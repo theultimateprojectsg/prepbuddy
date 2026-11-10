@@ -1185,13 +1185,23 @@ function mistakeCard(q, m) {
   </div>`;
 }
 async function renderMistakes(tab) {
-  const groups = await mistakeItems(tab === 'done');
-  const todo = mistakeCount(), done = Object.values(local.mistakes || {}).filter((m) => m.done).length;
+  // Filter by textbook (remembered). Only shown when mistakes come from more than one book.
+  const books = await getBooks();
+  const entries = Object.entries(local.mistakes || {});
+  const bookIds = [...new Set(entries.map(([id]) => id.split(':')[0]))].filter((id) => books.some((b) => b.id === id));
+  let only = local.mkBook && bookIds.includes(local.mkBook) ? local.mkBook : 'all';
+  if (bookIds.length < 2) only = 'all';
+  const inBook = ([id]) => only === 'all' || id.startsWith(only + ':');
+  const groups = (await mistakeItems(tab === 'done')).filter((g) => only === 'all' || g.book.id === only);
+  const todo = entries.filter((e) => inBook(e) && !e[1].done).length, done = entries.filter((e) => inBook(e) && e[1].done).length;
+  const chips = bookIds.length >= 2 ? `<div class="bookchips" role="tablist" aria-label="Textbook">${[['all', LANG === 'zh' ? '全部' : 'All'], ...bookIds.map((id) => { const b = books.find((x) => x.id === id); return [id, b.subject || b.title]; })]
+    .map(([id, name]) => { const n = entries.filter(([q, m]) => !m.done && (id === 'all' || q.startsWith(id + ':'))).length; return `<button role="tab" class="${only === id ? 'on' : ''}" data-mkbook="${esc(id)}"><span ${id === 'all' ? '' : 'data-raw'}>${esc(name)}</span>${n ? ` <b>${n}</b>` : ''}</button>`; }).join('')}</div>` : '';
   const all = groups.flatMap((g) => g.items.map((x) => x.q));
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">Mistake book</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Every question you didn’t get fully right is kept here. Get it right again and it moves to Mastered.</p>
+    ${chips}
     <div class="seg" style="grid-template-columns:1fr 1fr" role="tablist"><button role="tab" class="${tab === 'todo' ? 'on' : ''}" data-tab="todo">To get right (${todo})</button><button role="tab" class="${tab === 'done' ? 'on' : ''}" data-tab="done">Mastered (${done})</button></div>
     ${groups.length ? groups.map((g, gi) => `<section class="stack g10"><div class="mhead"><span><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><br><span class="muted" style="font-size:12.5px" data-raw>${esc(g.book.subject || g.book.title)}</span></span>${tab === 'todo' ? `<button class="link" data-redo="${gi}" style="padding:0;white-space:nowrap">Redo these ${g.items.length}</button>` : ''}</div>
       ${g.items.map((x) => mistakeCard(x.q, x.m)).join('')}</section>`).join('')
@@ -1200,8 +1210,10 @@ async function renderMistakes(tab) {
   ${tab === 'todo' && all.length ? `<div class="sheet sticky"><button class="btn" id="redoall">Redo all ${all.length}</button><span class="hint" style="text-align:center">The answer options are shuffled, so you can’t just remember the letter.</span></div>` : ''}`;
   document.getElementById('back').onclick = () => go({ name: 'home' });
   $app.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab: b.dataset.tab })));
+  $app.querySelectorAll('[data-mkbook]').forEach((b) => (b.onclick = () => { local.mkBook = b.dataset.mkbook; saveLocal(); renderMistakes(tab); }));
   const start = (qs, title) => { S = newSession({ mode: 'mistakes', title, qs: shuffle(qs).slice(0, 30).map(shuffleOptions), target: Math.min(qs.length, 30) }); renderQuestion(); };
-  const ra = document.getElementById('redoall'); if (ra) ra.onclick = () => start(all, LANG === 'zh' ? '錯題簿' : 'Mistake book');
+  const bookName = only === 'all' ? '' : ` · ${(books.find((b) => b.id === only) || {}).subject || ''}`;
+  const ra = document.getElementById('redoall'); if (ra) ra.onclick = () => start(all, (LANG === 'zh' ? '錯題簿' : 'Mistake book') + bookName);
   $app.querySelectorAll('[data-redo]').forEach((b) => (b.onclick = () => { const g = groups[+b.dataset.redo]; start(g.items.map((x) => x.q), g.unit ? g.unit.title : 'Mistake book'); }));
   $app.querySelectorAll('[data-dismiss]').forEach((b) => (b.onclick = () => { const m = local.mistakes[b.dataset.dismiss]; if (m) { m.done = true; m.doneAt = Date.now(); m.manual = true; saveLocal(); } const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }));
 }

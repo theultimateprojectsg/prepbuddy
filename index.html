@@ -262,6 +262,10 @@ textarea.essay{min-height:280px}
 .inktools{display:flex;gap:8px;justify-content:flex-end}.inktools button{border:1px solid var(--line);background:#fff;border-radius:10px;min-height:36px;padding:0 12px;font-family:inherit;font-size:13px;color:var(--ink);cursor:pointer}
 .yours.handwritten{display:flex;flex-direction:column;gap:8px}.yours.handwritten img{max-width:100%;max-height:220px;object-fit:contain;align-self:flex-start;border-radius:8px;border:1px solid #EEF0F2}
 .readas{margin:0;font-size:14.5px;line-height:1.5}.readas span:first-child{font-weight:600;color:var(--muted);font-size:13px}
+.bookchips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}.bookchips::-webkit-scrollbar{display:none}
+.bookchips button{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer;min-height:38px;white-space:nowrap}
+.bookchips button b{font-size:12px;background:var(--miss-soft);color:var(--miss-dark);border-radius:999px;padding:1px 7px;margin-left:4px}
+.bookchips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}.bookchips button.on b{background:rgba(255,255,255,.2);color:#fff}
 .katex{font-size:1.06em}.katex-display{margin:.4em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
 .opt .katex,.point .katex{font-size:1.02em}
 </style>
