@@ -94,6 +94,37 @@ function recordUsage(path, u) {
   saveLocal();
 }
 
+/* ---------- spaced review ----------
+   Full marks moves a question up a box (back in 1, 3, 7, 14, then 30 days).
+   Anything less sends it back to box 1 (back tomorrow). */
+const DAY = 864e5;
+const INTERVALS = [1, 3, 7, 14, 30];
+function startOfToday() { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+function schedule(s, full) {
+  s.box = full ? Math.min((s.box || 0) + 1, INTERVALS.length) : 1;
+  s.at = Date.now();
+  s.due = startOfToday() + INTERVALS[s.box - 1] * DAY; // due from the start of that day
+}
+(function scheduleOldProgress() { // progress saved before spaced review existed
+  let changed = false;
+  for (const s of Object.values(local.stats)) if (!s.due) { schedule(s, s.last >= 1); changed = true; }
+  if (changed) saveLocal();
+})();
+async function dueItems() {
+  const now = Date.now();
+  return (await allQuestions()).filter((x) => { const s = local.stats[x.q.id]; return s && s.due <= now; })
+    .sort((a, b) => local.stats[a.q.id].due - local.stats[b.q.id].due);
+}
+async function nextDue() {
+  let next = Infinity;
+  for (const x of await allQuestions()) { const s = local.stats[x.q.id]; if (s && s.due > Date.now()) next = Math.min(next, s.due); }
+  return next;
+}
+function whenText(t) {
+  const days = Math.round((t - startOfToday()) / DAY);
+  return days <= 1 ? 'tomorrow' : days < 7 ? `in ${days} days` : days < 14 ? 'in about a week' : `in ${Math.round(days / 7)} weeks`;
+}
+
 /* ---------- routing ---------- */
 let view = { name: 'home' };
 let S = null; // current practice session
@@ -112,6 +143,8 @@ async function go(v) {
 async function renderHome() {
   S = null;
   const books = await getBooks();
+  const due = await dueItems();
+  const nextAt = due.length ? 0 : await nextDue();
   const cards = [];
   for (const b of books) {
     let n = 0; const qs = [];
@@ -141,6 +174,9 @@ async function renderHome() {
     </section>
     ${cards.length ? `<section class="stack g10" aria-label="Review">
       <h2 style="margin:0;font-size:15px">Review across all textbooks</h2>
+      ${due.length
+        ? `<button class="review-card" data-mode="spaced"><span class="stack g6" style="align-items:flex-start"><b>Spaced review</b><span>${due.length} question${due.length > 1 ? 's' : ''} due today · about ${Math.max(1, Math.round(Math.min(due.length, 15) * 0.6))} min</span></span><span class="pill">Start</span></button>`
+        : `<div class="review-card done"><span class="stack g6"><b>Spaced review</b><span>${nextAt < Infinity ? `All caught up. Next review ${whenText(nextAt)}.` : 'Questions you answer come back here to help you remember them.'}</span></span></div>`}
       <div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">
         <button class="tile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="tile" data-mode="mock">${ICON.clock}<b>Mini mock</b><span>12 questions, 20 min</span></button>
@@ -409,6 +445,12 @@ async function startReview(mode) {
   const items = await allQuestions();
   if (items.length < 4) return toast('Practise a chapter first, then come back here.');
   let pick;
+  if (mode === 'spaced') {
+    pick = (await dueItems()).slice(0, 15).map((x) => shuffleOptions(x.q));
+    if (!pick.length) return toast('Nothing to review today.');
+    S = newSession({ mode: 'spaced', title: 'Spaced review', qs: shuffle(pick), target: pick.length });
+    return renderQuestion();
+  }
   if (mode === 'weak') {
     const tried = items.filter((x) => local.stats[x.q.id]);
     if (tried.length < 3) return toast('Answer a few questions first, so PrepBuddy knows your weak spots.');
@@ -776,6 +818,7 @@ function writtenBody(q, revealed) {
 function record(q, got) {
   const s = local.stats[q.id] || { seen: 0, got: 0, total: 0, last: 0 };
   s.seen++; s.got += got; s.total += marksOf(q); s.last = got / marksOf(q);
+  schedule(s, got >= marksOf(q));
   local.stats[q.id] = s; saveLocal();
 }
 
@@ -831,6 +874,7 @@ function renderSummary() {
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
     <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · done</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? '#0F766E' : '#9A3412'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
     <div class="card stack">${list}</div>
+    ${S.mode === 'spaced' ? `<p class="hint" style="margin:0;line-height:1.5">Questions you got right come back later and later. The ones you missed come back tomorrow.</p>` : ''}
     <div class="stack g10">
       ${unitRef ? `<button class="btn" id="more">10 more on ${unitRef.units.length > 1 ? 'these chapters' : 'this chapter'}</button>` : ''}
       ${missed.length ? `<button class="btn ${unitRef ? 'ghost' : ''}" id="retry">Retry the ${missed.length} I missed</button>` : ''}
