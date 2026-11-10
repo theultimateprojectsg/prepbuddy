@@ -306,6 +306,15 @@ const EXACT = {
   ' Thanks. We’ve sent this to the PrepBuddy team to check. You won’t see this question again.': ' 謝謝！已交給 PrepBuddy 團隊檢查。你不會再看到這條題目。',
   'Thanks. We’ve sent this to the PrepBuddy team to check. You won’t see this question again.': '謝謝！已交給 PrepBuddy 團隊檢查。你不會再看到這條題目。',
   'Thanks. We’ll send this when you’re back online. You won’t see this question again.': '謝謝！恢復連線後會自動提交。你不會再看到這條題目。',
+  'Your study coach': '你的溫習教練',
+  'Sees your scores, mistakes and reviews': '會參考你的分數、錯題和溫習進度',
+  'How am I doing?': '我現在表現如何？',
+  'What should I work on this week?': '這星期我應該集中溫習甚麼？',
+  'Which chapter is my weakest?': '哪一章是我最弱的？',
+  'Make me a plan for today': '幫我定今天的溫習計劃',
+  'Ask about your progress…': '問問你的學習進度…',
+  'Study coach': '溫習教練',
+  'The coach is not available right now. Try again in a moment.': '教練暫時未能回應，請稍後再試。',
   'Worth another go': '值得再試一次',
   'Redo this set (shuffled)': '重做這一組（次序打亂）',
   'Weak-spot drill': '弱項操練',
@@ -394,6 +403,7 @@ const EXACT = {
 
 // Text with numbers or names in it.
 const PATTERNS = [
+  [/^Hi(?: (.+))?! Ask me how you’re doing, what to focus on, or for a study plan\.$/, (m, n) => `${n ? n + '，' : ''}你好！可以問我你的進度、應該集中溫習甚麼，或者請我幫你定溫習計劃。`],
   [/^(\d+) of (\d+) marks$/, '$2 分中得 $1 分'],
   [/^(\d+) right$/, '$1 題全對'], [/^(\d+) partly$/, '$1 題部分正確'], [/^(\d+) missed$/, '$1 題答錯'],
   [/^(.*?)(\d+) chapters · (\d+) questions( · uploaded)?$/, (m, pre, c, q, up) => `${pre}${c} 個章節 · ${q} 條題目${up ? ' · 自行上載' : ''}`],

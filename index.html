@@ -533,6 +533,21 @@ body[data-tab] .app{padding-bottom:76px}
 .rbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .rdone{margin:0;display:flex;gap:8px;align-items:flex-start;font-size:13.5px;line-height:1.5;color:var(--good-dark)}
 .rdone svg{flex:none;width:18px;height:18px;margin-top:1px}
+
+/* ---------- study coach on the Today screen ---------- */
+.coach{margin:0 20px 20px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.coach-head{display:flex;gap:10px;align-items:center}
+.coach-head>div{display:flex;flex-direction:column;gap:1px}.coach-head b{font-size:15.5px}.coach-head span{font-size:12.5px;color:var(--muted)}
+.coach-ic{flex:none;width:36px;height:36px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}.coach-ic svg{width:20px;height:20px}
+.coach-msgs{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding:2px}
+.coach .tchips{margin-top:2px}
+@media (min-width:1200px){
+  body[data-tab] .app:has(> aside.coach){max-width:1400px;margin-left:calc(220px + max(24px, (100vw - 220px - 1400px) / 2));margin-right:auto;display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:auto 1fr;column-gap:28px;align-items:start}
+  .app:has(> aside.coach)>main{grid-column:1;grid-row:1}
+  .app:has(> aside.coach)>footer{grid-column:1;grid-row:2}
+  .app>aside.coach{grid-column:2;grid-row:1/span 2;position:sticky;top:24px;margin:32px 0 24px;max-height:calc(100vh - 48px);min-height:520px}
+  .app>aside.coach .coach-msgs{flex:1;max-height:none;min-height:0}
+}
 </style>
 </head>
 <body>

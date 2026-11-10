@@ -429,6 +429,67 @@ function lastChapter(books) {
 }
 
 /* ---------- Today (home) ---------- */
+/* ---------- study coach (Today screen) ---------- */
+// A text snapshot of the student's progress, made on the device and sent with each question.
+async function coachSnapshot() {
+  const books = await getBooks(); const r = await currentReport();
+  const pc = (x) => Math.round(100 * x);
+  const lines = [`Today: ${new Date().toDateString()}. Student name: ${local.name || '(not given)'}.`,
+    `Last 7 days: practised on ${r.dp} of 7 days, ${r.q} questions answered, ${r.a === null ? 'no score yet' : r.a + '% of marks'}${r.pa !== null && r.a !== null ? ` (previous week ${r.pa}%)` : ''}.`,
+    `Thinking skills, last 30 days (% of marks, answers): ${['Recall', 'Understand', 'Apply', 'Analyse/evaluate'].map((n, i) => `${n} ${r.sk[i][1] ? r.sk[i][0] + '%' : '-'} (${r.sk[i][1]})`).join(', ')}.`,
+    `Mistake book: ${mistakeCount()} questions still to get right. Reviews due now: ${(await dueItems()).length}.`];
+  for (const b of books) {
+    const m = await bookMastery(b);
+    lines.push('', `BOOK: ${b.title}${b.subject ? ` (${b.subject})` : ''} — mastery ${m.pct}% (${masteryLabel(m.pct)}). Areas: ${AREAS.map(([k, label]) => `${label} ${pc(m.areas[k])}%`).join(', ')}.`);
+    const started = m.chapters.filter((c) => c.done || c.tests);
+    for (const c of started.slice(0, 40)) {
+      const acc = c.done ? pc(c.score.accurate / Math.max(0.01, Math.min(1, c.done / c.target))) : 0;
+      lines.push(`- ${c.unit.title}: mastery ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}.`);
+    }
+    const fresh = m.chapters.filter((c) => !c.done && !c.tests).map((c) => c.unit.title);
+    if (fresh.length) lines.push(`- Not started yet (${fresh.length}): ${fresh.slice(0, 25).join('; ')}${fresh.length > 25 ? '; …' : ''}`);
+  }
+  if (!books.length) lines.push('', 'No textbooks added yet.');
+  return lines.join('\n');
+}
+const COACH_CHIPS = ['How am I doing?', 'What should I work on this week?', 'Which chapter is my weakest?', 'Make me a plan for today'];
+const coach = { busy: false, error: null };
+function coachHTML() {
+  const msgs = local.coach || [];
+  return `<div class="coach-head"><span class="coach-ic" aria-hidden="true">${ICON.chat}</span><div><b>Your study coach</b><span>Sees your scores, mistakes and reviews</span></div>
+      ${msgs.length && !coach.busy ? '<button class="link quiet" id="coachClear" style="padding:0;font-size:13px;margin-left:auto">Clear</button>' : ''}</div>
+    <div class="coach-msgs" id="coachMsgs">
+      <div class="tmsg ai">Hi${local.name ? ` ${esc(local.name)}` : ''}! Ask me how you’re doing, what to focus on, or for a study plan.</div>
+      ${msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
+      ${coach.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
+      ${coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : ''}
+    </div>
+    ${coach.busy ? '' : `<div class="tchips">${COACH_CHIPS.filter((t) => !msgs.some((m) => m.chip === t)).map((t) => `<button class="tchip" data-coach="${esc(t)}">${t}</button>`).join('')}</div>`}
+    <form class="tform" id="coachForm"><input id="coachQ" class="tinput" placeholder="Ask about your progress…" autocomplete="off" ${coach.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${coach.busy ? 'disabled' : ''}>${ICON.send}</button></form>`;
+}
+function bindCoach() {
+  const box = document.getElementById('coach'); if (!box) return;
+  const redraw = () => { const b = document.getElementById('coach'); if (!b) return; b.innerHTML = coachHTML(); bindCoach(); const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight; };
+  const ask = async (text, chip) => {
+    text = String(text || '').trim(); if (!text || coach.busy) return;
+    const msgs = local.coach || (local.coach = []);
+    const history = msgs.slice(-10).map((m) => ({ role: m.role, text: m.text }));
+    msgs.push({ role: 'user', text, chip }); coach.busy = true; coach.error = null; redraw();
+    try {
+      const r = await api('coach', { snapshot: await coachSnapshot(), ask: text, history, lang: LANG });
+      msgs.push({ role: 'assistant', text: r.reply });
+    } catch (e) {
+      msgs.pop();
+      coach.error = e.status === 0 ? 'You seem to be offline.' : (e.message && e.status !== 500 ? e.message : 'The coach is not available right now. Try again in a moment.');
+    }
+    local.coach = msgs.slice(-20); saveLocal(); coach.busy = false; redraw();
+  };
+  box.querySelectorAll('[data-coach]').forEach((b) => (b.onclick = () => ask(b.textContent, b.dataset.coach)));
+  const f = document.getElementById('coachForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); ask(document.getElementById('coachQ').value); };
+  const c = document.getElementById('coachClear'); if (c) c.onclick = () => { local.coach = []; coach.error = null; saveLocal(); redraw(); };
+  const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight;
+}
+
 async function renderHome() {
   S = null;
   const books = await getBooks();
@@ -490,8 +551,10 @@ async function renderHome() {
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
     <button class="weekstrip" id="progress"><span class="dots" aria-hidden="true">${r.days.map((m) => `<i class="${m ? 'on' : ''}"></i>`).join('')}</span><span class="wt"><b>${r.dp} of 7 days practised</b><span>See your progress and send a report to your parents</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>
-  </main>${footerHTML()}`;
+  </main>
+  <aside class="coach" id="coach" aria-label="Study coach">${coachHTML()}</aside>${footerHTML()}`;
   bindHomeCommon();
+  bindCoach();
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   const wsb = document.getElementById('worksheets'); if (wsb) wsb.onclick = () => go({ name: 'worksheets' });
   const mkb = document.getElementById('mistakes'); if (mkb) mkb.onclick = () => go({ name: 'mistakes' });
@@ -1154,7 +1217,7 @@ async function renderProgress() {
 /* ---------- AI usage on this device ---------- */
 function renderUsage() {
   const u = local.usage || {};
-  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions'], ['mark', 'Marking answers'], ['explain', 'Tutor (I don’t get it)'], ['notes', 'Notes and flashcards']];
+  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions'], ['mark', 'Marking answers'], ['explain', 'Tutor (I don’t get it)'], ['notes', 'Notes and flashcards'], ['coach', 'Study coach']];
   const fmt = (n) => (n || 0).toLocaleString('en');
   const tot = { calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0, usd: 0 };
   const usd = (n) => '$' + (n || 0).toFixed((n || 0) >= 1 ? 2 : 3);
