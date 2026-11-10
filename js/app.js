@@ -9,11 +9,12 @@ const BUFFER = 3;           // spare questions kept ready beyond the current ses
 // Mix of question kinds, cycled through as a chapter's bank grows.
 const TYPE_CHOICES = [['mcq', 'MCQ'], ['written', 'Written'], ['mix', 'Both']];
 const PLANS = {
-  mcq: [[1, 'mcq'], [2, 'mcq'], [3, 'mcq'], [1, 'mcq'], [2, 'mcq'], [3, 'mcq']],
+  mcq: [[1, 'mcq'], [2, 'mcq'], [2, 'graph'], [3, 'mcq'], [1, 'mcq'], [2, 'mcq'], [3, 'mcq']],
   written: [[2, 'short'], [3, 'structured'], [2, 'short'], [4, 'structured'], [3, 'short'], [3, 'structured']],
 };
-const matchType = (q, types) => !types || types === 'mix' || (types === 'mcq' ? q.type === 'mcq' : q.type !== 'mcq');
-const PLAN = [[1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
+const choiceType = (q) => q.type === 'mcq' || q.type === 'graph';
+const matchType = (q, types) => !types || types === 'mix' || (types === 'mcq' ? choiceType(q) : !choiceType(q));
+const PLAN = [[2, 'graph'], [1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
               [4, 'structured'], [1, 'mcq'], [2, 'short'], [3, 'mcq'], [3, 'structured'], [2, 'mcq']];
 
 /* ---------- small local settings + progress (localStorage) ---------- */
@@ -28,9 +29,9 @@ function saveLocal() { try { localStorage.setItem(LKEY, JSON.stringify(local)); 
 const $app = document.getElementById('app');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LEVEL = { 1: 'Recall', 2: 'Understand', 3: 'Apply', 4: 'Analyse / evaluate' };
-const TYPE = { mcq: 'MCQ', short: 'Short answer', structured: 'Structured' };
+const TYPE = { mcq: 'MCQ', graph: 'Graph MCQ', short: 'Short answer', structured: 'Structured' };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const marksOf = (q) => (q.type === 'mcq' ? 1 : (q.parts || []).reduce((s, p) => s + p.marks, 0));
+const marksOf = (q) => (q.type === 'mcq' || q.type === 'graph' ? 1 : (q.parts || []).reduce((s, p) => s + p.marks, 0));
 // 'zh-HK' when the text is mostly Chinese characters, else 'en'.
 const langOf = (t) => { const x = String(t || '').slice(0, 20000); const cjk = (x.match(/[\u3400-\u9fff]/g) || []).length; const words = (x.match(/[A-Za-z]{2,}/g) || []).length; return cjk > words ? 'zh-HK' : 'en'; };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -542,7 +543,7 @@ async function confirmRemove(book) {
    unused questions first, new ones made for what's missing, and only then questions used before. */
 const PAPER_PRESETS = [['short', 'Short', 10, 2], ['half', 'Half paper', 18, 4], ['full', 'Full paper', 36, 8]];
 const paperMinutes = (a, b) => Math.max(5, Math.round((a * 1.5 + b * 7) / 5) * 5);
-const isMcqLike = (q) => q.type === 'mcq' || q.type === 'graph';
+const isMcqLike = choiceType;
 let paperSet = { a: 10, b: 2 };
 let paperJob = null;
 
@@ -911,7 +912,7 @@ function renderAccess(onOk, msg) {
 
 /* ---------- weak-spot drills ---------- */
 function missedIdea(q, idx) {
-  if (q.type === 'mcq') {
+  if (choiceType(q)) {
     const opt = (L) => (q.options || [])['ABCD'.indexOf(L)] || '';
     return `Question: ${q.stem}\nCorrect answer: ${opt(q.correct_option)}\nThe student chose: ${opt(S.answers[idx]) || '(no answer)'}\nWhy: ${q.explanation}`;
   }
@@ -983,9 +984,33 @@ function pumpDrills(sess) {
     });
 }
 
-/* graph questions: drawn in the graph-question feature */
+/* ---------- graph questions ----------
+   The AI gives each of the 4 options as points; the app draws them on the same scale. */
+function graphScale(graphs) {
+  const pts = graphs.flatMap((g) => g.points || []);
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(0, ...ys), y1 = Math.max(...ys);
+  return { x0, x1: x1 === x0 ? x0 + 1 : x1, y0, y1: y1 === y0 ? y0 + 1 : y1 };
+}
+function graphSVG(g, sc, label, print) {
+  const W = 160, H = 118, L = 22, B = 22, T = 8, R = 8;
+  const X = (x) => L + (x - sc.x0) / (sc.x1 - sc.x0) * (W - L - R);
+  const Y = (y) => H - B - (y - sc.y0) / (sc.y1 - sc.y0) * (H - B - T);
+  const pts = (g.points || []).slice().sort((a, b) => a[0] - b[0]);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(' ');
+  const ink = print ? '#111' : 'currentColor';
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)}">
+    <path d="M${L} ${T - 2}V${H - B}H${W - R + 2}" fill="none" stroke="${ink}" stroke-width="1.2" opacity=".7"/>
+    <path d="${line}" fill="none" stroke="${print ? '#111' : '#0F766E'}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle" font-size="9.5" fill="${ink}">${esc(g.x_label || '')}</text>
+    <text transform="translate(10 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle" font-size="9.5" fill="${ink}">${esc(g.y_label || '')}</text>
+  </svg>`;
+}
 function graphStem(q) { return renderStem(q.stem, 'pstem'); }
-function graphOptions(q) { return ''; }
+function graphOptions(q, print) {
+  const sc = graphScale(q.graphs || []);
+  return `<div class="pgraphs">${(q.graphs || []).map((g, k) => `<div><b>${'ABCD'[k]}</b>${graphSVG(g, sc, `Graph ${'ABCD'[k]}: ${q.options[k] || ''}`, print)}</div>`).join('')}</div>`;
+}
 
 /* ---------- question screens ---------- */
 function header() {
@@ -1000,7 +1025,7 @@ function header() {
 function renderQuestion() {
   S.waiting = false;
   const q = S.qs[S.i];
-  const body = q.type === 'mcq' ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
+  const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18" style="flex:1;padding:8px 20px 20px">
     <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}</div>
@@ -1025,14 +1050,18 @@ function nextLabel() {
 
 function mcqBody(q, revealed) {
   const picked = S.answers[S.i];
+  const sc = q.type === 'graph' ? graphScale(q.graphs || []) : null;
   const opts = (q.options || []).map((o, k) => {
     const L = 'ABCD'[k]; let cls = '';
     if (revealed) { if (L === q.correct_option) cls = 'right'; else if (L === picked) cls = 'wrong'; } else if (L === picked) cls = 'picked';
     const dot = revealed && L === q.correct_option ? ICON.check : L;
+    if (q.type === 'graph') {
+      return `<button class="opt gopt ${cls}" data-opt="${L}" ${revealed ? 'disabled' : ''} aria-pressed="${L === picked}" aria-label="Graph ${L}: ${esc(o)}"><span class="dot">${dot}</span>${graphSVG((q.graphs || [])[k] || {}, sc, `Graph ${L}: ${o}`)}${revealed ? `<span class="gcap">${esc(o)}</span>` : ''}</button>`;
+    }
     return `<button class="opt ${cls}" data-opt="${L}" ${revealed ? 'disabled' : ''} aria-pressed="${L === picked}"><span class="dot">${dot}</span><span>${esc(o)}</span></button>`;
   }).join('');
   const right = picked === q.correct_option;
-  const main = `${renderStem(q.stem, 'q')}<div class="stack g10">${opts}</div>`;
+  const main = `${renderStem(q.stem, 'q')}<div class="${q.type === 'graph' ? 'ggrid' : 'stack g10'}">${opts}</div>`;
   let footer = '';
   if (revealed) footer = `<div class="sheet"><span class="verdict ${right ? 'ok' : 'no'}">${right ? 'Correct' : picked ? `Not quite. The answer is ${q.correct_option}.` : `No answer. The answer is ${q.correct_option}.`}</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
   else if (isExam()) footer = `<div class="pad" style="padding-top:0"><button class="btn" id="next" ${picked ? '' : 'disabled'}>${nextLabel()}</button></div>`;
@@ -1145,7 +1174,7 @@ let quitArmed = 0;
 function endEarly() {
   if (isExam() && !S.review) return S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' });
   const q = S.qs[S.i];
-  if (q && S.phase === 'revealed' && q.type !== 'mcq' && (S.got[S.i] === undefined || S.got[S.i] === null) && !(S.marks[S.i] || {}).pending) {
+  if (q && S.phase === 'revealed' && !choiceType(q) && (S.got[S.i] === undefined || S.got[S.i] === null) && !(S.marks[S.i] || {}).pending) {
     S.got[S.i] = partsGot(q); record(q, S.got[S.i]);
   }
   const answered = S.qs.map((_, k) => k).filter((k) => S.got[k] !== undefined && S.got[k] !== null);
@@ -1164,7 +1193,7 @@ function bindCommon(q) {
   };
   const n = document.getElementById('next');
   if (n) n.onclick = () => {
-    if (q.type !== 'mcq' && S.phase === 'revealed') {
+    if (!choiceType(q) && S.phase === 'revealed') {
       const first = S.got[S.i] === undefined || S.got[S.i] === null;
       S.got[S.i] = partsGot(q);
       if (first) record(q, S.got[S.i]);
@@ -1200,7 +1229,7 @@ function renderSummary() {
   const pct = total ? Math.round(100 * got / total) : 0;
   const list = qs.map((q, k) => {
     const g = S.got[k] || 0, m = marksOf(q), full = g === m;
-    const label = q.type === 'mcq' ? q.stem : ((q.parts[0] && q.parts[0].prompt) || q.stem);
+    const label = choiceType(q) ? q.stem : ((q.parts[0] && q.parts[0].prompt) || q.stem);
     return `<div class="res"><span class="tick ${full ? 'full' : 'part'}">${full ? ICON.check : g}</span><span style="flex:1">${esc(String(label).slice(0, 90))}${String(label).length > 90 ? '…' : ''}</span><span class="muted" style="white-space:nowrap">${g}/${m}</span></div>`;
   }).join('');
   const missed = qs.filter((q, k) => (S.got[k] || 0) < marksOf(q));
@@ -1239,9 +1268,9 @@ function renderSummary() {
 
 // Same question, MCQ options in a new order (so a redo tests the idea, not the letter).
 function shuffleOptions(q) {
-  if (q.type !== 'mcq' || !Array.isArray(q.options)) return q;
+  if (!choiceType(q) || !Array.isArray(q.options)) return q;
   const order = shuffle(q.options.map((_, i) => i));
-  return { ...q, options: order.map((i) => q.options[i]), correct_option: 'ABCD'[order.indexOf('ABCD'.indexOf(q.correct_option))] };
+  return { ...q, options: order.map((i) => q.options[i]), graphs: q.graphs ? order.map((i) => q.graphs[i]) : undefined, correct_option: 'ABCD'[order.indexOf('ABCD'.indexOf(q.correct_option))] };
 }
 
 /* ---------- mock timer ---------- */

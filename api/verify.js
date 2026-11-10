@@ -17,7 +17,7 @@ module.exports = handler(async (body, usage) => {
     system: VERIFY_SYSTEM, sectionBlock: block, toolName: 'answer', maxTokens: 2000, usage, step: 'check',
     instruction: `<question>\n${questionForChecker(q, false)}\n</question>\n\nAnswer this question as a top student would, using only the section.`,
   });
-  if (q.type === 'mcq' && blind.option !== q.correct_option) {
+  if ((q.type === 'mcq' || q.type === 'graph') && blind.option !== q.correct_option) {
     problems.push(`checker chose ${blind.option || '?'}, key says ${q.correct_option}`);
   }
 

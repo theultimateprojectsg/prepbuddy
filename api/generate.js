@@ -4,7 +4,7 @@
 
 const { langNote, LEVELS, GEN_SYSTEM, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
 
-const TYPES = { mcq: 'MCQ', short: 'SHORT-ANSWER', structured: 'STRUCTURED' };
+const TYPES = { mcq: 'MCQ', graph: 'CHOOSE-THE-GRAPH', short: 'SHORT-ANSWER', structured: 'STRUCTURED' };
 
 module.exports = handler(async (body, usage) => {
   const items = Array.isArray(body.items) ? body.items.slice(0, 4) : [];
@@ -17,7 +17,12 @@ module.exports = handler(async (body, usage) => {
   const wanted = items.map((it, i) =>
     `${i + 1}. A level ${it.level} ${TYPES[it.type]} question. Level ${it.level} means: ${LEVELS[it.level]}` +
     (it.type === 'structured' ? ' Give a short scenario or data in the stem, then 2-4 parts totalling 4-8 marks.' : '') +
-    (it.type === 'short' ? ' One part, 2-3 marks.' : '')
+    (it.type === 'short' ? ' One part, 2-3 marks.' : '') +
+    (it.type === 'graph' ? ' The student picks which of 4 sketch graphs correctly shows a relationship the section describes ' +
+      '(e.g. enzyme activity against temperature, population against time). Give the 4 graphs in "graphs" with identical axes and ' +
+      'labels, 5-12 points each, as sketch values that show the shape; make the wrong graphs plausible misconceptions. ' +
+      'Options are 4 short captions of each shape; correct_option is the right graph. If the section describes no such ' +
+      'relationship, write an ordinary MCQ instead and leave "graphs" empty.' : '')
   ).join('\n');
 
   const f = body.focus && Number(body.focus.of) > 1 ? body.focus : null;
@@ -42,13 +47,20 @@ module.exports = handler(async (body, usage) => {
     usage,
   });
 
-  const questions = (out.questions || []).slice(0, items.length).map((q, i) => ({
-    ...q,
-    level: items[i].level,
-    type: items[i].type,
-    options: items[i].type === 'mcq' ? q.options : undefined,
-    correct_option: items[i].type === 'mcq' ? q.correct_option : undefined,
-    parts: items[i].type === 'mcq' ? [] : (q.parts || []),
-  }));
+  const questions = (out.questions || []).slice(0, items.length).map((q, i) => {
+    let type = items[i].type;
+    // A graph request the section couldn't support comes back as an ordinary MCQ.
+    if (type === 'graph' && !(Array.isArray(q.graphs) && q.graphs.length === 4)) type = 'mcq';
+    const choice = type === 'mcq' || type === 'graph';
+    return {
+      ...q,
+      level: items[i].level,
+      type,
+      options: choice ? q.options : undefined,
+      correct_option: choice ? q.correct_option : undefined,
+      graphs: type === 'graph' ? q.graphs : undefined,
+      parts: choice ? [] : (q.parts || []),
+    };
+  });
   return { questions };
 });
