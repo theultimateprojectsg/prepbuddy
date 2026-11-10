@@ -1597,9 +1597,17 @@ function topUp(sess) {
 
 /* ---------- mistake book (錯題簿) ---------- */
 // Mistakes from textbooks that were removed are dropped (older versions kept them, so the count stayed).
-function pruneMistakes(books) {
-  const ids = new Set(books.map((b) => b.id)); let n = 0;
-  for (const k of Object.keys(local.mistakes || {})) if (!ids.has(k.split(':')[0])) { delete local.mistakes[k]; n++; }
+async function pruneMistakes(books) {
+  const ids = new Set(books.map((b) => b.id)), qsOf = new Map(); let n = 0;
+  for (const k of Object.keys(local.mistakes || {})) {
+    const [b, u] = qUnit(k);
+    if (!ids.has(k.split(':')[0])) { delete local.mistakes[k]; n++; continue; }
+    // the question itself is gone (reported, or the chapter was re-made): it can never be shown, so don't count it
+    const key = `${b}:${u}`;
+    if (!qsOf.has(key)) qsOf.set(key, await getQs(b, u));
+    const qs = qsOf.get(key);
+    if (!qs.some((q) => q.id === k)) { delete local.mistakes[k]; n++; }
+  }
   if (n) saveLocal();
 }
 const mistakeCount = () => Object.values(local.mistakes || {}).filter((m) => !m.done).length;
@@ -1640,7 +1648,7 @@ function mistakeCard(q, m) {
 async function renderMistakes(tab) {
   // Filter by textbook (remembered). Only shown when mistakes come from more than one book.
   const books = await getBooks();
-  pruneMistakes(books);
+  await pruneMistakes(books);
   const entries = Object.entries(local.mistakes || {});
   const bookIds = [...new Set(entries.map(([id]) => id.split(':')[0]))].filter((id) => books.some((b) => b.id === id));
   let only = local.mkBook && bookIds.includes(local.mkBook) ? local.mkBook : 'all';
@@ -1648,7 +1656,7 @@ async function renderMistakes(tab) {
   const inBook = ([id]) => only === 'all' || id.startsWith(only + ':');
   const groups = (await mistakeItems(tab === 'done')).filter((g) => only === 'all' || g.book.id === only);
   const todo = entries.filter((e) => inBook(e) && !e[1].done).length, done = entries.filter((e) => inBook(e) && e[1].done).length;
-  const chips = bookIds.length >= 2 ? `<div class="bookchips" role="tablist" aria-label="Textbook">${[['all', LANG === 'zh' ? '全部' : 'All'], ...bookIds.map((id) => { const b = books.find((x) => x.id === id); return [id, b.subject || b.title]; })]
+  const chips = bookIds.length >= 2 ? `<div class="bookchips" role="tablist" aria-label="Textbook">${[['all', LANG === 'zh' ? '全部' : 'All'], ...bookIds.map((id) => { const b = books.find((x) => x.id === id); const same = bookIds.filter((x) => { const o = books.find((y) => y.id === x); return (o.subject || o.title) === (b.subject || b.title); }).length > 1; return [id, same ? b.title : (b.subject || b.title)]; })]
     .map(([id, name]) => { const n = entries.filter(([q, m]) => !m.done && (id === 'all' || q.startsWith(id + ':'))).length; return `<button role="tab" class="${only === id ? 'on' : ''}" data-mkbook="${esc(id)}"><span ${id === 'all' ? '' : 'data-raw'}>${esc(name)}</span>${n ? ` <b>${n}</b>` : ''}</button>`; }).join('')}</div>` : '';
   const all = groups.flatMap((g) => g.items.map((x) => x.q));
   $app.innerHTML = `
