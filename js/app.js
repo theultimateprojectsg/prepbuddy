@@ -443,17 +443,14 @@ async function renderHome() {
     $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
     <section class="empty-start" aria-label="Add a textbook">
       <h2>Start with your textbook</h2>
-      <p style="margin:0;line-height:1.55;color:var(--text-2)">Find it in the library, or upload the PDF. PrepBuddy turns each chapter into exam practice, notes and flashcards, and marks your answers.</p>
+      <p style="margin:0;line-height:1.55;color:var(--text-2)">Search the library by title, subject or book code. PrepBuddy turns each chapter into exam practice, notes and flashcards, and marks your answers.</p>
       <form id="find" class="searchbox" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
         <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off"></form>
-      <label class="link" style="align-self:flex-start;display:inline-flex;gap:6px;align-items:center;cursor:pointer">${ICON.upload}<span>Upload your own PDF</span>
-        <input type="file" id="file" accept="application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0"></label>
     </section></main>${footerHTML()}`;
     bindHomeCommon();
     const q = document.getElementById('q');
     q.onfocus = () => go({ name: 'library', query: q.value });
     document.getElementById('find').onsubmit = (e) => { e.preventDefault(); go({ name: 'library', query: q.value }); };
-    document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
     return window.scrollTo(0, 0);
   }
   const due = await dueItems();
@@ -529,12 +526,9 @@ async function renderBooks() {
     <section class="stack g10" aria-label="My textbooks">
       <h2 style="margin:0;font-size:16px">My textbooks</h2>
       ${rows.length ? `<div class="card stack">${rows.join('')}</div>` : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No textbooks yet. Search above to add one from the library.</p></div>`}
-      <label class="link" style="align-self:flex-start;display:inline-flex;gap:6px;align-items:center;cursor:pointer">${ICON.upload}<span>Not in the library? Upload your own PDF</span>
-        <input type="file" id="file" accept="application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0"></label>
     </section>
   </main>`;
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
-  document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
   const q = document.getElementById('q');
   q.onfocus = () => go({ name: 'library', query: q.value });
   document.getElementById('find').onsubmit = (e) => { e.preventDefault(); go({ name: 'library', query: q.value }); };
@@ -604,7 +598,7 @@ async function renderLibrary(query) {
               : `<button class="btn small" data-add="${esc(b.id)}">${ICON.plus} Add to my textbooks</button>`}
           </div></div>`;
       }).join('')
-      : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">No textbook matches “${esc(raw)}”.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Check the book code, or upload your own PDF from the home screen.</p></div>`);
+      : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">No textbook matches “${esc(raw)}”.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Check the spelling or the book code and try again.</p></div>`);
     document.querySelectorAll('[data-add]').forEach((btn) => (btn.onclick = () => addFromLibrary(list.find((b) => b.id === btn.dataset.add), btn)));
     document.querySelectorAll('[data-open]').forEach((btn) => (btn.onclick = () => go({ name: 'book', bookId: 'lib-' + btn.dataset.open })));
   };
@@ -621,17 +615,24 @@ async function addFromLibrary(entry, btn) {
   try {
     const qr = await fetch(`library/${entry.id}/questions.json`);
     const bank = qr.ok ? await qr.json() : {};
-    for (const u of entry.units) {
-      const tr = await fetch(`library/${entry.id}/${u.id}.txt`);
-      if (!tr.ok) throw new Error('Part of this textbook could not be downloaded. Please try again.');
-      await store.set(`text:${id}:${u.id}`, await tr.text());
-      if (u.figs) { const fr = await fetch(`library/${entry.id}/figs/${u.id}.json`); if (fr.ok) await store.set(`figs:${id}:${u.id}`, await fr.json()); }
+    // Chapter text is downloaded 8 chapters at a time; diagram pictures are fetched later, only when a chapter needs them.
+    let next = 0, done = 0;
+    const one = async (u) => {
+      for (let tryNo = 1; ; tryNo++) {
+        const tr = await fetch(`library/${entry.id}/${u.id}.txt`).catch(() => null);
+        if (tr && tr.ok) { await store.set(`text:${id}:${u.id}`, await tr.text()); break; }
+        if (tryNo >= 3) throw new Error('Part of this textbook could not be downloaded. Please try again.');
+        await new Promise((r) => setTimeout(r, 800 * tryNo));
+      }
       const existing = await getQs(id, u.id);
       const have = new Set(existing.map((q) => q.id));
       const ready = (bank[u.id] || []).map((q) => ({ ...q, id: `${id}:${u.id}:${q.id}`, section: u.title, pages: q.pages || `${u.startPage}-${u.endPage}` }))
         .filter((q) => !have.has(q.id));
-      await setQs(id, u.id, existing.concat(ready));
-    }
+      if (ready.length) await setQs(id, u.id, existing.concat(ready));
+      done++;
+      if (btn) btn.textContent = `Adding… ${Math.round(100 * done / entry.units.length)}%`;
+    };
+    await Promise.all(Array.from({ length: Math.min(8, entry.units.length) }, async () => { while (next < entry.units.length) await one(entry.units[next++]); }));
     await store.persist();
     const books = (await store.get('books', [])).filter((b) => b.id !== id);
     books.unshift({ id, library: entry.id, code: entry.code, title: entry.title, subject: entry.subject, level: entry.level,
@@ -845,9 +846,6 @@ async function renderBook(bookId) {
     <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
       ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
       : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'ai' ? 'the contents page and headings, checked by AI' : book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
-    <button class="link" id="editch" style="align-self:flex-start;padding:2px 0">Chapter names wrong? Edit chapters</button>
-    <label class="kindrow"><span>Subject type</span><select id="kind">${KINDS.map(([k, l]) => `<option value="${k}" ${kindOfBook(book) === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-    <p class="muted" style="font-size:12px;margin:-6px 0 0;line-height:1.5">${{ science: 'Questions test ideas, experiments and data.', maths: 'Calculation questions with method marks; a maths keyboard helps you type working.', language: 'Comprehension, vocabulary, grammar and writing tasks marked with a rubric.', humanities: 'Source- and data-based questions, and “to what extent” questions.' }[kindOfBook(book)]}</p>
     <button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>
   <div class="sheet sticky setup ${n ? 'armed' : ''}">
@@ -891,11 +889,6 @@ async function renderBook(bookId) {
     pick.ids = new Set([b.dataset.stepUnit]); keep();
   }));
   document.getElementById('ctest').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); if (units.length) startChapterTest(book, units); };
-  document.getElementById('editch').onclick = () => go({ name: 'edit', bookId });
-  document.getElementById('kind').onchange = async (e) => {
-    const books = await store.get('books', []); const b = books.find((x) => x.id === bookId);
-    if (b) { b.kind = e.target.value; await store.set('books', books); bookKinds.set(bookId, b.kind); toast('New questions will suit this subject'); keep(); }
-  };
   document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
   document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
