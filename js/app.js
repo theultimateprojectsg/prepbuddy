@@ -34,6 +34,13 @@ const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) {
 const marksOf = (q) => (q.type === 'mcq' || q.type === 'graph' ? 1 : (q.parts || []).reduce((s, p) => s + p.marks, 0));
 // 'zh-HK' when the text is mostly Chinese characters, else 'en'.
 const langOf = (t) => { const x = String(t || '').slice(0, 20000); const cjk = (x.match(/[\u3400-\u9fff]/g) || []).length; const words = (x.match(/[A-Za-z]{2,}/g) || []).length; return cjk > words ? 'zh-HK' : 'en'; };
+// Drop or repair malformed questions before they reach a student.
+function usable(q) {
+  if (!q || typeof q !== 'object') return false;
+  if (q.type === 'graph' && !(Array.isArray(q.graphs) && q.graphs.length === 4)) { q.type = 'mcq'; delete q.graphs; }
+  if (q.type === 'mcq' || q.type === 'graph') return Array.isArray(q.options) && q.options.length === 4 && 'ABCD'.includes(q.correct_option || '?');
+  return Array.isArray(q.parts) && q.parts.length > 0 && q.parts.every((p) => p && p.prompt && Array.isArray(p.mark_scheme) && p.marks > 0);
+}
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const ICON = {
   close: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
@@ -798,7 +805,7 @@ async function doFill(book, unit, job) {
       if (!gen.questions || !gen.questions.length) { if (++empty >= 2) stop = true; continue; }
       const checked = await Promise.all(gen.questions.map((q) =>
         api('verify', { title, text, question: q }).then((v) => ({ q, v })).catch((e) => { if (e.status === 401) { stop = true; throw e; } return { q, v: { passed: false } }; })));
-      const passed = checked.filter((x) => x.v.passed).map((x) => x.q);
+      const passed = checked.filter((x) => x.v.passed && usable(x.q)).map((x) => x.q);
       if (!passed.length) continue;
       passed.forEach((q) => {
         q.id = `${book.id}:${unit.id}:${uid()}`;
@@ -945,7 +952,7 @@ async function makeDrill(q, idea, types, n = 2) {
   const gen = await api('generate', { title, text, items, avoid, target: idea, lang: langOf(text) });
   const checked = await Promise.all((gen.questions || []).map((x) =>
     api('verify', { title, text, question: x }).then((v) => ({ x, v })).catch((e) => { if (e.status === 401) throw e; return { x, v: { passed: false } }; })));
-  const passed = checked.filter((c) => c.v.passed).map((c) => c.x);
+  const passed = checked.filter((c) => c.v.passed && usable(c.x)).map((c) => c.x);
   passed.forEach((x) => { x.id = `${bookId}:${unitId}:${uid()}`; x.section = title; x.pages = q.pages; x.drillOf = q.id; });
   if (passed.length) {
     await addToBank(bookId, unitId, passed);
