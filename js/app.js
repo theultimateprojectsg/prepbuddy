@@ -7,7 +7,7 @@ const SESSION_SIZE = 10;
 const BATCH = 3;            // questions requested per generate call
 const BUFFER = 3;           // spare questions kept ready beyond the current session (costs credits)
 // Mix of question kinds, cycled through as a chapter's bank grows.
-const TYPE_CHOICES = [['mix', 'Mix'], ['mcq', 'MCQ only'], ['written', 'Written only']];
+const TYPE_CHOICES = [['mcq', 'MCQ'], ['written', 'Written'], ['mix', 'Both']];
 const PLANS = {
   mcq: [[1, 'mcq'], [2, 'mcq'], [3, 'mcq'], [1, 'mcq'], [2, 'mcq'], [3, 'mcq']],
   written: [[2, 'short'], [3, 'structured'], [2, 'short'], [4, 'structured'], [3, 'short'], [3, 'structured']],
@@ -332,69 +332,73 @@ async function uploadBook(file) {
 }
 
 /* ---------- book: chapter list ---------- */
-let pick = { bookId: null, on: false, ids: new Set() }; // chapter selection on the book screen
+let pick = { bookId: null, ids: new Set() }; // chapters ticked on the book screen
 
 async function renderBook(bookId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   if (!book) return go({ name: 'home' });
-  if (pick.bookId !== bookId) pick = { bookId, on: false, ids: new Set() };
-  const sel = pick.on;
+  if (pick.bookId !== bookId) pick = { bookId, ids: new Set() };
+  const t = local.types || 'mix';
+  const count = local.count || SESSION_SIZE;
   const rows = [];
   let lastChapter = null;
   for (const u of book.units) {
     if (u.chapter && u.chapter !== lastChapter) { rows.push(`<div class="chapter-head">${esc(u.chapter)}</div>`); lastChapter = u.chapter; }
     const qs = await getQs(book.id, u.id);
-    const t = local.types || 'mix';
     const unseen = qs.filter((q) => !local.stats[q.id] && matchType(q, t)).length;
     const done = qs.filter((q) => local.stats[q.id]).length;
     const sc = scoreOf(qs);
-    const kind = t === 'mcq' ? ' MCQ' : t === 'written' ? ' written' : '';
-    const status = qs.length ? `${unseen} new${kind} · ${done} done` : (sel ? 'Questions will be made' : 'Tap to make questions');
     const on = pick.ids.has(u.id);
-    rows.push(`<button class="row ${sel ? 'selectable' : ''} ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" ${sel ? `aria-pressed="${on}"` : ''}>
-      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start">${sel ? `<span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span>` : ''}<span>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div>
-      <span class="muted" style="font-size:12px;${sel ? 'padding-left:36px' : ''}">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
-      ${sc !== null && !sel ? `<div class="bar ${sc < 50 ? 'warn' : ''}"><i style="width:${sc}%"></i></div>` : ''}</button>`);
+    const status = qs.length || done ? `${unseen} ready · ${done} done` : 'New questions will be made';
+    rows.push(`<button class="row selectable ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}">
+      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div>
+      <span class="muted" style="font-size:12px;padding-left:36px">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
+      ${sc !== null ? `<div class="bar ${sc < 50 ? 'warn' : ''}" style="margin-left:36px"><i style="width:${sc}%"></i></div>` : ''}</button>`);
   }
   const n = pick.ids.size;
+  const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(book.title)}</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-      <p class="muted" style="margin:0;font-size:14px;line-height:1.5">${sel ? 'Choose the chapters to mix together.' : 'Tap a chapter for 10 questions.'}</p>
-      ${book.units.length > 1 ? `<button class="link" id="mode" style="white-space:nowrap">${sel ? 'Cancel' : 'Select chapters'}</button>` : ''}
+      <p style="margin:0;font-size:15px;font-weight:600">1. Choose chapters</p>
+      ${book.units.length > 1 ? `<button class="link" id="all" style="padding:0">${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
     </div>
-    <div class="seg" role="radiogroup" aria-label="Question types">
-      ${TYPE_CHOICES.map(([k, l]) => `<button role="radio" aria-checked="${(local.types || 'mix') === k}" data-types="${k}" class="${(local.types || 'mix') === k ? 'on' : ''}">${l}</button>`).join('')}
-    </div>
-    ${sel ? `<button class="link" id="all" style="align-self:flex-start;padding:0">${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
     <div class="card stack">${rows.join('')}</div>
     <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
       ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
       : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
-    ${sel ? '' : '<button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>'}
+    <button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>
-  ${sel ? `<div class="sheet sticky"><button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Practise ${n} chapter${n > 1 ? 's' : ''} · 10 questions` : 'Select at least one chapter'}</button></div>` : ''}`;
-  const keepScroll = () => { const y = window.scrollY; return () => window.scrollTo(0, y); };
-  document.getElementById('back').onclick = () => { pick = { bookId: null, on: false, ids: new Set() }; go({ name: 'home' }); };
-  const m = document.getElementById('mode');
-  if (m) m.onclick = () => { pick.on = !pick.on; pick.ids.clear(); renderBook(bookId); };
-  $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = async () => {
-    local.types = b.dataset.types; saveLocal(); const y = window.scrollY; await renderBook(bookId); window.scrollTo(0, y);
-  }));
+  <div class="sheet sticky setup">
+    <p style="margin:0;font-size:15px;font-weight:600">2. Set up your practice</p>
+    <div class="setup-row">
+      <span id="types-label">Questions</span>
+      <div class="seg" role="radiogroup" aria-labelledby="types-label">
+        ${TYPE_CHOICES.map(([k, l]) => `<button role="radio" aria-checked="${t === k}" data-types="${k}" class="${t === k ? 'on' : ''}">${l}</button>`).join('')}
+      </div>
+    </div>
+    <div class="setup-row">
+      <span id="count-label">How many</span>
+      <div class="stepper" role="group" aria-labelledby="count-label">
+        <button id="minus" aria-label="Fewer questions" ${count <= 5 ? 'disabled' : ''}>−</button>
+        <output id="count" aria-live="polite">${count}</output>
+        <button id="plus" aria-label="More questions" ${count >= 100 ? 'disabled' : ''}>+</button>
+      </div>
+    </div>
+    <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter above'}</button>
+  </div>`;
+  const keep = async () => { const y = window.scrollY; await renderBook(bookId); window.scrollTo(0, y); };
+  document.getElementById('back').onclick = () => { pick = { bookId: null, ids: new Set() }; go({ name: 'home' }); };
   const a = document.getElementById('all');
-  if (a) a.onclick = async () => { const back = keepScroll(); if (pick.ids.size === book.units.length) pick.ids.clear(); else book.units.forEach((u) => pick.ids.add(u.id)); await renderBook(bookId); back(); };
-  $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = async () => {
-    const unit = book.units.find((u) => u.id === b.dataset.unit);
-    if (!sel) return startUnits(book, [unit]);
-    const back = keepScroll();
-    pick.ids.has(unit.id) ? pick.ids.delete(unit.id) : pick.ids.add(unit.id);
-    await renderBook(bookId); back();
-  }));
-  const g = document.getElementById('go');
-  if (g) g.onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); pick.on = false; pick.ids.clear(); startUnits(book, units); };
-  const d = document.getElementById('delete');
-  if (d) d.onclick = () => confirmRemove(book);
+  if (a) a.onclick = () => { if (pick.ids.size === book.units.length) pick.ids.clear(); else book.units.forEach((u) => pick.ids.add(u.id)); keep(); };
+  $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => { const id = b.dataset.unit; pick.ids.has(id) ? pick.ids.delete(id) : pick.ids.add(id); keep(); }));
+  $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; saveLocal(); keep(); }));
+  const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || SESSION_SIZE) + d)); saveLocal(); keep(); };
+  document.getElementById('minus').onclick = () => step((local.count || SESSION_SIZE) > 20 ? -10 : -5);
+  document.getElementById('plus').onclick = () => step((local.count || SESSION_SIZE) >= 20 ? 10 : 5);
+  document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || SESSION_SIZE); };
+  document.getElementById('delete').onclick = () => confirmRemove(book);
   window.scrollTo(0, 0);
 }
 
@@ -521,7 +525,7 @@ async function confirmRemove(book) {
     local.log = local.log.filter((e) => !e.q.startsWith(prefix));
     local.reports = local.reports.filter((id) => !id.startsWith(prefix));
     saveLocal();
-    pick = { bookId: null, on: false, ids: new Set() };
+    pick = { bookId: null, ids: new Set() };
     toast('Textbook and its progress removed');
     go({ name: 'home' });
   };
@@ -534,26 +538,40 @@ function newSession(props) {
 }
 
 // A session over one or more chapters: questions are spread evenly across them.
-async function startUnits(book, units) {
-  const k = units.length, quota = Math.ceil(SESSION_SIZE / k);
-  const pools = [];
+// A session over one or more chapters. Ready questions are used first; new ones are made a few at a time,
+// staying about AHEAD questions in front of the student, so stopping early wastes little.
+const AHEAD = 6;
+async function startUnits(book, units, count = SESSION_SIZE) {
+  const k = units.length, quota = Math.ceil(count / k);
   const types = local.types || 'mix';
+  const pools = [];
   for (const u of units) pools.push(shuffle((await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types))));
   let qs = [];
   pools.forEach((p) => qs.push(...p.slice(0, quota)));
-  if (qs.length < SESSION_SIZE) pools.forEach((p) => qs.push(...p.slice(quota)));   // top up from chapters that have more
-  qs = shuffle(qs.slice(0, SESSION_SIZE));
+  if (qs.length < count) pools.forEach((p) => qs.push(...p.slice(quota)));   // top up from chapters that have more
+  qs = shuffle(qs.slice(0, count));
   const title = k === 1 ? units[0].title : `${k} chapters`;
-  S = newSession({ mode: 'unit', title, book, units, qs, target: SESSION_SIZE, pending: 0, types });
-  // Make only what this session still needs, plus a small buffer, while the student practises.
-  const buffer = Math.max(1, Math.ceil(BUFFER / k));
-  units.forEach((u, i) => {
-    const used = qs.filter((q) => q.id.startsWith(`${book.id}:${u.id}:`)).length;
-    const spare = pools[i].length - used;
-    const want = Math.max(0, quota - used) + Math.max(0, buffer - spare);
-    if (want > 0) followFill(S, ensureFill(book, u, want, types));
-  });
+  S = newSession({ mode: 'unit', title, book, units, qs, target: count, pending: 0, types, count });
+  topUp(S);
   if (S.qs.length) renderQuestion(); else renderWaiting();
+}
+
+// Ask for just enough new questions to stay AHEAD in front of the student.
+function topUp(sess) {
+  if (!sess.units || sess.generating || sess.error) return;
+  const ahead = sess.qs.length - (sess.i + 1);
+  const need = Math.min(sess.target - sess.qs.length, AHEAD - ahead);
+  if (need <= 0) return;
+  // spread across the chosen chapters, starting with the ones that have given fewest questions so far
+  const used = (u) => sess.qs.filter((q) => q.id.startsWith(`${sess.book.id}:${u.id}:`)).length;
+  const order = [...sess.units].sort((a, b) => used(a) - used(b));
+  const per = Math.ceil(need / order.length);
+  let left = need;
+  for (const u of order) {
+    if (left <= 0) break;
+    const want = Math.min(per, left); left -= want;
+    followFill(sess, ensureFill(sess.book, u, want, sess.types));
+  }
 }
 
 async function startReview(mode) {
@@ -663,7 +681,12 @@ function followFill(sess, job) {
       sess.pending--;
       if (job.error && !sess.error) sess.error = job.error;
       sess.generating = sess.pending > 0;
-      if (!sess.generating && sess.qs.length < sess.target && !sess.error) sess.target = Math.max(sess.qs.length, sess.i + 1);
+      if (!job.made) sess.dry = (sess.dry || 0) + 1; else sess.dry = 0;
+      if (!sess.generating && sess.qs.length < sess.target && !sess.error) {
+        // the chapter has run out of new material: end the session at what we have
+        if (sess.dry >= 2) sess.target = Math.max(sess.qs.length, sess.i + 1);
+        else topUp(sess);
+      }
     }
     sessionGrew(done && !sess.generating);
   };
@@ -671,10 +694,9 @@ function followFill(sess, job) {
 }
 
 function refill(sess) {
-  sess.error = null;
+  sess.error = null; sess.dry = 0;
   sess.target = Math.max(sess.target, sess.qs.length + 1);
-  const per = Math.ceil((sess.target - sess.qs.length) / sess.units.length);
-  sess.units.forEach((u) => followFill(sess, ensureFill(sess.book, u, per, sess.types)));
+  topUp(sess);
 }
 
 function sessionGrew(done) {
@@ -945,10 +967,22 @@ function record(q, got) {
 }
 
 let quitArmed = 0;
+function endEarly() {
+  if (S.mode === 'mock' && !S.review) return S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' });
+  const q = S.qs[S.i];
+  if (q && S.phase === 'revealed' && q.type !== 'mcq' && (S.got[S.i] === undefined || S.got[S.i] === null) && !(S.marks[S.i] || {}).pending) {
+    S.got[S.i] = partsGot(q); record(q, S.got[S.i]);
+  }
+  const answered = S.qs.map((_, k) => k).filter((k) => S.got[k] !== undefined && S.got[k] !== null);
+  if (!answered.length) return S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' });
+  S.qs = answered.map((k) => S.qs[k]); S.got = answered.map((k) => S.got[k]);
+  S.i = S.qs.length - 1; S.target = S.qs.length; S.endedEarly = true;
+  renderSummary();
+}
 function bindCommon(q) {
   document.getElementById('quit').onclick = () => {
-    if (Date.now() - quitArmed < 2500) return S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' });
-    quitArmed = Date.now(); toast('Tap × again to end this session');
+    if (Date.now() - quitArmed < 2500) return endEarly();
+    quitArmed = Date.now(); toast('Tap × again to stop and see your results');
   };
   const n = document.getElementById('next');
   if (n) n.onclick = () => {
@@ -968,6 +1002,7 @@ function bindCommon(q) {
 function advance() {
   if (S.i < S.target - 1) {
     S.i++; S.phase = S.review ? 'revealed' : 'answer';
+    topUp(S);
     if (S.i < S.qs.length) return renderQuestion();
     if (!S.generating && !S.error && S.units) refill(S);
     return renderWaiting();
@@ -994,17 +1029,17 @@ function renderSummary() {
   const missed = qs.filter((q, k) => (S.got[k] || 0) < marksOf(q));
   const unitRef = S.units ? { book: S.book, units: S.units } : null;
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
-    <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · done</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? '#0F766E' : '#9A3412'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
+    <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? '#0F766E' : '#9A3412'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
     <div class="card stack">${list}</div>
     ${S.mode === 'spaced' ? `<p class="hint" style="margin:0;line-height:1.5">Questions you got right come back later and later. The ones you missed come back tomorrow.</p>` : ''}
     <div class="stack g10">
-      ${unitRef ? `<button class="btn" id="more">10 more on ${unitRef.units.length > 1 ? 'these chapters' : 'this chapter'}</button>` : ''}
+      ${unitRef ? `<button class="btn" id="more">${S.count || SESSION_SIZE} more on ${unitRef.units.length > 1 ? 'these chapters' : 'this chapter'}</button>` : ''}
       ${missed.length ? `<button class="btn ${unitRef ? 'ghost' : ''}" id="retry">Retry the ${missed.length} I missed</button>` : ''}
       ${qs.length ? '<button class="btn ghost" id="redo">Redo this set (shuffled)</button>' : ''}
       <button class="btn ghost" id="home">${S.book ? 'Back to chapters' : 'Back to home'}</button>
     </div></main>`;
   document.getElementById('home').onclick = () => (S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' }));
-  const m = document.getElementById('more'); if (m) m.onclick = () => startUnits(unitRef.book, unitRef.units);
+  const m = document.getElementById('more'); if (m) m.onclick = () => startUnits(unitRef.book, unitRef.units, S.count || SESSION_SIZE);
   const r = document.getElementById('retry');
   const again = (list, title) => { const l = shuffle(list).map(shuffleOptions); S = newSession({ mode: 'retry', title, book: S.book, qs: l, target: l.length }); renderQuestion(); };
   if (r) r.onclick = () => again(missed, 'Retry');
