@@ -1,0 +1,758 @@
+3.3
+Solve Mixture Applications
+Learning Objectives
+BE PREPARED : : 3.9 Before you get started, take this readiness quiz.
+Multiply: 14(0.25).
+If you missed this problem, review Example 1.97.
+BE PREPARED : : 3.10 Solve: 0.25x + 0.10(x + 4) = 2.5.
+If you missed this problem, review Example 2.44.
+BE PREPARED : : 3.11
+The number of dimes is three more than the number of quarters. Let q represent the number of quarters. Write
+an expression for the number of dimes.
+If you missed this problem, review Example 1.26.
+Solve Coin Word Problems
+In mixture problems, we will have two or more items with different values to combine together. The mixture model is
+used by grocers and bartenders to make sure they set fair prices for the products they sell. Many other professionals, like
+chemists, investment bankers, and landscapers also use the mixture model.
+MANIPULATIVE MATHEMATICS
+Doing the Manipulative Mathematics activity Coin Lab will help you develop a better understanding of mixture word
+problems.
+We will start by looking at an application everyone is familiar with—money!
+Imagine that we take a handful of coins from a pocket or purse and place them on a desk. How would we determine the
+value of that pile of coins? If we can form a step-by-step plan for finding the total value of the coins, it will help us as we
+begin solving coin word problems.
+So what would we do? To get some order to the mess of coins, we could separate the coins into piles according to their
+value. Quarters would go with quarters, dimes with dimes, nickels with nickels, and so on. To get the total value of all the
+coins, we would add the total value of each pile.
+How would we determine the value of each pile? Think about the dime pile—how much is it worth? If we count the
+number of dimes, we’ll know how many we have—the number of dimes.
+But this does not tell us the value of all the dimes. Say we counted 17 dimes, how much are they worth? Each dime is worth
+$0.10—that is the value of one dime. To find the total value of the pile of 17 dimes, multiply 17 by $0.10 to get $1.70. This
+is the total value of all 17 dimes. This method leads to the following model.
+Chapter 3 Math Models 337
+Total Value of Coins
+For the same type of coin, the total value of a number of coins is found by using the model
+number · value = total value
+where
+number is the number of coins
+value is the value of each coin
+total value is the total value of all the coins
+The number of dimes times the value of each dime equals the total value of the dimes.
+number · value = total value
+17 · $0.10 = $1.70
+We could continue this process for each type of coin, and then we would know the total value of each type of coin. To get
+the total value of all the coins, add the total value of each type of coin.
+Let’s look at a specific case. Suppose there are 14 quarters, 17 dimes, 21 nickels, and 39 pennies.
+The total value of all the coins is $6.64.
+Notice how the chart helps organize all the information! Let’s see how we use this method to solve a coin word problem.
+Adalberto has $2.25 in dimes and nickels in his pocket. He has nine more nickels than dimes. How many of each type of
+coin does he have?
+Step 1. Read the problem. Make sure all the words and ideas are understood.
+• Determine the types of coins involved.
+Think about the strategy we used to find the value of the handful of coins. The first thing we need is to notice what
+types of coins are involved. Adalberto has dimes and nickels.
+• Create a table to organize the information. See chart below.
+◦ Label the columns “type,” “number,” “value,” “total value.”
+◦ List the types of coins.
+◦ Write in the value of each type of coin.
+◦ Write in the total value of all the coins.
+We can work this problem all in cents or in dollars. Here we will do it in dollars and put in the dollar sign ($) in the
+table as a reminder.
+The value of a dime is $0.10 and the value of a nickel is $0.05. The total value of all the coins is $2.25. The table
+below shows this information.
+Step 2. Identify what we are looking for.
+• We are asked to find the number of dimes and nickels Adalberto has.
+Step 3. Name what we are looking for. Choose a variable to represent that quantity.
+• Use variable expressions to represent the number of each type of coin and write them in the table.
+• Multiply the number times the value to get the total value of each type of coin.
+Next we counted the number of each type of coin. In this problem we cannot count each type of coin—that is what you
+are looking for—but we have a clue. There are nine more nickels than dimes. The number of nickels is nine more than the
+338 Chapter 3 Math Models
+number of dimes.
+Let d = number of dimes.
+d + 9 = number of nickels
+Fill in the “number” column in the table to help get everything organized.
+Now we have all the information we need from the problem!
+We multiply the number times the value to get the total value of each type of coin. While we do not know the actual
+number, we do have an expression to represent it.
+And so now multiply number · value = total value. See how this is done in the table below.
+Notice that we made the heading of the table show the model.
+Step 4. Translate into an equation. It may be helpful to restate the problem in one sentence. Translate the English
+sentence into an algebraic equation.
+Write the equation by adding the total values of all the types of coins.
+Step 5. Solve the equation using good algebra techniques.
+Now solve this equation.
+Distribute.
+Combine like terms.
+Subtract 0.45 from each side.
+Divide.
+So there are 12 dimes.
+The number of nickels is d + 9 .
+Step 6. Check the answer in the problem and make sure it makes sense.
+Does this check?
+12 dimes 12(0.10) = 1.20
+21 nickels 21(0.05) = 1.05____
+$2.25 ✓
+Table 3.7
+Chapter 3 Math Models 339
+Step 7. Answer the question with a complete sentence.
+• Adalberto has twelve dimes and twenty-one nickels.
+If this were a homework exercise, our work might look like the following.
+Michaela has $2.05 in dimes and nickels in her change purse. She has seven more dimes than nickels. How many
+coins of each type does she have?
+Liliana has $2.10 in nickels and quarters in her backpack. She has 12 more nickels than quarters. How many coins
+of each type does she have?
+340 Chapter 3 Math Models
+Maria has $2.43 in quarters and pennies in her wallet. She has twice as many pennies as quarters. How many coins of
+each type does she have?
+Step 1. Read the problem.
+Determine the types of coins involved.
+We know that Maria has quarters and pennies.
+Create a table to organize the information.
+• Label the columns “type,” “number,” “value,” “total value.”
+• List the types of coins.
+• Write in the value of each type of coin.
+• Write in the total value of all the coins.
+Step 2. Identify what you are looking for.
+• We are looking for the number of quarters and pennies.
+Step 3. Name. Represent the number of quarters and pennies using variables.
+HOW TO : : SOLVE COIN WORD PROBLEMS.
+Read the problem. Make sure all the words and ideas are understood.
+◦ Determine the types of coins involved.
+◦ Create a table to organize the information.
+◦ Label the columns “type,” “number,” “value,” “total value.”
+◦ List the types of coins.
+◦ Write in the value of each type of coin.
+◦ Write in the total value of all the coins.
+Identify what we are looking for.
+Name what we are looking for. Choose a variable to represent that quantity.
+◦ Use variable expressions to represent the number of each type of coin and write them
+in the table.
+◦ Multiply the number times the value to get the total value of each type of coin.
+Translate into an equation.
+It may be helpful to restate the problem in one sentence with all the important information.
+Then, translate the sentence into an equation.
+Write the equation by adding the total values of all the types of coins.
+Solve the equation using good algebra techniques.
+Check the answer in the problem and make sure it makes sense.
+Answer the question with a complete sentence.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Step 7.
+Chapter 3 Math Models 341
+• We know Maria has twice as many pennies as quarters. The number of pennies is defined in terms of quarters.
+• Let q represent the number of quarters.
+• Then the number of pennies is 2q.
+Multiply the ‘number’ and the ‘value’ to get the ‘total value’ of each type of coin.
+Step 4. Translate. Write the equation by adding the ‘total value’ of all the types of coins.
+Step 5. Solve the equation. 0.25q + 0.01(2q) = 2.43
+Multiply. 0.25q + 0.02q = 2.43
+Combine like terms. 0.27q = 2.43
+Divide by 0.27. q = 9 quarters
+The number of pennies is 2q .
+2q
+2 · 9
+18 pennies
+Step 6. Check the answer in the problem.
+Maria has 9 quarters and 18 pennies. Does this make
+$2.43?
+9 quarters 9(0.25) = 2.25
+18 pennies 18(0.01) = 0.18____
+Total $2.43 ✓
+Step 7. Answer the question. Maria has nine quarters and eighteen
+pennies.
+Table 3.8
+Sumanta has $4.20 in nickels and dimes in her piggy bank. She has twice as many nickels as dimes. How many
+coins of each type does she have?
+Alison has three times as many dimes as quarters in her purse. She has $9.35 altogether. How many coins of each
+type does she have?
+In the next example, we’ll show only the completed table—remember the steps we take to fill in the table.
+342 Chapter 3 Math Models
+Danny has $2.14 worth of pennies and nickels in his piggy bank. The number of nickels is two more than ten times the
+number of pennies. How many nickels and how many pennies does Danny have?
+Step 1. Read the problem.
+Determine the types of coins involved. pennies and nickels
+Create a table.
+Write in the value of each type of coin. Pennies are worth $0.01.
+Nickels are worth $0.05.
+Step 2. Identify what we are looking for. the number of pennies and nickels
+Step 3. Name. Represent the number of each type of coin
+using variables.
+The number of nickels is defined in terms of the number of
+pennies, so start with pennies. Let p = number of pennies.
+The number of nickels is two more than ten times the
+number of pennies. 10p + 2 = number of nickels.
+Multiply the number and the value to get the total value of
+each type of coin.
+Step 4. Translate. Write the equation by adding the total
+value of all the types of coins.
+Step 5. Solve the equation.
+How many nickels?
+Step 6. Check the answer in the problem and make sure it
+makes sense
+Danny has four pennies and 42 nickels.
+Is the total value $2.14?
+4⎛
+⎝ 0.01⎞
+⎠ + 42⎛
+⎝ 0.05⎞
+⎠ ≟ 2.14
+2.14 = 2.14 ✓
+Step 7. Answer the question. Danny has four pennies and 42 nickels.
+Jesse has $6.55 worth of quarters and nickels in his pocket. The number of nickels is five more than two times the
+number of quarters. How many nickels and how many quarters does Jesse have?
+Chapter 3 Math Models 343
+Elane has $7.00 total in dimes and nickels in her coin jar. The number of dimes that Elane has is seven less than
+three times the number of nickels. How many of each coin does Elane have?
+Solve Ticket and Stamp Word Problems
+Problems involving tickets or stamps are very much like coin problems. Each type of ticket and stamp has a value, just like
+each type of coin does. So to solve these problems, we will follow the same steps we used to solve coin problems.
+At a school concert, the total value of tickets sold was $1,506. Student tickets sold for $6 each and adult tickets sold for
+$9 each. The number of adult tickets sold was five less than three times the number of student tickets sold. How many
+student tickets and how many adult tickets were sold?
+Step 1. Read the problem.
+• Determine the types of tickets involved. There are student tickets and adult tickets.
+• Create a table to organize the information.
+Step 2. Identify what we are looking for.
+• We are looking for the number of student and adult tickets.
+Step 3. Name. Represent the number of each type of ticket using variables.
+We know the number of adult tickets sold was five less than three times the number of student tickets sold.
+• Let s be the number of student tickets.
+• Then 3s − 5 is the number of adult tickets
+Multiply the number times the value to get the total value of each type of ticket.
+Step 4. Translate. Write the equation by adding the total values of each type of ticket.
+6s + 9(3s − 5) = 1506
+Step 5. Solve the equation.
+6s + 27s − 45 = 1506
+33s − 45 = 1506
+33s = 1551
+s = 47 student tickets
+3s − 5
+3(47) − 5
+136 adult tickets
+Step 6. Check the answer.
+There were 47 student tickets at $6 each and 136 adult tickets at $9 each. Is the total value $1,506? We find the total value
+of each type of ticket by multiplying the number of tickets times its value then add to get the total value of all the tickets
+sold.
+344 Chapter 3 Math Models
+47 · 6 = 282
+136 · 9 = 1,224_____
+1,506 ✓
+Step 7. Answer the question. They sold 47 student tickets and 136 adult tickets.
+The first day of a water polo tournament the total value of tickets sold was $17,610. One-day passes sold for $20
+and tournament passes sold for $30. The number of tournament passes sold was 37 more than the number of day
+passes sold. How many day passes and how many tournament passes were sold?
+At the movie theater, the total value of tickets sold was $2,612.50. Adult tickets sold for $10 each and senior/child
+tickets sold for $7.50 each. The number of senior/child tickets sold was 25 less than twice the number of adult
+tickets sold. How many senior/child tickets and how many adult tickets were sold?
+We have learned how to find the total number of tickets when the number of one type of ticket is based on the number of
+the other type. Next, we’ll look at an example where we know the total number of tickets and have to figure out how the
+two types of tickets relate.
+Suppose Bianca sold a total of 100 tickets. Each ticket was either an adult ticket or a child ticket. If she sold 20 child tickets,
+how many adult tickets did she sell?
+• Did you say ‘80’? How did you figure that out? Did you subtract 20 from 100?
+If she sold 45 child tickets, how many adult tickets did she sell?
+• Did you say ‘55’? How did you find it? By subtracting 45 from 100?
+What if she sold 75 child tickets? How many adult tickets did she sell?
+• The number of adult tickets must be 100 − 75. She sold 25 adult tickets.
+Now, suppose Bianca sold x child tickets. Then how many adult tickets did she sell? To find out, we would follow the same
+logic we used above. In each case, we subtracted the number of child tickets from 100 to get the number of adult tickets.
+We now do the same with x.
+We have summarized this below.
+We can apply these techniques to other examples
+Galen sold 810 tickets for his church’s carnival for a total of $2,820. Children’s tickets cost $3 each and adult tickets cost
+$5 each. How many children’s tickets and how many adult tickets did he sell?
+Step 1. Read the problem.
+• Determine the types of tickets involved. There are children tickets and adult tickets.
+• Create a table to organize the information.
+Chapter 3 Math Models 345
+Step 2. Identify what we are looking for.
+• We are looking for the number of children and adult tickets.
+Step 3. Name. Represent the number of each type of ticket using variables.
+• We know the total number of tickets sold was 810. This means the number of children’s tickets plus the number
+of adult tickets must add up to 810.
+• Let c be the number of children tickets.
+• Then 810 − c is the number of adult tickets.
+• Multiply the number times the value to get the total value of each type of ticket.
+Step 4. Translate.
+• Write the equation by adding the total values of each type of ticket.
+Step 5. Solve the equation.
+3c + 5(810 − c) = 2,820
+3c + 4,050 − 5c = 2,820
+−2c = −1,230
+c = 615 children tickets
+How many adults?
+810 − c
+810 − 615
+195 adult tickets
+Step 6. Check the answer. There were 615 children’s tickets at $3 each and 195 adult tickets at $5 each. Is the total value
+$2,820?
+615 · 3 = 1845
+195 · 5 = 975____
+2,820 ✓
+Step 7. Answer the question. Galen sold 615 children’s tickets and 195 adult tickets.
+During her shift at the museum ticket booth, Leah sold 115 tickets for a total of $1,163. Adult tickets cost $12 and
+student tickets cost $5. How many adult tickets and how many student tickets did Leah sell?
+A whale-watching ship had 40 paying passengers on board. The total collected from tickets was $1,196. Full-fare
+passengers paid $32 each and reduced-fare passengers paid $26 each. How many full-fare passengers and how
+many reduced-fare passengers were on the ship?
+Now, we’ll do one where we fill in the table all at once.
+Monica paid $8.36 for stamps. The number of 41-cent stamps was four more than twice the number of two-cent stamps.
+How many 41-cent stamps and how many two-cent stamps did Monica buy?
+The types of stamps are 41-cent stamps and two-cent stamps. Their names also give the value!
+“The number of 41-cent stamps was four more than twice the number of two-cent stamps.”
+346 Chapter 3 Math Models
+Let x = number of 2-cent stamps.
+2x + 4 = number of 41-cent stamps
+Write the equation from the total values. 0.41(2x + 4) + 0.02x = 8.36
+Solve the equation.
+0.82x + 1.64 + 0.02x = 8.36
+0.84x + 1.64 = 8.36
+0.84x = 6.72
+x = 8
+Monica bought eight two-cent stamps. 2x + 4 for x = 8.
+Find the number of 41-cent stamps she bought be
+evaluating.
+2x + 4
+2(8) + 4
+Check.
+8(0.02) + 20(0.41) =? 8.36
+0.16 + 8.20 =? 8.36
+8.36 = 8.36 ✓
+Monica bought eight two-cent stamps and 20
+41-cent stamps.
+Table 3.9
+Eric paid $13.36 for stamps. The number of 41-cent stamps was eight more than twice the number of two-cent
+stamps. How many 41-cent stamps and how many two-cent stamps did Eric buy?
+Kailee paid $12.66 for stamps. The number of 41-cent stamps was four less than three times the number of 20-cent
+stamps. How many 41-cent stamps and how many 20-cent stamps did Kailee buy?
+Solve Mixture Word Problems
+Now we’ll solve some more general applications of the mixture model. Grocers and bartenders use the mixture model to
+set a fair price for a product made from mixing two or more ingredients. Financial planners use the mixture model when
+they invest money in a variety of accounts and want to find the overall interest rate. Landscape designers use the mixture
+model when they have an assortment of plants and a fixed budget, and event coordinators do the same when choosing
+appetizers and entrees for a banquet.
+Our first mixture word problem will be making trail mix from raisins and nuts.
+Henning is mixing raisins and nuts to make 10 pounds of trail mix. Raisins cost $2 a pound and nuts cost $6 a pound. If
+Henning wants his cost for the trail mix to be $5.20 a pound, how many pounds of raisins and how many pounds of nuts
+should he use?
+As before, we fill in a chart to organize our information.
+Chapter 3 Math Models 347
+The 10 pounds of trail mix will come from mixing raisins and nuts.
+Let x = number of pounds of raisins.
+10 − x = number of pounds of nuts
+We enter the price per pound for each item.
+We multiply the number times the value to get the total value.
+Notice that the last line in the table gives the information for the total amount of the mixture.
+We know the value of the raisins plus the value of the nuts will be the value of the trail mix.
+Write the equation from the total
+values.
+Solve the equation.
+Find the number of pounds of nuts.
+8 pounds of nuts
+Check.
+2($2) + 8($6) =? 10($5.20)
+$4 + $48 =? $52
+$52 = $52 ✓
+Henning mixed two pounds of raisins with eight pounds of
+nuts.
+Orlando is mixing nuts and cereal squares to make a party mix. Nuts sell for $7 a pound and cereal squares sell
+for $4 a pound. Orlando wants to make 30 pounds of party mix at a cost of $6.50 a pound, how many pounds of
+nuts and how many pounds of cereal squares should he use?
+Becca wants to mix fruit juice and soda to make a punch. She can buy fruit juice for $3 a gallon and soda for $4
+a gallon. If she wants to make 28 gallons of punch at a cost of $3.25 a gallon, how many gallons of fruit juice and
+how many gallons of soda should she buy?
+We can also use the mixture model to solve investment problems using simple interest. We have used the simple interest
+formula, I = Prt, where t represented the number of years. When we just need to find the interest for one year,
+t = 1, so then I = Pr.
+Stacey has $20,000 to invest in two different bank accounts. One account pays interest at 3% per year and the other
+348 Chapter 3 Math Models
+account pays interest at 5% per year. How much should she invest in each account if she wants to earn 4.5% interest per
+year on the total amount?
+We will fill in a chart to organize our information. We will use the simple interest formula to find the interest earned in the
+different accounts.
+The interest on the mixed investment will come from adding the interest from the account earning 3% and the interest
+from the account earning 5% to get the total interest on the $20,000.
+Let x = amount invested at 3%.
+20,000 − x = amount invested at 5%
+The amount invested is the principal for each account.
+We enter the interest rate for each account.
+We multiply the amount invested times the rate to get the interest.
+Notice that the total amount invested, 20,000, is the sum of the amount invested at 3% and the amount invested at 5%.
+And the total interest, 0.045(20,000), is the sum of the interest earned in the 3% account and the interest earned in the
+5% account.
+As with the other mixture applications, the last column in the table gives us the equation to solve.
+Write the equation from the interest earned.
+Solve the equation.
+0.03x + 0.05⎛
+⎝ 20,000 − x⎞
+⎠ = 0.045⎛
+⎝ 20,000⎞
+0.03x + 1,000 − 0.05x = 900
+−0.02x + 1,000 = 900
+−0.02x = −100
+x = 5,000
+amount invested at 3%
+Find the amount invested at 5%.
+Check.
+0.03x + 0.05⎛
+⎝ 15,000 + x⎞
+⎠ ≟ 0.045⎛
+⎝ 20,000⎞
+150 + 750 ≟ 900
+900 = 900 ✓
+Stacey should invest $5,000 in the account that
+earns 3% and $15,000 in the account that earns 5%.
+Remy has $14,000 to invest in two mutual funds. One fund pays interest at 4% per year and the other fund pays
+interest at 7% per year. How much should she invest in each fund if she wants to earn 6.1% interest on the total
+amount?
+Chapter 3 Math Models 349
+Marco has $8,000 to save for his daughter’s college education. He wants to divide it between one account that
+pays 3.2% interest per year and another account that pays 8% interest per year. How much should he invest in
+each account if he wants the interest on the total investment to be 6.5%?
+350 Chapter 3 Math Models
+Practice Makes Perfect
+Solve Coin Word Problems
+In the following exercises, solve each coin word problem.
+161. Jaime has $2.60 in dimes and
+nickels. The number of dimes is 14
+more than the number of nickels.
+How many of each coin does he
+have?
+162. Lee has $1.75 in dimes and
+nickels. The number of nickels is
+11 more than the number of
+dimes. How many of each coin
+does he have?
+163. Ngo has a collection of dimes
+and quarters with a total value of
+$3.50. The number of dimes is
+seven more than the number of
+quarters. How many of each coin
+does he have?
+164. Connor has a collection of
+dimes and quarters with a total
+value of $6.30. The number of
+dimes is 14 more than the number
+of quarters. How many of each
+coin does he have?
+165. A cash box of $1 and $5 bills is
+worth $45. The number of $1 bills
+is three more than the number of
+$5 bills. How many of each bill
+does it contain?
+166. Joe’s wallet contains $1 and
+$5 bills worth $47. The number of
+$1 bills is five more than the
+number of $5 bills. How many of
+each bill does he have?
+167. Rachelle has $6.30 in nickels
+and quarters in her coin purse.
+The number of nickels is twice the
+number of quarters. How many
+coins of each type does she have?
+168. Deloise has $1.20 in pennies
+and nickels in a jar on her desk.
+The number of pennies is three
+times the number of nickels. How
+many coins of each type does she
+have?
+169. Harrison has $9.30 in his coin
+collection, all in pennies and
+dimes. The number of dimes is
+three times the number of
+pennies. How many coins of each
+type does he have?
+170. Ivan has $8.75 in nickels and
+quarters in his desk drawer. The
+number of nickels is twice the
+number of quarters. How many
+coins of each type does he have?
+171. In a cash drawer there is $125
+in $5 and $10 bills. The number of
+$10 bills is twice the number of $5
+bills. How many of each are in the
+drawer?
+172. John has $175 in $5 and $10
+bills in his drawer. The number of
+$5 bills is three times the number
+of $10 bills. How many of each are
+in the drawer?
+173. Carolyn has $2.55 in her purse
+in nickels and dimes. The number
+of nickels is nine less than three
+times the number of dimes. Find
+the number of each type of coin.
+174. Julio has $2.75 in his pocket
+in nickels and dimes. The number
+of dimes is 10 less than twice the
+number of nickels. Find the
+number of each type of coin.
+175. Chi has $11.30 in dimes and
+quarters. The number of dimes is
+three more than three times the
+number of quarters. How many of
+each are there?
+176. Tyler has $9.70 in dimes and
+quarters. The number of quarters
+is eight more than four times the
+number of dimes. How many of
+each coin does he have?
+177. Mukul has $3.75 in quarters,
+dimes and nickels in his pocket. He
+has five more dimes than quarters
+and nine more nickels than
+quarters. How many of each coin
+are in his pocket?
+178. Vina has $4.70 in quarters,
+dimes and nickels in her purse.
+She has eight more dimes than
+quarters and six more nickels than
+quarters. How many of each coin
+are in her purse?
+Solve Ticket and Stamp Word Problems
+In the following exercises, solve each ticket or stamp word problem.
+179. The school play sold $550 in
+tickets one night. The number of
+$8 adult tickets was 10 less than
+twice the number of $5 child
+tickets. How many of each ticket
+were sold?
+180. If the number of $8 child
+tickets is seventeen less than
+three times the number of $12
+adult tickets and the theater took
+in $584, how many of each ticket
+were sold?
+181. The movie theater took in
+$1,220 one Monday night. The
+number of $7 child tickets was ten
+more than twice the number of $9
+adult tickets. How many of each
+were sold?
+3.3 EXERCISES
+Chapter 3 Math Models 351
+182. The ball game sold $1,340 in
+tickets one Saturday. The number
+of $12 adult tickets was 15 more
+than twice the number of $5 child
+tickets. How many of each were
+sold?
+183. The ice rink sold 95 tickets for
+the afternoon skating session, for
+a total of $828. General admission
+tickets cost $10 each and youth
+tickets cost $8 each. How many
+general admission tickets and how
+many youth tickets were sold?
+184. For the 7:30 show time, 140
+movie tickets were sold. Receipts
+from the $13 adult tickets and the
+$10 senior tickets totaled $1,664.
+How many adult tickets and how
+many senior tickets were sold?
+185. The box office sold 360 tickets
+to a concert at the college. The
+total receipts were $4170. General
+admission tickets cost $15 and
+student tickets cost $10. How
+many of each kind of ticket was
+sold?
+186. Last Saturday, the museum
+box office sold 281 tickets for a
+total of $3954. Adult tickets cost
+$15 and student tickets cost $12.
+How many of each kind of ticket
+was sold?
+187. Julie went to the post office
+and bought both $0.41 stamps
+and $0.26 postcards. She spent
+$51.40. The number of stamps
+was 20 more than twice the
+number of postcards. How many
+of each did she buy?
+188. Jason went to the post office
+and bought both $0.41 stamps
+and $0.26 postcards and spent
+$10.28. The number of stamps
+was four more than twice the
+number of postcards. How many
+of each did he buy?
+189. Maria spent $12.50 at the post
+office. She bought three times as
+many $0.41 stamps as $0.02
+stamps. How many of each did she
+buy?
+190. Hector spent $33.20 at the
+post office. He bought four times
+as many $0.41 stamps as $0.02
+stamps. How many of each did he
+buy?
+191. Hilda has $210 worth of $10
+and $12 stock shares. The
+numbers of $10 shares is five
+more than twice the number of
+$12 shares. How many of each
+does she have?
+192. Mario invested $475 in $45
+and $25 stock shares. The number
+of $25 shares was five less than
+three times the number of $45
+shares. How many of each type of
+share did he buy?
+Solve Mixture Word Problems
+In the following exercises, solve each mixture word problem.
+193. Lauren in making 15 liters of
+mimosas for a brunch banquet.
+Orange juice costs her $1.50 per
+liter and champagne costs her $12
+per liter. How many liters of
+orange juice and how many liters
+of champagne should she use for
+the mimosas to cost Lauren $5 per
+liter?
+194. Macario is making 12 pounds
+of nut mixture with macadamia
+nuts and almonds. Macadamia
+nuts cost $9 per pound and
+almonds cost $5.25 per pound.
+How many pounds of macadamia
+nuts and how many pounds of
+almonds should Macario use for
+the mixture to cost $6.50 per
+pound to make?
+195. Kaapo is mixing Kona beans
+and Maui beans to make 25
+pounds of coffee blend. Kona
+beans cost Kaapo $15 per pound
+and Maui beans cost $24 per
+pound. How many pounds of each
+coffee bean should Kaapo use for
+his blend to cost him $17.70 per
+pound?
+196. Estelle is making 30 pounds of
+fruit salad from strawberries and
+blueberries. Strawberries cost
+$1.80 per pound and blueberries
+cost $4.50 per pound. If Estelle
+wants the fruit salad to cost her
+$2.52 per pound, how many
+pounds of each berry should she
+use?
+197. Carmen wants to tile the floor
+of his house. He will need 1000
+square feet of tile. He will do most
+of the floor with a tile that costs
+$1.50 per square foot, but also
+wants to use an accent tile that
+costs $9.00 per square foot. How
+many square feet of each tile
+should he plan to use if he wants
+the overall cost to be $3 per
+square foot?
+198. Riley is planning to plant a
+lawn in his yard. He will need nine
+pounds of grass seed. He wants
+to mix Bermuda seed that costs
+$4.80 per pound with Fescue seed
+that costs $3.50 per pound. How
+much of each seed should he buy
+so that the overall cost will be
+$4.02 per pound?
+352 Chapter 3 Math Models
+199. Vartan was paid $25,000 for a
+cell phone app that he wrote and
+wants to invest it to save for his
+son’s education. He wants to put
+some of the money into a bond
+that pays 4% annual interest and
+the rest into stocks that pay 9%
+annual interest. If he wants to
+earn 7.4% annual interest on the
+total amount, how much money
+should he invest in each account?
+200. Vern sold his 1964 Ford
+Mustang for $55,000 and wants to
+invest the money to earn him 5.8%
+interest per year. He will put some
+of the money into Fund A that
+earns 3% per year and the rest in
+Fund B that earns 10% per year.
+How much should he invest into
+each fund if he wants to earn 5.8%
+interest per year on the total
+amount?
+201. Stephanie inherited $40,000.
+She wants to put some of the
+money in a certificate of deposit
+that pays 2.1% interest per year
+and the rest in a mutual fund
+account that pays 6.5% per year.
+How much should she invest in
+each account if she wants to earn
+5.4% interest per year on the total
+amount?
+202. Avery and Caden have saved
+$27,000 towards a down payment
+on a house. They want to keep
+some of the money in a bank
+account that pays 2.4% annual
+interest and the rest in a stock
+fund that pays 7.2% annual
+interest. How much should they
+put into each account so that they
+earn 6% interest per year?
+203. Dominic pays 7% interest on
+his $15,000 college loan and 12%
+interest on his $11,000 car loan.
+What average interest rate does
+he pay on the total $26,000 he
+owes? (Round your answer to the
+nearest tenth of a percent.)
+204. Liam borrowed a total of
+$35,000 to pay for college. He pays
+his parents 3% interest on the
+$8,000 he borrowed from them
+and pays the bank 6.8% on the
+rest. What average interest rate
+does he pay on the total $35,000?
+(Round your answer to the
+nearest tenth of a percent.)
+Everyday Math
+205. As the treasurer of her daughter’s Girl Scout troop,
+Laney collected money for some girls and adults to go
+to a 3-day camp. Each girl paid $75 and each adult paid
+$30. The total amount of money collected for camp was
+$765. If the number of girls is three times the number
+of adults, how many girls and how many adults paid for
+camp?
+206. Laurie was completing the treasurer’s report for
+her son’s Boy Scout troop at the end of the school year.
+She didn’t remember how many boys had paid the $15
+full-year registration fee and how many had paid the
+$10 partial-year fee. She knew that the number of boys
+who paid for a full-year was ten more than the number
+who paid for a partial-year. If $250 was collected for all
+the registrations, how many boys had paid the full-year
+fee and how many had paid the partial-year fee?
+Writing Exercises
+207. Suppose you have six quarters, nine dimes, and
+four pennies. Explain how you find the total value of all
+the coins.
+208. Do you find it helpful to use a table when solving
+coin problems? Why or why not?
+209. In the table used to solve coin problems, one
+column is labeled “number” and another column is
+labeled “value.” What is the difference between the
+“number” and the “value?”
+210. What similarities and differences did you see
+between solving the coin problems and the ticket and
+stamp problems?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b After reviewing this checklist, what will you do to become confident for all objectives?
+Chapter 3 Math Models 353

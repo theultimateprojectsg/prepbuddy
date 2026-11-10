@@ -1,0 +1,567 @@
+8.6
+Solve Rational Equations
+Learning Objectives
+By the end of this section, you will be able to:
+Solve rational equations
+Solve a rational equation for a specific variable
+BE PREPARED : : 8.19 Before you get started, take this readiness quiz.
+If you miss a problem, go back to the section listed and review the material.
+Solve: 1
+6x + 1
+2 = 1
+3.
+If you missed this problem, review Example 2.48.
+BE PREPARED : : 8.20 Solve: n2 − 5n − 36 = 0.
+If you missed this problem, review Example 7.73.
+BE PREPARED : : 8.21 Solve for y in terms of x : 5x + 2y = 10 for y.
+If you missed this problem, review Example 2.65.
+After defining the terms expression and equation early in Foundations, we have used them throughout this book. We have
+simplified many kinds of expressions and solved many kinds of equations. We have simplified many rational expressions so
+far in this chapter. Now we will solve rational equations.
+The definition of a rational equation is similar to the definition of equation we used in Foundations.
+Rational Equation
+A rational equation is two rational expressions connected by an equal sign.
+You must make sure to know the difference between rational expressions and rational equations. The equation contains
+an equal sign.
+Rational Expression Rational Equation
+8x + 1
+2 1
+8x + 1
+2 = 1
+y + 6
+y2 − 36
+y + 6
+y2 − 36 = y + 1
+n − 3 + 1
+n + 4 1
+n − 3 + 1
+n + 4 = 15
+n2 + n − 12
+Solve Rational Equations
+We have already solved linear equations that contained fractions. We found the LCD of all the fractions in the equation
+and then multiplied both sides of the equation by the LCD to “clear” the fractions.
+Here is an example we did when we worked with linear equations:
+Chapter 8 Rational Expressions and Equations 969
+We multiplied both sides by the LCD.
+Then we distributed.
+We simplified—and then we had an equation with no
+fractions.
+Finally, we solved that equation.
+We will use the same strategy to solve rational equations. We will multiply both sides of the equation by the LCD. Then we
+will have an equation that does not contain rational expressions and thus is much easier for us to solve.
+But because the original equation may have a variable in a denominator we must be careful that we don’t end up with a
+solution that would make a denominator equal to zero.
+So before we begin solving a rational equation, we examine it first to find the values that would make any denominators
+zero. That way, when we solve a rational equation we will know if there are any algebraic solutions we must discard.
+An algebraic solution to a rational equation that would cause any of the rational expressions to be undefined is called an
+extraneous solution.
+Extraneous Solution to a Rational Equation
+An extraneous solution to a rational equation is an algebraic solution that would cause any of the expressions in
+the original equation to be undefined.
+We note any possible extraneous solutions, c, by writing x ≠ c next to the equation.
+EXAMPLE 8.59 HOW TO SOLVE EQUATIONS WITH RATIONAL EXPRESSIONS
+Solve: 1
+x + 1
+3 = 5
+6.
+970 Chapter 8 Rational Expressions and Equations
+TRY IT : : 8.117 Solve: 1
+y + 2
+3 = 1
+5.
+TRY IT : : 8.118 Solve: 2
+3 + 1
+5 = 1
+x.
+The steps of this method are shown below.
+We always start by noting the values that would cause any denominators to be zero.
+Solve: 1 − 5
+y = − 6
+y2.
+HOW TO : : SOLVE EQUATIONS WITH RATIONAL EXPRESSIONS.
+Note any value of the variable that would make any denominator zero.
+Find the least common denominator of all denominators in the equation.
+Clear the fractions by multiplying both sides of the equation by the LCD.
+Solve the resulting equation.
+Check.
+◦ If any values found in Step 1 are algebraic solutions, discard them.
+◦ Check any remaining solutions in the original equation.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Chapter 8 Rational Expressions and Equations 971
+Note any value of the variable that would make any denominator zero.
+Find the least common denominator of all denominators in the equation. The
+LCD is y2 .
+Clear the fractions by multiplying both sides of the equation by the LCD.
+Distribute.
+Multiply.
+Solve the resulting equation. First write the quadratic equation in standard
+form.
+Factor.
+Use the Zero Product Property.
+Solve.
+Check.
+We did not get 0 as an algebraic solution.
+TRY IT : : 8.119 Solve: 1 − 2
+a = 15
+a2 .
+TRY IT : : 8.120 Solve: 1 − 4
+b = 12
+b2 .
+Solve: 5
+3u − 2 = 3
+2u.
+972 Chapter 8 Rational Expressions and Equations
+Note any value of the variable that would make any denominator
+zero.
+Find the least common denominator of all denominators in the
+equation. The LCD is 2u(3u − 2) .
+Clear the fractions by multiplying both sides of the equation by the
+LCD.
+Remove common factors.
+Simplify.
+Multiply.
+Solve the resulting equation.
+We did not get 0 or 2
+3 as algebraic solutions.
+TRY IT : : 8.121 Solve: 1
+x − 1 = 2
+3x.
+TRY IT : : 8.122 Solve: 3
+5n + 1 = 2
+3n.
+When one of the denominators is a quadratic, remember to factor it first to find the LCD.
+Solve: 2
+p + 2 + 4
+p − 2 = p − 1
+p2 − 4.
+Note any value of the variable that would
+make any denominator zero.
+Chapter 8 Rational Expressions and Equations 973
+Find the least common denominator of all
+denominators in the equation. The LCD is
+⎛
+⎝p + 2⎞
+⎠⎛
+⎝p − 2⎞
+⎠ .
+Clear the fractions by multiplying both
+sides of the equation by the LCD.
+Distribute.
+Remove common factors.
+Simplify.
+Distribute.
+Solve.
+We did not get 2 or − 2 as algebraic
+solutions.
+TRY IT : : 8.123 Solve: 2
+x + 1 + 1
+x − 1 = 1
+x2 − 1.
+TRY IT : : 8.124 Solve: 5
+y + 3 + 2
+y − 3 = 5
+y2 − 9.
+Solve: 4
+q − 4 − 3
+q − 3 = 1.
+974 Chapter 8 Rational Expressions and Equations
+Note any value of the variable that would make
+any denominator zero.
+Find the least common denominator of all
+denominators in the equation. The LCD is
+⎛
+⎝q − 4⎞
+⎠⎛
+⎝q − 3⎞
+⎠ .
+Clear the fractions by multiplying both sides of
+the equation by the LCD.
+Distribute.
+Remove common factors.
+Simplify.
+Simplify.
+Combine like terms.
+Solve. First write in standard form.
+Factor.
+Use the Zero Product Property.
+We did not get 4 or 3 as algebraic solutions.
+TRY IT : : 8.125 Solve: 2
+x + 5 − 1
+x − 1 = 1.
+TRY IT : : 8.126 Solve: 3
+x + 8 − 2
+x − 2 = 1.
+Solve: m + 11
+m2 − 5m + 4 = 5
+m − 4 − 3
+m − 1.
+Chapter 8 Rational Expressions and Equations 975
+Factor all the denominators, so we
+can note any value of the variable
+the would make any denominator
+zero.
+Find the least common
+denominator of all denominators in
+the equation. The LCD is
+(m − 4)(m − 1) .
+Clear the fractions.
+Distribute.
+Remove common factors.
+Simplify.
+Solve the resulting equation.
+Check. The only algebraic solution
+was 4, but we said that 4 would
+make a denominator equal to zero.
+The algebraic solution is an
+extraneous solution. There is no
+solution to this equation.
+TRY IT : : 8.127 Solve: x + 13
+x2 − 7x + 10 = 6
+x − 5 − 4
+x − 2.
+TRY IT : : 8.128 Solve: y − 14
+y2 + 3y − 4 = 2
+y + 4 + 7
+y − 1.
+The equation we solved in Example 8.64 had only one algebraic solution, but it was an extraneous solution. That left us
+with no solution to the equation. Some equations have no solution.
+Solve: n
+12 + n + 3
+3n = 1
+n.
+Note any value of the variable that would make any denominator zero.
+976 Chapter 8 Rational Expressions and Equations
+Find the least common denominator of all denominators in the equation.
+The LCD is 12n .
+Clear the fractions by multiplying both sides of the equation by the LCD.
+Distribute.
+Remove common factors.
+Simplify.
+Solve the resulting equation.
+Check.
+n = 0 is an extraneous solution.
+TRY IT : : 8.129 Solve: x
+18 + x + 6
+9x = 2
+3x.
+TRY IT : : 8.130 Solve: y + 5
+5y + y
+15 = 1
+y.
+Solve: y
+y + 6 = 72
+y2 − 36 + 4.
+Factor all the denominators, so we can note any value
+of the variable that would make any denominator zero.
+Chapter 8 Rational Expressions and Equations 977
+Find the least common denominator. The LCD is
+⎛
+⎝y − 6⎞
+⎠⎛
+⎝y + 6⎞
+⎠ .
+Clear the fractions.
+Simplify.
+Simplify.
+Solve the resulting equation.
+Check.
+y = − 6 is an extraneous solution.
+TRY IT : : 8.131 Solve: x
+x + 4 = 32
+x2 − 16 + 5.
+TRY IT : : 8.132 Solve: y
+y + 8 = 128
+y2 − 64 + 9.
+Solve: x
+2x − 2 − 2
+3x + 3 = 5x2 − 2x + 9
+12x2 − 12 .
+978 Chapter 8 Rational Expressions and Equations
+We will start by factoring all
+denominators, to make it easier to
+identify extraneous solutions and the
+LCD.
+Note any value of the variable that would
+make any denominator zero.
+Find the least common denominator.The
+LCD is 12(x − 1)(x + 1)
+Clear the fractions.
+Simplify.
+Simplify.
+Solve the resulting equation.
+Check.
+x = 1 and x = − 1 are extraneous
+solutions.
+The equation has no solution.
+Solve: y
+5y − 10 − 5
+3y + 6 = 2y2 − 19y + 54
+15y2 − 60 .
+TRY IT : : 8.134 Solve: z
+2z + 8 − 3
+4z − 8 = 3z2 − 16z − 16
+8z2 + 16z − 64.
+Solve a Rational Equation for a Specific Variable
+When we solved linear equations, we learned how to solve a formula for a specific variable. Many formulas used
+in business, science, economics, and other fields use rational equations to model the relation between two or more
+variables. We will now see how to solve a rational equation for a specific variable.
+We’ll start with a formula relating distance, rate, and time. We have used it many times before, but not usually in this
+form.
+Solve: D
+T = R for T.
+Chapter 8 Rational Expressions and Equations 979
+Note any value of the variable that would make any denominator zero.
+Clear the fractions by multiplying both sides of the equations by the LCD, T.
+Simplify.
+Divide both sides by R to isolate T.
+Simplify.
+TRY IT : : 8.135 Solve: A
+L = W for L.
+TRY IT : : 8.136 Solve: F
+A = M for A.
+Example 8.69 uses the formula for slope that we used to get the point-slope form of an equation of a line.
+Solve: m = x − 2
+y − 3 for y.
+Note any value of the variable that would make any denominator zero.
+Clear the fractions by multiplying both sides of the equations by the LCD, y − 3 .
+Simplify.
+Isolate the term with y.
+Divide both sides by m to isolate y.
+Simplify.
+TRY IT : : 8.137 Solve: y − 2
+x + 1 = 2
+3 for x.
+TRY IT : : 8.138 Solve: x = y
+1 − y for y.
+Be sure to follow all the steps in Example 8.70. It may look like a very simple formula, but we cannot solve it instantly for
+either denominator.
+980 Chapter 8 Rational Expressions and Equations
+Solve 1
+c + 1
+m = 1 for c.
+Note any value of the variable that would make any denominator zero.
+Clear the fractions by multiplying both sides of the equations by the LCD,
+cm .
+Distribute.
+Simplify.
+Collect the terms with c to the right.
+Factor the expression on the right.
+To isolate c, divide both sides by m − 1 .
+Simplify by removing common factors.
+Notice that even though we excluded c = 0 and m = 0 from the original equation, we must also now state that m ≠ 1 .
+TRY IT : : 8.139 Solve: 1
+a + 1
+b = c for a.
+TRY IT : : 8.140 Solve: 2
+x + 1
+3 = 1
+y for y.
+Chapter 8 Rational Expressions and Equations 981
+Practice Makes Perfect
+Solve Rational Equations
+In the following exercises, solve.
+303. 1
+a + 2
+5 = 1
+2 304. 5
+6 + 3
+b = 1
+3 305. 5
+2 − 1
+c = 3
+306. 6
+3 − 2
+d = 4
+9 307. 4
+5 + 1
+4 = 2
+v 308. 3
+7 + 2
+3 = 1
+w
+309. 7
+9 + 1
+x = 2
+3 310. 3
+8 + 2
+y = 1
+4 311. 1 − 2
+m = 8
+m2
+312. 1 + 4
+n = 21
+n2 313. 1 + 9
+p = −20
+p2 314. 1 − 7
+q = −6
+q2
+315. 1
+r + 3 = 4
+2r 316. 3
+t − 6 = 1
+t 317. 5
+3v − 2 = 7
+4v
+318. 8
+2w + 1 = 3
+w 319. 3
+x + 4 + 7
+x − 4 = 8
+x2 − 16 320. 5
+y − 9 + 1
+y + 9 = 18
+y2 − 81
+321.
+z − 10 + 7
+z + 10 = 5
+z2 − 100
+322.
+a + 11 + 6
+a − 11 = 7
+a2 − 121
+323. 1
+q + 4 − 2
+q − 2 = 1
+324. 3
+r + 10 − 4
+r − 4 = 1 325. 1
+t + 7 − 5
+t − 5 = 1 326. 2
+s + 7 − 3
+s − 3 = 1
+327.
+v − 10
+v2 − 5v + 4 = 3
+v − 1 − 6
+v − 4
+328.
+w + 8
+w2 − 11w + 28 = 5
+w − 7 + 2
+w − 4
+329.
+x − 10
+x2 + 8x + 12 = 3
+x + 2 + 4
+x + 6
+330.
+y − 3
+y2 − 4y − 5 = 1
+y + 1 + 8
+y − 5
+331. z
+16 + z + 2
+4z = 1
+2z 332. a
+9 + a + 3
+3a = 1
+a
+333. b + 3
+3b + b
+24 = 1
+b 334. c + 3
+12c + c
+36 = 1
+4c 335. d
+d + 3 = 18
+d2 − 9 + 4
+336. m
+m + 5 = 50
+m2 − 25 + 6 337. n
+n + 2 = 8
+n2 − 4 + 3 338. p
+p + 7 = 98
+p2 − 49 + 8
+339. q
+3q − 9 − 3
+4q + 12
+= 7q2 + 6q + 63
+24q2 − 216
+340. r
+3r − 15 − 1
+4r + 20
+= 3r2 + 17r + 40
+12r2 − 300
+341. s
+2s + 6 − 2
+5s + 5
+= 5s2 − s − 18
+10s2 + 40s + 30
+8.6 EXERCISES
+982 Chapter 8 Rational Expressions and Equations
+342. t
+6t − 12 − 5
+2t + 10
+= t2 − 23t + 70
+12t2 + 36t − 120
+Solve a Rational Equation for a Specific Variable
+In the following exercises, solve.
+343. C
+r = 2π for r 344. I
+r = P for r 345. V
+h = lw for h
+346. 2A
+b = h for b 347. v + 3
+w − 1 = 1
+2 for w 348. x + 5
+2 − y = 4
+3 for y
+349. a = b + 3
+c − 2 for c 350. m = n
+2 − n for n 351. 1
+p + 2
+q = 4 for p
+352. 3
+s + 1
+t = 2 for s 353. 2
+v + 1
+5 = 3
+w for w 354. 6
+x + 2
+3 = 1
+y for y
+355. m + 3
+n − 2 = 4
+5 for n 356. E
+c = m2 for c 357. 3
+x − 5
+y = 1
+4 for y
+358. R
+T = W for T 359. r = s
+3 − t for t 360. c = 2
+a + b
+5 for a
+Everyday Math
+361. House Painting Alain can paint a house in 4 days.
+Spiro would take 7 days to paint the same house. Solve
+the equation 1
+4 + 1
+7 = 1
+t for t to find the number of
+days it would take them to paint the house if they
+worked together.
+362. Boating Ari can drive his boat 18 miles with the
+current in the same amount of time it takes to drive 10
+miles against the current. If the speed of the boat is 7
+knots, solve the equation 18
+7 + c = 10
+7 − c for c to find
+the speed of the current.
+Writing Exercises
+363. Why is there no solution to the equation
+x − 2 = 5
+x − 2 ?
+364. Pete thinks the equation y
+y + 6 = 72
+y2 − 36 + 4
+has two solutions, y = −6 and y = 4 . Explain why
+Pete is wrong.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b After reviewing this checklist, what will you do to become confident for all objectives?
+Chapter 8 Rational Expressions and Equations 983

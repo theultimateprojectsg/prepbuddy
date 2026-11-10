@@ -1,0 +1,429 @@
+6.3
+Multiply Polynomials
+Learning Objectives
+By the end of this section, you will be able to:
+Multiply a polynomial by a monomial
+Multiply a binomial by a binomial
+Multiply a trinomial by a binomial
+BE PREPARED : : 6.6 Before you get started, take this readiness quiz.
+Distribute: 2(x + 3).
+If you missed this problem, review Example 1.132.
+BE PREPARED : : 6.7 Combine like terms: x2 + 9x + 7x + 63.
+If you missed this problem, review Example 1.24.
+Multiply a Polynomial by a Monomial
+We have used the Distributive Property to simplify expressions like 2(x − 3) . You multiplied both terms in the
+parentheses, x and 3 , by 2, to get 2x − 6 . With this chapter’s new vocabulary, you can say you were multiplying a
+binomial, x − 3 , by a monomial, 2.
+Multiplying a binomial by a monomial is nothing new for you! Here’s an example:
+Multiply: 4(x + 3).
+Distribute.
+Simplify.
+TRY IT : : 6.55 Multiply: 5(x + 7).
+TRY IT : : 6.56 Multiply: 3⎛
+⎝y + 13⎞
+⎠.
+Multiply: y⎛
+⎝y − 2⎞
+⎠.
+714 Chapter 6 Polynomials
+Distribute.
+Simplify.
+TRY IT : : 6.57 Multiply: x(x − 7).
+TRY IT : : 6.58 Multiply: d(d − 11).
+Multiply: 7x(2x + y).
+Distribute.
+Simplify.
+TRY IT : : 6.59 Multiply: 5x(x + 4y).
+TRY IT : : 6.60 Multiply: 2p(6p + r).
+Multiply: −2y⎛
+⎝4y2 + 3y − 5⎞
+⎠.
+Distribute.
+Simplify.
+TRY IT : : 6.61 Multiply: −3y⎛
+⎝5y2 + 8y − 7⎞
+⎠.
+TRY IT : : 6.62 Multiply: 4x2(2x2 − 3x + 5).
+Chapter 6 Polynomials 715
+Multiply: 2x3(x2 − 8x + 1).
+Distribute.
+Simplify.
+TRY IT : : 6.63 Multiply: 4x⎛
+⎝3x2 − 5x + 3⎞
+⎠.
+TRY IT : : 6.64 Multiply: −6a3(3a2 − 2a + 6).
+Multiply: (x + 3)p.
+The monomial is the second factor.
+Distribute.
+Simplify.
+TRY IT : : 6.65 Multiply: (x + 8)p.
+TRY IT : : 6.66 Multiply: (a + 4)p.
+Multiply a Binomial by a Binomial
+Just like there are different ways to represent multiplication of numbers, there are several methods that can be used to
+multiply a binomial times a binomial. We will start by using the Distributive Property.
+Multiply a Binomial by a Binomial Using the Distributive Property
+Look at Example 6.33, where we multiplied a binomial by a monomial.
+716 Chapter 6 Polynomials
+We distributed the p to get:
+What if we have (x + 7) instead of p?
+Distribute (x + 7).
+Distribute again.
+Combine like terms.
+Notice that before combining like terms, you had four terms. You multiplied the two terms of the first binomial by the two
+terms of the second binomial—four multiplications.
+Multiply: ⎛
+⎝y + 5⎞
+⎠⎛
+⎝y + 8⎞
+⎠.
+Distribute (y + 8).
+Distribute again
+Combine like terms.
+TRY IT : : 6.67 Multiply: (x + 8)(x + 9).
+TRY IT : : 6.68 Multiply: (5x + 9)(4x + 3).
+Multiply: ⎛
+⎝2y + 5⎞
+⎠⎛
+⎝3y + 4⎞
+⎠.
+Chapter 6 Polynomials 717
+Distribute (3y + 4).
+Distribute again
+Combine like terms.
+TRY IT : : 6.69 Multiply: (3b + 5)(4b + 6).
+TRY IT : : 6.70 Multiply: (a + 10)(a + 7).
+Multiply: ⎛
+⎝4y + 3⎞
+⎠⎛
+⎝2y − 5⎞
+⎠.
+Distribute.
+Distribute again.
+Combine like terms.
+TRY IT : : 6.71 Multiply: ⎛
+⎝5y + 2⎞
+⎠⎛
+⎝6y − 3⎞
+⎠.
+TRY IT : : 6.72 Multiply: (3c + 4)(5c − 2).
+Multiply: (x - 2)(x − y).
+Distribute.
+Distribute again.
+There are no like terms to combine.
+TRY IT : : 6.73 Multiply: (a + 7)(a − b).
+718 Chapter 6 Polynomials
+TRY IT : : 6.74 Multiply: (x + 5)(x − y).
+Multiply a Binomial by a Binomial Using the FOIL Method
+Remember that when you multiply a binomial by a binomial you get four terms. Sometimes you can combine like terms
+to get a trinomial, but sometimes, like in Example 6.37, there are no like terms to combine.
+Let’s look at the last example again and pay particular attention to how we got the four terms.
+(x − 2)(x − y)
+x2 − xy − 2x + 2y
+Where did the first term, x2 , come from?
+We abbreviate “First, Outer, Inner, Last” as FOIL. The letters stand for ‘First, Outer, Inner, Last’. The word FOIL is easy to
+remember and ensures we find all four products.
+(x − 2)(x − y)
+x2 − xy − 2x + 2y
+F O I L
+Let’s look at (x + 3)(x + 7) .
+Chapter 6 Polynomials 719
+Distibutive Property FOIL
+Notice how the terms in third line fit the FOIL pattern.
+Now we will do an example where we use the FOIL pattern to multiply two binomials.
+EXAMPLE 6.38 HOW TO MULTIPLY A BINOMIAL BY A BINOMIAL USING THE FOIL METHOD
+Multiply using the FOIL method: (x + 5)(x + 9).
+TRY IT : : 6.75 Multiply using the FOIL method: (x + 6)(x + 8).
+TRY IT : : 6.76 Multiply using the FOIL method: ⎛
+⎝y + 17⎞
+⎠⎛
+⎝y + 3⎞
+⎠.
+We summarize the steps of the FOIL method below. The FOIL method only applies to multiplying binomials, not other
+polynomials!
+720 Chapter 6 Polynomials
+When you multiply by the FOIL method, drawing the lines will help your brain focus on the pattern and make it easier to
+apply.
+Multiply: ⎛
+⎝y − 7⎞
+⎠⎛
+⎝y + 4⎞
+⎠.
+TRY IT : : 6.77 Multiply: (x − 7)(x + 5).
+TRY IT : : 6.78 Multiply: (b − 3)(b + 6).
+Multiply: (4x + 3)(2x − 5).
+HOW TO : : MULTIPLY TWO BINOMIALS USING THE FOIL METHOD
+Chapter 6 Polynomials 721
+TRY IT : : 6.79 Multiply: (3x + 7)(5x − 2).
+TRY IT : : 6.80 Multiply: ⎛
+⎝4y + 5⎞
+⎠⎛
+⎝4y − 10⎞
+⎠.
+The final products in the last four examples were trinomials because we could combine the two middle terms. This is not
+always the case.
+Multiply: ⎛
+⎝3x − y⎞
+⎠⎛
+⎝2x − 5).
+Multiply the First.
+Multiply the Outer.
+Multiply the Inner.
+Multiply the Last.
+Combine like terms—there are none.
+TRY IT : : 6.81 Multiply: (10c − d)(c − 6).
+TRY IT : : 6.82 Multiply: ⎛
+⎝7x − y⎞
+⎠(2x − 5).
+Be careful of the exponents in the next example.
+722 Chapter 6 Polynomials
+Multiply: ⎛
+⎝n2 + 4⎞
+⎠(n − 1).
+Multiply the First.
+Multiply the Outer.
+Multiply the Inner.
+Multiply the Last.
+Combine like terms—there are none.
+TRY IT : : 6.83 Multiply: ⎛
+⎝x2 + 6⎞
+⎠(x − 8).
+TRY IT : : 6.84 Multiply: ⎛
+⎝y2 + 7⎞
+⎠⎛
+⎝y − 9⎞
+⎠.
+Multiply: ⎛
+⎝3pq + 5⎞
+⎠⎛
+⎝6pq − 11⎞
+⎠.
+Multiply the First.
+Multiply the Outer.
+Multiply the Inner.
+Multiply the Last.
+Combine like terms—there are none.
+TRY IT : : 6.85 Multiply: (2ab + 5)(4ab − 4).
+TRY IT : : 6.86 Multiply: ⎛
+⎝2xy + 3⎞
+⎠⎛
+⎝4xy − 5⎞
+⎠.
+Multiply a Binomial by a Binomial Using the Vertical Method
+The FOIL method is usually the quickest method for multiplying two binomials, but it only works for binomials. You can
+use the Distributive Property to find the product of any two polynomials. Another method that works for all polynomials
+Chapter 6 Polynomials 723
+is the Vertical Method. It is very much like the method you use to multiply whole numbers. Look carefully at this example
+of multiplying two-digit numbers.
+Now we’ll apply this same method to multiply two binomials.
+Multiply using the Vertical Method: ⎛
+⎝3y − 1⎞
+⎠⎛
+⎝2y − 6⎞
+⎠.
+It does not matter which binomial goes on the top.
+Multiply 3y − 1 by −6.
+Multiply 3y − 1 by 2y.
+Add like terms.
+3y − 1
+× 2y − 6________
+−18y + 6
+6y2 − 2y_____________
+6y2 − 20y + 6
+partial product
+partial product
+product
+Notice the partial products are the same as the terms in the FOIL method.
+TRY IT : : 6.87 Multiply using the Vertical Method: (5m − 7)(3m − 6).
+TRY IT : : 6.88 Multiply using the Vertical Method: (6b − 5)(7b − 3).
+We have now used three methods for multiplying binomials. Be sure to practice each method, and try to decide which one
+you prefer. The methods are listed here all together, to help you remember them.
+Multiplying Two Binomials
+To multiply binomials, use the:
+• Distributive Property
+• FOIL Method
+• Vertical Method
+Remember, FOIL only works when multiplying two binomials.
+Multiply a Trinomial by a Binomial
+We have multiplied monomials by monomials, monomials by polynomials, and binomials by binomials. Now we’re ready
+to multiply a trinomial by a binomial. Remember, FOIL will not work in this case, but we can use either the Distributive
+Property or the Vertical Method. We first look at an example using the Distributive Property.
+Multiply using the Distributive Property: (b + 3)(2b2 − 5b + 8).
+724 Chapter 6 Polynomials
+Distribute.
+Multiply.
+Combine like terms.
+TRY IT : : 6.89 Multiply using the Distributive Property: (y − 3)(y2 − 5y + 2).
+TRY IT : : 6.90 Multiply using the Distributive Property: (x + 4)(2x2 − 3x + 5).
+Now let’s do this same multiplication using the Vertical Method.
+Multiply using the Vertical Method: (b + 3)(2b2 − 5b + 8).
+It is easier to put the polynomial with fewer terms on the bottom because we get fewer partial products this way.
+Multiply (2b2 − 5b + 8) by 3.
+Multiply (2b2 − 5b + 8) by b.
+Add like terms.
+TRY IT : : 6.91 Multiply using the Vertical Method: (y − 3)(y2 − 5y + 2).
+TRY IT : : 6.92 Multiply using the Vertical Method: (x + 4)(2x2 − 3x + 5).
+We have now seen two methods you can use to multiply a trinomial by a binomial. After you practice each method, you’ll
+probably find you prefer one way over the other. We list both methods are listed here, for easy reference.
+Multiplying a Trinomial by a Binomial
+To multiply a trinomial by a binomial, use the:
+• Distributive Property
+• Vertical Method
+Chapter 6 Polynomials 725
+MEDIA : :
+Access these online resources for additional instruction and practice with multiplying polynomials:
+• Multiplying Exponents 1 (https://openstax.org/l/25MultiplyExp1)
+• Multiplying Exponents 2 (https://openstax.org/l/25MultiplyExp2)
+• Multiplying Exponents 3 (https://openstax.org/l/25MultiplyExp3)
+726 Chapter 6 Polynomials
+Practice Makes Perfect
+Multiply a Polynomial by a Monomial
+In the following exercises, multiply.
+173. 4(w + 10) 174. 6(b + 8) 175. −3(a + 7)
+176. −5(p + 9) 177. 2(x − 7) 178. 7(y − 4)
+179. −3(k − 4) 180. −8( j − 5) 181. q(q + 5)
+182. k(k + 7) 183. −b(b + 9) 184. −y(y + 3)
+185. −x(x − 10) 186. −p(p − 15) 187. 6r(4r + s)
+188. 5c(9c + d) 189. 12x(x − 10) 190. 9m(m − 11)
+191. −9a(3a + 5) 192. −4p(2p + 7) 193. 3(p2 + 10p + 25)
+194. 6(y2 + 8y + 16) 195. −8x(x2 + 2x − 15) 196. −5t(t2 + 3t − 18)
+197. 5q3 ⎛
+⎝q3 − 2q + 6⎞
+⎠ 198. 4x3 ⎛
+⎝x4 − 3x + 7⎞
+⎠ 199. −8y(y2 + 2y − 15)
+200. −5m(m2 + 3m − 18) 201. 5q3(q2 − 2q + 6) 202. 9r3(r2 − 3r + 5)
+203. −4z2(3z2 + 12z − 1) 204. −3x2(7x2 + 10x − 1) 205. (2m − 9)m
+206. (8 j − 1) j 207. (w − 6) · 8 208. (k − 4) · 5
+209. 4(x + 10) 210. 6(y + 8) 211. 15(r − 24)
+212. 12(v − 30) 213. −3(m + 11) 214. −4(p + 15)
+215. −8(z − 5) 216. −3(x − 9) 217. u(u + 5)
+218. q(q + 7) 219. n(n2 − 3n) 220. s(s2 − 6s)
+221. 6x(4x + y) 222. 5a(9a + b) 223. 5p(11p − 5q)
+224. 12u(3u − 4v) 225. 3(v2 + 10v + 25) 226. 6(x2 + 8x + 16)
+227. 2n(4n2 − 4n + 1) 228. 3r(2r2 − 6r + 2) 229. −8y(y2 + 2y − 15)
+230. −5m(m2 + 3m − 18) 231. 5q3(q2 − 2q + 6) 232. 9r3(r2 − 3r + 5)
+6.3 EXERCISES
+Chapter 6 Polynomials 727
+233. −4z2(3z2 + 12z − 1) 234. −3x2(7x2 + 10x − 1) 235. (2y − 9)y
+236. (8b − 1)b
+Multiply a Binomial by a Binomial
+In the following exercises, multiply the following binomials using: a the Distributive Property b the FOIL method c the Vertical
+Method.
+237. (w + 5)(w + 7) 238. (y + 9)(y + 3) 239. (p + 11)(p − 4)
+240. (q + 4)(q − 8)
+In the following exercises, multiply the binomials. Use any method.
+241. (x + 8)(x + 3) 242. (y + 7)(y + 4) 243. (y − 6)(y − 2)
+244. (x − 7)(x − 2) 245. (w − 4)(w + 7) 246. (q − 5)(q + 8)
+247. (p + 12)(p − 5) 248. (m + 11)(m − 4) 249. (6p + 5)(p + 1)
+250. (7m + 1)(m + 3) 251. (2t − 9)(10t + 1) 252. (3r − 8)(11r + 1)
+253. ⎛
+⎝5x − y⎞
+⎠(3x − 6) 254. (10a − b)(3a − 4) 255. (a + b)(2a + 3b)
+256. (r + s)(3r + 2s) 257. (4z − y)(z − 6) 258. (5x − y)(x − 4)
+259. (x2 + 3)(x + 2) 260. (y2 − 4)(y + 3) 261. (x2 + 8)(x2 − 5)
+262. (y2 − 7)(y2 − 4) 263. (5ab − 1)(2ab + 3) 264. (2xy + 3)(3xy + 2)
+265. (6pq − 3)(4pq − 5) 266. (3rs − 7)(3rs − 4)
+Multiply a Trinomial by a Binomial
+In the following exercises, multiply using a the Distributive Property b the Vertical Method.
+267. (x + 5)(x2 + 4x + 3) 268. (u + 4)(u2 + 3u + 2) 269. (y + 8)(4y2 + y − 7)
+270. (a + 10)(3a2 + a − 5)
+In the following exercises, multiply. Use either method.
+271. (w − 7)(w2 − 9w + 10) 272. (p − 4)(p2 − 6p + 9) 273. (3q + 1)(q2 − 4q − 5)
+274. (6r + 1)(r2 − 7r − 9)
+Mixed Practice
+275. ⎛
+⎝10y − 6⎞
+⎠ + ⎛
+⎝4y − 7⎞
+⎠ 276. ⎛
+⎝15p − 4⎞
+⎠ + ⎛
+⎝3p − 5⎞
+⎠ 277.
+⎛
+⎝x2 − 4x − 34⎞
+⎠ − ⎛
+⎝x2 + 7x − 6⎞
+728 Chapter 6 Polynomials
+278.
+⎛
+⎝ j2 − 8 j − 27⎞
+⎠ − ⎛
+⎝ j2 + 2 j − 12⎞
+279. 5q(3q2 − 6q + 11) 280. 8t(2t2 − 5t + 6)
+281. (s − 7)(s + 9) 282. (x − 5)(x + 13) 283. ⎛
+⎝y2 − 2y⎞
+⎠⎛
+⎝y + 1⎞
+284. ⎛
+⎝a2 − 3a⎞
+⎠(4a + 5) 285. (3n − 4)⎛
+⎝n2 + n − 7⎞
+⎠ 286. (6k − 1)⎛
+⎝k2 + 2k − 4⎞
+287. ⎛
+⎝7p + 10⎞
+⎠⎛
+⎝7p − 10⎞
+⎠ 288. ⎛
+⎝3y + 8⎞
+⎠⎛
+⎝3y − 8⎞
+⎠ 289. (4m2 − 3m − 7)m2
+290. (15c2 − 4c + 5)c4 291. (5a + 7b)(5a + 7b) 292. ⎛
+⎝3x − 11y⎞
+⎠⎛
+⎝3x − 11y⎞
+293. ⎛
+⎝4y + 12z⎞
+⎠⎛
+⎝4y − 12z⎞
+Everyday Math
+294. Mental math You can use binomial multiplication
+to multiply numbers without a calculator. Say you need
+to multiply 13 times 15. Think of 13 as 10 + 3 and 15
+as 10 + 5 .
+a Multiply (10 + 3)(10 + 5) by the FOIL
+method.
+b Multiply 13 · 15 without using a calculator.
+c Which way is easier for you? Why?
+295. Mental math You can use binomial multiplication
+to multiply numbers without a calculator. Say you need
+to multiply 18 times 17. Think of 18 as 20 − 2 and 17
+as 20 − 3 .
+a Multiply (20 − 2)(20 − 3) by the FOIL
+method.
+b Multiply 18 · 17 without using a calculator.
+c Which way is easier for you? Why?
+Writing Exercises
+296. Which method do you prefer to use when
+multiplying two binomials: the Distributive Property,
+the FOIL method, or the Vertical Method? Why?
+297. Which method do you prefer to use when
+multiplying a trinomial by a binomial: the Distributive
+Property or the Vertical Method? Why?
+298. Multiply the following:
+(x + 2)(x − 2)
+(y + 7)(y − 7)
+(w + 5)(w − 5)
+Explain the pattern that you see in your answers.
+299. Multiply the following:
+(m − 3)(m + 3)
+(n − 10)(n + 10)
+(p − 8)(p + 8)
+Explain the pattern that you see in your answers.
+300. Multiply the following:
+(p + 3)(p + 3)
+(q + 6)(q + 6)
+(r + 1)(r + 1)
+Explain the pattern that you see in your answers.
+301. Multiply the following:
+(x − 4)(x − 4)
+(y − 1)(y − 1)
+(z − 7)(z − 7)
+Explain the pattern that you see in your answers.
+Chapter 6 Polynomials 729
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b What does this checklist tell you about your mastery of this section? What steps will you take to improve?
+730 Chapter 6 Polynomials

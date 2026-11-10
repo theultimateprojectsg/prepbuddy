@@ -1,0 +1,370 @@
+7.2
+Factor Trinomials of the Form x2+bx+c
+Learning Objectives
+By the end of this section, you will be able to:
+Factor trinomials of the form x2 + bx + c
+Factor trinomials of the form x2 + bxy + cy2
+BE PREPARED : : 7.4 Before you get started, take this readiness quiz.
+Multiply: (x + 4)(x + 5).
+If you missed this problem, review Example 6.38.
+BE PREPARED : : 7.5 Simplify: a −9 + (−6) b −9 + 6.
+If you missed this problem, review Example 1.37.
+BE PREPARED : : 7.6 Simplify: a −9(6) b −9(−6).
+If you missed this problem, review Example 1.46.
+BE PREPARED : : 7.7 Simplify: a |−5| b |3|.
+If you missed this problem, review Example 1.33.
+Factor Trinomials of the Form x2 + bx + c
+You have already learned how to multiply binomials using FOIL. Now you’ll need to “undo” this multiplication—to start
+with the product and end up with the factors. Let’s look at an example of multiplying binomials to refresh your memory.
+To factor the trinomial means to start with the product, x2 + 5x + 6 , and end with the factors, (x + 2)(x + 3) . You need
+to think about where each of the terms in the trinomial came from.
+The first term came from multiplying the first term in each binomial. So to get x2 in the product, each binomial must start
+with an x.
+x2 + 5x + 6
+(x )(x )
+The last term in the trinomial came from multiplying the last term in each binomial. So the last terms must multiply to 6.
+What two numbers multiply to 6?
+The factors of 6 could be 1 and 6, or 2 and 3. How do you know which pair to use?
+Consider the middle term. It came from adding the outer and inner terms.
+So the numbers that must have a product of 6 will need a sum of 5. We’ll test both possibilities and summarize the results
+in Table 7.1—the table will be very helpful when you work with numbers that can be factored in many different ways.
+Chapter 7 Factoring 821
+Factors of 6 Sum of factors
+1, 6 1 + 6 = 7
+2, 3 2 + 3 = 5
+Table 7.1
+We see that 2 and 3 are the numbers that multiply to 6 and add to 5. So we have the factors of x2 + 5x + 6 . They are
+(x + 2)(x + 3) .
+x2 + 5x + 6 product
+(x + 2)(x + 3) factors
+You should check this by multiplying.
+Looking back, we started with x2 + 5x + 6 , which is of the form x2 + bx + c , where b = 5 and c = 6 . We factored it
+into two binomials of the form (x + m) and (x + n) .
+x2 + 5x + 6 x2 + bx + c
+(x + 2)(x + 3) (x + m)(x + n)
+To get the correct factors, we found two numbers m and n whose product is c and sum is b.
+EXAMPLE 7.17 HOW TO FACTOR TRINOMIALS OF THE FORM x2 + bx + c
+Factor: x2 + 7x + 12 .
+TRY IT : : 7.33 Factor: x2 + 6x + 8 .
+TRY IT : : 7.34 Factor: y2 + 8y + 15 .
+Let’s summarize the steps we used to find the factors.
+822 Chapter 7 Factoring
+Factor: u2 + 11u + 24 .
+Notice that the variable is u, so the factors will have first terms u.
+u2 + 11u + 24
+Write the factors as two binomials with first terms u. (u )(u )
+Find two numbers that: multiply to 24 and add to 11.
+Factors of 24 Sum of factors
+1, 24 1 + 24 = 25
+2, 12 2 + 12 = 14
+3, 8 3 + 8 = 11*
+4, 6 4 + 6 = 10
+Use 3 and 8 as the last terms of the binomials. (u + 3)(u + 8)
+Check.
+(u + 3)(u + 8)
+u2 + 3u + 8u + 24
+u2 + 11u + 24 ✓
+TRY IT : : 7.35 Factor: q2 + 10q + 24 .
+TRY IT : : 7.36 Factor: t2 + 14t + 24 .
+Factor: y2 + 17y + 60 .
+HOW TO : : FACTOR TRINOMIALS OF THE FORM x2 + bx + c .
+Write the factors as two binomials with first terms x: (x )(x ) .
+Find two numbers m and n that
+Multiply to c, m · n = c
+Add to b, m + n = b
+Use m and n as the last terms of the factors: (x + m)(x + n) .
+Check by multiplying the factors.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 7 Factoring 823
+y2 + 17y + 60
+Write the factors as two binomials with first terms y. (y )(y )
+Find two numbers that multiply to 60 and add to 17.
+Factors of 60 Sum of factors
+1, 60 1 + 60 = 61
+2, 30 2 + 30 = 32
+3, 20 3 + 20 = 23
+4, 15 4 + 15 = 19
+5, 12 5 + 12 = 17*
+6, 10 6 + 10 = 16
+Use 5 and 12 as the last terms. ⎛
+⎝y + 5⎞
+⎠⎛
+⎝y + 12⎞
+Check.
+(y + 5)(y + 12)
+(y2 + 12y + 5y + 60)
+(y2 + 17y + 60) ✓
+TRY IT : : 7.37 Factor: x2 + 19x + 60 .
+TRY IT : : 7.38 Factor: v2 + 23v + 60 .
+Factor Trinomials of the Form x2 + bx + c with b Negative, c Positive
+In the examples so far, all terms in the trinomial were positive. What happens when there are negative terms? Well, it
+depends which term is negative. Let’s look first at trinomials with only the middle term negative.
+Remember: To get a negative sum and a positive product, the numbers must both be negative.
+Again, think about FOIL and where each term in the trinomial came from. Just as before,
+• the first term, x2 , comes from the product of the two first terms in each binomial factor, x and y;
+• the positive last term is the product of the two last terms
+• the negative middle term is the sum of the outer and inner terms.
+How do you get a positive product and a negative sum? With two negative numbers.
+Factor: t2 − 11t + 28 .
+Again, with the positive last term, 28, and the negative middle term, −11t , we need two negative factors. Find two
+numbers that multiply 28 and add to −11 .
+824 Chapter 7 Factoring
+t2 − 11t + 28
+Write the factors as two binomials with first terms t. (t )(t )
+Find two numbers that: multiply to 28 and add to −11 .
+Factors of 28 Sum of factors
+−1, −28 −1 + (−28) = −29
+−2, −14 −2 + (−14) = −16
+−4, −7 −4 + (−7) = −11*
+Use −4, −7 as the last terms of the binomials. (t − 4)(t − 7)
+Check.
+(t − 4)(t − 7)
+t2 − 7t − 4t + 28
+t2 − 11t + 28 ✓
+TRY IT : : 7.39 Factor: u2 − 9u + 18 .
+TRY IT : : 7.40 Factor: y2 − 16y + 63 .
+Factor Trinomials of the Form x2 + bx + c with c Negative
+Now, what if the last term in the trinomial is negative? Think about FOIL. The last term is the product of the last terms
+in the two binomials. A negative product results from multiplying two numbers with opposite signs. You have to be very
+careful to choose factors to make sure you get the correct sign for the middle term, too.
+Remember: To get a negative product, the numbers must have different signs.
+Factor: z2 + 4z − 5 .
+To get a negative last term, multiply one positive and one negative. We need factors of −5 that add to positive 4.
+Factors of −5 Sum of factors
+1, −5 1 + (−5) = −4
+−1, 5 −1 + 5 = 4*
+Notice: We listed both 1, −5 and − 1, 5 to make sure we got the sign of the middle term correct.
+Chapter 7 Factoring 825
+z2 + 4z − 5
+Factors will be two binomials with first terms z. (z )(z )
+Use −1, 5 as the last terms of the binomials. (z − 1)(z + 5)
+Check.
+(z − 1)(z + 5)
+z2 + 5z − 1z − 5
+z2 + 4z − 5 ✓
+TRY IT : : 7.41 Factor: h2 + 4h − 12 .
+TRY IT : : 7.42 Factor: k2 + k − 20 .
+Let’s make a minor change to the last trinomial and see what effect it has on the factors.
+Factor: z2 − 4z − 5 .
+This time, we need factors of −5 that add to −4 .
+Factors of −5 Sum of factors
+1, −5 1 + (−5) = −4*
+−1, 5 −1 + 5 = 4
+z2 − 4z − 5
+Factors will be two binomials with first terms z. (z )(z )
+Use 1, −5 as the last terms of the binomials. (z + 1)(z − 5)
+Check.
+(z + 1)(z − 5)
+z2 − 5z + 1z − 5
+z2 − 4z − 5 ✓
+Notice that the factors of z2 − 4z − 5 are very similar to the factors of z2 + 4z − 5 . It is very important to make sure you
+choose the factor pair that results in the correct sign of the middle term.
+TRY IT : : 7.43 Factor: x2 − 4x − 12 .
+TRY IT : : 7.44 Factor: y2 − y − 20 .
+Factor: q2 − 2q − 15 .
+826 Chapter 7 Factoring
+q2 − 2q − 15
+Factors will be two binomials with first terms q. (q )(q )
+You can use 3, −5 as the last terms of the ⎛
+⎝q + 3⎞
+⎠⎛
+⎝q − 5⎞
+binomials.
+Factors of −15 Sum of factors
+1, −15 1 + (−15) = −14
+−1, 15 −1 + 15 = 14
+3, −5 3 + (−5) = −2*
+−3, 5 −3 + 5 = 2
+Check.
+⎛
+⎝q + 3⎞
+⎠⎛
+⎝q − 5⎞
+q2 − 5q + 3q − 15
+q2 − 2q − 15 ✓
+TRY IT : : 7.45 Factor: r2 − 3r − 40 .
+TRY IT : : 7.46 Factor: s2 − 3s − 10 .
+Some trinomials are prime. The only way to be certain a trinomial is prime is to list all the possibilities and show that none
+of them work.
+Factor: y2 − 6y + 15 .
+y2 − 6y + 15
+Factors will be two binomials with first (y )(y )
+terms y.
+Factors of 15 Sum of factors
+−1, −15 −1 + (−15) = −16
+−3, −5 −3 + (−5) = −8
+As shown in the table, none of the factors add to −6 ; therefore, the expression is prime.
+TRY IT : : 7.47 Factor: m2 + 4m + 18 .
+TRY IT : : 7.48 Factor: n2 − 10n + 12 .
+Chapter 7 Factoring 827
+Factor: 2x + x2 − 48 .
+2x + x2 − 48
+First we put the terms in decreasing degree order. x2 + 2x − 48
+Factors will be two binomials with first terms x. (x )(x )
+As shown in the table, you can use −6, 8 as the last terms of the binomials.
+(x − 6)(x + 8)
+Factors of −48 Sum of factors
+−1, 48 −1 + 48 = 47
+−2, 24
+−3, 16
+−4, 12
+−6, 8
+−2 + 24 = 22
+−3 + 16 = 13
+−4 + 12 = 8
+−6 + 8 = 2
+Check.
+(x − 6)(x + 8)
+x2 − 6q + 8q − 48
+x2 + 2x − 48 ✓
+TRY IT : : 7.49 Factor: 9m + m2 + 18 .
+TRY IT : : 7.50 Factor: −7n + 12 + n2 .
+Let’s summarize the method we just developed to factor trinomials of the form x2 + bx + c .
+828 Chapter 7 Factoring
+Factor Trinomials of the Form x2 + bxy + cy2
+Sometimes you’ll need to factor trinomials of the form x2 + bxy + cy2 with two variables, such as x2 + 12xy + 36y2.
+The first term, x2 , is the product of the first terms of the binomial factors, x · x . The y2 in the last term means that
+the second terms of the binomial factors must each contain y. To get the coefficients b and c, you use the same process
+summarized in the previous objective.
+Factor: x2 + 12xy + 36y2 .
+x2 + 12xy + 36y2
+Note that the first terms are x, last terms
+contain y. (x _ y)(x _ y)
+Find the numbers that multiply to 36 and add to 12.
+Factors of 36 Sum of factors
+1, 36 1 + 36 = 37
+2, 18 2 + 18 = 20
+3, 12 3 + 12 = 15
+4, 9 4 + 9 = 13
+6, 6 6 + 6 = 12*
+HOW TO : : FACTOR TRINOMIALS.
+When we factor a trinomial, we look at the signs of its terms first to determine the signs of the binomial
+factors.
+x2 + bx + c
+(x + m)(x + n)
+When c is positive, m and n have the same sign.
+b positive b negative
+m, n positive m, n negative
+x2 + 5x + 6 x2 − 6x + 8
+(x + 2)(x + 3) (x − 4)(x − 2)
+same signs same signs
+When c is negative, m and n have opposite signs.
+x2 + x − 12 x2 − 2x − 15
+(x + 4)(x − 3) (x − 5)(x + 3)
+opposite signs opposite signs
+Notice that, in the case when m and n have opposite signs, the sign of the one with the larger absolute
+value matches the sign of b.
+Chapter 7 Factoring 829
+Use 6 and 6 as the coefficients of the last terms. ⎛
+⎝x + 6y⎞
+⎠⎛
+⎝x + 6y⎞
+Check your answer.
+⎛
+⎝x + 6y⎞
+⎠⎛
+⎝x + 6y⎞
+x2 + 6xy + 6xy + 36y2
+x2 + 12xy + 36y2 ✓
+TRY IT : : 7.51 Factor: u2 + 11uv + 28v2 .
+TRY IT : : 7.52 Factor: x2 + 13xy + 42y2 .
+Factor: r2 − 8rs − 9s2 .
+We need r in the first term of each binomial and s in the second term. The last term of the trinomial is negative, so the
+factors must have opposite signs.
+r2 − 8rs − 9s2
+Note that the first terms are r, last terms contain s. (r _ s)(r _ s)
+Find the numbers that multiply to −9 and add to −8 .
+Factors of −9 Sum of factors
+1, −9 1 + (−9) = −8*
+−1, 9 −1 + 9 = 8
+3, −3 3 + (−3) = 0
+Use 1, −9 as coefficients of the last terms. (r + s)(r − 9s)
+Check your answer.
+(r − 9s)(r + s)
+r2 + rs − 9rs − 9s2
+r2 − 8rs − 9s2 ✓
+TRY IT : : 7.53 Factor: a2 − 11ab + 10b2 .
+TRY IT : : 7.54 Factor: m2 − 13mn + 12n2 .
+Factor: u2 − 9uv − 12v2 .
+830 Chapter 7 Factoring
+We need u in the first term of each binomial and v in the second term. The last term of the trinomial is negative, so the
+factors must have opposite signs.
+u2 − 9uv − 12v2
+Note that the first terms are u, last terms contain v. (u _ v)(u _ v)
+Find the numbers that multiply to −12 and add to −9 .
+Factors of −12 Sum of factors
+1, −12 1 + (−12) = −11
+−1, 12 −1 + 12 = 11
+2, −6 2 + (−6) = −4
+−2, 6 −2 + 6 = 4
+3, −4 3 + (−4) = −1
+−3, 4 −3 + 4 = 1
+Note there are no factor pairs that give us −9 as a sum. The trinomial is prime.
+TRY IT : : 7.55 Factor: x2 − 7xy − 10y2 .
+TRY IT : : 7.56 Factor: p2 + 15pq + 20q2 .
+Chapter 7 Factoring 831
+Practice Makes Perfect
+Factor Trinomials of the Form x2 + bx + c
+In the following exercises, factor each trinomial of the form x2 + bx + c .
+63. x2 + 4x + 3 64. y2 + 8y + 7 65. m2 + 12m + 11
+66. b2 + 14b + 13 67. a2 + 9a + 20 68. m2 + 7m + 12
+69. p2 + 11p + 30 70. w2 + 10w + 21 71. n2 + 19n + 48
+72. b2 + 14b + 48 73. a2 + 25a + 100 74. u2 + 101u + 100
+75. x2 − 8x + 12 76. q2 − 13q + 36 77. y2 − 18y + 45
+78. m2 − 13m + 30 79. x2 − 8x + 7 80. y2 − 5y + 6
+81. p2 + 5p − 6 82. n2 + 6n − 7 83. y2 − 6y − 7
+84. v2 − 2v − 3 85. x2 − x − 12 86. r2 − 2r − 8
+87. a2 − 3a − 28 88. b2 − 13b − 30 89. w2 − 5w − 36
+90. t2 − 3t − 54 91. x2 + x + 5 92. x2 − 3x − 9
+93. 8 − 6x + x2 94. 7x + x2 + 6 95. x2 − 12 − 11x
+96. −11 − 10x + x2
+Factor Trinomials of the Form x2 + bxy + cy2
+In the following exercises, factor each trinomial of the form x2 + bxy + cy2 .
+97. p2 + 3pq + 2q2 98. m2 + 6mn + 5n2 99. r2 + 15rs + 36s2
+100. u2 + 10uv + 24v2 101. m2 − 12mn + 20n2 102. p2 − 16pq + 63q2
+103. x2 − 2xy − 80y2 104. p2 − 8pq − 65q2 105. m2 − 64mn − 65n2
+106. p2 − 2pq − 35q2 107. a2 + 5ab − 24b2 108. r2 + 3rs − 28s2
+109. x2 − 3xy − 14y2 110. u2 − 8uv − 24v2 111. m2 − 5mn + 30n2
+112. c2 − 7cd + 18d2
+7.2 EXERCISES
+832 Chapter 7 Factoring
+Mixed Practice
+In the following exercises, factor each expression.
+113. u2 − 12u + 36 114. w2 + 4w − 32 115. x2 − 14x − 32
+116. y2 + 41y + 40 117. r2 − 20rs + 64s2 118. x2 − 16xy + 64y2
+119. k2 + 34k + 120 120. m2 + 29m + 120 121. y2 + 10y + 15
+122. z2 − 3z + 28 123. m2 + mn − 56n2 124. q2 − 29qr − 96r2
+125. u2 − 17uv + 30v2 126. m2 − 31mn + 30n2 127. c2 − 8cd + 26d2
+128. r2 + 11rs + 36s2
+Everyday Math
+129. Consecutive integers Deirdre is thinking of two
+consecutive integers whose product is 56. The
+trinomial x2 + x − 56 describes how these numbers
+are related. Factor the trinomial.
+130. Consecutive integers Deshawn is thinking of two
+consecutive integers whose product is 182. The
+trinomial x2 + x − 182 describes how these numbers
+are related. Factor the trinomial.
+Writing Exercises
+131. Many trinomials of the form x2 + bx + c factor
+into the product of two binomials (x + m)(x + n) .
+Explain how you find the values of m and n.
+132. How do you determine whether to use plus or
+minus signs in the binomial factors of a trinomial of the
+form x2 + bx + c where b and c may be positive or
+negative numbers?
+133. Will factored x2 − x − 20 as (x + 5)(x − 4) . Bill
+factored it as (x + 4)(x − 5) . Phil factored it as
+(x − 5)(x − 4) . Who is correct? Explain why the other
+two are wrong.
+134. Look at Example 7.19, where we factored
+y2 + 17y + 60 . We made a table listing all pairs of
+factors of 60 and their sums. Do you find this kind of
+table helpful? Why or why not?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b After reviewing this checklist, what will you do to become confident for all goals?
+Chapter 7 Factoring 833

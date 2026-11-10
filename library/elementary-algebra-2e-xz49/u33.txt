@@ -1,0 +1,600 @@
+boundary line
+geoboard
+graph of a linear equation
+horizontal line
+intercepts of a line
+linear equation
+linear inequality
+negative slope
+ordered pair
+origin
+parallel lines
+perpendicular lines
+point–slope form
+positive slope
+quadrant
+rectangular coordinate system
+rise
+run
+slope formula
+slope of a line
+slope-intercept form of an equation of a line
+solution of a linear inequality
+vertical line
+x- intercept
+x-coordinate
+y-coordinate
+y-intercept
+CHAPTER 4 REVIEW
+KEY TERMS
+The line with equation Ax + By = C that separates the region where Ax + By > C from the region
+where Ax + By < C .
+A geoboard is a board with a grid of pegs on it.
+The graph of a linear equation Ax + By = C is a straight line. Every point on the line is a
+solution of the equation. Every solution of this equation is a point on this line.
+A horizontal line is the graph of an equation of the form y = b . The line passes through the y-axis at
+(0, b) .
+The points where a line crosses the x- axis and the y- axis are called the intercepts of the line.
+A linear equation is of the form Ax + By = C , where A and B are not both zero, is called a linear
+equation in two variables.
+An inequality that can be written in one of the following forms:
+Ax + By > C Ax + By ≥ C Ax + By < C Ax + By ≤ C
+where A and B are not both zero.
+A negative slope of a line goes down as you read from left to right.
+An ordered pair (x, y) gives the coordinates of a point in a rectangular coordinate system.
+The point (0, 0) is called the origin. It is the point where the x-axis and y-axis intersect.
+Lines in the same plane that do not intersect.
+Lines in the same plane that form a right angle.
+The point–slope form of an equation of a line with slope m and containing the point (x1, y1) is
+y − y1 = m(x − x1) .
+A positive slope of a line goes up as you read from left to right.
+The x-axis and the y-axis divide a plane into four regions, called quadrants.
+A grid system is used in algebra to show a relationship between two variables; also
+called the xy-plane or the ‘coordinate plane’.
+The rise of a line is its vertical change.
+The run of a line is its horizontal change.
+The slope of the line between two points (x1, y1) and (x2, y2) is m = y2 − y1
+x2 − x1 .
+The slope of a line is m = rise
+run . The rise measures the vertical change and the run measures the
+horizontal change.
+The slope–intercept form of an equation of a line with slope m and
+y-intercept, (0, b) is, y = mx + b .
+An ordered pair (x, y) is a solution to a linear inequality the inequality is true when we
+substitute the values of x and y.
+A vertical line is the graph of an equation of the form x = a . The line passes through the x-axis at (a, 0) .
+The point (a, 0) where the line crosses the x- axis; the x- intercept occurs when y is zero.
+The first number in an ordered pair (x, y) .
+The second number in an ordered pair (x, y) .
+The point (0, b) where the line crosses the y- axis; the y- intercept occurs when x is zero.
+560 Chapter 4 Graphs
+KEY CONCEPTS
+4.1 Use the Rectangular Coordinate System
+• Sign Patterns of the Quadrants
+Quadrant I Quadrant II Quadrant III Quadrant IV
+(x, y) (x, y) (x, y) (x, y)
+( + , + ) (−, + ) (−, −) ( + , −)
+• Points on the Axes
+◦ On the x-axis, y = 0 . Points with a y-coordinate equal to 0 are on the x-axis, and have coordinates (a, 0) .
+◦ On the y-axis, x = 0 . Points with an x-coordinate equal to 0 are on the y-axis, and have coordinates
+(0, b).
+• Solution of a Linear Equation
+◦ An ordered pair (x, y) is a solution of the linear equation Ax + By = C , if the equation is a true
+statement when the x- and y- values of the ordered pair are substituted into the equation.
+4.2 Graph Linear Equations in Two Variables
+• Graph a Linear Equation by Plotting Points
+Find three points whose coordinates are solutions to the equation. Organize them in a table.
+Plot the points in a rectangular coordinate system. Check that the points line up. If they do not, carefully
+check your work!
+Draw the line through the three points. Extend the line to fill the grid and put arrows on both ends of the
+line.
+4.3 Graph with Intercepts
+• Find the x- and y- Intercepts from the Equation of a Line
+◦ Use the equation of the line to find the x- intercept of the line, let y = 0 and solve for x.
+◦ Use the equation of the line to find the y- intercept of the line, let x = 0 and solve for y.
+• Graph a Linear Equation using the Intercepts
+Find the x- and y- intercepts of the line.
+Let y = 0 and solve for x.
+Let x = 0 and solve for y.
+Find a third solution to the equation.
+Plot the three points and then check that they line up.
+Draw the line.
+• Strategy for Choosing the Most Convenient Method to Graph a Line:
+◦ Consider the form of the equation.
+◦ If it only has one variable, it is a vertical or horizontal line.
+x = a is a vertical line passing through the x- axis at a
+y = b is a horizontal line passing through the y- axis at b .
+◦ If y is isolated on one side of the equation, graph by plotting points.
+◦ Choose any three values for x and then solve for the corresponding y- values.
+◦ If the equation is of the form ax + by = c , find the intercepts. Find the x- and y- intercepts and then a
+third point.
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 4 Graphs 561
+4.4 Understand Slope of a Line
+• Find the Slope of a Line from its Graph using m = rise
+run
+Locate two points on the line whose coordinates are integers.
+Starting with the point on the left, sketch a right triangle, going from the first point to the second point.
+Count the rise and the run on the legs of the triangle.
+Take the ratio of rise to run to find the slope.
+• Graph a Line Given a Point and the Slope
+Plot the given point.
+Use the slope formula m = rise
+run to identify the rise and the run.
+Starting at the given point, count out the rise and run to mark the second point.
+Connect the points with a line.
+• Slope of a Horizontal Line
+◦ The slope of a horizontal line, y = b , is 0.
+• Slope of a vertical line
+◦ The slope of a vertical line, x = a , is undefined
+4.5 Use the Slope-Intercept Form of an Equation of a Line
+• The slope–intercept form of an equation of a line with slope m and y-intercept, (0, b) is, y = mx + b .
+• Graph a Line Using its Slope and y-Intercept
+Find the slope-intercept form of the equation of the line.
+Identify the slope and y-intercept.
+Plot the y-intercept.
+Use the slope formula m = rise
+run to identify the rise and the run.
+Starting at the y-intercept, count out the rise and run to mark the second point.
+Connect the points with a line.
+• Strategy for Choosing the Most Convenient Method to Graph a Line: Consider the form of the equation.
+◦ If it only has one variable, it is a vertical or horizontal line.
+x = a is a vertical line passing through the x-axis at a .
+y = b is a horizontal line passing through the y-axis at b .
+◦ If y is isolated on one side of the equation, in the form y = mx + b , graph by using the slope and
+y-intercept.
+Identify the slope and y-intercept and then graph.
+◦ If the equation is of the form Ax + By = C , find the intercepts.
+Find the x- and y-intercepts, a third point, and then graph.
+• Parallel lines are lines in the same plane that do not intersect.
+◦ Parallel lines have the same slope and different y-intercepts.
+◦ If m1 and m2 are the slopes of two parallel lines then m1 = m2.
+◦ Parallel vertical lines have different x-intercepts.
+• Perpendicular lines are lines in the same plane that form a right angle.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+562 Chapter 4 Graphs
+◦ If m1 and m2 are the slopes of two perpendicular lines, then m1 · m2 = −1 and m1 = −1
+m2 .
+◦ Vertical lines and horizontal lines are always perpendicular to each other.
+4.6 Find the Equation of a Line
+• To Find an Equation of a Line Given the Slope and a Point
+Identify the slope.
+Identify the point.
+Substitute the values into the point-slope form, y − y1 = m(x − x1) .
+Write the equation in slope-intercept form.
+• To Find an Equation of a Line Given Two Points
+Find the slope using the given points.
+Choose one point.
+Substitute the values into the point-slope form, y − y1 = m(x − x1) .
+Write the equation in slope-intercept form.
+• To Write and Equation of a Line
+◦ If given slope and y-intercept, use slope–intercept form y = mx + b .
+◦ If given slope and a point, use point–slope form y − y1 = m(x − x1) .
+◦ If given two points, use point–slope form y − y1 = m(x − x1) .
+• To Find an Equation of a Line Parallel to a Given Line
+Find the slope of the given line.
+Find the slope of the parallel line.
+Identify the point.
+Substitute the values into the point-slope form, y − y1 = m(x − x1) .
+Write the equation in slope-intercept form.
+• To Find an Equation of a Line Perpendicular to a Given Line
+Find the slope of the given line.
+Find the slope of the perpendicular line.
+Identify the point.
+Substitute the values into the point-slope form, y − y1 = m(x − x1) .
+Write the equation in slope-intercept form.
+4.7 Graphs of Linear Inequalities
+• To Graph a Linear Inequality
+Identify and graph the boundary line.
+If the inequality is ≤ or ≥ , the boundary line is solid.
+If the inequality is < or >, the boundary line is dashed.
+Test a point that is not on the boundary line. Is it a solution of the inequality?
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 1.
+Step 2.
+Chapter 4 Graphs 563
+Shade in one side of the boundary line.
+If the test point is a solution, shade in the side that includes the point.
+If the test point is not a solution, shade in the opposite side.
+REVIEW EXERCISES
+4.1 Rectangular Coordinate System
+Plot Points in a Rectangular Coordinate System
+In the following exercises, plot each point in a rectangular coordinate system.
+556.
+a (−1, −5)
+b (−3, 4)
+c (2, −3)
+d ⎛
+⎝1, 5
+⎞
+557.
+a (4, 3)
+b (−4, 3)
+c (−4, −3)
+d (4, −3)
+558.
+a (−2, 0)
+b (0, −4)
+c (0, 5) d (3, 0)
+559.
+a ⎛
+⎝2, 3
+⎞
+⎠ b ⎛
+⎝3, 4
+⎞
+c ⎛
+⎝1
+3, −4⎞
+d ⎛
+⎝1
+2, −5⎞
+Identify Points on a Graph
+In the following exercises, name the ordered pair of each point shown in the rectangular coordinate system.
+560. 561.
+Verify Solutions to an Equation in Two Variables
+In the following exercises, which ordered pairs are solutions to the given equations?
+562. 5x + y = 10
+a (5, 1) b (2, 0)
+c (4, −10)
+563. y = 6x − 2
+a (1, 4) b ⎛
+⎝1
+3, 0⎞
+c (6, −2)
+Step 3.
+564 Chapter 4 Graphs
+Complete a Table of Solutions to a Linear Equation in Two Variables
+In the following exercises, complete the table to find solutions to each linear equation.
+564. y = 4x − 1
+x y (x, y)
+−2
+565. y = − 1
+2x + 3
+x y (x, y)
+−2
+566. x + 2y = 5
+x y (x, y)
+−1
+567. 3x + 2y = 6
+x y (x, y)
+−2
+Find Solutions to a Linear Equation in Two Variables
+In the following exercises, find three solutions to each linear equation.
+568. x + y = 3 569. x + y = −4 570. y = 3x + 1
+571. y = −x − 1
+4.2 Graphing Linear Equations
+Recognize the Relation Between the Solutions of an Equation and its Graph
+In the following exercises, for each ordered pair, decide:
+a Is the ordered pair a solution to the equation? b Is the point on the line?
+Chapter 4 Graphs 565
+572. y = −x + 4
+a (0, 4)
+b (−1, 3)
+c (2, 2)
+d (−2, 6)
+573. y = 2
+3x − 1
+a (0, −1)
+b (3, 1)
+c (−3, −3)
+d (6, 4)
+Graph a Linear Equation by Plotting Points
+In the following exercises, graph by plotting points.
+574. y = 4x − 3 575. y = −3x 576. y = 1
+2x + 3
+577. x − y = 6 578. 2x + y = 7 579. 3x − 2y = 6
+Graph Vertical and Horizontal lines
+In the following exercises, graph each equation.
+580. y = −2 581. x = 3
+In the following exercises, graph each pair of equations in the same rectangular coordinate system.
+582. y = −2x and y = −2 583. y = 4
+3x and y = 4
+566 Chapter 4 Graphs
+4.3 Graphing with Intercepts
+Identify the x- and y-Intercepts on a Graph
+In the following exercises, find the x- and y-intercepts.
+584. 585.
+Find the x- and y-Intercepts from an Equation of a Line
+In the following exercises, find the intercepts of each equation.
+586. x + y = 5 587. x − y = −1 588. x + 2y = 6
+589. 2x + 3y = 12 590. y = 3
+4x − 12 591. y = 3x
+Graph a Line Using the Intercepts
+In the following exercises, graph using the intercepts.
+592. −x + 3y = 3 593. x + y = −2 594. x − y = 4
+595. 2x − y = 5 596. 2x − 4y = 8 597. y = 2x
+4.4 Slope of a Line
+Use Geoboards to Model Slope
+In the following exercises, find the slope modeled on each geoboard.
+598. 599.
+Chapter 4 Graphs 567
+600. 601.
+In the following exercises, model each slope. Draw a picture to show your results.
+602. 1
+3 603. 3
+2 604. − 2
+605. − 1
+Use m = rise
+run to find the Slope of a Line from its Graph
+In the following exercises, find the slope of each line shown.
+606. 607.
+568 Chapter 4 Graphs
+608. 609.
+Find the Slope of Horizontal and Vertical Lines
+In the following exercises, find the slope of each line.
+610. y = 2 611. x = 5 612. x = −3
+613. y = −1
+Use the Slope Formula to find the Slope of a Line between Two Points
+In the following exercises, use the slope formula to find the slope of the line between each pair of points.
+614. (−1, −1), (0, 5) 615. (3, 5), (4, −1) 616. (−5, −2), (3, 2)
+617. (2, 1), (4, 6)
+Graph a Line Given a Point and the Slope
+In the following exercises, graph each line with the given point and slope.
+618. (2, −2) ; m = 5
+2 619. (−3, 4) ; m = − 1
+3 620. x-intercept −4 ; m = 3
+621. y-intercept 1; m = − 3
+Chapter 4 Graphs 569
+Solve Slope Applications
+In the following exercises, solve these slope applications.
+622. The roof pictured below has a rise of 10 feet and
+a run of 15 feet. What is its slope?
+623. A mountain road rises 50 feet for a 500-foot run.
+What is its slope?
+4.5 Intercept Form of an Equation of a Line
+Recognize the Relation Between the Graph and the Slope–Intercept Form of an Equation of a Line
+In the following exercises, use the graph to find the slope and y-intercept of each line. Compare the values to the equation
+y = mx + b .
+624.
+y = 4x − 1
+625.
+y = − 2
+3x + 4
+Identify the Slope and y-Intercept from an Equation of a Line
+In the following exercises, identify the slope and y-intercept of each line.
+626. y = −4x + 9 627. y = 5
+3x − 6 628. 5x + y = 10
+629. 4x − 5y = 8
+Graph a Line Using Its Slope and Intercept
+In the following exercises, graph the line of each equation using its slope and y-intercept.
+630. y = 2x + 3 631. y = −x − 1 632. y = − 2
+5x + 3
+633. 4x − 3y = 12
+570 Chapter 4 Graphs
+In the following exercises, determine the most convenient method to graph each line.
+634. x = 5 635. y = −3 636. 2x + y = 5
+637. x − y = 2 638. y = x + 2 639. y = 3
+4x − 1
+Graph and Interpret Applications of Slope–Intercept
+640. Katherine is a private chef.
+The equation C = 6.5m + 42
+models the relation between her
+weekly cost, C, in dollars and the
+number of meals, m, that she
+serves.
+a Find Katherine’s cost
+for a week when she
+serves no meals.
+b Find the cost for a
+week when she serves
+14 meals.
+c Interpret the slope
+and C-intercept of the
+equation.
+d Graph the equation.
+641. Marjorie teaches piano. The
+equation P = 35h − 250 models
+the relation between her weekly
+profit, P, in dollars and the number
+of student lessons, s, that she
+teaches.
+a Find Marjorie’s profit
+for a week when she
+teaches no student
+lessons.
+b Find the profit for a
+week when she teaches
+20 student lessons.
+c Interpret the slope
+and P–intercept of the
+equation.
+d Graph the equation.
+Use Slopes to Identify Parallel Lines
+In the following exercises, use slopes and y-intercepts to determine if the lines are parallel.
+642. 4x − 3y = −1; y = 4
+3x − 3 643. 2x − y = 8; x − 2y = 4
+Use Slopes to Identify Perpendicular Lines
+In the following exercises, use slopes and y-intercepts to determine if the lines are perpendicular.
+644. y = 5x − 1; 10x + 2y = 0 645. 3x − 2y = 5; 2x + 3y = 6
+4.6 Find the Equation of a Line
+Find an Equation of the Line Given the Slope and y-Intercept
+In the following exercises, find the equation of a line with given slope and y-intercept. Write the equation in slope–intercept form.
+646. slope 1
+3 and y-intercept
+(0, −6)
+647. slope −5 and y-intercept
+(0, −3)
+648. slope 0 and y-intercept
+(0, 4)
+649. slope −2 and y-intercept
+(0, 0)
+Chapter 4 Graphs 571
+In the following exercises, find the equation of the line shown in each graph. Write the equation in slope–intercept form.
+650. 651.
+652. 653.
+Find an Equation of the Line Given the Slope and a Point
+In the following exercises, find the equation of a line with given slope and containing the given point. Write the equation in
+slope–intercept form.
+654. m = − 1
+4 , point (−8, 3) 655. m = 3
+5 , point (10, 6) 656. Horizontal line containing
+(−2, 7)
+657. m = −2 , point (−1, −3)
+Find an Equation of the Line Given Two Points
+In the following exercises, find the equation of a line containing the given points. Write the equation in slope–intercept form.
+658. (2, 10) and (−2, −2) 659. (7, 1) and (5, 0) 660. (3, 8) and (3, −4) .
+661. (5, 2) and (−1, 2)
+Find an Equation of a Line Parallel to a Given Line
+In the following exercises, find an equation of a line parallel to the given line and contains the given point. Write the equation in
+slope–intercept form.
+662. line y = −3x + 6 , point
+(1, −5)
+663. line 2x + 5y = −10 , point
+(10, 4)
+664. line x = 4 , point (−2, −1)
+665. line y = −5 , point (−4, 3)
+572 Chapter 4 Graphs
+Find an Equation of a Line Perpendicular to a Given Line
+In the following exercises, find an equation of a line perpendicular to the given line and contains the given point. Write the
+equation in slope–intercept form.
+666. line y = − 4
+5x + 2 , point
+(8, 9)
+667. line 2x − 3y = 9 , point
+(−4, 0)
+668. line y = 3 , point (−1, −3)
+669. line x = −5 point (2, 1)
+4.7 Graph Linear Inequalities
+Verify Solutions to an Inequality in Two Variables
+In the following exercises, determine whether each ordered pair is a solution to the given inequality.
+670. Determine whether each
+ordered pair is a solution to the
+inequality y < x − 3 :
+a (0, 1)
+b (−2, −4)
+c (5, 2)
+d (3, −1)
+e (−1, −5)
+671. Determine whether each
+ordered pair is a solution to the
+inequality x + y > 4 :
+a (6, 1)
+b (−3, 6)
+c (3, 2)
+d (−5, 10)
+e (0, 0)
+Recognize the Relation Between the Solutions of an Inequality and its Graph
+In the following exercises, write the inequality shown by the shaded region.
+672. Write the inequality shown by
+the graph with the boundary line
+y = −x + 2 .
+673. Write the inequality shown by
+the graph with the boundary line
+y = 2
+3x − 3 .
+674. Write the inequality shown by
+the shaded region in the graph
+with the boundary line
+x + y = −4 .
+Chapter 4 Graphs 573
+675. Write the inequality shown by
+the shaded region in the graph
+with the boundary line
+x − 2y = 6.
+Graph Linear Inequalities
+In the following exercises, graph each linear inequality.
+676. Graph the linear inequality
+y > 2
+5x − 4 .
+677. Graph the linear inequality
+y ≤ − 1
+4x + 3 .
+678. Graph the linear inequality
+x − y ≤ 5 .
+679. Graph the linear inequality
+3x + 2y > 10 .
+680. Graph the linear inequality
+y ≤ −3x .
+681. Graph the linear inequality
+y < 6 .
+574 Chapter 4 Graphs
+PRACTICE TEST
+682. Plot each point in a
+rectangular coordinate system.
+a (2, 5)
+b (−1, −3)
+c (0, 2)
+d ⎛
+⎝−4, 3
+⎞
+e (5, 0)
+683. Which of the given ordered
+pairs are solutions to the equation
+3x − y = 6 ?
+a (3, 3) b (2, 0)
+c (4, −6)
+684. Find three solutions to the
+linear equation y = −2x − 4 .
+685. Find the x- and y-intercepts of
+the equation 4x − 3y = 12 .
+Find the slope of each line shown.
+686. 687.
+688. 689. Find the slope of the line
+between the points (5, 2) and
+(−1, −4) .
+690. Graph the line with slope 1
+containing the point (−3, −4) .
+Graph the line for each of the following equations.
+691. y = 5
+3x − 1 692. y = −x 693. x − y = 2
+Chapter 4 Graphs 575
+694. 4x + 2y = −8 695. y = 2 696. x = −3
+Find the equation of each line. Write the equation in slope–intercept form.
+697. slope − 3
+4 and y-intercept
+(0, −2)
+698. m = 2 , point (−3, −1) 699. containing (10, 1) and
+(6, −1)
+700. parallel to the line
+y = − 2
+3x − 1 , containing the
+point (−3, 8)
+701. perpendicular to the line
+y = 5
+4x + 2 , containing the point
+(−10, 3)
+702. Write the inequality shown by
+the graph with the boundary line
+y = −x − 3 .
+Graph each linear inequality.
+703. y > 3
+2x + 5 704. x − y ≥ −4 705. y ≤ −5x
+706. y < 3
+576 Chapter 4 Graphs

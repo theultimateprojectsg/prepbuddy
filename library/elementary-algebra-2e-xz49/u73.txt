@@ -1,0 +1,1111 @@
+9.8
+Rational Exponents
+Learning Objectives
+By the end of this section, you will be able to:
+Simplify expressions with a
+n
+Simplify expressions with a
+m
+n
+Use the Laws of Exponents to simply expressions with rational exponents
+BE PREPARED : : 9.21 Before you get started, take this readiness quiz.
+Add: 7
+15 + 5
+12 .
+If you missed this problem, review Example 1.81.
+BE PREPARED : : 9.22 Simplify: ⎛
+⎝4x2 y5⎞
+.
+If you missed this problem, review Example 6.24.
+BE PREPARED : : 9.23 Simplify: 5−3 .
+If you missed this problem, review Example 6.89.
+Simplify Expressions with a
+n
+Rational exponents are another way of writing expressions with radicals. When we use rational exponents, we can apply
+the properties of exponents to simplify expressions.
+The Power Property for Exponents says that (am)n = am · n when m and n are whole numbers. Let’s assume we are now
+not limited to whole numbers.
+Suppose we want to find a number p such that (8 p)3 = 8 . We will use the Power Property of Exponents to find the value
+of p.
+(8 p)3 = 8
+Multiply the exponents on the left. 83p = 8
+Write the exponent 1 on the right. 83p = 81
+The exponents must be equal. 3p = 1
+Solve for p. p = 1
+So
+⎛
+⎝
+⎜8
+3⎞
+⎟
+= 8.
+But we know also ⎛
+⎝ 8
+3 ⎞
+= 8 . Then it must be that 8
+3 = 8
+3 .
+This same logic can be used for any positive integer exponent n to show that a
+n = an .
+Chapter 9 Roots and Radicals 1127
+Rational Exponent a
+n
+If an is a real number and n ≥ 2 , a
+n = an .
+There will be times when working with expressions will be easier if you use rational exponents and times when it will be
+easier if you use radicals. In the first few examples, you’ll practice converting expressions between these two notations.
+Write as a radical expression: a x
+2 b y
+3 c z
+4 .
+We want to write each expression in the form an .
+a
+x
+The denominator of the exponent is 2, so
+the index of the radical is 2. We do not
+show the index when it is 2.
+x
+b
+y
+The denominator of the exponent is 3, so
+the index is 3. y3
+c
+z
+The denominator of the exponent is 4, so
+the index is 4. z4
+Write as a radical expression: a t
+2 b m
+3 c r
+4 .
+Write as a radial expression: a b
+2 b z
+3 c p
+4 .
+Write with a rational exponent: a x b y3 c z4 .
+We want to write each radical in the form a
+n .
+a x
+No index is shown, so it is 2.
+The denominator of the exponent will be 2. x
+1128 Chapter 9 Roots and Radicals
+b
+y3
+The index is 3, so the denominator of the
+exponent is 3. y
+c
+z4
+The index is 4, so the denominator of the
+exponent is 4. z
+TRY IT : : 9.207 Write with a rational exponent: a s b x3 c b
+4 .
+TRY IT : : 9.208 Write with a rational exponent: a v b p3 c p4 .
+Write with a rational exponent: a 5y b 4x
+3 c 3 5z
+4 .
+We want to write each radical in the form a
+n .
+a
+5y
+No index is shown, so it is 2.
+The denominator of the exponent will be 2.
+⎛
+⎝5y⎞
+b
+4x
+The index is 3, so the denominator of the
+exponent is 3. (4x)
+c
+3 5z
+The index is 4, so the denominator of the
+exponent is 4. 3(5z)
+TRY IT : : 9.209 Write with a rational exponent: a 10m b 3n
+5 c 3 6y
+4 .
+TRY IT : : 9.210 Write with a rational exponent: a 3k
+7 b 5 j
+4 c 8 2a
+3 .
+In the next example, you may find it easier to simplify the expressions if you rewrite them as radicals first.
+Chapter 9 Roots and Radicals 1129
+Simplify: a 25
+2 b 64
+3 c 256
+4 .
+a
+Rewrite as a square root. 25
+Simplify. 5
+b
+Rewrite as a cube root. 64
+Recognize 64 is a perfect cube. 43
+Simplify. 4
+c
+Rewrite as a fourth root. 256
+Recognize 256 is a perfect fourth power. 44
+Simplify. 4
+Simplify: a 36
+2 b 8
+3 c 16
+4 .
+Simplify: a 100
+2 b 27
+3 c 81
+4 .
+Be careful of the placement of the negative signs in the next example. We will need to use the property a−n = 1
+an in one
+case.
+Simplify: a (−64)
+3 b −64
+3 c (64)− 1
+3 .
+a
+(−64)
+Rewrite as a cube root. −64
+Rewrite −64 as a perfect cube. (−4)33
+Simplify. −4
+b
+1130 Chapter 9 Roots and Radicals
+−64
+The exponent applies only to the 64. −
+⎛
+⎝
+⎜64
+3⎞
+⎟
+Rewrite as a cube root. − 64
+Rewrite 64 as 43. − 43
+Simplify. −4
+c
+(64)− 1
+Rewrite as a fraction with
+a positive exponent, using
+the property, a−n = 1
+an.
+Write as a cube root.
+Rewrite 64 as 43. 1
+Simplify. 1
+Simplify: a (−125)
+3 b −125
+3 c (125)− 1
+3 .
+Simplify: a (−32)
+5 b −32
+5 c (32)− 1
+5 .
+Simplify: a (−16)
+4 b −16
+4 c (16)− 1
+4 .
+a
+(−16)
+Rewrite as a fourth root. −16
+There is no real number whose fourth power is −16.
+b
+−16
+The exponent only applies to the 16.
+Rewrite as a fourth root. − 16
+Rewrite 16 as 24. − 24
+Simplify. −2
+c
+Chapter 9 Roots and Radicals 1131
+(16)− 1
+Rewrite using the property a−n = 1
+an. 1
+(16)
+Rewrite as a fourth root. 1
+Rewrite 16 as 24. 1
+Simplify. 1
+Simplify: a (−64)
+2 b −64
+2 c (64)− 1
+2 .
+Simplify: a (−256)
+4 b −256
+4 c (256)− 1
+4 .
+Simplify Expressions with a
+m
+n
+Let’s work with the Power Property for Exponents some more.
+Suppose we raise a
+n to the power m.
+⎛
+⎝
+⎜a
+n⎞
+⎟
+m
+Multiply the exponents. a
+n · m
+Simplify. a
+m
+n
+So a
+m
+n = ( an )m.
+Now suppose we take am to the 1
+n power.
+(am)
+n
+Multiply the exponents. am · 1
+n
+Simplify. a
+m
+n
+So a
+m
+n = amn also.
+Which form do we use to simplify an expression? We usually take the root first—that way we keep the numbers in the
+radicand smaller.
+Rational Exponent a
+m
+n
+For any positive integers m and n,
+1132 Chapter 9 Roots and Radicals
+a
+m
+n = ( an )m
+a
+m
+n = amn
+Write with a rational exponent: a y3 b x2
+c z3
+.
+We want to use a
+m
+n = amn to write each radical in the form a
+m
+n .
+a
+b
+c
+TRY IT : : 9.217 Write with a rational exponent: a x5 b z3
+c y25 .
+TRY IT : : 9.218 Write with a rational exponent: a a2
+b b7
+c m5
+.
+Simplify: a 9
+2 b 125
+3 c 81
+4 .
+We will rewrite each expression as a radical first using the property, a
+m
+n = ( an )m . This form lets us take the root first and
+so we keep the numbers in the radicand smaller than if we used the other form.
+a
+The power of the radical is the numerator
+of the exponent, 3. Since the denominator
+of the exponent is 2, this is a square root.
+⎛
+⎝ 9⎞
+⎠3
+Simplify. (3)3
+Chapter 9 Roots and Radicals 1133
+b
+The power of the radical is the numerator
+of the exponent, 2. The index of the radical
+is the denominator of the exponent, 3.
+⎛
+⎝ 125
+3 ⎞
+Simplify. (5)2
+c
+The power of the radical is the numerator
+of the exponent, 3. The index of the radical
+is the denominator of the exponent, 4.
+⎛
+⎝ 81
+4 ⎞
+Simplify. (3)3
+Simplify: a 4
+2 b 27
+3 c 625
+4 .
+Simplify: a 8
+3 b 81
+2 c 16
+4 .
+Remember that b−p = 1
+b p . The negative sign in the exponent does not change the sign of the expression.
+Simplify: a 16− 3
+2 b 32− 2
+5 c 4− 5
+2 .
+We will rewrite each expression first using b−p = 1
+b p and then change to radical form.
+a
+16− 3
+Rewrite using b−p = 1
+b p. 1
+Change to radical form. The power of the
+radical is the numerator of the exponent, 3.
+The index is the denominator of the
+exponent, 2.
+⎛
+⎝ 16⎞
+⎠3
+Simplify. 1
+1134 Chapter 9 Roots and Radicals
+b
+32− 2
+Rewrite using b−p = 1
+b p. 1
+Change to radical form. 1
+⎛
+⎝ 32
+5 ⎞
+Rewrite the radicand as a power. 1
+⎛
+⎝ 25
+5 ⎞
+Simplify. 1
+c
+4− 5
+Rewrite using b−p = 1
+b p. 1
+Change to radical form. 1
+( 4)5
+Simplify. 1
+Simplify: a 8− 5
+3 b 81− 3
+2 c 16− 3
+4 .
+Simplify: a 4− 3
+2 b 27− 2
+3 c 625− 3
+4 .
+Simplify: a −25
+2 b −25− 3
+2 c (−25)
+2 .
+a
+Chapter 9 Roots and Radicals 1135
+−25
+Rewrite in radical form. −⎛
+⎝ 25⎞
+⎠3
+Simplify the radical. −(5)3
+Simplify. −125
+b
+−25− 3
+Rewrite using b−p = 1
+b p. −
+⎛
+⎝
+⎜
+⎜ 1
+⎞
+⎟
+⎟
+Rewrite in radical form. −
+⎛
+⎝
+⎜ 1
+⎛
+⎝ 25⎞
+⎠3
+⎞
+⎟
+Simplify the radical. −⎛
+⎝
+⎜ 1
+(5)3
+⎞
+⎟
+Simplify. − 1
+c
+(−25)
+Rewrite in radical form. ⎛
+⎝ −25⎞
+⎠3
+There is no real number whose
+square root is −25. Not a real number.
+Simplify: a −16
+2 b −16− 3
+2 c (−16)− 3
+2 .
+Simplify: a −81
+2 b −81− 3
+2 c (−81)− 3
+2 .
+Use the Laws of Exponents to Simplify Expressions with Rational Exponents
+The same laws of exponents that we already used apply to rational exponents, too. We will list the Exponent Properties
+here to have them for reference as we simplify expressions.
+Summary of Exponent Properties
+If a, b are real numbers and m, n are rational numbers, then
+1136 Chapter 9 Roots and Radicals
+Product Property am · an = am + n
+Power Property (am)n = am · n
+Product to a Power (ab)m = am bm
+Quotient Property am
+an = am − n, a ≠ 0, m > n
+am
+an = 1
+an − m, a ≠ 0, n > m
+Zero Exponent Definition a0 = 1, a ≠ 0
+Quotient to a Power Property ⎛
+⎝a
+b
+⎞
+m
+= am
+bm, b ≠ 0
+When we multiply the same base, we add the exponents.
+Simplify: a 2
+2 · 2
+2 b x
+3 · x
+3 c z
+4 · z
+4 .
+a
+2 · 2
+The bases are the same, so we add the
+exponents. 2
+2 + 5
+Add the fractions. 2
+Simplify the exponent. 23
+Simplify. 8
+b
+x
+3 · x
+The bases are the same, so we add the
+exponents. x
+3 + 4
+Add the fractions. x
+Simplify. x2
+c
+z
+4 · z
+The bases are the same, so we add the
+exponents. z
+4 + 5
+Add the fractions. z
+Simplify. z2
+Simplify: a 3
+3 · 3
+3 b y
+3 · y
+3 c m
+4 · m
+4 .
+Chapter 9 Roots and Radicals 1137
+Simplify: a 5
+5 · 5
+5 b z
+8 · z
+8 c n
+7 · n
+7 .
+We will use the Power Property in the next example.
+Simplify: a ⎛
+⎝x4⎞
+b ⎛
+⎝y6⎞
+c ⎛
+⎝z9⎞
+.
+a
+⎛
+⎝x4⎞
+To raise a power to a power, we multiply
+the exponents. x4 · 1
+Simplify. x2
+b
+⎛
+⎝y6⎞
+To raise a power to a power, we multiply
+the exponents. y6 · 1
+Simplify. y2
+c
+⎛
+⎝z9⎞
+To raise a power to a power, we multiply
+the exponents. z9 · 2
+Simplify. z6
+Simplify: a ⎛
+⎝p10⎞
+b ⎛
+⎝q8⎞
+c ⎛
+⎝x6⎞
+.
+Simplify: a ⎛
+⎝r6⎞
+b ⎛
+⎝s12⎞
+c ⎛
+⎝m9⎞
+.
+The Quotient Property tells us that when we divide with the same base, we subtract the exponents.
+Simplify: a x
+x
+b y
+y
+c z
+z
+.
+1138 Chapter 9 Roots and Radicals
+a
+x
+x
+To divide with the same base, we subtract
+the exponents. x
+3 − 1
+Simplify. x
+b
+y
+y
+To divide with the same base, we subtract
+the exponents. y
+4 − 1
+Simplify. y
+c
+z
+z
+To divide with the same base, we subtract
+the exponents. z
+3 − 5
+Rewrite without a negative exponent. 1
+z
+Simplify: a u
+u
+b v
+v
+c x
+x
+.
+Simplify: a c
+c
+b m
+m
+c d
+d
+.
+Sometimes we need to use more than one property. In the next two examples, we will use both the Product to a Power
+Property and then the Power Property.
+Simplify: a ⎛
+⎝
+⎜27u
+2⎞
+⎟
+b ⎛
+⎝
+⎜8v
+4⎞
+⎟
+.
+Chapter 9 Roots and Radicals 1139
+a
+⎛
+⎝
+⎜27u
+2⎞
+⎟
+First we use the Product to a Power
+Property. (27)
+3 ⎛
+⎝
+⎜u
+2⎞
+⎟
+Rewrite 27 as a power of 3. ⎛
+⎝33⎞
+3 ⎛
+⎝
+⎜u
+2⎞
+⎟
+To raise a power to a power, we multiply
+the exponents.
+⎛
+⎝32⎞
+⎛
+⎝
+⎜u
+3⎞
+⎟
+Simplify. 9u
+b
+⎛
+⎝
+⎜8v
+4⎞
+⎟
+First we use the Product to a Power
+Property. (8)
+3 ⎛
+⎝
+⎜v
+4⎞
+⎟
+Rewrite 8 as a power of 2. ⎛
+⎝23⎞
+3 ⎛
+⎝
+⎜v
+4⎞
+⎟
+To raise a power to a power, we multiply
+the exponents.
+⎛
+⎝22⎞
+⎛
+⎝
+⎜v
+6⎞
+⎟
+Simplify. 4v
+Simplify: a ⎛
+⎝
+⎜32x
+3⎞
+⎟
+b ⎛
+⎝
+⎜64y
+3⎞
+⎟
+.
+1140 Chapter 9 Roots and Radicals
+Simplify: a ⎛
+⎝
+⎜16m
+3⎞
+⎟
+b ⎛
+⎝
+⎜81n
+5⎞
+⎟
+.
+Simplify: a ⎛
+⎝m3 n9⎞
+b ⎛
+⎝p4 q8⎞
+.
+a
+⎛
+⎝m3 n9⎞
+First we use the Product to a Power
+Property.
+⎛
+⎝m3⎞
+3 ⎛
+⎝n9⎞
+To raise a power to a power, we multiply
+the exponents. mn3
+b
+⎛
+⎝p4 q8⎞
+First we use the Product to a Power
+Property.
+⎛
+⎝p4⎞
+4 ⎛
+⎝q8⎞
+To raise a power to a power, we multiply
+the exponents. pq2
+We will use both the Product and Quotient Properties in the next example.
+Simplify: a x
+4 · x− 1
+x− 6
+b y
+3 · y
+y− 2
+.
+Chapter 9 Roots and Radicals 1141
+a
+x
+4 · x− 1
+x− 6
+Use the Product Property in the numerator,
+add the exponents.
+x
+x− 6
+Use the Quotient Property, subtract the
+exponents. x
+Simplify. x2
+b
+y
+3 · y
+y− 2
+Use the Product Property in the numerator,
+add the exponents.
+y
+y− 2
+Use the Quotient Property, subtract the
+exponents. y
+Simplify. y3
+Simplify: a m
+3 · m− 1
+m− 5
+b n
+6 · n
+n− 11
+.
+Simplify: a u
+5 · u− 2
+u− 13
+b v
+2 · v
+v− 7
+.
+1142 Chapter 9 Roots and Radicals
+Practice Makes Perfect
+Simplify Expressions with a
+n
+In the following exercises, write as a radical expression.
+524. a x
+2 b y
+3 c z
+4 525. a r
+2 b s
+3 c t
+4 526. a u
+5 b v
+9 c w
+527. a g
+7 b h
+5 c j
+In the following exercises, write with a rational exponent.
+528. a − x7 b y9 c f
+5 529. a r8 b c t
+4 530. a a3 b c c
+531. a u5 b v c 532. a 7c
+3 b 12d
+7 c 3 5 f
+4 533. a 5x
+4 b 9y
+8 c 7 3z
+534. a 21p b 8q
+4 c 4 36r
+6 535. a 25a
+3 b 3b c
+In the following exercises, simplify.
+536. a 81
+2 b 125
+3 c 64
+2 537. a 625
+4 b 243
+5 c 32
+5 538. a 16
+4 b 16
+2 c 3125
+539. a 216
+3 b 32
+5 c 81
+4 540. a (−216)
+3 b −216
+3 c
+(216)− 1
+541. a (−243)
+5 b −243
+5 c
+(243)− 1
+542. a (−1)
+3 b −1
+3 c (1)− 1
+3 543. a (−1000)
+3 b −1000
+3 c
+(1000)− 1
+544. a (−81)
+4 b −81
+4 c
+(81)− 1
+545. a (−49)
+2 b −49
+2 c
+(49)− 1
+546. a (−36)
+2 b −36
+2 c
+(36)− 1
+547. a (−1)
+4 b (1)− 1
+4 c −1
+548. a (−100)
+2 b −100
+2 c
+(100)− 1
+549. a (−32)
+5 b (243)− 1
+5 c
+−125
+Simplify Expressions with a
+m
+n
+In the following exercises, write with a rational exponent.
+550. a m5 b n2
+c p34
+551. a r7
+b s3
+c t7
+552. a u2
+b v8
+c w4
+9.8 EXERCISES
+Chapter 9 Roots and Radicals 1143
+553. a a3 b b5 c c5
+In the following exercises, simplify.
+554. a 16
+2 b 8
+3 c 10,000
+4 555. a 1000
+3 b 25
+2 c 32
+5 556. a 27
+3 b 16
+4 c 32
+557. a 16
+2 b 125
+3 c 64
+3 558. a 32
+5 b 27− 2
+3 c 25− 3
+2 559. a 64
+2 b 81− 3
+2 c 27− 4
+560. a 25
+2 b 9− 3
+2 c (−64)
+3 561. a 100
+2 b 49− 5
+2 c
+(−100)
+562. a −9
+2 b −9− 3
+2 c (−9)
+563. a −64
+2 b −64− 3
+2 c
+(−64)
+564. a −100
+2 b −100− 3
+2 c
+(−100)
+565. a −49
+2 b −49− 3
+2 c
+(−49)
+Use the Laws of Exponents to Simplify Expressions with Rational Exponents
+In the following exercises, simplify.
+566. a 4
+8 · 4
+8 b m
+12 · m
+12 c
+p
+7 · p
+567. a 6
+2 · 6
+2 b n
+10 · n
+10 c
+q
+5 · q
+568. a 5
+2 · 5
+2 b c
+4 · c
+4 c
+d
+5 · d
+569. a 10
+3 · 10
+3 b x
+6 · x
+6 c
+y
+8 · y
+570. a ⎛
+⎝m6⎞
+b ⎛
+⎝n9⎞
+c
+⎛
+⎝p12⎞
+571. a ⎛
+⎝a12⎞
+b ⎛
+⎝b15⎞
+c
+⎛
+⎝c11⎞
+572. a ⎛
+⎝x12⎞
+b ⎛
+⎝y20⎞
+c
+⎛
+⎝z16⎞
+573. a ⎛
+⎝h6⎞
+b ⎛
+⎝k12⎞
+c
+⎛
+⎝ j10⎞
+574. a x
+x
+b y
+y
+c r
+r
+575. a s
+s
+b z
+z
+c w
+w
+576. a t
+t
+b x
+x
+c m
+m
+577. a u
+u
+b r
+r
+c n
+n
+578. a ⎛
+⎝
+⎜9p
+3⎞
+⎟
+b ⎛
+⎝
+⎜27q
+2⎞
+⎟
+579. a ⎛
+⎝
+⎜81r
+5⎞
+⎟
+b ⎛
+⎝
+⎜64s
+7⎞
+⎟
+580. a ⎛
+⎝
+⎜16u
+3⎞
+⎟
+b ⎛
+⎝
+⎜100v
+5⎞
+⎟
+581. a ⎛
+⎝
+⎜27m
+4⎞
+⎟
+b ⎛
+⎝
+⎜625n
+3⎞
+⎟
+582. a ⎛
+⎝x8 y10⎞
+b ⎛
+⎝a9 b12⎞
+583. a ⎛
+⎝r8 s4⎞
+b ⎛
+⎝u15 v20⎞
+1144 Chapter 9 Roots and Radicals
+584. a ⎛
+⎝a6 b16⎞
+b ⎛
+⎝ j9 k6⎞
+585. a ⎛
+⎝r16 s10⎞
+b ⎛
+⎝u10 v5⎞
+5 586. a r
+2 · r− 1
+r− 3
+b s
+5 · s
+s− 9
+587. a a
+4 · a− 1
+a− 10
+b b
+3 · b
+b− 7
+588. a c
+3 · c− 1
+c− 2
+b d
+5 · d
+d− 2
+589. a m
+4 · m− 5
+m− 2
+b n
+7 · n
+n− 4
+590. 4
+2 · 4
+2 591. n
+6 · n
+592. ⎛
+⎝a24⎞
+593. ⎛
+⎝b10⎞
+5 594. w
+w
+595. z
+z
+596.
+⎛
+⎝
+⎜27r
+5⎞
+⎟
+597.
+⎛
+⎝
+⎜64s
+5⎞
+⎟
+598. ⎛
+⎝r9 s12⎞
+599. ⎛
+⎝u12 v18⎞
+Everyday Math
+600. Landscaping Joe wants to have a square garden
+plot in his backyard. He has enough compost to cover
+an area of 144 square feet. Simplify 144
+2 to find the
+length of each side of his garden.
+601. Landscaping Elliott wants to make a square patio
+in his yard. He has enough concrete to pave an area
+of 242 square feet. Simplify 242
+2 to find the length of
+each side of his patio.Round to the nearest tenth of a
+foot.
+602. Gravity While putting up holiday decorations, Bob
+dropped a decoration from the top of a tree that is 12
+feet tall. Simplify 12
+to find how many seconds it
+took for the decoration to reach the ground. Round to
+the nearest tenth of a second.
+603. Gravity An airplane dropped a flare from a height
+of 1024 feet above a lake. Simplify 1024
+to find how
+many seconds it took for the flare to reach the water.
+Writing Exercises
+604. Show two different algebraic methods to simplify
+2. Explain all your steps.
+605. Explain why the expression (−16)
+2 cannot be
+evaluated.
+Chapter 9 Roots and Radicals 1145

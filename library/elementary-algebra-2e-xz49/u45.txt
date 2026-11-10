@@ -1,0 +1,988 @@
+6.5
+Divide Monomials
+Learning Objectives
+By the end of this section, you will be able to:
+Simplify expressions using the Quotient Property for Exponents
+Simplify expressions with zero exponents
+Simplify expressions using the quotient to a Power Property
+Simplify expressions by applying several properties
+Divide monomials
+BE PREPARED : : 6.9 Before you get started, take this readiness quiz.
+Simplify: 8
+24.
+If you missed this problem, review Example 1.65.
+BE PREPARED : : 6.10 Simplify: ⎛
+⎝2m3⎞
+.
+If you missed this problem, review Example 6.23.
+BE PREPARED : : 6.11 Simplify: 12x
+12y.
+If you missed this problem, review Example 1.67.
+Simplify Expressions Using the Quotient Property for Exponents
+Earlier in this chapter, we developed the properties of exponents for multiplication. We summarize these properties
+below.
+Summary of Exponent Properties for Multiplication
+If a and b are real numbers, and m and n are whole numbers, then
+Product Property am · an = am + n
+Power Property (am)n = am · n
+Product to a Power (ab)m = am bm
+Now we will look at the exponent properties for division. A quick memory refresher may help before we get started.
+You have learned to simplify fractions by dividing out common factors from the numerator and denominator using the
+Equivalent Fractions Property. This property will also help you work with algebraic fractions—which are also quotients.
+Equivalent Fractions Property
+If a, b, and c are whole numbers where b ≠ 0, c ≠ 0 ,
+then a
+b = a · c
+b · c and a · c
+b · c = a
+b
+As before, we’ll try to discover a property by looking at some examples.
+744 Chapter 6 Polynomials
+Consider x5
+x2 and x2
+x3
+What do they mean? x · x · x · x · x
+x · x x · x
+x · x · x
+Use the Equivalent Fractions Property. x · x · x · x · x
+x · x x · x · 1
+x · x · x
+Simplify. x3 1
+x
+Notice, in each case the bases were the same and we subtracted exponents.
+When the larger exponent was in the numerator, we were left with factors in the numerator.
+When the larger exponent was in the denominator, we were left with factors in the denominator—notice the numerator
+of 1.
+We write:
+x5
+x2
+x2
+x3
+x5 − 2 1
+x3 − 2
+x3 1
+x
+This leads to the Quotient Property for Exponents.
+Quotient Property for Exponents
+If a is a real number, a ≠ 0 , and m and n are whole numbers, then
+am
+an = am − n, m > n and am
+an = 1
+an − m, n > m
+A couple of examples with numbers may help to verify this property.
+32 = 34 − 2 52
+53 = 1
+53 − 2
+9 = 32 25
+125 = 1
+9 = 9 ✓ 1
+5 = 1
+5 ✓
+Simplify: a x9
+x7 b 310
+32 .
+To simplify an expression with a quotient, we need to first compare the exponents in the numerator and denominator.
+a
+Since 9 > 7, there are more factors of x in the numerator.
+Use the Quotient Property, am
+an = am − n .
+Simplify.
+Chapter 6 Polynomials 745
+b
+Since 10 > 2, there are more factors of x in the numerator.
+Use the Quotient Property, am
+an = am − n .
+Simplify.
+Notice that when the larger exponent is in the numerator, we are left with factors in the numerator.
+TRY IT : : 6.117 Simplify: a x15
+x10 b 614
+65 .
+Simplify: a y43
+y37 b 1015
+107 .
+Simplify: a b8
+b12 b 73
+75.
+To simplify an expression with a quotient, we need to first compare the exponents in the numerator and denominator.
+a
+Since 12 > 8, there are more factors of b in the denominator.
+Use the Quotient Property, am
+an = 1
+an − m .
+Simplify.
+b
+Since 5 > 3, there are more factors of 3 in the denominator.
+Use the Quotient Property, am
+an = 1
+an − m .
+Simplify.
+Simplify.
+Notice that when the larger exponent is in the denominator, we are left with factors in the denominator.
+TRY IT : : 6.119 Simplify: a x18
+x22 b 1215
+1230.
+746 Chapter 6 Polynomials
+TRY IT : : 6.120 Simplify: a m7
+m15 b 98
+919.
+Notice the difference in the two previous examples:
+• If we start with more factors in the numerator, we will end up with factors in the numerator.
+• If we start with more factors in the denominator, we will end up with factors in the denominator.
+The first step in simplifying an expression using the Quotient Property for Exponents is to determine whether the
+exponent is larger in the numerator or the denominator.
+Simplify: a a5
+a9 b x11
+x7 .
+a Is the exponent of a larger in the numerator or denominator? Since 9 > 5, there are more a 's in the
+denominator and so we will end up with factors in the denominator.
+Use the Quotient Property, am
+an = 1
+an − m .
+Simplify.
+b Notice there are more factors of x in the numerator, since 11 > 7. So we will end up with factors in the
+numerator.
+Use the Quotient Property, am
+an = 1
+an − m .
+Simplify.
+TRY IT : : 6.121 Simplify: a b19
+b11 b z5
+z11.
+Simplify: a p9
+p17 b w13
+w9 .
+Simplify Expressions with an Exponent of Zero
+A special case of the Quotient Property is when the exponents of the numerator and denominator are equal, such as an
+expression like am
+am . From your earlier work with fractions, you know that:
+2 = 1 17
+17 = 1 −43
+−43 = 1
+In words, a number divided by itself is 1. So, x
+x = 1 , for any x (x ≠ 0) , since any number divided by itself is 1.
+Chapter 6 Polynomials 747
+The Quotient Property for Exponents shows us how to simplify am
+an when m > n and when n < m by subtracting
+exponents. What if m = n ?
+Consider 8
+8 , which we know is 1.
+8 = 1
+Write 8 as 23 . 23
+23 = 1
+Subtract exponents. 23 − 3 = 1
+Simplify. 20 = 1
+Now we will simplify am
+am in two ways to lead us to the definition of the zero exponent. In general, for a ≠ 0 :
+We see am
+am simplifies to a0 and to 1. So a0 = 1 .
+Zero Exponent
+If a is a non-zero number, then a0 = 1 .
+Any nonzero number raised to the zero power is 1.
+In this text, we assume any variable that we raise to the zero power is not zero.
+Simplify: a 90 b n0.
+The definition says any non-zero number raised to the zero power is 1.
+a
+Use the definition of the zero exponent.
+b
+Use the definition of the zero exponent.
+n0
+TRY IT : : 6.123 Simplify: a 150 b m0.
+748 Chapter 6 Polynomials
+TRY IT : : 6.124 Simplify: a k0 b 290.
+Now that we have defined the zero exponent, we can expand all the Properties of Exponents to include whole number
+exponents.
+What about raising an expression to the zero power? Let’s look at (2x)0 . We can use the product to a power rule to
+rewrite this expression.
+(2x)0
+Use the product to a power rule. 20 x0
+Use the zero exponent property. 1 · 1
+Simplify. 1
+Table 6.1
+This tells us that any nonzero expression raised to the zero power is one.
+Simplify: a (5b)0 b ⎛
+⎝−4a2 b⎞
+.
+a (5b)0
+Use the definition of the zero exponent. 1
+b ⎛
+⎝−4a2 b⎞
+Use the definition of the zero exponent. 1
+TRY IT : : 6.125 Simplify: a (11z)0 b ⎛
+⎝−11pq3⎞
+.
+TRY IT : : 6.126 Simplify: a (−6d)0 b ⎛
+⎝−8m2 n3⎞
+.
+Simplify Expressions Using the Quotient to a Power Property
+Now we will look at an example that will lead us to the Quotient to a Power Property.
+Chapter 6 Polynomials 749
+⎛
+⎝x
+y⎞
+This means: x
+y · x
+y · x
+y
+Multiply the fractions. x · x · x
+y · y · y
+Write with exponents. x3
+y3
+Notice that the exponent applies to both the numerator and the denominator.
+We write: ⎛
+⎝x
+y⎞
+x3
+y3
+This leads to the Quotient to a Power Property for Exponents.
+Quotient to a Power Property for Exponents
+If a and b are real numbers, b ≠ 0 , and m is a counting number, then
+⎛
+⎝a
+b
+⎞
+m
+= am
+bm
+To raise a fraction to a power, raise the numerator and denominator to that power.
+An example with numbers may help you understand this property:
+⎛
+⎝2
+⎞
+= 23
+3 · 2
+3 · 2
+3 = 8
+27 = 8
+27 ✓
+Simplify: a ⎛
+⎝3
+⎞
+b ⎛
+⎝b
+⎞
+c ⎛
+⎝k
+j
+⎞
+.
+a
+Use the Quotient Property, ⎛
+⎝a
+b
+⎞
+m
+= am
+bm .
+Simplify.
+750 Chapter 6 Polynomials
+b
+Use the Quotient Property, ⎛
+⎝a
+b
+⎞
+m
+= am
+bm .
+Simplify.
+c
+Raise the numerator and denominator to the third power.
+Simplify: a ⎛
+⎝5
+⎞
+b ⎛
+⎝
+p
+⎞
+c ⎛
+⎝m
+n ⎞
+7.
+Simplify: a ⎛
+⎝1
+⎞
+b ⎛
+⎝−2
+q ⎞
+c ⎛
+⎝w
+x ⎞
+4.
+Simplify Expressions by Applying Several Properties
+We’ll now summarize all the properties of exponents so they are all together to refer to as we simplify expressions using
+several properties. Notice that they are now defined for whole number exponents.
+Summary of Exponent Properties
+If a and b are real numbers, and m and n are whole numbers, then
+Product Property am · an = am + n
+Power Property (am)n = am · n
+Product to a Power (ab)m = am bm
+Quotient Property
+am
+bm = am − n, a ≠ 0, m > n
+am
+an = 1
+an − m, a ≠ 0, n > m
+Zero Exponent Definition ao = 1, a ≠ 0
+Quotient to a Power Property ⎛
+⎝a
+b
+⎞
+m
+= am
+bm, b ≠ 0
+Chapter 6 Polynomials 751
+Simplify:
+⎛
+⎝y4⎞
+y6 .
+⎛
+⎝y4⎞
+y6
+Multiply the exponents in the numerator. y8
+y6
+Subtract the exponents. y2
+Simplify:
+⎛
+⎝m5⎞
+m7 .
+Simplify:
+⎛
+⎝k2⎞
+k7 .
+Simplify: b12
+⎛
+⎝b2⎞
+6.
+b12
+⎛
+⎝b2⎞
+Multiply the exponents in the numerator. b12
+b12
+Subtract the exponents. b0
+Simplify. 1
+TRY IT : : 6.131 Simplify: n12
+⎛
+⎝n3⎞
+4.
+TRY IT : : 6.132 Simplify: x15
+⎛
+⎝x3⎞
+5.
+752 Chapter 6 Polynomials
+Simplify:
+⎛
+⎝
+⎜y9
+y4
+⎞
+⎟
+.
+⎛
+⎝
+⎜y9
+y4
+⎞
+⎟
+Remember parentheses come before exponents.
+Notice the bases are the same, so we can simplify
+inside the parentheses. Subtract the exponents.
+⎛
+⎝y5⎞
+Multiply the exponents. y10
+Simplify: ⎛
+⎝r5
+r3
+⎞
+.
+Simplify: ⎛
+⎝v6
+v4
+⎞
+.
+Simplify:
+⎛
+⎝
+⎜ j2
+k3
+⎞
+⎟
+.
+Here we cannot simplify inside the parentheses first, since the bases are not the same.
+⎛
+⎝
+⎜ j2
+k3
+⎞
+⎟
+Raise the numberator and denominator to the third power
+using the Quotient to a Power Property, ⎛
+⎝a
+b
+⎞
+m
+= am
+bm .
+Use the Powert Property and simplify. j8
+k12
+Simplify: ⎛
+⎝a3
+b2
+⎞
+.
+Simplify:
+⎛
+⎝
+⎜ q7
+r5
+⎞
+⎟
+.
+Chapter 6 Polynomials 753
+Simplify: ⎛
+⎝2m2
+5n
+⎞
+.
+⎛
+⎝2m2
+5n
+⎞
+Raise the numberator and denominator to the fourth power,
+using the Quotient to a Power Property, ⎛
+⎝a
+b
+⎞
+m
+= am
+bm .
+(2m2)4
+(5n)4
+Raise each factor to the fourth power. (2m2)4
+(5n)4
+Use the Power Property and simplify. 16m8
+625n4
+Simplify: ⎛
+⎝7x3
+9y
+⎞
+.
+Simplify: ⎛
+⎝3x4
+7y
+⎞
+.
+Simplify:
+⎛
+⎝x3⎞
+4 ⎛
+⎝x2⎞
+⎛
+⎝x6⎞
+5 .
+⎛
+⎝x3⎞
+4 ⎛
+⎝x2⎞
+⎛
+⎝x6⎞
+Use the Power Property, (am)n = am · n .
+⎛
+⎝x12⎞
+⎠⎛
+⎝x10⎞
+⎛
+⎝x30⎞
+Add the exponents in the numerator. x22
+x30
+Use the Quotient Property, am
+an = 1
+an − m . 1
+x8
+754 Chapter 6 Polynomials
+Simplify:
+⎛
+⎝a2⎞
+3 ⎛
+⎝a2⎞
+⎛
+⎝a4⎞
+5 .
+Simplify:
+⎛
+⎝p3⎞
+4 ⎛
+⎝p5⎞
+⎛
+⎝p7⎞
+6 .
+Simplify:
+⎛
+⎝10p3⎞
+⎛
+⎝5p⎞
+3 ⎛
+⎝2p5⎞
+4.
+⎛
+⎝10p3⎞
+⎛
+⎝5p⎞
+3 ⎛
+⎝2p5⎞
+Use the Product to a Power Property, (ab)m = am bm . (10)2 ⎛
+⎝p3⎞
+(5)3 (p)3 (2)4 ⎛
+⎝p5⎞
+Use the Power Property, (am)n = am · n . 100p6
+125p3 · 16p20
+Add the exponents in the denominator. 100p6
+125 · 16p23
+Use the Quotient Property, am
+an = 1
+an − m . 100
+125 · 16p17
+Simplify. 1
+20p17
+Simplify:
+⎛
+⎝3r3⎞
+2 ⎛
+⎝r3⎞
+⎛
+⎝r3⎞
+3 .
+Simplify:
+⎛
+⎝2x4⎞
+⎛
+⎝4x3⎞
+2 ⎛
+⎝x3⎞
+5.
+Divide Monomials
+You have now been introduced to all the properties of exponents and used them to simplify expressions. Next, you’ll see
+how to use these properties to divide monomials. Later, you’ll use them to divide polynomials.
+Chapter 6 Polynomials 755
+Find the quotient: 56x7 ÷ 8x3.
+56x7 ÷ 8x3
+Rewrite as a fraction. 56x7
+8x3
+Use fraction multiplication. 56
+8 ⋅ x7
+x3
+Simplify and use the Quotient Property. 7x4
+TRY IT : : 6.143 Find the quotient: 42y9 ÷ 6y3.
+TRY IT : : 6.144 Find the quotient: 48z8 ÷ 8z2.
+Find the quotient: 45a2 b3
+−5ab5 .
+45a2 b3
+−5ab5
+Use fraction multiplication. 45
+−5 · a2
+a · b3
+b5
+Simplify and use the Quotient Property. −9 · a · 1
+b2
+Multiply. − 9a
+b2
+TRY IT : : 6.145 Find the quotient: −72a7 b3
+8a12 b4 .
+TRY IT : : 6.146 Find the quotient: −63c8 d3
+7c12 d2 .
+756 Chapter 6 Polynomials
+Find the quotient: 24a5 b3
+48ab4 .
+24a5 b3
+48ab4
+Use fraction multiplication. 24
+48 · a5
+a · b3
+b4
+Simplify and use the Quotient Property. 1
+2 · a4 · 1
+b
+Multiply. a4
+2b
+TRY IT : : 6.147 Find the quotient: 16a7 b6
+24ab8 .
+Find the quotient: 27p4 q7
+−45p12 q.
+Once you become familiar with the process and have practiced it step by step several times, you may be able to simplify a
+fraction in one step.
+Find the quotient: 14x7 y12
+21x11 y6.
+Be very careful to simplify 14
+21 by dividing out a common factor, and to simplify the variables by subtracting their
+exponents.
+14x7 y12
+21x11 y6
+Simplify and use the Quotient Property. 2y6
+3x4
+Find the quotient: 28x5 y14
+49x9 y12.
+TRY IT : : 6.150 Find the quotient: 30m5 n11
+48m10 n14.
+In all examples so far, there was no work to do in the numerator or denominator before simplifying the fraction. In the
+next example, we’ll first find the product of two monomials in the numerator before we simplify the fraction. This follows
+Chapter 6 Polynomials 757
+the order of operations. Remember, a fraction bar is a grouping symbol.
+Find the quotient:
+⎛
+⎝6x2 y3⎞
+⎠⎛
+⎝5x3 y2⎞
+⎛
+⎝3x4 y5⎞
+.
+⎛
+⎝6x2 y3⎞
+⎠⎛
+⎝5x3 y2⎞
+⎛
+⎝3x4 y5⎞
+Simplify the numerator. 30x5 y5
+3x4 y5
+Simplify. 10x
+Find the quotient:
+⎛
+⎝6a4 b5⎞
+⎠⎛
+⎝4a2 b5⎞
+12a5 b8 .
+Find the quotient:
+⎛
+⎝−12x6 y9⎞
+⎠⎛
+⎝−4x5 y8⎞
+−12x10 y12 .
+MEDIA : :
+Access these online resources for additional instruction and practice with dividing monomials:
+• Rational Expressions (https://openstax.org/l/25RationalExp)
+• Dividing Monomials (https://openstax.org/l/25DivideMono)
+• Dividing Monomials 2 (https://openstax.org/l/25DivideMono2)
+758 Chapter 6 Polynomials
+Practice Makes Perfect
+Simplify Expressions Using the Quotient Property for Exponents
+In the following exercises, simplify.
+356. a x18
+x3 b 512
+53 357. a y20
+y10 b 716
+72 358. a p21
+p7 b 416
+359. a u24
+u3 b 915
+95 360. a q18
+q36 b 102
+103 361. a t10
+t40 b 83
+362. a b
+b9 b 4
+46 363. a x
+x7 b 10
+Simplify Expressions with Zero Exponents
+In the following exercises, simplify.
+364. a 200 b b0 365. a 130 b k0 366. a −270 b −⎛
+⎝270⎞
+367. a −150 b −⎛
+⎝150⎞
+⎠ 368. a (25x)0 b 25x0 369. a ⎛
+⎝6y⎞
+0 b 6y0
+370. a (12x)0 b ⎛
+⎝−56p4 q3⎞
+0 371. a 7y0 ⎛
+⎝17y⎞
+0 b
+⎛
+⎝−93c7 d15⎞
+372. a 12n0 − 18m0 b
+(12n)0 − (18m)0
+373. a 15r0 − 22s0 b
+(15r)0 − (22s)0
+Simplify Expressions Using the Quotient to a Power Property
+In the following exercises, simplify.
+374. a ⎛
+⎝3
+⎞
+b ⎛
+⎝
+p
+⎞
+c ⎛
+⎝x
+y⎞
+375. a ⎛
+⎝2
+⎞
+b ⎛
+⎝x
+⎞
+c ⎛
+⎝a
+b
+⎞
+376. a ⎛
+⎝ a
+3b
+⎞
+b ⎛
+⎝ 5
+4m
+⎞
+377. a ⎛
+⎝ x
+2y
+⎞
+b ⎛
+⎝10
+3q
+⎞
+Simplify Expressions by Applying Several Properties
+In the following exercises, simplify.
+378.
+⎛
+⎝a2⎞
+a4 379.
+⎛
+⎝p3⎞
+p5 380.
+⎛
+⎝y3⎞
+y10
+381.
+⎛
+⎝x4⎞
+x15
+382. u6
+⎛
+⎝u3⎞
+2 383. v20
+⎛
+⎝v4⎞
+6.5 EXERCISES
+Chapter 6 Polynomials 759
+384. m12
+⎛
+⎝m8⎞
+3 385. n8
+⎛
+⎝n6⎞
+4 386.
+⎛
+⎝
+⎜p9
+p3
+⎞
+⎟
+387.
+⎛
+⎝
+⎜q8
+q2
+⎞
+⎟
+388. ⎛
+⎝r2
+r6
+⎞
+389. ⎛
+⎝m4
+m7
+⎞
+390. ⎛
+⎝ p
+r11
+⎞
+391. ⎛
+⎝ a
+b6
+⎞
+392. ⎛
+⎝w5
+x3
+⎞
+393.
+⎛
+⎝
+⎜ y4
+z10
+⎞
+⎟
+394.
+⎛
+⎝
+⎜2 j3
+3k
+⎞
+⎟
+395. ⎛
+⎝3m5
+5n
+⎞
+396. ⎛
+⎝3c2
+4d6
+⎞
+397. ⎛
+⎝5u7
+2v3
+⎞
+398. ⎛
+⎝k2 k8
+k3
+⎞
+399.
+⎛
+⎝
+⎜ j2 j5
+j4
+⎞
+⎟
+400.
+⎛
+⎝t2⎞
+5 ⎛
+⎝t4⎞
+⎛
+⎝t3⎞
+7 401.
+⎛
+⎝q3⎞
+6 ⎛
+⎝q2⎞
+⎛
+⎝q4⎞
+402.
+⎛
+⎝−2p2⎞
+4 ⎛
+⎝3p4⎞
+⎛
+⎝−6p3⎞
+2 403.
+⎛
+⎝−2k3⎞
+2 ⎛
+⎝6k2⎞
+⎛
+⎝9k4⎞
+2 404.
+⎛
+⎝−4m3⎞
+2 ⎛
+⎝5m4⎞
+⎛
+⎝−10m6⎞
+405.
+⎛
+⎝−10n2⎞
+3 ⎛
+⎝4n5⎞
+⎛
+⎝2n8⎞
+Divide Monomials
+In the following exercises, divide the monomials.
+406. 56b8 ÷ 7b2 407. 63v10 ÷ 9v2 408. −88y15 ÷ 8y3
+409. −72u12 ÷ 12u4 410. 45a6 b8
+−15a10 b2 411. 54x9 y3
+−18x6 y15
+412. 15r4 s9
+18r9 s2 413. 20m8 n4
+30m5 n9 414. 18a4 b8
+−27a9 b5
+415. 45x5 y9
+−60x8 y6 416. 64q11 r9 s3
+48q6 r8 s5 417. 65a10 b8 c5
+42a7 b6 c8
+418.
+⎛
+⎝10m5 n4⎞
+⎠⎛
+⎝5m3 n6⎞
+25m7 n5 419.
+⎛
+⎝−18p4 q7⎞
+⎠⎛
+⎝−6p3 q8⎞
+−36p12 q10 420.
+⎛
+⎝6a4 b3⎞
+⎠⎛
+⎝4ab5⎞
+⎛
+⎝12a2 b⎞
+⎠⎛
+⎝a3 b⎞
+760 Chapter 6 Polynomials
+421.
+⎛
+⎝4u2 v5⎞
+⎠⎛
+⎝15u3 v⎞
+⎛
+⎝12u3 v⎞
+⎠⎛
+⎝u4 v⎞
+Mixed Practice
+422. a 24a5 + 2a5 b
+24a5 − 2a5 c 24a5 · 2a5 d
+24a5 ÷ 2a5
+423. a 15n10 + 3n10 b
+15n10 − 3n10 c 15n10 · 3n10 d
+15n10 ÷ 3n10
+424. a p4 · p6 b ⎛
+⎝p4⎞
+425. a q5 · q3 b ⎛
+⎝q5⎞
+426. a y3
+y b y
+y3 427. a z6
+z5 b z5
+z6
+428. ⎛
+⎝8x5⎞
+⎠(9x) ÷ 6x3 429. ⎛
+⎝4y⎞
+⎛
+⎝12y7⎞
+⎠ ÷ 8y2 430. 27a7
+3a3 + 54a9
+9a5
+431. 32c11
+4c5 + 42c9
+6c3 432. 32y5
+8y2 − 60y10
+5y7 433. 48x6
+6x4 − 35x9
+7x7
+434. 63r6 s3
+9r4 s2 − 72r2 s2
+6s 435. 56y4 z5
+7y3 z3 − 45y2 z2
+5y
+Everyday Math
+436. Memory One megabyte is approximately 106
+bytes. One gigabyte is approximately 109 bytes. How
+many megabytes are in one gigabyte?
+437. Memory One gigabyte is approximately 109
+bytes. One terabyte is approximately 1012 bytes. How
+many gigabytes are in one terabyte?
+Writing Exercises
+438. Jennifer thinks the quotient a24
+a6 simplifies to a4 .
+What is wrong with her reasoning?
+439. Maurice simplifies the quotient d7
+d by writing
+d 7
+d = 7 . What is wrong with his reasoning?
+440. When Drake simplified −30 and (−3)0 he got
+the same answer. Explain how using the Order of
+Operations correctly gives different answers.
+441. Robert thinks x0 simplifies to 0. What would you
+say to convince Robert he is wrong?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+Chapter 6 Polynomials 761
+b On a scale of 1-10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+762 Chapter 6 Polynomials

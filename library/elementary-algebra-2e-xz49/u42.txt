@@ -1,0 +1,540 @@
+6.2
+Use Multiplication Properties of Exponents
+Learning Objectives
+By the end of this section, you will be able to:
+Simplify expressions with exponents
+Simplify expressions using the Product Property for Exponents
+Simplify expressions using the Power Property for Exponents
+Simplify expressions using the Product to a Power Property
+Simplify expressions by applying several properties
+Multiply monomials
+BE PREPARED : : 6.4 Before you get started, take this readiness quiz.
+Simplify: 3
+4 · 3
+4.
+If you missed this problem, review Example 1.68.
+BE PREPARED : : 6.5 Simplify: (−2)(−2)(−2).
+If you missed this problem, review Example 1.50.
+Simplify Expressions with Exponents
+Remember that an exponent indicates repeated multiplication of the same quantity. For example, 24 means to multiply
+2 by itself 4 times, so 24 means 2 · 2 · 2 · 2 .
+Let’s review the vocabulary for expressions with exponents.
+Exponential Notation
+This is read a to the mth power.
+In the expression am , the exponent m tells us how many times we use the base a as a factor.
+Before we begin working with variable expressions containing exponents, let’s simplify a few expressions involving only
+numbers.
+Simplify: a 43 b 71 c ⎛
+⎝5
+⎞
+d (0.63)2.
+700 Chapter 6 Polynomials
+a 43
+Multiply three factors of 4. 4 · 4 · 4
+Simplify. 64
+b 71
+Multiply one factor of 7. 7
+c ⎛
+⎝5
+⎞
+Multiply two factors. ⎛
+⎝5
+⎞
+⎠⎛
+⎝5
+⎞
+Simplify. 25
+d (0.63)2
+Multiply two factors. (0.63)(0.63)
+Simplify. 0.3969
+Simplify: a 63 b 151 c ⎛
+⎝3
+⎞
+d (0.43)2.
+Simplify: a 25 b 211 c ⎛
+⎝2
+⎞
+d (0.218)2.
+Simplify: a (−5)4 b −54.
+a (−5)4
+Multiply four factors of −5 . (−5)(−5)(−5)(−5)
+Simplify. 625
+b −54
+Multiply four factors of 5. −(5 · 5 · 5 · 5)
+Simplify. −625
+Chapter 6 Polynomials 701
+TRY IT : : 6.33 Simplify: a (−3)4 b −34.
+TRY IT : : 6.34 Simplify: a (−13)2 b −132.
+Notice the similarities and differences in Example 6.17a and Example 6.17b! Why are the answers different? As we
+follow the order of operations in part a the parentheses tell us to raise the (−5) to the 4th power. In part b we raise just
+the 5 to the 4th power and then take the opposite.
+Simplify Expressions Using the Product Property for Exponents
+You have seen that when you combine like terms by adding and subtracting, you need to have the same base with the
+same exponent. But when you multiply and divide, the exponents may be different, and sometimes the bases may be
+different, too.
+We’ll derive the properties of exponents by looking for patterns in several examples.
+First, we will look at an example that leads to the Product Property.
+What does this mean?
+How many factors altogether?
+So, we have
+Notice that 5 is the sum of the exponents, 2 and 3.
+We write:
+x2 · x3
+x2 + 3
+x5
+The base stayed the same and we added the exponents. This leads to the Product Property for Exponents.
+Product Property for Exponents
+If a is a real number, and m and n are counting numbers, then
+am · an = am + n
+To multiply with like bases, add the exponents.
+An example with numbers helps to verify this property.
+22 · 23 =? 22 + 3
+4 · 8 =? 25
+32 = 32 ✓
+Simplify: y5 · y6.
+702 Chapter 6 Polynomials
+Use the product property, am · an = am+n.
+Simplify.
+TRY IT : : 6.35 Simplify: b9 · b8.
+TRY IT : : 6.36 Simplify: x12 · x4.
+Simplify: a 25 · 29 b 3 · 34.
+a
+Use the product property, am · an = am+n.
+Simplify.
+b
+Use the product property, am · an = am+n.
+Simplify.
+TRY IT : : 6.37 Simplify: a 5 · 55 b 49 · 49.
+TRY IT : : 6.38 Simplify: a 76 · 78 b 10 · 1010.
+Simplify: a a7 · a b x27 · x13.
+Chapter 6 Polynomials 703
+a
+Rewrite, a = a1.
+Use the product property, am · an = am+n.
+Simplify.
+b
+Notice, the bases are the same, so add the exponents.
+Simplify.
+TRY IT : : 6.39 Simplify: a p5 · p b y14 · y29.
+TRY IT : : 6.40 Simplify: a z · z7 b b15 · b34.
+We can extend the Product Property for Exponents to more than two factors.
+Simplify: d4 · d5 · d2.
+Add the exponents, since bases are the same.
+Simplify.
+TRY IT : : 6.41 Simplify: x6 · x4 · x8.
+TRY IT : : 6.42 Simplify: b5 · b9 · b5.
+Simplify Expressions Using the Power Property for Exponents
+Now let’s look at an exponential expression that contains a power raised to a power. See if you can discover a general
+property.
+704 Chapter 6 Polynomials
+What does this mean?
+How many factors altogether?
+So we have
+Notice that 6 is the product of the exponents, 2 and 3.
+We write:
+⎛
+⎝x2⎞
+x2 · 3
+x6
+We multiplied the exponents. This leads to the Power Property for Exponents.
+Power Property for Exponents
+If a is a real number, and m and n are whole numbers, then
+(am)n = am · n
+To raise a power to a power, multiply the exponents.
+An example with numbers helps to verify this property.
+⎛
+⎝32⎞
+=? 32 · 3
+(9)3 =? 36
+729 = 729 ✓
+Simplify: a (y5)9 b (44)7.
+a
+Use the power property, (am)n = am·n.
+Simplify.
+b
+Chapter 6 Polynomials 705
+Use the power property.
+Simplify.
+TRY IT : : 6.43 Simplify: a (b7)5 b (54)3.
+TRY IT : : 6.44 Simplify: a (z6)9 b (37)7.
+Simplify Expressions Using the Product to a Power Property
+We will now look at an expression containing a product that is raised to a power. Can you find this pattern?
+(2x)3
+What does this mean? 2x · 2x · 2x
+We group the like factors together. 2 · 2 · 2 · x · x · x
+How many factors of 2 and of x ? 23 · x3
+Notice that each factor was raised to the power and (2x)3 is 23 · x3 .
+We write: (2x)3
+23 · x3
+The exponent applies to each of the factors! This leads to the Product to a Power Property for Exponents.
+Product to a Power Property for Exponents
+If a and b are real numbers and m is a whole number, then
+(ab)m = am bm
+To raise a product to a power, raise each factor to that power.
+An example with numbers helps to verify this property:
+(2 · 3)2 =? 22 · 32
+62 =? 4 · 9
+36 = 36 ✓
+Simplify: a (−9d)2 b (3mn)3.
+706 Chapter 6 Polynomials
+a
+Use Power of a Product Property, (ab)m = ambm.
+Simplify.
+b
+Use Power of a Product Property, (ab)m = ambm.
+Simplify.
+TRY IT : : 6.45 Simplify: a (−12y)2 b (2wx)5.
+TRY IT : : 6.46 Simplify: a (5wx)3 b (−3y)3.
+Simplify Expressions by Applying Several Properties
+We now have three properties for multiplying expressions with exponents. Let’s summarize them and then we’ll do some
+examples that use more than one of the properties.
+Properties of Exponents
+If a and b are real numbers, and m and n are whole numbers, then
+Product Property am · an = am + n
+Power Property (am)n = am · n
+Product to a Power (ab)m = am bm
+All exponent properties hold true for any real numbers m and n . Right now, we only use whole number exponents.
+Simplify: a (y3)6 (y5)4 b ⎛
+⎝−6x4 y5⎞
+.
+Chapter 6 Polynomials 707
+a (y3)6 (y5)4
+Use the Power Property. y18 · y20
+Add the exponents. y38
+b ⎛
+⎝−6x4 y5⎞
+Use the Product to a Power Property. (−6)2 (x4)2 (y5)2
+Use the Power Property. (−6)2
+Simplify. 36x8 y10
+TRY IT : : 6.47 Simplify: a (a4)5 (a7)4 b ⎛
+⎝−2c4 d2⎞
+.
+TRY IT : : 6.48 Simplify: a ⎛
+⎝−3x6 y7⎞
+b (q4)5 (q3)3.
+Simplify: a (5m)2(3m3) b (3x2 y)4 (2xy2)3.
+a (5m)2(3m3)
+Raise 5m to the second power. 52 m2 · 3m3
+Simplify. 25m2 · 3m3
+Use the Commutative Property. 25 · 3 · m2 · m3
+Multiply the constants and add the exponents. 75m5
+b (3x2 y)4 (2xy2)3
+Use the Product to a Power Property. (34 x8 y4)(23 x3 y6)
+Simplify. (81x8 y4)(8x3 y6)
+Use the Commutative Property. 81 · 8 · x8 · x3 · y4 · y6
+Multiply the constants and add the exponents. 648x11 y10
+708 Chapter 6 Polynomials
+TRY IT : : 6.49 Simplify: a (5n)2(3n10) b (c4 d2)5 (3cd5)4.
+TRY IT : : 6.50 Simplify: a (a3 b2)6 (4ab3)4 b (2x)3(5x7).
+Multiply Monomials
+Since a monomial is an algebraic expression, we can use the properties of exponents to multiply monomials.
+Multiply: ⎛
+⎝3x2⎞
+⎠⎛
+⎝−4x3⎞
+⎠.
+⎛
+⎝3x2⎞
+⎠⎛
+⎝−4x3⎞
+Use the Commutative Property to rearrange the terms. 3 · (−4) · x2 · x3
+Multiply. −12x5
+TRY IT : : 6.51 Multiply: ⎛
+⎝5y7⎞
+⎠⎛
+⎝−7y4⎞
+⎠.
+TRY IT : : 6.52 Multiply: ⎛
+⎝−6b4⎞
+⎠⎛
+⎝−9b5⎞
+⎠.
+Multiply: ⎛
+⎝5
+6x3 y⎞
+⎠⎛
+⎝12xy2⎞
+⎠.
+⎛
+⎝5
+6x3 y⎞
+⎠⎛
+⎝12xy2⎞
+Use the Commutative Property to rearrange the terms. 5
+6 · 12 · x3 · x · y · y2
+Multiply. 10x4 y3
+TRY IT : : 6.53 Multiply: ⎛
+⎝2
+5a4 b3⎞
+⎠⎛
+⎝15ab3⎞
+⎠.
+TRY IT : : 6.54 Multiply: ⎛
+⎝2
+3r5 s⎞
+⎠⎛
+⎝12r6 s7⎞
+⎠.
+MEDIA : :
+Access these online resources for additional instruction and practice with using multiplication properties of
+exponents:
+• Multiplication Properties of Exponents (https://openstax.org/l/25MultiPropExp)
+Chapter 6 Polynomials 709
+Practice Makes Perfect
+Simplify Expressions with Exponents
+In the following exercises, simplify each expression with exponents.
+88. a 35 b 91 c ⎛
+⎝1
+⎞
+d
+(0.2)4
+89. a 104 b 171 c ⎛
+⎝2
+⎞
+d
+(0.5)3
+90. a 26 b 141 c ⎛
+⎝2
+⎞
+d
+(0.7)2
+91. a 83 b 81 c ⎛
+⎝3
+⎞
+d
+(0.4)3
+92. a (−6)4 b −64 93. a (−2)6 b −26
+94. a −⎛
+⎝1
+⎞
+b ⎛
+⎝− 1
+⎞
+95. a −⎛
+⎝2
+⎞
+b ⎛
+⎝− 2
+⎞
+2 96. a −0.52 b (−0.5)2
+97. a −0.14 b (−0.1)4
+Simplify Expressions Using the Product Property for Exponents
+In the following exercises, simplify each expression using the Product Property for Exponents.
+98. d3 · d6 99. x4 · x2 100. n19 · n12
+101. q27 · q15 102. a 45 · 49 b 89 · 8 103. a 310 · 36 b 5 · 54
+104. a y · y3 b z25 · z8 105. a w5 · w b u41 · u53 106. w · w2 · w3
+107. y · y3 · y5 108. a4 · a3 · a9 109. c5 · c11 · c2
+110. mx · m3 111. ny · n2 112. ya · yb
+113. x p · xq
+Simplify Expressions Using the Power Property for Exponents
+In the following exercises, simplify each expression using the Power Property for Exponents.
+114. a (m4)2 b (103)6 115. a (b2)7 b (38)2 116. a ⎛
+⎝y3⎞
+x
+b (5x)y
+117. a ⎛
+⎝x2⎞
+y
+b (7a)b
+Simplify Expressions Using the Product to a Power Property
+In the following exercises, simplify each expression using the Product to a Power Property.
+118. a (6a)2 b (3xy)2 119. a (5x)2 b (4ab)2 120. a (−4m)3 b (5ab)3
+121. a (−7n)3 b ⎛
+⎝3xyz⎞
+6.2 EXERCISES
+710 Chapter 6 Polynomials
+Simplify Expressions by Applying Several Properties
+In the following exercises, simplify each expression.
+122. a ⎛
+⎝y2⎞
+· ⎛
+⎝y3⎞
+b (10a2 b)3 123. a ⎛
+⎝w4⎞
+· ⎛
+⎝w5⎞
+b (2xy4)5 124. a (−2r3 s2)4 b
+⎛
+⎝m5⎞
+· ⎛
+⎝m9⎞
+125. a (−10q2 p4)3 b
+⎛
+⎝n3⎞
+· ⎛
+⎝n5⎞
+126. a (3x)2(5x) b (5t2)3 (3t)2 127. a (2y)3(6y) b
+(10k4)3 (5k6)2
+128. a (5a)2 (2a)3 b
+(1
+2y2)3
+(2
+3y)2
+129. a (4b)2 (3b)3 b
+(1
+2 j2)5
+(2
+5 j3)2 130. a ⎛
+⎝2
+5x2 y⎞
+b ⎛
+⎝8
+9xy4⎞
+131. a (2r2)3 (4r)2 b
+(3x3)3 (x5)4
+132. a (m2 n)2 (2mn5)4 b
+(3pq4)2 (6p6 q)2
+Multiply Monomials
+In the following exercises, multiply the monomials.
+133. ⎛
+⎝6y7⎞
+⎠⎛
+⎝−3y4⎞
+⎠ 134. ⎛
+⎝−10x5⎞
+⎠⎛
+⎝−3x3⎞
+⎠ 135. (−8u6)(−9u)
+136. (−6c4)(−12c) 137. (1
+5 f 8)(20 f 3) 138. (1
+4d5)(36d2)
+139. (4a3 b)(9a2 b6) 140. (6m4 n3)(7mn5) 141. ⎛
+⎝4
+7rs2⎞
+⎠⎛
+⎝14rs3⎞
+142. ⎛
+⎝5
+8x3 y⎞
+⎠⎛
+⎝24x5 y⎞
+⎠ 143. ⎛
+⎝2
+3x2 y⎞
+⎠⎛
+⎝3
+4xy2⎞
+⎠ 144. ⎛
+⎝3
+5m3 n2⎞
+⎠⎛
+⎝5
+9m2 n3⎞
+Mixed Practice
+In the following exercises, simplify each expression.
+145. ⎛
+⎝x2⎞
+· ⎛
+⎝x3⎞
+146. ⎛
+⎝y4⎞
+· ⎛
+⎝y5⎞
+147. ⎛
+⎝a2⎞
+· ⎛
+⎝a3⎞
+148. ⎛
+⎝b7⎞
+· ⎛
+⎝b2⎞
+6 149. (2m6)3 150. (3y2)4
+151. (10x2 y)3 152. (2mn4)5 153. (−2a3 b2)4
+154. (−10u2 v4)3
+155. ⎛
+⎝2
+3x2 y⎞
+156. ⎛
+⎝7
+9 pq4⎞
+157. (8a3)2 (2a)4 158. (5r2)3 (3r)2 159. (10p4)3 (5p6)2
+160. (4x3)3 (2x5)4
+161. ⎛
+⎝1
+2x2 y3⎞
+4 ⎛
+⎝4x5 y3⎞
+162. ⎛
+⎝1
+3m3 n2⎞
+4 ⎛
+⎝9m8 n3⎞
+Chapter 6 Polynomials 711
+163. (3m2 n)2 (2mn5)4 164. (2pq4)3 (5p6 q)2
+Everyday Math
+165. Email Kate emails a flyer to ten of her friends
+and tells them to forward it to ten of their friends,
+who forward it to ten of their friends, and so on. The
+number of people who receive the email on the second
+round is 102 , on the third round is 103 , as shown
+in the table below. How many people will receive the
+email on the sixth round? Simplify the expression to
+show the number of people who receive the email.
+Round Number of people
+1 10
+2 102
+3 103
+... ...
+6 ?
+166. Salary Jamal’s boss gives him a 3% raise every
+year on his birthday. This means that each year, Jamal’s
+salary is 1.03 times his last year’s salary. If his original
+salary was $35,000, his salary after 1 year was
+$35,000(1.03) , after 2 years was $35,000(1.03)2 ,
+after 3 years was $35,000(1.03)3 , as shown in the
+table below. What will Jamal’s salary be after 10 years?
+Simplify the expression, to show Jamal’s salary in
+dollars.
+Year Salary
+1 $35,000(1.03)
+2 $35,000(1.03)2
+3 $35,000(1.03)3
+... ...
+10 ?
+167. Clearance A department store is clearing out
+merchandise in order to make room for new inventory.
+The plan is to mark down items by 30% each week.
+This means that each week the cost of an item is 70%
+of the previous week’s cost. If the original cost of a
+sofa was $1,000, the cost for the first week would be
+$1,000(0.70) and the cost of the item during the
+second week would be $1,000(0.70)2 . Complete the
+table shown below. What will be the cost of the sofa
+during the fifth week? Simplify the expression, to show
+the cost in dollars.
+Week Cost
+1 $1,000(0.70)
+2 $1,000(0.70)2
+4 ...
+5 ?
+168. Depreciation Once a new car is driven away from
+the dealer, it begins to lose value. Each year, a car
+loses 10% of its value. This means that each year the
+value of a car is 90% of the previous year’s value. If a
+new car was purchased for $20,000, the value at the
+end of the first year would be $20,000(0.90) and the
+value of the car after the end of the second year would
+be $20,000(0.90)2 . Complete the table shown below.
+What will be the value of the car at the end of the
+eighth year? Simplify the expression, to show the value
+in dollars.
+Year Cost
+1 $20,000(0.90)
+2 $20,000(0.90)2
+... ...
+8 ?
+Writing Exercises
+169. Use the Product Property for Exponents to explain
+why x · x = x2 .
+170. Explain why −53 = (−5)3 but −54 ≠ (−5)4 .
+712 Chapter 6 Polynomials
+171. Jorge thinks ⎛
+⎝1
+⎞
+is 1. What is wrong with his
+reasoning?
+172. Explain why x3 · x5 is x8 , and not x15 .
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b After reviewing this checklist, what will you do to become confident for all goals?
+Chapter 6 Polynomials 713

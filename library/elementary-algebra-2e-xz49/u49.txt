@@ -1,0 +1,332 @@
+Figure 7.1 The Sydney Harbor Bridge is one of Australia’s most photographed landmarks. It is the world’s largest steel arch bridge
+with the top of the bridge standing 134 meters above the harbor. Can you see why it is known by the locals as the “Coathanger”?
+Chapter Outline
+7.1 Greatest Common Factor and Factor by Grouping
+7.2 Factor Trinomials of the Form x2+bx+c
+7.3 Factor Trinomials of the Form ax2+bx+c
+7.4 Factor Special Products
+7.5 General Strategy for Factoring Polynomials
+7.6 Quadratic Equations
+Introduction
+Quadratic expressions may be used to model physical properties of a large bridge, the trajectory of a baseball or
+rocket, and revenue and profit of a business. By factoring these expressions, specific characteristics of the model can be
+identified. In this chapter, you will explore the process of factoring expressions and see how factoring is used to solve
+certain types of equations.
+7.1
+Greatest Common Factor and Factor by Grouping
+Learning Objectives
+By the end of this section, you will be able to:
+Find the greatest common factor of two or more expressions
+Factor the greatest common factor from a polynomial
+Factor by grouping
+BE PREPARED : : 7.1 Before you get started, take this readiness quiz.
+Factor 56 into primes.
+If you missed this problem, review Example 1.7.
+BE PREPARED : : 7.2 Find the least common multiple of 18 and 24.
+If you missed this problem, review Example 1.10.
+FACTORING7
+Chapter 7 Factoring 807
+BE PREPARED : : 7.3 Simplify −3(6a + 11) .
+If you missed this problem, review Example 1.135.
+Find the Greatest Common Factor of Two or More Expressions
+Earlier we multiplied factors together to get a product. Now, we will be reversing this process; we will start with a product
+and then break it down into its factors. Splitting a product into factors is called factoring.
+We have learned how to factor numbers to find the least common multiple (LCM) of two or more numbers. Now we will
+factor expressions and find the greatest common factor of two or more expressions. The method we use is similar to
+what we used to find the LCM.
+Greatest Common Factor
+The greatest common factor (GCF) of two or more expressions is the largest expression that is a factor of all the
+expressions.
+First we’ll find the GCF of two numbers.
+EXAMPLE 7.1 HOW TO FIND THE GREATEST COMMON FACTOR OF TWO OR MORE EXPRESSIONS
+Find the GCF of 54 and 36.
+808 Chapter 7 Factoring
+Notice that, because the GCF is a factor of both numbers, 54 and 36 can be written as multiples of 18.
+54 = 18 · 3
+36 = 18 · 2
+TRY IT : : 7.1 Find the GCF of 48 and 80.
+TRY IT : : 7.2 Find the GCF of 18 and 40.
+We summarize the steps we use to find the GCF below.
+In the first example, the GCF was a constant. In the next two examples, we will get variables in the greatest common
+factor.
+Find the greatest common factor of 27x3 and 18x4 .
+Factor each coefficient into primes and write the variables with exponents in
+expanded form. Circle the common factors in each column.
+Bring down the common factors.
+Multiply the factors.
+The GCF of 27x3 and
+18x4 is 9x3.
+TRY IT : : 7.3 Find the GCF: 12x2, 18x3 .
+TRY IT : : 7.4 Find the GCF: 16y2, 24y3 .
+Find the GCF of 4x2 y, 6xy3 .
+HOW TO : : FIND THE GREATEST COMMON FACTOR (GCF) OF TWO EXPRESSIONS.
+Factor each coefficient into primes. Write all variables with exponents in expanded form.
+List all factors—matching common factors in a column. In each column, circle the common
+factors.
+Bring down the common factors that all expressions share.
+Multiply the factors.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 7 Factoring 809
+Factor each coefficient into primes and write the variables with exponents in
+expanded form. Circle the common factors in each column.
+Bring down the common factors.
+Multiply the factors.
+The GCF of 4x2y and
+6xy3 is 2xy .
+TRY IT : : 7.5 Find the GCF: 6ab4, 8a2 b .
+TRY IT : : 7.6 Find the GCF: 9m5 n2, 12m3 n .
+Find the GCF of: 21x3, 9x2, 15x .
+Factor each coefficient into primes and write the variables with exponents in
+expanded form. Circle the common factors in each column.
+Bring down the common factors.
+Multiply the factors.
+The GCF of 21x3 , 9x2 and
+15x is 3x.
+TRY IT : : 7.7 Find the greatest common factor: 25m4, 35m3, 20m2 .
+TRY IT : : 7.8 Find the greatest common factor: 14x3, 70x2, 105x .
+Factor the Greatest Common Factor from a Polynomial
+Just like in arithmetic, where it is sometimes useful to represent a number in factored form (for example, 12 as
+2 · 6 or 3 · 4), in algebra, it can be useful to represent a polynomial in factored form. One way to do this is by finding the
+GCF of all the terms. Remember, we multiply a polynomial by a monomial as follows:
+2(x + 7) factors
+2 · x + 2 · 7
+2x + 14 product
+Now we will start with a product, like 2x + 14 , and end with its factors, 2(x + 7) . To do this we apply the Distributive
+Property “in reverse.”
+810 Chapter 7 Factoring
+We state the Distributive Property here just as you saw it in earlier chapters and “in reverse.”
+Distributive Property
+If a, b, c are real numbers, then
+a(b + c) = ab + ac and ab + ac = a(b + c)
+The form on the left is used to multiply. The form on the right is used to factor.
+So how do you use the Distributive Property to factor a polynomial? You just find the GCF of all the terms and write the
+polynomial as a product!
+EXAMPLE 7.5 HOW TO FACTOR THE GREATEST COMMON FACTOR FROM A POLYNOMIAL
+Factor: 4x + 12 .
+TRY IT : : 7.9 Factor: 6a + 24 .
+TRY IT : : 7.10 Factor: 2b + 14 .
+Factor as a Noun and a Verb
+We use “factor” as both a noun and a verb.
+HOW TO : : FACTOR THE GREATEST COMMON FACTOR FROM A POLYNOMIAL.
+Find the GCF of all the terms of the polynomial.
+Rewrite each term as a product using the GCF.
+Use the “reverse” Distributive Property to factor the expression.
+Check by multiplying the factors.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 7 Factoring 811
+Factor: 5a + 5 .
+Find the GCF of 5a and 5.
+Rewrite each term as a product using the GCF.
+Use the Distributive Property "in reverse" to factor the GCF.
+Check by mulitplying the factors to get the orginal polynomial.
+5(a + 1)
+5 ⋅ a + 5 ⋅ 1
+5a + 5 ✓
+TRY IT : : 7.11 Factor: 14x + 14 .
+TRY IT : : 7.12 Factor: 12p + 12 .
+The expressions in the next example have several factors in common. Remember to write the GCF as the product of all
+the common factors.
+Factor: 12x − 60 .
+Find the GCF of 12x and 60.
+Rewrite each term as a product using the GCF.
+Factor the GCF.
+Check by mulitplying the factors.
+12(x − 5)
+12 ⋅ x − 12 ⋅ 5
+12x − 60 ✓
+812 Chapter 7 Factoring
+TRY IT : : 7.13 Factor: 18u − 36 .
+TRY IT : : 7.14 Factor: 30y − 60 .
+Now we’ll factor the greatest common factor from a trinomial. We start by finding the GCF of all three terms.
+Factor: 4y2 + 24y + 28 .
+We start by finding the GCF of all three terms.
+Find the GCF of 4y2 , 24y and 28.
+Rewrite each term as a product using the GCF.
+Factor the GCF.
+Check by mulitplying.
+4⎛
+⎝y2 + 6y + 7⎞
+4 ⋅ y2 + 4 ⋅ 6y + 4 ⋅ 7
+4y2 + 24y + 28 ✓
+TRY IT : : 7.15 Factor: 5x2 − 25x + 15 .
+TRY IT : : 7.16 Factor: 3y2 − 12y + 27 .
+Factor: 5x3 − 25x2 .
+Find the GCF of 5x3 and 25x2.
+Chapter 7 Factoring 813
+Rewrite each term.
+Factor the GCF.
+Check.
+5x2⎛
+⎝x − 5⎞
+5x2 ⋅ x − 5x2 ⋅ 5
+5x3 − 25x2 ✓
+TRY IT : : 7.17 Factor: 2x3 + 12x2 .
+TRY IT : : 7.18 Factor: 6y3 − 15y2 .
+Factor: 21x3 − 9x2 + 15x .
+In a previous example we found the GCF of 21x3, 9x2, 15x to be 3x .
+Rewrite each term using the GCF, 3x.
+Factor the GCF.
+Check.
+3x⎛
+⎝7x2 − 3x + 5⎞
+3x ⋅ 7x2 − 3x ⋅ 3x + 3x ⋅ 5
+21x3 − 9x2 + 15x ✓
+TRY IT : : 7.19 Factor: 20x3 − 10x2 + 14x .
+TRY IT : : 7.20 Factor: 24y3 − 12y2 − 20y .
+Factor: 8m3 − 12m2 n + 20mn2 .
+814 Chapter 7 Factoring
+Find the GCF of 8m3 , 12m2 n , 20mn2 .
+Rewrite each term.
+Factor the GCF.
+Check.
+4m⎛
+⎝2m2 − 3mn + 5n2⎞
+4m ⋅ 2m2 − 4m ⋅ 3mn + 4m ⋅ 5n2
+8m3 − 12m2 n + 20mn2 ✓
+TRY IT : : 7.21 Factor: 9xy2 + 6x2 y2 + 21y3 .
+TRY IT : : 7.22 Factor: 3p3 − 6p2 q + 9pq3 .
+When the leading coefficient is negative, we factor the negative out as part of the GCF.
+Factor: −8y − 24 .
+When the leading coefficient is negative, the GCF will be negative.
+Ignoring the signs of the terms, we first find the GCF of 8y and 24 is 8. Since the
+expression −8y − 24 has a negative leading coefficient, we use −8 as the GCF.
+Rewrite each term using the GCF.
+Factor the GCF.
+Check.
+−8⎛
+⎝y + 3⎞
+−8 ⋅ y + ⎛
+⎝−8⎞
+⎠ ⋅ 3
+Chapter 7 Factoring 815
+−8y − 24 ✓
+TRY IT : : 7.23 Factor: −16z − 64 .
+TRY IT : : 7.24 Factor: −9y − 27 .
+Factor: −6a2 + 36a .
+The leading coefficient is negative, so the GCF will be negative?
+Since the leading coefficient is negative, the GCF is negative, −6a.
+Rewrite each term using the GCF.
+Factor the GCF.
+Check.
+−6a(a − 6)
+−6a ⋅ a + (−6a)(−6)
+−6a2 + 36a ✓
+TRY IT : : 7.25 Factor: −4b2 + 16b .
+TRY IT : : 7.26 Factor: −7a2 + 21a .
+Factor: 5q⎛
+⎝q + 7⎞
+⎠ − 6⎛
+⎝q + 7⎞
+⎠ .
+The GCF is the binomial q + 7 .
+Factor the GCF, (q + 7).
+Check on your own by multiplying.
+816 Chapter 7 Factoring
+TRY IT : : 7.27 Factor: 4m(m + 3) − 7(m + 3) .
+TRY IT : : 7.28 Factor: 8n(n − 4) + 5(n − 4) .
+Factor by Grouping
+When there is no common factor of all the terms of a polynomial, look for a common factor in just some of the terms.
+When there are four terms, a good way to start is by separating the polynomial into two parts with two terms in each part.
+Then look for the GCF in each part. If the polynomial can be factored, you will find a common factor emerges from both
+parts.
+(Not all polynomials can be factored. Just like some numbers are prime, some polynomials are prime.)
+EXAMPLE 7.15 HOW TO FACTOR BY GROUPING
+Factor: xy + 3y + 2x + 6 .
+TRY IT : : 7.29 Factor: xy + 8y + 3x + 24 .
+TRY IT : : 7.30 Factor: ab + 7b + 8a + 56 .
+Factor: x2 + 3x − 2x − 6 .
+HOW TO : : FACTOR BY GROUPING.
+Group terms with common factors.
+Factor out the common factor in each group.
+Factor the common factor from the expression.
+Check by multiplying the factors.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 7 Factoring 817
+There is no GCF in all four terms. x2 + 3x −2x − 6
+Separate into two parts. x2 + 3x⎤
+⎦
+⎥ −2x − 6⎤
+⎦
+⎥
+Factor the GCF from both parts. Be careful
+with the signs when factoring the GCF from
+the last two terms.
+x(x + 3) − 2(x + 3)
+(x + 3)(x − 2)
+Check on your own by multiplying.
+TRY IT : : 7.31 Factor: x2 + 2x − 5x − 10 .
+TRY IT : : 7.32 Factor: y2 + 4y − 7y − 28 .
+MEDIA : :
+Access these online resources for additional instruction and practice with greatest common factors (GFCs) and
+factoring by grouping.
+• Greatest Common Factor (GCF) (https://openstax.org/l/25GCF1)
+• Factoring Out the GCF of a Binomial (https://openstax.org/l/25GCF2)
+• Greatest Common Factor (GCF) of Polynomials (https://openstax.org/l/25GCF3)
+818 Chapter 7 Factoring
+Practice Makes Perfect
+Find the Greatest Common Factor of Two or More Expressions
+In the following exercises, find the greatest common factor.
+1. 8, 18 2. 24, 40 3. 72, 162
+4. 150, 275 5. 10a, 50 6. 5b, 30
+7. 3x, 10x2 8. 21b2, 14b 9. 8w2, 24w3
+10. 30x2, 18x3 11. 10p3 q, 12pq2 12. 8a2 b3, 10ab2
+13. 12m2 n3, 30m5 n3 14. 28x2 y4, 42x4 y4 15. 10a3, 12a2, 14a
+16. 20y3, 28y2, 40y 17. 35x3, 10x4, 5x5 18. 27p2, 45p3, 9p4
+Factor the Greatest Common Factor from a Polynomial
+In the following exercises, factor the greatest common factor from each polynomial.
+19. 4x + 20 20. 8y + 16 21. 6m + 9
+22. 14p + 35 23. 9q + 9 24. 7r + 7
+25. 8m − 8 26. 4n − 4 27. 9n − 63
+28. 45b − 18 29. 3x2 + 6x − 9 30. 4y2 + 8y − 4
+31. 8p2 + 4p + 2 32. 10q2 + 14q + 20 33. 8y3 + 16y2
+34. 12x3 − 10x 35. 5x3 − 15x2 + 20x 36. 8m2 − 40m + 16
+37. 12xy2 + 18x2 y2 − 30y3 38. 21pq2 + 35p2 q2 − 28q3 39. −2x − 4
+40. −3b + 12 41. 5x(x + 1) + 3(x + 1) 42. 2x(x − 1) + 9(x − 1)
+43. 3b(b − 2) − 13(b − 2) 44. 6m(m − 5) − 7(m − 5)
+Factor by Grouping
+In the following exercises, factor by grouping.
+45. xy + 2y + 3x + 6 46. mn + 4n + 6m + 24 47. uv − 9u + 2v − 18
+48. pq − 10p + 8q − 80 49. b2 + 5b − 4b − 20 50. m2 + 6m − 12m − 72
+51. p2 + 4p − 9p − 36 52. x2 + 5x − 3x − 15
+7.1 EXERCISES
+Chapter 7 Factoring 819
+Mixed Practice
+In the following exercises, factor.
+53. −20x − 10 54. 5x3 − x2 + x 55. 3x3 − 7x2 + 6x − 14
+56. x3 + x2 − x − 1 57. x2 + xy + 5x + 5y 58. 5x3 + 3x2 − 5x − 3
+Everyday Math
+59. Area of a rectangle The area of a rectangle with
+length 6 less than the width is given by the expression
+w2 − 6w , where w = width. Factor the greatest
+common factor from the polynomial.
+60. Height of a baseball The height of a baseball t
+seconds after it is hit is given by the expression
+−16t2 + 80t + 4 . Factor the greatest common factor
+from the polynomial.
+Writing Exercises
+61. The greatest common factor of 36 and 60 is 12.
+Explain what this means. 62. What is the GCF of y4, y5, and y10 ? Write a
+general rule that tells you how to find the GCF of
+ya, yb, andyc .
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b If most of your checks were:
+...confidently. Congratulations! You have achieved your goals in this section! Reflect on the study skills you used so that you can
+continue to use them. What did you do to become confident of your ability to do these things? Be specific!
+...with some help. This must be addressed quickly as topics you do not master become potholes in your road to success. Math
+is sequential—every topic builds upon previous work. It is important to make sure you have a strong foundation before you move
+on. Whom can you ask for help? Your fellow classmates and instructor are good resources. Is there a place on campus where
+math tutors are available? Can your study skills be improved?
+...no - I don’t get it! This is critical and you must not ignore it. You need to get help immediately or you will quickly be
+overwhelmed. See your instructor as soon as possible to discuss your situation. Together you can come up with a plan to get you
+the help you need.
+820 Chapter 7 Factoring

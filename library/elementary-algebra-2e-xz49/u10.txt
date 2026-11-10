@@ -1,0 +1,1231 @@
+absolute value
+additive identity
+additive inverse
+coefficient
+complex fraction
+composite number
+constant
+counting numbers
+decimal
+denominator
+divisible by a number
+equality symbol
+equation
+equivalent decimals
+equivalent fractions
+evaluate an expression
+expression
+factors
+fraction
+integers
+irrational number
+least common denominator
+least common multiple
+like terms
+multiple of a number
+multiplicative identity
+multiplicative inverse
+number line
+numerator
+opposite
+origin
+percent
+CHAPTER 1 REVIEW
+KEY TERMS
+The absolute value of a number is its distance from 0 on the number line. The absolute value of a
+number n is written as |n| .
+The additive identity is the number 0; adding 0 to any number does not change its value.
+The opposite of a number is its additive inverse. A number and it additive inverse add to 0.
+The coefficient of a term is the constant that multiplies the variable in a term.
+A complex fraction is a fraction in which the numerator or the denominator contains a fraction.
+A composite number is a counting number that is not prime. A composite number has factors other
+than 1 and itself.
+A constant is a number whose value always stays the same.
+The counting numbers are the numbers 1, 2, 3, ...
+A decimal is another way of writing a fraction whose denominator is a power of ten.
+The denominator is the value on the bottom part of the fraction that indicates the number of equal parts
+into which the whole has been divided.
+If a number m is a multiple of n , then m is divisible by n . (If 6 is a multiple of 3, then 6 is
+divisible by 3.)
+The symbol “ = ” is called the equal sign. We read a = b as “ a is equal to b .”
+An equation is two expressions connected by an equal sign.
+Two decimals are equivalent if they convert to equivalent fractions.
+Equivalent fractions are fractions that have the same value.
+To evaluate an expression means to find the value of the expression when the variable is
+replaced by a given number.
+An expression is a number, a variable, or a combination of numbers and variables using operation symbols.
+If a · b = m , then a and b are factors of m . Since 3 · 4 = 12, then 3 and 4 are factors of 12.
+A fraction is written a
+b , where b ≠ 0 a is the numerator and b is the denominator. A fraction represents
+parts of a whole. The denominator b is the number of equal parts the whole has been divided into, and the
+numerator a indicates how many parts are included.
+The whole numbers and their opposites are called the integers: ...−3, −2, −1, 0, 1, 2, 3...
+An irrational number is a number that cannot be written as the ratio of two integers. Its decimal form
+does not stop and does not repeat.
+The least common denominator (LCD) of two fractions is the Least common multiple
+(LCM) of their denominators.
+The least common multiple of two numbers is the smallest number that is a multiple of both
+numbers.
+Terms that are either constants or have the same variables raised to the same powers are called like terms.
+A number is a multiple of n if it is the product of a counting number and n.
+The multiplicative identity is the number 1; multiplying 1 by any number does not change the
+value of the number.
+The reciprocal of a number is its multiplicative inverse. A number and its multiplicative inverse
+multiply to one.
+A number line is used to visualize numbers. The numbers on the number line get larger as they go from left
+to right, and smaller as they go from right to left.
+The numerator is the value on the top part of the fraction that indicates how many parts of the whole are
+included.
+The opposite of a number is the number that is the same distance from zero on the number line but on the
+opposite side of zero: −a means the opposite of the number. The notation −a is read “the opposite of a .”
+The origin is the point labeled 0 on a number line.
+A percent is a ratio whose denominator is 100.
+182 Chapter 1 Foundations
+prime factorization
+prime number
+radical sign
+rational number
+real number
+reciprocal
+repeating decimal
+simplified fraction
+simplify an expression
+square and square root
+term
+variable
+whole numbers
+The prime factorization of a number is the product of prime numbers that equals the number.
+A prime number is a counting number greater than 1, whose only factors are 1 and itself.
+A radical sign is the symbol m that denotes the positive square root.
+A rational number is a number of the form p
+q , where p and q are integers and q ≠ 0 . A rational
+number can be written as the ratio of two integers. Its decimal form stops or repeats.
+A real number is a number that is either rational or irrational.
+The reciprocal of a
+b is b
+a . A number and its reciprocal multiply to one: a
+b · b
+a = 1 .
+A repeating decimal is a decimal in which the last digit or group of digits repeats endlessly.
+A fraction is considered simplified if there are no common factors in its numerator and
+denominator.
+To simplify an expression, do all operations in the expression.
+If n2 = m , then m is the square of n and n is a square root of m .
+A term is a constant or the product of a constant and one or more variables.
+A variable is a letter that represents a number whose value may change.
+The whole numbers are the numbers 0, 1, 2, 3, ....
+KEY CONCEPTS
+1.1 Introduction to Whole Numbers
+• Place Value as in Figure 1.3.
+• Name a Whole Number in Words
+Start at the left and name the number in each period, followed by the period name.
+Put commas in the number to separate the periods.
+Do not name the ones period.
+• Write a Whole Number Using Digits
+Identify the words that indicate periods. (Remember the ones period is never named.)
+Draw 3 blanks to indicate the number of places needed in each period. Separate the periods by commas.
+Name the number in each period and place the digits in the correct place value position.
+• Round Whole Numbers
+Locate the given place value and mark it with an arrow. All digits to the left of the arrow do not change.
+Underline the digit to the right of the given place value.
+Is this digit greater than or equal to 5?
+▪ Yes—add 1 to the digit in the given place value.
+▪ No—do not change the digit in the given place value.
+Replace all digits to the right of the given place value with zeros.
+• Divisibility Tests: A number is divisible by:
+◦ 2 if the last digit is 0, 2, 4, 6, or 8.
+◦ 3 if the sum of the digits is divisible by 3.
+◦ 5 if the last digit is 5 or 0.
+◦ 6 if it is divisible by both 2 and 3.
+◦ 10 if it ends with 0.
+• Find the Prime Factorization of a Composite Number
+Find two factors whose product is the given number, and use these numbers to create two branches.
+If a factor is prime, that branch is complete. Circle the prime, like a bud on the tree.
+If a factor is not prime, write it as the product of two factors and continue the process.
+Write the composite number as the product of all the circled primes.
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 1 Foundations 183
+• Find the Least Common Multiple by Listing Multiples
+List several multiples of each number.
+Look for the smallest number that appears on both lists.
+This number is the LCM.
+• Find the Least Common Multiple Using the Prime Factors Method
+Write each number as a product of primes.
+List the primes of each number. Match primes vertically when possible.
+Bring down the columns.
+Multiply the factors.
+1.2 Use the Language of Algebra
+• Notation The result is...
+∘ a + b the sum of a and b
+∘ a − b the difference of a and b
+∘ a · b, ab, (a)(b) (a)b, a(b) the product of a and b
+∘ a ÷ b, a/b, a
+b, b a the quotient of a and b
+• Inequality
+∘ a < b is read “a is less than b” a is to the left of b on the number line
+∘ a > b is read “a is greater than b” a is to the right of b on the number line
+• Inequality Symbols Words
+∘ a ≠ b a is not equal to b
+∘ a < b a is less than b
+∘ a ≤ b a is less than or equal to b
+∘ a > b a is greater than b
+∘ a ≥ b a is greater than or equal to b
+• Grouping Symbols
+◦ Parentheses ( )
+◦ Brackets [ ]
+◦ Braces { }
+• Exponential Notation
+◦ an means multiply a by itself, n times. The expression an is read a to the nth power.
+• Order of Operations: When simplifying mathematical expressions perform the operations in the following order:
+Parentheses and other Grouping Symbols: Simplify all expressions inside the parentheses or other
+grouping symbols, working on the innermost parentheses first.
+Exponents: Simplify all expressions with exponents.
+Multiplication and Division: Perform all multiplication and division in order from left to right. These
+operations have equal priority.
+Addition and Subtraction: Perform all addition and subtraction in order from left to right. These operations
+have equal priority.
+• Combine Like Terms
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+184 Chapter 1 Foundations
+Identify like terms.
+Rearrange the expression so like terms are together.
+Add or subtract the coefficients and keep the same variable for each group of like terms.
+1.3 Add and Subtract Integers
+• Addition of Positive and Negative Integers
+5 + 3 −5 + (−3)
+8 −8
+both positive, both negative,
+sum positive sum negative
+−5 + 3 5 + (−3)
+−2 2
+different signs, different signs,
+more negatives more positives
+sum negative sum positive
+• Property of Absolute Value: |n| ≥ 0 for all numbers. Absolute values are always greater than or equal to zero!
+• Subtraction of Integers
+5 − 3 −5 − (−3)
+2 −2
+5 positives 5 negatives
+take away 3 positives take away 3 negatives
+2 positives 2 negatives
+−5 − 3 5 − (−3)
+−8 8
+5 negatives, want to 5 positives, want to
+subtract 3 positives subtract 3 negatives
+need neutral pairs need neutral pairs
+• Subtraction Property: Subtracting a number is the same as adding its opposite.
+1.4 Multiply and Divide Integers
+• Multiplication and Division of Two Signed Numbers
+◦ Same signs—Product is positive
+◦ Different signs—Product is negative
+• Strategy for Applications
+Identify what you are asked to find.
+Write a phrase that gives the information to find it.
+Translate the phrase to an expression.
+Simplify the expression.
+Answer the question with a complete sentence.
+1.5 Visualize Fractions
+• Equivalent Fractions Property: If a, b, c are numbers where b ≠ 0, c ≠ 0, then
+a
+b = a · c
+b · c and a · c
+b · c = a
+b.
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Chapter 1 Foundations 185
+• Fraction Division: If a, b, c and d are numbers where b ≠ 0, c ≠ 0, and d ≠ 0, then a
+b ÷ c
+d = a
+b · d
+c . To
+divide fractions, multiply the first fraction by the reciprocal of the second.
+• Fraction Multiplication: If a, b, c and d are numbers where b ≠ 0, and d ≠ 0, then a
+b · c
+d = ac
+bd. To multiply
+fractions, multiply the numerators and multiply the denominators.
+• Placement of Negative Sign in a Fraction: For any positive numbers a and b, −a
+b = a
+−b = − a
+b.
+• Property of One: a
+a = 1; Any number, except zero, divided by itself is one.
+• Simplify a Fraction
+Rewrite the numerator and denominator to show the common factors. If needed, factor the numerator
+and denominator into prime numbers first.
+Simplify using the equivalent fractions property by dividing out common factors.
+Multiply any remaining factors.
+• Simplify an Expression with a Fraction Bar
+Simplify the expression in the numerator. Simplify the expression in the denominator.
+Simplify the fraction.
+1.6 Add and Subtract Fractions
+• Fraction Addition and Subtraction: If a, b, and c are numbers where c ≠ 0, then
+a
+c + b
+c = a + b
+c and a
+c − b
+c = a − b
+c .
+To add or subtract fractions, add or subtract the numerators and place the result over the common denominator.
+• Strategy for Adding or Subtracting Fractions
+Do they have a common denominator?
+Yes—go to step 2.
+No—Rewrite each fraction with the LCD (Least Common Denominator). Find the LCD. Change each
+fraction into an equivalent fraction with the LCD as its denominator.
+Add or subtract the fractions.
+Simplify, if possible. To multiply or divide fractions, an LCD IS NOT needed. To add or subtract fractions, an
+LCD IS needed.
+• Simplify Complex Fractions
+Simplify the numerator.
+Simplify the denominator.
+Divide the numerator by the denominator. Simplify if possible.
+1.7 Decimals
+• Name a Decimal
+Name the number to the left of the decimal point.
+Write ”and” for the decimal point.
+Name the “number” part to the right of the decimal point as if it were a whole number.
+Name the decimal place of the last digit.
+• Write a Decimal
+Look for the word ‘and’—it locates the decimal point. Place a decimal point under the word ‘and.’
+Translate the words before ‘and’ into the whole number and place it to the left of the decimal point. If
+there is no “and,” write a “0” with a decimal point to its right.
+Mark the number of decimal places needed to the right of the decimal point by noting the place value
+indicated by the last word.
+Translate the words after ‘and’ into the number to the right of the decimal point. Write the number in the
+spaces—putting the final digit in the last place.
+Fill in zeros for place holders as needed.
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+186 Chapter 1 Foundations
+• Round a Decimal
+Locate the given place value and mark it with an arrow.
+Underline the digit to the right of the place value.
+Is this digit greater than or equal to 5? Yes—add 1 to the digit in the given place value. No—do not change
+the digit in the given place value.
+Rewrite the number, deleting all digits to the right of the rounding digit.
+• Add or Subtract Decimals
+Write the numbers so the decimal points line up vertically.
+Use zeros as place holders, as needed.
+Add or subtract the numbers as if they were whole numbers. Then place the decimal in the answer under
+the decimal points in the given numbers.
+• Multiply Decimals
+Determine the sign of the product.
+Write in vertical format, lining up the numbers on the right. Multiply the numbers as if they were whole
+numbers, temporarily ignoring the decimal points.
+Place the decimal point. The number of decimal places in the product is the sum of the decimal places in
+the factors.
+Write the product with the appropriate sign.
+• Multiply a Decimal by a Power of Ten
+Move the decimal point to the right the same number of places as the number of zeros in the power of 10.
+Add zeros at the end of the number as needed.
+• Divide Decimals
+Determine the sign of the quotient.
+Make the divisor a whole number by “moving” the decimal point all the way to the right. “Move” the
+decimal point in the dividend the same number of places - adding zeros as needed.
+Divide. Place the decimal point in the quotient above the decimal point in the dividend.
+Write the quotient with the appropriate sign.
+• Convert a Decimal to a Proper Fraction
+Determine the place value of the final digit.
+Write the fraction: numerator—the ‘numbers’ to the right of the decimal point; denominator—the place
+value corresponding to the final digit.
+• Convert a Fraction to a Decimal Divide the numerator of the fraction by the denominator.
+1.8 The Real Numbers
+• Square Root Notation
+m is read ‘the square root of m.’ If m = n2, then m = n, for n ≥ 0.
+• Order Decimals
+Write the numbers one under the other, lining up the decimal points.
+Check to see if both numbers have the same number of digits. If not, write zeros at the end of the one with
+fewer digits to make them match.
+Compare the numbers as if they were whole numbers.
+Order the numbers using the appropriate inequality sign.
+1.9 Properties of Real Numbers
+• Commutative Property of
+◦ Addition: If a, b are real numbers, then a + b = b + a.
+◦ Multiplication: If a, b are real numbers, then a · b = b · a. When adding or multiplying, changing the
+order gives the same result.
+• Associative Property of
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 3.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Step 2.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 1 Foundations 187
+◦ Addition: If a, b, c are real numbers, then (a + b) + c = a + (b + c).
+◦ Multiplication: If a, b, c are real numbers, then (a · b) · c = a · (b · c).
+When adding or multiplying, changing the grouping gives the same result.
+• Distributive Property: If a, b, c are real numbers, then
+◦ a(b + c) = ab + ac
+◦ (b + c)a = ba + ca
+◦ a(b − c) = ab − ac
+◦ (b − c)a = ba − ca
+• Identity Property
+◦ of Addition: For any real number a: a + 0 = a 0 + a = a
+0 is the additive identity
+◦ of Multiplication: For any real number a: a · 1 = a 1 · a = a
+1 is the multiplicative identity
+• Inverse Property
+◦ of Addition: For any real number a, a + (−a) = 0. A number and its opposite add to zero. −a is the
+additive inverse of a.
+◦ of Multiplication: For any real number a, (a ≠ 0) a · 1
+a = 1. A number and its reciprocal multiply to one.
+a is the multiplicative inverse of a.
+• Properties of Zero
+◦ For any real number a,
+a · 0 = 0 0 · a = 0 – The product of any real number and 0 is 0.
+◦ 0
+a = 0 for a ≠ 0 – Zero divided by any real number except zero is zero.
+◦ a
+0 is undefined – Division by zero is undefined.
+1.10 Systems of Measurement
+• Metric System of Measurement
+◦ Length
+1 kilometer (km) = 1,000 m
+1 hectometer (hm) = 100 m
+1 dekameter (dam) = 10 m
+1 meter (m) = 1 m
+1 decimeter (dm) = 0.1 m
+1 centimeter (cm) = 0.01 m
+1 millimeter (mm) = 0.001 m
+1 meter = 100 centimeters
+1 meter = 1,000 millimeters
+◦ Mass
+188 Chapter 1 Foundations
+1 kilogram (kg) = 1,000 g
+1 hectogram (hg) = 100 g
+1 dekagram (dag) = 10 g
+1 gram (g) = 1 g
+1 decigram (dg) = 0.1 g
+1 centigram (cg) = 0.01 g
+1 milligram (mg) = 0.001 g
+1 gram = 100 centigrams
+1 gram = 1,000 milligrams
+◦ Capacity
+1 kiloliter (kL) = 1,000 L
+1 hectoliter (hL) = 100 L
+1 dekaliter (daL) = 10 L
+1 liter (L) = 1 L
+1 deciliter (dL) = 0.1 L
+1 centiliter (cL) = 0.01 L
+1 milliliter (mL) = 0.001 L
+1 liter = 100 centiliters
+1 liter = 1,000 milliliters
+• Temperature Conversion
+◦ To convert from Fahrenheit temperature, F, to Celsius temperature, C, use the formula C = 5
+9(F − 32)
+◦ To convert from Celsius temperature, C, to Fahrenheit temperature, F, use the formula F = 9
+5C + 32
+REVIEW EXERCISES
+1.1 Introduction to Whole Numbers
+Use Place Value with Whole Number
+In the following exercises find the place value of each digit.
+913. 26,915
+a 1 b 2 c 9 d 5 e 6
+914. 359,417
+a 9 b 3 c 4 d 7 e 1
+915. 58,129,304
+a 5 b 0 c 1 d 8 e 2
+916. 9,430,286,157
+a 6 b 4 c 9 d 0 e 5
+In the following exercises, name each number.
+917. 6,104 918. 493,068 919. 3,975,284
+920. 85,620,435
+In the following exercises, write each number as a whole number using digits.
+921. three hundred fifteen 922. sixty-five thousand, nine
+hundred twelve
+923. ninety million, four hundred
+twenty-five thousand, sixteen
+924. one billion, forty-three
+million, nine hundred twenty-two
+thousand, three hundred eleven
+Chapter 1 Foundations 189
+In the following exercises, round to the indicated place value.
+925. Round to the nearest ten.
+a 407 b 8,564
+926. Round to the nearest
+hundred.
+a 25,846 b 25,864
+In the following exercises, round each number to the nearest a hundred b thousand c ten thousand.
+927. 864,951 928. 3,972,849
+Identify Multiples and Factors
+In the following exercises, use the divisibility tests to determine whether each number is divisible by 2, by 3, by 5, by 6, and by 10.
+929. 168 930. 264 931. 375
+932. 750 933. 1430 934. 1080
+Find Prime Factorizations and Least Common Multiples
+In the following exercises, find the prime factorization.
+935. 420 936. 115 937. 225
+938. 2475 939. 1560 940. 56
+941. 72 942. 168 943. 252
+944. 391
+In the following exercises, find the least common multiple of the following numbers using the multiples method.
+945. 6,15 946. 60, 75
+In the following exercises, find the least common multiple of the following numbers using the prime factors method.
+947. 24, 30 948. 70, 84
+1.2 Use the Language of Algebra
+Use Variables and Algebraic Symbols
+In the following exercises, translate the following from algebra to English.
+949. 25 − 7 950. 5 · 6 951. 45 ÷ 5
+952. x + 8 953. 42 ≥ 27 954. 3n = 24
+955. 3 ≤ 20 ÷ 4 956. a ≠ 7 · 4
+In the following exercises, determine if each is an expression or an equation.
+957. 6 · 3 + 5 958. y − 8 = 32
+Simplify Expressions Using the Order of Operations
+In the following exercises, simplify each expression.
+959. 35 960. 108
+In the following exercises, simplify
+961. 6 + 10/2 + 2 962. 9 + 12/3 + 4 963. 20 ÷ (4 + 6) · 5
+190 Chapter 1 Foundations
+964. 33 ÷ (3 + 8) · 2 965. (4 + 5)2 966. (4 + 5)2
+Evaluate an Expression
+In the following exercises, evaluate the following expressions.
+967. 9x + 7 when x = 3 968. 5x − 4 when x = 6 969. x4 when x = 3
+970. 3x when x = 3 971. x2 + 5x − 8 when x = 6 972. 2x + 4y − 5 when
+x = 7, y = 8
+Simplify Expressions by Combining Like Terms
+In the following exercises, identify the coefficient of each term.
+973. 12n 974. 9x2
+In the following exercises, identify the like terms.
+975. 3n, n2, 12, 12p2, 3, 3n2 976. 5, 18r2, 9s, 9r, 5r2, 5s
+In the following exercises, identify the terms in each expression.
+977. 11x2 + 3x + 6 978. 22y3 + y + 15
+In the following exercises, simplify the following expressions by combining like terms.
+979. 17a + 9a 980. 18z + 9z 981. 9x + 3x + 8
+982. 8a + 5a + 9 983. 7p + 6 + 5p − 4 984. 8x + 7 + 4x − 5
+Translate an English Phrase to an Algebraic Expression
+In the following exercises, translate the following phrases into algebraic expressions.
+985. the sum of 8 and 12 986. the sum of 9 and 1 987. the difference of x and 4
+988. the difference of x and 3 989. the product of 6 and y 990. the product of 9 and y
+991. Adele bought a skirt and a
+blouse. The skirt cost $15 more
+than the blouse. Let b represent
+the cost of the blouse. Write an
+expression for the cost of the skirt.
+992. Marcella has 6 fewer boy
+cousins than girl cousins. Let g
+represent the number of girl
+cousins. Write an expression for
+the number of boy cousins.
+1.3 Add and Subtract Integers
+Use Negatives and Opposites of Integers
+In the following exercises, order each of the following pairs of numbers, using < or >.
+993.
+a 6___2
+b −7___4
+c −9___−1
+d 9___−3
+994.
+a −5___1
+b −4___−9
+c 6___10
+d 3___−8
+Chapter 1 Foundations 191
+In the following exercises,, find the opposite of each number.
+995. a −8 b 1 996. a −2 b 6
+In the following exercises, simplify.
+997. −(−19) 998. −(−53)
+In the following exercises, simplify.
+999. −m when
+a m = 3
+b m = −3
+1000. −p when
+a p = 6
+b p = −6
+Simplify Expressions with Absolute Value
+In the following exercises,, simplify.
+1001. a |7| b |−25| c |0| 1002. a |5| b |0| c |−19|
+In the following exercises, fill in <, >, or = for each of the following pairs of numbers.
+1003.
+a −8___|−8|
+b −|−2|___−2
+1004.
+a |−3|___ − |−3|
+b 4___ − |−4|
+In the following exercises, simplify.
+1005. |8 − 4| 1006. |9 − 6| 1007. 8(14 − 2|−2|)
+1008. 6(13 − 4|−2|)
+In the following exercises, evaluate.
+1009. a |x| when x = −28 b
+|x| when x = −15
+1010.
+a |y| when y = −37
+b |−z| when z = −24
+Add Integers
+In the following exercises, simplify each expression.
+1011. −200 + 65 1012. −150 + 45 1013. 2 + (−8) + 6
+1014. 4 + (−9) + 7 1015. 140 + (−75) + 67 1016. −32 + 24 + (−6) + 10
+Subtract Integers
+In the following exercises, simplify.
+1017. 9 − 3 1018. −5 − (−1) 1019. a 15 − 6 b 15 + (−6)
+1020. a 12 − 9 b 12 + (−9) 1021. a 8 − (−9) b 8 + 9 1022. a 4 − (−4) b 4 + 4
+In the following exercises, simplify each expression.
+1023. 10 − (−19) 1024. 11 − (−18) 1025. 31 − 79
+192 Chapter 1 Foundations
+1026. 39 − 81 1027. −31 − 11 1028. −32 − 18
+1029. −15 − (−28) + 5 1030. 71 + (−10) − 8 1031. −16 − (−4 + 1) − 7
+1032. −15 − (−6 + 4) − 3
+Multiply Integers
+In the following exercises, multiply.
+1033. −5(7) 1034. −8(6) 1035. −18(−2)
+1036. −10(−6)
+Divide Integers
+In the following exercises, divide.
+1037. −28 ÷ 7 1038. 56 ÷ (−7) 1039. −120 ÷ (−20)
+1040. −200 ÷ 25
+Simplify Expressions with Integers
+In the following exercises, simplify each expression.
+1041. −8(−2) − 3(−9) 1042. −7(−4) − 5(−3) 1043. (−5)3
+1044. (−4)3 1045. −4 · 2 · 11 1046. −5 · 3 · 10
+1047. −10(−4) ÷ (−8) 1048. −8(−6) ÷ (−4) 1049. 31 − 4(3 − 9)
+1050. 24 − 3(2 − 10)
+Evaluate Variable Expressions with Integers
+In the following exercises, evaluate each expression.
+1051. x + 8 when a x = −26 b
+x = −95
+1052. y + 9 when a y = −29 b
+y = −84
+1053. When b = −11 , evaluate:a
+b + 6 b −b + 6
+1054. When c = −9 , evaluate:
+a c + (−4) >b −c + (−4)
+1055. p2 − 5p + 2 when
+p = −1
+1056. q2 − 2q + 9 when q = −2
+1057. 6x − 5y + 15 when x = 3
+and y = −1
+1058. 3p − 2q + 9 when p = 8
+and q = −2
+Translate English Phrases to Algebraic Expressions
+In the following exercises, translate to an algebraic expression and simplify if possible.
+1059. the sum of −4 and −17 ,
+increased by 32
+1060. a the difference of 15 and
+−7 b subtract 15 from −7
+1061. the quotient of −45 and
+−9
+1062. the product of −12 and the
+difference of c and d
+Chapter 1 Foundations 193
+Use Integers in Applications
+In the following exercises, solve.
+1063. Temperature The high
+temperature one day in Miami
+Beach, Florida, was 76° . That
+same day, the high temperature in
+Buffalo, New York was −8° . What
+was the difference between the
+temperature in Miami Beach and
+the temperature in Buffalo?
+1064. Checking Account
+Adrianne has a balance of −$22 in
+her checking account. She deposits
+$301 to the account. What is the
+new balance?
+1.5 Visualize Fractions
+Find Equivalent Fractions
+In the following exercises, find three fractions equivalent to the given fraction. Show your work, using figures or algebra.
+1065. 1
+4 1066. 1
+3 1067. 5
+1068. 2
+Simplify Fractions
+In the following exercises, simplify.
+1069. 7
+21 1070. 8
+24 1071. 15
+1072. 12
+18 1073. − 168
+192 1074. − 140
+1075. 11x
+11y 1076. 15a
+15b
+Multiply Fractions
+In the following exercises, multiply.
+1077. 2
+5 · 1
+3 1078. 1
+2 · 3
+8 1079. 7
+⎛
+⎝− 8
+⎞
+1080. 5
+⎛
+⎝− 8
+⎞
+⎠ 1081. −28p⎛
+⎝− 1
+⎞
+⎠ 1082. −51q⎛
+⎝− 1
+⎞
+1083. 14
+5 (−15) 1084. −1⎛
+⎝− 3
+⎞
+Divide Fractions
+In the following exercises, divide.
+1085. 1
+2 ÷ 1
+4 1086. 1
+2 ÷ 1
+8 1087. − 4
+5 ÷ 4
+1088. − 3
+4 ÷ 3
+5 1089. 5
+8 ÷ a
+10 1090. 5
+6 ÷ c
+1091. 7p
+12 ÷ 21p
+8 1092. 5q
+12 ÷ 15q
+8 1093. 2
+5 ÷ (−10)
+194 Chapter 1 Foundations
+1094. −18 ÷ − ⎛
+⎝9
+⎞
+In the following exercises, simplify.
+1095.
+1096.
+1097. − 9
+1098. 2
+8 1099.
+r
+s
+1100. − x
+− 8
+Simplify Expressions Written with a Fraction Bar
+In the following exercises, simplify.
+1101. 4 + 11
+8 1102. 9 + 3
+7 1103. 30
+7 − 12
+1104. 15
+4 − 9 1105. 22 − 14
+19 − 13 1106. 15 + 9
+18 + 12
+1107. 5 · 8
+−10 1108. 3 · 4
+−24 1109. 15 · 5 − 52
+2 · 10
+1110. 12 · 9 − 32
+3 · 18 1111. 2 + 4(3)
+−3 − 22 1112. 7 + 3(5)
+−2 − 32
+Translate Phrases to Expressions with Fractions
+In the following exercises, translate each English phrase into an algebraic expression.
+1113. the quotient of c and the sum
+of d and 9.
+1114. the quotient of the
+difference of h and k, and −5 .
+1.6 Add and Subtract Fractions
+Add and Subtract Fractions with a Common Denominator
+In the following exercises, add.
+1115. 4
+9 + 1
+9 1116. 2
+9 + 5
+9 1117. y
+3 + 2
+1118. 7
+p + 9
+p 1119. − 1
+8 + ⎛
+⎝− 3
+⎞
+⎠ 1120. − 1
+8 + ⎛
+⎝− 5
+⎞
+In the following exercises, subtract.
+1121. 4
+5 − 1
+5 1122. 4
+5 − 3
+5 1123. y
+17 − 9
+1124. x
+19 − 8
+19 1125. − 8
+d − 3
+d 1126. − 7
+c − 7
+c
+Add or Subtract Fractions with Different Denominators
+In the following exercises, add or subtract.
+1127. 1
+3 + 1
+5 1128. 1
+4 + 1
+5 1129. 1
+5 − ⎛
+⎝− 1
+⎞
+Chapter 1 Foundations 195
+1130. 1
+2 − ⎛
+⎝− 1
+⎞
+⎠ 1131. 2
+3 + 3
+4 1132. 3
+4 + 2
+1133. 11
+12 − 3
+8 1134. 5
+8 − 7
+12 1135. − 9
+16 − ⎛
+⎝− 4
+⎞
+1136. − 7
+20 − ⎛
+⎝− 5
+⎞
+⎠ 1137. 1 + 5
+6 1138. 1 − 5
+Use the Order of Operations to Simplify Complex Fractions
+In the following exercises, simplify.
+1139.
+⎛
+⎝1
+⎞
+2 + 32 1140.
+⎛
+⎝1
+⎞
+5 + 22
+1141.
+3 + 1
+4 − 2
+1142.
+4 + 1
+6 − 2
+Evaluate Variable Expressions with Fractions
+In the following exercises, evaluate.
+1143. x + 1
+2 when
+a x = − 1
+b x = − 1
+1144. x + 2
+3 when
+a x = − 1
+b x = − 5
+1145. 4p2 q when p = − 1
+2 and
+q = 5
+1146. 5m2 n when m = − 2
+and n = 1
+1147. u + v
+w when
+u = −4, v = −8, w = 2
+1148. m + n
+p when
+m = −6, n = −2, p = 4
+1.7 Decimals
+Name and Write Decimals
+In the following exercises, write as a decimal.
+1149. Eight and three hundredths 1150. Nine and seven hundredths 1151. One thousandth
+1152. Nine thousandths
+In the following exercises, name each decimal.
+1153. 7.8 1154. 5.01 1155. 0.005
+1156. 0.381
+Round Decimals
+In the following exercises, round each number to the nearest a hundredth b tenth c whole number.
+1157. 5.7932 1158. 3.6284 1159. 12.4768
+1160. 25.8449
+196 Chapter 1 Foundations
+Add and Subtract Decimals
+In the following exercises, add or subtract.
+1161. 18.37 + 9.36 1162. 256.37 − 85.49 1163. 15.35 − 20.88
+1164. 37.5 + 12.23 1165. −4.2 + (−9.3) 1166. −8.6 + (−8.6)
+1167. 100 − 64.2 1168. 100 − 65.83 1169. 2.51 + 40
+1170. 9.38 + 60
+Multiply and Divide Decimals
+In the following exercises, multiply.
+1171. (0.3)(0.4) 1172. (0.6)(0.7) 1173. (8.52)(3.14)
+1174. (5.32)(4.86) 1175. (0.09)(24.78) 1176. (0.04)(36.89)
+In the following exercises, divide.
+1177. 0.15 ÷ 5 1178. 0.27 ÷ 3 1179. $8.49 ÷ 12
+1180. $16.99 ÷ 9 1181. 12 ÷ 0.08 1182. 5 ÷ 0.04
+Convert Decimals, Fractions, and Percents
+In the following exercises, write each decimal as a fraction.
+1183. 0.08 1184. 0.17 1185. 0.425
+1186. 0.184 1187. 1.75 1188. 0.035
+In the following exercises, convert each fraction to a decimal.
+1189. 2
+5 1190. 4
+5 1191. − 3
+1192. − 5
+8 1193. 5
+9 1194. 2
+1195. 1
+2 + 6.5 1196. 1
+4 + 10.75
+In the following exercises, convert each percent to a decimal.
+1197. 5% 1198. 9% 1199. 40%
+1200. 50% 1201. 115% 1202. 125%
+In the following exercises, convert each decimal to a percent.
+1203. 0.18 1204. 0.15 1205. 0.009
+1206. 0.008 1207. 1.5 1208. 2.2
+Chapter 1 Foundations 197
+1.8 The Real Numbers
+Simplify Expressions with Square Roots
+In the following exercises, simplify.
+1209. 64 1210. 144 1211. − 25
+1212. − 81
+Identify Integers, Rational Numbers, Irrational Numbers, and Real Numbers
+In the following exercises, write as the ratio of two integers.
+1213. a 9 b 8.47 1214. a −15 b 3.591
+In the following exercises, list the a rational numbers, b irrational numbers.
+1215. 0.84, 0.79132..., 1.3
+– 1216. 2.38
+–, 0.572, 4.93814...
+In the following exercises, identify whether each number is rational or irrational.
+1217. a 121 b 48 1218. a 56 b 16
+In the following exercises, identify whether each number is a real number or not a real number.
+1219. a −9 b − 169 1220. a −64 b − 81
+In the following exercises, list the a whole numbers, b integers, c rational numbers, d irrational numbers, e real numbers
+for each set of numbers.
+1221.
+−4, 0, 5
+6, 16, 18, 5.2537...
+1222.
+− 4, 0.36
+—, 13
+3 , 6.9152..., 48, 101
+Locate Fractions on the Number Line
+In the following exercises, locate the numbers on a number line.
+1223. 2
+3, 5
+4, 12
+5 1224. 1
+3, 7
+4, 13
+5 1225. 21
+3, −21
+1226. 13
+5, −13
+In the following exercises, order each of the following pairs of numbers, using < or >.
+1227. −1___ − 1
+8 1228. −31
+4___−4 1229. − 7
+9___ − 4
+1230. −2___ − 19
+Locate Decimals on the Number Line
+In the following exercises, locate on the number line.
+1231. 0.3 1232. −0.2 1233. −2.5
+1234. 2.7
+198 Chapter 1 Foundations
+In the following exercises, order each of the following pairs of numbers, using < or >.
+1235. 0.9___0.6 1236. 0.7___0.8 1237. −0.6___−0.59
+1238. −0.27___−0.3
+1.9 Properties of Real Numbers
+Use the Commutative and Associative Properties
+In the following exercises, use the Associative Property to simplify.
+1239. −12(4m) 1240. 30⎛
+⎝5
+6q⎞
+⎠ 1241. (a + 16) + 31
+1242. (c + 0.2) + 0.7
+In the following exercises, simplify.
+1243. 6y + 37 + ⎛
+⎝−6y⎞
+⎠ 1244. 1
+4 + 11
+15 + ⎛
+⎝− 1
+⎞
+⎠ 1245. 14
+11 + 35
+9 + ⎛
+⎝− 14
+⎞
+1246. −18 · 15 · 2
+9 1247. ⎛
+⎝ 7
+12 + 4
+⎞
+⎠ + 1
+1248. (3.98d + 0.75d) + 1.25d
+1249. 11x + 8y + 16x + 15y 1250.
+52m + (−20n) + (−18m) + (−5n)
+Use the Identity and Inverse Properties of Addition and Multiplication
+In the following exercises, find the additive inverse of each number.
+1251.
+a 1
+b 5.1
+c −14
+d − 8
+1252.
+a − 7
+b −0.03
+c 17
+d 12
+In the following exercises, find the multiplicative inverse of each number.
+1253. a 10 b − 4
+9 c 0.6 1254. a − 9
+2 b −7 c 2.1
+Use the Properties of Zero
+In the following exercises, simplify.
+1255. 83 · 0 1256. 0
+9 1257. 5
+1258. 0 ÷ 2
+In the following exercises, simplify.
+1259. 43 + 39 + (−43) 1260. (n + 6.75) + 0.25 1261. 5
+13 · 57 · 13
+Chapter 1 Foundations 199
+1262. 1
+6 · 17 · 12 1263. 2
+3 · 28 · 3
+7 1264. 9(6x − 11) + 15
+Simplify Expressions Using the Distributive Property
+In the following exercises, simplify using the Distributive Property.
+1265. 7(x + 9) 1266. 9(u − 4) 1267. −3(6m − 1)
+1268. −8(−7a − 12) 1269. 1
+3(15n − 6) 1270. ⎛
+⎝y + 10⎞
+⎠ · p
+1271. (a − 4) − (6a + 9) 1272. 4(x + 3) − 8(x − 7)
+1.10 Systems of Measurement
+1.1 Define U.S. Units of Measurement and Convert from One Unit to Another
+In the following exercises, convert the units. Round to the nearest tenth.
+1273. A floral arbor is 7 feet tall.
+Convert the height to inches.
+1274. A picture frame is 42 inches
+wide. Convert the width to feet.
+1275. Kelly is 5 feet 4 inches tall.
+Convert her height to inches.
+1276. A playground is 45 feet wide.
+Convert the width to yards.
+1277. The height of Mount Shasta
+is 14,179 feet. Convert the height to
+miles.
+1278. Shamu weights 4.5 tons.
+Convert the weight to pounds.
+1279. The play lasted 13
+4 hours.
+Convert the time to minutes.
+1280. How many tablespoons are
+in a quart?
+1281. Naomi’s baby weighed 5
+pounds 14 ounces at birth. Convert
+the weight to ounces.
+1282. Trinh needs 30 cups of paint
+for her class art project. Convert
+the volume to gallons.
+Use Mixed Units of Measurement in the U.S. System.
+In the following exercises, solve.
+1283. John caught 4 lobsters. The
+weights of the lobsters were 1
+pound 9 ounces, 1 pound 12
+ounces, 4 pounds 2 ounces, and 2
+pounds 15 ounces. What was the
+total weight of the lobsters?
+1284. Every day last week Pedro
+recorded the number of minutes
+he spent reading. The number of
+minutes were 50, 25, 83, 45, 32, 60,
+135. How many hours did Pedro
+spend reading?
+1285. Fouad is 6 feet 2 inches tall.
+If he stands on a rung of a ladder
+8 feet 10 inches high, how high off
+the ground is the top of Fouad’s
+head?
+1286. Dalila wants to make throw
+pillow covers. Each cover takes 30
+inches of fabric. How many yards
+of fabric does she need for 4
+covers?
+Make Unit Conversions in the Metric System
+In the following exercises, convert the units.
+1287. Donna is 1.7 meters tall.
+Convert her height to centimeters.
+1288. Mount Everest is 8,850
+meters tall. Convert the height to
+kilometers.
+1289. One cup of yogurt contains
+488 milligrams of calcium. Convert
+this to grams.
+1290. One cup of yogurt contains
+13 grams of protein. Convert this to
+milligrams.
+1291. Sergio weighed 2.9
+kilograms at birth. Convert this to
+grams.
+1292. A bottle of water contained
+650 milliliters. Convert this to
+liters.
+200 Chapter 1 Foundations
+Use Mixed Units of Measurement in the Metric System
+In the following exerices, solve.
+1293. Minh is 2 meters tall. His
+daughter is 88 centimeters tall.
+How much taller is Minh than his
+daughter?
+1294. Selma had a 1 liter bottle of
+water. If she drank 145 milliliters,
+how much water was left in the
+bottle?
+1295. One serving of cranberry
+juice contains 30 grams of sugar.
+How many kilograms of sugar are
+in 30 servings of cranberry juice?
+1296. One ounce of tofu provided
+2 grams of protein. How many
+milligrams of protein are provided
+by 5 ounces of tofu?
+Convert between the U.S. and the Metric Systems of Measurement
+In the following exercises, make the unit conversions. Round to the nearest tenth.
+1297. Majid is 69 inches tall.
+Convert his height to centimeters.
+1298. A college basketball court is
+84 feet long. Convert this length to
+meters.
+1299. Caroline walked 2.5
+kilometers. Convert this length to
+miles.
+1300. Lucas weighs 78 kilograms.
+Convert his weight to pounds.
+1301. Steve’s car holds 55 liters of
+gas. Convert this to gallons.
+1302. A box of books weighs 25
+pounds. Convert the weight to
+kilograms.
+Convert between Fahrenheit and Celsius Temperatures
+In the following exercises, convert the Fahrenheit temperatures to degrees Celsius. Round to the nearest tenth.
+1303. 95° Fahrenheit 1304. 23° Fahrenheit 1305. 20° Fahrenheit
+1306. 64° Fahrenheit
+In the following exercises, convert the Celsius temperatures to degrees Fahrenheit. Round to the nearest tenth.
+1307. 30° Celsius 1308. –5° Celsius 1309. –12° Celsius
+1310. 24° Celsius
+Chapter 1 Foundations 201
+PRACTICE TEST
+1311. Write as a whole number
+using digits: two hundred five
+thousand, six hundred seventeen.
+1312. Find the prime factorization
+of 504.
+1313. Find the Least Common
+Multiple of 18 and 24.
+1314. Combine like terms:
+5n + 8 + 2n − 1.
+In the following exercises, evaluate.
+1315. −|x| when x = −2 1316. 11 − a when a = −3 1317. Translate to an algebraic
+expression and simplify: twenty
+less than negative 7.
+1318. Monique has a balance of
+−$18 in her checking account.
+She deposits $152 to the account.
+What is the new balance?
+1319. Round 677.1348 to the
+nearest hundredth. 1320. Convert 4
+5 to a decimal.
+1321. Convert 1.85 to a percent. 1322. Locate 2
+3, −1.5, and 9
+4 on a
+number line.
+In the following exercises, simplify each expression.
+1323. 4 + 10(3 + 9) − 52 1324. −85 + 42 1325. −19 − 25
+1326. (−2)4 1327. −5(−9) ÷ 15 1328. 3
+8 · 11
+1329. 4
+5 ÷ 9
+20 1330. 12 + 3 · 5
+15 − 6 1331. m
+7 + 10
+1332. 7
+12 − 3
+8 1333. −5.8 + (−4.7) 1334. 100 − 64.25
+1335. (0.07)(31.95) 1336. 9 ÷ 0.05 1337. −14⎛
+⎝5
+7 p⎞
+1338. (u + 8) − 9 1339. 6x + ⎛
+⎝−4y⎞
+⎠ + 9x + 8y 1340. 0
+1341. 75
+0 1342. −2⎛
+⎝13q − 5⎞
+⎠ 1343. A movie lasted 12
+3 hours.
+How many minutes did it last? (1
+hour = 60 minutes)
+1344. Mike’s SUV is 5 feet 11
+inches tall. He wants to put a
+rooftop cargo bag on the the SUV.
+The cargo bag is 1 foot 6 inches
+tall. What will the total height be of
+the SUV with the cargo bag on the
+roof? (1 foot = 12 inches)
+1345. Jennifer ran 2.8 miles.
+Convert this length to kilometers.
+(1 mile = 1.61 kilometers)
+202 Chapter 1 Foundations

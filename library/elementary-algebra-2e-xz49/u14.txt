@@ -1,0 +1,407 @@
+2.4
+Use a General Strategy to Solve Linear Equations
+Learning Objectives
+BE PREPARED : : 2.8 Before you get started, take this readiness quiz.
+Simplify: −(a − 4).
+If you missed this problem, review Example 1.137.
+BE PREPARED : : 2.9 Multiply: 3
+2(12x + 20) .
+If you missed this problem, review Example 1.133.
+BE PREPARED : : 2.10 Simplify: 5 − 2(n + 1) .
+If you missed this problem, review Example 1.138.
+BE PREPARED : : 2.11 Multiply: 3(7y + 9) .
+If you missed this problem, review Example 1.132.
+BE PREPARED : : 2.12 Multiply: (2.5)(6.4) .
+If you missed this problem, review Example 1.97.
+Solve Equations Using the General Strategy
+Until now we have dealt with solving one specific form of a linear equation. It is time now to lay out one overall strategy
+that can be used to solve any linear equation. Some equations we solve will not require all these steps to solve, but many
+will.
+Beginning by simplifying each side of the equation makes the remaining steps easier.
+EXAMPLE 2.37 HOW TO SOLVE LINEAR EQUATIONS USING THE GENERAL STRATEGY
+Solve: −6(x + 3) = 24.
+242 Chapter 2 Solving Linear Equations and Inequalities
+TRY IT : : 2.73 Solve: 5(x + 3) = 35.
+TRY IT : : 2.74 Solve: 6⎛
+⎝y − 4⎞
+⎠ = −18.
+Solve: −⎛
+⎝y + 9⎞
+⎠ = 8.
+Simplify each side of the equation as much as possible by distributing.
+The only y term is on the left side, so all variable terms are on the left side of the
+equation.
+Add 9 to both sides to get all constant terms on the right side of the equation.
+Simplify.
+Rewrite −y as −1y .
+Make the coefficient of the variable term to equal to 1 by dividing both sides by −1 .
+HOW TO : : GENERAL STRATEGY FOR SOLVING LINEAR EQUATIONS.
+Simplify each side of the equation as much as possible.
+Use the Distributive Property to remove any parentheses.
+Combine like terms.
+Collect all the variable terms on one side of the equation.
+Use the Addition or Subtraction Property of Equality.
+Collect all the constant terms on the other side of the equation.
+Use the Addition or Subtraction Property of Equality.
+Make the coefficient of the variable term to equal to 1.
+Use the Multiplication or Division Property of Equality.
+State the solution to the equation.
+Check the solution. Substitute the solution into the original equation to make sure the result
+is a true statement.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Chapter 2 Solving Linear Equations and Inequalities 243
+Simplify.
+Check:
+Let y = −17 .
+TRY IT : : 2.75 Solve: −⎛
+⎝y + 8⎞
+⎠ = −2.
+TRY IT : : 2.76 Solve: −(z + 4) = −12.
+Solve: 5(a − 3) + 5 = −10 .
+Simplify each side of the equation as much as possible.
+Distribute.
+Combine like terms.
+The only a term is on the left side, so all variable terms are on one side of the
+equation.
+Add 10 to both sides to get all constant terms on the other side of the equation.
+Simplify.
+Make the coefficient of the variable term to equal to 1 by dividing both sides by 5 .
+Simplify.
+Check:
+Let a = 0 .
+TRY IT : : 2.77 Solve: 2(m − 4) + 3 = −1 .
+TRY IT : : 2.78 Solve: 7(n − 3) − 8 = −15 .
+244 Chapter 2 Solving Linear Equations and Inequalities
+Solve: 2
+3(6m − 3) = 8 − m .
+Distribute.
+Add m to get the variables only to the left.
+Simplify.
+Add 2 to get constants only on the right.
+Simplify.
+Divide by 5 .
+Simplify.
+Check:
+Let m = 2 .
+TRY IT : : 2.79 Solve: 1
+3(6u + 3) = 7 − u .
+TRY IT : : 2.80 Solve: 2
+3(9x − 12) = 8 + 2x .
+Solve: 8 − 2⎛
+⎝3y + 5⎞
+⎠ = 0 .
+Simplify—use the Distributive Property.
+Combine like terms.
+Add 2 to both sides to collect constants on the right.
+Simplify.
+Divide both sides by −6 .
+Chapter 2 Solving Linear Equations and Inequalities 245
+Simplify.
+Check: Let y = − 1
+3.
+TRY IT : : 2.81 Solve: 12 − 3⎛
+⎝4 j + 3⎞
+⎠ = −17 .
+TRY IT : : 2.82 Solve: −6 − 8(k − 2) = −10 .
+Solve: 4(x − 1) − 2 = 5(2x + 3) + 6 .
+Distribute.
+Combine like terms.
+Subtract 4x to get the variables only on the right side since 10 > 4 .
+Simplify.
+Subtract 21 to get the constants on left.
+Simplify.
+Divide by 6.
+Simplify.
+Check:
+Let x = − 9
+2 .
+246 Chapter 2 Solving Linear Equations and Inequalities
+TRY IT : : 2.83 Solve: 6⎛
+⎝p − 3⎞
+⎠ − 7 = 5⎛
+⎝4p + 3⎞
+⎠ − 12 .
+TRY IT : : 2.84 Solve: 8⎛
+⎝q + 1⎞
+⎠ − 5 = 3⎛
+⎝2q − 4⎞
+⎠ − 1 .
+Solve: 10⎡
+⎣3 − 8(2s − 5)⎤
+⎦ = 15(40 − 5s) .
+Simplify from the innermost parentheses first.
+Combine like terms in the brackets.
+Distribute.
+Add 160s to get the s’s to the right.
+Simplify.
+Subtract 600 to get the constants to the left.
+Simplify.
+Divide.
+Simplify.
+Check:
+Substitute s = −2 .
+TRY IT : : 2.85 Solve: 6⎡
+⎣4 − 2⎛
+⎝7y − 1⎞
+⎤
+⎦ = 8⎛
+⎝13 − 8y⎞
+⎠ .
+TRY IT : : 2.86 Solve: 12⎡
+⎣1 − 5(4z − 1)⎤
+⎦ = 3(24 + 11z) .
+Solve: 0.36(100n + 5) = 0.6(30n + 15) .
+Chapter 2 Solving Linear Equations and Inequalities 247
+Distribute.
+Subtract 18n to get the variables to the left.
+Simplify.
+Subtract 1.8 to get the constants to the right.
+Simplify.
+Divide.
+Simplify.
+Check:
+Let n = 0.4 .
+TRY IT : : 2.87 Solve: 0.55(100n + 8) = 0.6(85n + 14) .
+TRY IT : : 2.88 Solve: 0.15(40m − 120) = 0.5(60m + 12) .
+Classify Equations
+Consider the equation we solved at the start of the last section, 7x + 8 = −13 . The solution we found was x = −3 . This
+means the equation 7x + 8 = −13 is true when we replace the variable, x, with the value −3 . We showed this when we
+checked the solution x = −3 and evaluated 7x + 8 = −13 for x = −3 .
+If we evaluate 7x + 8 for a different value of x, the left side will not be −13 .
+The equation 7x + 8 = −13 is true when we replace the variable, x, with the value −3 , but not true when we replace x
+with any other value. Whether or not the equation 7x + 8 = −13 is true depends on the value of the variable. Equations
+like this are called conditional equations.
+All the equations we have solved so far are conditional equations.
+Conditional equation
+An equation that is true for one or more values of the variable and false for all other values of the variable is a
+conditional equation.
+Now let’s consider the equation 2y + 6 = 2⎛
+⎝y + 3⎞
+⎠ . Do you recognize that the left side and the right side are equivalent?
+Let’s see what happens when we solve for y.
+248 Chapter 2 Solving Linear Equations and Inequalities
+Distribute.
+Subtract 2y to get the y ’s to one side.
+Simplify—the y ’s are gone!
+But 6 = 6 is true.
+This means that the equation 2y + 6 = 2⎛
+⎝y + 3⎞
+⎠ is true for any value of y. We say the solution to the equation is all of the
+real numbers. An equation that is true for any value of the variable like this is called an identity.
+Identity
+An equation that is true for any value of the variable is called an identity.
+The solution of an identity is all real numbers.
+What happens when we solve the equation 5z = 5z − 1 ?
+Subtract 5z to get the constant alone on the right.
+Simplify—the z ’s are gone!
+But 0 ≠ −1 .
+Solving the equation 5z = 5z − 1 led to the false statement 0 = −1 . The equation 5z = 5z − 1 will not be true for any
+value of z. It has no solution. An equation that has no solution, or that is false for all values of the variable, is called a
+contradiction.
+Contradiction
+An equation that is false for all values of the variable is called a contradiction.
+A contradiction has no solution.
+Classify the equation as a conditional equation, an identity, or a contradiction. Then state the solution.
+6(2n − 1) + 3 = 2n − 8 + 5(2n + 1)
+Distribute.
+Combine like terms.
+Subtract 12n to get the n ’s to one side.
+Simplify.
+This is a true statement. The equation is an identity.
+The solution is all real numbers.
+Chapter 2 Solving Linear Equations and Inequalities 249
+Classify the equation as a conditional equation, an identity, or a contradiction and then state the solution:
+4 + 9(3x − 7) = −42x − 13 + 23(3x − 2)
+Classify the equation as a conditional equation, an identity, or a contradiction and then state the solution:
+8(1 − 3x) + 15(2x + 7) = 2(x + 50) + 4(x + 3) + 1
+Classify as a conditional equation, an identity, or a contradiction. Then state the solution.
+10 + 4(p − 5) = 0
+Distribute.
+Combine like terms.
+Add 10 to both sides.
+Simplify.
+Divide.
+Simplify.
+The equation is true when p = 5
+2 .
+This is a conditional equation.
+The solution is p = 5
+2.
+Classify the equation as a conditional equation, an identity, or a contradiction and then state the solution:
+11(q + 3) − 5 = 19
+Classify the equation as a conditional equation, an identity, or a contradiction and then state the solution:
+6 + 14(k − 8) = 95
+Classify the equation as a conditional equation, an identity, or a contradiction. Then state the solution.
+5m + 3(9 + 3m) = 2(7m − 11)
+250 Chapter 2 Solving Linear Equations and Inequalities
+Distribute.
+Combine like terms.
+Subtract 14m from both sides.
+Simplify.
+But 27 ≠ −22 . The equation is a contradiction.
+It has no solution.
+Classify the equation as a conditional equation, an identity, or a contradiction and then state the solution:
+12c + 5(5 + 3c) = 3(9c − 4)
+Classify the equation as a conditional equation, an identity, or a contradiction and then state the solution:
+4(7d + 18) = 13(3d − 2) − 11d
+Type of equation What happens when you solve it? Solution
+Conditional
+Equation
+True for one or more values of the variables and false for all
+other values
+One or more
+values
+Identity True for any value of the variable All real numbers
+Contradiction False for all values of the variable No solution
+Table 2.5
+Chapter 2 Solving Linear Equations and Inequalities 251
+Practice Makes Perfect
+Solve Equations Using the General Strategy for Solving Linear Equations
+In the following exercises, solve each linear equation.
+232. 15⎛
+⎝y − 9⎞
+⎠ = −60 233. 21⎛
+⎝y − 5⎞
+⎠ = −42 234. −9(2n + 1) = 36
+235. −16(3n + 4) = 32 236. 8(22 + 11r) = 0 237. 5⎛
+⎝8 + 6p⎞
+⎠ = 0
+238. −(w − 12) = 30 239. −(t − 19) = 28 240. 9(6a + 8) + 9 = 81
+241. 8(9b − 4) − 12 = 100 242. 32 + 3(z + 4) = 41 243. 21 + 2(m − 4) = 25
+244. 51 + 5(4 − q) = 56 245. −6 + 6(5 − k) = 15 246. 2(9s − 6) − 62 = 16
+247. 8(6t − 5) − 35 = −27 248. 3(10 − 2x) + 54 = 0 249. −2(11 − 7x) + 54 = 4
+250. 2
+3(9c − 3) = 22 251. 3
+5(10x − 5) = 27 252. 1
+5(15c + 10) = c + 7
+253. 1
+4(20d + 12) = d + 7 254. 18 − (9r + 7) = −16 255. 15 − (3r + 8) = 28
+256. 5 − (n − 1) = 19 257. −3 − (m − 1) = 13 258. 11 − 4(y − 8) = 43
+259. 18 − 2(y − 3) = 32 260. 24 − 8(3v + 6) = 0 261. 35 − 5(2w + 8) = −10
+262. 4(a − 12) = 3(a + 5) 263. −2(a − 6) = 4(a − 3) 264. 2(5 − u) = −3(2u + 6)
+265. 5(8 − r) = −2(2r − 16) 266. 3(4n − 1) − 2 = 8n + 3 267. 9(2m − 3) − 8 = 4m + 7
+268.
+12 + 2(5 − 3y) = −9⎛
+⎝y − 1⎞
+⎠ − 2
+269.
+−15 + 4(2 − 5y) = −7⎛
+⎝y − 4⎞
+⎠ + 4
+270. 8(x − 4) − 7x = 14
+271. 5(x − 4) − 4x = 14 272.
+5 + 6(3s − 5) = −3 + 2(8s − 1)
+273.
+−12 + 8(x − 5) = −4 + 3(5x − 2)
+274.
+4(u − 1) − 8 = 6(3u − 2) − 7 275. 7(2n − 5) = 8(4n − 1) − 9 276. 4⎛
+⎝p − 4⎞
+⎠ − ⎛
+⎝p + 7⎞
+⎠ = 5⎛
+⎝p − 3⎞
+277.
+3(a − 2) − (a + 6) = 4(a − 1) 278. −(9y + 5) − (3y − 7)
+= 16 − (4y − 2)
+279. −(7m + 4) − (2m − 5)
+= 14 − (5m − 3)
+280. 4⎡
+⎣5 − 8(4c − 3)⎤
+⎦
+= 12(1 − 13c) − 8
+281. 5⎡
+⎣9 − 2(6d − 1)⎤
+⎦
+= 11(4 − 10d) − 139
+282. 3⎡
+⎣−9 + 8(4h − 3)⎤
+⎦
+= 2(5 − 12h) − 19
+283. 3⎡
+⎣−14 + 2(15k − 6)⎤
+⎦
+= 8(3 − 5k) − 24
+284. 5⎡
+⎣2(m + 4) + 8(m − 7)⎤
+⎦
+= 2⎡
+⎣3(5 + m) − (21 − 3m)⎤
+⎦
+285. 10⎡
+⎣5(n + 1) + 4(n − 1)⎤
+⎦
+= 11⎡
+⎣7(5 + n) − (25 − 3n)⎤
+⎦
+2.4 EXERCISES
+252 Chapter 2 Solving Linear Equations and Inequalities
+286. 5(1.2u − 4.8) = −12 287. 4(2.5v − 0.6) = 7.6 288. 0.25(q − 6) = 0.1⎛
+⎝q + 18⎞
+289. 0.2(p − 6) = 0.4⎛
+⎝p + 14⎞
+⎠ 290. 0.2(30n + 50) = 28 291. 0.5(16m + 34) = −15
+Classify Equations
+In the following exercises, classify each equation as a conditional equation, an identity, or a contradiction and then state the
+solution.
+292. 23z + 19 = 3(5z − 9) + 8z + 46 293. 15y + 32 = 2⎛
+⎝10y − 7⎞
+⎠ − 5y + 46
+294. 5(b − 9) + 4(3b + 9) = 6(4b − 5) − 7b + 21 295. 9(a − 4) + 3(2a + 5) = 7(3a − 4) − 6a + 7
+296. 18(5 j − 1) + 29 = 47 297. 24(3d − 4) + 100 = 52
+298. 22(3m − 4) = 8(2m + 9) 299. 30(2n − 1) = 5(10n + 8)
+300. 7v + 42 = 11(3v + 8) − 2(13v − 1) 301. 18u − 51 = 9(4u + 5) − 6(3u − 10)
+302. 3⎛
+⎝6q − 9⎞
+⎠ + 7⎛
+⎝q + 4⎞
+⎠ = 5⎛
+⎝6q + 8⎞
+⎠ − 5⎛
+⎝q + 1⎞
+⎠ 303. 5⎛
+⎝p + 4⎞
+⎠ + 8⎛
+⎝2p − 1⎞
+⎠ = 9⎛
+⎝3p − 5⎞
+⎠ − 6⎛
+⎝p − 2⎞
+304. 12(6h − 1) = 8(8h + 5) − 4 305. 9(4k − 7) = 11(3k + 1) + 4
+306. 45(3y − 2) = 9⎛
+⎝15y − 6⎞
+⎠ 307. 60(2x − 1) = 15(8x + 5)
+308. 16(6n + 15) = 48(2n + 5) 309. 36(4m + 5) = 12(12m + 15)
+310. 9(14d + 9) + 4d = 13(10d + 6) + 3 311. 11(8c + 5) − 8c = 2(40c + 25) + 5
+Everyday Math
+312. Fencing Micah has 44 feet of fencing to make a
+dog run in his yard. He wants the length to be 2.5 feet
+more than the width. Find the length, L, by solving the
+equation 2L + 2(L − 2.5) = 44 .
+313. Coins Rhonda has $1.90 in nickels and dimes. The
+number of dimes is one less than twice the number of
+nickels. Find the number of nickels, n, by solving the
+equation 0.05n + 0.10(2n − 1) = 1.90 .
+Writing Exercises
+314. Using your own words, list the steps in the general
+strategy for solving linear equations.
+315. Explain why you should simplify both sides of an
+equation as much as possible before collecting the
+variable terms to one side and the constant terms to
+the other side.
+316. What is the first step you take when solving the
+equation 3 − 7(y − 4) = 38 ? Why is this your first
+step?
+317. Solve the equation 1
+4(8x + 20) = 3x − 4
+explaining all the steps of your solution as in the
+examples in this section.
+Chapter 2 Solving Linear Equations and Inequalities 253
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objective of this section.
+b On a scale of 1-10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+254 Chapter 2 Solving Linear Equations and Inequalities

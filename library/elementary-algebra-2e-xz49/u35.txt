@@ -1,0 +1,770 @@
+5.2
+Solving Systems of Equations by Substitution
+Learning Objectives
+BE PREPARED : : 5.4 Before you get started, take this readiness quiz.
+Simplify −5(3 − x) .
+If you missed this problem, review Example 1.136.
+BE PREPARED : : 5.5 Simplify 4 − 2(n + 5) .
+If you missed this problem, review Example 1.123.
+BE PREPARED : : 5.6 Solve for y . 8y − 8 = 32 − 2y
+If you missed this problem, review Example 2.34.
+BE PREPARED : : 5.7 Solve for x . 3x − 9y = −3
+If you missed this problem, review Example 2.65.
+Solving systems of linear equations by graphing is a good way to visualize the types of solutions that may result. However,
+there are many cases where solving a system by graphing is inconvenient or imprecise. If the graphs extend beyond the
+small grid with x and y both between −10 and 10, graphing the lines may be cumbersome. And if the solutions to the
+system are not integers, it can be hard to read their values precisely from a graph.
+In this section, we will solve systems of linear equations by the substitution method.
+Solve a System of Equations by Substitution
+We will use the same system we used first for graphing.
+⎧
+⎩
+⎨2x + y = 7
+x − 2y = 6
+We will first solve one of the equations for either x or y. We can choose either equation and solve for either variable—but
+we’ll try to make a choice that will keep the work easy.
+Then we substitute that expression into the other equation. The result is an equation with just one variable—and we know
+how to solve those!
+After we find the value of one variable, we will substitute that value into one of the original equations and solve for the
+other variable. Finally, we check our solution and make sure it makes both equations true.
+We’ll fill in all these steps now in Example 5.13.
+EXAMPLE 5.13 HOW TO SOLVE A SYSTEM OF EQUATIONS BY SUBSTITUTION
+Solve the system by substitution.
+⎧
+⎩
+⎨2x + y = 7
+x − 2y = 6
+598 Chapter 5 Systems of Linear Equations
+TRY IT : : 5.25 Solve the system by substitution.
+⎧
+⎩
+⎨−2x + y = −11
+x + 3y = 9
+TRY IT : : 5.26 Solve the system by substitution.
+⎧
+⎩
+⎨x + 3y = 10
+4x + y = 18
+If one of the equations in the system is given in slope–intercept form, Step 1 is already done! We’ll see this in Example
+5.14.
+HOW TO : : SOLVE A SYSTEM OF EQUATIONS BY SUBSTITUTION.
+Solve one of the equations for either variable.
+Substitute the expression from Step 1 into the other equation.
+Solve the resulting equation.
+Substitute the solution in Step 3 into one of the original equations to find the other variable.
+Write the solution as an ordered pair.
+Check that the ordered pair is a solution to both original equations.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Chapter 5 Systems of Linear Equations 599
+Solve the system by substitution.
+⎧
+⎩
+⎨x + y = −1
+y = x + 5
+The second equation is already solved for y. We will substitute the expression in place of y in the first equation.
+The second equation is already solved for y.
+We will substitute into the first equation.
+Replace the y with x + 5.
+Solve the resulting equation for x.
+Substitute x = −3 into y = x + 5 to find y.
+The ordered pair is (−3, 2).
+Check the ordered pair in both equations:
+x + y = −1
+−3 + 2 =? −1
+−1 = −1 ✓
+y = x + 5
+2 =? −3 + 5
+2 = 2 ✓
+The solution is (−3, 2).
+TRY IT : : 5.27 Solve the system by substitution.
+⎧
+⎩
+⎨x + y = 6
+y = 3x − 2
+TRY IT : : 5.28 Solve the system by substitution.
+⎧
+⎩
+⎨2x − y = 1
+y = −3x − 6
+If the equations are given in standard form, we’ll need to start by solving for one of the variables. In this next example,
+we’ll solve the first equation for y.
+Solve the system by substitution.
+⎧
+⎩
+⎨3x + y = 5
+2x + 4y = −10
+We need to solve one equation for one variable. Then we will substitute that expression into the other equation.
+600 Chapter 5 Systems of Linear Equations
+Solve for y.
+Substitute into the other equation.
+Replace the y with −3x + 5.
+Solve the resulting equation for x.
+Substitute x = 3 into 3x + y = 5 to find y.
+The ordered pair is (3, −4).
+Check the ordered pair in both equations:
+3x + y = 5
+3 · 3 + ( − 4) =? 5
+9 − 4 =? 5
+5 = 5 ✓
+2x + 4y = −10
+2 · 3 + 4( − 4) = −10
+6 − 16 =? −10
+−10 = −10 ✓
+The solution is (3, −4).
+TRY IT : : 5.29 Solve the system by substitution.
+⎧
+⎩
+⎨4x + y = 2
+3x + 2y = −1
+TRY IT : : 5.30 Solve the system by substitution.
+⎧
+⎩
+⎨−x + y = 4
+4x − y = 2
+In Example 5.15 it was easiest to solve for y in the first equation because it had a coefficient of 1. In Example 5.16 it will
+be easier to solve for x.
+Solve the system by substitution.
+⎧
+⎩
+⎨x − 2y = −2
+3x + 2y = 34
+We will solve the first equation for x and then substitute the expression into the second equation.
+Solve for x.
+Substitute into the other equation.
+Replace the x with 2y − 2.
+Chapter 5 Systems of Linear Equations 601
+Solve the resulting equation for y.
+Substitute y = 5 into x − 2y = −2 to find x.
+The ordered pair is (8, 5).
+Check the ordered pair in both equations:
+x − 2y = −2
+8 − 2 · 5 =? −2
+8 − 10 =? −2
+−2 = −2 ✓
+3x + 2y = 34
+3 · 8 + 2 · 5 =? 34
+24 + 10 =? 34
+34 = 34 ✓
+The solution is (8, 5).
+TRY IT : : 5.31 Solve the system by substitution.
+⎧
+⎩
+⎨x − 5y = 13
+4x − 3y = 1
+TRY IT : : 5.32 Solve the system by substitution.
+⎧
+⎩
+⎨x − 6y = −6
+2x − 4y = 4
+When both equations are already solved for the same variable, it is easy to substitute!
+Solve the system by substitution.
+⎧
+⎩
+⎨y = −2x + 5
+y = 1
+2x
+Since both equations are solved for y, we can substitute one into the other.
+Substitute 1
+2x for y in the first equation.
+Replace the y with 1
+2x.
+Solve the resulting equation. Start
+by clearing the fraction.
+Solve for x.
+602 Chapter 5 Systems of Linear Equations
+Substitute x = 2 into y = 1
+2x to find y.
+The ordered pair is (2,1).
+Check the ordered pair in both equations:
+y = 1
+2x
+1 =? 1
+2 · 2
+1 = 1 ✓
+y = −2x + 5
+1 =? −2 · 2 + 5
+1 = −4 + 5
+1 = 1 ✓
+The solution is (2,1).
+Solve the system by substitution.
+⎧
+⎩
+⎨y = 3x − 16
+y = 1
+3x
+Solve the system by substitution.
+⎧
+⎩
+⎨
+y = −x + 10
+y = 1
+4x
+Be very careful with the signs in the next example.
+Solve the system by substitution.
+⎧
+⎩
+⎨4x + 2y = 4
+6x − y = 8
+We need to solve one equation for one variable. We will solve the first equation for y.
+Solve the first equation for y.
+Substitute −2x + 2 for y in the second equation.
+Replace the y with −2x + 2.
+Solve the equation for x.
+Chapter 5 Systems of Linear Equations 603
+Substitute x = 5
+4 into 4x + 2y = 4 to find y.
+The ordered pair is ⎛
+⎝5
+4, − 1
+⎞
+⎠.
+Check the ordered pair in both equations.
+4x + 2y = 4
+4⎛
+⎝5
+⎞
+⎠ + 2⎛
+⎝− 1
+⎞
+⎠ =? 4
+5 − 1 =? 4
+4 = 4 ✓
+6x − y = 8
+6⎛
+⎝5
+⎞
+⎠ − ⎛
+⎝− 1
+⎞
+⎠ =? 8
+4 − ⎛
+⎝− 1
+⎞
+⎠ =? 8
+2 =? 8
+8 = 8 ✓
+The solution is ⎛
+⎝5
+4, − 1
+⎞
+⎠.
+TRY IT : : 5.35 Solve the system by substitution.
+⎧
+⎩
+⎨x − 4y = −4
+−3x + 4y = 0
+TRY IT : : 5.36 Solve the system by substitution.
+⎧
+⎩
+⎨4x − y = 0
+2x − 3y = 5
+In Example 5.19, it will take a little more work to solve one equation for x or y.
+Solve the system by substitution.
+⎧
+⎩
+⎨4x − 3y = 6
+15y − 20x = −30
+We need to solve one equation for one variable. We will solve the first equation for x.
+Solve the first equation for x.
+Substitute 3
+4y + 3
+2 for x in the second equation.
+Replace the x with 3
+4y + 3
+2.
+604 Chapter 5 Systems of Linear Equations
+Solve for y.
+Since 0 = 0 is a true statement, the system is consistent. The equations are dependent. The graphs of these two equations
+would give the same line. The system has infinitely many solutions.
+TRY IT : : 5.37 Solve the system by substitution.
+⎧
+⎩
+⎨2x − 3y = 12
+−12y + 8x = 48
+TRY IT : : 5.38 Solve the system by substitution.
+⎧
+⎩
+⎨5x + 2y = 12
+−4y − 10x = −24
+Look back at the equations in Example 5.19. Is there any way to recognize that they are the same line?
+Let’s see what happens in the next example.
+Solve the system by substitution.
+⎧
+⎩
+⎨5x − 2y = −10
+y = 5
+2x
+The second equation is already solved for y, so we can substitute for y in the first equation.
+Substitute x for y in the first equation.
+Replace the y with 5
+2x.
+Solve for x.
+Since 0 = −10 is a false statement the equations are inconsistent. The graphs of the two equation would be parallel lines.
+The system has no solutions.
+Solve the system by substitution.
+⎧
+⎩
+⎨
+3x + 2y = 9
+y = − 3
+2x + 1
+Solve the system by substitution.
+⎧
+⎩
+⎨
+5x − 3y = 2
+y = 5
+3x − 4
+Solve Applications of Systems of Equations by Substitution
+We’ll copy here the problem solving strategy we used in the Solving Systems of Equations by Graphing section for
+solving systems of equations. Now that we know how to solve systems by substitution, that’s what we’ll do in Step 5.
+Chapter 5 Systems of Linear Equations 605
+Some people find setting up word problems with two variables easier than setting them up with just one variable.
+Choosing the variable names is easier when all you need to do is write down two letters. Think about this in the next
+example—how would you have done it with just one variable?
+The sum of two numbers is zero. One number is nine less than the other. Find the numbers.
+Step 1. Read the problem.
+Step 2. Identify what we are looking for. We are looking for two numbers.
+Step 3. Name what we are looking for. Let n = the first number
+Let m = the second number
+Step 4. Translate into a system of equations. The sum of two numbers is zero.
+One number is nine less than the other.
+The system is:
+Step 5. Solve the system of
+equations. We will use substitution
+since the second equation is solved
+for n.
+Substitute m − 9 for n in the first equation.
+Solve for m.
+Substitute m = 9
+2 into the second equation
+and then solve for n.
+HOW TO : : HOW TO USE A PROBLEM SOLVING STRATEGY FOR SYSTEMS OF LINEAR EQUATIONS.
+Read the problem. Make sure all the words and ideas are understood.
+Identify what we are looking for.
+Name what we are looking for. Choose variables to represent those quantities.
+Translate into a system of equations.
+Solve the system of equations using good algebra techniques.
+Check the answer in the problem and make sure it makes sense.
+Answer the question with a complete sentence.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Step 7.
+606 Chapter 5 Systems of Linear Equations
+Step 6. Check the answer in the problem. Do these numbers make sense in
+the problem? We will leave this to you!
+Step 7. Answer the question. The numbers are 9
+2 and − 9
+2.
+TRY IT : : 5.41 The sum of two numbers is 10. One number is 4 less than the other. Find the numbers.
+TRY IT : : 5.42 The sum of two number is −6. One number is 10 less than the other. Find the numbers.
+In the Example 5.22, we’ll use the formula for the perimeter of a rectangle, P = 2L + 2W.
+The perimeter of a rectangle is 88. The length is five more than twice the width. Find the length and the width.
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. We are looking for the length and width.
+Step 3. Name what we are looking for. Let L = the length
+W = the width
+Step 4. Translate into a system of equations. The perimeter of a rectangle is 88.
+2L + 2W = P
+The length is five more than twice the width.
+The system is:
+Step 5. Solve the system of equations.
+We will use substitution since the second
+equation is solved for L.
+Substitute 2W + 5 for L in the first equation.
+Solve for W.
+Chapter 5 Systems of Linear Equations 607
+Substitute W = 13 into the second
+equation and then solve for L.
+Step 6. Check the answer in the problem. Does a rectangle with length 31 and width
+13 have perimeter 88? Yes.
+Step 7. Answer the equation. The length is 31 and the width is 13.
+The perimeter of a rectangle is 40. The length is 4 more than the width. Find the length and width of the rectangle.
+The perimeter of a rectangle is 58. The length is 5 more than three times the width. Find the length and width of
+the rectangle.
+For Example 5.23 we need to remember that the sum of the measures of the angles of a triangle is 180 degrees and that
+a right triangle has one 90 degree angle.
+The measure of one of the small angles of a right triangle is ten more than three times the measure of the other small
+angle. Find the measures of both angles.
+We will draw and label a figure.
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. We are looking for the measures of the angles.
+Step 3. Name what we are looking for. Let a = the measure of the 1st angle
+b = the measure of the 2nd angle
+Step 4. Translate into a system of equations. The measure of one of the small angles
+of a right triangle is ten more than three
+times the measure of the other small angle.
+The sum of the measures of the angles of
+a triangle is 180.
+The system is:
+608 Chapter 5 Systems of Linear Equations
+Step 5. Solve the system of equations.
+We will use substitution since the first
+equation is solved for a.
+Substitute 3b + 10 for a in the
+second equation.
+Solve for b.
+Substitute b = 20 into the first
+equation and then solve for a.
+Step 6. Check the answer in the problem. We will leave this to you!
+Step 7. Answer the question. The measures of the small angles are
+20 and 70.
+The measure of one of the small angles of a right triangle is 2 more than 3 times the measure of the other small
+angle. Find the measure of both angles.
+The measure of one of the small angles of a right triangle is 18 less than twice the measure of the other small
+angle. Find the measure of both angles.
+Heather has been offered two options for her salary as a trainer at the gym. Option A would pay her $25,000 plus $15 for
+each training session. Option B would pay her $10,000 + $40 for each training session. How many training sessions would
+make the salary options equal?
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. We are looking for the number of training sessions
+that would make the pay equal.
+Step 3. Name what we are looking for. Let s = Heather’s salary.
+n = the number of training sessions
+Step 4. Translate into a system of equations. Option A would pay her $25,000 plus $15
+for each training session.
+Option B would pay her $10,000 + $40
+for each training session
+Chapter 5 Systems of Linear Equations 609
+The system is:
+Step 5. Solve the system of equations.
+We will use substitution.
+Substitute 25,000 + 15n for s in the second
+equation.
+Solve for n.
+Step 6. Check the answer. Are 600 training sessions a year reasonable?
+Are the two options equal when n = 600?
+Step 7. Answer the question. The salary options would be equal for 600 training
+sessions.
+Geraldine has been offered positions by two insurance companies. The first company pays a salary of $12,000 plus
+a commission of $100 for each policy sold. The second pays a salary of $20,000 plus a commission of $50 for each
+policy sold. How many policies would need to be sold to make the total pay the same?
+Kenneth currently sells suits for company A at a salary of $22,000 plus a $10 commission for each suit sold.
+Company B offers him a position with a salary of $28,000 plus a $4 commission for each suit sold. How many suits
+would Kenneth need to sell for the options to be equal?
+MEDIA : :
+Access these online resources for additional instruction and practice with solving systems of equations by
+substitution.
+• Instructional Video-Solve Linear Systems by Substitution (http://www.openstax.org/l/
+25SolvingLinear)
+• Instructional Video-Solve by Substitution (http://www.openstax.org/l/25Substitution)
+610 Chapter 5 Systems of Linear Equations
+Practice Makes Perfect
+Solve a System of Equations by Substitution
+In the following exercises, solve the systems of equations by substitution.
+71.
+⎧
+⎩
+⎨2x + y = −4
+3x − 2y = −6 72.
+⎧
+⎩
+⎨2x + y = −2
+3x − y = 7 73.
+⎧
+⎩
+⎨x − 2y = −5
+2x − 3y = −4
+74.
+⎧
+⎩
+⎨x − 3y = −9
+2x + 5y = 4 75.
+⎧
+⎩
+⎨5x − 2y = −6
+y = 3x + 3 76.
+⎧
+⎩
+⎨−2x + 2y = 6
+y = −3x + 1
+77.
+⎧
+⎩
+⎨2x + 3y = 3
+y = −x + 3 78.
+⎧
+⎩
+⎨2x + 5y = −14
+y = −2x + 2 79.
+⎧
+⎩
+⎨2x + 5y = 1
+y = 1
+3x − 2
+80.
+⎧
+⎩
+⎨
+3x + 4y = 1
+y = − 2
+5x + 2 81.
+⎧
+⎩
+⎨3x − 2y = 6
+y = 2
+3x + 2 82.
+⎧
+⎩
+⎨−3x − 5y = 3
+y = 1
+2x − 5
+83.
+⎧
+⎩
+⎨2x + y = 10
+−x + y = −5 84.
+⎧
+⎩
+⎨−2x + y = 10
+−x + 2y = 16 85.
+⎧
+⎩
+⎨3x + y = 1
+−4x + y = 15
+86.
+⎧
+⎩
+⎨x + y = 0
+2x + 3y = −4 87.
+⎧
+⎩
+⎨x + 3y = 1
+3x + 5y = −5 88.
+⎧
+⎩
+⎨x + 2y = −1
+2x + 3y = 1
+89.
+⎧
+⎩
+⎨2x + y = 5
+x − 2y = −15 90.
+⎧
+⎩
+⎨4x + y = 10
+x − 2y = −20 91.
+⎧
+⎩
+⎨
+y = −2x − 1
+y = − 1
+3x + 4
+92.
+⎧
+⎩
+⎨y = x − 6
+y = − 3
+2x + 4 93.
+⎧
+⎩
+⎨
+y = 2x − 8
+y = 3
+5x + 6
+94.
+⎧
+⎩
+⎨y = −x − 1
+y = x + 7
+95.
+⎧
+⎩
+⎨4x + 2y = 8
+8x − y = 1 96.
+⎧
+⎩
+⎨−x − 12y = −1
+2x − 8y = −6 97.
+⎧
+⎩
+⎨15x + 2y = 6
+−5x + 2y = −4
+98.
+⎧
+⎩
+⎨2x − 15y = 7
+12x + 2y = −4 99.
+⎧
+⎩
+⎨y = 3x
+6x − 2y = 0 100.
+⎧
+⎩
+⎨x = 2y
+4x − 8y = 0
+101.
+⎧
+⎩
+⎨2x + 16y = 8
+−x − 8y = −4 102.
+⎧
+⎩
+⎨15x + 4y = 6
+−30x − 8y = −12 103.
+⎧
+⎩
+⎨y = −4x
+4x + y = 1
+104.
+⎧
+⎩
+⎨y = − 1
+4x
+x + 4y = 8
+105.
+⎧
+⎩
+⎨y = 7
+8x + 4
+−7x + 8y = 6
+106.
+⎧
+⎩
+⎨y = − 2
+3x + 5
+2x + 3y = 11
+5.2 EXERCISES
+Chapter 5 Systems of Linear Equations 611
+Solve Applications of Systems of Equations by Substitution
+In the following exercises, translate to a system of equations and solve.
+107. The sum of two numbers is
+15. One number is 3 less than the
+other. Find the numbers.
+108. The sum of two numbers is
+30. One number is 4 less than the
+other. Find the numbers.
+109. The sum of two numbers is
+−26. One number is 12 less than
+the other. Find the numbers.
+110. The perimeter of a rectangle
+is 50. The length is 5 more than
+the width. Find the length and
+width.
+111. The perimeter of a rectangle is
+60. The length is 10 more than the
+width. Find the length and width.
+112. The perimeter of a rectangle
+is 58. The length is 5 more than
+three times the width. Find the
+length and width.
+113. The perimeter of a rectangle
+is 84. The length is 10 more than
+three times the width. Find the
+length and width.
+114. The measure of one of the
+small angles of a right triangle is
+14 more than 3 times the measure
+of the other small angle. Find the
+measure of both angles.
+115. The measure of one of the
+small angles of a right triangle is
+26 more than 3 times the measure
+of the other small angle. Find the
+measure of both angles.
+116. The measure of one of the
+small angles of a right triangle is
+15 less than twice the measure of
+the other small angle. Find the
+measure of both angles.
+117. The measure of one of the
+small angles of a right triangle is
+45 less than twice the measure of
+the other small angle. Find the
+measure of both angles.
+118. Maxim has been offered
+positions by two car dealers. The
+first company pays a salary of
+$10,000 plus a commission of
+$1,000 for each car sold. The
+second pays a salary of $20,000
+plus a commission of $500 for
+each car sold. How many cars
+would need to be sold to make the
+total pay the same?
+119. Jackie has been offered
+positions by two cable companies.
+The first company pays a salary of
+$ 14,000 plus a commission of
+$100 for each cable package sold.
+The second pays a salary of
+$20,000 plus a commission of $25
+for each cable package sold. How
+many cable packages would need
+to be sold to make the total pay
+the same?
+120. Amara currently sells
+televisions for company A at a
+salary of $17,000 plus a $100
+commission for each television
+she sells. Company B offers her a
+position with a salary of $29,000
+plus a $20 commission for each
+television she sells. How
+televisions would Amara need to
+sell for the options to be equal?
+121. Mitchell currently sells stoves
+for company A at a salary of
+$12,000 plus a $150 commission
+for each stove he sells. Company B
+offers him a position with a salary
+of $24,000 plus a $50 commission
+for each stove he sells. How many
+stoves would Mitchell need to sell
+for the options to be equal?
+Everyday Math
+122. When Gloria spent 15 minutes on the elliptical
+trainer and then did circuit training for 30 minutes,
+her fitness app says she burned 435 calories. When
+she spent 30 minutes on the elliptical trainer and 40
+minutes circuit training she burned 690 calories. Solve
+the system ⎧
+⎩
+⎨15e + 30c = 435
+30e + 40c = 690 for e , the number of
+calories she burns for each minute on the elliptical
+trainer, and c , the number of calories she burns for
+each minute of circuit training.
+123. Stephanie left Riverside, California, driving her
+motorhome north on Interstate 15 towards Salt Lake
+City at a speed of 56 miles per hour. Half an hour later,
+Tina left Riverside in her car on the same route as
+Stephanie, driving 70 miles per hour. Solve the system
+⎧
+⎩
+⎨56s = 70t
+s = t + 1
+.
+a for t to find out how long it will take Tina to
+catch up to Stephanie.
+b what is the value of s , the number of hours
+Stephanie will have driven before Tina catches up
+to her?
+612 Chapter 5 Systems of Linear Equations
+Writing Exercises
+124. Solve the system of equations
+⎧
+⎩
+⎨x + y = 10
+x − y = 6
+a by graphing. b by substitution. c Which method do
+you prefer? Why?
+125. Solve the system of equations
+⎧
+⎩
+⎨3x + y = 12
+x = y − 8 by substitution and explain all your
+steps in words.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b After reviewing this checklist, what will you do to become confident for all objectives?
+Chapter 5 Systems of Linear Equations 613

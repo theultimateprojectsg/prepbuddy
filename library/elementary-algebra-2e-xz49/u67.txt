@@ -1,0 +1,411 @@
+9.2
+Simplify Square Roots
+Learning Objectives
+By the end of this section, you will be able to:
+Use the Product Property to simplify square roots
+Use the Quotient Property to simplify square roots
+BE PREPARED : : 9.4 Before you get started take this readiness quiz.
+Simplify: 80
+176 .
+If you missed this problem, review Example 1.65.
+BE PREPARED : : 9.5 Simplify: n9
+n3 .
+If you missed this problem, review Example 6.59.
+BE PREPARED : : 9.6
+Simplify: q4
+q12 .
+If you missed this problem, review Example 6.60.
+In the last section, we estimated the square root of a number between two consecutive whole numbers. We can say
+that 50 is between 7 and 8. This is fairly easy to do when the numbers are small enough that we can use m82545
+(http://cnx.org/content/m82545/1.3/#CNX_ElemAlg_Figure_09_01_003) .
+But what if we want to estimate 500 ? If we simplify the square root first, we’ll be able to estimate it easily. There are
+other reasons, too, to simplify square roots as you’ll see later in this chapter.
+A square root is considered simplified if its radicand contains no perfect square factors.
+Simplified Square Root
+a is considered simplified if a has no perfect square factors.
+So 31 is simplified. But 32 is not simplified, because 16 is a perfect square factor of 32.
+Use the Product Property to Simplify Square Roots
+The properties we will use to simplify expressions with square roots are similar to the properties of exponents. We know
+that (ab)m = am bm . The corresponding property of square roots says that ab = a · b .
+Product Property of Square Roots
+If a, b are non-negative real numbers, then ab = a · b .
+We use the Product Property of Square Roots to remove all perfect square factors from a radical. We will show how to do
+this in Example 9.12.
+EXAMPLE 9.12 HOW TO USE THE PRODUCT PROPERTY TO SIMPLIFY A SQUARE ROOT
+Simplify: 50 .
+Chapter 9 Roots and Radicals 1043
+TRY IT : : 9.23 Simplify: 48 .
+TRY IT : : 9.24 Simplify: 45 .
+Notice in the previous example that the simplified form of 50 is 5 2 , which is the product of an integer and a square
+root. We always write the integer in front of the square root.
+Simplify: 500 .
+Rewrite the radicand as a product using the
+largest perfect square factor. 100 · 5
+Rewrite the radical as the product of two
+radicals. 100 · 5
+Simplify. 10 5
+TRY IT : : 9.25 Simplify: 288 .
+TRY IT : : 9.26 Simplify: 432 .
+We could use the simplified form 10 5 to estimate 500 . We know 5 is between 2 and 3, and 500 is 10 5 . So 500
+is between 20 and 30.
+The next example is much like the previous examples, but with variables.
+HOW TO : : SIMPLIFY A SQUARE ROOT USING THE PRODUCT PROPERTY.
+Find the largest perfect square factor of the radicand. Rewrite the radicand as a product using
+the perfect-square factor.
+Use the product rule to rewrite the radical as the product of two radicals.
+Simplify the square root of the perfect square.
+Step 1.
+Step 2.
+Step 3.
+1044 Chapter 9 Roots and Radicals
+Simplify: x3 .
+x3
+Rewrite the radicand as a product using the
+largest perfect square factor. x2 · x
+Rewrite the radical as the product of two
+radicals. x2 · x
+Simplify. x x
+TRY IT : : 9.27 Simplify: b5 .
+TRY IT : : 9.28 Simplify: p9 .
+We follow the same procedure when there is a coefficient in the radical, too.
+Simplify: 25y5.
+25y5
+Rewrite the radicand as a product using the
+largest perfect square factor. 25y4 · y
+Rewrite the radical as the product of two
+radicals. 25y4 · y
+Simplify. 5y2 y
+TRY IT : : 9.29 Simplify: 16x7 .
+TRY IT : : 9.30 Simplify: 49v9 .
+In the next example both the constant and the variable have perfect square factors.
+Simplify: 72n7 .
+72n7
+Rewrite the radicand as a product using the
+largest perfect square factor. 36n6 · 2n
+Rewrite the radical as the product of two
+radicals. 36n6 · 2n
+Simplify. 6n3 2n
+Chapter 9 Roots and Radicals 1045
+TRY IT : : 9.31 Simplify: 32y5 .
+TRY IT : : 9.32 Simplify: 75a9 .
+Simplify: 63u3 v5 .
+63u3 v5
+Rewrite the radicand as a product using the
+largest perfect square factor. 9u2 v4 · 7uv
+Rewrite the radical as the product of two
+radicals. 9u2 v4 · 7uv
+Simplify. 3uv2 7uv
+TRY IT : : 9.33 Simplify: 98a7 b5 .
+TRY IT : : 9.34 Simplify: 180m9 n11 .
+We have seen how to use the Order of Operations to simplify some expressions with radicals. To simplify 25 + 144 we
+must simplify each square root separately first, then add to get the sum of 17.
+The expression 17 + 7 cannot be simplified—to begin we’d need to simplify each square root, but neither 17 nor 7
+contains a perfect square factor.
+In the next example, we have the sum of an integer and a square root. We simplify the square root but cannot add the
+resulting expression to the integer.
+Simplify: 3 + 32 .
+3 + 32
+Rewrite the radicand as a product using the
+largest perfect square factor. 3 + 16 · 2
+Rewrite the radical as the product of two
+radicals. 3 + 16 · 2
+Simplify. 3 + 4 2
+The terms are not like and so we cannot add them. Trying to add an integer and a radical is like trying to add an integer
+and a variable—they are not like terms!
+TRY IT : : 9.35 Simplify: 5 + 75 .
+TRY IT : : 9.36 Simplify: 2 + 98 .
+The next example includes a fraction with a radical in the numerator. Remember that in order to simplify a fraction you
+need a common factor in the numerator and denominator.
+1046 Chapter 9 Roots and Radicals
+Simplify: 4 − 48
+2 .
+4 − 48
+Rewrite the radicand as a product using the
+largest perfect square factor.
+4 − 16 · 3
+Rewrite the radical as the product of two
+radicals.
+4 − 16 · 3
+Simplify. 4 − 4 3
+Factor the common factor from the
+numerator.
+4⎛
+⎝1 − 3⎞
+Remove the common factor, 2, from the
+numerator and denominator.
+2 · 2⎛
+⎝1 − 3⎞
+Simplify. 2⎛
+⎝1 − 3⎞
+TRY IT : : 9.37 Simplify: 10 − 75
+5 .
+TRY IT : : 9.38 Simplify: 6 − 45
+3 .
+Use the Quotient Property to Simplify Square Roots
+Whenever you have to simplify a square root, the first step you should take is to determine whether the radicand is
+a perfect square. A perfect square fraction is a fraction in which both the numerator and the denominator are perfect
+squares.
+Simplify: 9
+64 .
+Since ⎛
+⎝3
+⎞
+= 9
+64 3
+TRY IT : : 9.39 Simplify: 25
+16 .
+TRY IT : : 9.40 Simplify: 49
+81 .
+Chapter 9 Roots and Radicals 1047
+If the numerator and denominator have any common factors, remove them. You may find a perfect square fraction!
+Simplify: 45
+80 .
+Simplify inside the radical first. Rewrite
+showing the common factors of the
+numerator and denominator.
+5 · 9
+5 · 16
+Simplify the fraction by removing common
+factors.
+Simplify. ⎛
+⎝3
+⎞
+= 9
+16 3
+TRY IT : : 9.41 Simplify: 75
+48 .
+TRY IT : : 9.42 Simplify: 98
+162 .
+In the last example, our first step was to simplify the fraction under the radical by removing common factors. In the next
+example we will use the Quotient Property to simplify under the radical. We divide the like bases by subtracting their
+exponents, am
+an = am − n, a ≠ 0 .
+Simplify: m6
+m4 .
+m6
+m4
+Simplify the fraction inside the radical first.
+Divide the like bases by subtracting the
+exponents.
+m2
+Simplify. m
+Simplify: a8
+a6 .
+Simplify: x14
+x10 .
+1048 Chapter 9 Roots and Radicals
+Simplify: 48p7
+3p3 .
+48p7
+3p3
+Simplify the fraction inside the radical first. 16p4
+Simplify. 4p2
+Simplify: 75x5
+3x .
+Simplify: 72z12
+2z10 .
+Remember the Quotient to a Power Property? It said we could raise a fraction to a power by raising the numerator and
+denominator to the power separately.
+⎛
+⎝a
+b
+⎞
+m
+= am
+bm, b ≠ 0
+We can use a similar property to simplify a square root of a fraction. After removing all common factors from the
+numerator and denominator, if the fraction is not a perfect square we simplify the numerator and denominator
+separately.
+Quotient Property of Square Roots
+If a, b are non-negative real numbers and b ≠ 0 , then
+a
+b = a
+b
+Simplify: 21
+64 .
+We cannot simplify the fraction inside the
+radical. Rewrite using the quotient
+property.
+Simplify the square root of 64. The
+numerator cannot be simplified.
+TRY IT : : 9.47 Simplify: 19
+49 .
+TRY IT : : 9.48 Simplify: 28
+81 .
+Chapter 9 Roots and Radicals 1049
+EXAMPLE 9.25 HOW TO USE THE QUOTIENT PROPERTY TO SIMPLIFY A SQUARE ROOT
+Simplify: 27m3
+196 .
+Simplify: 24p3
+49 .
+Simplify: 48x5
+100 .
+Simplify: 45x5
+y4 .
+45x5
+y4
+We cannot simplify the fraction in the
+radicand. Rewrite using the Quotient
+Property.
+45x5
+y4
+Simplify the radicals in the numerator and
+the denominator.
+9x4 · 5x
+y2
+Simplify. 3x2 5x
+y2
+HOW TO : : SIMPLIFY A SQUARE ROOT USING THE QUOTIENT PROPERTY.
+Simplify the fraction in the radicand, if possible.
+Use the Quotient Property to rewrite the radical as the quotient of two radicals.
+Simplify the radicals in the numerator and the denominator.
+Step 1.
+Step 2.
+Step 3.
+1050 Chapter 9 Roots and Radicals
+Simplify: 80m3
+n6 .
+Simplify: 54u7
+v8 .
+Be sure to simplify the fraction in the radicand first, if possible.
+Simplify: 81d9
+25d4 .
+81d9
+25d4
+Simplify the fraction in the radicand. 81d5
+Rewrite using the Quotient Property. 81d5
+Simplify the radicals in the numerator and
+the denominator.
+81d4 · d
+Simplify. 9d2 d
+Simplify: 64x7
+9x3 .
+Simplify: 16a9
+100a5 .
+Simplify: 18p5 q7
+32pq2 .
+18p5 q7
+32pq2
+Simplify the fraction in the radicand, if
+possible.
+9p4 q5
+Rewrite using the Quotient Property. 9p4 q5
+Simplify the radicals in the numerator and
+the denominator.
+9p4 q4 · q
+Simplify. 3p2 q2 q
+Chapter 9 Roots and Radicals 1051
+Simplify: 50x5 y3
+72x4 y .
+Simplify: 48m7 n2
+125m5 n9 .
+1052 Chapter 9 Roots and Radicals
+Practice Makes Perfect
+Use the Product Property to Simplify Square Roots
+In the following exercises, simplify.
+53. 27 54. 80 55. 125
+56. 96 57. 200 58. 147
+59. 450 60. 252 61. 800
+62. 288 63. 675 64. 1250
+65. x7 66. y11 67. p3
+68. q5 69. m13 70. n21
+71. r25 72. s33 73. 49n17
+74. 25m9 75. 81r15 76. 100s19
+77. 98m5 78. 32n11 79. 125r13
+80. 80s15 81. 200p13 82. 128q3
+83. 242m23 84. 175n13 85. 147m7 n11
+86. 48m7 n5 87. 75r13 s9 88. 96r3 s3
+89. 300p9 q11 90. 192q3 r7 91. 242m13 n21
+92. 150m9 n3 93. 5 + 12 94. 8 + 96
+95. 1 + 45 96. 3 + 125 97. 10 − 24
+98. 8 − 80
+4 99. 3 + 90
+3 100. 15 + 75
+Use the Quotient Property to Simplify Square Roots
+In the following exercises, simplify.
+101. 49
+64 102. 100
+36 103. 121
+104. 144
+169 105. 72
+98 106. 75
+9.2 EXERCISES
+Chapter 9 Roots and Radicals 1053
+107. 45
+125 108. 300
+243 109. x10
+x6
+110. p20
+p10 111. y4
+y8 112. q8
+q14
+113. 200x7
+2x3 114. 98y11
+2y5 115. 96p9
+6p
+116. 108q10
+3q2
+117. 36
+35 118. 144
+119. 20
+81 120. 21
+196 121. 96x7
+122. 108y4
+49 123. 300m5
+64 124. 125n7
+125. 98r5
+100 126. 180s10
+144 127. 28q6
+128. 150r3
+256 129. 75r9
+s8 130. 72x5
+y6
+131. 28p7
+q2 132. 45r3
+s10 133. 100x5
+36x3
+134. 49r12
+16r6 135. 121p5
+81p2 136. 25r8
+64r
+137. 32x5 y3
+18x3 y
+138. 75r6 s8
+48rs4 139. 27p2 q
+108p5 q3
+140. 50r5 s2
+128r2 s5
+1054 Chapter 9 Roots and Radicals
+Everyday Math
+141.
+a Elliott decides to construct a square garden
+that will take up 288 square feet of his yard.
+Simplify 288 to determine the length and the
+width of his garden. Round to the nearest tenth of
+a foot.
+b Suppose Elliott decides to reduce the size of
+his square garden so that he can create a 5-footwide walking path on the north and east sides of
+the garden. Simplify 288 − 5 to determine the
+length and width of the new garden. Round to the
+nearest tenth of a foot.
+142.
+a Melissa accidentally drops a pair of sunglasses
+from the top of a roller coaster, 64 feet above the
+ground. Simplify 64
+16 to determine the number
+of seconds it takes for the sunglasses to reach the
+ground.
+b Suppose the sunglasses in the previous
+example were dropped from a height of 144 feet.
+Simplify 144
+16 to determine the number of
+seconds it takes for the sunglasses to reach the
+ground.
+Writing Exercises
+143. Explain why x4 = x2 . Then explain why
+x16 = x8 .
+144. Explain why 7 + 9 is not equal to 7 + 9 .
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b After reviewing this checklist, what will you do to become confident for all objectives?
+Chapter 9 Roots and Radicals 1055

@@ -1,0 +1,510 @@
+8.8
+Solve Uniform Motion and Work Applications
+Learning Objectives
+By the end of this section, you will be able to:
+Solve uniform motion applications
+Solve work applications
+BE PREPARED : : 8.24
+Before you get started, take this readiness quiz.
+If you miss a problem, go back to the section listed and review the material.
+An express train and a local bus leave Chicago to travel to Champaign. The express bus can make the trip in 2
+hours and the local bus takes 5 hours for the trip. The speed of the express bus is 42 miles per hour faster than
+the speed of the local bus. Find the speed of the local bus.
+If you missed this problem, review Example 3.48.
+BE PREPARED : : 8.25 Solve 1
+3x + 1
+4x = 5
+6 .
+If you missed this problem, review Example 3.49.
+BE PREPARED : : 8.26 Solve: 18t2 − 30 = −33t .
+If you missed this problem, review Example 7.79.
+Solve Uniform Motion Applications
+We have solved uniform motion problems using the formula D = rt in previous chapters. We used a table like the one
+below to organize the information and lead us to the equation.
+The formula D = rt assumes we know r and t and use them to find D. If we know D and r and need to find t, we would
+solve the equation for t and get the formula t = D
+r .
+We have also explained how flying with or against a current affects the speed of a vehicle. We will revisit that idea in the
+next example.
+An airplane can fly 200 miles into a 30 mph headwind in the same amount of time it takes to fly 300 miles with a 30 mph
+tailwind. What is the speed of the airplane?
+This is a uniform motion situation. A diagram will help us visualize the situation.
+1000 Chapter 8 Rational Expressions and Equations
+We fill in the chart to organize the information.
+We are looking for the speed of the airplane. Let r = the speed of the airplane.
+When the plane flies with the wind, the wind
+increases its speed and the rate is r + 30 .
+When the plane flies against the wind, the wind
+decreases its speed and the rate is r − 30 .
+Write in the rates.
+Write in the distances.
+Since D = r ∙ t , we solve for t and get D
+r .
+We divide the distance by the rate in each row, and
+place the expression in the time column.
+We know the times are equal and so we write our
+equation.
+r − 30 = 300
+r + 30
+We multiply both sides by the LCD.
+200(r + 30) = 300(r − 30)
+⎛
+⎝r + 30⎞
+⎠⎛
+⎝r − 30⎞
+⎠⎛
+⎝ 200
+r − 30
+⎞
+⎠ = ⎛
+⎝r + 30⎞
+⎠⎛
+⎝r − 30⎞
+⎠⎛
+⎝ 300
+r + 30
+⎞
+Simplify. (r + 30)(200) = (r − 30)(300)
+200r + 6000 = 300r − 9000
+Solve. 15000 = 100r
+150 = r
+Check.
+Is 150 mph a reasonable speed for an airplane? Yes.
+If the plane is traveling 150 mph and the wind is 30
+mph:
+Tailwind 150 + 30 = 180mph 300
+180 = 5
+3 hours
+Headwind 150 − 30 = 120mph 200
+120 = 5
+3 hours
+The times are equal, so it checks. The plane was traveling 150 mph.
+Link can ride his bike 20 miles into a 3 mph headwind in the same amount of time he can ride 30 miles with a 3
+mph tailwind. What is Link’s biking speed?
+Chapter 8 Rational Expressions and Equations 1001
+Judy can sail her boat 5 miles into a 7 mph headwind in the same amount of time she can sail 12 miles with a 7
+mph tailwind. What is the speed of Judy’s boat without a wind?
+In the next example, we will know the total time resulting from travelling different distances at different speeds.
+Jazmine trained for 3 hours on Saturday. She ran 8 miles and then biked 24 miles. Her biking speed is 4 mph faster than
+her running speed. What is her running speed?
+This is a uniform motion situation. A diagram will help us visualize the situation.
+We fill in the chart to organize the information.
+We are looking for Jazmine’s running speed. Let r = Jazmine’s running speed.
+Her biking speed is 4 miles faster than her running speed. r + 4 = her biking speed
+The distances are given, enter them into the chart.
+Since D = r ∙ t , we solve for t and get t = D
+r .
+We divide the distance by the rate in each row, and place the expression
+in the time column.
+Write a word sentence. Her time plus the time biking is 3 hours.
+Translate the sentence to get the equation. 8
+r + 24
+r + 4 = 3
+Solve.
+r⎛
+⎝r + 4⎞
+⎠⎛
+⎝8
+r + 24
+r + 4
+⎞
+⎠ = 3 ∙ r(r + 4)
+8(r + 4) + 24r = 3r(r + 4)
+8r + 32 + 24r = 3r2 + 12r
+32 + 32r = 3r2 + 12r
+0 = 3r2 − 20r − 32
+0 = (3r + 4)(r − 8)
+(3r + 4) = 0 (r − 8) = 0
+r = − 4
+3 r = 8
+Check. r = − 4
+3 r = 8
+A negative speed does not make sense in this problem, so r = 8 is the
+solution.
+Is 8 mph a reasonable running speed? Yes.
+1002 Chapter 8 Rational Expressions and Equations
+Run 8 mph 8 miles
+8 mph = 1 hour
+Bike 12 mph 24 miles
+12 mph = 2 hours
+Total 3 hours Jazmine’s running speed is 8 mph.
+Dennis went cross-country skiing for 6 hours on Saturday. He skied 20 miles uphill and then 20 miles back
+downhill, returning to his starting point. His uphill speed was 5 mph slower than his downhill speed. What was
+Dennis’ speed going uphill and his speed going downhill?
+Tony drove 4 hours to his home, driving 208 miles on the interstate and 40 miles on country roads. If he drove 15
+mph faster on the interstate than on the country roads, what was his rate on the country roads?
+Once again, we will use the uniform motion formula solved for the variable t.
+Hamilton rode his bike downhill 12 miles on the river trail from his house to the ocean and then rode uphill to return
+home. His uphill speed was 8 miles per hour slower than his downhill speed. It took him 2 hours longer to get home than
+it took him to get to the ocean. Find Hamilton’s downhill speed.
+This is a uniform motion situation. A diagram will help us visualize the situation.
+We fill in the chart to organize the information.
+We are looking for Hamilton’s downhill speed. Let r = Hamilton’s downhill speed.
+His uphill speed is 8 miles per hour slower. Enter
+the rates into the chart. r − 8 = Hamilton’s uphill speed
+The distance is the same in both directions, 12
+miles.
+Since D = r ∙ t , we solve for t and get t = D
+r .
+We divide the distance by the rate in each row, and
+place the expression in the time column.
+Write a word sentence about the time. He took 2 hours longer uphill than downhill. The
+uphill time is 2 more than the downhill time.
+Chapter 8 Rational Expressions and Equations 1003
+Translate the sentence to get the equation.
+Solve.
+r − 8 = 12
+r + 2
+r⎛
+⎝r − 8⎞
+⎠⎛
+⎝ 12
+r − 8
+⎞
+⎠ = r⎛
+⎝r − 8⎞
+⎠⎛
+⎝12
+r + 2⎞
+12r = 12⎛
+⎝ r − 8⎞
+⎠ + 2r⎛
+⎝ r − 8⎞
+12r = 12r − 96 + 2r2 − 16r
+0 = 2r2 − 16r − 96
+0 = 2⎛
+⎝r2 − 8r − 48⎞
+0 = 2⎛
+⎝ r − 12⎞
+⎠ ⎛
+⎝ r + 4⎞
+r − 12 = 0 r + 4 = 0
+r = 12 r = −4
+Check. Is 12 mph a reasonable speed for biking
+downhill? Yes.
+Downhill 12 mph 12 miles
+12 mph = 1 hour
+Uphill 12 − 8 = 4 mph 12 miles
+4 mph = 3 hours
+The uphill time is 2 hours more than the downhill
+time. Hamilton’s downhill speed is 12 mph.
+Kayla rode her bike 75 miles home from college one weekend and then rode the bus back to college. It took her 2
+hours less to ride back to college on the bus than it took her to ride home on her bike, and the average speed of
+the bus was 10 miles per hour faster than Kayla’s biking speed. Find Kayla’s biking speed.
+Victoria jogs 12 miles to the park along a flat trail and then returns by jogging on a 20 mile hilly trail. She jogs 1
+mile per hour slower on the hilly trail than on the flat trail, and her return trip takes her two hours longer. Find her
+rate of jogging on the flat trail.
+Solve Work Applications
+Suppose Pete can paint a room in 10 hours. If he works at a steady pace, in 1 hour he would paint 1
+10 of the room. If
+Alicia would take 8 hours to paint the same room, then in 1 hour she would paint 1
+8 of the room. How long would it take
+Pete and Alicia to paint the room if they worked together (and didn’t interfere with each other’s progress)?
+This is a typical ‘work’ application. There are three quantities involved here – the time it would take each of the two people
+to do the job alone and the time it would take for them to do the job together.
+Let’s get back to Pete and Alicia painting the room. We will let t be the number of hours it would take them to paint the
+room together. So in 1 hour working together they have completed 1
+t of the job.
+In one hour Pete did 1
+10 of the job. Alicia did 1
+8 of the job. And together they did 1
+t of the job.
+We can model this with the word equation and then translate to a rational equation. To find the time it would take them if
+they worked together, we solve for t.
+1004 Chapter 8 Rational Expressions and Equations
+Multiply by the LCD, 40t .
+Distribute.
+Simplify and solve.
+We’ll write as a mixed number so that we can
+convert it to hours and minutes.
+Remember, 1 hour = 60 minutes.
+Multiply, and then round to the nearest minute.
+It would take Pete and Alica about 4 hours and 27
+minutes to paint the room.
+Keep in mind, it should take less time for two people to complete a job working together than for either person to do it
+alone.
+The weekly gossip magazine has a big story about the Princess’ baby and the editor wants the magazine to be printed as
+soon as possible. She has asked the printer to run an extra printing press to get the printing done more quickly. Press #1
+takes 6 hours to do the job and Press #2 takes 12 hours to do the job. How long will it take the printer to get the magazine
+printed with both presses running together?
+This is a work problem. A chart will help us organize the information.
+Chapter 8 Rational Expressions and Equations 1005
+Let t = the number of hours needed to complete the job
+together.
+Enter the hours per job for Press #1, Press #2 and when
+they work together.
+If a job on Press #1 takes 6 hours, then in 1 hour 1
+6 of the
+job is completed.
+Similarly find the part of the job completed/hours for Press
+#2 and when they both work together.
+Write a word sentence.
+The part completed by Press #1 plus the part completed by
+Press #2 equals the amount completed together.
+Translate to an equation.
+Solve.
+Multiply by the LCD, 12t .
+Simplify.
+When both presses are running it takes 4
+hours to do the job.
+One gardener can mow a golf course in 4 hours, while another gardener can mow the same golf course in 6 hours.
+How long would it take if the two gardeners worked together to mow the golf course?
+Carrie can weed the garden in 7 hours, while her mother can do it in 3. How long will it take the two of them
+working together?
+Corey can shovel all the snow from the sidewalk and driveway in 4 hours. If he and his twin Casey work together, they can
+finish shoveling the snow in 2 hours. How many hours would it take Casey to do the job by himself?
+1006 Chapter 8 Rational Expressions and Equations
+This is a work application. A chart will help us organize the
+information.
+We are looking for how many hours it would take Casey to
+complete the job by himself.
+Let t = the number of hours needed for Casey to complete.
+Enter the hours per job for Corey, Casey, and when they
+work together.
+If Corey takes 4 hours, then in 1 hour 1
+4 of the job is
+completed. Similarly find the part of the job completed/
+hours for Casey and when they both work together.
+Write a word sentence.
+The part completed by Corey plus the part completed by Casey equals the amount completed together.
+Translate to an equation:
+Solve.
+Multiply by the LCD, 4t .
+Simplify.
+It would take Casey 4 hours to do the job
+alone.
+Two hoses can fill a swimming pool in 10 hours. It would take one hose 26 hours to fill the pool by itself. How long
+would it take for the other hose, working alone, to fill the pool?
+Cara and Cindy, working together, can rake the yard in 4 hours. Working alone, it takes Cindy 6 hours to rake the
+yard. How long would it take Cara to rake the yard alone?
+Chapter 8 Rational Expressions and Equations 1007
+Practice Makes Perfect
+Solve Uniform Motion Applications
+In the following exercises, solve uniform motion applications
+429. Mary takes a sightseeing tour
+on a helicopter that can fly 450
+miles against a 35 mph headwind
+in the same amount of time it can
+travel 702 miles with a 35 mph
+tailwind. Find the speed of the
+helicopter.
+430. A private jet can fly 1210 miles
+against a 25 mph headwind in the
+same amount of time it can fly
+1694 miles with a 25 mph tailwind.
+Find the speed of the jet.
+431. A boat travels 140 miles
+downstream in the same time as
+it travels 92 miles upstream. The
+speed of the current is 6mph.
+What is the speed of the boat?
+432. Darrin can skateboard 2 miles
+against a 4 mph wind in the same
+amount of time he skateboards 6
+miles with a 4 mph wind. Find the
+speed Darrin skateboards with no
+wind.
+433. Jane spent 2 hours exploring
+a mountain with a dirt bike. When
+she rode the 40 miles uphill, she
+went 5 mph slower than when she
+reached the peak and rode for 12
+miles along the summit. What was
+her rate along the summit?
+434. Jill wanted to lose some
+weight so she planned a day of
+exercising. She spent a total of 2
+hours riding her bike and jogging.
+She biked for 12 miles and jogged
+for 6 miles. Her rate for jogging
+was 10 mph less than biking rate.
+What was her rate when jogging?
+435. Bill wanted to try out different
+water craft. He went 62 miles
+downstream in a motor boat and
+27 miles downstream on a jet ski.
+His speed on the jet ski was 10
+mph faster than in the motor
+boat. Bill spent a total of 4 hours
+on the water. What was his rate of
+speed in the motor boat?
+436. Nancy took a 3 hour drive.
+She went 50 miles before she got
+caught in a storm. Then she drove
+68 miles at 9 mph less than she
+had driven when the weather was
+good. What was her speed driving
+in the storm?
+437. Chester rode his bike uphill
+24 miles and then back downhill
+at 2 mph faster than his uphill. If
+it took him 2 hours longer to ride
+uphill than downhill, l, what was
+his uphill rate?
+438. Matthew jogged to his
+friend’s house 12 miles away and
+then got a ride back home. It took
+him 2 hours longer to jog there
+than ride back. His jogging rate
+was 25 mph slower than the rate
+when he was riding. What was his
+jogging rate?
+439. Hudson travels 1080 miles in
+a jet and then 240 miles by car to
+get to a business meeting. The jet
+goes 300 mph faster than the rate
+of the car, and the car ride takes
+1 hour longer than the jet. What is
+the speed of the car?
+440. Nathan walked on an asphalt
+pathway for 12 miles. He walked
+the 12 miles back to his car on a
+gravel road through the forest. On
+the asphalt he walked 2 miles per
+hour faster than on the gravel.
+The walk on the gravel took one
+hour longer than the walk on the
+asphalt. How fast did he walk on
+the gravel?
+441. John can fly his airplane 2800
+miles with a wind speed of 50 mph
+in the same time he can travel
+2400 miles against the wind. If the
+speed of the wind is 50 mph, find
+the speed of his airplane.
+442. Jim’s speedboat can travel 20
+miles upstream against a 3 mph
+current in the same amount of
+time it travels 22 miles
+downstream with a 3 mph current
+speed. Find the speed of the Jim’s
+boat.
+443. Hazel needs to get to her
+granddaughter’s house by taking
+an airplane and a rental car. She
+travels 900 miles by plane and 250
+miles by car. The plane travels 250
+mph faster than the car. If she
+drives the rental car for 2 hours
+more than she rode the plane, find
+the speed of the car.
+444. Stu trained for 3 hours
+yesterday. He ran 14 miles and
+then biked 40 miles. His biking
+speed is 6 mph faster than his
+running speed. What is his
+running speed?
+445. When driving the 9 hour trip
+home, Sharon drove 390 miles on
+the interstate and 150 miles on
+country roads. Her speed on the
+interstate was 15 more than on
+country roads. What was her
+speed on country roads?
+446. Two sisters like to compete
+on their bike rides. Tamara can go
+4 mph faster than her sister,
+Samantha. If it takes Samantha 1
+hours longer than Tamara to go
+80 miles, how fast can Samantha
+ride her bike?
+8.8 EXERCISES
+1008 Chapter 8 Rational Expressions and Equations
+Solve Work Applications
+In the following exercises, solve work applications.
+447. Mike, an experienced
+bricklayer, can build a wall in 3
+hours, while his son, who is
+learning, can do the job in 6 hours.
+How long does it take for them to
+build a wall together?
+448. It takes Sam 4 hours to rake
+the front lawn while his brother,
+Dave, can rake the lawn in 2 hours.
+How long will it take them to rake
+the lawn working together?
+449. Mary can clean her
+apartment in 6 hours while her
+roommate can clean the
+apartment in 5 hours. If they work
+together, how long would it take
+them to clean the apartment?
+450. Brian can lay a slab of
+concrete in 6 hours, while Greg
+can do it in 4 hours. If Brian and
+Greg work together, how long will
+it take?
+451. Leeson can proofread a
+newspaper copy in 4 hours. If
+Ryan helps, they can do the job in
+3 hours. How long would it take
+for Ryan to do his job alone?
+452. Paul can clean a classroom
+floor in 3 hours. When his
+assistant helps him, the job takes
+2 hours. How long would it take
+the assistant to do it alone?
+453. Josephine can correct her
+students’ test papers in 5 hours,
+but if her teacher’s assistant
+helps, it would take them 3 hours.
+How long would it take the
+assistant to do it alone?
+454. Washing his dad’s car alone,
+eight year old Levi takes 2.5 hours.
+If his dad helps him, then it takes
+1 hour. How long does it take the
+Levi’s dad to wash the car by
+himself?
+455. Jackson can remove the
+shingles off of a house in 7 hours,
+while Martin can remove the
+shingles in 5 hours. How long will
+it take them to remove the
+shingles if they work together?
+456. At the end of the day Dodie
+can clean her hair salon in 15
+minutes. Ann, who works with her,
+can clean the salon in 30 minutes.
+How long would it take them to
+clean the shop if they work
+together?
+457. Ronald can shovel the
+driveway in 4 hours, but if his
+brother Donald helps it would
+take 2 hours. How long would it
+take Donald to shovel the
+driveway alone?
+458. It takes Tina 3 hours to frost
+her holiday cookies, but if Candy
+helps her it takes 2 hours. How
+long would it take Candy to frost
+the holiday cookies by herself?
+Everyday Math
+459. Dana enjoys taking her dog for a walk, but
+sometimes her dog gets away and she has to run after
+him. Dana walked her dog for 7 miles but then had to
+run for 1 mile, spending a total time of 2.5 hours with
+her dog. Her running speed was 3 mph faster than her
+walking speed. Find her walking speed.
+460. Ken and Joe leave their apartment to go to a
+football game 45 miles away. Ken drives his car 30 mph
+faster Joe can ride his bike. If it takes Joe 2 hours longer
+than Ken to get to the game, what is Joe’s speed?
+Writing Exercises
+461. In Example 8.83, the solution h = −4 is crossed
+out. Explain why.
+462. Paula and Yuki are roommates. It takes Paula 3
+hours to clean their apartment. It takes Yuki 4 hours to
+clean the apartment. The equation 1
+3 + 1
+4 = 1
+t can be
+used to find t, the number of hours it would take both
+of them, working together, to clean their apartment.
+Explain how this equation models the situation.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b On a scale of 1–10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+Chapter 8 Rational Expressions and Equations 1009

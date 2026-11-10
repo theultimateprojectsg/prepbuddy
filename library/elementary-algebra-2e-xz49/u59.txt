@@ -1,0 +1,590 @@
+8.4
+Add and Subtract Rational Expressions with Unlike Denominators
+Learning Objectives
+By the end of this section, you will be able to:
+Find the least common denominator of rational expressions
+Find equivalent rational expressions
+Add rational expressions with different denominators
+Subtract rational expressions with different denominators
+BE PREPARED : : 8.13 Before you get started, take this readiness quiz.
+If you miss a problem, go back to the section listed and review the material.
+Add: 7
+10 + 8
+15.
+If you missed this problem, review Example 1.81.
+BE PREPARED : : 8.14 Subtract: 6(2x + 1) − 4(x − 5).
+If you missed this problem, review Example 1.139.
+BE PREPARED : : 8.15 Find the Greatest Common Factor of 9x2 y3 and 12xy5 .
+If you missed this problem, review Example 7.3.
+BE PREPARED : : 8.16 Factor completely −48n − 12 .
+If you missed this problem, review Example 7.11.
+Find the Least Common Denominator of Rational Expressions
+When we add or subtract rational expressions with unlike denominators we will need to get common denominators. If we
+review the procedure we used with numerical fractions, we will know what to do with rational expressions.
+Let’s look at the example 7
+12 + 5
+18 from Foundations. Since the denominators are not the same, the first step was to
+find the least common denominator (LCD). Remember, the LCD is the least common multiple of the denominators. It is
+the smallest number we can use as a common denominator.
+To find the LCD of 12 and 18, we factored each number into primes, lining up any common primes in columns. Then we
+“brought down” one prime from each column. Finally, we multiplied the factors to find the LCD.
+12 = 2 · 2 · 3
+18 = 2 · 3 · 3
+LCD = 2 · 2 · 3 · 3
+LCD = 36
+We do the same thing for rational expressions. However, we leave the LCD in factored form.
+942 Chapter 8 Rational Expressions and Equations
+Find the LCD for 8
+x2 − 2x − 3, 3x
+x2 + 4x + 3 .
+Find the LCD for 8
+x2 − 2x − 3, 3x
+x2 + 4x + 3.
+Factor each expression completely, lining
+up common factors.
+Bring down the columns.
+x2 − 2x − 3 = (x + 1)(x − 2)
+x2 + 4x + 3 = (x + 1) (x + 3)
+LCD = (x + 1)(x − 2)(x + 3)
+Multiply the factors. The LCD is (x + 1)(x − 3)(x + 3).
+TRY IT : : 8.75 Find the LCD for 2
+x2 − x − 12, 1
+x2 − 16 .
+TRY IT : : 8.76 Find the LCD for x
+x2 + 8x + 15, 5
+x2 + 9x + 18 .
+Find Equivalent Rational Expressions
+When we add numerical fractions, once we find the LCD, we rewrite each fraction as an equivalent fraction with the LCD.
+We will do the same thing for rational expressions.
+Rewrite as equivalent rational expressions with denominator (x + 1)(x − 3)(x + 3) : 8
+x2 − 2x − 3, 3x
+x2 + 4x + 3.
+HOW TO : : FIND THE LEAST COMMON DENOMINATOR OF RATIONAL EXPRESSIONS.
+Factor each expression completely.
+List the factors of each expression. Match factors vertically when possible.
+Bring down the columns.
+Multiply the factors.
+Remember, we always exclude values that would make the denominator zero. What values of x should
+we exclude in this next example?
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 8 Rational Expressions and Equations 943
+Factor each denominator.
+Find the LCD.
+Multiply each denominator by the 'missing' factor and multiply
+each numerator by the same factor.
+Simplify the numerators.
+TRY IT : : 8.77 Rewrite as equivalent rational expressions with denominator (x + 3)(x − 4)(x + 4) :
+x2 − x − 12, 1
+x2 − 16.
+TRY IT : : 8.78 Rewrite as equivalent rational expressions with denominator (x + 3)(x + 5)(x + 6) :
+x
+x2 + 8x + 15, 5
+x2 + 9x + 18.
+Add Rational Expressions with Different Denominators
+Now we have all the steps we need to add rational expressions with different denominators. As we have done previously,
+we will do one example of adding numerical fractions first.
+Add: 7
+12 + 5
+18.
+Find the LCD of 12 and 18.
+Rewrite each fraction as an equivalent fraction with the LCD.
+Add the fractions.
+The fraction cannot be simplified.
+TRY IT : : 8.79 Add: 11
+30 + 7
+12.
+944 Chapter 8 Rational Expressions and Equations
+TRY IT : : 8.80 Add: 3
+8 + 9
+20.
+Now we will add rational expressions whose denominators are monomials.
+Add: 5
+12x2 y + 4
+21xy2.
+Find the LCD of 12x2 y and 21xy2 .
+Rewrite each rational expression as an equivalent fraction with the LCD.
+Simplify.
+Add the rational expressions.
+There are no factors common to the numerator and denominator. The fraction
+cannot be simplified.
+TRY IT : : 8.81 Add: 2
+15a2 b + 5
+6ab2.
+TRY IT : : 8.82 Add: 5
+16c + 3
+8cd2.
+Now we are ready to tackle polynomial denominators.
+EXAMPLE 8.42 HOW TO ADD RATIONAL EXPRESSIONS WITH DIFFERENT DENOMINATORS
+Add: 3
+x − 3 + 2
+x − 2.
+Chapter 8 Rational Expressions and Equations 945
+TRY IT : : 8.83 Add: 2
+x − 2 + 5
+x + 3.
+TRY IT : : 8.84 Add: 4
+m + 3 + 3
+m + 4.
+The steps to use to add rational expressions are summarized in the following procedure box.
+Add: 2a
+2ab + b2 + 3a
+4a2 − b2.
+HOW TO : : ADD RATIONAL EXPRESSIONS.
+Determine if the expressions have a common denominator.
+Yes – go to step 2.
+No – Rewrite each rational expression with the LCD.
+Find the LCD.
+Rewrite each rational expression as an equivalent rational expression with the LCD.
+Add the rational expressions.
+Simplify, if possible.
+Step 1.
+Step 2.
+Step 3.
+946 Chapter 8 Rational Expressions and Equations
+Do the expressions have a common denominator? No.
+Rewrite each expression with the LCD.
+Find the LCD.
+Rewrite each rational expression as an equivalent rational
+expression with the LCD.
+Simplify the numerators.
+Add the rational expressions.
+Simplify the numerator.
+Factor the numerator.
+There are no factors common to the numerator and denominator.
+The fraction cannot be simplified.
+TRY IT : : 8.85 Add: 5x
+xy − y2 + 2x
+x2 − y2.
+TRY IT : : 8.86 Add: 7
+2m + 6 + 4
+m2 + 4m + 3.
+Avoid the temptation to simplify too soon! In the example above, we must leave the first rational expression as
+2a(2a − b)
+b(2a + b)(2a − b) to be able to add it to 3a · b
+(2a + b)(2a − b) · b . Simplify only after you have combined the numerators.
+Add: 8
+x2 − 2x − 3 + 3x
+x2 + 4x + 3.
+Do the expressions have a common denominator? No.
+Rewrite each expression with the LCD.
+Find the LCD.
+Rewrite each rational expression as an equivalent fraction with
+the LCD.
+Chapter 8 Rational Expressions and Equations 947
+Simplify the numerators.
+Add the rational expressions.
+Simplify the numerator.
+The numerator is prime, so there are no common factors.
+TRY IT : : 8.87 Add: 1
+m2 − m − 2 + 5m
+m2 + 3m + 2.
+TRY IT : : 8.88 Add: 2n
+n2 − 3n − 10 + 6
+n2 + 5n + 6.
+Subtract Rational Expressions with Different Denominators
+The process we use to subtract rational expressions with different denominators is the same as for addition. We just have
+to be very careful of the signs when subtracting the numerators.
+EXAMPLE 8.45 HOW TO SUBTRACT RATIONAL EXPRESSIONS WITH DIFFERENT DENOMINATORS
+Subtract: x
+x − 3 − x − 2
+x + 3.
+TRY IT : : 8.89 Subtract: y
+y + 4 − y − 2
+y − 5.
+948 Chapter 8 Rational Expressions and Equations
+TRY IT : : 8.90 Subtract: z + 3
+z + 2 − z
+z + 3.
+The steps to take to subtract rational expressions are listed below.
+Subtract: 8y
+y2 − 16 − 4
+y − 4.
+Do the expressions have a common denominator? No.
+Rewrite each expression with the LCD.
+Find the LCD.
+Rewrite each rational expression as an equivalent rational expression with
+the LCD.
+Simplify the numerators.
+Subtract the rational expressions.
+Simplify the numerators.
+Factor the numerator to look for common factors.
+Remove common factors.
+Simplify.
+TRY IT : : 8.91 Subtract: 2x
+x2 − 4 − 1
+x + 2.
+HOW TO : : SUBTRACT RATIONAL EXPRESSIONS.
+Determine if they have a common denominator.
+Yes – go to step 2.
+No – Rewrite each rational expression with the LCD.
+Find the LCD.
+Rewrite each rational expression as an equivalent rational expression with the LCD.
+Subtract the rational expressions.
+Simplify, if possible.
+Step 1.
+Step 2.
+Step 3.
+Chapter 8 Rational Expressions and Equations 949
+TRY IT : : 8.92 Subtract: 3
+z + 3 − 6z
+z2 − 9.
+There are lots of negative signs in the next example. Be extra careful!
+Subtract: −3n − 9
+n2 + n − 6 − n + 3
+2 − n.
+Factor the denominator.
+Since n − 2 and 2 − n are opposites, we will mutliply the second rational
+expression by −1
+−1 .
+Simplify.
+Do the expressions have a common denominator? No.
+Find the LCD.
+Rewrite each rational expression as an equivalent rational expression with
+the LCD.
+Simplify the numerators.
+Simplify the rational expressions.
+Somplify the numerator.
+Factor the numerator to look for common factors.
+Simplify.
+TRY IT : : 8.93 Subtract: 3x − 1
+x2 − 5x − 6 − 2
+6 − x.
+TRY IT : : 8.94 Subtract: −2y − 2
+y2 + 2y − 8 − y − 1
+2 − y.
+When one expression is not in fraction form, we can write it as a fraction with denominator 1.
+950 Chapter 8 Rational Expressions and Equations
+Subtract: 5c + 4
+c − 2 − 3.
+Write 3 as 3
+1 to have 2 rational expressions.
+Do the rational expressions have a common denominator? No.
+Find the LCD of c − 2 and 1. LCD = c − 2.
+Rewrite 3
+1 as an equivalent rational expression with the LCD.
+Simplify.
+Subtract the rational expressions.
+Simplify.
+Factor to check for common factors.
+There are no common factors; the rational expression is simplified.
+TRY IT : : 8.95 Subtract: 2x + 1
+x − 7 − 3.
+TRY IT : : 8.96 Subtract: 4y + 3
+2y − 1 − 5.
+We follow the same steps as before to find the LCD when we have more than two rational expressions. In the next example
+we will start by factoring all three denominators to find their LCD.
+Simplify: 2u
+u − 1 + 1
+u − 2u − 1
+u2 − u.
+HOW TO : : ADD OR SUBTRACT RATIONAL EXPRESSIONS.
+Determine if the expressions have a common denominator.
+Yes – go to step 2.
+No – Rewrite each rational expression with the LCD.
+Find the LCD.
+Rewrite each rational expression as an equivalent rational expression with the LCD.
+Add or subtract the rational expressions.
+Simplify, if possible.
+Step 1.
+Step 2.
+Step 3.
+Chapter 8 Rational Expressions and Equations 951
+Do the rational expressions have a common denominator? No.
+Find the LCD.
+Rewrite each rational expression as an equivalent rational expression with
+the LCD.
+Write as one rational expression.
+Simplify.
+Factor the numerator, and remove common factors.
+Simplify.
+TRY IT : : 8.97 Simplify: v
+v + 1 + 3
+v − 1 − 6
+v2 − 1.
+TRY IT : : 8.98 Simplify: 3w
+w + 2 + 2
+w + 7 − 17w + 4
+w2 + 9w + 14.
+952 Chapter 8 Rational Expressions and Equations
+Practice Makes Perfect
+In the following exercises, find the LCD.
+169. 5
+x2 − 2x − 8, 2x
+x2 − x − 12 170. 8
+y2 + 12y + 35, 3y
+y2 + y − 42 171. 9
+z2 + 2z − 8, 4z
+z2 − 4
+172. 6
+a2 + 14a + 45, 5a
+a2 − 81 173. 4
+b2 + 6b + 9, 2b
+b2 − 2b − 15 174. 5
+c2 − 4c + 4, 3c
+c2 − 10c + 16
+175.
+3d2 + 14d − 5, 5d
+3d2 − 19d + 6
+176.
+5m2 − 3m − 2, 6m
+5m2 + 17m + 6
+In the following exercises, write as equivalent rational expressions with the given LCD.
+177. 5
+x2 − 2x − 8, 2x
+x2 − x − 12
+LCD (x − 4)(x + 2)(x + 3)
+178. 8
+y2 + 12y + 35, 3y
+y2 + y − 42
+LCD (y + 7)(y + 5)(y − 6)
+179. 9
+z2 + 2z − 8, 4z
+z2 − 4
+LCD (z − 2)(z + 4)(z + 2)
+180. 6
+a2 + 14a + 45, 5a
+a2 − 81
+LCD (a + 9)(a + 5)(a − 9)
+181. 4
+b2 + 6b + 9, 2b
+b2 − 2b − 15
+LCD (b + 3)(b + 3)(b − 5)
+182. 5
+c2 − 4c + 4, 3c
+c2 − 10c + 16
+LCD (c − 2)(c − 2)(c − 8)
+183.
+3d2 + 14d − 5, 5d
+3d2 − 19d + 6
+LCD (3d − 1)(d + 5)(d − 6)
+184.
+5m2 − 3m − 2, 6m
+5m2 + 17m + 6
+LCD (5m + 2)(m − 1)(m + 3)
+In the following exercises, add.
+185. 5
+24 + 11
+36 186. 7
+30 + 13
+45 187. 9
+20 + 11
+188. 8
+27 + 7
+18 189. 7
+10x2 y + 4
+15xy2 190. 1
+12a3 b2 + 5
+9a2 b3
+191. 1
+2m + 7
+8m2 n 192. 5
+6p2 q + 1
+4p 193. 3
+r + 4 + 2
+r − 5
+194. 4
+s − 7 + 5
+s + 3 195. 8
+t + 5 + 6
+t − 5 196. 7
+v + 5 + 9
+v − 5
+197. 5
+3w − 2 + 2
+w + 1 198. 4
+2x + 5 + 2
+x − 1 199. 2y
+y + 3 + 3
+y − 1
+200. 3z
+z − 2 + 1
+z + 5 201. 5b
+a2 b − 2a2 + 2b
+b2 − 4 202. 4
+cd + 3c + 1
+d2 − 9
+8.4 EXERCISES
+Chapter 8 Rational Expressions and Equations 953
+203. 2m
+3m − 3 + 5m
+m2 + 3m − 4 204. 3
+4n + 4 + 6
+n2 − n − 2
+205.
+n2 + 3n − 18 + 4n
+n2 + 8n + 12
+206.
+q2 − 3q − 10 + 5q
+q2 − 8q + 15
+207. 3r
+r2 + 7r + 6 + 9
+r2 + 4r + 3 208. 2s
+s2 + 2s − 8 + 4
+s2 + 3s − 10
+In the following exercises, subtract.
+209. t
+t − 6 − t − 2
+t + 6 210. v
+v − 3 − v − 6
+v + 1 211. w + 2
+w + 4 − w
+w − 2
+212. x − 3
+x + 6 − x
+x + 3 213. y − 4
+y + 1 − 1
+y + 7 214. z + 8
+z − 3 − z
+z − 2
+215. 5a
+a + 3 − a + 2
+a + 6 216. 3b
+b − 2 − b − 6
+b − 8 217. 6c
+c2 − 25 − 3
+c + 5
+218. 4d
+d2 − 81 − 2
+d + 9 219. 6
+m + 6 − 12m
+m2 − 36 220. 4
+n + 4 − 8n
+n2 − 16
+221. −9p − 17
+p2 − 4p − 21 − p + 1
+7 − p 222. −13q − 8
+q2 + 2q − 24 − q + 2
+4 − q 223. −2r − 16
+r2 + 6r − 16 − 5
+2 − r
+224. 2t − 30
+t2 + 6t − 27 − 2
+3 − t 225. 5v − 2
+v + 3 − 4 226. 6w + 5
+w − 1 + 2
+227. 2x + 7
+10x − 1 + 3 228. 8y − 4
+5y + 2 − 6
+In the following exercises, add and subtract.
+229. 5a
+a − 2 + 9
+a − 2a + 18
+a2 − 2a 230. 2b
+b − 5 + 3
+2b − 2b − 15
+2b2 − 10b 231. c
+c + 2 + 5
+c − 2 − 10c
+c2 − 4
+232.
+6d
+d − 5 + 1
+d + 4 − 7d − 5
+d2 − d − 20
+In the following exercises, simplify.
+233. 6a
+3ab + b2 + 3a
+9a2 − b2 234. 2c
+2c + 10 + 7c
+c2 + 9c + 20 235. 6d
+d2 − 64 − 3
+d − 8
+236. 5
+n + 7 − 10n
+n2 − 49
+237.
+4m
+m2 + 6m − 7 + 2
+m2 + 10m + 21
+238.
+3p
+p2 + 4p − 12 + 1
+p2 + p − 30
+239. −5n − 5
+n2 + n − 6 + n + 1
+2 − n 240. −4b − 24
+b2 + b − 30 + b + 7
+5 − b 241. 7
+15p + 5
+18pq
+242. 3
+20a2 + 11
+12ab2 243. 4
+x − 2 + 3
+x + 5 244. 6
+m + 4 + 9
+m − 8
+954 Chapter 8 Rational Expressions and Equations
+245. 2q + 7
+q + 4 − 2 246. 3y − 1
+y + 4 − 2 247. z + 2
+z − 5 − z
+z + 1
+248. t
+t − 5 − t − 1
+t + 5 249. 3d
+d + 2 + 4
+d − d + 8
+d2 + 2d
+250.
+2q
+q + 5 + 3
+q − 3 − 13q + 15
+q2 + 2q − 15
+Everyday Math
+251. Decorating cupcakes Victoria can decorate an
+order of cupcakes for a wedding in t hours, so in 1
+hour she can decorate 1
+t of the cupcakes. It would
+take her sister 3 hours longer to decorate the same
+order of cupcakes, so in 1 hour she can decorate 1
+t + 3
+of the cupcakes.
+a Find the fraction of the decorating job that
+Victoria and her sister, working together, would
+complete in one hour by adding the rational
+expressions 1
+t + 1
+t + 3.
+b Evaluate your answer to part (a) when t = 5.
+252. Kayaking When Trina kayaks upriver, it takes her
+3 − c hours to go 5 miles, where c is the speed of the
+river current. It takes her 5
+3 + c hours to kayak 5 miles
+down the river.
+a Find an expression for the number of hours it
+would take Trina to kayak 5 miles up the river and
+then return by adding 5
+3 − c + 5
+3 + c.
+b Evaluate your answer to part (a) when c = 1
+to find the number of hours it would take Trina if
+the speed of the river current is 1 mile per hour.
+Writing Exercises
+253. Felipe thinks 1
+x + 1
+y is 2
+x + y.
+a Choose numerical values for x and y and
+evaluate 1
+x + 1
+y.
+b Evaluate 2
+x + y for the same values of x and y
+you used in part (a).
+c Explain why Felipe is wrong.
+d Find the correct expression for 1
+x + 1
+y.
+254. Simplify the expression 4
+n2 + 6n + 9 − 1
+n2 − 9
+and explain all your steps.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b On a scale of 1-10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+Chapter 8 Rational Expressions and Equations 955

@@ -1,0 +1,459 @@
+4.6
+Find the Equation of a Line
+Learning Objectives
+By the end of this section, you will be able to:
+Find an equation of the line given the slope and y -intercept
+Find an equation of the line given the slope and a point
+Find an equation of the line given two points
+Find an equation of a line parallel to a given line
+Find an equation of a line perpendicular to a given line
+BE PREPARED : : 4.13 Before you get started, take this readiness quiz.
+Solve: 2
+3 = x
+5 .
+If you missed this problem, review Example 2.14.
+BE PREPARED : : 4.14 Simplify: − 2
+5(x − 15) .
+If you missed this problem, review Example 1.133.
+How do online retailers know that ‘you may also like’ a particular item based on something you just ordered? How can
+economists know how a rise in the minimum wage will affect the unemployment rate? How do medical researchers create
+drugs to target cancer cells? How can traffic engineers predict the effect on your commuting time of an increase or
+decrease in gas prices? It’s all mathematics.
+You are at an exciting point in your mathematical journey as the mathematics you are studying has interesting
+applications in the real world.
+The physical sciences, social sciences, and the business world are full of situations that can be modeled with linear
+equations relating two variables. Data is collected and graphed. If the data points appear to form a straight line, an
+equation of that line can be used to predict the value of one variable based on the value of the other variable.
+To create a mathematical model of a linear relation between two variables, we must be able to find the equation of
+the line. In this section we will look at several ways to write the equation of a line. The specific method we use will be
+determined by what information we are given.
+Find an Equation of the Line Given the Slope and y-Intercept
+We can easily determine the slope and intercept of a line if the equation was written in slope–intercept form, y = mx + b.
+Now, we will do the reverse—we will start with the slope and y-intercept and use them to find the equation of the line.
+Find an equation of a line with slope −7 and y-intercept (0, −1) .
+Since we are given the slope and y-intercept of the line, we can substitute the needed values into the slope–intercept form,
+y = mx + b .
+524 Chapter 4 Graphs
+Name the slope.
+Name the y-intercept.
+Substitute the values into y = mx + b.
+TRY IT : : 4.113 Find an equation of a line with slope 2
+5 and y-intercept (0, 4) .
+TRY IT : : 4.114 Find an equation of a line with slope −1 and y-intercept (0, −3) .
+Sometimes, the slope and intercept need to be determined from the graph.
+Find the equation of the line shown.
+We need to find the slope and y-intercept of the line from the graph so we can substitute the needed values into the
+slope–intercept form, y = mx + b .
+To find the slope, we choose two points on the graph.
+The y-intercept is (0, −4) and the graph passes through (3, −2) .
+Find the slope by counting the rise and run.
+Find the y-intercept.
+Substitute the values into y = mx + b.
+Chapter 4 Graphs 525
+TRY IT : : 4.115 Find the equation of the line shown in the graph.
+TRY IT : : 4.116 Find the equation of the line shown in the graph.
+Find an Equation of the Line Given the Slope and a Point
+Finding an equation of a line using the slope–intercept form of the equation works well when you are given the slope and
+y-intercept or when you read them off a graph. But what happens when you have another point instead of the y-intercept?
+We are going to use the slope formula to derive another form of an equation of the line. Suppose we have a line that has
+slope m and that contains some specific point (x1, y1) and some other point, which we will just call (x, y) . We can write
+the slope of this line and then change it to a different form.
+m = y − y1
+x − x1
+Multiply both sides of the equation by x − x1 . m(x − x1) = ⎛
+⎝
+y − y1
+x − x1
+⎞
+⎠(x − x1)
+Simplify. m(x − x1) = y − y1
+Rewrite the equation with the y terms on the left. y − y1 = m(x − x1)
+Table 4.46
+This format is called the point–slope form of an equation of a line.
+Point–slope Form of an Equation of a Line
+The point–slope form of an equation of a line with slope m and containing the point (x1, y1) is
+526 Chapter 4 Graphs
+We can use the point–slope form of an equation to find an equation of a line when we are given the slope and one
+point. Then we will rewrite the equation in slope–intercept form. Most applications of linear equations use the the
+slope–intercept form.
+EXAMPLE 4.59 FIND AN EQUATION OF A LINE GIVEN THE SLOPE AND A POINT
+Find an equation of a line with slope m = 2
+5 that contains the point (10, 3) . Write the equation in slope–intercept form.
+TRY IT : : 4.117 Find an equation of a line with slope m = 5
+6 and containing the point (6, 3) .
+TRY IT : : 4.118 Find an equation of a line with slope m = 2
+3 and containing thepoint (9, 2) .
+Find an equation of a line with slope m = − 1
+3 that contains the point (6, −4) . Write the equation in slope–intercept
+form.
+Since we are given a point and the slope of the line, we can substitute the needed values into the point–slope form,
+y − y1 = m(x − x1) .
+HOW TO : : FIND AN EQUATION OF A LINE GIVEN THE SLOPE AND A POINT.
+Identify the slope.
+Identify the point.
+Substitute the values into the point-slope form, y − y1 = m(x − x1) .
+Write the equation in slope–intercept form.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 4 Graphs 527
+Identify the slope.
+Identify the point.
+Substitute the values into y − y1 = m(x − x1).
+Simplify.
+Write in slope–intercept form.
+TRY IT : : 4.119 Find an equation of a line with slope m = − 2
+5 and containing the point (10, −5) .
+TRY IT : : 4.120 Find an equation of a line with slope m = − 3
+4 , and containing the point (4, −7) .
+Find an equation of a horizontal line that contains the point (−1, 2) . Write the equation in slope–intercept form.
+Every horizontal line has slope 0. We can substitute the slope and points into the point–slope form, y − y1 = m(x − x1) .
+Identify the slope.
+Identify the point.
+Substitute the values into y − y1 = m(x − x1).
+Simplify.
+Write in slope–intercept form. It is in y-form, but could be written y = 0x + 2 .
+Did we end up with the form of a horizontal line, y = a ?
+TRY IT : : 4.121 Find an equation of a horizontal line containing the point (−3, 8) .
+TRY IT : : 4.122 Find an equation of a horizontal line containing the point (−1, 4) .
+Find an Equation of the Line Given Two Points
+When real-world data is collected, a linear model can be created from two data points. In the next example we’ll see how
+to find an equation of a line when just two points are given.
+528 Chapter 4 Graphs
+We have two options so far for finding an equation of a line: slope–intercept or point–slope. Since we will know two points,
+it will make more sense to use the point–slope form.
+But then we need the slope. Can we find the slope with just two points? Yes. Then, once we have the slope, we can use it
+and one of the given points to find the equation.
+EXAMPLE 4.62 FIND AN EQUATION OF A LINE GIVEN TWO POINTS
+Find an equation of a line that contains the points (5, 4) and (3, 6) . Write the equation in slope–intercept form.
+Use the point (3, 6) and see that you get the same equation.
+TRY IT : : 4.123 Find an equation of a line containing the points (3, 1) and (5, 6) .
+TRY IT : : 4.124 Find an equation of a line containing the points (1, 4) and (6, 2) .
+Find an equation of a line that contains the points (−3, −1) and (2, −2) . Write the equation in slope–intercept form.
+Since we have two points, we will find an equation of the line using the point–slope form. The first step will be to find the
+slope.
+HOW TO : : FIND AN EQUATION OF A LINE GIVEN TWO POINTS.
+Find the slope using the given points.
+Choose one point.
+Substitute the values into the point-slope form, y − y1 = m(x − x1) .
+Write the equation in slope–intercept form.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 4 Graphs 529
+Find the slope of the line through (−3, −1) and (2, −2).
+Choose either point.
+Substitute the values into y − y1 = m(x − x1).
+Write in slope–intercept form.
+TRY IT : : 4.125 Find an equation of a line containing the points (−2, −4) and (1, −3) .
+TRY IT : : 4.126 Find an equation of a line containing the points (−4, −3) and (1, −5) .
+Find an equation of a line that contains the points (−2, 4) and (−2, −3) . Write the equation in slope–intercept form.
+Again, the first step will be to find the slope.
+Find the slope of the line through (−2, 4) and (−2, −3) . m = y2 − y1
+x2 − x1
+m = −3 − 4
+−2 − (−2)
+m = −7
+The slope is undefined.
+This tells us it is a vertical line. Both of our points have an x-coordinate of −2 . So our equation of the line is x = −2 .
+Since there is no y , we cannot write it in slope–intercept form.
+You may want to sketch a graph using the two given points. Does the graph agree with our conclusion that this is a vertical
+line?
+TRY IT : : 4.127 Find an equation of a line containing the points (5, 1) and (5, −4) .
+TRY IT : : 4.128 Find an equaion of a line containing the points (−4, 4) and (−4, 3) .
+530 Chapter 4 Graphs
+We have seen that we can use either the slope–intercept form or the point–slope form to find an equation of a line. Which
+form we use will depend on the information we are given. This is summarized in Table 4.47.
+To Write an Equation of a Line
+If given: Use: Form:
+Slope and y-intercept slope–intercept y = mx + b
+Slope and a point point–slope y − y1 = m(x − x1)
+Two points point–slope y − y1 = m(x − x1)
+Table 4.47
+Find an Equation of a Line Parallel to a Given Line
+Suppose we need to find an equation of a line that passes through a specific point and is parallel to a given line. We can
+use the fact that parallel lines have the same slope. So we will have a point and the slope—just what we need to use the
+point–slope equation.
+First let’s look at this graphically.
+The graph shows the graph of y = 2x − 3 . We want to graph a line parallel to this line and passing through the point
+(−2, 1) .
+We know that parallel lines have the same slope. So the second line will have the same slope as y = 2x − 3 . That slope
+is m∥ = 2 . We’ll use the notation m∥ to represent the slope of a line parallel to a line with slope m . (Notice that the
+subscript ∥ looks like two parallel lines.)
+The second line will pass through (−2, 1) and have m = 2 . To graph the line, we start at (−2, 1) and count out the rise
+and run. With m = 2 (or m = 2
+1 ), we count out the rise 2 and the run 1. We draw the line.
+Chapter 4 Graphs 531
+Do the lines appear parallel? Does the second line pass through (−2, 1) ?
+Now, let’s see how to do this algebraically.
+We can use either the slope–intercept form or the point–slope form to find an equation of a line. Here we know one point
+and can find the slope. So we will use the point–slope form.
+EXAMPLE 4.65 HOW TO FIND AN EQUATION OF A LINE PARALLEL TO A GIVEN LINE
+Find an equation of a line parallel to y = 2x − 3 that contains the point (−2, 1) . Write the equation in slope–intercept
+form.
+Does this equation make sense? What is the y-intercept of the line? What is the slope?
+Find an equation of a line parallel to the line y = 3x + 1 that contains the point (4, 2) . Write the equation in
+slope–intercept form.
+TRY IT : : 4.130 Find an equation of a line parallel to the line y = 1
+2x − 3 that contains the point (6, 4) .
+Find an Equation of a Line Perpendicular to a Given Line
+Now, let’s consider perpendicular lines. Suppose we need to find a line passing through a specific point and which is
+perpendicular to a given line. We can use the fact that perpendicular lines have slopes that are negative reciprocals. We
+will again use the point–slope equation, like we did with parallel lines.
+The graph shows the graph of y = 2x − 3 . Now, we want to graph a line perpendicular to this line and passing through
+HOW TO : : FIND AN EQUATION OF A LINE PARALLEL TO A GIVEN LINE.
+Find the slope of the given line.
+Find the slope of the parallel line.
+Identify the point.
+Substitute the values into the point–slope form, y − y1 = m(x − x1) .
+Write the equation in slope–intercept form.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+532 Chapter 4 Graphs
+(−2, 1) .
+We know that perpendicular lines have slopes that are negative reciprocals. We’ll use the notation m⊥ to represent the
+slope of a line perpendicular to a line with slope m . (Notice that the subscript ⊥ looks like the right angles made by two
+perpendicular lines.)
+y = 2x − 3 perpendicular line
+m = 2 m⊥ = − 1
+We now know the perpendicular line will pass through (−2, 1) with m⊥ = − 1
+2 .
+To graph the line, we will start at (−2, 1) and count out the rise −1 and the run 2. Then we draw the line.
+Do the lines appear perpendicular? Does the second line pass through (−2, 1) ?
+Now, let’s see how to do this algebraically. We can use either the slope–intercept form or the point–slope form to find an
+equation of a line. In this example we know one point, and can find the slope, so we will use the point–slope form.
+EXAMPLE 4.66 HOW TO FIND AN EQUATION OF A LINE PERPENDICULAR TO A GIVEN LINE
+Find an equation of a line perpendicular to y = 2x − 3 that contains the point (−2, 1) . Write the equation in
+slope–intercept form.
+Chapter 4 Graphs 533
+Find an equation of a line perpendicular to the line y = 3x + 1 that contains the point (4, 2) . Write the equation
+in slope–intercept form.
+Find an equation of a line perpendicular to the line y = 1
+2x − 3 that contains the point (6, 4) .
+Find an equation of a line perpendicular to x = 5 that contains the point (3, −2) . Write the equation in slope–intercept
+form.
+Again, since we know one point, the point–slope option seems more promising than the slope–intercept option. We
+need the slope to use this form, and we know the new line will be perpendicular to x = 5 . This line is vertical, so its
+perpendicular will be horizontal. This tells us the m⊥ = 0 .
+HOW TO : : FIND AN EQUATION OF A LINE PERPENDICULAR TO A GIVEN LINE.
+Find the slope of the given line.
+Find the slope of the perpendicular line.
+Identify the point.
+Substitute the values into the point–slope form, y − y1 = m(x − x1) .
+Write the equation in slope–intercept form.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+534 Chapter 4 Graphs
+Identify the point. (3, −2)
+Identify the slope of the perpendicular line. m⊥ = 0
+Substitute the values into y − y1 = m(x − x1) .
+y − y1 = m(x − x1)
+y − (−2) = 0(x − 3)
+y + 2 = 0
+Simplify. y = −2
+Sketch the graph of both lines. Do they appear to be perpendicular?
+Find an equation of a line that is perpendicular to the line x = 4 that contains the point (4, −5) . Write the
+equation in slope–intercept form.
+Find an equation of a line that is perpendicular to the line x = 2 that contains the point (2, −1) . Write the
+equation in slope–intercept form.
+In Example 4.67, we used the point–slope form to find the equation. We could have looked at this in a different way.
+We want to find a line that is perpendicular to x = 5 that contains the point (3, −2) . The graph shows us the line x = 5
+and the point (3, −2) .
+We know every line perpendicular to a vetical line is horizontal, so we will sketch the horizontal line through (3, −2) .
+Chapter 4 Graphs 535
+Do the lines appear perpendicular?
+If we look at a few points on this horizontal line, we notice they all have y-coordinates of −2 . So, the equation of the line
+perpendicular to the vertical line x = 5 is y = −2 .
+Find an equation of a line that is perpendicular to y = −4 that contains the point (−4, 2) . Write the equation in
+slope–intercept form.
+The line y = −4 is a horizontal line. Any line perpendicular to it must be vertical, in the form x = a . Since the
+perpendicular line is vertical and passes through (−4, 2) , every point on it has an x-coordinate of −4 . The equation of
+the perpendicular line is x = −4 . You may want to sketch the lines. Do they appear perpendicular?
+Find an equation of a line that is perpendicular to the line y = 1 that contains the point (−5, 1) . Write the
+equation in slope–intercept form.
+Find an equation of a line that is perpendicular to the line y = −5 that contains the point (−4, −5) .
+MEDIA : :
+Access this online resource for additional instruction and practice with finding the equation of a line.
+• Use the Point-Slope Form of an Equation of a Line (https://openstax.org/l/25PointSlopeForm)
+536 Chapter 4 Graphs
+Practice Makes Perfect
+Find an Equation of the Line Given the Slope and y-Intercept
+In the following exercises, find the equation of a line with given slope and y-intercept. Write the equation in slope–intercept form.
+386. slope 3 and y-intercept (0, 5) 387. slope 4 and y-intercept (0, 1) 388. slope 6 and y-intercept
+(0, −4)
+389. slope 8 and y-intercept
+(0, −6) 390. slope −1 and y-intercept
+(0, 3)
+391. slope −1 and y-intercept
+(0, 7)
+392. slope −2 and y-intercept
+(0, −3)
+393. slope −3 and y-intercept
+(0, −1) 394. slope 3
+5 and y-intercept
+(0, −1)
+395. slope 1
+5 and y-intercept
+(0, −5)
+396. slope − 3
+4 and y-intercept
+(0, −2)
+397. slope − 2
+3 and y-intercept
+(0, −3)
+398. slope 0 and y-intercept
+(0, −1)
+399. slope 0 and y-intercept
+(0, 2) 400. slope −3 and y-intercept
+(0, 0)
+401. slope −4 and y-intercept
+(0, 0)
+In the following exercises, find the equation of the line shown in each graph. Write the equation in slope–intercept form.
+402. 403.
+4.6 EXERCISES
+Chapter 4 Graphs 537
+404. 405.
+406. 407.
+408. 409.
+Find an Equation of the Line Given the Slope and a Point
+In the following exercises, find the equation of a line with given slope and containing the given point. Write the equation in
+538 Chapter 4 Graphs
+slope–intercept form.
+410. m = 5
+8 , point (8, 3) 411. m = 3
+8 , point (8, 2) 412. m = 1
+6 , point (6, 1)
+413. m = 5
+6 , point (6, 7) 414. m = − 3
+4 , point (8, −5) 415. m = − 3
+5 , point (10, −5)
+416. m = − 1
+4 , point (−12, −6) 417. m = − 1
+3 , point (−9, −8) 418. Horizontal line containing
+(−2, 5)
+419. Horizontal line containing
+(−1, 4)
+420. Horizontal line containing
+(−2, −3)
+421. Horizontal line containing
+(−1, −7)
+422. m = − 3
+2 , point (−4, −3) 423. m = − 5
+2 , point (−8, −2) 424. m = −7 , point (−1, −3)
+425. m = −4 , point (−2, −3) 426. Horizontal line containing
+(2, −3)
+427. Horizontal line containing
+(4, −8)
+Find an Equation of the Line Given Two Points
+In the following exercises, find the equation of a line containing the given points. Write the equation in slope–intercept form.
+428. (2, 6) and (5, 3) 429. (3, 1) and (2, 5) 430. (4, 3) and (8, 1)
+431. (2, 7) and (3, 8) 432. (−3, −4) and (5 − 2) 433. (−5, −3) and (4, −6)
+434. (−1, 3) and (−6, −7) 435. (−2, 8) and (−4, −6) 436. (6, −4) and (−2, 5)
+437. (3, −2) and (−4, 4) 438. (0, 4) and (2, −3) 439. (0, −2) and (−5, −3)
+440. (7, 2) and (7, −2) 441. (4, 2) and (4, −3) 442. (−7, −1) and (−7, −4)
+443. (−2, 1) and (−2, −4) 444. (6, 1) and (0, 1) 445. (6, 2) and (−3, 2)
+446. (3, −4) and (5, −4) 447. (−6, −3) and (−1, −3) 448. (4, 3) and (8, 0)
+449. (0, 0) and (1, 4) 450. (−2, −3) and (−5, −6) 451. (−3, 0) and (−7, −2)
+452. (8, −1) and (8, −5) 453. (3, 5) and (−7, 5)
+Find an Equation of a Line Parallel to a Given Line
+In the following exercises, find an equation of a line parallel to the given line and contains the given point. Write the equation in
+slope–intercept form.
+454. line y = 4x + 2 , point
+(1, 2)
+455. line y = 3x + 4 , point (2, 5) 456. line y = −2x − 3 , point
+(−1, 3)
+457. line y = −3x − 1 , point
+(2, −3)
+458. line 3x − y = 4 , point (3, 1) 459. line 2x − y = 6 , point (3, 0)
+460. line 4x + 3y = 6 , point
+(0, −3)
+461. line 2x + 3y = 6 , point
+(0, 5)
+462. line x = −3 , point (−2, −1)
+Chapter 4 Graphs 539
+463. line x = −4 , point (−3, −5) 464. line x − 2 = 0 , point
+(1, −2)
+465. line x − 6 = 0 , point
+(4, −3)
+466. line y = 5 , point (2, −2) 467. line y = 1 , point (3, −4) 468. line y + 2 = 0 , point
+(3, −3)
+469. line y + 7 = 0 , point
+(1, −1)
+Find an Equation of a Line Perpendicular to a Given Line
+In the following exercises, find an equation of a line perpendicular to the given line and contains the given point. Write the
+equation in slope–intercept form.
+470. line y = −2x + 3 , point
+(2, 2)
+471. line y = −x + 5 , point
+(3, 3)
+472. line y = 3
+4x − 2 , point
+(−3, 4)
+473. line y = 2
+3x − 4 , point
+(2, −4)
+474. line 2x − 3y = 8 , point
+(4, −1)
+475. line 4x − 3y = 5 , point
+(−3, 2)
+476. line 2x + 5y = 6 , point
+(0, 0)
+477. line 4x + 5y = −3 , point
+(0, 0)
+478. line y − 3 = 0 , point
+(−2, −4)
+479. line y − 6 = 0 , point
+(−5, −3)
+480. line y-axis, point (3, 4) 481. line y-axis, point (2, 1)
+Mixed Practice
+In the following exercises, find the equation of each line. Write the equation in slope–intercept form.
+482. Containing the points (4, 3) and (8, 1) 483. Containing the points (2, 7) and (3, 8)
+484. m = 1
+6 , containing point (6, 1) 485. m = 5
+6 , containing point (6, 7)
+486. Parallel to the line 4x + 3y = 6 , containing point
+(0, −3)
+487. Parallel to the line 2x + 3y = 6 , containing point
+(0, 5)
+488. m = − 3
+4 , containing point (8, −5) 489. m = − 3
+5 , containing point (10, −5)
+490. Perpendicular to the line y − 1 = 0 , point
+(−2, 6)
+491. Perpendicular to the line y-axis, point (−6, 2)
+492. Containing the points (4, 3) and (8, 1) 493. Containing the points (−2, 0) and (−3, −2)
+494. Parallel to the line x = −3 , containing point
+(−2, −1)
+495. Parallel to the line x = −4 , containing point
+(−3, −5)
+496. Containing the points (−3, −4) and (2, −5) 497. Containing the points (−5, −3) and (4, −6)
+540 Chapter 4 Graphs
+498. Perpendicular to the line x − 2y = 5 , containing
+point (−2, 2)
+499. Perpendicular to the line 4x + 3y = 1 , containing
+point (0, 0)
+Everyday Math
+500. Cholesterol. The age, x , and LDL cholesterol
+level, y , of two men are given by the points (18, 68)
+and (27, 122) . Find a linear equation that models the
+relationship between age and LDL cholesterol level.
+501. Fuel consumption. The city mpg, x , and highway
+mpg, y , of two cars are given by the points (29, 40)
+and (19, 28) . Find a linear equation that models the
+relationship between city mpg and highway mpg.
+Writing Exercises
+502. Why are all horizontal lines parallel? 503. Explain in your own words why the slopes of two
+perpendicular lines must have opposite signs.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b On a scale of 1-10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+Chapter 4 Graphs 541

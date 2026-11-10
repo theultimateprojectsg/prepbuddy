@@ -1,0 +1,448 @@
+7.6
+Quadratic Equations
+Learning Objectives
+By the end of this section, you will be able to:
+Solve quadratic equations by using the Zero Product Property
+Solve quadratic equations factoring
+Solve applications modeled by quadratic equations
+BE PREPARED : : 7.19 Before you get started, take this readiness quiz.
+Solve: 5y − 3 = 0 .
+If you missed this problem, review Example 2.27.
+BE PREPARED : : 7.20 Solve: 10a = 0 .
+If you missed this problem, review Example 2.13.
+BE PREPARED : : 7.21 Combine like terms: 12x2 − 6x + 4x .
+If you missed this problem, review Example 1.24.
+BE PREPARED : : 7.22 Factor n3 − 9n2 − 22n completely.
+If you missed this problem, review Example 7.32.
+We have already solved linear equations, equations of the form ax + by = c . In linear equations, the variables have
+no exponents. Quadratic equations are equations in which the variable is squared. Listed below are some examples of
+quadratic equations:
+x2 + 5x + 6 = 0 3y2 + 4y = 10 64u2 − 81 = 0 n(n + 1) = 42
+The last equation doesn’t appear to have the variable squared, but when we simplify the expression on the left we will get
+n2 + n .
+The general form of a quadratic equation is ax2 + bx + c = 0, with a ≠ 0 .
+Quadratic Equation
+An equation of the form ax2 + bx + c = 0 is called a quadratic equation.
+a, b, and c are real numbers and a ≠ 0
+To solve quadratic equations we need methods different than the ones we used in solving linear equations. We will look
+at one method here and then several others in a later chapter.
+Solve Quadratic Equations Using the Zero Product Property
+We will first solve some quadratic equations by using the Zero Product Property. The Zero Product Property says that if
+the product of two quantities is zero, it must be that at least one of the quantities is zero. The only way to get a product
+equal to zero is to multiply by zero itself.
+Zero Product Property
+If a · b = 0 , then either a = 0 or b = 0 or both.
+880 Chapter 7 Factoring
+We will now use the Zero Product Property, to solve a quadratic equation.
+EXAMPLE 7.69 HOW TO USE THE ZERO PRODUCT PROPERTY TO SOLVE A QUADRATIC EQUATION
+Solve: (x + 1)(x − 4) = 0 .
+TRY IT : : 7.137 Solve: (x − 3)(x + 5) = 0 .
+TRY IT : : 7.138 Solve: ⎛
+⎝y − 6⎞
+⎠⎛
+⎝y + 9⎞
+⎠ = 0 .
+We usually will do a little more work than we did in this last example to solve the linear equations that result from using
+the Zero Product Property.
+Solve: (5n − 2)(6n − 1) = 0 .
+(5n − 2)(6n − 1) = 0
+Use the Zero Product Property to set
+each factor to 0. 5n − 2 = 0 6n − 1 = 0
+Solve the equations. n = 2
+5 n = 1
+Check your answers.
+Chapter 7 Factoring 881
+TRY IT : : 7.139 Solve: (3m − 2)(2m + 1) = 0 .
+TRY IT : : 7.140 Solve: ⎛
+⎝4p + 3⎞
+⎠⎛
+⎝4p − 3⎞
+⎠ = 0 .
+Notice when we checked the solutions that each of them made just one factor equal to zero. But the product was zero for
+both solutions.
+Solve: 3p⎛
+⎝10p + 7⎞
+⎠ = 0 .
+3p⎛
+⎝10p + 7⎞
+⎠ = 0
+Use the Zero Product Property to set
+each factor to 0. 3p = 0 10p + 7 = 0
+Solve the equations. p = 0 10p = −7
+p = − 7
+Check your answers.
+TRY IT : : 7.141 Solve: 2u(5u − 1) = 0 .
+882 Chapter 7 Factoring
+TRY IT : : 7.142 Solve: w(2w + 3) = 0 .
+It may appear that there is only one factor in the next example. Remember, however, that ⎛
+⎝y − 8⎞
+2 means ⎛
+⎝y − 8⎞
+⎠⎛
+⎝y − 8⎞
+⎠ .
+Solve: ⎛
+⎝y − 8⎞
+2 = 0 .
+⎛
+⎝y − 8⎞
+2 = 0
+Rewrite the left side as a product. ⎛
+⎝y − 8⎞
+⎠⎛
+⎝y − 8⎞
+⎠ = 0
+Use the Zero Product Property and
+set each factor to 0. y − 8 = 0 y − 8 = 0
+Solve the equations. y = 8 y = 8
+When a solution repeats, we call it
+a double root.
+Check your answer.
+TRY IT : : 7.143 Solve: (x + 1)2 = 0 .
+TRY IT : : 7.144 Solve: (v − 2)2 = 0 .
+Solve Quadratic Equations by Factoring
+Each of the equations we have solved in this section so far had one side in factored form. In order to use the Zero Product
+Property, the quadratic equation must be factored, with zero on one side. So we be sure to start with the quadratic
+equation in standard form, ax2 + bx + c = 0 . Then we factor the expression on the left.
+EXAMPLE 7.73 HOW TO SOLVE A QUADRATIC EQUATION BY FACTORING
+Solve: x2 + 2x − 8 = 0 .
+Chapter 7 Factoring 883
+TRY IT : : 7.145 Solve: x2 − x − 12 = 0 .
+TRY IT : : 7.146 Solve: b2 + 9b + 14 = 0 .
+Before we factor, we must make sure the quadratic equation is in standard form.
+Solve: 2y2 = 13y + 45 .
+2y2 = 13y + 45
+Write the quadratic equation in standard form. 2y2 − 13y − 45 = 0
+Factor the quadratic expression. ⎛
+⎝2y + 5⎞
+⎠⎛
+⎝y − 9⎞
+⎠ = 0
+Use the Zero Product Property
+to set each factor to 0. 2y + 5 = 0 y − 9 = 0
+Solve each equation. y = − 5
+2 y = 9
+HOW TO : : SOLVE A QUADRATIC EQUATION BY FACTORING.
+Write the quadratic equation in standard form, ax2 + bx + c = 0 .
+Factor the quadratic expression.
+Use the Zero Product Property.
+Solve the linear equations.
+Check.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+884 Chapter 7 Factoring
+Check your answers.
+TRY IT : : 7.147 Solve: 3c2 = 10c − 8 .
+TRY IT : : 7.148 Solve: 2d2 − 5d = 3 .
+Solve: 5x2 − 13x = 7x .
+5x2 − 13x = 7x
+Write the quadratic equation in standard form. 5x2 − 20x = 0
+Factor the left side of the equation. 5x(x − 4) = 0
+Use the Zero Product Property
+to set each factor to 0. 5x = 0 x − 4 = 0
+Solve each equation. x = 0 x = 4
+Check your answers.
+TRY IT : : 7.149 Solve: 6a2 + 9a = 3a .
+TRY IT : : 7.150 Solve: 45b2 − 2b = −17b .
+Solving quadratic equations by factoring will make use of all the factoring techniques you have learned in this chapter!
+Do you recognize the special product pattern in the next example?
+Chapter 7 Factoring 885
+Solve: 144q2 = 25 .
+Write the quadratic equation in standard form.
+Factor. It is a difference of squares.
+Use the Zero Product Property to set each factor to 0. 12q – 5 = 0 12q + 5 = 0
+Solve each equation.
+12q = 5
+q = 5
+12q = –5
+q = – 5
+Check your answers.
+TRY IT : : 7.151 Solve: 25p2 = 49 .
+TRY IT : : 7.152 Solve: 36x2 = 121 .
+The left side in the next example is factored, but the right side is not zero. In order to use the Zero Product Property, one
+side of the equation must be zero. We’ll multiply the factors and then write the equation in standard form.
+Solve: (3x − 8)(x − 1) = 3x .
+Multiply the binomials.
+Write the quadratic equation in standard form.
+Factor the trinomial.
+(3x − 8)(x − 1) = 3x
+3x2 − 11x + 8 = 3x
+3x2 − 14x + 8 = 0
+(3x − 2)(x − 4) = 0
+Use the Zero Product Property to set each factor to 0.
+Solve each equation.
+3x − 2 = 0 x − 4 = 0
+3x = 2 x = 4
+x = 2
+Check your answers. The check is left to you!
+TRY IT : : 7.153 Solve: (2m + 1)(m + 3) = 12m .
+886 Chapter 7 Factoring
+TRY IT : : 7.154 Solve: (k + 1)(k − 1) = 8 .
+The Zero Product Property also applies to the product of three or more factors. If the product is zero, at least one of the
+factors must be zero. We can solve some equations of degree more than two by using the Zero Product Property, just like
+we solved quadratic equations.
+Solve: 9m3 + 100m = 60m2 .
+Bring all the terms to one side so that the other side is zero.
+Factor the greatest common factor first.
+Factor the trinomial.
+Use the Zero Product Property to set each factor to 0.
+Solve each equation.
+Check your answers. The check is left to you.
+TRY IT : : 7.155 Solve: 8x3 = 24x2 − 18x .
+TRY IT : : 7.156 Solve: 16y2 = 32y3 + 2y .
+When we factor the quadratic equation in the next example we will get three factors. However the first factor is a constant.
+We know that factor cannot equal 0.
+Solve: 4x2 = 16x + 84 .
+Write the quadratic equation in standard form.
+Factor the greatest common factor first.
+Factor the trinomial.
+4x2 = 16x + 84
+4x2 − 16x − 84 = 0
+4⎛
+⎝x2 − 4x − 21⎞
+⎠ = 0
+4(x − 7)(x + 3) = 0
+Use the Zero Product Property to set each factor to 0.
+Solve each equation.
+4 ≠ 0 x − 7 = 0 x + 3 = 0
+4 ≠ 0 x = 7 x = −3
+Check your answers. The check is left to you.
+TRY IT : : 7.157 Solve: 18a2 − 30 = −33a .
+Chapter 7 Factoring 887
+TRY IT : : 7.158 Solve: 123b = −6 − 60b2 .
+Solve Applications Modeled by Quadratic Equations
+The problem solving strategy we used earlier for applications that translate to linear equations will work just as well for
+applications that translate to quadratic equations. We will copy the problem solving strategy here so we can use it for
+reference.
+We will start with a number problem to get practice translating words into a quadratic equation.
+The product of two consecutive integers is 132 . Find the integers.
+Step 1. Read the problem.
+Step 2. Identify what we are looking for. We are looking for two consecutive integers.
+Step 3. Name what we are looking for. Let n = the first integer
+n + 1 = the next consecutive integer
+Step 4. Translate into an equation. Restate the The product of the two consecutive integers is 132.
+problem in a sentence.
+The first integer times the next integer is 132.
+Translate to an equation.
+Step 5. Solve the equation.
+Bring all the terms to one side.
+Factor the trinomial.
+n(n + 1) = 132
+n2 + n = 132
+n2 + n − 132 = 0
+(n − 11)(n + 12) = 0
+Use the zero product property.
+Solve the equations.
+n − 11 = 0 n + 12 = 0
+n = 11 n = −12
+There are two values for n that are solutions to this problem. So there are two sets of consecutive integers that will work.
+HOW TO : : USE A PROBLEM-SOLVING STRATEGY TO SOLVE WORD PROBLEMS.
+Read the problem. Make sure all the words and ideas are understood.
+Identify what we are looking for.
+Name what we are looking for. Choose a variable to represent that quantity.
+Translate into an equation. It may be helpful to restate the problem in one sentence with all
+the important information. Then, translate the English sentence into an algebra equation.
+Solve the equation using good algebra techniques.
+Check the answer in the problem and make sure it makes sense.
+Answer the question with a complete sentence.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Step 7.
+888 Chapter 7 Factoring
+If the first integer is n = 11 If the first integer is n = −12
+then the next integer is n + 1 then the next integer is n + 1
+11 + 1 −12 + 1
+12 −11
+Step 6. Check the answer.
+The consecutive integers are 11, 12 and −11, −12 . The product 11 · 12 = 132 and the product −11(−12) = 132 .
+Both pairs of consecutive integers are solutions.
+Step 7. Answer the question. The consecutive integers are 11, 12 and −11, −12 .
+TRY IT : : 7.159 The product of two consecutive integers is 240 . Find the integers.
+TRY IT : : 7.160 The product of two consecutive integers is 420 . Find the integers.
+Were you surprised by the pair of negative integers that is one of the solutions to the previous example? The product of
+the two positive integers and the product of the two negative integers both give 132.
+In some applications, negative solutions will result from the algebra, but will not be realistic for the situation.
+A rectangular garden has an area 15 square feet. The length of the garden is two feet more than the width. Find the
+length and width of the garden.
+Step 1. Read the problem. In problems involving geometric figures,
+a sketch can help you visualize the situation.
+Step 2. Identify what you are looking for. We are looking for the length and
+width.
+Step 3. Name what you are looking for.
+The length is two feet more than width.
+Let W = the width of the garden.
+W + 2 = the length of the garden
+Step 4. Translate into an equation.
+Restate the important information in a sentence. The area of the rectangular
+garden is 15 square feet.
+Use the formula for the area of a rectangle. A = L · W
+Substitute in the variables. 15 = (W + 2)W
+Step 5. Solve the equation. Distribute first. 15 = W 2 + 2W
+Get zero on one side. 0 = W 2 + 2W − 15
+Factor the trinomial. 0 = (W + 5)(W − 3)
+Use the Zero Product Property. 0 = W + 5 0 = W − 3
+Solve each equation. −5 = W 3 = W
+Chapter 7 Factoring 889
+Since W is the width of the garden,
+it does not make sense for it to be
+negative. We eliminate that value for W.
+−5 = W
+W = 3
+3 = W
+Width is 3
+feet.
+Find the value of the length. W + 2 = length
+3 + 2
+5 Length is 5
+feet.
+Step 6. Check the answer.
+Does the answer make sense?
+Yes, this makes sense.
+Step 7. Answer the question. The width of the garden is 3 feet
+and the length is 5 feet.
+A rectangular sign has an area of 30 square feet. The length of the sign is one foot more than the width. Find the
+length and width of the sign.
+A rectangular patio has an area of 180 square feet. The width of the patio is three feet less than the length. Find
+the length and width of the patio.
+In an earlier chapter, we used the Pythagorean Theorem ⎛
+⎝a2 + b2 = c2⎞
+⎠ . It gave the relation between the legs and the
+hypotenuse of a right triangle.
+We will use this formula to in the next example.
+Justine wants to put a deck in the corner of her backyard in the shape of a right triangle, as shown below. The hypotenuse
+will be 17 feet long. The length of one side will be 7 feet less than the length of the other side. Find the lengths of the sides
+of the deck.
+890 Chapter 7 Factoring
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. We are looking for the lengths of the sides
+of the deck.
+Step 3. Name what you are looking for.
+One side is 7 less than the other.
+Let x = length of a side of the deck
+x − 7 = length of other side
+Step 4. Translate into an equation.
+Since this is a right triangle we can use the
+Pythagorean Theorem.
+a2 + b2 = c2
+Substitute in the variables. x2 + (x − 7)2 = 172
+Step 5. Solve the equation. x2 + x2 − 14x + 49 = 289
+Simplify. 2x2 − 14x + 49 = 289
+It is a quadratic equation, so get zero on one side. 2x2 − 14x − 240 = 0
+Factor the greatest common factor. 2(x2 − 7x − 120) = 0
+Factor the trinomial. 2(x − 15)(x + 8) = 0
+Use the Zero Product Property. 2 ≠ 0 x − 15 = 0 x + 8 = 0
+Solve. 2 ≠ 0 x = 15 x = −8
+Since x is a side of the triangle, x = −8 does not
+make sense. 2 ≠ 0 x = 15 x = −8
+Find the length of the other side.
+If the length of one side is
+then the length of the other side is
+8 is the length of the other side.
+Step 6. Check the answer.
+Do these numbers make sense?
+Step 7. Answer the question. The sides of the deck are 8, 15, and 17 feet.
+A boat’s sail is a right triangle. The length of one side of the sail is 7 feet more than the other side. The hypotenuse
+is 13. Find the lengths of the two sides of the sail.
+Chapter 7 Factoring 891
+A meditation garden is in the shape of a right triangle, with one leg 7 feet. The length of the hypotenuse is one
+more than the length of one of the other legs. Find the lengths of the hypotenuse and the other leg.
+892 Chapter 7 Factoring
+Practice Makes Perfect
+Use the Zero Product Property
+In the following exercises, solve.
+315. (x − 3)(x + 7) = 0 316. ⎛
+⎝y − 11⎞
+⎠⎛
+⎝y + 1⎞
+⎠ = 0 317. (3a − 10)(2a − 7) = 0
+318. (5b + 1)(6b + 1) = 0 319. 6m(12m − 5) = 0 320. 2x(6x − 3) = 0
+321. (y − 3)2 = 0 322. (b + 10)2 = 0 323. (2x − 1)2 = 0
+324. (3y + 5)2 = 0
+Solve Quadratic Equations by Factoring
+In the following exercises, solve.
+325. x2 + 7x + 12 = 0 326. y2 − 8y + 15 = 0 327. 5a2 − 26a = 24
+328. 4b2 + 7b = −3 329. 4m2 = 17m − 15 330. n2 = 5n − 6
+331. 7a2 + 14a = 7a 332. 12b2 − 15b = −9b 333. 49m2 = 144
+334. 625 = x2 335. (y − 3)⎛
+⎝y + 2⎞
+⎠ = 4y 336. (p − 5)(p + 3) = −7
+337. (2x + 1)(x − 3) = −4x 338. (x + 6)(x − 3) = −8 339. 16p3 = 24p2 + 9p
+340. m3 − 2m2 = −m 341. 20x2 − 60x = −45 342. 3y2 − 18y = −27
+Solve Applications Modeled by Quadratic Equations
+In the following exercises, solve.
+343. The product of two
+consecutive integers is 56. Find
+the integers.
+344. The product of two
+consecutive integers is 42. Find
+the integers.
+345. The area of a rectangular
+carpet is 28 square feet. The
+length is three feet more than the
+width. Find the length and the
+width of the carpet.
+346. A rectangular retaining wall
+has area 15 square feet. The
+height of the wall is two feet less
+than its length. Find the height
+and the length of the wall.
+347. A pennant is shaped like a
+right triangle, with hypotenuse 10
+feet. The length of one side of the
+pennant is two feet longer than
+the length of the other side. Find
+the length of the two sides of the
+pennant.
+348. A reflecting pool is shaped
+like a right triangle, with one leg
+along the wall of a building. The
+hypotenuse is 9 feet longer than
+the side along the building. The
+third side is 7 feet longer than the
+side along the building. Find the
+lengths of all three sides of the
+reflecting pool.
+Mixed Practice
+In the following exercises, solve.
+349. (x + 8)(x − 3) = 0 350. ⎛
+⎝3y − 5⎞
+⎠⎛
+⎝y + 7⎞
+⎠ = 0 351. p2 + 12p + 11 = 0
+7.6 EXERCISES
+Chapter 7 Factoring 893
+352. q2 − 12q − 13 = 0 353. m2 = 6m + 16 354. 4n2 + 19n = 5
+355. a3 − a2 − 42a = 0 356. 4b2 − 60b + 224 = 0 357. The product of two
+consecutive integers is 110. Find
+the integers.
+358. The length of one leg of a
+right triangle is three feet more
+than the other leg. If the
+hypotenuse is 15 feet, find the
+lengths of the two legs.
+Everyday Math
+359. Area of a patio If each side of a square patio is
+increased by 4 feet, the area of the patio would be 196
+square feet. Solve the equation (s + 4)2 = 196 for s to
+find the length of a side of the patio.
+360. Watermelon drop A watermelon is dropped from
+the tenth story of a building. Solve the equation
+−16t2 + 144 = 0 for t to find the number of seconds
+it takes the watermelon to reach the ground.
+Writing Exercises
+361. Explain how you solve a quadratic equation. How
+many answers do you expect to get for a quadratic
+equation?
+362. Give an example of a quadratic equation that has a
+GCF and none of the solutions to the equation is zero.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b Overall, after looking at the checklist, do you think you are well-prepared for the next section? Why or why not?
+894 Chapter 7 Factoring

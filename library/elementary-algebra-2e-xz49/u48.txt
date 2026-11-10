@@ -1,0 +1,608 @@
+binomial
+conjugate pair
+degree of a constant
+degree of a polynomial
+degree of a term
+monomial
+negative exponent
+polynomial
+scientific notation
+standard form
+trinomial
+CHAPTER 6 REVIEW
+KEY TERMS
+A binomial is a polynomial with exactly two terms.
+A conjugate pair is two binomials of the form (a − b), (a + b) ; the pair of binomials each have the same
+first term and the same last term, but one binomial is a sum and the other is a difference.
+The degree of any constant is 0.
+The degree of a polynomial is the highest degree of all its terms.
+The degree of a term is the exponent of its variable.
+A monomial is a term of the form axm , where a is a constant and m is a whole number; a monomial has
+exactly one term.
+If n is a positive integer and a ≠ 0 , then a−n = 1
+an .
+A polynomial is a monomial, or two or more monomials combined by addition or subtraction.
+A number is expressed in scientific notation when it is of the form a × 10n where
+a ≥ 1 and a < 10 and n is an integer.
+A polynomial is in standard form when the terms of a polynomial are written in descending order of
+degrees.
+A trinomial is a polynomial with exactly three terms.
+KEY CONCEPTS
+6.1 Add and Subtract Polynomials
+• Monomials
+◦ A monomial is a term of the form axm , where a is a constant and m is a whole number
+• Polynomials
+◦ polynomial—A monomial, or two or more monomials combined by addition or subtraction is a
+polynomial.
+◦ monomial—A polynomial with exactly one term is called a monomial.
+◦ binomial—A polynomial with exactly two terms is called a binomial.
+◦ trinomial—A polynomial with exactly three terms is called a trinomial.
+• Degree of a Polynomial
+◦ The degree of a term is the sum of the exponents of its variables.
+◦ The degree of a constant is 0.
+◦ The degree of a polynomial is the highest degree of all its terms.
+6.2 Use Multiplication Properties of Exponents
+• Exponential Notation
+• Properties of Exponents
+◦ If a, b are real numbers and m, n are whole numbers, then
+Product Property am · an = am + n
+Power Property (am)n = am · n
+Product to a Power (ab)m = am bm
+Chapter 6 Polynomials 797
+6.3 Multiply Polynomials
+• FOIL Method for Multiplying Two Binomials—To multiply two binomials:
+Multiply the First terms.
+Multiply the Outer terms.
+Multiply the Inner terms.
+Multiply the Last terms.
+• Multiplying Two Binomials—To multiply binomials, use the:
+◦ Distributive Property (Example 6.34)
+◦ FOIL Method (Example 6.39)
+◦ Vertical Method (Example 6.44)
+• Multiplying a Trinomial by a Binomial—To multiply a trinomial by a binomial, use the:
+◦ Distributive Property (Example 6.45)
+◦ Vertical Method (Example 6.46)
+6.4 Special Products
+• Binomial Squares Pattern
+◦ If a, b are real numbers,
+◦ (a + b)2 = a2 + 2ab + b2
+◦ (a − b)2 = a2 − 2ab + b2
+◦ To square a binomial: square the first term, square the last term, double their product.
+• Product of Conjugates Pattern
+◦ If a, b are real numbers,
+◦ (a − b)(a + b) = a2 − b2
+◦ The product is called a difference of squares.
+• To multiply conjugates:
+◦ square the first term square the last term write it as a difference of squares
+6.5 Divide Monomials
+• Quotient Property for Exponents:
+◦ If a is a real number, a ≠ 0 , and m, n are whole numbers, then:
+am
+an = am − n, m > n and am
+an = 1
+am − n, n > m
+• Zero Exponent
+◦ If a is a non-zero number, then a0 = 1 .
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+798 Chapter 6 Polynomials
+• Quotient to a Power Property for Exponents:
+◦ If a and b are real numbers, b ≠ 0, and m is a counting number, then:
+⎛
+⎝a
+b
+⎞
+m
+= am
+bm
+◦ To raise a fraction to a power, raise the numerator and denominator to that power.
+• Summary of Exponent Properties
+◦ If a, b are real numbers and m, n are whole numbers, then
+Product Property am · an = am + n
+Power Property (am)n = am · n
+Product to a Power (ab)m = am bm
+Quotient Property am
+bm = am − n, a ≠ 0, m > n
+am
+an = 1
+an − m, a ≠ 0, n > m
+Zero Exponent Definition ao = 1, a ≠ 0
+Quotient to a Power Property ⎛
+⎝a
+b
+⎞
+m
+= am
+bm, b ≠ 0
+6.6 Divide Polynomials
+• Fraction Addition
+◦ If a, b, and c are numbers where c ≠ 0 , then
+a
+c + b
+c = a + b
+c and a + b
+c = a
+c + b
+c
+• Division of a Polynomial by a Monomial
+◦ To divide a polynomial by a monomial, divide each term of the polynomial by the monomial.
+6.7 Integer Exponents and Scientific Notation
+• Property of Negative Exponents
+◦ If n is a positive integer and a ≠ 0 , then 1
+a−n = an
+• Quotient to a Negative Exponent
+◦ If a, b are real numbers, b ≠ 0 and n is an integer , then ⎛
+⎝a
+b
+⎞
+−n
+= ⎛
+⎝b
+a⎞
+n
+• To convert a decimal to scientific notation:
+Move the decimal point so that the first factor is greater than or equal to 1 but less than 10.
+Count the number of decimal places, n , that the decimal point was moved.
+Write the number as a product with a power of 10. If the original number is:
+▪ greater than 1, the power of 10 will be 10n
+▪ between 0 and 1, the power of 10 will be 10−n
+Check.
+• To convert scientific notation to decimal form:
+Determine the exponent, n , on the factor 10.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 1.
+Chapter 6 Polynomials 799
+Move the decimal n places, adding zeros if needed.
+▪ If the exponent is positive, move the decimal point n places to the right.
+▪ If the exponent is negative, move the decimal point |n| places to the left.
+Check.
+REVIEW EXERCISES
+6.1 Add and Subtract Polynomials
+Identify Polynomials, Monomials, Binomials and Trinomials
+In the following exercises, determine if each of the following polynomials is a monomial, binomial, trinomial, or other polynomial.
+588.
+a 11c4 − 23c2 + 1
+b 9p3 + 6p2 − p − 5
+c 3
+7x + 5
+d 10
+e 2y − 12
+589.
+a a2 − b2
+b 24d3
+c x2 + 8x − 10
+d m2 n2 − 2mn + 6
+e 7y3 + y2 − 2y − 4
+Determine the Degree of Polynomials
+In the following exercises, determine the degree of each polynomial.
+590.
+a 3x2 + 9x + 10
+b 14a2 bc
+c 6y + 1
+d n3 − 4n2 + 2n − 8
+e −19
+591.
+a
+5p3 − 8p2 + 10p − 4
+b −20q4
+c x2 + 6x + 12
+d 23r2 s2 − 4rs + 5
+e 100
+Add and Subtract Monomials
+In the following exercises, add or subtract the monomials.
+592. 5y3 + 8y3 593. −14k + 19k 594. 12q − (−6q)
+595. −9c − 18c 596. 12x − 4y − 9x 597. 3m2 + 7n2 − 3m2
+598. 6x2 y − 4x + 8xy2 599. 13a + b
+Add and Subtract Polynomials
+In the following exercises, add or subtract the polynomials.
+600.
+(5x2 + 12x + 1) + (6x2 − 8x + 3) 601. (9p2 − 5p + 3) + (4p2 − 4) 602.
+(10m2 − 8m − 1) − (5m2 + m − 2)
+603. (7y2 − 8y) − (y − 4) 604. Subtract
+⎛
+⎝3s2 + 10⎞
+⎠ from ⎛
+⎝15s2 − 2s + 8⎞
+605. Find the sum of
+⎛
+⎝a2 + 6a + 9⎞
+⎠ and ⎛
+⎝5a3 − 7⎞
+Step 2.
+Step 3.
+800 Chapter 6 Polynomials
+Evaluate a Polynomial for a Given Value of the Variable
+In the following exercises, evaluate each polynomial for the given value.
+606. Evaluate 3y2 − y + 1 when:
+a y = 5 b y = −1
+c y = 0
+607. Evaluate 10 − 12x when:
+a x = 3 b x = 0
+c x = −1
+608. Randee drops a stone off the
+200 foot high cliff into the ocean.
+The polynomial −16t2 + 200
+gives the height of a stone t
+seconds after it is dropped from
+the cliff. Find the height after
+t = 3 seconds.
+609. A manufacturer of stereo
+sound speakers has found that the
+revenue received from selling the
+speakers at a cost of p dollars each
+is given by the polynomial
+−4p2 + 460p. Find the revenue
+received when p = 75 dollars.
+6.2 Use Multiplication Properties of Exponents
+Simplify Expressions with Exponents
+In the following exercises, simplify.
+610. 104 611. 171
+612. ⎛
+⎝2
+⎞
+613. (0.5)3 614. (−2)6 615. −26
+Simplify Expressions Using the Product Property for Exponents
+In the following exercises, simplify each expression.
+616. x4 · x3 617. p15 · p16 618. 410 · 46
+619. 8 · 85 620. n · n2 · n4 621. yc · y3
+Simplify Expressions Using the Power Property for Exponents
+In the following exercises, simplify each expression.
+622. (m3)5 623. (53)2 624. ⎛
+⎝y4⎞
+x
+625. (3r)s
+Simplify Expressions Using the Product to a Power Property
+In the following exercises, simplify each expression.
+626. (4a)2 627. ⎛
+⎝−5y⎞
+3 628. (2mn)5
+629. ⎛
+⎝10xyz⎞
+Simplify Expressions by Applying Several Properties
+In the following exercises, simplify each expression.
+630. ⎛
+⎝p2⎞
+· ⎛
+⎝p3⎞
+6 631. (4a3 b2)3 632. (5x)2(7x)
+Chapter 6 Polynomials 801
+633. (2q3)4 (3q)2
+634. ⎛
+⎝1
+3x2⎞
+2 ⎛
+⎝1
+2x⎞
+635. ⎛
+⎝2
+5m2 n⎞
+Multiply Monomials
+In the following exercises 8, multiply the monomials.
+636. ⎛
+⎝−15x2⎞
+⎠⎛
+⎝6x4⎞
+⎠ 637. (−9n7)(−16n) 638. (7p5 q3)(8pq9)
+639. ⎛
+⎝5
+9ab2⎞
+⎠⎛
+⎝27ab3⎞
+6.3 Multiply Polynomials
+Multiply a Polynomial by a Monomial
+In the following exercises, multiply.
+640. 7(a + 9) 641. −4(y + 13) 642. −5(r − 2)
+643. p(p + 3) 644. −m(m + 15) 645. −6u(2u + 7)
+646. 9(b2 + 6b + 8) 647. 3q2(q2 − 7q + 6) 3 648. (5z − 1)z
+649. (b − 4) · 11
+Multiply a Binomial by a Binomial
+In the following exercises, multiply the binomials using: a the Distributive Property, b the FOIL method, c the Vertical Method.
+650. (x − 4)(x + 10) 651. ⎛
+⎝6y − 7⎞
+⎠⎛
+⎝2y − 5⎞
+In the following exercises, multiply the binomials. Use any method.
+652. (x + 3)(x + 9) 653. (y − 4)(y − 8) 654. (p − 7)(p + 4)
+655. (q + 16)(q − 3) 656. (5m − 8)(12m + 1) 657. (u2 + 6)(u2 − 5)
+658. ⎛
+⎝9x − y⎞
+⎠(6x − 5) 659. (8mn + 3)(2mn − 1)
+Multiply a Trinomial by a Binomial
+In the following exercises, multiply using a the Distributive Property, b the Vertical Method.
+660. (n + 1)⎛
+⎝n2 + 5n − 2⎞
+⎠ 661. (3x − 4)⎛
+⎝6x2 + x − 10⎞
+In the following exercises, multiply. Use either method.
+662. (y − 2)(y2 − 8y + 9) 663. (7m + 1)(m2 − 10m − 3)
+6.4 Special Products
+Square a Binomial Using the Binomial Squares Pattern
+In the following exercises, square each binomial using the Binomial Squares Pattern.
+664. (c + 11)2 665. ⎛
+⎝q − 15⎞
+666. ⎛
+⎝x + 1
+⎞
+802 Chapter 6 Polynomials
+667. (8u + 1)2 668. (3n3 − 2)2 669. (4a − 3b)2
+Multiply Conjugates Using the Product of Conjugates Pattern
+In the following exercises, multiply each pair of conjugates using the Product of Conjugates Pattern.
+670. (s − 7)(s + 7) 671. ⎛
+⎝y + 2
+⎞
+⎠⎛
+⎝y − 2
+⎞
+⎠ 672. (12c + 13)(12c − 13)
+673. (6 − r)(6 + r) 674. ⎛
+⎝u + 3
+4v⎞
+⎠⎛
+⎝u − 3
+4v⎞
+⎠ 675. (5p4 − 4q3)(5p4 + 4q3)
+Recognize and Use the Appropriate Special Product Pattern
+In the following exercises, find each product.
+676. (3m + 10)2 677. (6a + 11)(6a − 11) 678. (5x + y)(x − 5y)
+679. (c4 + 9d)2 680. (p5 + q5)(p5 − q5) 681. (a2 + 4b)(4a − b2)
+6.5 Divide Monomials
+Simplify Expressions Using the Quotient Property for Exponents
+In the following exercises, simplify.
+682. u24
+u6 683. 1025
+105 684. 34
+685. v12
+v48
+686. x
+x5 687. 5
+Simplify Expressions with Zero Exponents
+In the following exercises, simplify.
+688. 750 689. x0 690. −120
+691. ⎛
+⎝−120⎞
+⎠ (−12)0 692. 25x0 693. (25x)0
+694. 19n0 − 25m0 695. (19n)0 − (25m)0
+Simplify Expressions Using the Quotient to a Power Property
+In the following exercises, simplify.
+696. ⎛
+⎝2
+⎞
+697. ⎛
+⎝m
+⎞
+4 698. ⎛
+⎝r
+s⎞
+699. ⎛
+⎝ x
+2y
+⎞
+Simplify Expressions by Applying Several Properties
+In the following exercises, simplify.
+700.
+⎛
+⎝x3⎞
+x9
+701. n10
+⎛
+⎝n5⎞
+2 702.
+⎛
+⎝
+⎜q6
+q8
+⎞
+⎟
+Chapter 6 Polynomials 803
+703. ⎛
+⎝r8
+r3
+⎞
+704. ⎛
+⎝c2
+d5
+⎞
+705.
+⎛
+⎝
+⎜3x4
+2y2
+⎞
+⎟
+706. ⎛
+⎝v3 v9
+v6
+⎞
+707.
+⎛
+⎝3n2⎞
+4 ⎛
+⎝−5n4⎞
+⎛
+⎝−2n5⎞
+Divide Monomials
+In the following exercises, divide the monomials.
+708. −65y14 ÷ 5y2
+709. 64a5 b9
+−16a10 b3 710. 144x15 y8 z3
+18x10 y2 z12
+711.
+⎛
+⎝8p6 q2⎞
+⎠⎛
+⎝9p3 q5⎞
+16p8 q7
+6.6 Divide Polynomials
+Divide a Polynomial by a Monomial
+In the following exercises, divide each polynomial by the monomial.
+712. 42z2 − 18z
+713. ⎛
+⎝35x2 − 75x⎞
+⎠ ÷ 5x 714. 81n4 + 105n2
+−3
+715. 550p6 − 300p4
+10p3
+716. ⎛
+⎝63xy3 + 56x2 y4⎞
+⎠ ÷ ⎛
+⎝7xy⎞
+⎠ 717.
+96a5 b2 − 48a4 b3 − 56a2 b4
+8ab2
+718. 57m2 − 12m + 1
+−3m 719. 105y5 + 50y3 − 5y
+5y3
+Divide a Polynomial by a Binomial
+In the following exercises, divide each polynomial by the binomial.
+720. ⎛
+⎝k2 − 2k − 99⎞
+⎠ ÷ (k + 9) 721. ⎛
+⎝v2 − 16v + 64⎞
+⎠ ÷ (v − 8) 722. ⎛
+⎝3x2 − 8x − 35⎞
+⎠ ÷ (x − 5)
+723. ⎛
+⎝n2 − 3n − 14⎞
+⎠ ÷ (n + 3) 724. ⎛
+⎝4m3 + m − 5⎞
+⎠ ÷ (m − 1) 725. ⎛
+⎝u3 − 8⎞
+⎠ ÷ (u − 2)
+6.7 Integer Exponents and Scientific Notation
+Use the Definition of a Negative Exponent
+In the following exercises, simplify.
+726. 9−2 727. (−5)−3 728. 3 · 4−3
+729. (6u)−3
+730. ⎛
+⎝2
+⎞
+−1
+731. ⎛
+⎝3
+⎞
+−2
+804 Chapter 6 Polynomials
+Simplify Expressions with Integer Exponents
+In the following exercises, simplify.
+732. p−2 · p8 733. q−6 · q−5 734. ⎛
+⎝c−2 d⎞
+⎠⎛
+⎝c−3 d−2⎞
+735. ⎛
+⎝y8⎞
+−1
+736. ⎛
+⎝q−4⎞
+−3 737. a8
+a12
+738. n5
+n−4 739. r−2
+r−3
+Convert from Decimal Notation to Scientific Notation
+In the following exercises, write each number in scientific notation.
+740. 8,500,000 741. 0.00429 742. The thickness of a dime is
+about 0.053 inches.
+743. In 2015, the population of the
+world was about 7,200,000,000
+people.
+Convert Scientific Notation to Decimal Form
+In the following exercises, convert each number to decimal form.
+744. 3.8 × 105 745. 1.5 × 1010 746. 9.1 × 10−7
+747. 5.5 × 10−1
+Multiply and Divide Using Scientific Notation
+In the following exercises, multiply and write your answer in decimal form.
+748. ⎛
+⎝2 × 105⎞
+⎠⎛
+⎝4 × 10−3⎞
+⎠ 749. ⎛
+⎝3.5 × 10−2⎞
+⎠⎛
+⎝6.2 × 10−1⎞
+In the following exercises, divide and write your answer in decimal form.
+750. 8 × 105
+4 × 10−1 751. 9 × 10−5
+3 × 102
+Chapter 6 Polynomials 805
+PRACTICE TEST
+752. For the polynomial
+10x4 + 9y2 − 1
+a Is it a monomial, binomial, or
+trinomial?
+b What is its degree?
+In the following exercises, simplify each expression.
+753.
+⎛
+⎝12a2 − 7a + 4⎞
+⎠ + ⎛
+⎝3a2 + 8a − 10⎞
+754. ⎛
+⎝9p2 − 5p + 1⎞
+⎠ − ⎛
+⎝2p2 − 6⎞
+⎠ 755. ⎛
+⎝− 2
+⎞
+756. u · u4
+757. ⎛
+⎝4a3 b5⎞
+2 758. ⎛
+⎝−9r4 s5⎞
+⎠⎛
+⎝4rs7⎞
+759. 3k⎛
+⎝k2 − 7k + 13⎞
+⎠ 760. (m + 6)(m + 12) 761. (v − 9)(9v − 5)
+762. (4c − 11)(3c − 8) 763. (n − 6)⎛
+⎝n2 − 5n + 4⎞
+⎠ 764. ⎛
+⎝2x − 15y⎞
+⎠⎛
+⎝5x + 7y⎞
+765. ⎛
+⎝7p − 5⎞
+⎠⎛
+⎝7p + 5⎞
+⎠ 766. (9v − 2)2 767. 38
+768. ⎛
+⎝m4 · m
+m3
+⎞
+769. ⎛
+⎝87x15 y3 z22⎞
+0 770. 80c8 d2
+16cd10
+771. 12x2 + 42x − 6
+2x 772. ⎛
+⎝70xy4 + 95x3 y⎞
+⎠ ÷ 5xy 773. 64x3 − 1
+4x − 1
+774. ⎛
+⎝y2 − 5y − 18⎞
+⎠ ÷ (y + 3) 775. 5−2 776. (4m)−3
+777. q−4 · q−5 778. n−2
+n−10
+779. Convert 83,000,000 to
+scientific notation.
+780. Convert 6.91 × 10−5 to
+decimal form.
+In the following exercises, simplify, and write your answer in decimal form.
+781. ⎛
+⎝3.4 × 109⎞
+⎠⎛
+⎝2.2 × 10−5⎞
+⎠ 782. 8.4 × 10−3
+4 × 103
+783. A helicopter flying at an
+altitude of 1000 feet drops a rescue
+package. The polynomial
+−16t2 + 1000 gives the height of
+the package t seconds a after it
+was dropped. Find the height when
+t = 6 seconds.
+806 Chapter 6 Polynomials
