@@ -177,8 +177,8 @@ async function renderHome() {
       <span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div></button>`);
   }
   $app.innerHTML = `
-  <main class="pad stack g22" style="flex:1">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><p class="muted" style="margin:0 0 2px;font-size:13px">Exam practice from your textbooks</p><h1 class="brand">PrepBuddy</h1></div>
+  <main class="pad stack g22 home" style="flex:1">
+    <div class="home-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><p class="muted" style="margin:0 0 2px;font-size:13px">Exam practice from your textbooks</p><h1 class="brand">PrepBuddy</h1></div>
       <button class="langbtn" id="lang" lang="${LANG === 'zh' ? 'en' : 'zh-HK'}" aria-label="${LANG === 'zh' ? 'Switch to English' : '切換至中文'}">${LANG === 'zh' ? 'EN' : '中文'}</button></div>
     <section class="hero" aria-label="Find a textbook">
       <small>Add a textbook</small>
@@ -188,14 +188,14 @@ async function renderHome() {
         <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off">
       </form>
     </section>
-    <section class="stack g10" aria-label="My textbooks">
+    <section class="stack g10 home-books" aria-label="My textbooks">
       <h2 style="margin:0;font-size:15px">My textbooks</h2>
       ${cards.length ? `<div class="card stack">${cards.join('')}</div>`
         : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:#374151">No textbooks yet. Search above to add one from the library.</p></div>`}
       <label class="link" style="align-self:flex-start;display:inline-flex;gap:6px;align-items:center;cursor:pointer">${ICON.upload}<span>Not in the library? Upload your own PDF</span>
         <input type="file" id="file" accept="application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0"></label>
     </section>
-    ${cards.length ? `<section class="stack g10" aria-label="Review">
+    ${cards.length ? `<section class="stack g10 home-review" aria-label="Review">
       <h2 style="margin:0;font-size:15px">Review across all textbooks</h2>
       ${due.length
         ? `<button class="review-card" data-mode="spaced"><span class="stack g6" style="align-items:flex-start"><b>Spaced review</b><span>${due.length} question${due.length > 1 ? 's' : ''} due today · about ${Math.max(1, Math.round(Math.min(due.length, 15) * 0.6))} min</span></span><span class="pill">Start</span></button>`
@@ -1386,6 +1386,19 @@ function startTimer() {
   tick(); timerId = setInterval(tick, 1000);
 }
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+
+// Keyboard on laptops: A–D or 1–4 picks an answer, Enter goes on.
+document.addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  const k = e.key.toUpperCase();
+  const L = { 1: 'A', 2: 'B', 3: 'C', 4: 'D' }[k] || (/^[A-D]$/.test(k) ? k : null);
+  if (L) { const b = document.querySelector(`[data-opt="${L}"]:not(:disabled)`); if (b) { e.preventDefault(); b.click(); } return; }
+  if (e.key === 'Enter' && (!t || t.tagName !== 'BUTTON')) {
+    const b = document.querySelector('#next:not(:disabled), #check:not(:disabled)'); if (b) { e.preventDefault(); b.click(); }
+  }
+});
 
 initLang();
 watch(document.body);
