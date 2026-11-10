@@ -2012,6 +2012,15 @@ function header() {
   </div>`;
 }
 
+// Laptops: the right-hand panel where marks and feedback appear, before there are any.
+function qSide(q) {
+  const mcq = choiceType(q);
+  const [t, d] = isExam() ? ['Exam conditions', 'Answers and marks come at the end, like the real paper.']
+    : mcq ? ['Pick an answer', 'You’ll see straight away if it’s right, with the explanation here.']
+    : ['Write your answer', 'When you press Mark my answer, your marks and feedback show here.'];
+  return `<aside class="qside" aria-hidden="true"><b>${t}</b><span>${d}</span>${mcq ? '<span class="qkeys"><kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> to choose · <kbd>Enter</kbd> for next</span>' : ''}</aside>`;
+}
+
 function renderQuestion() {
   S.waiting = false;
   const q = S.qs[S.i];
@@ -2021,7 +2030,7 @@ function renderQuestion() {
     <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}</div>
     ${body.main}
   </main>
-  ${body.footer}`;
+  ${body.footer}${/class="sheet/.test(body.footer) ? '' : qSide(q)}`;
   bindCommon(q);
   body.bind && body.bind();
   startTimer();
