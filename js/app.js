@@ -286,7 +286,7 @@ async function renderHome() {
       <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div>
       <button class="langbtn" id="lang" lang="${LANG === 'zh' ? 'en' : 'zh-HK'}" aria-label="${LANG === 'zh' ? 'Switch to English' : '切換至中文'}">${LANG === 'zh' ? 'EN' : '中文'}</button></div>`;
   if (!books.length) {
-    $app.innerHTML = `<main class="pad stack today" data-tab="home" style="flex:1">${head}
+    $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
     <section class="empty-start" aria-label="Add a textbook">
       <h2>Start with your textbook</h2>
       <p style="margin:0;line-height:1.55;color:var(--text-2)">Find it in the library, or upload the PDF. PrepBuddy turns each chapter into exam practice, notes and flashcards, and marks your answers.</p>
@@ -323,7 +323,7 @@ async function renderHome() {
   }
   const r = await currentReport();
   $app.innerHTML = `
-  <main class="pad stack today" data-tab="home" style="flex:1">
+  <main class="pad stack today" data-view="home" style="flex:1">
     ${head}
     <section class="plan" aria-label="Today's plan"><h2><span class="hl">Today’s plan</span></h2>${items.join('')}</section>
     <section class="stack g10" aria-label="My textbooks">
@@ -368,7 +368,7 @@ async function renderBooks() {
       <span style="font-weight:600;white-space:nowrap;color:${sc === null ? 'var(--muted-2)' : sc < 50 ? 'var(--miss)' : 'var(--good)'}">${sc === null ? '' : sc + '%'}</span></div></button>`);
   }
   $app.innerHTML = `
-  <main class="pad stack g18" data-tab="books" style="flex:1">
+  <main class="pad stack g18" data-view="books" style="flex:1">
     <h1 class="pagetitle">Books</h1>
     <form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off"></form>
@@ -400,7 +400,7 @@ function renderTabs(active = tabNow) {
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.tabgo })));
 }
 // The tab bar shows on the four main screens and hides everywhere else (practice, settings, papers).
-new MutationObserver(() => { const m = $app.querySelector('[data-tab]'); renderTabs(m ? m.dataset.tab : null); }).observe($app, { childList: true });
+new MutationObserver(() => { const m = $app.querySelector('main[data-view]'); renderTabs(m ? m.dataset.view : null); }).observe($app, { childList: true });
 
 /* ---------- library (books uploaded once by the admin) ---------- */
 let catalog = null;
@@ -420,7 +420,7 @@ async function renderLibrary(query) {
   const mine = new Set((await getBooks()).map((b) => b.id));
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to Books">${ICON.back}</button><span style="font-weight:600;font-size:15px">Textbook library</span></div>
-  <main class="stack g14" data-tab="books" style="flex:1;padding:4px 20px 24px">
+  <main class="stack g14" data-view="books" style="flex:1;padding:4px 20px 24px">
     <form id="find" class="searchbox light" role="search">
       <span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off" value="${esc(query)}">
@@ -889,7 +889,7 @@ async function renderProgress() {
   const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`;
   const trend = r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<span style="color:var(--good);font-weight:600">↑ ${r.a - r.pa} from last week</span>` : `<span style="color:var(--miss-dark);font-weight:600">↓ ${r.pa - r.a} from last week</span>`) : '<span>correct</span>';
   $app.innerHTML = `
-  <main class="pad stack g18" data-tab="progress" style="flex:1">
+  <main class="pad stack g18" data-view="progress" style="flex:1">
     <h1 class="pagetitle">Progress</h1>
     <div class="stack g6"><span class="muted" style="font-size:13px">Last 7 days</span><span class="display" style="font-size:26px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span></div>
     <div class="week">${r.days.map((m, i) => `<div><span class="${m ? 'on' : ''} ${i === 6 ? 'today' : ''}" title="${m} min"></span><small>${dayNames[i]}</small></div>`).join('')}</div>
@@ -1424,7 +1424,7 @@ async function renderMistakes(tab) {
     .map(([id, name]) => { const n = entries.filter(([q, m]) => !m.done && (id === 'all' || q.startsWith(id + ':'))).length; return `<button role="tab" class="${only === id ? 'on' : ''}" data-mkbook="${esc(id)}"><span ${id === 'all' ? '' : 'data-raw'}>${esc(name)}</span>${n ? ` <b>${n}</b>` : ''}</button>`; }).join('')}</div>` : '';
   const all = groups.flatMap((g) => g.items.map((x) => x.q));
   $app.innerHTML = `
-  <main class="pad stack g14" data-tab="mistakes" style="flex:1">
+  <main class="pad stack g14" data-view="mistakes" style="flex:1">
     <h1 class="pagetitle">Mistake book</h1>
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Every question you didn’t get fully right is kept here. Get it right again and it moves to Mastered.</p>
     ${chips}
