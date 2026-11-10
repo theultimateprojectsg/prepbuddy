@@ -95,6 +95,12 @@ function usable(q) {
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const ICON = {
+  today: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18M8 15l2.5 2.5L16 13"/></svg>',
+  books: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="M16.5 5.2l3.8-1 3 15.5-3.8 1z" transform="translate(-2 0)"/></svg>',
+  chart: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  review: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>',
+  play: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></svg>',
+  plus: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   pen: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>',
   keys: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg>',
   chat: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.2M12 16.5h.01"/></svg>',
@@ -104,12 +110,12 @@ const ICON = {
   close: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   back: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
   check: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L19 8"/></svg>',
-  book: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h7"/></svg>',
+  book: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h7"/></svg>',
   search: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
   plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   upload: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>',
-  target: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>',
-  clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>',
+  target: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>',
+  clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>',
 };
 function toast(msg) { document.querySelectorAll('.toast').forEach((x) => x.remove()); const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
 
@@ -231,6 +237,7 @@ async function go(v) {
   document.querySelectorAll('.toast').forEach((x) => x.remove());
   stopTimer();
   if (v.name === 'home') return renderHome();
+  if (v.name === 'books') return renderBooks();
   if (v.name === 'book') return renderBook(v.bookId);
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
@@ -245,67 +252,155 @@ async function go(v) {
 }
 
 /* ---------- home ---------- */
+// Book covers: one colour per subject, so the shelf is easy to scan.
+const COVER_COLOURS = ['#26357A', '#18966A', '#C2452D', '#6B4FB0', '#0E7C8C', '#A3661A', '#B0346A', '#3E6B2F'];
+function coverColour(b) {
+  const k = String(b.subject || b.title || '').toLowerCase();
+  const fixed = { biology: 1, chemistry: 4, physics: 0, mathematics: 5, maths: 5, english: 6, chinese: 2, history: 3, geography: 7, economics: 5 };
+  for (const [w, i] of Object.entries(fixed)) if (k.includes(w)) return COVER_COLOURS[i];
+  let h = 0; for (const c of k) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return COVER_COLOURS[h % COVER_COLOURS.length];
+}
+async function bookSummary(b) {
+  const qs = []; for (const u of b.units) qs.push(...await getQs(b.id, u.id));
+  return { n: qs.length, sc: scoreOf(qs) };
+}
+function lastChapter(books) {
+  for (let i = local.log.length - 1; i >= 0; i--) {
+    const [bid, uid2] = qUnit(local.log[i].q); const b = books.find((x) => x.id === bid);
+    const u = b && b.units.find((x) => x.id === uid2);
+    if (u) return { book: b, unit: u };
+  }
+  return null;
+}
+
+/* ---------- Today (home) ---------- */
 async function renderHome() {
   S = null;
   const books = await getBooks();
+  const hr = new Date().getHours();
+  const hello = LANG === 'zh' ? (hr < 12 ? '早晨' : hr < 18 ? '午安' : '晚安') : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+  const name = (local.name || '').trim();
+  const dateText = new Date().toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div>
+      <button class="langbtn" id="lang" lang="${LANG === 'zh' ? 'en' : 'zh-HK'}" aria-label="${LANG === 'zh' ? 'Switch to English' : '切換至中文'}">${LANG === 'zh' ? 'EN' : '中文'}</button></div>`;
+  if (!books.length) {
+    $app.innerHTML = `<main class="pad stack today" data-tab="home" style="flex:1">${head}
+    <section class="empty-start" aria-label="Add a textbook">
+      <h2>Start with your textbook</h2>
+      <p style="margin:0;line-height:1.55;color:var(--text-2)">Find it in the library, or upload the PDF. PrepBuddy turns each chapter into exam practice, notes and flashcards, and marks your answers.</p>
+      <form id="find" class="searchbox" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
+        <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off"></form>
+      <label class="link" style="align-self:flex-start;display:inline-flex;gap:6px;align-items:center;cursor:pointer">${ICON.upload}<span>Upload your own PDF</span>
+        <input type="file" id="file" accept="application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0"></label>
+    </section></main>${footerHTML()}`;
+    bindHomeCommon();
+    const q = document.getElementById('q');
+    q.onfocus = () => go({ name: 'library', query: q.value });
+    document.getElementById('find').onsubmit = (e) => { e.preventDefault(); go({ name: 'library', query: q.value }); };
+    document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
+    return window.scrollTo(0, 0);
+  }
   const due = await dueItems();
   const nextAt = due.length ? 0 : await nextDue();
-  const cards = [];
-  for (const b of books) {
-    let n = 0; const qs = [];
-    for (const u of b.units) { const l = await getQs(b.id, u.id); n += l.length; qs.push(...l); }
-    const sc = scoreOf(qs);
-    cards.push(`<button class="row" data-book="${esc(b.id)}">
-      <div class="top"><span style="display:flex;gap:10px;align-items:flex-start">${ICON.book}<span><b style="font-weight:600" data-raw>${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.subject ? esc(b.subject) + ' · ' : ''}${b.units.length} chapters · ${n} questions${b.library ? '' : ' · uploaded'}</span></span></span>
-      <span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div></button>`);
+  const mk = mistakeCount();
+  const last = lastChapter(books);
+  const items = [];
+  if (due.length) items.push(`<button class="plan-item" data-mode="spaced"><span class="pi-icon pi-review">${ICON.review}</span><span class="pi-text"><b>Review ${due.length} question${due.length > 1 ? 's' : ''}</b><span class="sub">About ${Math.max(1, Math.round(Math.min(due.length, 15) * 0.6))} min · keeps what you learned fresh</span></span><span class="go">Start</span></button>`);
+  if (mk) items.push(`<button class="plan-item" id="mistakes"><span class="pi-icon pi-mistake">${ICON.pen}</span><span class="pi-text"><b>Fix ${mk} mistake${mk > 1 ? 's' : ''}</b><span class="sub">Questions you didn’t get fully right</span></span><span class="go">Open</span></button>`);
+  if (last) {
+    const qs = await getQs(last.book.id, last.unit.id); const sc = scoreOf(qs);
+    items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${ICON.play}</span><span class="pi-text"><b data-raw>${esc(last.unit.title)}</b><span class="sub">Keep going${sc !== null ? ` · ${sc}% so far` : ''}</span></span><span class="go">Practise</span></button>`);
+  } else {
+    items.push(`<button class="plan-item" data-book="${esc(books[0].id)}"><span class="pi-icon pi-continue">${ICON.play}</span><span class="pi-text"><b>Practise your first chapter</b><span class="sub" data-raw>${esc(books[0].title)}</span></span><span class="go">Choose</span></button>`);
   }
+  if (!due.length && Object.keys(local.stats).length) items.push(`<div class="plan-item done"><span class="pi-icon pi-review">${ICON.review}</span><span class="pi-text"><b>Reviews done</b><span class="sub">${nextAt < Infinity ? `Next review ${whenText(nextAt)}` : ''}</span></span><span class="go">✓</span></div>`);
+  const covers = [];
+  for (const b of books) {
+    const { sc } = await bookSummary(b);
+    covers.push(`<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}"><span class="c-sub" data-raw>${esc(b.subject || (b.library ? '' : 'My upload'))}</span><span class="c-title" data-raw>${esc(b.title)}</span><span class="c-meter" aria-hidden="true"><i style="width:${sc || 0}%"></i></span></button>`);
+  }
+  const r = await currentReport();
   $app.innerHTML = `
-  <main class="pad stack g22 home" style="flex:1">
-    <div class="home-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><p class="muted" style="margin:0 0 2px;font-size:13px">Exam practice from your textbooks</p><h1 class="brand">PrepBuddy</h1></div>
-      <button class="langbtn" id="lang" lang="${LANG === 'zh' ? 'en' : 'zh-HK'}" aria-label="${LANG === 'zh' ? 'Switch to English' : '切換至中文'}">${LANG === 'zh' ? 'EN' : '中文'}</button></div>
-    <section class="hero" aria-label="Find a textbook">
-      <small>Add a textbook</small>
-      <span class="title">Find your textbook and practise any chapter</span>
-      <form id="find" class="searchbox" role="search">
-        <span aria-hidden="true" style="color:#4B5563;display:flex">${ICON.search}</span>
-        <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off">
-      </form>
+  <main class="pad stack today" data-tab="home" style="flex:1">
+    ${head}
+    <section class="plan" aria-label="Today's plan"><h2><span class="hl">Today’s plan</span></h2>${items.join('')}</section>
+    <section class="stack g10" aria-label="My textbooks">
+      <div class="sect-head"><h2>My textbooks</h2><button class="link" id="allbooks" style="padding:0">See all</button></div>
+      <div class="shelf">${covers.join('')}<button class="bookcover add" id="addbook">${ICON.plus}<span>Add a book</span></button></div>
     </section>
-    <section class="stack g10 home-books" aria-label="My textbooks">
-      <h2 style="margin:0;font-size:15px">My textbooks</h2>
-      ${cards.length ? `<div class="card stack">${cards.join('')}</div>`
-        : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:#374151">No textbooks yet. Search above to add one from the library.</p></div>`}
-      <label class="link" style="align-self:flex-start;display:inline-flex;gap:6px;align-items:center;cursor:pointer">${ICON.upload}<span>Not in the library? Upload your own PDF</span>
-        <input type="file" id="file" accept="application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0"></label>
-    </section>
-    ${cards.length ? `<section class="stack g10 home-review" aria-label="Review">
-      <h2 style="margin:0;font-size:15px">Review across all textbooks</h2>
-      ${due.length
-        ? `<button class="review-card" data-mode="spaced"><span class="stack g6" style="align-items:flex-start"><b>Spaced review</b><span>${due.length} question${due.length > 1 ? 's' : ''} due today · about ${Math.max(1, Math.round(Math.min(due.length, 15) * 0.6))} min</span></span><span class="pill">Start</span></button>`
-        : `<div class="review-card done"><span class="stack g6"><b>Spaced review</b><span>${nextAt < Infinity ? `All caught up. Next review ${whenText(nextAt)}.` : 'Questions you answer come back here to help you remember them.'}</span></span></div>`}
-      <div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-        <button class="tile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
-        <button class="tile" data-mode="mock">${ICON.clock}<b>Mock paper</b><span>DSE-style, timed</span></button>
+    <section class="stack g10" aria-label="Practice">
+      <div class="sect-head"><h2>Practice</h2></div>
+      <div class="quick">
+        <button class="qtile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
+        <button class="qtile" data-mode="mock">${ICON.clock}<b>Mock paper</b><span>DSE-style, timed</span></button>
       </div>
-      ${mistakeCount() ? `<button class="row card" id="mistakes" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">Mistake book</b><br><span class="muted" style="font-size:13px">${mistakeCount()} question${mistakeCount() > 1 ? 's' : ''} to get right</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>` : ''}
-      ${(local.worksheets || []).length ? `<button class="row card" id="worksheets" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">Mark a printed worksheet</b><br><span class="muted" style="font-size:13px">Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>` : ''}
-      <button class="row card" id="progress" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">My progress</b><br><span class="muted" style="font-size:13px">This week, and a report to send your parents</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>
-    </section>` : ''}
-  </main>
-  <footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="link quiet" id="usage" style="font-size:11px;padding:0">AI usage</button></footer>`;
-  document.getElementById('usage').onclick = () => go({ name: 'usage' });
-  document.getElementById('lang').onclick = () => { setLang(LANG === 'zh' ? 'en' : 'zh'); go({ name: 'home' }); };
+      ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
+    </section>
+    <button class="weekstrip" id="progress"><span class="dots" aria-hidden="true">${r.days.map((m) => `<i class="${m ? 'on' : ''}"></i>`).join('')}</span><span class="wt"><b>${r.dp} of 7 days practised</b><span>See your progress and send a report to your parents</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>
+  </main>${footerHTML()}`;
+  bindHomeCommon();
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   const wsb = document.getElementById('worksheets'); if (wsb) wsb.onclick = () => go({ name: 'worksheets' });
   const mkb = document.getElementById('mistakes'); if (mkb) mkb.onclick = () => go({ name: 'mistakes' });
+  const ct = document.getElementById('continue');
+  if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
+  document.getElementById('allbooks').onclick = () => go({ name: 'books' });
+  document.getElementById('addbook').onclick = () => go({ name: 'books' });
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
+  window.scrollTo(0, 0);
+}
+const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="link quiet" id="usage" style="font-size:11px;padding:0">AI usage</button></footer>`;
+function bindHomeCommon() {
+  document.getElementById('usage').onclick = () => go({ name: 'usage' });
+  document.getElementById('lang').onclick = () => { setLang(LANG === 'zh' ? 'en' : 'zh'); go({ name: 'home' }); renderTabs(); };
+}
+
+/* ---------- Books: my textbooks, the library and uploads ---------- */
+async function renderBooks() {
+  const books = await getBooks();
+  const rows = [];
+  for (const b of books) {
+    const { n, sc } = await bookSummary(b);
+    rows.push(`<button class="row" data-book="${esc(b.id)}"><div class="top"><span style="display:flex;gap:12px;align-items:center"><span class="spine" style="background:${coverColour(b)}" aria-hidden="true"></span><span><b style="font-weight:600" data-raw>${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.subject ? esc(b.subject) + ' · ' : ''}${b.units.length} chapters · ${n} questions${b.library ? '' : ' · uploaded'}</span></span></span>
+      <span style="font-weight:600;white-space:nowrap;color:${sc === null ? 'var(--muted-2)' : sc < 50 ? 'var(--miss)' : 'var(--good)'}">${sc === null ? '' : sc + '%'}</span></div></button>`);
+  }
+  $app.innerHTML = `
+  <main class="pad stack g18" data-tab="books" style="flex:1">
+    <h1 class="pagetitle">Books</h1>
+    <form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
+      <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off"></form>
+    <section class="stack g10" aria-label="My textbooks">
+      <h2 style="margin:0;font-size:16px">My textbooks</h2>
+      ${rows.length ? `<div class="card stack">${rows.join('')}</div>` : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No textbooks yet. Search above to add one from the library.</p></div>`}
+      <label class="link" style="align-self:flex-start;display:inline-flex;gap:6px;align-items:center;cursor:pointer">${ICON.upload}<span>Not in the library? Upload your own PDF</span>
+        <input type="file" id="file" accept="application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0"></label>
+    </section>
+  </main>`;
+  $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
   const q = document.getElementById('q');
   q.onfocus = () => go({ name: 'library', query: q.value });
   document.getElementById('find').onsubmit = (e) => { e.preventDefault(); go({ name: 'library', query: q.value }); };
   window.scrollTo(0, 0);
 }
+
+/* ---------- tab bar ---------- */
+const TABS = [['home', 'Today', 'today'], ['books', 'Books', 'books'], ['mistakes', 'Mistakes', 'pen'], ['progress', 'Progress', 'chart']];
+let tabNow = null;
+function renderTabs(active = tabNow) {
+  tabNow = active;
+  const nav = document.getElementById('tabs');
+  if (!active) { delete document.body.dataset.tab; return; }
+  document.body.dataset.tab = active;
+  const mk = mistakeCount();
+  nav.innerHTML = `<span class="brand-side">PrepBuddy</span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${ICON[ic]}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
+  nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.tabgo })));
+}
+// The tab bar shows on the four main screens and hides everywhere else (practice, settings, papers).
+new MutationObserver(() => { const m = $app.querySelector('[data-tab]'); renderTabs(m ? m.dataset.tab : null); }).observe($app, { childList: true });
 
 /* ---------- library (books uploaded once by the admin) ---------- */
 let catalog = null;
@@ -324,10 +419,10 @@ async function renderLibrary(query) {
   try { list = await getCatalog(); } catch (e) { toast(e.message); return go({ name: 'home' }); }
   const mine = new Set((await getBooks()).map((b) => b.id));
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">Textbook library</span></div>
-  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to Books">${ICON.back}</button><span style="font-weight:600;font-size:15px">Textbook library</span></div>
+  <main class="stack g14" data-tab="books" style="flex:1;padding:4px 20px 24px">
     <form id="find" class="searchbox light" role="search">
-      <span aria-hidden="true" style="color:#4B5563;display:flex">${ICON.search}</span>
+      <span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off" value="${esc(query)}">
     </form>
     <div id="results" class="stack g10" aria-live="polite"></div>
@@ -341,7 +436,7 @@ async function renderLibrary(query) {
       return words.every((w) => hay.includes(w));
     });
     const codeHit = code.length >= 4 && hits.find((b) => normCode(b.code) === code);
-    document.getElementById('results').innerHTML = (codeHit ? '<p class="hint" style="margin:0;font-weight:600;color:#0F766E">Book code matched</p>' : '') + (hits.length
+    document.getElementById('results').innerHTML = (codeHit ? '<p class="hint" style="margin:0;font-weight:600;color:var(--good)">Book code matched</p>' : '') + (hits.length
       ? hits.map((b) => {
         const added = mine.has(libBookId(b));
         return `<div class="card libcard">
@@ -361,7 +456,7 @@ async function renderLibrary(query) {
   };
   q.oninput = draw;
   document.getElementById('find').onsubmit = (e) => { e.preventDefault(); q.blur(); };
-  document.getElementById('back').onclick = () => go({ name: 'home' });
+  document.getElementById('back').onclick = () => go({ name: 'books' });
   draw();
   q.focus();
 }
@@ -576,7 +671,7 @@ async function renderBook(bookId) {
     const sh = levelShift(book.id, u.id);
     const status = (qs.length || done ? `${unseen} ready · ${done} done` : 'New questions will be made') + (sh > 0 ? ' · harder questions now' : sh < 0 ? ' · more basics first' : '');
     rows.push(`<button class="row selectable ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}">
-      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span data-raw>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div>
+      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span data-raw>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? 'var(--muted-2)' : sc < 50 ? 'var(--miss)' : 'var(--good)'}">${sc === null ? '' : sc + '%'}</span></div>
       <span class="muted" style="font-size:12px;padding-left:36px">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
       ${sc !== null ? `<div class="bar ${sc < 50 ? 'warn' : ''}" style="margin-left:36px"><i style="width:${sc}%"></i></div>` : ''}</button>`);
   }
@@ -698,7 +793,7 @@ async function renderNotes(bookId) {
     }).catch((e) => {
       if (view !== myView) return;
       const e2 = document.getElementById(`n-${u.id}`); if (!e2) return;
-      e2.innerHTML = `<h2 class="ntitle" data-raw>${esc(u.title)}</h2><p class="hint" style="margin:0;color:#9A3412">${esc(notesError(e))}</p><button class="link" data-retry>Try again</button>`;
+      e2.innerHTML = `<h2 class="ntitle" data-raw>${esc(u.title)}</h2><p class="hint" style="margin:0;color:var(--miss-dark)">${esc(notesError(e))}</p><button class="link" data-retry>Try again</button>`;
       e2.querySelector('[data-retry]').onclick = () => fill(u, false);
     });
   };
@@ -764,8 +859,8 @@ function drawCard() {
 function cardsDone() {
   const missed = C.missed.length;
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
-    <div class="stack g6"><span class="muted" style="font-size:13px">Flashcards · done</span><span class="score">${C.firstTry.size} / ${C.total}</span><span style="font-size:15px;font-weight:600;color:#0F766E">known first time</span></div>
-    ${missed ? `<p style="margin:0;line-height:1.5;color:#374151">${missed} card${missed > 1 ? 's' : ''} needed another go. Going through them again helps them stick.</p>` : '<p style="margin:0;line-height:1.5;color:#374151">You knew every card first time.</p>'}
+    <div class="stack g6"><span class="muted" style="font-size:13px">Flashcards · done</span><span class="score">${C.firstTry.size} / ${C.total}</span><span style="font-size:15px;font-weight:600;color:var(--good)">known first time</span></div>
+    ${missed ? `<p style="margin:0;line-height:1.5;color:var(--text-2)">${missed} card${missed > 1 ? 's' : ''} needed another go. Going through them again helps them stick.</p>` : '<p style="margin:0;line-height:1.5;color:var(--text-2)">You knew every card first time.</p>'}
     <div class="stack g10">
       ${missed ? `<button class="btn" id="redo">Go through the ${missed} I missed</button>` : ''}
       <button class="btn ${missed ? 'ghost' : ''}" id="all">Shuffle all and go again</button>
@@ -792,10 +887,10 @@ async function renderProgress() {
   const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'narrow' }));
   const mins = r.days.reduce((a, m) => a + m, 0);
   const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`;
-  const trend = r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<span style="color:#0F766E;font-weight:600">↑ ${r.a - r.pa} from last week</span>` : `<span style="color:#9A3412;font-weight:600">↓ ${r.pa - r.a} from last week</span>`) : '<span>correct</span>';
+  const trend = r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<span style="color:var(--good);font-weight:600">↑ ${r.a - r.pa} from last week</span>` : `<span style="color:var(--miss-dark);font-weight:600">↓ ${r.pa - r.a} from last week</span>`) : '<span>correct</span>';
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">My progress</span></div>
-  <main class="stack g18" style="flex:1;padding:4px 20px 20px">
+  <main class="pad stack g18" data-tab="progress" style="flex:1">
+    <h1 class="pagetitle">Progress</h1>
     <div class="stack g6"><span class="muted" style="font-size:13px">Last 7 days</span><span class="display" style="font-size:26px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span></div>
     <div class="week">${r.days.map((m, i) => `<div><span class="${m ? 'on' : ''} ${i === 6 ? 'today' : ''}" title="${m} min"></span><small>${dayNames[i]}</small></div>`).join('')}</div>
     <div class="tiles">
@@ -806,10 +901,10 @@ async function renderProgress() {
     <div class="skills-wrap" data-raw>${skillsHTML(r, LANG === 'zh')}</div>
     <div class="card stack g10" style="padding:14px 16px">
       <b style="font-size:15px">Your report for parents</b>
-      <span style="font-size:14px;line-height:1.5;color:#374151">A one-page summary of this week: practice, scores by chapter, what is improving and what needs work.</span>
-      <label for="name" style="font-size:13px;font-weight:600;color:#4B5563">Your name on the report</label>
+      <span style="font-size:14px;line-height:1.5;color:var(--text-2)">A one-page summary of this week: practice, scores by chapter, what is improving and what needs work.</span>
+      <label for="name" style="font-size:13px;font-weight:600;color:var(--muted)">Your name on the report</label>
       <input id="name" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name)}">
-      <a id="preview" href="#" style="font-size:14px;font-weight:600;color:#0F766E">Preview the report</a>
+      <a id="preview" href="#" style="font-size:14px;font-weight:600;color:var(--good)">Preview the report</a>
     </div>
     <div id="fallback"></div>
   </main>
@@ -817,7 +912,6 @@ async function renderProgress() {
     <button class="btn" id="send" style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
     <span class="hint" style="text-align:center">Opens WhatsApp or another app with a link. Your parent doesn't need to sign in.</span>
   </div>`;
-  document.getElementById('back').onclick = () => go({ name: 'home' });
   const nameEl = document.getElementById('name');
   nameEl.oninput = () => { local.name = nameEl.value.trim().slice(0, 30); saveLocal(); };
   const link = async () => { const rep = await currentReport(); return { rep, url: `${location.origin}${location.pathname.replace(/[^/]*$/, '')}report.html#d=${encodeReport(rep)}` }; };
@@ -850,7 +944,7 @@ function renderUsage() {
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">AI usage on this device</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
-    <p style="margin:0;line-height:1.5;color:#374151">Tokens used since you last reset. Reading PDFs happens on your device and uses no tokens.</p>
+    <p style="margin:0;line-height:1.5;color:var(--text-2)">Tokens used since you last reset. Reading PDFs happens on your device and uses no tokens.</p>
     <div style="overflow-x:auto"><table class="data usage">
       <tr><th>Step</th><th>AI calls</th><th>Input</th><th>Cache write</th><th>Cache read</th><th>Output</th><th>Cost (USD)</th></tr>
       ${rows}
@@ -878,13 +972,13 @@ async function confirmRemove(book) {
     <h1 class="display" style="margin:0;font-size:24px;line-height:1.25">Remove this textbook?</h1>
     <p style="margin:0;font-size:16px;line-height:1.5;font-weight:600" data-raw>${esc(book.title)}</p>
     <div class="card stack g8" style="padding:14px 16px;border-color:#F3C9B1;background:#FFF8F3">
-      <b style="color:#9A3412">This deletes from this device:</b>
-      <ul style="margin:0;padding-left:20px;line-height:1.7;color:#374151">
+      <b style="color:var(--miss-dark)">This deletes from this device:</b>
+      <ul style="margin:0;padding-left:20px;line-height:1.7;color:var(--text-2)">
         <li>${made} practice question${made === 1 ? '' : 's'}</li>
         <li>your scores on ${answered} question${answered === 1 ? '' : 's'}, and their spaced-review schedule</li>
         <li>${activity} answer${activity === 1 ? '' : 's'} in your progress history (used for parent reports)</li>
       </ul>
-      <span style="color:#374151;line-height:1.5">This can't be undone. ${book.library ? 'You can add the book again from the library, but your progress will start from zero.' : 'To use it again you will need to upload the PDF again.'}</span>
+      <span style="color:var(--text-2);line-height:1.5">This can't be undone. ${book.library ? 'You can add the book again from the library, but your progress will start from zero.' : 'To use it again you will need to upload the PDF again.'}</span>
     </div>
   </main>
   <div class="sheet sticky">
@@ -934,7 +1028,7 @@ async function renderPaper(bookId, from) {
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
-    <p style="margin:0;line-height:1.5;color:#374151">A DSE-style paper: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here and get it marked, or print it and enter your answers in the app afterwards to get them marked.</p>
+    <p style="margin:0;line-height:1.5;color:var(--text-2)">A DSE-style paper: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here and get it marked, or print it and enter your answers in the app afterwards to get them marked.</p>
     <div class="card stack g6" style="padding:14px 16px">
       <span class="muted" style="font-size:13px">Chapters</span>
       <b style="font-weight:600;line-height:1.4">${units.length === book.units.length ? `All ${book.units.length} chapters` : esc(units.map((u) => u.title).join(' · '))}</b>
@@ -947,7 +1041,7 @@ async function renderPaper(bookId, from) {
     <div class="card stack g14" style="padding:14px 16px">
       <div class="setup-row"><span>Section A · MCQ</span><div class="stepper"><button data-step="a:-2" aria-label="Fewer MCQs" ${a <= 0 ? 'disabled' : ''}>−</button><output>${a}</output><button data-step="a:2" aria-label="More MCQs" ${a >= 40 ? 'disabled' : ''}>+</button></div></div>
       <div class="setup-row"><span>Section B · Written</span><div class="stepper"><button data-step="b:-1" aria-label="Fewer written questions" ${b <= 0 ? 'disabled' : ''}>−</button><output>${b}</output><button data-step="b:1" aria-label="More written questions" ${b >= 10 ? 'disabled' : ''}>+</button></div></div>
-      <span class="muted" style="font-size:14px">Time allowed: <b style="color:#14181F">${mins} min</b></span>
+      <span class="muted" style="font-size:14px">Time allowed: <b style="color:var(--ink)">${mins} min</b></span>
     </div>
   </main>
   <div class="sheet sticky">
@@ -1099,7 +1193,7 @@ async function renderPrint(book, units, paper, mins, existing) {
     $app.innerHTML = `
   <div class="noprint topbar"><button class="icon-btn" id="back" aria-label="Back">${ICON.back}</button><span style="font-weight:600;font-size:15px">Worksheet ${ws.code}</span></div>
   <div class="noprint stack g10" style="padding:0 20px 16px">
-    <label for="wsname" style="font-size:13px;font-weight:600;color:#4B5563">Name on every page</label>
+    <label for="wsname" style="font-size:13px;font-weight:600;color:var(--muted)">Name on every page</label>
     <input id="wsname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(who)}">
     <button class="btn" id="doprint" ${who ? '' : 'disabled'}>Print or save as PDF</button>
     <span class="hint">${who ? 'There is no answer key on the paper. When you finish, open PrepBuddy, tap <b>Mark a printed worksheet</b> and enter your answers to get them marked.' : 'Add your name first. It is printed on every page.'}</span>
@@ -1139,7 +1233,7 @@ async function renderWorksheets() {
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Pick the worksheet you did. Check the code at the bottom of the page. Enter what you wrote on paper, and PrepBuddy marks it.</p>
     ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:13px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:13px"><span data-raw>${esc(b.subject || b.title)}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
       <div style="display:flex;gap:14px;margin-top:8px"><button class="link" data-ws="${ws.code}">${ws.score ? 'Mark again' : 'Enter answers'}</button><button class="link quiet" data-reprint="${ws.code}">Print again</button></div></div>`; }).join('')}</div>`
-      : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:#374151">No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.</p></div>'}
+      : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.</p></div>'}
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'home' });
   const open = async (code) => { const ws = await store.get('ws:' + code, null); return [ws, ws && books.find((b) => b.id === ws.bookId)]; };
@@ -1330,17 +1424,17 @@ async function renderMistakes(tab) {
     .map(([id, name]) => { const n = entries.filter(([q, m]) => !m.done && (id === 'all' || q.startsWith(id + ':'))).length; return `<button role="tab" class="${only === id ? 'on' : ''}" data-mkbook="${esc(id)}"><span ${id === 'all' ? '' : 'data-raw'}>${esc(name)}</span>${n ? ` <b>${n}</b>` : ''}</button>`; }).join('')}</div>` : '';
   const all = groups.flatMap((g) => g.items.map((x) => x.q));
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">Mistake book</span></div>
-  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+  <main class="pad stack g14" data-tab="mistakes" style="flex:1">
+    <h1 class="pagetitle">Mistake book</h1>
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Every question you didn’t get fully right is kept here. Get it right again and it moves to Mastered.</p>
     ${chips}
     <div class="seg" style="grid-template-columns:1fr 1fr" role="tablist"><button role="tab" class="${tab === 'todo' ? 'on' : ''}" data-tab="todo">To get right (${todo})</button><button role="tab" class="${tab === 'done' ? 'on' : ''}" data-tab="done">Mastered (${done})</button></div>
     ${groups.length ? groups.map((g, gi) => `<section class="stack g10"><div class="mhead"><span><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><br><span class="muted" style="font-size:12.5px" data-raw>${esc(g.book.subject || g.book.title)}</span></span>${tab === 'todo' ? `<button class="link" data-redo="${gi}" style="padding:0;white-space:nowrap">Redo these ${g.items.length}</button>` : ''}</div>
       ${g.items.map((x) => mistakeCard(x.q, x.m)).join('')}</section>`).join('')
-      : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:#374151">${tab === 'todo' ? 'Nothing here. Questions you get wrong will appear here automatically.' : 'Questions you get right after missing them will appear here.'}</p></div>`}
+      : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">${tab === 'todo' ? 'Nothing here. Questions you get wrong will appear here automatically.' : 'Questions you get right after missing them will appear here.'}</p></div>`}
   </main>
   ${tab === 'todo' && all.length ? `<div class="sheet sticky"><button class="btn" id="redoall">Redo all ${all.length}</button><span class="hint" style="text-align:center">The answer options are shuffled, so you can’t just remember the letter.</span></div>` : ''}`;
-  document.getElementById('back').onclick = () => go({ name: 'home' });
+  
   $app.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab: b.dataset.tab })));
   $app.querySelectorAll('[data-mkbook]').forEach((b) => (b.onclick = () => { local.mkBook = b.dataset.mkbook; saveLocal(); renderMistakes(tab); }));
   const start = (qs, title) => { S = newSession({ mode: 'mistakes', title, qs: shuffle(qs).slice(0, 30).map(shuffleOptions), target: Math.min(qs.length, 30) }); renderQuestion(); };
@@ -1361,7 +1455,7 @@ async function renderPick(mode) {
     if (mode === 'mock') return go({ name: 'paper', bookId: books[0].id, from: 'home' });
     return startReview('weak', books[0].id);
   }
-  const row = (id, title, sub) => `<button class="row" data-pick="${esc(id)}"><div class="top"><span><b style="font-weight:600" ${id ? 'data-raw' : ''}>${esc(title)}</b><br><span class="muted" style="font-size:13px">${sub}</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>`;
+  const row = (id, title, sub) => `<button class="row" data-pick="${esc(id)}"><div class="top"><span><b style="font-weight:600" ${id ? 'data-raw' : ''}>${esc(title)}</b><br><span class="muted" style="font-size:13px">${sub}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></div></button>`;
   const rows = books.map((b) => row(b.id, b.title, mode === 'weak'
     ? (weakIn(b.id) ? `${weakIn(b.id)} questions to work on` : 'No weak spots yet')
     : `${b.units.length} chapters`));
@@ -1571,9 +1665,9 @@ function renderAccess(onOk, msg) {
   $app.innerHTML = `<div class="topbar"><button class="icon-btn" id="back" aria-label="Back">${ICON.back}</button></div>
   <main class="pad stack g14" style="flex:1">
     <h1 class="display" style="margin:0;font-size:24px">Enter your access code</h1>
-    <p style="margin:0;line-height:1.5;color:#374151">PrepBuddy is in testing. You need a code to make new questions. Ask the person who invited you.</p>
-    ${msg ? `<p style="margin:0;color:#9A3412;font-weight:600">${esc(msg)}</p>` : ''}
-    <label for="code" style="font-size:13px;font-weight:600;color:#4B5563">Access code</label>
+    <p style="margin:0;line-height:1.5;color:var(--text-2)">PrepBuddy is in testing. You need a code to make new questions. Ask the person who invited you.</p>
+    ${msg ? `<p style="margin:0;color:var(--miss-dark);font-weight:600">${esc(msg)}</p>` : ''}
+    <label for="code" style="font-size:13px;font-weight:600;color:var(--muted)">Access code</label>
     <input id="code" class="input" autocomplete="off" autocapitalize="off" spellcheck="false" value="">
     <button class="btn" id="ok">Continue</button>
   </main>`;
@@ -1675,7 +1769,7 @@ function graphSVG(g, sc, label, print) {
   const ink = print ? '#111' : 'currentColor';
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)}">
     <path d="M${L} ${T - 2}V${H - B}H${W - R + 2}" fill="none" stroke="${ink}" stroke-width="1.2" opacity=".7"/>
-    <path d="${line}" fill="none" stroke="${print ? '#111' : '#0F766E'}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${line}" fill="none" stroke="${print ? '#111' : 'var(--good)'}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
     <text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle" font-size="9.5" fill="${ink}">${esc(g.x_label || '')}</text>
     <text transform="translate(10 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle" font-size="9.5" fill="${ink}">${esc(g.y_label || '')}</text>
   </svg>`;
@@ -1701,7 +1795,7 @@ function renderQuestion() {
   const q = S.qs[S.i];
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
-  <main class="stack g18" style="flex:1;padding:8px 20px 20px">
+  <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
     <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}</div>
     ${body.main}
   </main>
@@ -1807,7 +1901,7 @@ function tutorHTML(q) {
     <div class="thead"><b>${ICON.chat} Ask about this question</b><button class="link quiet" id="tutorClose" style="padding:0">Close</button></div>
     ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
     ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
-    ${c.error ? `<p class="hint" style="margin:0;color:#9A3412">${esc(c.error)}</p>` : ''}
+    ${c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : ''}
     ${c.busy ? '' : `<div class="tchips">${chips.filter(([k]) => !c.msgs.some((m) => m.chip === k)).map(([k, l]) => `<button class="tchip" data-chip="${k}">${l}</button>`).join('')}</div>`}
     <form class="tform" id="tform"><input id="tq" class="tinput" placeholder="Type your question…" autocomplete="off" ${c.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${c.busy ? 'disabled' : ''}>${ICON.send}</button></form>
   </div>`;
@@ -1968,7 +2062,7 @@ function writtenBody(q, revealed) {
     return {
       main: `${stem}${q.parts.map((p, k) => `<div class="part"><div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
         ${yoursHTML(k, ans[k], null)}</div>`).join('')}`,
-      footer: `<div class="sheet" style="align-items:center;text-align:center"><div class="spinner" aria-hidden="true"></div><span class="verdict" style="color:#14181F">Marking your answer…</span><span class="hint">Checking it against the mark scheme, point by point.</span></div>`,
+      footer: `<div class="sheet" style="align-items:center;text-align:center"><div class="spinner" aria-hidden="true"></div><span class="verdict" style="color:var(--ink)">Marking your answer…</span><span class="hint">Checking it against the mark scheme, point by point.</span></div>`,
     };
   }
   if (q.type === 'essay') return essayRevealed(q, m, ans, stem);
@@ -1986,7 +2080,7 @@ function writtenBody(q, revealed) {
     </div>`;
   }).join('');
   const got = partsGot(q);
-  const note = m.error ? `<p class="hint" style="margin:0;color:#9A3412">${esc(m.error)} Tick the points you made instead.</p>`
+  const note = m.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(m.error)} Tick the points you made instead.</p>`
     : ai ? '<p class="hint" style="margin:0">Marked by AI. Think it got one wrong? Tap a point to change it.</p>' : '';
   const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} marks</span>
     ${m.tip ? `<p class="tipline"><b>Tip:</b> <span data-raw>${esc(m.tip)}</span></p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
@@ -2092,7 +2186,7 @@ function essayRevealed(q, m, ans, stem) {
   const mine = `${yoursHTML(0, text, m.essay ? { read: m.essay.read } : null)}<span class="hint">${wordCount(text)} words</span>`;
   const task = `<div class="part"><div class="ph"><span>${esc(q.parts[0].prompt)}</span><span class="mk">${max} marks</span></div>${mine}</div>`;
   if (!m.essay) {
-    return { main: `${stem}${task}`, footer: `<div class="sheet"><span class="verdict no">Not marked</span><p class="hint" style="margin:0;color:#9A3412">${esc(m.error || 'The AI marker is not available right now.')}</p><button class="btn ghost" id="remark">Try marking again</button>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`,
+    return { main: `${stem}${task}`, footer: `<div class="sheet"><span class="verdict no">Not marked</span><p class="hint" style="margin:0;color:var(--miss-dark)">${esc(m.error || 'The AI marker is not available right now.')}</p><button class="btn ghost" id="remark">Try marking again</button>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`,
       bind() { document.getElementById('remark').onclick = () => { S.marks[S.i] = null; markAnswer(S, S.i); renderQuestion(); }; } };
   }
   const e = m.essay;
@@ -2196,7 +2290,7 @@ function renderSummary() {
   const unitRef = S.units ? { book: S.book, units: S.units } : null;
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
-    <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? '#0F766E' : '#9A3412'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
+    <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? 'var(--good)' : 'var(--miss-dark)'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
     ${S.mode === 'dse' ? (() => {
       const sec = (from, to) => { const xs = qs.slice(from, to); return [xs.reduce((a, q, k) => a + (S.got[from + k] || 0), 0), xs.reduce((a, q) => a + marksOf(q), 0)]; };
       const [ga, ta] = sec(0, S.sectionA), [gb, tb] = sec(S.sectionA, qs.length);
@@ -2205,7 +2299,7 @@ function renderSummary() {
     <div class="card stack">${list}</div>
     ${S.mode === 'spaced' ? `<p class="hint" style="margin:0;line-height:1.5">Questions you got right come back later and later. The ones you missed come back tomorrow.</p>` : ''}
     <div class="stack g10">
-      ${drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('#C2410C', 'currentColor')} Drill my weak spots · ${drillable.length * PER_IDEA} new questions</button>` : ''}
+      ${drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} Drill my weak spots · ${drillable.length * PER_IDEA} new questions</button>` : ''}
       ${unitRef ? `<button class="btn ${drillable.length ? 'ghost' : ''}" id="more">${S.count || SESSION_SIZE} more on ${unitRef.units.length > 1 ? 'these chapters' : 'this chapter'}</button>` : ''}
       ${missed.length ? `<button class="btn ${unitRef ? 'ghost' : ''}" id="retry">Retry the ${missed.length} I missed</button>` : ''}
       ${qs.length ? '<button class="btn ghost" id="redo">Redo this set (shuffled)</button>' : ''}
