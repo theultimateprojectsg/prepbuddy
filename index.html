@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PrepBuddy</title>
+<meta name="theme-color" content="#0F766E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PrepBuddy">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+:root{--ink:#14181F;--muted:#4B5563;--line:#E3E6EA;--bg:#F5F6F8;--accent:#0F766E;--accent-dark:#0F4F4A;--accent-soft:#E6F4F2;--accent-tint:#CCE7E4;--miss:#C2410C;--miss-dark:#9A3412;--miss-soft:#FFF1E8}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+button,textarea{font-family:inherit}
+.app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.pad{padding:24px 20px}
+h1,.display{font-family:'Space Grotesk',Inter,sans-serif}
+.brand{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column}
+.g6{gap:6px}.g8{gap:8px}.g10{gap:10px}.g14{gap:14px}.g18{gap:18px}.g22{gap:22px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px}
+.hero{background:var(--accent);color:#fff;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.hero small{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#CCF2EE}
+.hero .title{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;line-height:1.25}
+.btn{display:block;width:100%;text-align:center;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none}
+.btn:disabled{background:#9CA3AF;cursor:default}
+.btn.light{background:#fff;color:var(--accent);width:auto;padding:12px 20px;font-size:15px}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid #C9CED4}
+.link{background:none;border:none;color:var(--accent);font-weight:600;font-size:14px;cursor:pointer;padding:8px 0}
+.link.quiet{color:var(--muted);font-weight:500;text-decoration:underline}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 10px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;cursor:pointer;min-height:44px}
+.tile b{font-size:14px;color:var(--ink)}.tile span{font-size:12px;color:var(--muted)}
+.row{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:none;border-bottom:1px solid #EEF0F2;background:none;text-align:left;width:100%;cursor:pointer;color:var(--ink)}
+.row:last-child{border-bottom:none}
+.row .top{display:flex;justify-content:space-between;gap:12px;font-size:14px;font-weight:500}
+.bar{height:6px;border-radius:3px;background:#EEF0F2;overflow:hidden}.bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.bar.warn i{background:var(--miss)}
+.topbar{display:flex;align-items:center;gap:12px;padding:16px 12px 8px}
+.icon-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:none;background:none;color:var(--muted);cursor:pointer;border-radius:22px}
+.progress{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}.progress i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.count{font-size:13px;font-weight:600;color:var(--muted);min-width:56px;text-align:right}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-tint);padding:4px 10px;border-radius:999px}
+.chip.grey{color:var(--muted);background:#E9EBEE;font-weight:500}
+.stem{margin:0;font-size:15px;line-height:1.55;color:#374151;white-space:pre-line}
+.q{margin:0;font-size:18px;line-height:1.45;font-weight:500}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:15px;line-height:1.4;color:var(--ink);cursor:pointer;width:100%}
+.opt .dot{flex-shrink:0;width:26px;height:26px;border-radius:13px;border:1px solid #C9CED4;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:var(--muted)}
+.opt.picked{border:2px solid var(--ink)}
+.opt.right{border:2px solid var(--accent);background:var(--accent-soft)}
+.opt.right .dot{background:var(--accent);border-color:var(--accent);color:#fff}
+.opt.wrong{border:2px solid var(--miss);background:var(--miss-soft)}
+.opt.wrong .dot{border:2px solid var(--miss);color:var(--miss)}
+.opt:disabled{cursor:default}
+table.data{border-collapse:collapse;font-size:14px;margin:4px 0}
+table.data td,table.data th{border:1px solid var(--line);padding:6px 10px;text-align:left;background:#fff}
+.part{display:flex;flex-direction:column;gap:8px}
+.part .ph{display:flex;justify-content:space-between;gap:12px;font-size:16px;line-height:1.45;font-weight:500}
+.part .ph .mk{white-space:nowrap;font-size:13px;font-weight:600;color:var(--muted);padding-top:2px}
+textarea{width:100%;min-height:120px;resize:vertical;border:2px solid #C9CED4;border-radius:14px;padding:12px 14px;font-size:16px;line-height:1.5;color:var(--ink);background:#fff}
+textarea:focus{outline:none;border-color:var(--accent)}
+.hint{font-size:13px;color:var(--muted)}
+.sheet{background:#fff;border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:18px 20px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.verdict{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700}
+.verdict.ok{color:var(--accent)}.verdict.no{color:var(--miss-dark)}
+.expl{margin:0;font-size:14px;line-height:1.5;color:#374151}
+.src{font-size:12px;color:var(--muted);line-height:1.45}
+.point{display:flex;gap:12px;align-items:flex-start;border-radius:14px;padding:12px 14px;border:1px solid var(--line);background:#fff;cursor:pointer;text-align:left;width:100%;font-size:15px;line-height:1.45;color:var(--ink)}
+.point .box{flex-shrink:0;width:24px;height:24px;border-radius:7px;border:2px solid #9CA3AF;display:flex;align-items:center;justify-content:center;color:#fff;margin-top:1px}
+.point.on{background:var(--accent-soft);border-color:var(--accent)}
+.point.on .box{background:var(--accent);border-color:var(--accent)}
+.yours{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.5;color:#374151;white-space:pre-wrap}
+.yours.empty{color:#6B7280;font-style:italic}
+.diagram{position:relative;width:100%;aspect-ratio:350/330;background:#fff;border:1px solid var(--line);border-radius:16px}
+.diagram svg{position:absolute;inset:0;width:100%;height:100%}
+.drop{position:absolute;width:35.4%;height:11%;border-radius:10px;border:2px dashed #9CA3AF;background:#fff;display:flex;align-items:center;gap:5px;padding:0 6px;font-size:12px;line-height:1.15;text-align:left;color:var(--muted);cursor:pointer;overflow:hidden}
+.drop b{font-size:12px}
+.drop.armed{border-color:var(--accent);background:#F0F9F8;color:var(--accent)}
+.drop.filled{border:2px solid var(--accent);background:var(--accent);color:#fff;font-weight:600}
+.drop.right{border:2px solid var(--accent);background:var(--accent);color:#fff;font-weight:600}
+.drop.wrong{border:2px solid var(--miss);background:var(--miss-soft);color:var(--miss-dark);font-weight:600}
+.lbl{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid #C9CED4;background:#fff;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer}
+.lbl.sel{border:2px solid var(--accent);color:var(--accent);font-weight:600}
+.lbl.used{opacity:.4}
+.score{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:700;line-height:1}
+.res{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-bottom:1px solid #EEF0F2;font-size:14px;line-height:1.4}
+.res:last-child{border-bottom:none}
+.tick{flex-shrink:0;width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.tick.full{background:var(--accent);color:#fff}.tick.part{border:2px solid var(--miss);color:var(--miss)}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+.timer.low{color:var(--miss-dark)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:10}
+footer{padding:8px 20px 28px;font-size:11px;line-height:1.5;color:#6B7280}
+footer a{color:#4B5563}
+:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+const QUESTIONS = [{"section": "1.1 The Science of Biology", "pages": "29-38", "level": 1, "type": "mcq", "stem": "In a controlled experiment, the control group", "options": ["receives a larger amount of the factor being tested.", "is kept under completely different conditions from the experimental group.", "is identical to the experimental group except that it does not receive the factor being tested.", "is the group whose results are used to form the hypothesis."], "correct_option": "C", "parts": [], "explanation": "The control group is identical to the experimental group except that it does not receive the manipulation being tested, so any difference in results can be linked to that manipulation.", "source_quote": "The control group contains every feature of the experimental group except it is not given the manipulation that the researcher hypothesizes.", "origin": "sample", "id": "q1"}, {"section": "1.2 Themes and Concepts of Biology", "pages": "39-48", "level": 1, "type": "mcq", "stem": "Which of the following best describes homeostasis?", "options": ["The ability of a population to change over many generations", "Maintaining a relatively stable internal environment", "The increase in size and complexity of an organism", "The response of an organism to an external stimulus"], "correct_option": "B", "parts": [], "explanation": "Homeostasis means keeping a relatively stable internal environment, which cells need in order to function.", "source_quote": "Homeostasis (literally, “steady state”) refers to the relatively stable internal environment required to maintain life.", "origin": "sample", "id": "q2"}, {"section": "1.1 The Science of Biology", "pages": "29-38", "level": 1, "type": "mcq", "stem": "The main aim of basic science is to", "options": ["develop products of commercial value.", "solve a specific real-world problem.", "expand knowledge, whether or not it has an immediate use.", "improve crop yields and cure diseases."], "correct_option": "C", "parts": [], "explanation": "Basic science seeks knowledge for its own sake; solving a defined practical problem is the aim of applied science.", "source_quote": "The immediate goal of basic science is knowledge for knowledge’s sake", "origin": "sample", "id": "q3"}, {"section": "1.1 The Science of Biology", "pages": "29-38", "level": 2, "type": "mcq", "stem": "A student suggests four explanations for why a classroom is unusually warm. Which explanation is NOT a valid scientific hypothesis?", "options": ["The air conditioning has not been switched on.", "There is a power failure, so the air conditioning cannot work.", "An invisible spirit is heating the room.", "The afternoon sun is shining directly through the windows."], "correct_option": "C", "parts": [], "explanation": "A scientific hypothesis must be testable and falsifiable. An explanation based on the supernatural cannot be tested, so it is not scientific.", "source_quote": "The presence of the supernatural, for instance, is neither testable nor falsifiable.", "origin": "sample", "id": "q4"}, {"section": "1.1 The Science of Biology", "pages": "29-38", "level": 2, "type": "short", "stem": "", "options": null, "correct_option": null, "parts": [{"label": "", "prompt": "Explain why scientists say that experimental results support a hypothesis rather than prove it.", "marks": 2, "mark_scheme": ["Scientific understanding is always open to modification / may change with new information or further experiments (1)", "A valid hypothesis must be falsifiable / future results could disprove it (1)"]}], "explanation": "Scientific conclusions are always open to change when new evidence appears, and a hypothesis must be falsifiable, so results can support a hypothesis but never prove it.", "source_quote": "science does not claim to “prove” anything because scientific understandings are always subject to modification with further information", "origin": "sample", "id": "q5"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 2, "type": "short", "stem": "", "options": null, "correct_option": null, "parts": [{"label": "", "prompt": "Explain why the amount of carbon-14 in an organism's body decreases after the organism dies.", "marks": 2, "mark_scheme": ["After death the organism no longer takes in carbon-14 (e.g. through photosynthesis or feeding) (1)", "The carbon-14 already present continues to decay (to nitrogen-14) (1)"]}], "explanation": "A living organism keeps taking in carbon (including 14C) from its surroundings. After death no new 14C enters, and the 14C already present keeps decaying.", "source_quote": "When an organism dies, it is no longer ingesting 14C", "origin": "sample", "id": "q6"}, {"section": "1.1 The Science of Biology", "pages": "29-38", "level": 2, "type": "short", "stem": "", "options": null, "correct_option": null, "parts": [{"label": "", "prompt": "Distinguish between inductive reasoning and deductive reasoning.", "marks": 2, "mark_scheme": ["Inductive reasoning uses many related observations to reach a general conclusion (1)", "Deductive reasoning uses a general principle to predict specific results (1)"]}], "explanation": "Inductive reasoning moves from particular observations to a general conclusion; deductive reasoning moves from a general principle to predict specific results.", "source_quote": "Deductive reasoning is a form of logical thinking that uses a general principle or law to predict specific results.", "origin": "sample", "id": "q7"}, {"section": "1.1 The Science of Biology", "pages": "29-38", "level": 3, "type": "structured", "stem": "A student notices that the potted plants on a classroom windowsill have wilted. She proposes the hypothesis: “The plants have wilted because they have not been watered.”", "options": null, "correct_option": null, "parts": [{"label": "(a)", "prompt": "Write a prediction based on this hypothesis.", "marks": 1, "mark_scheme": ["If the plants are watered, then they will stop wilting / recover (1)"]}, {"label": "(b)", "prompt": "The student sets up an experiment to test her hypothesis. Identify the variable she should change, and describe a suitable control.", "marks": 2, "mark_scheme": ["Variable changed: whether the plants are watered / amount of water (1)", "Control: identical plants under the same conditions (light, temperature, pot, soil) that are not watered (1)"]}, {"label": "(c)", "prompt": "The watered plants recover. The student writes: “This proves my hypothesis.” Rewrite her conclusion more scientifically.", "marks": 1, "mark_scheme": ["The results support the hypothesis (but do not prove it) (1)"]}], "explanation": "A prediction takes an If ... then ... form. The independent variable is what the student changes (watering); the control lacks only that change.", "source_quote": "A valid hypothesis must be testable.", "origin": "sample", "id": "q8"}, {"section": "1.1 The Science of Biology", "pages": "29-38", "level": 4, "type": "structured", "stem": "A student wants to find out whether a fertiliser increases plant growth. He places one plant with fertiliser on a sunny windowsill and one plant without fertiliser in a dark cupboard. After two weeks, the fertilised plant is taller. He concludes that the fertiliser increases plant growth.", "options": null, "correct_option": null, "parts": [{"label": "(a)", "prompt": "Evaluate whether his conclusion is valid.", "marks": 3, "mark_scheme": ["Not valid (1)", "The two plants received different amounts of light as well as different fertiliser / more than one variable was changed (1)", "So the difference in growth could be due to light, not the fertiliser (1)", "Only one plant in each group, so results may not be reliable (1)"]}, {"label": "(b)", "prompt": "Suggest two improvements to the design of this experiment.", "marks": 2, "mark_scheme": ["Keep all other conditions (light, water, temperature, soil) the same for both groups (1)", "Use several plants in each group / repeat the experiment (1)"]}], "explanation": "Light differs between the two plants as well as fertiliser, so the difference could be due to light rather than fertiliser. Only one plant per group gives unreliable results.", "source_quote": "if the experimental group's results differ from the control group, the difference must be due to the hypothesized manipulation, rather than some outside factor", "origin": "sample", "id": "q9"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 1, "type": "mcq", "stem": "Which of the following correctly describes isotopes of an element?", "options": ["Atoms with the same number of protons but different numbers of neutrons", "Atoms with the same number of neutrons but different numbers of protons", "Atoms with the same number of protons but different numbers of electrons", "Atoms with the same mass number but different atomic numbers"], "correct_option": "A", "parts": [], "explanation": "Isotopes are different forms of the same element, so they have the same number of protons (same atomic number) but differ in the number of neutrons. Different numbers of electrons would produce ions, not isotopes.", "source_quote": "Isotopes are different forms of an element that have the same number of protons but a different number of neutrons.", "origin": "generated", "id": "q10"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 1, "type": "mcq", "stem": "In an atom, which subatomic particles are located in the nucleus?", "options": ["Protons and electrons", "Neutrons and electrons", "Protons and neutrons", "Protons only"], "correct_option": "C", "parts": [], "explanation": "The nucleus at the centre of the atom contains protons (positive) and neutrons (uncharged). Electrons are found in orbitals/shells outside the nucleus.", "source_quote": "the nucleus, which is in the atom's center and contains protons and neutrons.", "origin": "generated", "id": "q11"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 1, "type": "mcq", "stem": "What is the term for a positively charged ion formed when an atom loses one or more electrons?", "options": ["Anion", "Cation", "Isotope", "Radioisotope"], "correct_option": "B", "parts": [], "explanation": "Cations are positive ions formed by losing electrons. Anions are negative ions formed by gaining electrons. Isotopes and radioisotopes differ in neutron number, not charge.", "source_quote": "Cations are positive ions that form by losing electrons.", "origin": "generated", "id": "q12"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 1, "type": "mcq", "stem": "Which group of four elements is common to all living organisms?", "options": ["Oxygen, carbon, hydrogen and nitrogen", "Oxygen, carbon, sodium and calcium", "Carbon, hydrogen, nitrogen and phosphorus", "Oxygen, hydrogen, nitrogen and sodium"], "correct_option": "A", "parts": [], "explanation": "The four elements common to all living organisms are oxygen (O), carbon (C), hydrogen (H) and nitrogen (N). Phosphorus, sodium and calcium are present in living things but are not in this list.", "source_quote": "The four elements common to all living organisms are oxygen (O), carbon (C), hydrogen (H), and nitrogen (N).", "origin": "generated", "id": "q13"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 2, "type": "mcq", "stem": "A sodium atom has 11 protons and 1 electron in its outermost shell. Which statement best explains why sodium tends to form a Na⁺ ion?", "options": ["It loses one electron, leaving a full outer shell and 11 protons but only 10 electrons.", "It gains seven electrons to fill its outer shell, giving more electrons than protons.", "It loses one proton from its nucleus, so that its outer shell is full.", "It shares its one outer electron equally with another sodium atom so that no charge results."], "correct_option": "A", "parts": [], "explanation": "Losing one electron takes less energy than gaining seven, and leaves sodium with a full outer shell (octet rule). With 11 protons and 10 electrons, it has a net +1 charge. Protons are in the nucleus and are not lost in ion formation, and gaining electrons would give a negative ion.", "source_quote": "It takes less energy for sodium to donate that one electron than it does to accept seven more electrons to fill the outer shell.", "origin": "generated", "id": "q14"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 2, "type": "short", "stem": "Carbon-12 and carbon-14 are two forms of carbon. Carbon-12 has six protons and six neutrons, while carbon-14 has six protons and eight neutrons.", "options": null, "correct_option": null, "parts": [{"label": "(a)", "prompt": "Explain why carbon-12 and carbon-14 are both carbon, even though their mass numbers are different.", "marks": 2, "mark_scheme": ["Both have the same number of protons (six) / same atomic number", "The atomic number (number of protons) determines which element an atom is, so they are the same element", "The difference in mass number is only due to the different number of neutrons (accept: neutrons add to mass but not charge)"]}, {"label": "(b)", "prompt": "Explain why carbon-12 and carbon-14 are called isotopes of each other.", "marks": 1, "mark_scheme": ["They are different forms of the same element that have the same number of protons but different numbers of neutrons"]}], "explanation": "The number of protons defines the element. Atoms of the same element with different numbers of neutrons (and thus different mass numbers) are isotopes.", "source_quote": "Isotopes are different forms of an element that have the same number of protons but a different number of neutrons.", "origin": "generated", "id": "q15"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 2, "type": "short", "stem": "A sodium atom has 11 protons, 11 neutrons and 11 electrons, with one electron in its outermost shell. It can become a sodium ion.", "options": null, "correct_option": null, "parts": [{"label": "(a)", "prompt": "Explain why a sodium atom tends to lose one electron rather than gain seven electrons.", "marks": 2, "mark_scheme": ["Atoms are more stable when the outermost shell is full (octet rule / eight electrons)", "Losing one electron needs less energy than gaining seven, and leaves the full shell underneath as the new outer shell"]}, {"label": "(b)", "prompt": "Explain why the sodium ion formed has an overall charge of +1.", "marks": 2, "mark_scheme": ["The ion has 11 protons (positive) but only 10 electrons (negative) after losing one electron", "The number of protons is greater than the number of electrons by one, so the net charge is +1"]}], "explanation": "Sodium has one outer electron, so losing it requires less energy than gaining seven and gives a full outer shell. The loss makes electrons (10) fewer than protons (11), giving a +1 cation.", "source_quote": "If sodium loses an electron, it now has 11 protons, 11 neutrons, and only 10 electrons, leaving it with an overall charge of +1.", "origin": "generated", "id": "q16"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 3, "type": "structured", "stem": "The table shows the numbers of subatomic particles in three neutral atoms, P, Q and R.\n\nAtom | Protons | Neutrons | Electrons\nP | 7 | 7 | 7\nQ | 6 | 6 | 6\nR | 6 | 8 | 6\n\nCarbon-14 is a radioactive isotope with a half-life of about 5,730 years. A piece of ancient wood from a dead tree is found to contain only 25% of the carbon-14 concentration found in living trees.", "options": null, "correct_option": null, "parts": [{"label": "(a)", "prompt": "Identify the two atoms that are isotopes of the same element and give the mass number of each. Explain your choice.", "marks": 3, "mark_scheme": ["Q and R are isotopes", "They have the same number of protons (6) but different numbers of neutrons (6 and 8)", "Mass number of Q is 12 and of R is 14 (protons + neutrons)"]}, {"label": "(b)", "prompt": "Atoms P and R have the same mass number. Explain why they are atoms of different elements.", "marks": 2, "mark_scheme": ["The identity of an element is determined by its atomic number / number of protons", "P has 7 protons and R has 6 protons, so they are different elements (despite both having mass number 14)"]}, {"label": "(c)", "prompt": "Calculate the approximate age of the piece of wood. Show your working.", "marks": 2, "mark_scheme": ["100% to 50% to 25% means two half-lives have passed", "2 × 5,730 = about 11,460 years"]}], "explanation": "Isotopes share the same atomic number (protons) but differ in neutrons, so mass number = protons + neutrons gives 12 and 14. Element identity depends on proton number, not mass number. A drop to 25% means two half-lives, about 11,460 years.", "source_quote": "Isotopes are different forms of an element that have the same number of protons but a different number of neutrons.", "origin": "generated", "id": "q17"}, {"section": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks", "pages": "53-63", "level": 2, "type": "mcq", "stem": "More than 99% of the volume of an atom is empty space. Which of the following best explains why two solid objects pressed together do not simply pass through each other?", "options": ["Neutrons in the nuclei of the two objects collide with each other.", "The negatively charged electrons surrounding the atoms of the two objects repel each other.", "The protons in the nuclei of the two objects repel each other because they are positively charged.", "Atoms are tightly packed with matter in the nucleus, so there are no gaps between the atoms."], "correct_option": "B", "parts": [], "explanation": "The outer region of every atom is occupied by electrons, which carry a negative charge. Like charges repel, so the electron clouds of atoms in two objects repel each other and prevent the objects from passing through one another. Nuclei (containing protons and neutrons) lie at the centre of atoms, shielded by the electrons, and do not make contact. Option D contradicts the fact that atoms are mostly empty space.", "source_quote": "the electrons that surround all atoms are negatively charged and negative charges repel each other.", "origin": "generated", "id": "q18"}, {"id": "q19", "demo": true, "section": "Demo: animal cell", "pages": "", "level": 1, "type": "label", "stem": "Name parts A to D of this animal cell.", "targets": [{"key": "A", "answer": "Cell membrane", "x": 2.3, "y": 3}, {"key": "B", "answer": "Nucleus", "x": 62.3, "y": 3}, {"key": "C", "answer": "Mitochondrion", "x": 62.3, "y": 87.3}, {"key": "D", "answer": "Cytoplasm", "x": 2.3, "y": 87.3}], "labels": ["Cell membrane", "Nucleus", "Mitochondrion", "Cytoplasm", "Cell wall"], "explanation": "Animal cells have a cell membrane but no cell wall. Cell walls are found in plant cells. (Demo question: not from the uploaded chapters.)", "source_quote": "", "parts": []}];
+
+/* ---------- storage (per device) ---------- */
+const KEY = 'prepbuddy.v1';
+function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || {stats:{},reports:[]}; } catch(e){ return {stats:{},reports:[]}; } }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch(e){} }
+let store = load();
+
+/* ---------- helpers ---------- */
+const $app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LEVEL = {1:'Recall',2:'Understand',3:'Apply',4:'Analyse / evaluate'};
+const TYPE = {mcq:'MCQ',short:'Short answer',structured:'Structured',label:'Label'};
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const marksOf = q => q.type==='mcq' ? 1 : q.type==='label' ? q.targets.length : q.parts.reduce((s,p)=>s+p.marks,0);
+const chapterOf = q => q.section;
+const chapters = [...new Set(QUESTIONS.filter(q=>!q.demo).map(chapterOf))].sort();
+const ICON = {
+  close:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L19 8"/></svg>',
+  bolt:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  target:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>',
+  clock:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>'
+};
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status'); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }
+
+/* A stem may contain a pipe table: render it as a table, the rest as text. */
+function renderStem(stem){
+  if (!stem) return '';
+  const lines = stem.split('\n'); let html=''; let buf=[]; let tbl=[];
+  const flushText=()=>{ if(buf.join('').trim()) html+=`<p class="stem">${esc(buf.join('\n').trim())}</p>`; buf=[]; };
+  const flushTbl=()=>{ if(tbl.length){ html+='<div style="overflow-x:auto"><table class="data">'+tbl.map((r,i)=>'<tr>'+r.map(c=>i===0?`<th>${esc(c)}</th>`:`<td>${esc(c)}</td>`).join('')+'</tr>').join('')+'</table></div>'; } tbl=[]; };
+  for (const l of lines){
+    if (l.includes('|') && l.split('|').length>=3){ flushText(); const cells=l.split('|').map(s=>s.trim()).filter((s,i,a)=>!(s===''&&(i===0||i===a.length-1))); if(!cells.every(c=>/^-+$/.test(c))) tbl.push(cells); }
+    else { flushTbl(); buf.push(l); }
+  }
+  flushText(); flushTbl(); return html;
+}
+
+/* ---------- progress ---------- */
+function record(q, got){ const s = store.stats[q.id] || {seen:0,got:0,total:0,last:0}; s.seen++; s.got+=got; s.total+=marksOf(q); s.last = got/marksOf(q); store.stats[q.id]=s; save(); }
+function chapterScore(ch){ let got=0,total=0; QUESTIONS.filter(q=>chapterOf(q)===ch).forEach(q=>{ const s=store.stats[q.id]; if(s){got+=s.got;total+=s.total;} }); return total? Math.round(100*got/total) : null; }
+
+/* ---------- sessions ---------- */
+let S = null; // current session
+function startSession(mode, chapter){
+  let pool = QUESTIONS.filter(q => !chapter || chapterOf(q)===chapter);
+  let qs, title;
+  if (mode==='weak'){
+    const scored = chapters.map(ch=>({ch, s: chapterScore(ch)})).filter(x=>x.s!==null).sort((a,b)=>a.s-b.s);
+    const weakCh = scored.length ? scored.slice(0,2).map(x=>x.ch) : chapters;
+    const prio = q => { const s=store.stats[q.id]; return s ? s.last : 0.5; };
+    qs = shuffle(QUESTIONS.filter(q=>weakCh.includes(chapterOf(q)))).sort((a,b)=>prio(a)-prio(b)).slice(0,10);
+    title = 'Weak topics';
+  } else if (mode==='mock'){
+    qs = shuffle(QUESTIONS.filter(q=>q.type!=='label')).slice(0,12).sort((a,b)=>a.level-b.level);
+    title = 'Mini mock';
+  } else {
+    qs = shuffle(pool).slice(0,10);
+    title = chapter ? chapter : 'Quick 10';
+  }
+  S = { mode, title, qs, i:0, answers: qs.map(()=>null), got: qs.map(()=>null), phase:'answer', ticks:{}, labelSel:null, review:false,
+        deadline: mode==='mock' ? Date.now()+20*60*1000 : null };
+  renderQuestion();
+}
+
+/* ---------- screens ---------- */
+function renderHome(){
+  stopTimer(); S=null;
+  const tried = Object.keys(store.stats).length;
+  const rows = chapters.map(ch=>{ const s=chapterScore(ch); return `
+    <button class="row" data-ch="${esc(ch)}">
+      <div class="top"><span>${esc(ch)}</span><span style="font-weight:600;color:${s===null?'#6B7280':s<50?'#C2410C':'#0F766E'}">${s===null?'Not started':s+'%'}</span></div>
+      <div class="bar ${s!==null&&s<50?'warn':''}"><i style="width:${s||0}%"></i></div>
+    </button>`; }).join('');
+  $app.innerHTML = `
+  <main class="pad stack g22" style="flex:1">
+    <div><p class="muted" style="margin:0 0 2px;font-size:13px">Biology practice · HKDSE style</p><h1 class="brand">PrepBuddy</h1></div>
+    <section class="hero" aria-label="Quick start">
+      <small>${tried? 'Keep going':'Start here'}</small>
+      <span class="title">${QUESTIONS.length} practice questions across ${chapters.length} topics</span>
+      <span style="font-size:13px;color:#E6F7F5">${tried? `You have tried ${tried} of them on this phone.`:'About 8 minutes for 10 questions.'}</span>
+      <button class="btn light" style="align-self:flex-start" data-mode="quick">Start Quick 10</button>
+    </section>
+    <section class="stack g10" aria-label="Start a session">
+      <h2 style="margin:0;font-size:15px">Start a session</h2>
+      <div class="tiles">
+        <button class="tile" data-mode="quick">${ICON.bolt}<b>Quick 10</b><span>About 8 min</span></button>
+        <button class="tile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>${tried?'Your lowest scores':'Try a few first'}</span></button>
+        <button class="tile" data-mode="mock">${ICON.clock}<b>Mini mock</b><span>12 Qs, 20 min</span></button>
+      </div>
+    </section>
+    <section class="stack g10" aria-label="My chapters">
+      <h2 style="margin:0;font-size:15px">Topics <span class="muted" style="font-weight:400;font-size:13px">· tap one to practise it</span></h2>
+      <div class="card stack">${rows}</div>
+    </section>
+  </main>
+  <footer>Prototype. Your progress is saved on this phone only. Source text: <a href="https://openstax.org/details/books/biology-2e" target="_blank" rel="noopener">OpenStax Biology 2e</a>, CC BY-NC-SA 4.0. Access for free at openstax.org. Questions are original practice items.</footer>`;
+  $app.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>startSession(b.dataset.mode));
+  $app.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>startSession('quick', b.dataset.ch));
+  window.scrollTo(0,0);
+}
+
+function header(){
+  const n=S.qs.length, pct=Math.round(100*(S.i)/n);
+  return `<div class="topbar">
+    <button class="icon-btn" id="quit" aria-label="End session">${ICON.close}</button>
+    <div class="progress" role="progressbar" aria-valuenow="${S.i}" aria-valuemin="0" aria-valuemax="${n}"><i style="width:${pct}%"></i></div>
+    <span class="count">${S.deadline && !S.review ? '<span class="timer" id="timer"></span>' : `${S.i+1} / ${n}`}</span>
+  </div>`;
+}
+
+function renderQuestion(){
+  const q = S.qs[S.i];
+  const showFeedback = S.phase==='revealed';
+  let body = '';
+  if (q.type==='mcq') body = mcqBody(q, showFeedback);
+  else if (q.type==='label') body = labelBody(q, showFeedback);
+  else body = writtenBody(q, showFeedback);
+  $app.innerHTML = header() + `
+  <main class="stack g18" style="flex:1;padding:8px 20px 20px">
+    <div class="chips"><span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q)>1?'s':''}</span>${S.review?'<span class="chip grey">Review</span>':''}</div>
+    ${body.main}
+  </main>
+  ${body.footer}`;
+  bindCommon(q);
+  body.bind && body.bind();
+  startTimer();
+  window.scrollTo(0,0);
+}
+
+function feedbackBits(q){
+  return `<p class="expl">${esc(q.explanation)}</p>
+    ${q.source_quote?`<p class="src">Textbook${q.pages?`, pp. ${esc(q.pages)}`:''}: “${esc(q.source_quote)}”</p>`:''}
+    <div style="display:flex;justify-content:flex-end"><button class="link quiet" id="report">Report a problem</button></div>`;
+}
+
+function nextLabel(){ return S.i < S.qs.length-1 ? 'Next question' : (S.review||S.mode!=='mock' ? 'See results' : 'Finish and review'); }
+
+/* MCQ */
+function mcqBody(q, revealed){
+  const picked = S.answers[S.i];
+  const opts = q.options.map((o,k)=>{ const L='ABCD'[k]; let cls='';
+    if (revealed){ if(L===q.correct_option) cls='right'; else if(L===picked) cls='wrong'; }
+    else if (L===picked) cls='picked';
+    const dot = revealed && L===q.correct_option ? ICON.check : L;
+    return `<button class="opt ${cls}" data-opt="${L}" ${revealed?'disabled':''} aria-pressed="${L===picked}"><span class="dot">${dot}</span><span>${esc(o)}</span></button>`; }).join('');
+  const right = picked===q.correct_option;
+  const main = `${renderStem(q.stem).replace('class="stem"','class="q"')}<div class="stack g10">${opts}</div>`;
+  let footer='';
+  if (revealed) footer = `<div class="sheet"><span class="verdict ${right?'ok':'no'}">${right?'Correct':picked?`Not quite. The answer is ${q.correct_option}.`:`No answer. The answer is ${q.correct_option}.`}</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
+  else if (S.mode==='mock') footer = `<div class="pad" style="padding-top:0"><button class="btn" id="next" ${picked?'':'disabled'}>${nextLabel()}</button></div>`;
+  return { main, footer, bind(){
+    $app.querySelectorAll('[data-opt]').forEach(b=>b.onclick=()=>{
+      S.answers[S.i]=b.dataset.opt;
+      if (S.mode!=='mock'){ S.phase='revealed'; S.got[S.i]= b.dataset.opt===q.correct_option?1:0; record(q,S.got[S.i]); }
+      renderQuestion();
+    });
+  }};
+}
+
+/* Short / structured: write, then self-mark against the mark scheme */
+function writtenBody(q, revealed){
+  const ans = S.answers[S.i] || q.parts.map(()=> '');
+  const stem = q.stem ? renderStem(q.stem) : '';
+  if (!revealed){
+    const parts = q.parts.map((p,k)=>`<div class="part">
+      <label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks>1?'s':''}</span></label>
+      <textarea id="a${k}" data-k="${k}" placeholder="Type, or tap the microphone on your keyboard to speak">${esc(ans[k])}</textarea></div>`).join('');
+    const main = `${stem}${parts}<p class="hint">Aim for one clear point per mark.</p>`;
+    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${S.mode==='mock'?nextLabel():'Check my answer'}</button>${S.mode==='mock'?'':'<button class="link quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
+    return { main, footer, bind(){
+      const grab=()=>{ S.answers[S.i]=[...$app.querySelectorAll('textarea')].map(t=>t.value); };
+      $app.querySelectorAll('textarea').forEach(t=>t.oninput=grab);
+      document.getElementById('check').onclick=()=>{ grab(); if(S.mode==='mock') return advance(); S.phase='revealed'; renderQuestion(); };
+      const sk=document.getElementById('skip'); if(sk) sk.onclick=()=>{ grab(); S.phase='revealed'; renderQuestion(); };
+    }};
+  }
+  const ticks = S.ticks[S.i] || (S.ticks[S.i] = q.parts.map(p=>p.mark_scheme.map(()=>false)));
+  const partHtml = q.parts.map((p,k)=>`<div class="part">
+      <div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks>1?'s':''}</span></div>
+      <div class="yours ${ans[k]?.trim()?'':'empty'}">${ans[k]?.trim()?esc(ans[k]):'No answer written'}</div>
+      <span class="hint" style="font-weight:600">Tick each point your answer makes${p.mark_scheme.length>p.marks?` (max ${p.marks})`:''}:</span>
+      ${p.mark_scheme.map((pt,j)=>`<button class="point ${ticks[k][j]?'on':''}" data-k="${k}" data-j="${j}" aria-pressed="${ticks[k][j]}"><span class="box">${ticks[k][j]?ICON.check:''}</span><span>${esc(pt.replace(/\s*\(1\)\s*$/,''))}</span></button>`).join('')}
+    </div>`).join('');
+  const got = q.parts.reduce((s,p,k)=>s+Math.min(p.marks, ticks[k].filter(Boolean).length),0);
+  const main = `${stem}${partHtml}`;
+  const footer = `<div class="sheet"><span class="verdict ${got===marksOf(q)?'ok':'no'}">${got} / ${marksOf(q)} marks</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
+  return { main, footer, bind(){
+    $app.querySelectorAll('.point').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k,j=+b.dataset.j; ticks[k][j]=!ticks[k][j]; const y=window.scrollY; renderQuestion(); window.scrollTo(0,y); });
+  }, got };
+}
+
+/* Label: tap a label, then tap a box */
+const CELL_SVG = `<svg viewBox="0 0 350 330" role="img" aria-label="Diagram of an animal cell with four parts marked A to D">
+  <ellipse cx="175" cy="170" rx="120" ry="100" fill="#FDF6E9" stroke="#8A6D3B" stroke-width="2.5"/>
+  <circle cx="165" cy="160" r="34" fill="#E7DDF5" stroke="#6D4AA8" stroke-width="2"/><circle cx="160" cy="156" r="9" fill="#C9B6EA"/>
+  <ellipse cx="238" cy="214" rx="26" ry="12" transform="rotate(-20 238 214)" fill="#FBE0D3" stroke="#B4532A" stroke-width="2"/>
+  <path d="M220 214 q6 -8 12 0 t12 0 t10 0" fill="none" stroke="#B4532A" stroke-width="1.5" transform="rotate(-20 238 214)"/>
+  <ellipse cx="105" cy="200" rx="10" ry="6" fill="#E9DFC8"/><ellipse cx="215" cy="115" rx="8" ry="5" fill="#E9DFC8"/>
+  <g stroke="#6B7280" stroke-width="1.25" fill="none"><path d="M68 46 L92 98"/><path d="M282 46 L192 136"/><path d="M282 288 L246 222"/><path d="M68 288 L128 236"/></g>
+  <g fill="#6B7280"><circle cx="92" cy="98" r="3"/><circle cx="192" cy="136" r="3"/><circle cx="246" cy="222" r="3"/><circle cx="128" cy="236" r="3"/></g></svg>`;
+function labelBody(q, revealed){
+  const placed = S.answers[S.i] || (S.answers[S.i] = {});
+  const used = Object.values(placed);
+  const drops = q.targets.map(t=>{ const v=placed[t.key]; let cls = v?'filled':''; if (revealed) cls = v===t.answer?'right':'wrong'; else if(!v && S.labelSel) cls='armed';
+    const text = revealed && v!==t.answer ? `${v?esc(v)+' → ':''}${esc(t.answer)}` : (v?esc(v):'Tap to place');
+    return `<button class="drop ${cls}" data-key="${t.key}" style="left:${t.x}%;top:${t.y}%" ${revealed?'disabled':''} aria-label="Box ${t.key}: ${v?esc(v):'empty'}"><b>${t.key}</b><span>${text}</span></button>`; }).join('');
+  const labels = q.labels.map(l=>`<button class="lbl ${S.labelSel===l?'sel':''} ${used.includes(l)?'used':''}" data-l="${esc(l)}" ${revealed?'disabled':''} aria-pressed="${S.labelSel===l}">${esc(l)}</button>`).join('');
+  const got = q.targets.filter(t=>placed[t.key]===t.answer).length;
+  const main = `<p class="q">${esc(q.stem)}</p><div class="diagram">${CELL_SVG}${drops}</div>
+    <div class="stack g8"><span class="hint" style="font-weight:600">Labels (one is not needed). Tap a label, then tap a box.</span><div class="chips">${labels}</div></div>`;
+  const footer = revealed
+    ? `<div class="sheet"><span class="verdict ${got===q.targets.length?'ok':'no'}">${got} / ${q.targets.length} marks</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`
+    : `<div class="pad" style="padding-top:0"><button class="btn" id="check" ${Object.keys(placed).length?'':'disabled'}>Check labels</button></div>`;
+  return { main, footer, bind(){
+    $app.querySelectorAll('.lbl').forEach(b=>b.onclick=()=>{ S.labelSel = S.labelSel===b.dataset.l?null:b.dataset.l; renderQuestion(); });
+    $app.querySelectorAll('.drop').forEach(b=>b.onclick=()=>{ const k=b.dataset.key;
+      if (S.labelSel){ for (const kk in placed) if (placed[kk]===S.labelSel) delete placed[kk]; placed[k]=S.labelSel; S.labelSel=null; }
+      else if (placed[k]) delete placed[k];
+      renderQuestion(); });
+    const c=document.getElementById('check'); if(c) c.onclick=()=>{ S.phase='revealed'; S.got[S.i]=got; record(q,got); renderQuestion(); };
+  }};
+}
+
+function bindCommon(q){
+  document.getElementById('quit').onclick=()=>{ if (confirmQuit()) renderHome(); };
+  const n=document.getElementById('next'); if(n) n.onclick=()=>{
+    if (q.type!=='mcq' && q.type!=='label' && S.phase==='revealed' && S.got[S.i]===null){ const ticks=S.ticks[S.i]; const g=q.parts.reduce((s,p,k)=>s+Math.min(p.marks,ticks[k].filter(Boolean).length),0); S.got[S.i]=g; record(q,g); }
+    else if (q.type!=='mcq' && q.type!=='label' && S.phase==='revealed'){ const ticks=S.ticks[S.i]; S.got[S.i]=q.parts.reduce((s,p,k)=>s+Math.min(p.marks,ticks[k].filter(Boolean).length),0); }
+    advance(); };
+  const r=document.getElementById('report'); if(r) r.onclick=()=>{ if(!store.reports.includes(q.id)){store.reports.push(q.id); save();} toast('Thanks. This question is flagged for checking.'); };
+}
+let quitArmed=0;
+function confirmQuit(){ if (Date.now()-quitArmed<2500) return true; quitArmed=Date.now(); toast('Tap × again to end this session'); return false; }
+
+function advance(){
+  if (S.i < S.qs.length-1){ S.i++; S.phase = S.review ? 'revealed' : 'answer'; S.labelSel=null; return renderQuestion(); }
+  if (S.mode==='mock' && !S.review){
+    // mark MCQs automatically, then review each question with its answer
+    S.qs.forEach((q,k)=>{ if(q.type==='mcq'){ S.got[k]= S.answers[k]===q.correct_option?1:0; record(q,S.got[k]); } });
+    S.review=true; S.i=0; S.phase='revealed'; stopTimer();
+    toast('Time to review. Tick the points you made in written answers.');
+    return renderQuestion();
+  }
+  renderSummary();
+}
+
+function renderSummary(){
+  stopTimer();
+  const total = S.qs.reduce((s,q)=>s+marksOf(q),0), got = S.got.reduce((s,g)=>s+(g||0),0);
+  const pct = total? Math.round(100*got/total):0;
+  const list = S.qs.map((q,k)=>{ const g=S.got[k]||0, m=marksOf(q), full=g===m;
+    return `<div class="res"><span class="tick ${full?'full':'part'}">${full?ICON.check:g}</span><span style="flex:1">${esc((q.type==='mcq'||q.type==='label'?q.stem:(q.parts[0]?.prompt||q.stem)).slice(0,90))}${(q.stem||'').length>90?'…':''}</span><span class="muted" style="white-space:nowrap">${g}/${m}</span></div>`; }).join('');
+  const missed = S.qs.filter((q,k)=>(S.got[k]||0)<marksOf(q));
+  $app.innerHTML = `<main class="pad stack g22" style="flex:1">
+    <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · done</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct>=70?'#0F766E':'#9A3412'}">${pct>=85?'Excellent work':pct>=70?'Good, solid work':pct>=50?'Getting there':'Worth another go'} · ${pct}%</span></div>
+    <div class="card stack">${list}</div>
+    <div class="stack g10">
+      ${missed.length?`<button class="btn" id="retry">Retry the ${missed.length} I missed</button>`:''}
+      <button class="btn ghost" id="home">Back to home</button>
+    </div></main>`;
+  document.getElementById('home').onclick=renderHome;
+  const r=document.getElementById('retry'); if(r) r.onclick=()=>{ S={...S, mode:'quick', title:'Retry', qs:missed, i:0, answers:missed.map(()=>null), got:missed.map(()=>null), phase:'answer', ticks:{}, review:false, deadline:null}; renderQuestion(); };
+  window.scrollTo(0,0);
+}
+
+/* mock timer */
+let timerId=null;
+function startTimer(){ stopTimer(); if(!S||!S.deadline||S.review) return; const tick=()=>{ const el=document.getElementById('timer'); const left=Math.max(0,S.deadline-Date.now()); if(el){ const m=Math.floor(left/60000), s=Math.floor(left/1000)%60; el.textContent=`${m}:${String(s).padStart(2,'0')}`; el.classList.toggle('low', left<120000); }
+  if(left<=0){ stopTimer(); toast("Time's up"); S.i=S.qs.length-1; advance(); } }; tick(); timerId=setInterval(tick,1000); }
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
+
+renderHome();
+</script>
+</body>
+</html>
