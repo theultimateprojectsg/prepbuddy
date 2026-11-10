@@ -1212,6 +1212,7 @@ async function confirmRemove(book) {
     for (const k of Object.keys(local.stats)) if (k.startsWith(prefix)) delete local.stats[k];
     local.log = local.log.filter((e) => !e.q.startsWith(prefix));
     local.reports = local.reports.filter((id) => !id.startsWith(prefix));
+    for (const k of Object.keys(local.mistakes || {})) if (k.startsWith(prefix)) delete local.mistakes[k];
     saveLocal();
     pick = { bookId: null, ids: new Set() };
     toast('Textbook and its progress removed');
@@ -1589,6 +1590,12 @@ function topUp(sess) {
 }
 
 /* ---------- mistake book (錯題簿) ---------- */
+// Mistakes from textbooks that were removed are dropped (older versions kept them, so the count stayed).
+function pruneMistakes(books) {
+  const ids = new Set(books.map((b) => b.id)); let n = 0;
+  for (const k of Object.keys(local.mistakes || {})) if (!ids.has(k.split(':')[0])) { delete local.mistakes[k]; n++; }
+  if (n) saveLocal();
+}
 const mistakeCount = () => Object.values(local.mistakes || {}).filter((m) => !m.done).length;
 async function mistakeItems(done) {
   const books = await getBooks();
@@ -1627,6 +1634,7 @@ function mistakeCard(q, m) {
 async function renderMistakes(tab) {
   // Filter by textbook (remembered). Only shown when mistakes come from more than one book.
   const books = await getBooks();
+  pruneMistakes(books);
   const entries = Object.entries(local.mistakes || {});
   const bookIds = [...new Set(entries.map(([id]) => id.split(':')[0]))].filter((id) => books.some((b) => b.id === id));
   let only = local.mkBook && bookIds.includes(local.mkBook) ? local.mkBook : 'all';
@@ -2623,4 +2631,5 @@ new MutationObserver((muts) => {
 { const st = document.createElement('style'); st.textContent = REPORT_CSS; document.head.appendChild(st); }
 initLang();
 watch(document.body);
+getBooks().then(pruneMistakes).catch(() => {});
 go({ name: 'home' });
