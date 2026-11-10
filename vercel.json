@@ -9,5 +9,10 @@
       "source": "/admin",
       "destination": "/admin.html"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "reports": false
+    }
+  }
 }

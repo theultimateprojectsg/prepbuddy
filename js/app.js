@@ -2108,7 +2108,46 @@ function feedbackBits(q) {
   return `<p class="expl">${esc(q.explanation)}</p>
     ${q.source_quote ? `<p class="src">${esc(q.section || 'Textbook')}${q.pages ? `, pp. ${esc(q.pages)}` : ''}: “${esc(q.source_quote)}”</p>` : ''}
     <div class="tutor" id="tutor">${tutorHTML(q)}</div>
-    <div style="display:flex;justify-content:flex-end"><button class="link quiet" id="report">Report a problem</button></div>`;
+    <div class="rbox" id="rbox">${(local.reports || []).includes(q.id) ? '<p class="rdone">You reported this question. We’ll check it.</p>' : '<div style="display:flex;justify-content:flex-end"><button class="link quiet" id="report">Report a problem</button></div>'}</div>`;
+}
+const REPORT_REASONS = [['wrong_answer', 'The answer is wrong'], ['unclear', 'The question doesn’t make sense'], ['missing_figure', 'It needs a diagram or table I can’t see'], ['off_topic', 'It’s not from my textbook'], ['typo', 'Spelling or formatting mistake'], ['other', 'Something else']];
+// Sends a report to the admin. If it can't be sent now (offline), it's kept and sent next time the app opens.
+async function sendReport(payload) {
+  try { await apiOnce('report', payload); return true; } catch (e) {
+    if (e.status === 400) return false;
+    local.pendingReports = [...(local.pendingReports || []), payload].slice(-30); saveLocal(); return false;
+  }
+}
+async function flushReports() {
+  const list = local.pendingReports || []; if (!list.length) return;
+  local.pendingReports = []; saveLocal();
+  for (const p of list) await sendReport(p);
+}
+function bindReport(q) {
+  const box = document.getElementById('rbox'); const r = document.getElementById('report');
+  if (!box || !r) return;
+  r.onclick = () => {
+    let reason = '';
+    box.innerHTML = `<div class="rform"><b>What’s wrong with this question?</b>
+      <div class="rreasons" role="radiogroup">${REPORT_REASONS.map(([k, t]) => `<button type="button" role="radio" aria-checked="false" data-reason="${k}">${t}</button>`).join('')}</div>
+      <textarea id="rnote" class="input" rows="2" maxlength="1000" placeholder="Tell us more (optional)"></textarea>
+      <div class="rbtns"><button class="btn ghost" id="rcancel">Cancel</button><button class="btn" id="rsend" disabled>Send report</button></div></div>`;
+    box.querySelectorAll('[data-reason]').forEach((b) => (b.onclick = () => {
+      reason = b.dataset.reason;
+      box.querySelectorAll('[data-reason]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+      document.getElementById('rsend').disabled = false;
+    }));
+    document.getElementById('rcancel').onclick = () => { box.innerHTML = '<div style="display:flex;justify-content:flex-end"><button class="link quiet" id="report">Report a problem</button></div>'; bindReport(q); };
+    document.getElementById('rsend').onclick = async () => {
+      const btn = document.getElementById('rsend'); btn.disabled = true; btn.textContent = 'Sending…';
+      const book = (S && S.book) || {}; const uid = qUnit(q.id)[1]; const unit = (book.units || []).find((u) => u.id === uid) || {};
+      const ans = S && S.answers ? S.answers[S.i] : '';
+      const payload = { reason, note: document.getElementById('rnote').value.trim(), lang: LANG, book: { id: book.id, title: book.title, library: book.library, code: book.code }, unit: { id: unit.id, title: unit.title }, q, answer: Array.isArray(ans) ? ans.join('\n') : String(ans || '') };
+      const sent = await sendReport(payload);
+      if (!local.reports.includes(q.id)) { local.reports.push(q.id); saveLocal(); }
+      box.innerHTML = `<p class="rdone">${ICON.check} ${sent ? 'Thanks. We’ve sent this to the PrepBuddy team to check. You won’t see this question again.' : 'Thanks. We’ll send this when you’re back online. You won’t see this question again.'}</p>`;
+    };
+  };
 }
 
 /* ---------- "I don't get it": ask the AI tutor about this question ---------- */
@@ -2496,8 +2535,7 @@ function bindCommon(q) {
     advance();
   };
   bindTutor(q);
-  const r = document.getElementById('report');
-  if (r) r.onclick = () => { if (!local.reports.includes(q.id)) { local.reports.push(q.id); saveLocal(); } toast('Thanks. You won’t see this question again.'); };
+  bindReport(q);
 }
 
 function advance() {
@@ -2655,4 +2693,5 @@ new MutationObserver((muts) => {
 initLang();
 watch(document.body);
 getBooks().then(pruneMistakes).catch(() => {});
+flushReports().catch(() => {});
 go({ name: 'home' });

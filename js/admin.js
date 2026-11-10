@@ -53,6 +53,7 @@ async function renderLibrary(note) {
   const cat = await catalog();
   app.innerHTML = `<header><h1>Library</h1><span class="badge">Admin</span></header>
   ${note ? `<div class="ok">${esc(note)}</div>` : ''}
+  <div class="card" id="reports"><h2>Reported questions</h2><p class="muted" style="margin:0">Loading…</p></div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2>Books in the library (${cat.length})</h2><button class="btn" id="add">Add a textbook</button></div>
     <div>${cat.map((b) => `<div class="row" data-id="${esc(b.id)}"><div class="meta"><b>${esc(b.title)}</b><span>${esc(b.subject || '')}${b.level ? ' · ' + esc(b.level) : ''} · ${b.units.length} chapters · code ${esc(b.code)}</span></div>
@@ -60,6 +61,7 @@ async function renderLibrary(note) {
   </div>
   <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy.</p>
   <button class="link" id="out" style="align-self:flex-start">Sign out</button>`;
+  loadReports();
   $('add').onclick = () => renderUpload();
   $('out').onclick = () => { sessionStorage.removeItem(PW_KEY); pw = ''; renderLogin(); };
   app.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => renderDetails(cat.find((x) => x.id === b.dataset.edit), cat)));
@@ -69,6 +71,35 @@ async function renderLibrary(note) {
     b.disabled = true; b.textContent = 'Removing…';
     try { await adminApi({ action: 'remove', id: book.id }); renderLibrary(`Removed “${book.title}”. The library updates in about 1–2 minutes.`); }
     catch (err) { alert(err.message); b.disabled = false; b.textContent = 'Remove'; }
+  }));
+}
+
+/* ---------- questions students reported ---------- */
+const REASON = { wrong_answer: 'The answer is wrong', unclear: 'The question doesn’t make sense', missing_figure: 'Needs a diagram or table they can’t see', off_topic: 'Not from the textbook', typo: 'Spelling or formatting mistake', other: 'Something else' };
+async function loadReports() {
+  const box = $('reports'); if (!box) return;
+  let list;
+  try { list = (await adminApi({ action: 'reports' })).reports; }
+  catch (e) { box.innerHTML = `<h2>Reported questions</h2><div class="err">Couldn’t load reports: ${esc(e.message)}</div>`; return; }
+  const when = (t) => new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const qHTML = (q) => {
+    const opts = Array.isArray(q.options) ? `<ol class="ropts" type="A">${q.options.map((o, i) => `<li class="${'ABCD'[i] === q.correct_option ? 'right' : ''}">${esc(o)}${'ABCD'[i] === q.correct_option ? ' ✓' : ''}</li>`).join('')}</ol>` : '';
+    const parts = Array.isArray(q.parts) ? q.parts.map((p) => `<p class="rq-part"><b>${esc(p.label || '')}</b> ${esc(p.prompt || '')} <span class="muted">(${p.marks || 1} mark${p.marks > 1 ? 's' : ''})</span></p>${(p.mark_scheme || []).length ? `<ul class="rq-ms">${p.mark_scheme.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}`).join('') : '';
+    return `${q.stem ? `<p class="rq-stem">${esc(q.stem)}</p>` : ''}${opts}${parts}${q.explanation ? `<p class="rq-exp"><b>Explanation:</b> ${esc(q.explanation)}</p>` : ''}${q.source_quote ? `<p class="hint" style="margin:0">Source${q.pages ? `, pp. ${esc(q.pages)}` : ''}: “${esc(q.source_quote)}”</p>` : ''}`;
+  };
+  box.innerHTML = `<h2>Reported questions (${list.length})</h2>
+    ${list.length ? '<p class="hint" style="margin:0">Questions students flagged. The student who reported it no longer sees it. Mark each one as checked once you’ve looked at it.</p>' : '<p class="muted" style="margin:0">Nothing reported. When a student taps “Report a problem” on a question, it shows up here.</p>'}
+    ${list.map((r, i) => `<div class="rep" data-i="${i}">
+      <div class="rep-top"><span class="rtag">${esc(REASON[r.reason] || r.reason)}</span><span class="muted" style="font-size:13px">${when(r.t)}${r.lang === 'zh' ? ' · 中文' : ''}</span></div>
+      <div class="hint" style="margin:0">${esc((r.book || {}).title || 'Unknown book')}${(r.book || {}).code ? ` · ${esc(r.book.code)}` : (r.book || {}).library ? '' : ' · student’s own upload'}${(r.unit || {}).title ? ` · ${esc(r.unit.title)}` : ''}${r.q && r.q.level ? ` · Level ${r.q.level}` : ''}</div>
+      ${r.note ? `<p class="rnote">“${esc(r.note)}”</p>` : ''}
+      <details><summary>Show the question</summary><div class="rq">${qHTML(r.q || {})}${r.answer ? `<p class="rq-ans"><b>Student’s answer:</b> ${esc(r.answer)}</p>` : ''}</div></details>
+      <div class="acts"><button class="link" data-resolve="${i}">Mark as checked</button></div>
+    </div>`).join('')}`;
+  box.querySelectorAll('[data-resolve]').forEach((b) => (b.onclick = async () => {
+    const r = list[+b.dataset.resolve]; b.disabled = true; b.textContent = 'Saving…';
+    try { await adminApi({ action: 'resolve', path: r.path, sha: r.sha }); b.closest('.rep').remove(); box.querySelector('h2').textContent = `Reported questions (${box.querySelectorAll('.rep').length})`; }
+    catch (e) { alert(e.message); b.disabled = false; b.textContent = 'Mark as checked'; }
   }));
 }
 

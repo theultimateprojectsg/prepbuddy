@@ -9,10 +9,13 @@
 //   { action: 'publish', entry, files: [{ path, sha }] } -> { ok, commit } adds/replaces the book in library/catalog.json
 //   { action: 'update', id, changes }                    -> { ok, commit } edits a book's details in the catalog
 //   { action: 'remove', id }                             -> { ok, commit } takes a book out of the library (and deletes its files)
+//   { action: 'reports' }                                -> { reports }   questions students flagged (newest first)
+//   { action: 'resolve', path, sha }                     -> { ok }        marks a report as checked (deletes it)
 
 const REPO = () => process.env.GITHUB_REPO || 'theultimateprojectsg/prepbuddy';
 const BRANCH = () => process.env.GITHUB_BRANCH || 'main';
 const CATALOG = 'library/catalog.json';
+const { listReports, resolveReport } = require('../lib/github');
 
 function err(status, message) { const e = new Error(message); e.status = status; return e; }
 
@@ -89,6 +92,11 @@ module.exports = async (req, res) => {
       if (!safeId(body.id)) throw err(400, 'Bad book id.');
       const commit = await commitWith({ message: `Library: remove ${body.id}`, deletePrefix: `library/${body.id}/`, change: (cat) => cat.filter((x) => x.id !== body.id) });
       out = { ok: true, commit };
+    } else if (body.action === 'reports') {
+      out = { reports: await listReports(100) };
+    } else if (body.action === 'resolve') {
+      await resolveReport(body.path, body.sha);
+      out = { ok: true };
     } else throw err(400, 'Unknown action.');
     res.statusCode = 200; res.end(JSON.stringify(out));
   } catch (e) {
