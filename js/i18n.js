@@ -26,6 +26,7 @@ const EXACT = {
   'Practise the questions you found hard.': '練習你覺得難的題目。',
   'You choose the chapters and length next.': '下一步選擇章節和長度。',
   'All my textbooks': '我的所有課本',
+  'Introduction': '引言',
   'No weak spots yet': '暫時沒有弱項',
   '12 questions, 20 min': '12 題，20 分鐘',
   'My progress': '我的進度',
@@ -286,6 +287,7 @@ const PATTERNS = [
   [/^Found (\d+) chapters\. Saving…$/, '找到 $1 個章節，正在儲存…'],
   [/^(\d+) questions to work on$/, '$1 題需要加強'],
   [/^Weak topics · (.+)$/, '弱項 · $1'],
+  [/^Part (\d+)$/, '第 $1 部分'],
   [/^(\d+) chapters$/, '$1 個章節'],
 ];
 

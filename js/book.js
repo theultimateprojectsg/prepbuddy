@@ -123,36 +123,73 @@ async function fromOutline(pdf, pages) {
 
 /* ---------- 2. numbered headings ---------- */
 
-function fromHeadings(pages) {
-  // Numbered section headings ("2.1 Water") also appear in chapter outlines and summaries.
-  // The real heading is the copy followed by the most text before the next heading.
+// Chinese numerals 一 … 九十九 (and plain digits) to numbers.
+function zhNum(t) {
+  if (/^\d+$/.test(t)) return Number(t);
+  const d = { 零: 0, 〇: 0, 一: 1, 二: 2, 兩: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+  if (t === '十') return 10;
+  const m = t.match(/^([一二兩三四五六七八九])?十([一二三四五六七八九])?$/);
+  if (m) return (m[1] ? d[m[1]] : 1) * 10 + (m[2] ? d[m[2]] : 0);
+  return t.length === 1 && t in d ? d[t] : NaN;
+}
+const ROMAN = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12, XIII: 13, XIV: 14, XV: 15 };
+const ZHN = '[零〇一二兩三四五六七八九十]{1,3}|\\d{1,2}';
+
+// Kinds of heading a textbook may use. Each gives the heading's number (for checking order) and its title.
+const HEADING_KINDS = [
   // "2.1 Water" or "2.1 細胞的結構" (Chinese titles can be short and may follow the number without a space)
-  const re = /^(\d{1,2}\.\d{1,2})(?:\s+([A-Z][^•|]{3,100})|\s*([\u3400-\u9fff][^•|]{1,60}))$/;
+  { re: /^(\d{1,2}\.\d{1,2})(?:\s+([A-Z][^•|]{3,100})|\s*([㐀-鿿][^•|]{1,60}))$/,
+    key: (m) => m[1].split('.').map(Number), title: (m) => `${m[1]} ${(m[2] || m[3]).trim()}` },
+  // "第一章 交通標誌" / "第3課 光合作用" / "第二部分" / "單元四 …"
+  { re: new RegExp(`^(?:第\\s*(${ZHN})\\s*([章課课單单元部篇節节])(?:分)?|(單元|单元)\\s*(${ZHN}))[\\s:：、．.]*([^•|]{0,40})$`),
+    key: (m) => [zhNum(m[1] || m[4])], title: (m) => `${m[0].replace(/\s+/g, ' ').trim()}` },
+  // "Chapter 3 Cells", "Unit 2: Forces", "Part IV – …"
+  { re: /^(Chapter|Unit|Part|Topic|Module|Lesson|Section)\s+(\d{1,2}|[IVX]{1,5})\b[\s:.\-–—]*([^•|]{0,90})$/i,
+    key: (m) => [/^\d+$/.test(m[2]) ? Number(m[2]) : ROMAN[m[2].toUpperCase()]], title: (m) => m[0].replace(/\s+/g, ' ').trim() },
+  // "一、引言" (common in Chinese documents)
+  { re: new RegExp(`^(${ZHN.split('|')[0]})\\s*[、．]\\s*([\\u3400-\\u9fff][^•|]{1,40})$`),
+    key: (m) => [zhNum(m[1])], title: (m) => m[0].replace(/\s+/g, ' ').trim() },
+];
+
+function fromHeadings(pages) {
+  let best = null;
+  for (const kind of HEADING_KINDS) {
+    const units = headingsOfKind(pages, kind);
+    if (units && units.length <= 80 && (!best || units.length > best.length)) best = units;
+  }
+  return best;
+}
+
+function headingsOfKind(pages, kind) {
+  // The same heading also appears in contents pages and summaries.
+  // The real heading is the copy followed by the most text before the next heading.
   const occ = [];
   let offset = 0;
   pages.forEach((lines, p) => lines.forEach((line, l) => {
-    const m = line.match(re);
-    const t = m && (m[2] || m[3]);
-    if (m && !/\d\s*$/.test(t) && !/[.…·]{3,}/.test(t)) occ.push({ num: m[1], p, l, offset, title: `${m[1]} ${t.trim()}` });
+    const m = line.length <= 110 && line.match(kind.re);
+    if (m) {
+      const k = kind.key(m), t = kind.title(m);
+      if (k.every((x) => Number.isFinite(x)) && !/\d\s*$/.test(t.replace(/^\S+\s*/, '')) && !/[.…·]{3,}/.test(t)) occ.push({ num: k.join('.'), k, p, l, offset, title: t });
+    }
     offset += line.length + 1;
   }));
   if (occ.length < 2) return null;
   occ.forEach((o, i) => { o.gap = (i + 1 < occ.length ? occ[i + 1].offset : offset) - o.offset; });
-  const best = new Map();
-  for (const o of occ) if (!best.has(o.num) || o.gap > best.get(o.num).gap) best.set(o.num, o);
+  const top = new Map();
+  for (const o of occ) if (!top.has(o.num) || o.gap > top.get(o.num).gap) top.set(o.num, o);
   const minGap = isChinese(pages.slice(0, 30).flat().join('')) ? MIN_UNIT_ZH : MIN_UNIT;
-  const cand = [...best.values()].filter((o) => o.gap >= minGap).sort((a, b) => a.offset - b.offset);
+  const cand = [...top.values()].filter((o) => o.gap >= minGap).sort((a, b) => a.offset - b.offset);
   // keep the heaviest run of headings whose numbers go up through the book
-  const cmp = (a, b) => { const [a1, a2] = a.split('.').map(Number), [b1, b2] = b.split('.').map(Number); return a1 - b1 || a2 - b2; };
+  const cmp = (a, b) => { for (let i = 0; i < Math.max(a.length, b.length); i++) { const d = (a[i] || 0) - (b[i] || 0); if (d) return d; } return 0; };
   const score = cand.map((o) => o.gap), prev = cand.map(() => -1);
   for (let i = 0; i < cand.length; i++) for (let j = 0; j < i; j++) {
-    if (cmp(cand[j].num, cand[i].num) < 0 && score[j] + cand[i].gap > score[i]) { score[i] = score[j] + cand[i].gap; prev[i] = j; }
+    if (cmp(cand[j].k, cand[i].k) < 0 && score[j] + cand[i].gap > score[i]) { score[i] = score[j] + cand[i].gap; prev[i] = j; }
   }
   let k = score.indexOf(Math.max(...score));
   const heads = [];
   while (k >= 0) { heads.unshift(cand[k]); k = prev[k]; }
   if (heads.length < 2) return null;
-  return heads.map((h, i) => {
+  const units = heads.map((h, i) => {
     const nx = heads[i + 1];
     const lines = [];
     const endP = nx ? nx.p : pages.length - 1;
@@ -163,6 +200,7 @@ function fromHeadings(pages) {
     }
     return { title: h.title, chapter: null, startPage: h.p + 1, endPage: endP + 1, text: joinLines(lines) };
   });
+  return units;
 }
 
 /* ---------- 3. fixed page chunks ---------- */
@@ -171,7 +209,7 @@ function byPages(pages, size) {
   const units = [];
   for (let s = 0; s < pages.length; s += size) {
     const e = Math.min(pages.length - 1, s + size - 1);
-    units.push({ title: `Pages ${s + 1}–${e + 1}`, chapter: null, startPage: s + 1, endPage: e + 1, text: slicePages(pages, s, e) });
+    units.push({ title: `Part ${units.length + 1}`, chapter: null, startPage: s + 1, endPage: e + 1, text: slicePages(pages, s, e) });
   }
   return units;
 }
