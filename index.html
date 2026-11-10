@@ -131,6 +131,30 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .stepper button{width:44px;height:40px;border:none;border-radius:10px;background:#fff;font-size:22px;font-weight:600;color:var(--ink);cursor:pointer}
 .stepper button:disabled{opacity:.4;cursor:default}
 .stepper output{min-width:44px;text-align:center;font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700}
+.chips-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.choice{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;font-family:inherit;color:var(--ink);min-height:44px}
+.choice b{font-size:14px}.choice span{font-size:12px;color:var(--muted);line-height:1.35}
+.choice.on{border:2px solid var(--accent);background:var(--accent-soft)}
+.chip.sec{background:#14181F;color:#fff}
+.paper{background:#fff;color:#111;font-family:Georgia,'Times New Roman','Noto Serif CJK TC',serif;padding:28px 24px;line-height:1.5;font-size:15px}
+.paper h1{font-size:22px;margin:0 0 6px}.paper h2{font-size:17px;border-bottom:2px solid #111;padding-bottom:4px;margin:28px 0 6px}
+.pmeta{margin:0 0 18px;color:#444;font-size:13px}.pnote{margin:0 0 10px;color:#444;font-size:13px;font-style:italic}
+.pfields{display:flex;gap:18px;font-size:14px;margin-bottom:8px}.pfields span{flex:1;border-bottom:1px solid #888;padding-bottom:2px}
+.pq{margin:16px 0 20px;page-break-inside:avoid;break-inside:avoid}.pqh{display:flex;justify-content:space-between}
+.pm{font-size:12px;color:#555;white-space:nowrap;margin-left:12px;font-family:Arial,sans-serif}
+.pstem{margin:4px 0;white-space:pre-line}.popts{margin:6px 0 0 4px;padding-left:22px}.popts li{margin:3px 0}
+.ppart{display:flex;justify-content:space-between;margin:8px 0 2px 14px}
+.paper .lines{margin-left:14px}.paper .lines div{border-bottom:1px dotted #999;height:26px}
+.pkey{margin-top:30px}.pk{margin:10px 0;font-size:14px;page-break-inside:avoid;break-inside:avoid}.pk ul{margin:2px 0 4px 18px;padding-left:16px}
+.pexp{color:#333}.psrc{color:#777;font-size:12px}.pfoot{margin-top:24px;font-size:11px;color:#777}
+@media print{
+  html,body{background:#fff}
+  .noprint{display:none!important}
+  .app{max-width:none}
+  .paper{padding:0}
+  .pkey{page-break-before:always;break-before:page}
+  @page{margin:16mm}
+}
 </style>
 </head>
 <body>

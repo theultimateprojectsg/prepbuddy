@@ -147,6 +147,7 @@ async function go(v) {
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
   if (v.name === 'progress') return renderProgress();
+  if (v.name === 'paper') return renderPaper(v.bookId);
 }
 
 /* ---------- home ---------- */
@@ -389,6 +390,7 @@ async function renderBook(bookId) {
       </div>
     </div>
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter above'}</button>
+    <button class="link" id="paper" style="align-self:center;padding:2px 0">Or make a DSE-style mock paper / worksheet</button>
   </div>`;
   const keep = async () => { const y = window.scrollY; await renderBook(bookId); window.scrollTo(0, y); };
   document.getElementById('back').onclick = () => { pick = { bookId: null, ids: new Set() }; go({ name: 'home' }); };
@@ -401,6 +403,7 @@ async function renderBook(bookId) {
   document.getElementById('plus').onclick = () => step((local.count || SESSION_SIZE) >= 20 ? 10 : 5);
   document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || SESSION_SIZE); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
+  document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
   window.scrollTo(0, 0);
 }
 
@@ -534,7 +537,160 @@ async function confirmRemove(book) {
   window.scrollTo(0, 0);
 }
 
+/* ---------- papers: DSE-style mock and printable worksheets ----------
+   A paper = Section A (multiple choice) + Section B (written). It is fully prepared before it starts or prints:
+   unused questions first, new ones made for what's missing, and only then questions used before. */
+const PAPER_PRESETS = [['short', 'Short', 10, 2], ['half', 'Half paper', 18, 4], ['full', 'Full paper', 36, 8]];
+const paperMinutes = (a, b) => Math.max(5, Math.round((a * 1.5 + b * 7) / 5) * 5);
+const isMcqLike = (q) => q.type === 'mcq' || q.type === 'graph';
+let paperSet = { a: 10, b: 2 };
+let paperJob = null;
+
+function paperUnits(book) {
+  return pick.bookId === book.id && pick.ids.size ? book.units.filter((u) => pick.ids.has(u.id)) : book.units;
+}
+
+async function renderPaper(bookId) {
+  const book = (await getBooks()).find((b) => b.id === bookId);
+  if (!book) return go({ name: 'home' });
+  const units = paperUnits(book);
+  const { a, b } = paperSet;
+  const mins = paperMinutes(a, b);
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
+  <main class="stack g18" style="flex:1;padding:4px 20px 24px">
+    <p style="margin:0;line-height:1.5;color:#374151">A DSE-style paper: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here and get it marked, or print it with an answer key.</p>
+    <div class="card stack g6" style="padding:14px 16px">
+      <span class="muted" style="font-size:13px">Chapters</span>
+      <b style="font-weight:600;line-height:1.4">${units.length === book.units.length ? `All ${book.units.length} chapters` : esc(units.map((u) => u.title).join(' · '))}</b>
+      <button class="link" id="change" style="align-self:flex-start;padding:4px 0 0">Change chapters</button>
+    </div>
+    <div class="stack g10">
+      <span style="font-size:15px;font-weight:600">Length</span>
+      <div class="chips-row">${PAPER_PRESETS.map(([k, l, pa, pb]) => `<button class="choice ${pa === a && pb === b ? 'on' : ''}" data-preset="${k}"><b>${l}</b><span>${pa} MCQ · ${pb} written · ${paperMinutes(pa, pb)} min</span></button>`).join('')}</div>
+    </div>
+    <div class="card stack g14" style="padding:14px 16px">
+      <div class="setup-row"><span>Section A · MCQ</span><div class="stepper"><button data-step="a:-2" aria-label="Fewer MCQs" ${a <= 0 ? 'disabled' : ''}>−</button><output>${a}</output><button data-step="a:2" aria-label="More MCQs" ${a >= 40 ? 'disabled' : ''}>+</button></div></div>
+      <div class="setup-row"><span>Section B · Written</span><div class="stepper"><button data-step="b:-1" aria-label="Fewer written questions" ${b <= 0 ? 'disabled' : ''}>−</button><output>${b}</output><button data-step="b:1" aria-label="More written questions" ${b >= 10 ? 'disabled' : ''}>+</button></div></div>
+      <span class="muted" style="font-size:14px">Time allowed: <b style="color:#14181F">${mins} min</b></span>
+    </div>
+  </main>
+  <div class="sheet sticky">
+    <button class="btn" id="sit" ${a + b ? '' : 'disabled'}>Start mock paper · ${mins} min</button>
+    <button class="btn ghost" id="print" ${a + b ? '' : 'disabled'}>Print worksheet with answer key</button>
+  </div>`;
+  document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+  document.getElementById('change').onclick = () => go({ name: 'book', bookId });
+  $app.querySelectorAll('[data-preset]').forEach((el) => (el.onclick = () => { const p = PAPER_PRESETS.find((x) => x[0] === el.dataset.preset); paperSet = { a: p[2], b: p[3] }; renderPaper(bookId); }));
+  $app.querySelectorAll('[data-step]').forEach((el) => (el.onclick = () => {
+    const [k, d] = el.dataset.step.split(':'); const max = k === 'a' ? 40 : 10;
+    paperSet = { ...paperSet, [k]: Math.min(max, Math.max(0, paperSet[k] + Number(d))) }; renderPaper(bookId);
+  }));
+  const go2 = async (purpose) => {
+    try {
+      const paper = await preparePaper(book, units, a, b, purpose);
+      if (!paper) return;
+      if (purpose === 'print') renderPrint(book, units, paper, mins); else startDse(book, paper, mins);
+    } catch (e) {
+      if (e.status === 401) return renderAccess(() => renderPaper(bookId), 'That access code didn’t work.');
+      toast(e.status === 0 ? 'You seem to be offline.' : (e.message || 'Could not prepare the paper.'));
+      renderPaper(bookId);
+    }
+  };
+  document.getElementById('sit').onclick = () => go2('sit');
+  document.getElementById('print').onclick = () => go2('print');
+}
+
+async function preparePaper(book, units, nA, nB, purpose) {
+  const token = {}; paperJob = token;
+  const total = nA + nB;
+  $app.innerHTML = `<div class="topbar"><button class="icon-btn" id="cancel" aria-label="Cancel">${ICON.close}</button></div>
+  <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
+    <div class="spinner" aria-hidden="true"></div>
+    <h1 class="display" style="margin:0;font-size:22px">Preparing your paper</h1>
+    <div class="progress" style="width:100%;max-width:300px"><i id="pp" style="width:0%"></i></div>
+    <p class="muted" id="pt" style="margin:0;line-height:1.5;max-width:320px">Checking which questions are ready…</p>
+  </main>`;
+  document.getElementById('cancel').onclick = () => { paperJob = null; go({ name: 'paper', bookId: book.id }); };
+  const show = (have) => {
+    const el = document.getElementById('pp'), t = document.getElementById('pt');
+    if (el) el.style.width = `${Math.round(100 * Math.min(have, total) / total)}%`;
+    if (t) t.textContent = `${Math.min(have, total)} of ${total} questions ready. New ones are written from your textbook and checked first, so a long paper can take a few minutes the first time.`;
+  };
+  const printed = new Set(local.printed || []);
+  const fresh = (q) => (purpose === 'print' ? !printed.has(q.id) : !local.stats[q.id]);
+  const pool = async () => { const all = []; for (const u of units) all.push(...await getQs(book.id, u.id)); return all; };
+  const take = (all, mcq, n) => shuffle(all.filter((q) => isMcqLike(q) === mcq && fresh(q))).slice(0, n);
+  let all = await pool();
+  let A = take(all, true, nA), B = take(all, false, nB);
+  show(A.length + B.length);
+  for (let round = 0; round < 4 && (A.length < nA || B.length < nB); round++) {
+    if (paperJob !== token) return null;
+    const jobs = [];
+    const needA = nA - A.length, needB = nB - B.length;
+    if (needA > 0) units.forEach((u) => jobs.push(ensureFill(book, u, Math.ceil(needA / units.length), 'mcq')));
+    if (needB > 0) units.forEach((u) => jobs.push(ensureFill(book, u, Math.ceil(needB / units.length), 'written')));
+    let made = 0; const base = A.length + B.length;
+    jobs.forEach((j) => j.listeners.add((passed) => { made += passed.length; if (paperJob === token) show(base + made); }));
+    await Promise.all(jobs.map((j) => j.promise));
+    const hard = jobs.map((j) => j.error).find((e) => e && (e.status === 0 || e.status === 401));
+    if (hard) throw hard;
+    all = await pool(); A = take(all, true, nA); B = take(all, false, nB);
+    show(A.length + B.length);
+    if (!jobs.some((j) => j.made)) break;
+  }
+  if (paperJob !== token) return null;
+  // Still short (chapter ran out of new material): reuse questions used before.
+  if (A.length < nA) A.push(...shuffle(all.filter((q) => isMcqLike(q) && !A.includes(q))).slice(0, nA - A.length));
+  if (B.length < nB) B.push(...shuffle(all.filter((q) => !isMcqLike(q) && !B.includes(q))).slice(0, nB - B.length));
+  if (!A.length && !B.length) throw new Error('No questions could be made for these chapters.');
+  if (A.length + B.length < total) toast(`Only ${A.length + B.length} questions could be prepared for these chapters.`);
+  return { A: shuffle(A).map(shuffleOptions), B: shuffle(B) };
+}
+
+function startDse(book, paper, mins) {
+  const qs = [...paper.A, ...paper.B];
+  S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs, target: qs.length, sectionA: paper.A.length, deadline: Date.now() + mins * 60 * 1000 });
+  renderQuestion();
+  toast(paper.A.length ? `Section A: ${paper.A.length} multiple-choice questions` : 'Section B: written questions');
+}
+
+function renderPrint(book, units, paper, mins) {
+  const qs = [...paper.A, ...paper.B];
+  local.printed = [...new Set([...(local.printed || []), ...qs.map((q) => q.id)])].slice(-3000); saveLocal();
+  const total = qs.reduce((s, q) => s + marksOf(q), 0);
+  const chapterText = units.length === book.units.length ? 'All chapters' : units.map((u) => u.title).join(' · ');
+  const lines = (n) => `<div class="lines">${'<div></div>'.repeat(n)}</div>`;
+  const mcq = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">1 mark</span></div>${q.type === 'graph' ? graphStem(q) : renderStem(q.stem, 'pstem')}
+    ${q.type === 'graph' ? graphOptions(q, true) : `<ol type="A" class="popts">${(q.options || []).map((o) => `<li>${esc(o)}</li>`).join('')}</ol>`}</div>`;
+  const written = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">${marksOf(q)} marks</span></div>${q.stem ? renderStem(q.stem, 'pstem') : ''}
+    ${q.parts.map((p) => `<div class="ppart"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="pm">(${p.marks})</span></div>${lines(Math.max(2, p.marks + 1))}`).join('')}</div>`;
+  const key = qs.map((q, i) => `<div class="pk"><b>${i + 1}.</b> ${isMcqLike(q) ? `<b>${esc(q.correct_option)}</b>` : ''}
+    ${isMcqLike(q) ? '' : q.parts.map((p) => `<div><b>${esc(p.label || '')}</b> (${p.marks} mark${p.marks > 1 ? 's' : ''})<ul>${p.mark_scheme.map((pt) => `<li>${esc(pt)}</li>`).join('')}</ul></div>`).join('')}
+    <div class="pexp">${esc(q.explanation)}${q.pages ? ` <span class="psrc">(${esc(q.section)}, pp. ${esc(q.pages)})</span>` : ''}</div></div>`).join('');
+  $app.innerHTML = `
+  <div class="noprint topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px">Worksheet ready</span></div>
+  <div class="noprint stack g8" style="padding:0 20px 16px">
+    <button class="btn" id="doprint">Print or save as PDF</button>
+    <span class="hint">On a phone: tap the button, then choose <b>Save as PDF</b> or share the PDF. The answer key starts on a new page.</span>
+  </div>
+  <article class="paper">
+    <h1>${esc(book.title)}</h1>
+    <p class="pmeta">${esc(chapterText)}<br>${paper.A.length ? `Section A: ${paper.A.length} multiple choice · ` : ''}${paper.B.length ? `Section B: ${paper.B.length} written · ` : ''}Time: ${mins} min · Total: ${total} marks</p>
+    <div class="pfields"><span>Name:</span><span>Class:</span><span>Score: &nbsp;&nbsp;&nbsp;&nbsp; / ${total}</span></div>
+    ${paper.A.length ? `<h2>Section A · Multiple choice</h2><p class="pnote">Choose the best answer for each question.</p>${paper.A.map((q, i) => mcq(q, i + 1)).join('')}` : ''}
+    ${paper.B.length ? `<h2>Section B · Written</h2><p class="pnote">Answer all questions in the spaces provided.</p>${paper.B.map((q, i) => written(q, paper.A.length + i + 1)).join('')}` : ''}
+    <section class="pkey"><h1>Answer key</h1>${key}</section>
+    <p class="pfoot">Made with PrepBuddy from ${esc(book.title)}.${book.credit ? ' ' + esc(book.credit) : ''} Questions are written and checked by AI.</p>
+  </article>`;
+  document.getElementById('back').onclick = () => go({ name: 'book', bookId: book.id });
+  document.getElementById('doprint').onclick = () => window.print();
+  window.scrollTo(0, 0);
+}
+
 /* ---------- sessions ---------- */
+const isExam = () => !!S && (S.mode === 'mock' || S.mode === 'dse');
+
 function newSession(props) {
   return Object.assign({ i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
 }
@@ -827,6 +983,10 @@ function pumpDrills(sess) {
     });
 }
 
+/* graph questions: drawn in the graph-question feature */
+function graphStem(q) { return renderStem(q.stem, 'pstem'); }
+function graphOptions(q) { return ''; }
+
 /* ---------- question screens ---------- */
 function header() {
   const n = S.target, pct = Math.round(100 * S.i / Math.max(1, n));
@@ -843,7 +1003,7 @@ function renderQuestion() {
   const body = q.type === 'mcq' ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18" style="flex:1;padding:8px 20px 20px">
-    <div class="chips"><span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}</div>
+    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}</div>
     ${body.main}
   </main>
   ${body.footer}`;
@@ -860,7 +1020,7 @@ function feedbackBits(q) {
 }
 function nextLabel() {
   if (S.i < S.target - 1) return 'Next question';
-  return S.mode === 'mock' && !S.review ? 'Finish and review' : 'See results';
+  return isExam() && !S.review ? 'Finish and review' : 'See results';
 }
 
 function mcqBody(q, revealed) {
@@ -875,11 +1035,11 @@ function mcqBody(q, revealed) {
   const main = `${renderStem(q.stem, 'q')}<div class="stack g10">${opts}</div>`;
   let footer = '';
   if (revealed) footer = `<div class="sheet"><span class="verdict ${right ? 'ok' : 'no'}">${right ? 'Correct' : picked ? `Not quite. The answer is ${q.correct_option}.` : `No answer. The answer is ${q.correct_option}.`}</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
-  else if (S.mode === 'mock') footer = `<div class="pad" style="padding-top:0"><button class="btn" id="next" ${picked ? '' : 'disabled'}>${nextLabel()}</button></div>`;
+  else if (isExam()) footer = `<div class="pad" style="padding-top:0"><button class="btn" id="next" ${picked ? '' : 'disabled'}>${nextLabel()}</button></div>`;
   return { main, footer, bind() {
     $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => {
       S.answers[S.i] = b.dataset.opt;
-      if (S.mode !== 'mock') { S.phase = 'revealed'; S.got[S.i] = b.dataset.opt === q.correct_option ? 1 : 0; record(q, S.got[S.i]); }
+      if (!isExam()) { S.phase = 'revealed'; S.got[S.i] = b.dataset.opt === q.correct_option ? 1 : 0; record(q, S.got[S.i]); }
       renderQuestion();
     }));
   } };
@@ -923,13 +1083,13 @@ function writtenBody(q, revealed) {
       <label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
       <textarea id="a${k}" placeholder="Type, or tap the microphone on your keyboard to speak">${esc(ans[k])}</textarea></div>`).join('');
     const main = `${stem}${parts}<p class="hint">Aim for one clear point per mark.</p>`;
-    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${S.mode === 'mock' ? nextLabel() : 'Mark my answer'}</button>${S.mode === 'mock' ? '' : '<button class="link quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
+    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="link quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
     return { main, footer, bind() {
       const grab = () => { S.answers[S.i] = [...$app.querySelectorAll('textarea')].map((t) => t.value); };
       $app.querySelectorAll('textarea').forEach((t) => (t.oninput = grab));
       document.getElementById('check').onclick = () => {
         grab();
-        if (S.mode === 'mock') return advance();
+        if (isExam()) return advance();
         S.phase = 'revealed'; markAnswer(S, S.i); renderQuestion();
       };
       const sk = document.getElementById('skip');
@@ -983,7 +1143,7 @@ function record(q, got) {
 
 let quitArmed = 0;
 function endEarly() {
-  if (S.mode === 'mock' && !S.review) return S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' });
+  if (isExam() && !S.review) return S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' });
   const q = S.qs[S.i];
   if (q && S.phase === 'revealed' && q.type !== 'mcq' && (S.got[S.i] === undefined || S.got[S.i] === null) && !(S.marks[S.i] || {}).pending) {
     S.got[S.i] = partsGot(q); record(q, S.got[S.i]);
@@ -1018,13 +1178,14 @@ function bindCommon(q) {
 function advance() {
   if (S.i < S.target - 1) {
     S.i++; S.phase = S.review ? 'revealed' : 'answer';
+    if (S.mode === 'dse' && !S.review && S.i === S.sectionA && S.sectionA) toast('Section B: written questions');
     topUp(S);
     if (S.i < S.qs.length) return renderQuestion();
     if (!S.generating && !S.error && S.units) refill(S);
     return renderWaiting();
   }
-  if (S.mode === 'mock' && !S.review) {
-    S.qs.forEach((q, k) => { if (q.type === 'mcq') { S.got[k] = S.answers[k] === q.correct_option ? 1 : 0; record(q, S.got[k]); } });
+  if (isExam() && !S.review) {
+    S.qs.forEach((q, k) => { if (isMcqLike(q)) { S.got[k] = S.answers[k] === q.correct_option ? 1 : 0; record(q, S.got[k]); } });
     S.review = true; S.i = 0; S.phase = 'revealed'; stopTimer();
     toast('Time to review. Tick the points you made in written answers.');
     return renderQuestion();
@@ -1048,6 +1209,11 @@ function renderSummary() {
   const unitRef = S.units ? { book: S.book, units: S.units } : null;
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
     <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? '#0F766E' : '#9A3412'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
+    ${S.mode === 'dse' ? (() => {
+      const sec = (from, to) => { const xs = qs.slice(from, to); return [xs.reduce((a, q, k) => a + (S.got[from + k] || 0), 0), xs.reduce((a, q) => a + marksOf(q), 0)]; };
+      const [ga, ta] = sec(0, S.sectionA), [gb, tb] = sec(S.sectionA, qs.length);
+      return `<div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">${ta ? `<div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${ga} / ${ta}</b><span>Section A · MCQ</span></div>` : ''}${tb ? `<div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${gb} / ${tb}</b><span>Section B · written</span></div>` : ''}</div>`;
+    })() : ''}
     <div class="card stack">${list}</div>
     ${S.mode === 'spaced' ? `<p class="hint" style="margin:0;line-height:1.5">Questions you got right come back later and later. The ones you missed come back tomorrow.</p>` : ''}
     <div class="stack g10">
