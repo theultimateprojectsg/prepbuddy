@@ -20,6 +20,13 @@ const EXACT = {
   'Weak topics': '弱項',
   'Questions you found hard': '你覺得難的題目',
   'Mini mock': '小型模擬測驗',
+  'Mock paper': '模擬試卷',
+  'DSE-style, timed': 'DSE 模式，限時作答',
+  'Which textbook?': '哪一本課本？',
+  'Practise the questions you found hard.': '練習你覺得難的題目。',
+  'You choose the chapters and length next.': '下一步選擇章節和長度。',
+  'All my textbooks': '我的所有課本',
+  'No weak spots yet': '暫時沒有弱項',
   '12 questions, 20 min': '12 題，20 分鐘',
   'My progress': '我的進度',
   'This week, and a report to send your parents': '今個星期的表現，以及可傳給家長的報告',
@@ -256,6 +263,8 @@ const PATTERNS = [
   [/^Added (\d+) chapters$/, '已加入 $1 個章節'],
   [/^Page (\d+) of (\d+)$/, '第 $1 / $2 頁'],
   [/^Found (\d+) chapters\. Saving…$/, '找到 $1 個章節，正在儲存…'],
+  [/^(\d+) questions to work on$/, '$1 題需要加強'],
+  [/^Weak topics · (.+)$/, '弱項 · $1'],
   [/^(\d+) chapters$/, '$1 個章節'],
 ];
 
@@ -290,7 +299,7 @@ export function tr(text) {
 
 const ATTRS = ['placeholder', 'aria-label', 'title'];
 // Book content and questions: never translate.
-const RAW = '[data-raw], .stem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
+const RAW = '[data-raw], .stem, p.q, .pstem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
 const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(RAW)); };
 export function translateTree(root) {
   if (LANG !== 'zh' || !root) return;

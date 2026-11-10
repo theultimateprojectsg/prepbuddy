@@ -156,7 +156,8 @@ async function go(v) {
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
   if (v.name === 'progress') return renderProgress();
-  if (v.name === 'paper') return renderPaper(v.bookId);
+  if (v.name === 'paper') return renderPaper(v.bookId, v.from);
+  if (v.name === 'pick') return renderPick(v.mode);
 }
 
 /* ---------- home ---------- */
@@ -200,7 +201,7 @@ async function renderHome() {
         : `<div class="review-card done"><span class="stack g6"><b>Spaced review</b><span>${nextAt < Infinity ? `All caught up. Next review ${whenText(nextAt)}.` : 'Questions you answer come back here to help you remember them.'}</span></span></div>`}
       <div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">
         <button class="tile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
-        <button class="tile" data-mode="mock">${ICON.clock}<b>Mini mock</b><span>12 questions, 20 min</span></button>
+        <button class="tile" data-mode="mock">${ICON.clock}<b>Mock paper</b><span>DSE-style, timed</span></button>
       </div>
       <button class="row card" id="progress" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">My progress</b><br><span class="muted" style="font-size:13px">This week, and a report to send your parents</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>
     </section>` : ''}
@@ -210,7 +211,7 @@ async function renderHome() {
   document.getElementById('lang').onclick = () => { setLang(LANG === 'zh' ? 'en' : 'zh'); go({ name: 'home' }); };
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
-  $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => startReview(b.dataset.mode)));
+  $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
   const q = document.getElementById('q');
   q.onfocus = () => go({ name: 'library', query: q.value });
@@ -561,7 +562,7 @@ function paperUnits(book) {
   return pick.bookId === book.id && pick.ids.size ? book.units.filter((u) => pick.ids.has(u.id)) : book.units;
 }
 
-async function renderPaper(bookId) {
+async function renderPaper(bookId, from) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   if (!book) return go({ name: 'home' });
   const units = paperUnits(book);
@@ -590,7 +591,7 @@ async function renderPaper(bookId) {
     <button class="btn" id="sit" ${a + b ? '' : 'disabled'}>Start mock paper · ${mins} min</button>
     <button class="btn ghost" id="print" ${a + b ? '' : 'disabled'}>Print worksheet with answer key</button>
   </div>`;
-  document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+  document.getElementById('back').onclick = () => go(from === 'pick' ? { name: 'pick', mode: 'mock' } : from === 'home' ? { name: 'home' } : { name: 'book', bookId });
   document.getElementById('change').onclick = () => go({ name: 'book', bookId });
   $app.querySelectorAll('[data-preset]').forEach((el) => (el.onclick = () => { const p = PAPER_PRESETS.find((x) => x[0] === el.dataset.preset); paperSet = { a: p[2], b: p[3] }; renderPaper(bookId); }));
   $app.querySelectorAll('[data-step]').forEach((el) => (el.onclick = () => {
@@ -744,8 +745,37 @@ function topUp(sess) {
   }
 }
 
-async function startReview(mode) {
+/* ---------- choose a textbook for weak topics / mock paper ---------- */
+const isWeak = (q) => { const st = local.stats[q.id]; return !!st && st.last < 1; };
+async function renderPick(mode) {
+  const books = await getBooks();
+  if (!books.length) return go({ name: 'home' });
   const items = await allQuestions();
+  const weakIn = (id) => items.filter((x) => (!id || x.book.id === id) && isWeak(x.q)).length;
+  if (books.length === 1) {   // only one textbook: nothing to choose
+    if (mode === 'mock') return go({ name: 'paper', bookId: books[0].id, from: 'home' });
+    return startReview('weak', books[0].id);
+  }
+  const row = (id, title, sub) => `<button class="row" data-pick="${esc(id)}"><div class="top"><span><b style="font-weight:600" ${id ? 'data-raw' : ''}>${esc(title)}</b><br><span class="muted" style="font-size:13px">${sub}</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>`;
+  const rows = books.map((b) => row(b.id, b.title, mode === 'weak'
+    ? (weakIn(b.id) ? `${weakIn(b.id)} questions to work on` : 'No weak spots yet')
+    : `${b.units.length} chapters`));
+  if (mode === 'weak') rows.unshift(row('', 'All my textbooks', `${weakIn('')} questions to work on`));
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">${mode === 'weak' ? 'Weak topics' : 'Mock paper'}</span></div>
+  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+    <h2 style="margin:0;font-size:17px">Which textbook?</h2>
+    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">${mode === 'weak' ? 'Practise the questions you found hard.' : 'You choose the chapters and length next.'}</p>
+    <div class="card stack">${rows.join('')}</div>
+  </main>`;
+  document.getElementById('back').onclick = () => go({ name: 'home' });
+  $app.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = () => (mode === 'mock'
+    ? go({ name: 'paper', bookId: b.dataset.pick, from: 'pick' })
+    : startReview('weak', b.dataset.pick || null))));
+}
+
+async function startReview(mode, bookId = null) {
+  const items = (await allQuestions()).filter((x) => !bookId || x.book.id === bookId);
   if (items.length < 4) return toast('Practise a chapter first, then come back here.');
   let pick;
   if (mode === 'spaced') {
@@ -757,8 +787,9 @@ async function startReview(mode) {
   if (mode === 'weak') {
     const tried = items.filter((x) => local.stats[x.q.id]);
     if (tried.length < 3) return toast('Answer a few questions first, so PrepBuddy knows your weak spots.');
-    pick = shuffle(tried).sort((a, b) => local.stats[a.q.id].last - local.stats[b.q.id].last).slice(0, SESSION_SIZE).map((x) => x.q);
-    S = newSession({ mode: 'weak', title: 'Weak topics', qs: pick, target: pick.length });
+    pick = shuffle(tried).sort((a, b) => local.stats[a.q.id].last - local.stats[b.q.id].last).slice(0, SESSION_SIZE).map((x) => shuffleOptions(x.q));
+    const book = bookId && items[0] && items[0].book;
+    S = newSession({ mode: 'weak', title: book ? `Weak topics · ${book.subject || book.title}` : 'Weak topics', qs: pick, target: pick.length });
   } else {
     pick = shuffle(items).slice(0, 12).map((x) => x.q).sort((a, b) => a.level - b.level);
     S = newSession({ mode: 'mock', title: 'Mini mock', qs: pick, target: pick.length, deadline: Date.now() + 20 * 60 * 1000 });
