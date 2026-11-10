@@ -1,5 +1,6 @@
 // PrepBuddy app: books, chapters, on-demand questions, practice sessions.
 import * as store from './store.js';
+import { buildReport, encodeReport, headline } from './report.js';
 
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
@@ -14,7 +15,7 @@ const LKEY = 'prepbuddy.v2';
 function loadLocal() {
   try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; }
 }
-const local = Object.assign({ stats: {}, reports: [], code: '', usage: {}, log: [] }, loadLocal());
+const local = Object.assign({ stats: {}, reports: [], code: '', usage: {}, log: [], name: '' }, loadLocal());
 function saveLocal() { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) {} }
 
 /* ---------- helpers ---------- */
@@ -137,6 +138,7 @@ async function go(v) {
   if (v.name === 'book') return renderBook(v.bookId);
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
+  if (v.name === 'progress') return renderProgress();
 }
 
 /* ---------- home ---------- */
@@ -181,10 +183,12 @@ async function renderHome() {
         <button class="tile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="tile" data-mode="mock">${ICON.clock}<b>Mini mock</b><span>12 questions, 20 min</span></button>
       </div>
+      <button class="row card" id="progress" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">My progress</b><br><span class="muted" style="font-size:13px">This week, and a report to send your parents</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>
     </section>` : ''}
   </main>
   <footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="link quiet" id="usage" style="font-size:11px;padding:0">AI usage</button></footer>`;
   document.getElementById('usage').onclick = () => go({ name: 'usage' });
+  const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => startReview(b.dataset.mode)));
   document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
@@ -384,6 +388,63 @@ async function renderBook(bookId) {
     toast('Textbook removed'); go({ name: 'home' });
   };
   window.scrollTo(0, 0);
+}
+
+/* ---------- my progress + report for parents ---------- */
+async function currentReport() {
+  const books = await getBooks();
+  const practised = new Set(local.log.filter((e) => e.t >= Date.now() - 7 * DAY).map((e) => e.q.split(':')[0]));
+  const names = books.filter((b) => practised.has(b.id)).map((b) => b.subject || b.title);
+  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)] });
+}
+
+async function renderProgress() {
+  const r = await currentReport();
+  const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString('en-GB', { weekday: 'narrow' }));
+  const mins = r.days.reduce((a, m) => a + m, 0);
+  const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`;
+  const trend = r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<span style="color:#0F766E;font-weight:600">↑ ${r.a - r.pa} from last week</span>` : `<span style="color:#9A3412;font-weight:600">↓ ${r.pa - r.a} from last week</span>`) : '<span>correct</span>';
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">My progress</span></div>
+  <main class="stack g18" style="flex:1;padding:4px 20px 20px">
+    <div class="stack g6"><span class="muted" style="font-size:13px">Last 7 days</span><span class="display" style="font-size:26px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span></div>
+    <div class="week">${r.days.map((m, i) => `<div><span class="${m ? 'on' : ''} ${i === 6 ? 'today' : ''}" title="${m} min"></span><small>${dayNames[i]}</small></div>`).join('')}</div>
+    <div class="tiles">
+      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.q}</b><span>questions</span></div>
+      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${hm}</b><span>practising</span></div>
+      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.a === null ? '–' : r.a + '%'}</b>${trend}</div>
+    </div>
+    <div class="card stack g10" style="padding:14px 16px">
+      <b style="font-size:15px">Your report for parents</b>
+      <span style="font-size:14px;line-height:1.5;color:#374151">A one-page summary of this week: practice, scores by chapter, what is improving and what needs work.</span>
+      <label for="name" style="font-size:13px;font-weight:600;color:#4B5563">Your name on the report</label>
+      <input id="name" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name)}">
+      <a id="preview" href="#" style="font-size:14px;font-weight:600;color:#0F766E">Preview the report</a>
+    </div>
+    <div id="fallback"></div>
+  </main>
+  <div class="sheet sticky">
+    <button class="btn" id="send" style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
+    <span class="hint" style="text-align:center">Opens WhatsApp or another app with a link. Your parent doesn't need to sign in.</span>
+  </div>`;
+  document.getElementById('back').onclick = () => go({ name: 'home' });
+  const nameEl = document.getElementById('name');
+  nameEl.oninput = () => { local.name = nameEl.value.trim().slice(0, 30); saveLocal(); };
+  const link = async () => { const rep = await currentReport(); return { rep, url: `${location.origin}${location.pathname.replace(/[^/]*$/, '')}report.html#d=${encodeReport(rep)}` }; };
+  document.getElementById('preview').onclick = async (e) => { e.preventDefault(); const { url } = await link(); window.open(url, '_blank', 'noopener'); };
+  document.getElementById('send').onclick = async () => {
+    const { rep, url } = await link();
+    const text = `${headline(rep)}. Here is ${rep.n ? rep.n + '\u2019s' : 'my'} PrepBuddy report for this week:`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'PrepBuddy weekly report', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    document.getElementById('fallback').innerHTML = `<div class="card stack g10" style="padding:14px 16px">
+      <b style="font-size:15px">Send the report</b>
+      <a class="btn" href="https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}" target="_blank" rel="noopener">Send on WhatsApp</a>
+      <button class="btn ghost" id="copy">Copy the link</button></div>`;
+    document.getElementById('copy').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch (e) { prompt('Copy this link:', url); } };
+    document.getElementById('fallback').scrollIntoView({ behavior: 'smooth' });
+  };
 }
 
 /* ---------- AI usage on this device ---------- */

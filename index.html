@@ -115,6 +115,10 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .review-card b{font-size:15px}.review-card span span{font-size:13px;color:var(--muted)}
 .review-card .pill{background:var(--accent);color:#fff;font-weight:600;font-size:14px;padding:10px 16px;border-radius:12px;white-space:nowrap}
 .review-card.done{border:1px solid var(--line);cursor:default}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.week div{display:flex;flex-direction:column;align-items:center;gap:6px}
+.week span{width:34px;height:34px;border-radius:17px;background:#E3E6EA}.week span.on{background:var(--accent)}.week span.today{box-shadow:0 0 0 3px var(--accent-tint)}
+.week small{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>

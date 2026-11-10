@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PrepBuddy weekly report</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0F766E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F5F6F8;color:#14181F;font-family:Inter,system-ui,-apple-system,sans-serif}
+.wrap{max-width:480px;margin:0 auto;min-height:100vh}
+.cta{margin:4px 20px 28px;padding:16px;border-radius:14px;background:#fff;border:1px solid #E3E6EA;font-size:14px;line-height:1.5;color:#374151}
+.cta a{color:#0F766E;font-weight:600}
+.err{padding:40px 20px;line-height:1.6}
+</style>
+<style id="rep-css"></style>
+</head>
+<body>
+<div class="wrap" id="report"><p class="err">Loading report…</p></div>
+<script type="module">
+import { decodeReport, reportHTML, REPORT_CSS, headline } from './js/report.js';
+document.getElementById('rep-css').textContent = REPORT_CSS;
+const el = document.getElementById('report');
+try {
+  const data = new URLSearchParams(location.hash.slice(1)).get('d');
+  if (!data) throw new Error('no data');
+  const r = decodeReport(data);
+  document.title = headline(r) + ' · PrepBuddy';
+  el.innerHTML = reportHTML(r) + '<div class="cta">PrepBuddy turns your child’s own textbook into exam practice with AI marking. <a href="./">Learn more</a></div>';
+} catch (e) {
+  el.innerHTML = '<p class="err">This report link looks incomplete. Ask for the report to be sent again from PrepBuddy.</p>';
+}
+</script>
+</body>
+</html>
