@@ -444,7 +444,6 @@ async function doFill(book, unit, job) {
     try { await api('warm', { title, text }); } catch (e) { if (e.status === 401 || e.status === 0) throw e; }
   }
   warmed.set(wk, Date.now());
-  let saving = Promise.resolve();
   let started = (await getQs(book.id, unit.id)).length;
   let empty = 0, stop = false;
   const worker = async (w) => {
@@ -467,8 +466,7 @@ async function doFill(book, unit, job) {
         q.section = title;
         q.pages = unit.startPage ? `${unit.startPage}-${unit.endPage}` : '';
       });
-      saving = saving.then(async () => { const list = await getQs(book.id, unit.id); list.push(...passed); await setQs(book.id, unit.id, list); });
-      await saving;
+      await addToBank(book.id, unit.id, passed);
       job.made += passed.length;
       const t = local.usage.made || 0; local.usage.made = t + passed.length; saveLocal();
       job.listeners.forEach((f) => f(passed, false));
@@ -480,6 +478,12 @@ async function doFill(book, unit, job) {
   if (failed) throw failed.reason;
   if (!job.made && empty) throw new Error('No questions could be made from this chapter. It may not have enough teaching content.');
   if (job.made) job.error = null;
+}
+
+let bankChain = Promise.resolve();
+function addToBank(bookId, unitId, qs) {
+  bankChain = bankChain.then(async () => { const list = await getQs(bookId, unitId); list.push(...qs); await setQs(bookId, unitId, list); });
+  return bankChain;
 }
 
 function followFill(sess, job) {
@@ -561,6 +565,67 @@ function renderAccess(onOk, msg) {
   document.getElementById('back').onclick = () => (S && S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' }));
 }
 
+/* ---------- weak-spot drills ---------- */
+function missedIdea(q, idx) {
+  if (q.type === 'mcq') {
+    const opt = (L) => (q.options || [])['ABCD'.indexOf(L)] || '';
+    return `Question: ${q.stem}\nCorrect answer: ${opt(q.correct_option)}\nThe student chose: ${opt(S.answers[idx]) || '(no answer)'}\nWhy: ${q.explanation}`;
+  }
+  const ticks = S.ticks[idx] || [];
+  const m = (S.marks || {})[idx] || {};
+  return q.parts.map((p, k) => {
+    const missed = p.mark_scheme.filter((_, j) => !(ticks[k] || [])[j]);
+    if (!missed.length) return '';
+    const fb = m.parts && m.parts[k] ? `\nMarker's feedback: ${m.parts[k].feedback}` : '';
+    return `Question part: ${p.prompt}\nPoints the student missed: ${missed.join('; ')}${fb}`;
+  }).filter(Boolean).join('\n\n') || `Question: ${q.stem}`;
+}
+
+function canDrill(q) { return S.mode !== 'mock' && !S.review && q.id && q.id.split(':').length >= 3; }
+
+async function drill(q) {
+  const sess = S, idx = S.i;
+  if (sess.drilling) return;
+  sess.drilling = idx; sess.drilled = sess.drilled || {};
+  const redraw = () => { if (sess === S && S.i === idx) { const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); } };
+  redraw();
+  try {
+    const [bookId, unitId] = q.id.split(':');
+    const text = await store.get(`text:${bookId}:${unitId}`, '');
+    if (!text) throw new Error('This chapter\u2019s text is missing on this device.');
+    const title = q.section;
+    const wk = `${bookId}:${unitId}`;
+    if (!warmed.has(wk) || Date.now() - warmed.get(wk) > 4 * 60 * 1000) { try { await api('warm', { title, text }); warmed.set(wk, Date.now()); } catch (e) {} }
+    const items = [{ level: 1, type: 'mcq' }, { level: 2, type: 'mcq' }, { level: Math.min(3, Math.max(2, q.level)), type: 'short' }];
+    const avoid = [(q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200)];
+    const gen = await api('generate', { title, text, items, avoid, target: missedIdea(q, idx) });
+    const checked = await Promise.all((gen.questions || []).map((x) =>
+      api('verify', { title, text, question: x }).then((v) => ({ x, v })).catch(() => ({ x, v: { passed: false } }))));
+    const passed = checked.filter((c) => c.v.passed).map((c) => c.x);
+    passed.forEach((x) => { x.id = `${bookId}:${unitId}:${uid()}`; x.section = title; x.pages = q.pages; x.drillOf = q.id; });
+    if (passed.length) {
+      await addToBank(bookId, unitId, passed);
+      local.usage.made = (local.usage.made || 0) + passed.length; saveLocal();
+      if (sess === S) { sess.qs.splice(idx + 1, 0, ...passed); sess.target += passed.length; sess.drilled[idx] = passed.length; }
+    } else {
+      toast('Couldn\u2019t make drill questions this time. Try again.');
+    }
+  } catch (e) {
+    toast(e.status === 0 ? 'You seem to be offline.' : (e.message || 'Something went wrong.'));
+  } finally {
+    sess.drilling = false;
+    redraw();
+  }
+}
+
+function drillButton(q, lost) {
+  if (!lost || !canDrill(q)) return '';
+  const done = S.drilled && S.drilled[S.i];
+  if (done) return `<p class="hint" style="margin:0;color:#0F766E;font-weight:600">${ICON.check} ${done} drill question${done > 1 ? 's' : ''} on this idea come next</p>`;
+  if (S.drilling === S.i) return '<button class="btn ghost" disabled><span class="spinner small" aria-hidden="true"></span> Making 3 questions on this idea…</button>';
+  return `<button class="btn ghost" id="drill">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"')} Drill this: 3 more like it</button>`;
+}
+
 /* ---------- question screens ---------- */
 function header() {
   const n = S.target, pct = Math.round(100 * S.i / Math.max(1, n));
@@ -608,7 +673,7 @@ function mcqBody(q, revealed) {
   const right = picked === q.correct_option;
   const main = `${renderStem(q.stem, 'q')}<div class="stack g10">${opts}</div>`;
   let footer = '';
-  if (revealed) footer = `<div class="sheet"><span class="verdict ${right ? 'ok' : 'no'}">${right ? 'Correct' : picked ? `Not quite. The answer is ${q.correct_option}.` : `No answer. The answer is ${q.correct_option}.`}</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
+  if (revealed) footer = `<div class="sheet"><span class="verdict ${right ? 'ok' : 'no'}">${right ? 'Correct' : picked ? `Not quite. The answer is ${q.correct_option}.` : `No answer. The answer is ${q.correct_option}.`}</span>${feedbackBits(q)}${drillButton(q, !right)}<button class="btn" id="next">${nextLabel()}</button></div>`;
   else if (S.mode === 'mock') footer = `<div class="pad" style="padding-top:0"><button class="btn" id="next" ${picked ? '' : 'disabled'}>${nextLabel()}</button></div>`;
   return { main, footer, bind() {
     $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => {
@@ -698,7 +763,7 @@ function writtenBody(q, revealed) {
   const note = m.error ? `<p class="hint" style="margin:0;color:#9A3412">${esc(m.error)} Tick the points you made instead.</p>`
     : ai ? '<p class="hint" style="margin:0">Marked by AI. Think it got one wrong? Tap a point to change it.</p>' : '';
   const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} marks</span>
-    ${m.tip ? `<p class="expl"><b>Tip:</b> ${esc(m.tip)}</p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
+    ${m.tip ? `<p class="expl"><b>Tip:</b> ${esc(m.tip)}</p>` : ''}${feedbackBits(q)}${drillButton(q, got < marksOf(q))}<button class="btn" id="next">${nextLabel()}</button></div>`;
   return { main: `${stem}${note}${partHtml}`, footer, bind() {
     $app.querySelectorAll('.point').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, j = +b.dataset.j; ticks[k][j] = !ticks[k][j]; const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }));
   } };
@@ -725,6 +790,8 @@ function bindCommon(q) {
     }
     advance();
   };
+  const dr = document.getElementById('drill');
+  if (dr) dr.onclick = () => drill(q);
   const r = document.getElementById('report');
   if (r) r.onclick = () => { if (!local.reports.includes(q.id)) { local.reports.push(q.id); saveLocal(); } toast('Thanks. This question is flagged for checking.'); };
 }

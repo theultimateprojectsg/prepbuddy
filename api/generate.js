@@ -24,8 +24,14 @@ module.exports = handler(async (body, usage) => {
   const focusText = f
     ? `\n\nSplit the section into ${Number(f.of)} roughly equal parts by position. Take these questions mainly from part ${Number(f.part)}, so that batches made in parallel cover different material.`
     : '';
+  const target = typeof body.target === 'string' && body.target.trim() ? body.target.slice(0, 1500) : '';
+  const targetText = target
+    ? `\n\nThis is a DRILL for a student who just lost marks. Every question must practise this exact idea, from different angles ` +
+      `(recall it, explain it, apply it), using only what the section says about it:\n<missed_idea>\n${target}\n</missed_idea>\n` +
+      'Do not repeat the original question or simply reword it.'
+    : '';
   const instruction =
-    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + focusText +
+    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + focusText + targetText +
     (avoid.length ? `\n\nQuestions already written for this section (test different ideas):\n- ${avoid.join('\n- ')}` : '');
 
   const out = await callTool({
