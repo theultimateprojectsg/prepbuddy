@@ -2496,7 +2496,8 @@ function renderSummary() {
   const list = qs.map((q, k) => {
     const g = S.got[k] || 0, m = marksOf(q), full = g === m;
     const label = choiceType(q) ? q.stem : ((q.parts[0] && q.parts[0].prompt) || q.stem);
-    return `<div class="res"><span class="tick ${full ? 'full' : 'part'}">${full ? ICON.check : g}</span><span style="flex:1" data-raw>${esc(String(label).slice(0, 90))}${String(label).length > 90 ? '…' : ''}</span><span class="muted" style="white-space:nowrap">${g}/${m}</span></div>`;
+    const st = full ? 'right' : g ? 'part' : 'miss';
+    return `<div class="rrow ${st}"><span class="rnum">Q${k + 1}</span><span class="rtext" data-raw>${esc(String(label).slice(0, 110))}${String(label).length > 110 ? '…' : ''}</span><span class="rmark">${g}/${m}</span></div>`;
   }).join('');
   const missed = qs.filter((q, k) => (S.got[k] || 0) < marksOf(q));
   const missedIdx = qs.map((q, k) => k).filter((k) => (S.got[k] || 0) < marksOf(qs[k]));
@@ -2510,22 +2511,47 @@ function renderSummary() {
     local.tests = [...(local.tests || []), { t: Date.now(), per }].slice(-300); saveLocal();
   }
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
-  $app.innerHTML = `<main class="pad stack g22" style="flex:1">
-    <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? 'var(--good)' : 'var(--miss-dark)'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
-    ${S.mode === 'dse' ? (() => {
-      const sec = (from, to) => { const xs = qs.slice(from, to); return [xs.reduce((a, q, k) => a + (S.got[from + k] || 0), 0), xs.reduce((a, q) => a + marksOf(q), 0)]; };
-      const [ga, ta] = sec(0, S.sectionA), [gb, tb] = sec(S.sectionA, qs.length);
-      return `<div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">${ta ? `<div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${ga} / ${ta}</b><span>Section A · MCQ</span></div>` : ''}${tb ? `<div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${gb} / ${tb}</b><span>Section B · written</span></div>` : ''}</div>`;
-    })() : ''}
-    <div class="card stack">${list}</div>
-    ${S.mode === 'spaced' ? `<p class="hint" style="margin:0;line-height:1.5">Questions you got right come back later and later. The ones you missed come back tomorrow.</p>` : ''}
-    <div class="stack g10">
+  const nRight = qs.filter((q, k) => (S.got[k] || 0) === marksOf(q)).length;
+  const nMiss = qs.filter((q, k) => !(S.got[k] || 0) && marksOf(q)).length;
+  const nPart = qs.length - nRight - nMiss;
+  const band = pct >= 85 ? 'good' : pct >= 50 ? 'mid' : '';
+  const head = pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go';
+  const sub = pct >= 85 ? 'You know this well. Reviews over the next few days will lock it in.'
+    : pct >= 70 ? 'A few slips to tidy up, then you’re there.'
+    : pct >= 50 ? 'Fix the ones you missed and you’ll be well on your way.'
+    : 'This set was tough. Drilling the ones you missed is the fastest way up.';
+  const sections = S.mode === 'dse' ? (() => {
+    const sec = (from, to) => { const xs = qs.slice(from, to); return [xs.reduce((a, q, k) => a + (S.got[from + k] || 0), 0), xs.reduce((a, q) => a + marksOf(q), 0)]; };
+    const [ga, ta] = sec(0, S.sectionA), [gb, tb] = sec(S.sectionA, qs.length);
+    return `<div class="rsecs">${ta ? `<div><span>Section A · MCQ</span><b>${ga} / ${ta}</b></div>` : ''}${tb ? `<div><span>Section B · written</span><b>${gb} / ${tb}</b></div>` : ''}</div>`;
+  })() : '';
+  const X = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  const V = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+  const H = '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>';
+  $app.innerHTML = `<main class="pad results">
+    <div class="r-left">
+    <section class="rhero ${band}">
+      <span class="rmeta">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span>
+      <div class="rtop"><div class="ring ${band}" style="--p:${pct}" role="img" aria-label="${pct}%"><span>${pct}%</span></div>
+        <div class="rhead"><b>${head}</b><span>${got} of ${total} marks</span></div></div>
+      <p class="rsub">${sub}</p>
+      <div class="rcounts"><span class="right">${V} ${nRight} right</span>${nPart ? `<span class="part">${H} ${nPart} partly</span>` : ''}<span class="miss">${X} ${nMiss} missed</span></div>
+      ${sections}
+    </section>
+    <div class="ractions">
       ${drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} Drill my weak spots · ${drillable.length * PER_IDEA} new questions</button>` : ''}
       ${unitRef ? `<button class="btn ${drillable.length ? 'ghost' : ''}" id="more">${S.count || SESSION_SIZE} more on ${unitRef.units.length > 1 ? 'these chapters' : 'this chapter'}</button>` : ''}
-      ${missed.length ? `<button class="btn ${unitRef ? 'ghost' : ''}" id="retry">Retry the ${missed.length} I missed</button>` : ''}
+      <div class="rgrid">
+      ${missed.length ? `<button class="btn ghost" id="retry">Retry the ${missed.length} I missed</button>` : ''}
       ${qs.length ? '<button class="btn ghost" id="redo">Redo this set (shuffled)</button>' : ''}
-      <button class="btn ghost" id="home">${S.book ? 'Back to chapters' : 'Back to home'}</button>
-    </div></main>`;
+      </div>
+      <button class="link rback" id="home">${S.book ? 'Back to chapters' : 'Back to home'}</button>
+    </div>
+    </div>
+    <section class="rlist"><h2>Your answers</h2>
+      ${S.mode === 'spaced' ? `<p class="hint" style="margin:0 0 8px;line-height:1.5">Questions you got right come back later and later. The ones you missed come back tomorrow.</p>` : ''}
+      <div class="card">${list}</div></section>
+    </main>`;
   document.getElementById('home').onclick = () => (S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' }));
   const m = document.getElementById('more'); if (m) m.onclick = () => startUnits(unitRef.book, unitRef.units, S.count || SESSION_SIZE);
   const r = document.getElementById('retry');

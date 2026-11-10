@@ -279,6 +279,11 @@ const EXACT = {
   'Excellent work': '非常好',
   'Good, solid work': '做得不錯',
   'Getting there': '漸入佳境',
+  'Your answers': '你的答案',
+  'You know this well. Reviews over the next few days will lock it in.': '你掌握得很好。未來幾天溫習一下，就能牢牢記住。',
+  'A few slips to tidy up, then you’re there.': '還有幾處小錯，修正後就達標了。',
+  'Fix the ones you missed and you’ll be well on your way.': '改正答錯的題目，你就會進步得很快。',
+  'This set was tough. Drilling the ones you missed is the fastest way up.': '這組題目不容易。操練答錯的題目，是進步最快的方法。',
   'Worth another go': '值得再試一次',
   'Redo this set (shuffled)': '重做這一組（次序打亂）',
   'Weak-spot drill': '弱項操練',
@@ -367,6 +372,8 @@ const EXACT = {
 
 // Text with numbers or names in it.
 const PATTERNS = [
+  [/^(\d+) of (\d+) marks$/, '$2 分中得 $1 分'],
+  [/^(\d+) right$/, '$1 題全對'], [/^(\d+) partly$/, '$1 題部分正確'], [/^(\d+) missed$/, '$1 題答錯'],
   [/^(.*?)(\d+) chapters · (\d+) questions( · uploaded)?$/, (m, pre, c, q, up) => `${pre}${c} 個章節 · ${q} 條題目${up ? ' · 自行上載' : ''}`],
   [/^(?:pp\. (\d+)–(\d+) · )?(?:(\d+) ready · (\d+) done|(New questions will be made))( · harder questions now| · more basics first)?$/, (m, a, b, r, d, nw, sh) =>
     `${a ? `第 ${a}–${b} 頁 · ` : ''}${nw ? '會編寫新題目' : `${r} 條可用 · 已做 ${d} 條`}${sh ? (sh.includes('harder') ? ' · 現在題目較深' : ' · 先做基礎題') : ''}`],
