@@ -542,10 +542,10 @@ body[data-tab] .app{padding-bottom:76px}
 .coach-msgs{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding:2px}
 .coach .tchips{margin-top:2px}
 @media (min-width:1200px){
-  body[data-tab] .app:has(> aside.coach){max-width:1400px;margin-left:calc(220px + max(24px, (100vw - 220px - 1400px) / 2));margin-right:auto;display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:auto 1fr;column-gap:28px;align-items:start}
+  body[data-tab] .app:has(> aside.coach){max-width:1560px;margin-left:calc(220px + max(24px, (100vw - 220px - 1560px) / 2));margin-right:auto;padding-right:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:28px;align-items:start}
   .app:has(> aside.coach)>main{grid-column:1;grid-row:1}
   .app:has(> aside.coach)>footer{grid-column:1;grid-row:2}
-  .app>aside.coach{grid-column:2;grid-row:1/span 2;position:sticky;top:24px;margin:32px 0 24px;max-height:calc(100vh - 48px);min-height:520px}
+  .app>aside.coach{grid-column:2;grid-row:1/span 2;position:sticky;top:24px;margin:32px 0 24px;height:calc(100vh - 56px);min-height:520px}
   .app>aside.coach .coach-msgs{flex:1;max-height:none;min-height:0}
 }
 </style>
