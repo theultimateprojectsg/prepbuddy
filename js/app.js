@@ -271,7 +271,7 @@ function masteryCard(m) {
       <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. Here’s what will get you there:` : 'Practise a chapter to see how ready you are.'}</span></div></div>
     <details class="areas"><summary>How this is worked out</summary>${AREAS.map(([k, label, w]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}<small>${w}%</small></span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
       <p class="hint" style="margin:6px 0 0">A chapter can’t go above 70% until you pass a timed test on it, or reach 100% until you’ve passed two on different days.</p></details>
-    ${steps.length ? `<ul class="m-steps">${steps.map((x) => `<li><button class="link" data-step-unit="${esc(x.unit.id)}" data-step-kind="${x.kind}">${esc(x.text)}</button></li>`).join('')}</ul>` : ''}
+    ${steps.length ? `<ul class="m-steps">${steps.map((x) => `<li><button class="mstep" data-step-unit="${esc(x.unit.id)}" data-step-kind="${x.kind}">${esc(x.text)}</button></li>`).join('')}</ul>` : ''}
     ${p < 100 ? `<button class="btn" id="boost">${ICON.target} Get me closer to 100%</button>` : ''}
   </section>`;
 }
@@ -457,7 +457,7 @@ const coach = { busy: false, error: null };
 function coachHTML() {
   const msgs = local.coach || [];
   return `<div class="coach-head"><span class="coach-ic" aria-hidden="true">${ICON.chat}</span><div><b>Your study coach</b><span>Sees your scores, mistakes and reviews</span></div>
-      ${msgs.length && !coach.busy ? '<button class="link quiet" id="coachClear" style="padding:0;font-size:13px;margin-left:auto">Clear</button>' : ''}</div>
+      ${msgs.length && !coach.busy ? '<button class="btn-sm quiet" id="coachClear" style="margin-left:auto">Clear</button>' : ''}</div>
     <div class="coach-msgs" id="coachMsgs">
       <div class="tmsg ai">Hi${local.name ? ` ${esc(local.name)}` : ''}! Ask me how you’re doing, what to focus on, or for a study plan.</div>
       ${msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
@@ -566,7 +566,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   window.scrollTo(0, 0);
 }
-const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="link quiet" id="usage" style="font-size:11px;padding:0">AI usage</button></footer>`;
+const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="btn-sm quiet" id="usage" >AI usage</button></footer>`;
 function bindHomeCommon() {
   document.getElementById('usage').onclick = () => go({ name: 'usage' });
   document.getElementById('lang').onclick = () => { setLang(LANG === 'zh' ? 'en' : 'zh'); go({ name: 'home' }); renderTabs(); };
@@ -790,8 +790,8 @@ async function renderEdit(bookId, openSplit) {
       <input class="etitle" data-title="${esc(u.id)}" value="${esc(u.title)}" aria-label="Chapter name" data-raw>
       <span class="muted epages">${u.startPage ? `pp. ${u.startPage}–${u.endPage}` : ''}</span>
       ${openSplit === u.id ? `<div class="esplit"><label>Start a new chapter at page <select id="splitAt">${Array.from({ length: u.endPage - u.startPage }, (_, k) => u.startPage + 1 + k).map((p) => `<option value="${p}">${p}${pages[p - 1] ? ` – ${esc(pages[p - 1].split('\n')[0].slice(0, 40))}` : ''}</option>`).join('')}</select></label>
-          <div class="eacts"><button class="btn small" id="doSplit" data-u="${esc(u.id)}">Split here</button><button class="link quiet" id="noSplit">Cancel</button></div></div>`
-        : `<div class="eacts">${last ? '' : `<button class="link" data-merge="${esc(u.id)}">Merge with next</button>`}${canSplit ? `<button class="link" data-split="${esc(u.id)}">Split</button>` : ''}<button class="link quiet" data-hide="${esc(u.id)}">Hide</button></div>`}
+          <div class="eacts"><button class="btn small" id="doSplit" data-u="${esc(u.id)}">Split here</button><button class="btn-sm quiet" id="noSplit">Cancel</button></div></div>`
+        : `<div class="eacts">${last ? '' : `<button class="btn-sm" data-merge="${esc(u.id)}">Merge with next</button>`}${canSplit ? `<button class="btn-sm" data-split="${esc(u.id)}">Split</button>` : ''}<button class="btn-sm quiet" data-hide="${esc(u.id)}">Hide</button></div>`}
     </div>`;
   };
   $app.innerHTML = `
@@ -801,7 +801,7 @@ async function renderEdit(bookId, openSplit) {
     ${pages ? '' : `<p class="hint" style="margin:0">${book.library ? 'Library books can be renamed, merged or hidden.' : 'Splitting needs the book uploaded again (books uploaded before today can still be renamed, merged or hidden).'}</p>`}
     <div class="card stack">${book.units.map(row).join('')}</div>
     ${hidden.length ? `<p style="margin:6px 0 0;font-size:15px;font-weight:600">Hidden (${hidden.length})</p>
-      <div class="card stack">${hidden.map((u) => `<div class="erow hiddenrow"><span data-raw>${esc(u.title)}</span><span class="muted epages">${u.startPage ? `pp. ${u.startPage}–${u.endPage}` : ''}</span><div class="eacts"><button class="link" data-show="${esc(u.id)}">Show</button></div></div>`).join('')}</div>` : ''}
+      <div class="card stack">${hidden.map((u) => `<div class="erow hiddenrow"><span data-raw>${esc(u.title)}</span><span class="muted epages">${u.startPage ? `pp. ${u.startPage}–${u.endPage}` : ''}</span><div class="eacts"><button class="btn-sm" data-show="${esc(u.id)}">Show</button></div></div>`).join('')}</div>` : ''}
   </main>
   <div class="sheet sticky"><button class="btn" id="done">Done</button></div>`;
   const again = async (split) => { const y = window.scrollY; await renderEdit(bookId, split); window.scrollTo(0, y); };
@@ -928,19 +928,19 @@ async function renderBook(bookId) {
   <main class="bk-main stack g14">
     <div class="chtools">
       <p style="margin:0;font-size:15px;font-weight:600">1. Choose chapters <span class="muted" style="font-weight:500">(${book.units.length})</span></p>
-      ${book.units.length > 1 ? `<button class="link" id="all" style="padding:0">${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
+      ${book.units.length > 1 ? `<button class="btn-sm" id="all" >${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
       ${book.units.length > 12 ? `<label class="chsearch"><span aria-hidden="true">${ICON.search}</span><input id="chsearch" type="search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>` : ''}
     </div>
     <div class="chlist" id="chlist">${listHTML}</div>
     <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
       ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
       : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'ai' ? 'the contents page and headings, checked by AI' : book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
-    <button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
+    <button class="btn-sm danger" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>
   <aside class="bk-side">
     ${masteryCard(bm)}
   <div class="sheet sticky setup ${n ? 'armed' : ''} ${pick.opts ? 'expanded' : ''}">
-    <div class="setup-head"><p style="margin:0;font-size:15px;font-weight:600">2. Set up your practice${n ? ` <span class="muted" style="font-weight:500">· ${n} chapter${n > 1 ? 's' : ''} ticked</span>` : ''}</p>${n ? `<button class="link setup-more" id="opts" aria-expanded="${!!pick.opts}">${pick.opts ? 'Fewer options' : 'More options'}</button>` : ''}</div>
+    <div class="setup-head"><p style="margin:0;font-size:15px;font-weight:600">2. Set up your practice${n ? ` <span class="muted" style="font-weight:500">· ${n} chapter${n > 1 ? 's' : ''} ticked</span>` : ''}</p>${n ? `<button class="btn-sm setup-more" id="opts" aria-expanded="${!!pick.opts}">${pick.opts ? 'Fewer options' : 'More options'}</button>` : ''}</div>
     <div class="setup-row">
       <span id="types-label">Questions</span>
       <div class="seg" role="radiogroup" aria-labelledby="types-label">
@@ -1058,12 +1058,12 @@ async function renderNotes(bookId) {
     getNotes(book, u, fresh).then((n) => {
       if (view !== myView) return;
       const e2 = document.getElementById(`n-${u.id}`); if (!e2) return;
-      e2.innerHTML = notesHTML(u, n) + `<button class="link quiet noprint" data-remake="${esc(u.id)}" style="align-self:flex-start;font-size:12px;padding:4px 0 0">Make these notes again</button>`;
+      e2.innerHTML = notesHTML(u, n) + `<button class="btn-sm quiet noprint" data-remake="${esc(u.id)}" style="align-self:flex-start">Make these notes again</button>`;
       e2.querySelector('[data-remake]').onclick = () => fill(u, true);
     }).catch((e) => {
       if (view !== myView) return;
       const e2 = document.getElementById(`n-${u.id}`); if (!e2) return;
-      e2.innerHTML = `<h2 class="ntitle" data-raw>${esc(u.title)}</h2><p class="hint" style="margin:0;color:var(--miss-dark)">${esc(notesError(e))}</p><button class="link" data-retry>Try again</button>`;
+      e2.innerHTML = `<h2 class="ntitle" data-raw>${esc(u.title)}</h2><p class="hint" style="margin:0;color:var(--miss-dark)">${esc(notesError(e))}</p><button class="btn-sm" data-retry>Try again</button>`;
       e2.querySelector('[data-retry]').onclick = () => fill(u, false);
     });
   };
@@ -1182,7 +1182,7 @@ async function renderProgress() {
       <span style="font-size:14px;line-height:1.5;color:var(--text-2)">A one-page summary of this week: practice, scores by chapter, what is improving and what needs work.</span>
       <label for="name" style="font-size:13px;font-weight:600;color:var(--muted)">Your name on the report</label>
       <input id="name" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name)}">
-      <a id="preview" href="#" style="font-size:14px;font-weight:600;color:var(--good)">Preview the report</a>
+      <button class="btn-sm" id="preview" style="align-self:flex-start">Preview the report</button>
       <div class="pg-send stack g8"><button class="btn" data-send style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
       <span class="hint" style="text-align:center">Opens WhatsApp or another app with a link. Your parent doesn't need to sign in.</span></div>
     </div>
@@ -1705,7 +1705,7 @@ function mistakeCard(q, m) {
     ${right ? `<div class="mrow good"><span>${LANG === 'zh' ? '答案' : 'Answer'}</span><p>${esc(right)}</p></div>` : ''}
     <p class="expl">${esc(q.explanation || '')}</p>
     ${m.chat && m.chat.length ? `<details class="mchat"><summary>${LANG === 'zh' ? '你和 AI 導師的對話' : 'Your chat with the tutor'} (${m.chat.length})</summary>${m.chat.map((x) => x.role === 'user' ? `<div class="tmsg me nomath">${esc(x.text)}</div>` : `<div class="tmsg ai">${tutorMd(x.text)}</div>`).join('')}</details>` : ''}
-    <div class="mfoot"><span class="hint">${m.n > 1 ? `${LANG === 'zh' ? `錯了 ${m.n} 次` : `Missed ${m.n} times`}` : ''}</span>${m.done ? '' : `<button class="link quiet" data-dismiss="${esc(q.id)}" style="padding:0;font-size:13px">${LANG === 'zh' ? '我已明白，移除' : 'I understand it now'}</button>`}</div>
+    <div class="mfoot"><span class="hint">${m.n > 1 ? `${LANG === 'zh' ? `錯了 ${m.n} 次` : `Missed ${m.n} times`}` : ''}</span>${m.done ? '' : `<button class="btn-sm quiet" data-dismiss="${esc(q.id)}" >${LANG === 'zh' ? '我已明白，移除' : 'I understand it now'}</button>`}</div>
   </div>`;
 }
 async function renderMistakes(tab) {
@@ -2171,7 +2171,7 @@ function feedbackBits(q) {
   return `<p class="expl">${esc(q.explanation)}</p>
     ${q.source_quote ? `<p class="src">${esc(q.section || 'Textbook')}${q.pages ? `, pp. ${esc(q.pages)}` : ''}: “${esc(q.source_quote)}”</p>` : ''}
     <div class="tutor" id="tutor">${tutorHTML(q)}</div>
-    <div class="rbox" id="rbox">${(local.reports || []).includes(q.id) ? '<p class="rdone">You reported this question. We’ll check it.</p>' : '<div style="display:flex;justify-content:flex-end"><button class="link quiet" id="report">Report a problem</button></div>'}</div>`;
+    <div class="rbox" id="rbox">${(local.reports || []).includes(q.id) ? '<p class="rdone">You reported this question. We’ll check it.</p>' : '<div style="display:flex;justify-content:flex-end"><button class="btn-sm quiet" id="report">Report a problem</button></div>'}</div>`;
 }
 const REPORT_REASONS = [['wrong_answer', 'The answer is wrong'], ['unclear', 'The question doesn’t make sense'], ['missing_figure', 'It needs a diagram or table I can’t see'], ['off_topic', 'It’s not from my textbook'], ['typo', 'Spelling or formatting mistake'], ['other', 'Something else']];
 // Sends a report to the admin. If it can't be sent now (offline), it's kept and sent next time the app opens.
@@ -2200,7 +2200,7 @@ function bindReport(q) {
       box.querySelectorAll('[data-reason]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
       document.getElementById('rsend').disabled = false;
     }));
-    document.getElementById('rcancel').onclick = () => { box.innerHTML = '<div style="display:flex;justify-content:flex-end"><button class="link quiet" id="report">Report a problem</button></div>'; bindReport(q); };
+    document.getElementById('rcancel').onclick = () => { box.innerHTML = '<div style="display:flex;justify-content:flex-end"><button class="btn-sm quiet" id="report">Report a problem</button></div>'; bindReport(q); };
     document.getElementById('rsend').onclick = async () => {
       const btn = document.getElementById('rsend'); btn.disabled = true; btn.textContent = 'Sending…';
       const book = (S && S.book) || {}; const uid = qUnit(q.id)[1]; const unit = (book.units || []).find((u) => u.id === uid) || {};
@@ -2245,7 +2245,7 @@ function tutorHTML(q) {
     ['example', 'Give me another example'],
   ];
   return `<div class="tchat">
-    <div class="thead"><b>${ICON.chat} Ask about this question</b><button class="link quiet" id="tutorClose" style="padding:0">Close</button></div>
+    <div class="thead"><b>${ICON.chat} Ask about this question</b><button class="btn-sm quiet" id="tutorClose" >Close</button></div>
     ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
     ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
     ${c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : ''}
@@ -2376,7 +2376,7 @@ function writtenBody(q, revealed) {
       ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}`}</div>`;
     }).join('');
     const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
-    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="link quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
+    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
     return { main, footer, bind() {
       const grab = () => {
         const prev = S.answers[S.i] || [];
