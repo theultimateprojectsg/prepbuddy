@@ -14,19 +14,19 @@
 <style>
 :root{--ink:#14181F;--muted:#4B5563;--line:#E3E6EA;--bg:#F5F6F8;--accent:#0F766E;--accent-dark:#0F4F4A;--accent-soft:#E6F4F2;--accent-tint:#CCE7E4;--miss:#C2410C;--miss-dark:#9A3412;--miss-soft:#FFF1E8}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;-webkit-text-size-adjust:100%}
 button,textarea{font-family:inherit}
 .app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 .pad{padding:24px 20px}
-h1,.display{font-family:'Space Grotesk',Inter,sans-serif}
-.brand{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0}
+h1,.display{font-family:'Space Grotesk',Inter,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif}
+.brand{font-family:'Space Grotesk','PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0}
 .muted{color:var(--muted)}
 .stack{display:flex;flex-direction:column}
 .g6{gap:6px}.g8{gap:8px}.g10{gap:10px}.g14{gap:14px}.g18{gap:18px}.g22{gap:22px}
 .card{background:#fff;border:1px solid var(--line);border-radius:14px}
 .hero{background:var(--accent);color:#fff;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
 .hero small{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#CCF2EE}
-.hero .title{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;line-height:1.25}
+.hero .title{font-family:'Space Grotesk','PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:20px;font-weight:600;line-height:1.25}
 .btn{display:block;width:100%;text-align:center;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none}
 .btn:disabled{background:#9CA3AF;cursor:default}
 .btn.light{background:#fff;color:var(--accent);width:auto;padding:12px 20px;font-size:15px}
@@ -67,7 +67,7 @@ textarea{width:100%;min-height:120px;resize:vertical;border:2px solid #C9CED4;bo
 textarea:focus{outline:none;border-color:var(--accent)}
 .hint{font-size:13px;color:var(--muted)}
 .sheet{background:#fff;border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:18px 20px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
-.verdict{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700}
+.verdict{font-family:'Space Grotesk','PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:20px;font-weight:700}
 .verdict.ok{color:var(--accent)}.verdict.no{color:var(--miss-dark)}
 .expl,.tipline{margin:0;font-size:14px;line-height:1.5;color:#374151}
 .src{font-size:12px;color:var(--muted);line-height:1.45}
@@ -77,7 +77,7 @@ textarea:focus{outline:none;border-color:var(--accent)}
 .point.on .box{background:var(--accent);border-color:var(--accent)}
 .yours{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.5;color:#374151;white-space:pre-wrap}
 .yours.empty{color:#6B7280;font-style:italic}
-.score{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:700;line-height:1}
+.score{font-family:'Space Grotesk','PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:48px;font-weight:700;line-height:1}
 .res{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-bottom:1px solid #EEF0F2;font-size:14px;line-height:1.4}
 .res:last-child{border-bottom:none}
 .tick{flex-shrink:0;width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
@@ -98,7 +98,7 @@ footer a{color:#4B5563}
 .searchbox input{flex:1;border:none;outline:none;font-size:16px;font-family:inherit;background:transparent;color:var(--ink);min-width:0;padding:14px 0}
 .searchbox.light{border:2px solid #C9CED4}.searchbox.light:focus-within{border-color:var(--accent)}
 .libcard{display:flex;gap:14px;padding:14px;align-items:flex-start}
-.cover{flex-shrink:0;width:52px;height:68px;border-radius:8px;background:var(--accent-tint);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase}
+.cover{flex-shrink:0;width:52px;height:68px;border-radius:8px;background:var(--accent-tint);color:var(--accent-dark);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk','PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase}
 .btn.small{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:auto;align-self:flex-start;padding:10px 14px;font-size:14px;border-radius:12px;margin-top:4px;min-height:44px}
 .row .box{flex-shrink:0;width:24px;height:24px;border-radius:7px;border:2px solid #9CA3AF;display:flex;align-items:center;justify-content:center;color:#fff;margin-top:-1px}
 .row .box.on{background:var(--accent);border-color:var(--accent)}
@@ -131,7 +131,7 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .stepper{display:flex;align-items:center;gap:4px;background:#E9EBEE;border-radius:12px;padding:3px}
 .stepper button{width:44px;height:40px;border:none;border-radius:10px;background:#fff;font-size:22px;font-weight:600;color:var(--ink);cursor:pointer}
 .stepper button:disabled{opacity:.4;cursor:default}
-.stepper output{min-width:44px;text-align:center;font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700}
+.stepper output{min-width:44px;text-align:center;font-family:'Space Grotesk','PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:20px;font-weight:700}
 .chips-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .choice{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;font-family:inherit;color:var(--ink);min-height:44px}
 .choice b{font-size:14px}.choice span{font-size:12px;color:var(--muted);line-height:1.35}
@@ -142,14 +142,14 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .pmeta{margin:0 0 18px;color:#444;font-size:13px}.pnote{margin:0 0 10px;color:#444;font-size:13px;font-style:italic}
 .pfields{display:flex;gap:18px;font-size:14px;margin-bottom:8px}.pfields span{flex:1;border-bottom:1px solid #888;padding-bottom:2px}
 .pq{margin:16px 0 20px;page-break-inside:avoid;break-inside:avoid}.pqh{display:flex;justify-content:space-between}
-.pm{font-size:12px;color:#555;white-space:nowrap;margin-left:12px;font-family:Arial,sans-serif}
+.pm{font-size:12px;color:#555;white-space:nowrap;margin-left:12px;font-family:Arial,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif}
 .pstem{margin:4px 0;white-space:pre-line}.popts{margin:6px 0 0 4px;padding-left:22px}.popts li{margin:3px 0}
 .ppart{display:flex;justify-content:space-between;margin:8px 0 2px 14px}
 .paper .lines{margin-left:14px}.paper .lines div{border-bottom:1px dotted #999;height:26px}
 .pkey{margin-top:30px}.pk{margin:10px 0;font-size:14px;page-break-inside:avoid;break-inside:avoid}.pk ul{margin:2px 0 4px 18px;padding-left:16px}
 .pexp{color:#333}.psrc{color:#777;font-size:12px}.pfoot{margin-top:24px;font-size:11px;color:#777}
 .ptable{width:100%;border-collapse:collapse}.ptable td{padding:0;vertical-align:top}
-.pbrand{display:flex;gap:10px;align-items:center;border-top:1px solid #bbb;padding-top:6px;margin-top:24px;font-family:Inter,system-ui,sans-serif;font-size:10.5px;color:#444;line-height:1.35;break-inside:avoid}
+.pbrand{display:flex;gap:10px;align-items:center;border-top:1px solid #bbb;padding-top:6px;margin-top:24px;font-family:Inter,system-ui,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:10.5px;color:#444;line-height:1.35;break-inside:avoid}
 .pbrand>div{display:flex;flex-direction:column}.pbrand b{font-size:11.5px;color:#111}
 .pqr{width:52px;height:52px;flex:none}
 @media print{
@@ -167,7 +167,7 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .opt.gopt .dot{align-self:flex-start}
 .gcap{font-size:12px;line-height:1.35;color:var(--muted)}
 .pgraphs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 0}
-.pgraphs b{font-family:Arial,sans-serif;font-size:13px}
+.pgraphs b{font-family:Arial,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:13px}
 </style>
 </head>
 <body>

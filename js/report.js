@@ -161,12 +161,12 @@ export function reportHTML(r) {
 export const REPORT_CSS = `
 .rep-head{background:#0F766E;color:#fff;padding:28px 20px 24px;display:flex;flex-direction:column;gap:10px}
 .rep-head small{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#CCF2EE}
-.rep-head h1{margin:0;font-family:'Space Grotesk',Inter,sans-serif;font-size:26px;line-height:1.2}
+.rep-head h1{margin:0;font-family:'Space Grotesk',Inter,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:26px;line-height:1.2}
 .rep-head p{margin:0;font-size:14px;line-height:1.5;color:#E6F7F5}
 .rep{display:flex;flex-direction:column;gap:18px;padding:20px}
 .rep-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .rep-stats div{background:#fff;border:1px solid #E3E6EA;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:4px}
-.rep-stats b{font-family:'Space Grotesk',Inter,sans-serif;font-size:22px}
+.rep-stats b{font-family:'Space Grotesk',Inter,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC','Noto Sans CJK TC',sans-serif;font-size:22px}
 .rep-stats span{font-size:12px;color:#4B5563}.rep-stats .up{color:#0F766E;font-weight:600}.rep-stats .down{color:#9A3412;font-weight:600}
 .rep-card{background:#fff;border:1px solid #E3E6EA;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
 .rep-card h2{margin:0;font-size:15px}.rep-card p{margin:0;font-size:14px;line-height:1.5;color:#374151}
