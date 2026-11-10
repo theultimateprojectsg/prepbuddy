@@ -20,8 +20,12 @@ module.exports = handler(async (body) => {
     (it.type === 'short' ? ' One part, 2-3 marks.' : '')
   ).join('\n');
 
+  const f = body.focus && Number(body.focus.of) > 1 ? body.focus : null;
+  const focusText = f
+    ? `\n\nSplit the section into ${Number(f.of)} roughly equal parts by position. Take these questions mainly from part ${Number(f.part)}, so that batches made in parallel cover different material.`
+    : '';
   const instruction =
-    `Write exactly these ${items.length} questions, in this order:\n${wanted}` +
+    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + focusText +
     (avoid.length ? `\n\nQuestions already written for this section (test different ideas):\n- ${avoid.join('\n- ')}` : '');
 
   const out = await callTool({

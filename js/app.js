@@ -5,7 +5,6 @@ import { SAMPLE_QUESTIONS } from './sample.js';
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
 const BATCH = 3;            // questions requested per generate call
-const MAX_ROUNDS = 6;       // generate calls per session before giving up
 // Mix of question kinds, cycled through as a chapter's bank grows.
 const PLAN = [[1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
               [4, 'structured'], [1, 'mcq'], [2, 'short'], [3, 'mcq'], [3, 'structured'], [2, 'mcq']];
@@ -245,8 +244,11 @@ async function startUnit(book, unit) {
   let qs = unseen.slice(0, SESSION_SIZE);
   if (unit.static) qs = shuffle(all).slice(0, SESSION_SIZE);
   S = newSession({ mode: 'unit', title: unit.title, book, unit, qs, target: unit.static ? qs.length : SESSION_SIZE });
-  if (!unit.static && qs.length < SESSION_SIZE) {
-    runGenerator(S);
+  if (!unit.static) {
+    // Fill this session, and keep the next 10 ready so "10 more" starts instantly.
+    const spare = unseen.length - qs.length;
+    const want = (SESSION_SIZE - qs.length) + Math.max(0, SESSION_SIZE - spare);
+    if (want > 0) followFill(S, ensureFill(book, unit, want));
   }
   if (S.qs.length) renderQuestion(); else renderWaiting();
 }
@@ -268,45 +270,83 @@ async function startReview(mode) {
 }
 
 /* ---------- making questions on demand ---------- */
-async function runGenerator(sess) {
-  if (sess.generating) return;
-  sess.generating = true; sess.error = null;
-  const { book, unit } = sess;
+// One background job per chapter. Several batches run side by side, each on a different
+// part of the chapter, so 10 questions take about as long as 3 used to.
+const jobs = new Map();
+const PARALLEL = 4;
+
+function ensureFill(book, unit, want) {
+  const key = `${book.id}:${unit.id}`;
+  if (jobs.has(key)) { const j = jobs.get(key); j.want = Math.max(j.want, want); return j; }
+  const job = { want, made: 0, error: null, done: false, listeners: new Set() };
+  jobs.set(key, job);
+  job.promise = doFill(book, unit, job)
+    .catch((e) => { job.error = e; if (e.status === 401) { local.code = ''; saveLocal(); } })
+    .finally(() => { job.done = true; jobs.delete(key); job.listeners.forEach((f) => f([], true)); });
+  return job;
+}
+
+async function doFill(book, unit, job) {
   const title = unit.title;
-  try {
-    const text = await store.get(`text:${book.id}:${unit.id}`, '');
-    if (!text) throw new Error('This chapter’s text is missing on this device. Try uploading the book again.');
-    for (let round = 0; round < MAX_ROUNDS && sess === S && sess.qs.length < sess.target; round++) {
+  const text = await store.get(`text:${book.id}:${unit.id}`, '');
+  if (!text) throw new Error('This chapter\u2019s text is missing on this device. Try uploading the book again.');
+  let saving = Promise.resolve();
+  let started = (await getQs(book.id, unit.id)).length;
+  let empty = 0, stop = false;
+  const worker = async (w) => {
+    for (let round = 0; round < 3 && !stop && job.made < job.want; round++) {
       const existing = await getQs(book.id, unit.id);
-      const items = Array.from({ length: BATCH }, (_, k) => PLAN[(existing.length + round + k) % PLAN.length]).map(([level, type]) => ({ level, type }));
+      const slot = started; started += BATCH;
+      const items = Array.from({ length: BATCH }, (_, k) => PLAN[(slot + k) % PLAN.length]).map(([level, type]) => ({ level, type }));
       const avoid = existing.map((q) => (q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200));
-      const gen = await api('generate', { title, text, items, avoid });
-      if (!gen.questions || !gen.questions.length) { if (round > 0) break; throw new Error('No questions could be made from this chapter. It may not have enough teaching content.'); }
+      const focus = { part: ((slot / BATCH) % PARALLEL) + 1, of: PARALLEL };
+      let gen;
+      try { gen = await api('generate', { title, text, items, avoid, focus }); }
+      catch (e) { if (e.status === 401 || e.status === 0) { stop = true; throw e; } if (!job.error) job.error = e; continue; }
+      if (!gen.questions || !gen.questions.length) { if (++empty >= 2) stop = true; continue; }
       const checked = await Promise.all(gen.questions.map((q) =>
-        api('verify', { title, text, question: q }).then((v) => ({ q, v })).catch((e) => { if (e.status === 401) throw e; return { q, v: { passed: false } }; })));
+        api('verify', { title, text, question: q }).then((v) => ({ q, v })).catch((e) => { if (e.status === 401) { stop = true; throw e; } return { q, v: { passed: false } }; })));
       const passed = checked.filter((x) => x.v.passed).map((x) => x.q);
-      if (passed.length) {
-        const list = await getQs(book.id, unit.id);
-        passed.forEach((q) => {
-          q.id = `${book.id}:${unit.id}:${uid()}`;
-          q.section = title;
-          q.pages = unit.startPage ? `${unit.startPage}-${unit.endPage}` : '';
-          list.push(q);
-        });
-        await setQs(book.id, unit.id, list);
-        if (sess === S) { sess.qs.push(...passed.slice(0, sess.target - sess.qs.length)); sessionGrew(); }
-      }
+      if (!passed.length) continue;
+      passed.forEach((q) => {
+        q.id = `${book.id}:${unit.id}:${uid()}`;
+        q.section = title;
+        q.pages = unit.startPage ? `${unit.startPage}-${unit.endPage}` : '';
+      });
+      saving = saving.then(async () => { const list = await getQs(book.id, unit.id); list.push(...passed); await setQs(book.id, unit.id, list); });
+      await saving;
+      job.made += passed.length;
+      job.listeners.forEach((f) => f(passed, false));
     }
-  } catch (e) {
-    sess.error = e;
-    if (e.status === 401) { local.code = ''; saveLocal(); }
-  } finally {
-    sess.generating = false;
-    if (sess === S) {
+  };
+  const n = Math.min(PARALLEL, Math.ceil(job.want / BATCH));
+  const results = await Promise.allSettled(Array.from({ length: n }, (_, w) => worker(w)));
+  const failed = results.find((r) => r.status === 'rejected');
+  if (failed) throw failed.reason;
+  if (!job.made && empty) throw new Error('No questions could be made from this chapter. It may not have enough teaching content.');
+  if (job.made) job.error = null;
+}
+
+function followFill(sess, job) {
+  sess.generating = true; sess.error = null;
+  const listener = (passed, done) => {
+    if (sess !== S) { job.listeners.delete(listener); return; }
+    const have = new Set(sess.qs.map((q) => q.id));
+    sess.qs.push(...passed.filter((q) => !have.has(q.id)).slice(0, Math.max(0, sess.target - sess.qs.length)));
+    if (done) {
+      sess.generating = false;
+      sess.error = job.error;
       if (sess.qs.length < sess.target && !sess.error) sess.target = Math.max(sess.qs.length, sess.i + 1);
-      sessionGrew(true);
     }
-  }
+    sessionGrew(done);
+  };
+  job.listeners.add(listener);
+}
+
+function refill(sess) {
+  sess.error = null;
+  sess.target = Math.max(sess.target, sess.qs.length + 1);
+  followFill(sess, ensureFill(sess.book, sess.unit, sess.target - sess.qs.length + SESSION_SIZE));
 }
 
 function sessionGrew(done) {
@@ -322,7 +362,7 @@ function sessionGrew(done) {
 function renderWaiting() {
   S.waiting = true;
   const e = S.error;
-  if (e && e.status === 401) return renderAccess(() => { S.error = null; runGenerator(S); renderWaiting(); }, 'That access code didn’t work. Please check it and try again.');
+  if (e && e.status === 401) return renderAccess(() => { refill(S); renderWaiting(); }, 'That access code didn’t work. Please check it and try again.');
   const failed = !S.generating && S.i >= S.qs.length;
   $app.innerHTML = `<div class="topbar"><button class="icon-btn" id="quit" aria-label="End session">${ICON.close}</button><div class="progress"><i style="width:${Math.round(100 * S.i / Math.max(1, S.target))}%"></i></div><span class="count">${Math.min(S.i + 1, S.target)} / ${S.target}</span></div>
   <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
@@ -333,10 +373,10 @@ function renderWaiting() {
          ${S.qs.length ? '<button class="link" id="finish">See my results</button>' : '<button class="link" id="home">Back</button>'}`
       : `<div class="spinner" aria-hidden="true"></div>
          <h1 class="display" style="margin:0;font-size:22px">${S.qs.length ? 'Preparing the next question' : 'Writing your questions'}</h1>
-         <p class="muted" style="margin:0;line-height:1.5;max-width:320px">${esc(S.unit ? S.unit.title : '')}<br>Each question is written from your textbook, then checked by a second AI. The first few take about a minute.</p>`}
+         <p class="muted" style="margin:0;line-height:1.5;max-width:320px">${esc(S.unit ? S.unit.title : '')}<br>Each question is written from your textbook, then checked by a second AI. The first ones take 30–60 seconds; after that the next set is made while you practise.</p>`}
   </main>`;
   document.getElementById('quit').onclick = () => go({ name: 'home' });
-  const r = document.getElementById('retry'); if (r) r.onclick = () => { S.error = null; S.target = Math.max(S.target, SESSION_SIZE); runGenerator(S); renderWaiting(); };
+  const r = document.getElementById('retry'); if (r) r.onclick = () => { S.target = Math.max(S.target, SESSION_SIZE); refill(S); renderWaiting(); };
   const f = document.getElementById('finish'); if (f) f.onclick = () => { S.qs = S.qs.slice(0, S.i); renderSummary(); };
   const h = document.getElementById('home'); if (h) h.onclick = () => go({ name: 'book', bookId: S.book.id });
 }
@@ -480,7 +520,7 @@ function advance() {
   if (S.i < S.target - 1) {
     S.i++; S.phase = S.review ? 'revealed' : 'answer';
     if (S.i < S.qs.length) return renderQuestion();
-    if (!S.generating && !S.error && S.unit && !S.unit.static) runGenerator(S);
+    if (!S.generating && !S.error && S.unit && !S.unit.static) refill(S);
     return renderWaiting();
   }
   if (S.mode === 'mock' && !S.review) {
