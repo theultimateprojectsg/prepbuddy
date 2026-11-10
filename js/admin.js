@@ -79,7 +79,8 @@ const REASON = { wrong_answer: 'The answer is wrong', unclear: 'The question doe
 async function loadReports() {
   const box = $('reports'); if (!box) return;
   let list;
-  try { list = (await adminApi({ action: 'reports' })).reports; }
+  let stats = { right: 0, fine: 0, reasons: {} };
+  try { const d = await adminApi({ action: 'reports' }); list = d.reports; stats = d.stats || stats; }
   catch (e) { box.innerHTML = `<h2>Reported questions</h2><div class="err">Couldn’t load reports: ${esc(e.message)}</div>`; return; }
   const when = (t) => new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const qHTML = (q) => {
@@ -88,18 +89,19 @@ async function loadReports() {
     return `${q.stem ? `<p class="rq-stem">${esc(q.stem)}</p>` : ''}${opts}${parts}${q.explanation ? `<p class="rq-exp"><b>Explanation:</b> ${esc(q.explanation)}</p>` : ''}${q.source_quote ? `<p class="hint" style="margin:0">Source${q.pages ? `, pp. ${esc(q.pages)}` : ''}: “${esc(q.source_quote)}”</p>` : ''}`;
   };
   box.innerHTML = `<h2>Reported questions (${list.length})</h2>
-    ${list.length ? '<p class="hint" style="margin:0">Questions students flagged. The student who reported it no longer sees it. Mark each one as checked once you’ve looked at it.</p>' : '<p class="muted" style="margin:0">Nothing reported. When a student taps “Report a problem” on a question, it shows up here.</p>'}
+    ${list.length ? '<p class="hint" style="margin:0">Questions students flagged. Each question was written on that student’s device, so it only ever reached them, and they no longer see it. Decide who was right: it keeps a record of how often the AI gets questions wrong.</p>' : '<p class="muted" style="margin:0">Nothing to check. When a student taps “Report a problem” on a question, it shows up here.</p>'}
+    ${stats.right + stats.fine ? `<p class="rstats">Checked so far: <b>${stats.right}</b> real problem${stats.right === 1 ? '' : 's'} · <b>${stats.fine}</b> question${stats.fine === 1 ? ' was' : 's were'} fine${stats.right ? ` · most common: ${esc(REASON[Object.entries(stats.reasons).sort((a, b) => b[1] - a[1])[0][0]] || '')}` : ''}</p>` : ''}
     ${list.map((r, i) => `<div class="rep" data-i="${i}">
       <div class="rep-top"><span class="rtag">${esc(REASON[r.reason] || r.reason)}</span><span class="muted" style="font-size:13px">${when(r.t)}${r.lang === 'zh' ? ' · 中文' : ''}</span></div>
       <div class="hint" style="margin:0">${esc((r.book || {}).title || 'Unknown book')}${(r.book || {}).code ? ` · ${esc(r.book.code)}` : (r.book || {}).library ? '' : ' · student’s own upload'}${(r.unit || {}).title ? ` · ${esc(r.unit.title)}` : ''}${r.q && r.q.level ? ` · Level ${r.q.level}` : ''}</div>
       ${r.note ? `<p class="rnote">“${esc(r.note)}”</p>` : ''}
       <details><summary>Show the question</summary><div class="rq">${qHTML(r.q || {})}${r.answer ? `<p class="rq-ans"><b>Student’s answer:</b> ${esc(r.answer)}</p>` : ''}</div></details>
-      <div class="acts"><button class="link" data-resolve="${i}">Mark as checked</button></div>
+      <div class="acts verdicts"><button class="btn small" data-resolve="${i}" data-v="right">Student is right: bad question</button><button class="btn ghost small" data-resolve="${i}" data-v="fine">Question is fine</button></div>
     </div>`).join('')}`;
   box.querySelectorAll('[data-resolve]').forEach((b) => (b.onclick = async () => {
-    const r = list[+b.dataset.resolve]; b.disabled = true; b.textContent = 'Saving…';
-    try { await adminApi({ action: 'resolve', path: r.path, sha: r.sha }); b.closest('.rep').remove(); box.querySelector('h2').textContent = `Reported questions (${box.querySelectorAll('.rep').length})`; }
-    catch (e) { alert(e.message); b.disabled = false; b.textContent = 'Mark as checked'; }
+    const r = list[+b.dataset.resolve]; const row = b.closest('.rep'); row.querySelectorAll('[data-resolve]').forEach((x) => (x.disabled = true)); const label = b.textContent; b.textContent = 'Saving…';
+    try { await adminApi({ action: 'resolve', path: r.path, sha: r.sha, verdict: b.dataset.v }); loadReports(); }
+    catch (e) { alert(e.message); row.querySelectorAll('[data-resolve]').forEach((x) => (x.disabled = false)); b.textContent = label; }
   }));
 }
 
