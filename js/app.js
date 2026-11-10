@@ -155,6 +155,82 @@ function scoreOf(questions) {
   questions.forEach((q) => { const s = local.stats[q.id]; if (s) { got += s.got; total += s.total; } });
   return total ? Math.round(100 * got / total) : null;
 }
+/* ---------- mastery: how ready you are, per chapter and per book ----------
+   Coverage × latest scores, capped until harder (apply/analyse) questions are done well,
+   with questions overdue for review counting a little less. */
+function chapterTarget(u) {
+  const pages = u.startPage && u.endPage ? u.endPage - u.startPage + 1 : 0;
+  const n = pages ? Math.round(pages * 1.2) : Math.round((u.chars || 30000) / 2500);
+  return Math.max(8, Math.min(20, n));
+}
+function chapterMastery(u, qs) {
+  const T = chapterTarget(u), now = Date.now();
+  const done = qs.filter((q) => local.stats[q.id]);
+  const vals = done.map((q) => { const st = local.stats[q.id]; let v = Math.max(0, Math.min(1, st.last || 0)); if (st.due && st.due < now - DAY) v *= 0.75; return v; })
+    .sort((a, b) => b - a).slice(0, T);
+  const base = vals.reduce((t, v) => t + v, 0) / T;
+  const hard = done.filter((q) => (q.level || 2) >= 3 && (local.stats[q.id].last || 0) >= 0.7).length;
+  const cap = hard >= 3 ? 1 : hard >= 1 ? 0.85 : 0.7;
+  const pct = Math.round(100 * Math.min(base, cap));
+  return {
+    pct, target: T, done: done.length,
+    more: Math.max(0, T - done.length),
+    hard: Math.max(0, 3 - hard),
+    due: done.filter((q) => local.stats[q.id].due <= now).length,
+    wrong: done.filter((q) => (local.stats[q.id].last || 0) < 1).length,
+    weight: (u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500),
+  };
+}
+async function bookMastery(book) {
+  const chapters = [];
+  for (const u of book.units) chapters.push({ unit: u, ...chapterMastery(u, await getQs(book.id, u.id)) });
+  const w = chapters.reduce((t, c) => t + c.weight, 0) || 1;
+  const pct = Math.round(chapters.reduce((t, c) => t + c.pct * c.weight, 0) / w);
+  return { pct, chapters };
+}
+function masteryLabel(p) {
+  return p >= 95 ? 'Mastered' : p >= 80 ? 'Well versed' : p >= 60 ? 'Getting there' : p >= 30 ? 'Building up' : p > 0 ? 'Just started' : 'Not started';
+}
+// The few most useful things to do next, weakest chapters first.
+function masterySteps(m) {
+  const steps = [];
+  const weak = m.chapters.filter((c) => c.pct < 95).sort((a, b) => a.pct - b.pct);
+  for (const c of weak) {
+    if (steps.length >= 3) break;
+    if (c.due) steps.push({ unit: c.unit, text: `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${c.unit.title}` });
+    else if (c.more) steps.push({ unit: c.unit, text: `Practise ${c.more} more question${c.more > 1 ? 's' : ''} in ${c.unit.title}` });
+    else if (c.hard) steps.push({ unit: c.unit, text: `Try harder questions in ${c.unit.title}` });
+    else if (c.wrong) steps.push({ unit: c.unit, text: `Get ${c.wrong} question${c.wrong > 1 ? 's' : ''} right in ${c.unit.title}` });
+  }
+  return steps;
+}
+// "Get me closer to 100%": the weakest chapter, starting with its due reviews and mistakes, then new questions at the right level.
+function masteryCard(m) {
+  const steps = masterySteps(m);
+  const p = m.pct;
+  return `<section class="mastery" aria-label="Mastery">
+    <div class="m-top"><div class="ring ${p >= 80 ? 'good' : p >= 60 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% mastered"><span>${p}%</span></div>
+      <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 95 ? 'You know this book well. Keep up your reviews.' : p ? `${100 - p}% to go. Here’s what will get you there:` : 'Practise a chapter to see how ready you are.'}</span></div></div>
+    ${steps.length ? `<ul class="m-steps">${steps.map((x) => `<li><button class="link" data-step-unit="${esc(x.unit.id)}">${esc(x.text)}</button></li>`).join('')}</ul>` : ''}
+    ${p < 100 ? `<button class="btn" id="boost">${ICON.target} Get me closer to 100%</button>` : ''}
+  </section>`;
+}
+
+async function boostSession(book) {
+  const m = await bookMastery(book);
+  const c = m.chapters.filter((x) => x.pct < 100).sort((a, b) => a.pct - b.pct)[0];
+  if (!c) return toast('Every chapter is at 100%. Keep up your reviews!');
+  const qs = await getQs(book.id, c.unit.id), now = Date.now();
+  const again = shuffle(qs.filter((q) => { const st = local.stats[q.id]; return st && (st.due <= now || (st.last || 0) < 1); })).slice(0, 6).map(shuffleOptions);
+  await startUnits(book, [c.unit], Math.max(6, 10 - again.length));
+  if (S && again.length) {
+    const have = new Set(S.qs.map((q) => q.id));
+    const add = again.filter((q) => !have.has(q.id));
+    S.qs.splice(S.i, 0, ...add); S.target += add.length; S.title = c.unit.title;
+    if (S.i < S.qs.length) renderQuestion();
+  }
+}
+
 async function allQuestions() {
   const out = [];
   for (const b of await getBooks()) for (const u of b.units) {
@@ -318,8 +394,8 @@ async function renderHome() {
   if (!due.length && Object.keys(local.stats).length) items.push(`<div class="plan-item done"><span class="pi-icon pi-review">${ICON.review}</span><span class="pi-text"><b>Reviews done</b><span class="sub">${nextAt < Infinity ? `Next review ${whenText(nextAt)}` : ''}</span></span><span class="go">✓</span></div>`);
   const covers = [];
   for (const b of books) {
-    const { sc } = await bookSummary(b);
-    covers.push(`<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}"><span class="c-sub" data-raw>${esc(b.subject || (b.library ? '' : 'My upload'))}</span><span class="c-title" data-raw>${esc(b.title)}</span><span class="c-meter" aria-hidden="true"><i style="width:${sc || 0}%"></i></span></button>`);
+    const sc = (await bookMastery(b)).pct;
+    covers.push(`<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}"><span class="c-sub" data-raw>${esc(b.subject || (b.library ? '' : 'My upload'))}</span><span class="c-title" data-raw>${esc(b.title)}</span><span class="c-foot"><b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span></span></button>`);
   }
   const r = await currentReport();
   $app.innerHTML = `
@@ -363,9 +439,9 @@ async function renderBooks() {
   const books = await getBooks();
   const rows = [];
   for (const b of books) {
-    const { n, sc } = await bookSummary(b);
+    const { n } = await bookSummary(b); const sc = (await bookMastery(b)).pct;
     rows.push(`<button class="row" data-book="${esc(b.id)}"><div class="top"><span style="display:flex;gap:12px;align-items:center"><span class="spine" style="background:${coverColour(b)}" aria-hidden="true"></span><span><b style="font-weight:600" data-raw>${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.subject ? esc(b.subject) + ' · ' : ''}${b.units.length} chapters · ${n} questions${b.library ? '' : ' · uploaded'}</span></span></span>
-      <span style="font-weight:600;white-space:nowrap;color:${sc === null ? 'var(--muted-2)' : sc < 50 ? 'var(--miss)' : 'var(--good)'}">${sc === null ? '' : sc + '%'}</span></div></button>`);
+      <span class="m-pill ${sc >= 80 ? 'good' : sc >= 60 ? 'mid' : ''}">${sc}%<small>mastered</small></span></div></button>`);
   }
   $app.innerHTML = `
   <main class="pad stack g18" data-view="books" style="flex:1">
@@ -666,20 +742,22 @@ async function renderBook(bookId) {
     const qs = await getQs(book.id, u.id);
     const unseen = qs.filter((q) => !local.stats[q.id] && matchType(q, t)).length;
     const done = qs.filter((q) => local.stats[q.id]).length;
-    const sc = scoreOf(qs);
+    const sc = chapterMastery(u, qs).pct;
     const on = pick.ids.has(u.id);
     const sh = levelShift(book.id, u.id);
     const status = (qs.length || done ? `${unseen} ready · ${done} done` : 'New questions will be made') + (sh > 0 ? ' · harder questions now' : sh < 0 ? ' · more basics first' : '');
     rows.push(`<button class="row selectable ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}">
-      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span data-raw>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? 'var(--muted-2)' : sc < 50 ? 'var(--miss)' : 'var(--good)'}">${sc === null ? '' : sc + '%'}</span></div>
+      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span data-raw>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${!done ? 'var(--muted-2)' : sc < 60 ? 'var(--miss)' : sc < 80 ? 'var(--accent)' : 'var(--good)'}">${done ? sc + '%' : ''}</span></div>
       <span class="muted" style="font-size:12px;padding-left:36px">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
-      ${sc !== null ? `<div class="bar ${sc < 50 ? 'warn' : ''}" style="margin-left:36px"><i style="width:${sc}%"></i></div>` : ''}</button>`);
+      ${done ? `<div class="bar ${sc < 60 ? 'warn' : sc < 80 ? 'mid' : ''}" style="margin-left:36px"><i style="width:${sc}%"></i></div>` : ''}</button>`);
   }
+  const bm = await bookMastery(book);
   const n = pick.ids.size;
   const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-raw>${esc(book.title)}</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+    ${masteryCard(bm)}
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
       <p style="margin:0;font-size:15px;font-weight:600">1. Choose chapters</p>
       ${book.units.length > 1 ? `<button class="link" id="all" style="padding:0">${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
@@ -693,7 +771,7 @@ async function renderBook(bookId) {
     <p class="muted" style="font-size:12px;margin:-6px 0 0;line-height:1.5">${{ science: 'Questions test ideas, experiments and data.', maths: 'Calculation questions with method marks; a maths keyboard helps you type working.', language: 'Comprehension, vocabulary, grammar and writing tasks marked with a rubric.', humanities: 'Source- and data-based questions, and “to what extent” questions.' }[kindOfBook(book)]}</p>
     <button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>
-  <div class="sheet sticky setup">
+  <div class="sheet sticky setup ${n ? 'armed' : ''}">
     <p style="margin:0;font-size:15px;font-weight:600">2. Set up your practice</p>
     <div class="setup-row">
       <span id="types-label">Questions</span>
@@ -724,6 +802,8 @@ async function renderBook(bookId) {
   document.getElementById('plus').onclick = () => step((local.count || SESSION_SIZE) >= 20 ? 10 : 5);
   document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || SESSION_SIZE); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
+  const bst = document.getElementById('boost'); if (bst) bst.onclick = () => boostSession(book);
+  $app.querySelectorAll('[data-step-unit]').forEach((b) => (b.onclick = () => { pick.ids = new Set([b.dataset.stepUnit]); keep(); }));
   document.getElementById('editch').onclick = () => go({ name: 'edit', bookId });
   document.getElementById('kind').onchange = async (e) => {
     const books = await store.get('books', []); const b = books.find((x) => x.id === bookId);
@@ -879,11 +959,16 @@ async function currentReport() {
   const books = await getBooks();
   const practised = new Set(local.log.filter((e) => e.t >= Date.now() - 7 * DAY).map((e) => e.q.split(':')[0]));
   const names = books.filter((b) => practised.has(b.id)).map((b) => b.subject || b.title);
-  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG });
+  const ms = []; for (const b of books) { const m = await bookMastery(b); if (m.chapters.some((c) => c.done)) ms.push([b.subject || b.title, m.pct]); }
+  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms });
 }
 
 async function renderProgress() {
   const r = await currentReport();
+  const mbooks = await getBooks();
+  const mrows = [];
+  for (const b of mbooks) { const m = await bookMastery(b); mrows.push(`<button class="mrowb" data-book="${esc(b.id)}"><span class="spine" style="background:${coverColour(b)}" aria-hidden="true"></span><span class="mt"><b data-raw>${esc(b.subject || b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : ''}">${m.pct}%</span></button>`); }
+  const mastHTML = mrows.length ? `<section class="card stack g10" style="padding:14px 16px"><b style="font-size:15px">How ready you are</b>${mrows.join('')}<span class="hint">Mastery counts how much of each book you’ve practised, how well, and whether you’ve kept it fresh with reviews.</span></section>` : '';
   const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'narrow' }));
   const mins = r.days.reduce((a, m) => a + m, 0);
   const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`;
@@ -898,6 +983,7 @@ async function renderProgress() {
       <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${hm}</b><span>practising</span></div>
       <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.a === null ? '–' : r.a + '%'}</b>${trend}</div>
     </div>
+    ${mastHTML}
     <div class="skills-wrap" data-raw>${skillsHTML(r, LANG === 'zh')}</div>
     <div class="card stack g10" style="padding:14px 16px">
       <b style="font-size:15px">Your report for parents</b>
@@ -912,6 +998,7 @@ async function renderProgress() {
     <button class="btn" id="send" style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
     <span class="hint" style="text-align:center">Opens WhatsApp or another app with a link. Your parent doesn't need to sign in.</span>
   </div>`;
+  $app.querySelectorAll('.mrowb[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   const nameEl = document.getElementById('name');
   nameEl.oninput = () => { local.name = nameEl.value.trim().slice(0, 30); saveLocal(); };
   const link = async () => { const rep = await currentReport(); return { rep, url: `${location.origin}${location.pathname.replace(/[^/]*$/, '')}report.html#d=${encodeReport(rep)}` }; };

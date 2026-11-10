@@ -22,7 +22,7 @@ function acc(entries) {
 const shortTitle = (c) => c.replace(/\s*\(part \d+ of \d+\)$/i, '');
 
 // Build the report from the log. `stats` gives the spaced-review box per question.
-export function buildReport({ log, stats, name, books, lang }) {
+export function buildReport({ log, stats, name, books, lang, ms }) {
   const zh = lang === 'zh'; const T = (en, c) => (zh ? c : en);
   const today = dayStart(Date.now());
   const from = today - 6 * DAY, prevFrom = from - 7 * DAY;
@@ -89,7 +89,7 @@ export function buildReport({ log, stats, name, books, lang }) {
   const a = acc(week), pa = acc(prev);
   return {
     v: 1, u: zh ? 'zh' : 'en', n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
-    days, q: week.length, a, pa, dp: daysPractised, ch: chapters, up, weak, rev, next, sk,
+    days, q: week.length, a, pa, dp: daysPractised, ch: chapters, up, weak, rev, next, sk, ms: (ms || []).slice(0, 6).map(([n, p]) => [String(n).slice(0, 40), p]),
   };
 }
 
@@ -154,6 +154,9 @@ export function reportHTML(r) {
     </section>` : ''}
     ${r.up ? `<section class="rep-good"><small>${T('Getting better at', '有進步')}</small><p>${esc(r.up)}</p></section>` : ''}
     ${r.weak ? `<section class="rep-weak"><small>${T('Needs more practice', '需要多加練習')}</small><p>${esc(r.weak)}</p></section>` : ''}
+    ${r.ms && r.ms.length ? `<section class="rep-card"><h2>${T('How ready for each subject', '各科準備程度')}</h2>
+      ${r.ms.map(([n, p]) => `<div class="rep-ch"><div><span>${esc(n)}</span><b class="${p >= 70 ? 'ok' : 'warn'}">${p}% ${T('mastered', '掌握')}</b></div><div class="rep-bar ${p >= 70 ? 'ok' : 'warn'}"><i style="width:${p}%"></i></div></div>`).join('')}
+      <p class="rep-note">${T('Mastery combines how much of the textbook has been practised, how well, and whether it has been reviewed.', '掌握程度綜合了練習了課本多少內容、表現如何，以及有否定期溫習。')}</p></section>` : ''}
     ${skillsHTML(r)}
     <section class="rep-card"><h2>${T('Remembering what was learned', '記住所學')}</h2><p>${esc(r.rev)}</p></section>
     <section class="rep-next"><small>${T('Suggested for next week', '下週建議')}</small><p>${esc(r.next)}</p></section>
