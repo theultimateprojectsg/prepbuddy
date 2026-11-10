@@ -14,7 +14,7 @@ const LKEY = 'prepbuddy.v2';
 function loadLocal() {
   try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; }
 }
-const local = Object.assign({ stats: {}, reports: [], code: '', usage: {} }, loadLocal());
+const local = Object.assign({ stats: {}, reports: [], code: '', usage: {}, log: [] }, loadLocal());
 function saveLocal() { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) {} }
 
 /* ---------- helpers ---------- */
@@ -819,7 +819,11 @@ function record(q, got) {
   const s = local.stats[q.id] || { seen: 0, got: 0, total: 0, last: 0 };
   s.seen++; s.got += got; s.total += marksOf(q); s.last = got / marksOf(q);
   schedule(s, got >= marksOf(q));
-  local.stats[q.id] = s; saveLocal();
+  local.stats[q.id] = s;
+  // Activity log for progress reports: when, which question/chapter, marks, and how it was practised.
+  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '' });
+  if (local.log.length > 5000) local.log = local.log.slice(-5000);
+  saveLocal();
 }
 
 let quitArmed = 0;
