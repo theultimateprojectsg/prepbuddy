@@ -804,7 +804,7 @@ let pick = { bookId: null, ids: new Set() }; // chapters ticked on the book scre
 async function renderBook(bookId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   if (!book) return go({ name: 'home' });
-  if (pick.bookId !== bookId) pick = { bookId, ids: new Set() };
+  if (pick.bookId !== bookId) pick = { bookId, ids: new Set(), open: new Set() };
   if (!book.kind) {
     const books = await store.get('books', []); const b = books.find((x) => x.id === bookId);
     const sample = book.units[0] ? await store.get(`text:${bookId}:${book.units[0].id}`, '') : '';
@@ -816,40 +816,68 @@ async function renderBook(bookId) {
   const count = local.count || SESSION_SIZE;
   const bm = await bookMastery(book);
   const bmByUnit = Object.fromEntries(bm.chapters.map((c) => [c.unit.id, c]));
-  const rows = [];
-  let lastChapter = null;
-  for (const u of book.units) {
-    if (u.chapter && u.chapter !== lastChapter) { rows.push(`<div class="chapter-head">${esc(u.chapter)}</div>`); lastChapter = u.chapter; }
-    const qs = await getQs(book.id, u.id);
-    const unseen = qs.filter((q) => !local.stats[q.id] && matchType(q, t)).length;
-    const done = qs.filter((q) => local.stats[q.id]).length;
-    const sc = (bmByUnit[u.id] || { pct: 0 }).pct;
+  // Sections are grouped under their chapter ("1.1", "1.2" → Chapter 1) so long books stay short to scroll.
+  const groupOf = (u) => { if (u.chapter) return u.chapter; const m = String(u.title).match(/^\s*(\d{1,2})\.\d/); return m ? `Chapter ${m[1]}` : null; };
+  const groups = [];
+  // sections without a number (e.g. "Glossary") belong to the chapter they follow
+  for (const u of book.units) { const last = groups[groups.length - 1]; const g = groupOf(u) || (last ? last.name : ''); if (last && last.name === g) last.units.push(u); else groups.push({ name: g, units: [u] }); }
+  const grouped = book.units.length > 12 && groups.length >= 2 && groups.every((g) => g.name);
+  if (!pick.open) pick.open = new Set();
+  if (grouped && !pick.openSet) {
+    pick.openSet = true;
+    groups.forEach((g) => { if (g.units.some((u) => pick.ids.has(u.id) || (bmByUnit[u.id] || {}).done)) pick.open.add(g.name); });
+    if (!pick.open.size) pick.open.add(groups[0].name);
+  }
+  const cleanTitle = (t) => String(t).replace(/\s*\*+\s*$/, '');
+  const pctColour = (sc) => (sc < 60 ? 'var(--miss)' : sc < 80 ? 'var(--accent)' : 'var(--good)');
+  const row = (u) => {
+    const c = bmByUnit[u.id] || { pct: 0, done: 0 };
     const on = pick.ids.has(u.id);
     const sh = levelShift(book.id, u.id);
-    const status = (qs.length || done ? `${unseen} ready · ${done} done` : 'New questions will be made') + (sh > 0 ? ' · harder questions now' : sh < 0 ? ' · more basics first' : '');
-    rows.push(`<button class="row selectable ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}">
-      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span data-raw>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${!done ? 'var(--muted-2)' : sc < 60 ? 'var(--miss)' : sc < 80 ? 'var(--accent)' : 'var(--good)'}">${done ? sc + '%' : ''}</span></div>
-      <span class="muted" style="font-size:12px;padding-left:36px">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
-      ${done ? `<div class="bar ${sc < 60 ? 'warn' : sc < 80 ? 'mid' : ''}" style="margin-left:36px"><i style="width:${sc}%"></i></div>` : ''}</button>`);
-  }
+    return `<button class="crow ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}" data-name="${esc(String(u.title).toLowerCase())}" title="${u.startPage ? `pp. ${u.startPage}–${u.endPage}` : ''}${sh > 0 ? ' · harder questions now' : sh < 0 ? ' · more basics first' : ''}">
+      <span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span>
+      <span class="ct" data-raw>${esc(cleanTitle(u.title))}</span>
+      ${c.done ? `<span class="cp" style="color:${pctColour(c.pct)}">${c.pct}%</span>` : `<span class="cpp">${u.startPage ? `p. ${u.startPage}` : ''}</span>`}
+    </button>`;
+  };
+  const listHTML = grouped
+    ? groups.map((g) => {
+      const open = pick.open.has(g.name);
+      const ids = g.units.map((u) => u.id);
+      const nOn = ids.filter((id) => pick.ids.has(id)).length;
+      const done = g.units.some((u) => (bmByUnit[u.id] || {}).done);
+      const w = g.units.reduce((t, u) => t + ((bmByUnit[u.id] || {}).weight || 1), 0) || 1;
+      const gp = Math.round(g.units.reduce((t, u) => t + ((bmByUnit[u.id] || {}).pct || 0) * ((bmByUnit[u.id] || {}).weight || 1), 0) / w);
+      return `<section class="cgroup ${open ? 'open' : ''}" data-g="${esc(g.name)}">
+        <div class="ghead">
+          <button class="gpick box ${nOn === ids.length ? 'on' : ''}" data-gpick="${esc(g.name)}" aria-label="Tick all of ${esc(g.name)}">${nOn === ids.length ? ICON.check : nOn ? '<i class="partial"></i>' : ''}</button>
+          <button class="gtoggle" data-gtoggle="${esc(g.name)}" aria-expanded="${open}"><b data-raw>${esc(g.name)}</b><span class="gmeta">${g.units.length} sections${nOn ? ` · ${nOn} ticked` : ''}</span>${done ? `<span class="cp" style="color:${pctColour(gp)}">${gp}%</span>` : ''}<span class="chev" aria-hidden="true">${ICON.back}</span></button>
+        </div>
+        ${open ? `<div class="gbody">${g.units.map(row).join('')}</div>` : ''}
+      </section>`;
+    }).join('')
+    : `<div class="gbody flat">${book.units.map(row).join('')}</div>`;
   const n = pick.ids.size;
   const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-raw>${esc(book.title)}</span></div>
-  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
-    ${masteryCard(bm)}
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-      <p style="margin:0;font-size:15px;font-weight:600">1. Choose chapters</p>
+  <div class="bookpage">
+  <main class="bk-main stack g14">
+    <div class="chtools">
+      <p style="margin:0;font-size:15px;font-weight:600">1. Choose chapters <span class="muted" style="font-weight:500">(${book.units.length})</span></p>
       ${book.units.length > 1 ? `<button class="link" id="all" style="padding:0">${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
+      ${book.units.length > 12 ? `<label class="chsearch"><span aria-hidden="true">${ICON.search}</span><input id="chsearch" type="search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>` : ''}
     </div>
-    <div class="card stack">${rows.join('')}</div>
+    <div class="chlist" id="chlist">${listHTML}</div>
     <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
       ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
       : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'ai' ? 'the contents page and headings, checked by AI' : book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
     <button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>
-  <div class="sheet sticky setup ${n ? 'armed' : ''}">
-    <p style="margin:0;font-size:15px;font-weight:600">2. Set up your practice</p>
+  <aside class="bk-side">
+    ${masteryCard(bm)}
+  <div class="sheet sticky setup ${n ? 'armed' : ''} ${pick.opts ? 'expanded' : ''}">
+    <div class="setup-head"><p style="margin:0;font-size:15px;font-weight:600">2. Set up your practice${n ? ` <span class="muted" style="font-weight:500">· ${n} chapter${n > 1 ? 's' : ''} ticked</span>` : ''}</p>${n ? `<button class="link setup-more" id="opts" aria-expanded="${!!pick.opts}">${pick.opts ? 'Fewer options' : 'More options'}</button>` : ''}</div>
     <div class="setup-row">
       <span id="types-label">Questions</span>
       <div class="seg" role="radiogroup" aria-labelledby="types-label">
@@ -864,16 +892,35 @@ async function renderBook(bookId) {
         <button id="plus" aria-label="More questions" ${count >= 100 ? 'disabled' : ''}>+</button>
       </div>
     </div>
-    <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter above'}</button>
+    <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter'}</button>
     <button class="btn ghost" id="ctest" ${n ? '' : 'disabled'}>${ICON.clock} Take a chapter test</button>
     <div class="revise-row"><button class="btn ghost" id="notes" ${n ? '' : 'disabled'}>${ICON.notes} Notes</button><button class="btn ghost" id="cards" ${n ? '' : 'disabled'}>${ICON.cards} Flashcards</button></div>
     <button class="link" id="paper" style="align-self:center;padding:2px 0">Or make a DSE-style mock paper / worksheet</button>
+  </div>
+  </aside>
   </div>`;
+  $app.querySelectorAll('[data-gtoggle]').forEach((b) => (b.onclick = () => { const g = b.dataset.gtoggle; pick.open.has(g) ? pick.open.delete(g) : pick.open.add(g); keep(); }));
+  $app.querySelectorAll('[data-gpick]').forEach((b) => (b.onclick = () => {
+    const g = groups.find((x) => x.name === b.dataset.gpick); const ids = g.units.map((u) => u.id);
+    const all = ids.every((id) => pick.ids.has(id));
+    ids.forEach((id) => (all ? pick.ids.delete(id) : pick.ids.add(id))); if (!all) pick.open.add(g.name); keep();
+  }));
+  const op = document.getElementById('opts'); if (op) op.onclick = () => { pick.opts = !pick.opts; keep(); };
+  const cs = document.getElementById('chsearch');
+  if (cs) cs.oninput = () => {
+    const w = cs.value.trim().toLowerCase();
+    if (grouped && w) {   // searching: show matching sections from every group
+      document.getElementById('chlist').innerHTML = `<div class="gbody flat">${book.units.filter((u) => String(u.title).toLowerCase().includes(w)).map(row).join('') || '<p class="muted" style="margin:12px 16px">No chapter matches.</p>'}</div>`;
+    } else if (grouped) return keep(); // back to the grouped list
+    else $app.querySelectorAll('.crow').forEach((r) => { r.hidden = !!w && !r.dataset.name.includes(w); });
+    bindRows();
+  };
   const keep = async () => { const y = window.scrollY; await renderBook(bookId); window.scrollTo(0, y); };
   document.getElementById('back').onclick = () => { pick = { bookId: null, ids: new Set() }; go({ name: 'home' }); };
   const a = document.getElementById('all');
   if (a) a.onclick = () => { if (pick.ids.size === book.units.length) pick.ids.clear(); else book.units.forEach((u) => pick.ids.add(u.id)); keep(); };
-  $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => { const id = b.dataset.unit; pick.ids.has(id) ? pick.ids.delete(id) : pick.ids.add(id); keep(); }));
+  function bindRows() { $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => { const id = b.dataset.unit; pick.ids.has(id) ? pick.ids.delete(id) : pick.ids.add(id); keep(); })); }
+  bindRows();
   $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; saveLocal(); keep(); }));
   const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || SESSION_SIZE) + d)); saveLocal(); keep(); };
   document.getElementById('minus').onclick = () => step((local.count || SESSION_SIZE) > 20 ? -10 : -5);

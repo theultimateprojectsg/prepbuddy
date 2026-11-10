@@ -27,6 +27,11 @@ const EXACT = {
   'You choose the chapters and length next.': '下一步選擇章節和長度。',
   'All my textbooks': '我的所有課本',
   'Introduction': '引言',
+  'More options': '更多選項',
+  'Fewer options': '較少選項',
+  'Find a chapter': '搜尋章節',
+  'Tick at least one chapter': '請剔選最少一個章節',
+  'No chapter matches.': '沒有符合的章節。',
   'Search the library by title, subject or book code. PrepBuddy turns each chapter into exam practice, notes and flashcards, and marks your answers.': '以書名、科目或課本編號搜尋課本庫。PrepBuddy 會把每一章變成應試練習、筆記和溫習卡，並批改你的答案。',
   'Check the spelling or the book code and try again.': '請檢查拼寫或課本編號，再試一次。',
   'Exam ready': '準備應考',
@@ -454,6 +459,10 @@ const PATTERNS = [
   [/^(\d+) min · pass mark 80%$/, '$1 分鐘 · 合格分數 80%'],
   [/^(\d+)%$/, '$1%'],
   [/^Adding… (\d+)%$/, '加入中… $1%'],
+  [/^Chapter (\d+)$/, '第 $1 章'],
+  [/^(\d+) sections( · (\d+) ticked)?$/, (m, n, x, k) => `${n} 節${k ? ` · 已剔 ${k} 節` : ''}`],
+  [/^· (\d+) chapters? ticked$/, '· 已剔 $1 章'],
+  [/^Tick all of (.+)$/, '剔選整個$1'],
   [/^(\d+) chapters$/, '$1 個章節'],
 ];
 

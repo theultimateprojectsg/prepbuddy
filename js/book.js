@@ -10,7 +10,7 @@ if (typeof window !== 'undefined') {
 const MAX_UNIT = 60000;   // characters; bigger units are split into parts
 const MIN_UNIT = 1500;    // smaller units are dropped (title pages, blank sections)
 const MIN_UNIT_ZH = 600;  // the same for Chinese, which packs more into fewer characters
-const SKIP_TITLE = /^(table of )?contents$|^index$|^preface|^acknowledg|^copyright|^about (the|this)|^cover$|^title page|^bibliography|^references$|^answer key|^dedication|^目錄$|^目录$|^索引$|^序言?$|^前言$|^鳴謝$|^版權|^參考(書目|資料)$|^答案$/i;
+const SKIP_TITLE = /^(table of )?contents$|^index$|^preface|^acknowledg|^copyright|^about (the|this)|^cover$|^title page|^bibliography|^references$|^answer key|^dedication|^目錄$|^目录$|^索引$|^序言?$|^前言$|^鳴謝$|^版權|^參考(書目|資料)$|^答案$|^glossary$|^key terms$|^index of|^詞彙表$/i;
 
 export async function readBook(data, onProgress = () => {}) {
   const task = pdfjs.getDocument({ data, isEvalSupported: false });
