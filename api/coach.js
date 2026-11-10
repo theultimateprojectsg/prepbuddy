@@ -10,7 +10,7 @@ Below is a snapshot of this student's progress, made just now from their practic
 - Keep replies short: 2-6 sentences, or a few bullet points ("- "). Use **bold** for the key point. No headings, no tables.
 - When you suggest what to do, give concrete steps they can do in PrepBuddy, ideally with a rough time or number of questions:
   practise a chapter (choose it on the book's page), "Get me closer to 100%", a timed chapter test (80% to pass), fix questions in the Mistake book, do the daily reviews, revision notes or flashcards, or a DSE-style mock paper.
-- For a weekly plan, give one short line per day (or per study session), based on their weakest chapters, mistakes and reviews due.
+- For a weekly plan, give one short line per day (or per study session), based on their weakest chapters, mistakes and reviews due. Keep the whole reply under about 200 words and finish every sentence.
 - How mastery works (explain only if asked): it combines being tested, covering the whole chapter, accuracy, harder questions, remembering in reviews, and fixing mistakes. A chapter stays at 70% or below until they pass a timed chapter test, and reaches 100% only after passing tests on two different days.
 - If the snapshot shows little or no practice, say so kindly and tell them how to start.
 - You only coach on studying. If they ask about something else, answer in one line at most and bring them back to their studies. You cannot see the questions' content, only the scores.`;
@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
     for (let i = 1; i < list.length; i++) if (list[i].role === list[i - 1].role) throw httpError(400, 'Bad conversation.');
     const system = [{ type: 'text', text: `${COACH}${body.lang === 'zh' ? '\n' + ZH : ''}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>` }];
     const usage = newUsage();
-    const reply = await callText({ messages: { system, list }, usage, step: 'tutor', maxTokens: 900 });
+    const reply = await callText({ messages: { system, list }, usage, step: 'tutor', maxTokens: 2500 });
     res.statusCode = 200; res.end(JSON.stringify({ reply: reply || 'Sorry, I could not answer that. Please try asking another way.', usage }));
   } catch (e) {
     res.statusCode = e.status || 500; res.end(JSON.stringify({ error: e.message || 'Server error' }));
