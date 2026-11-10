@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PrepBuddy admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap">
+<style>
+:root{--ink:#1E2A5A;--text-2:#3F4868;--muted:#5A6380;--line:#DCE2EE;--bg:#F4F6FA;--grid:#E3E8F1;--accent:#26357A;--accent-soft:#EEF1FB;--good:#18966A;--good-soft:#E5F5EE;--miss:#D93A2B;--miss-soft:#FDEEEC;--hl:#FFE066;
+  --ui:'Lexend',system-ui,-apple-system,'PingFang HK','Microsoft JhengHei','Noto Sans TC',sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui)}
+body{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px}
+.wrap{max-width:860px;margin:0 auto;padding:28px 20px 80px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{margin:0;font-size:24px}h2{margin:0;font-size:18px}h3{margin:0;font-size:15px}
+.badge{font-size:12px;font-weight:600;background:var(--hl);border-radius:999px;padding:3px 10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.muted{color:var(--muted)}.hint{font-size:13px;color:var(--muted);line-height:1.5}
+.btn{border:none;border-radius:12px;background:var(--accent);color:#fff;font:600 15px var(--ui);padding:12px 18px;cursor:pointer}
+.btn:disabled{background:#B7BDD0;cursor:default}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.danger{background:var(--miss)}
+.link{background:none;border:none;color:var(--accent);font:600 14px var(--ui);cursor:pointer;padding:4px 0}
+.link.red{color:var(--miss)}
+input,select,textarea{font:15px var(--ui);color:var(--ink);border:1.5px solid #CDD4E3;border-radius:10px;padding:10px 12px;background:#fff;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+label{display:flex;flex-direction:column;gap:6px;font-size:13.5px;font-weight:600;color:var(--text-2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.grid2{grid-template-columns:1fr}}
+.row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid #EEF1F6}
+.row:first-child{border-top:none}
+.row .meta{display:flex;flex-direction:column;gap:3px;min-width:0}.row .meta span{font-size:13px;color:var(--muted)}
+.acts{display:flex;gap:14px;flex-wrap:wrap}
+.chap{border-top:1px solid #EEF1F6;padding:12px 0;display:flex;flex-direction:column;gap:8px}
+.chap:first-child{border-top:none}
+.chap .top{display:flex;gap:10px;align-items:center}
+.chap .num{flex:none;width:28px;height:28px;border-radius:8px;background:var(--accent-soft);display:grid;place-items:center;font-size:13px;font-weight:600}
+.chap .pp{flex:none;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.chap details summary{cursor:pointer;font-size:13px;color:var(--accent);font-weight:600}
+.chap pre{white-space:pre-wrap;font:13px/1.5 var(--ui);color:var(--text-2);background:#F7F8FB;border-radius:10px;padding:10px;max-height:180px;overflow:auto;margin:6px 0 0}
+.split{background:var(--accent-soft);border-radius:10px;padding:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.split select{width:auto;flex:1;min-width:200px}
+.progress{height:8px;border-radius:4px;background:#E3E7F1;overflow:hidden}.progress i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.ok{background:var(--good-soft);color:#0E6E4D;border-radius:12px;padding:12px 14px;font-weight:600}
+.err{background:var(--miss-soft);color:#B22A1E;border-radius:12px;padding:12px 14px;font-weight:600}
+.steps{display:flex;gap:8px;flex-wrap:wrap}.steps span{font-size:13px;padding:5px 12px;border-radius:999px;background:#E9ECF4;color:var(--muted)}
+.steps span.on{background:var(--ink);color:#fff}
+.check{flex-direction:row;align-items:flex-start;gap:10px;font-weight:500}.check input{width:auto;margin-top:3px}
+:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="muted">Loading…</p></div>
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>
