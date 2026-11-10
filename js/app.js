@@ -377,7 +377,7 @@ function renderUsage() {
 
 /* ---------- sessions ---------- */
 function newSession(props) {
-  return Object.assign({ i: 0, answers: [], got: [], ticks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
+  return Object.assign({ i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
 }
 
 // A session over one or more chapters: questions are spread evenly across them.
@@ -624,6 +624,31 @@ function partsGot(q) {
   return (q.parts || []).reduce((s, p, k) => s + Math.min(p.marks, ticks ? ticks[k].filter(Boolean).length : 0), 0);
 }
 
+// Ask the AI to mark a written answer. The result pre-ticks the mark-scheme points;
+// the student can still change a tick if they disagree.
+async function markAnswer(sess, idx) {
+  await null; // never re-render in the middle of drawing a screen
+  const q = sess.qs[idx];
+  const answers = sess.answers[idx] || q.parts.map(() => '');
+  sess.marks = sess.marks || {};
+  if (!answers.some((a) => (a || '').trim())) {
+    sess.marks[idx] = { parts: q.parts.map(() => ({ awarded: [], feedback: 'No answer written.' })), tip: '' };
+  } else {
+    sess.marks[idx] = { pending: true };
+    try {
+      const [bookId, unitId] = q.id.split(':');
+      const text = await store.get(`text:${bookId}:${unitId}`, '');
+      if (!text) throw new Error('missing text');
+      sess.marks[idx] = await api('mark', { title: q.section, text, question: q, answers });
+    } catch (e) {
+      sess.marks[idx] = { error: e.status === 0 ? 'You seem to be offline, so the AI could not mark this.' : 'The AI marker is not available right now.' };
+    }
+  }
+  const m = sess.marks[idx];
+  if (m.parts) sess.ticks[idx] = q.parts.map((p, k) => p.mark_scheme.map((_, j) => ((m.parts[k] || {}).awarded || []).includes(j)));
+  if (sess === S && S.i === idx) { const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }
+}
+
 function writtenBody(q, revealed) {
   const ans = S.answers[S.i] || q.parts.map(() => '');
   const stem = q.stem ? renderStem(q.stem) : '';
@@ -632,24 +657,49 @@ function writtenBody(q, revealed) {
       <label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
       <textarea id="a${k}" placeholder="Type, or tap the microphone on your keyboard to speak">${esc(ans[k])}</textarea></div>`).join('');
     const main = `${stem}${parts}<p class="hint">Aim for one clear point per mark.</p>`;
-    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${S.mode === 'mock' ? nextLabel() : 'Check my answer'}</button>${S.mode === 'mock' ? '' : '<button class="link quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
+    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${S.mode === 'mock' ? nextLabel() : 'Mark my answer'}</button>${S.mode === 'mock' ? '' : '<button class="link quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
     return { main, footer, bind() {
       const grab = () => { S.answers[S.i] = [...$app.querySelectorAll('textarea')].map((t) => t.value); };
       $app.querySelectorAll('textarea').forEach((t) => (t.oninput = grab));
-      document.getElementById('check').onclick = () => { grab(); if (S.mode === 'mock') return advance(); S.phase = 'revealed'; renderQuestion(); };
-      const sk = document.getElementById('skip'); if (sk) sk.onclick = () => { grab(); S.phase = 'revealed'; renderQuestion(); };
+      document.getElementById('check').onclick = () => {
+        grab();
+        if (S.mode === 'mock') return advance();
+        S.phase = 'revealed'; markAnswer(S, S.i); renderQuestion();
+      };
+      const sk = document.getElementById('skip');
+      if (sk) sk.onclick = () => { grab(); S.marks = S.marks || {}; S.marks[S.i] = { skipped: true }; S.phase = 'revealed'; renderQuestion(); };
     } };
   }
+  S.marks = S.marks || {};
+  // In a mock's review, written answers are marked as each one is shown.
+  if (!S.marks[S.i]) markAnswer(S, S.i);
+  const m = S.marks[S.i] || { pending: true };
+  if (m.pending) {
+    return {
+      main: `${stem}${q.parts.map((p, k) => `<div class="part"><div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
+        <div class="yours ${ans[k] && ans[k].trim() ? '' : 'empty'}">${ans[k] && ans[k].trim() ? esc(ans[k]) : 'No answer written'}</div></div>`).join('')}`,
+      footer: `<div class="sheet" style="align-items:center;text-align:center"><div class="spinner" aria-hidden="true"></div><span class="verdict" style="color:#14181F">Marking your answer…</span><span class="hint">Checking it against the mark scheme, point by point.</span></div>`,
+    };
+  }
+  const ai = !!m.parts;
   const ticks = S.ticks[S.i] || (S.ticks[S.i] = q.parts.map((p) => p.mark_scheme.map(() => false)));
-  const partHtml = q.parts.map((p, k) => `<div class="part">
+  const partHtml = q.parts.map((p, k) => {
+    const pm = ai ? m.parts[k] || {} : null;
+    const got = Math.min(p.marks, ticks[k].filter(Boolean).length);
+    return `<div class="part">
       <div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
       <div class="yours ${ans[k] && ans[k].trim() ? '' : 'empty'}">${ans[k] && ans[k].trim() ? esc(ans[k]) : 'No answer written'}</div>
-      <span class="hint" style="font-weight:600">Tick each point your answer makes${p.mark_scheme.length > p.marks ? ` (max ${p.marks})` : ''}:</span>
+      ${pm ? `<div class="marker ${got === p.marks ? 'full' : ''}"><b>${got} / ${p.marks}</b> ${esc(pm.feedback)}</div>` : ''}
+      <span class="hint" style="font-weight:600">${ai ? 'Mark scheme (ticked = points you earned):' : m.skipped ? 'Mark scheme:' : `Tick each point your answer makes${p.mark_scheme.length > p.marks ? ` (max ${p.marks})` : ''}:`}</span>
       ${p.mark_scheme.map((pt, j) => `<button class="point ${ticks[k][j] ? 'on' : ''}" data-k="${k}" data-j="${j}" aria-pressed="${ticks[k][j]}"><span class="box">${ticks[k][j] ? ICON.check : ''}</span><span>${esc(pt.replace(/\s*\(1\)\s*$/, ''))}</span></button>`).join('')}
-    </div>`).join('');
+    </div>`;
+  }).join('');
   const got = partsGot(q);
-  const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} marks</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
-  return { main: `${stem}${partHtml}`, footer, bind() {
+  const note = m.error ? `<p class="hint" style="margin:0;color:#9A3412">${esc(m.error)} Tick the points you made instead.</p>`
+    : ai ? '<p class="hint" style="margin:0">Marked by AI. Think it got one wrong? Tap a point to change it.</p>' : '';
+  const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} marks</span>
+    ${m.tip ? `<p class="expl"><b>Tip:</b> ${esc(m.tip)}</p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
+  return { main: `${stem}${note}${partHtml}`, footer, bind() {
     $app.querySelectorAll('.point').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, j = +b.dataset.j; ticks[k][j] = !ticks[k][j]; const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }));
   } };
 }
