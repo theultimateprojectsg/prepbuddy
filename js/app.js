@@ -246,7 +246,6 @@ async function startUnit(book, unit) {
   if (unit.static) qs = shuffle(all).slice(0, SESSION_SIZE);
   S = newSession({ mode: 'unit', title: unit.title, book, unit, qs, target: unit.static ? qs.length : SESSION_SIZE });
   if (!unit.static && qs.length < SESSION_SIZE) {
-    if (!local.code) return renderAccess(() => startUnit(book, unit));
     runGenerator(S);
   }
   if (S.qs.length) renderQuestion(); else renderWaiting();
