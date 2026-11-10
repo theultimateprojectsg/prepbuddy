@@ -89,7 +89,16 @@ async function allQuestions() {
 }
 
 /* ---------- server ---------- */
+// At most this many AI requests at once from this device, so papers don't hit the API's rate limit.
+const MAX_INFLIGHT = 12;
+let inflight = 0; const waiting = [];
+async function slot() { if (inflight < MAX_INFLIGHT) { inflight++; return; } await new Promise((r) => waiting.push(r)); inflight++; }
+function release() { inflight--; const n = waiting.shift(); if (n) n(); }
 async function api(path, body) {
+  await slot();
+  try { return await apiOnce(path, body); } finally { release(); }
+}
+async function apiOnce(path, body) {
   let r;
   try {
     r = await fetch('/api/' + path, {
@@ -639,12 +648,40 @@ async function preparePaper(book, units, nA, nB, purpose) {
   let all = await pool();
   let A = take(all, true, nA), B = take(all, false, nB);
   show(A.length + B.length);
+  // Sitting the paper: start once the first few questions are ready; the rest are made while the student answers.
+  const enough = () => (nA ? A.length >= Math.min(nA, 4) : B.length >= 1);
+  if (purpose === 'sit') {
+    if (!enough()) {
+      const kick = () => {
+        const js = [];
+        if (A.length < nA) units.forEach((u) => js.push(ensureFill(book, u, Math.ceil((nA - A.length) / units.length), 'mcq', PAPER_PAR)));
+        if (B.length < nB) units.forEach((u) => js.push(ensureFill(book, u, Math.ceil((nB - B.length) / units.length), 'written', PAPER_PAR)));
+        return js;
+      };
+      const js = kick();
+      await new Promise((resolve, reject) => {
+        let left = js.length;
+        js.forEach((j) => j.listeners.add(async (passed, done) => {
+          if (paperJob !== token) return resolve();
+          all = await pool(); A = take(all, true, nA); B = take(all, false, nB); show(A.length + B.length);
+          if (enough()) return resolve();
+          if (done && --left === 0) {
+            const hard = js.map((x) => x.error).find((e) => e && (e.status === 0 || e.status === 401));
+            return hard ? reject(hard) : resolve();
+          }
+        }));
+      });
+      if (paperJob !== token) return null;
+    }
+    if (!A.length && !B.length) throw new Error('No questions could be made for these chapters.');
+    return { A: shuffle(A).map(shuffleOptions), B: shuffle(B), nA, nB, units, live: true };
+  }
   for (let round = 0; round < 4 && (A.length < nA || B.length < nB); round++) {
     if (paperJob !== token) return null;
     const jobs = [];
     const needA = nA - A.length, needB = nB - B.length;
-    if (needA > 0) units.forEach((u) => jobs.push(ensureFill(book, u, Math.ceil(needA / units.length), 'mcq')));
-    if (needB > 0) units.forEach((u) => jobs.push(ensureFill(book, u, Math.ceil(needB / units.length), 'written')));
+    if (needA > 0) units.forEach((u) => jobs.push(ensureFill(book, u, Math.ceil(needA / units.length), 'mcq', PAPER_PAR)));
+    if (needB > 0) units.forEach((u) => jobs.push(ensureFill(book, u, Math.ceil(needB / units.length), 'written', PAPER_PAR)));
     let made = 0; const base = A.length + B.length;
     jobs.forEach((j) => j.listeners.add((passed) => { made += passed.length; if (paperJob === token) show(base + made); }));
     await Promise.all(jobs.map((j) => j.promise));
@@ -663,9 +700,20 @@ async function preparePaper(book, units, nA, nB, purpose) {
   return { A: shuffle(A).map(shuffleOptions), B: shuffle(B) };
 }
 
+const PAPER_PAR = 5;   // batches written side by side per chapter when making a paper
+
 function startDse(book, paper, mins) {
-  const qs = [...paper.A, ...paper.B];
-  S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs, target: qs.length, sectionA: paper.A.length, deadline: Date.now() + mins * 60 * 1000 });
+  if (!paper.live) {
+    const qs = [...paper.A, ...paper.B];
+    S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs, target: qs.length, sectionA: paper.A.length, deadline: Date.now() + mins * 60 * 1000 });
+  } else {
+    // Section A fills up first; written questions wait in bQueue until Section A is complete.
+    const full = paper.A.length >= paper.nA;
+    S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs: full ? [...paper.A, ...paper.B] : [...paper.A], bQueue: full ? [] : [...paper.B],
+      target: paper.nA + paper.nB, sectionA: paper.nA, deadline: Date.now() + mins * 60 * 1000,
+      fill: { units: paper.units, nA: paper.nA, nB: paper.nB, rounds: 0 } });
+    pumpPaper(S);
+  }
   renderQuestion();
   toast(paper.A.length ? `Section A: ${paper.A.length} multiple-choice questions` : 'Section B: written questions');
 }
@@ -757,6 +805,69 @@ async function renderWorksheets() {
   }));
 }
 
+// Keep making questions for a paper that has already started.
+function paperPlace(sess, qs) {
+  const have = new Set([...sess.qs, ...sess.bQueue].map((q) => q.id));
+  const nA = sess.sectionA;
+  for (const q of qs) {
+    if (have.has(q.id)) continue; have.add(q.id);
+    if (isMcqLike(q)) {
+      const aCount = sess.qs.filter((x) => isMcqLike(x)).length;
+      if (aCount >= nA) continue;
+      const lo = Math.min(sess.i + 1, sess.qs.length);   // join the unanswered part of Section A
+      const hi = Math.min(sess.qs.length, nA);
+      sess.qs.splice(lo + Math.floor(Math.random() * (Math.max(lo, hi) - lo + 1)), 0, shuffleOptions(q));
+    } else if (sess.bQueue.length + sess.qs.filter((x) => !isMcqLike(x)).length < sess.fill.nB) sess.bQueue.push(q);
+  }
+  if (sess.qs.length >= nA && sess.bQueue.length) { sess.qs.push(...sess.bQueue.splice(0)); }
+}
+function paperShortfall(sess) {
+  const a = sess.qs.filter((x) => isMcqLike(x)).length, b = sess.qs.length - a + sess.bQueue.length;
+  return { a: Math.max(0, sess.sectionA - a), b: Math.max(0, sess.fill.nB - b) };
+}
+async function pumpPaper(sess) {
+  if (sess.generating || sess.error || sess.review || sess.pumping) return;
+  // first take any new questions already in the bank (e.g. made while the paper was starting)
+  sess.pumping = true;
+  try { let all = []; for (const u of sess.fill.units) all.push(...await getQs(sess.book.id, u.id)); paperPlace(sess, shuffle(all.filter((q) => !local.stats[q.id]))); }
+  finally { sess.pumping = false; }
+  if (sess !== S || sess.generating) return;
+  sessionGrew(false);
+  const { a, b } = paperShortfall(sess);
+  if (!a && !b) return;
+  const f = sess.fill, js = [];
+  if (a) f.units.forEach((u) => js.push(ensureFill(sess.book, u, Math.ceil(a / f.units.length), 'mcq', PAPER_PAR)));
+  if (b) f.units.forEach((u) => js.push(ensureFill(sess.book, u, Math.ceil(b / f.units.length), 'written', PAPER_PAR)));
+  f.rounds++;
+  sess.generating = true; sess.pending = js.length;
+  js.forEach((job) => {
+    const listener = async (passed, done) => {
+      if (sess !== S) { job.listeners.delete(listener); return; }
+      paperPlace(sess, passed);
+      if (done) {
+        sess.pending--;
+        if (job.error && (job.error.status === 0 || job.error.status === 401)) sess.error = job.error;
+        if (sess.pending <= 0) {
+          sess.generating = false;
+          const left = paperShortfall(sess);
+          if ((left.a || left.b) && !sess.error) {
+            if (f.rounds < 4) return pumpPaper(sess), sessionGrew(false);
+            // Out of new material: reuse questions done before, then shrink the paper to what exists.
+            let all = []; for (const u of f.units) all.push(...await getQs(sess.book.id, u.id));
+            paperPlace(sess, shuffle(all));
+            const now = paperShortfall(sess);
+            if (now.a) { sess.sectionA -= now.a; paperPlace(sess, []); }
+            sess.target = sess.qs.length + sess.bQueue.length;
+            if (sess.bQueue.length) sess.qs.push(...sess.bQueue.splice(0));
+          }
+        }
+      }
+      sessionGrew(done && !sess.generating);
+    };
+    job.listeners.add(listener);
+  });
+}
+
 /* ---------- sessions ---------- */
 const isExam = () => !!S && (S.mode === 'mock' || S.mode === 'dse');
 
@@ -786,6 +897,7 @@ async function startUnits(book, units, count = SESSION_SIZE) {
 // Ask for just enough new questions to stay AHEAD in front of the student.
 function topUp(sess) {
   if (sess.mode === 'drill') return pumpDrills(sess);
+  if (sess.fill) return pumpPaper(sess);
   if (!sess.units || sess.generating || sess.error) return;
   const ahead = sess.qs.length - (sess.i + 1);
   const need = Math.min(sess.target - sess.qs.length, AHEAD - ahead);
@@ -861,10 +973,10 @@ const jobs = new Map();
 const warmed = new Map(); // chapter -> when its text was last put in the AI's cache
 const PARALLEL = 3;
 
-function ensureFill(book, unit, want, types = 'mix') {
+function ensureFill(book, unit, want, types = 'mix', par = PARALLEL) {
   const key = `${book.id}:${unit.id}:${types}`;
   if (jobs.has(key)) { const j = jobs.get(key); j.want = Math.max(j.want, want); return j; }
-  const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: PLANS[types] || PLAN };
+  const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: PLANS[types] || PLAN, par };
   jobs.set(key, job);
   job.promise = doFill(book, unit, job)
     .catch((e) => { job.error = e; if (e.status === 401) { local.code = ''; saveLocal(); } })
@@ -889,7 +1001,7 @@ async function doFill(book, unit, job) {
       const slot = started; started += BATCH;
       const items = Array.from({ length: BATCH }, (_, k) => job.plan[(slot + k) % job.plan.length]).map(([level, type]) => ({ level, type }));
       const avoid = existing.map((q) => (q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200));
-      const focus = { part: ((slot / BATCH) % PARALLEL) + 1, of: PARALLEL };
+      const focus = { part: ((slot / BATCH) % job.par) + 1, of: job.par };
       let gen;
       try { gen = await api('generate', { title, text, items, avoid, focus, lang: langOf(text) }); }
       catch (e) { if (e.status === 401 || e.status === 0) { stop = true; throw e; } if (!job.error) job.error = e; continue; }
@@ -909,7 +1021,7 @@ async function doFill(book, unit, job) {
       job.listeners.forEach((f) => f(passed, false));
     }
   };
-  const n = Math.min(PARALLEL, Math.ceil(job.want / BATCH));
+  const n = Math.min(job.par, Math.ceil(job.want / BATCH));
   const results = await Promise.allSettled(Array.from({ length: n }, (_, w) => worker(w)));
   const failed = results.find((r) => r.status === 'rejected');
   if (failed) throw failed.reason;
@@ -986,6 +1098,7 @@ function renderWaiting() {
   document.getElementById('quit').onclick = () => go({ name: 'home' });
   const r = document.getElementById('retry'); if (r) r.onclick = () => {
     if (S.mode === 'drill') { S.error = null; S.target = Math.max(S.target, S.qs.length + 1); pumpDrills(S); return renderWaiting(); }
+    if (S.fill) { S.error = null; S.fill.rounds = 0; pumpPaper(S); return renderWaiting(); }
     S.target = Math.max(S.target, SESSION_SIZE); refill(S); renderWaiting(); };
   const f = document.getElementById('finish'); if (f) f.onclick = () => { S.qs = S.qs.slice(0, S.i); renderSummary(); };
   const h = document.getElementById('home'); if (h) h.onclick = () => go({ name: 'book', bookId: S.book.id });
@@ -1308,7 +1421,7 @@ function advance() {
     if (S.mode === 'dse' && !S.review && S.i === S.sectionA && S.sectionA) toast('Section B: written questions');
     topUp(S);
     if (S.i < S.qs.length) return renderQuestion();
-    if (!S.generating && !S.error && S.units) refill(S);
+    if (!S.generating && !S.error && (S.units || S.fill)) refill(S);
     return renderWaiting();
   }
   if (isExam() && !S.review) {
