@@ -46,8 +46,49 @@ export async function readBook(data, onProgress = () => {}) {
   let title = null;
   try { const meta = await pdf.getMetadata(); title = (meta && meta.info && meta.info.Title) || null; } catch (e) {}
   try { await task.destroy(); } catch (e) {}
-  return { title, pageCount: n, method, units };
+  const pageTexts = pages.map(joinLines);
+  return { title, pageCount: n, method, units, pageTexts, outline: outlineOf(raw, pages, units) };
 }
+
+/* ---------- chapter tidy-up and editing ----------
+   The outline gives the AI what it needs to fix chapter names: the contents pages, and for every page its
+   printed page number and first lines. */
+function outlineOf(raw, pages, units) {
+  const out = [];
+  const toc = [];
+  for (let i = 0; i < Math.min(pages.length, 20); i++) {
+    if (pages[i].some((l) => /^(table of )?contents$|^目\s*錄$|^目\s*录$/i.test(l.trim()))) toc.push(i);
+  }
+  if (toc.length) {
+    let t = '';
+    for (let i = toc[0]; i < Math.min(pages.length, toc[0] + 6) && t.length < 9000; i++) t += `\n[PDF page ${i + 1}]\n` + pages[i].join('\n');
+    out.push('CONTENTS PAGES:' + t.slice(0, 9000));
+  }
+  out.push('\nCURRENT CHAPTER GUESS:\n' + units.map((u) => `- "${u.title}" pages ${u.startPage}-${u.endPage}`).join('\n'));
+  out.push('\nEVERY PAGE (PDF page, printed page number if found, first lines):');
+  const per = Math.max(60, Math.min(220, Math.floor(60000 / Math.max(1, pages.length))));
+  pages.forEach((lines, i) => {
+    const r = raw[i] || [];
+    const edge = [...r.slice(0, 2), ...r.slice(-2)].map((l) => l.trim());
+    const num = (edge.find((l) => /^\d{1,4}$/.test(l)) || (edge.join(' ').match(/(?:^|\s)(\d{1,4})(?:\s|$)/) || [])[1] || '');
+    out.push(`p${i + 1}${num ? ` (printed ${num})` : ''}: ${lines.slice(0, 3).join(' | ').slice(0, per)}`);
+  });
+  return out.join('\n');
+}
+
+// Units from a list of chapter starts: [{ title, start, skip }] (start = PDF page number).
+export function unitsFromStarts(pageTexts, chapters) {
+  const list = chapters.filter((c) => Number.isInteger(c.start) && c.start >= 1 && c.start <= pageTexts.length)
+    .sort((a, b) => a.start - b.start).filter((c, i, a) => i === 0 || c.start !== a[i - 1].start);
+  const units = [];
+  list.forEach((c, i) => {
+    const end = i + 1 < list.length ? list[i + 1].start - 1 : pageTexts.length;
+    if (c.skip || end < c.start) return;
+    units.push({ title: String(c.title || '').trim() || `Pages ${c.start}–${end}`, chapter: null, startPage: c.start, endPage: end, text: pageTexts.slice(c.start - 1, end).join('\n\n') });
+  });
+  return units.flatMap(splitLarge).filter((u) => u.text.length >= (isChinese(u.text) ? MIN_UNIT_ZH : MIN_UNIT));
+}
+export const pagesText = (pageTexts, start, end) => pageTexts.slice(start - 1, end).join('\n\n');
 
 /* ---------- text ---------- */
 

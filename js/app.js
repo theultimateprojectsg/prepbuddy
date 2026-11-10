@@ -71,6 +71,10 @@ function guessKind(title, text) {
 }
 const kindOfBook = (book) => (book && book.kind) || 'science';
 const bookKinds = new Map(); // bookId -> kind, for calls that only know the question id
+// When chapters are merged, questions keep their ids; `alias` points the old chapter at the one it joined.
+const aliases = new Map(); // bookId -> { oldUnitId: unitId }
+function realUnit(bookId, unitId) { const a = aliases.get(bookId) || {}; let u = unitId; for (let n = 0; a[u] && n < 30; n++) u = a[u]; return u; }
+const qUnit = (qid) => { const [b, u] = String(qid || '').split(':'); return [b, realUnit(b, u)]; };
 async function kindOfId(qid) {
   const id = String(qid || '').split(':')[0];
   if (!bookKinds.has(id)) { const b = (await getBooks()).find((x) => x.id === id); bookKinds.set(id, kindOfBook(b)); }
@@ -209,7 +213,7 @@ let S = null; // current practice session
 
 async function go(v) {
   view = v;
-  getBooks().then((bs) => bs.forEach((b) => bookKinds.set(b.id, kindOfBook(b))));
+  getBooks().then((bs) => bs.forEach((b) => { bookKinds.set(b.id, kindOfBook(b)); aliases.set(b.id, b.alias || {}); }));
   document.querySelectorAll('.toast').forEach((x) => x.remove());
   stopTimer();
   if (v.name === 'home') return renderHome();
@@ -221,6 +225,7 @@ async function go(v) {
   if (v.name === 'pick') return renderPick(v.mode);
   if (v.name === 'worksheets') return renderWorksheets();
   if (v.name === 'notes') return renderNotes(v.bookId);
+  if (v.name === 'edit') return renderEdit(v.bookId);
   if (v.name === 'mistakes') return renderMistakes(v.tab || 'todo');
   if (v.name === 'cards') return renderCards(v.bookId, v.only);
 }
@@ -396,10 +401,15 @@ async function uploadBook(file) {
       show(Math.round(100 * i / n), msg || `Page ${i} of ${n}`);
     });
     if (!book.units.length) throw new Error('No chapters with enough text were found in this PDF.');
+    // AI tidy-up: fix chapter names and boundaries using the contents page and page headings.
+    show(100, 'Checking chapter names…');
+    const tidy = await tidyChapters(file.name, book);
+    if (tidy) { book.units = tidy; book.method = 'ai'; }
     show(100, `Found ${book.units.length} chapters. Saving…`);
     await store.persist();
     const id = 'b' + uid();
     const units = book.units.map((u, i) => ({ id: 'u' + i, title: u.title, chapter: u.chapter || null, startPage: u.startPage, endPage: u.endPage, chars: u.text.length }));
+    if (book.pageTexts) await store.set(`pages:${id}`, book.pageTexts);
     for (let i = 0; i < book.units.length; i++) {
       await store.set(`text:${id}:u${i}`, book.units[i].text);
       if ((book.units[i].figures || []).length) await store.set(`figs:${id}:u${i}`, book.units[i].figures);
@@ -417,6 +427,111 @@ async function uploadBook(file) {
       <button class="btn" id="home">Back to home</button></main>`;
     document.getElementById('home').onclick = () => go({ name: 'home' });
   }
+}
+
+async function tidyChapters(fileName, book) {
+  if (!book.outline || !book.pageTexts) return null;
+  try {
+    const r = await api('chapters', { title: fileName, text: book.outline, pageCount: book.pageCount, lang: langOf(book.outline) });
+    const { unitsFromStarts } = await import('./book.js');
+    const units = unitsFromStarts(book.pageTexts, r.chapters || []);
+    const chars = (us) => us.reduce((a, u) => a + u.text.length, 0);
+    // Only use the AI's version if it is sensible: a few chapters and most of the teaching text kept.
+    if (units.length < 2 || units.length > 150 || chars(units) < 0.6 * chars(book.units)) return null;
+    const figs = book.units.flatMap((u) => u.figures || []);
+    units.forEach((u) => { u.figures = figs.filter((f, i, a) => f.page >= u.startPage && f.page <= u.endPage && a.findIndex((g) => g.page === f.page) === i).slice(0, 6); });
+    return units;
+  } catch (e) { return null; } // offline or AI unavailable: keep the app's own split
+}
+
+/* ---------- edit chapters: rename, merge, split, hide ---------- */
+async function saveBook(book) {
+  const books = await store.get('books', []);
+  const i = books.findIndex((b) => b.id === book.id);
+  if (i >= 0) books[i] = book; await store.set('books', books);
+  aliases.set(book.id, book.alias || {});
+}
+async function renderEdit(bookId, openSplit) {
+  const book = (await getBooks()).find((b) => b.id === bookId);
+  if (!book) return go({ name: 'home' });
+  const pages = await store.get(`pages:${bookId}`, null);
+  const hidden = book.hiddenUnits || [];
+  const row = (u, i) => {
+    const last = i === book.units.length - 1;
+    const canSplit = pages && u.endPage > u.startPage;
+    return `<div class="erow" data-u="${esc(u.id)}">
+      <input class="etitle" data-title="${esc(u.id)}" value="${esc(u.title)}" aria-label="Chapter name" data-raw>
+      <span class="muted epages">${u.startPage ? `pp. ${u.startPage}–${u.endPage}` : ''}</span>
+      ${openSplit === u.id ? `<div class="esplit"><label>Start a new chapter at page <select id="splitAt">${Array.from({ length: u.endPage - u.startPage }, (_, k) => u.startPage + 1 + k).map((p) => `<option value="${p}">${p}${pages[p - 1] ? ` – ${esc(pages[p - 1].split('\n')[0].slice(0, 40))}` : ''}</option>`).join('')}</select></label>
+          <div class="eacts"><button class="btn small" id="doSplit" data-u="${esc(u.id)}">Split here</button><button class="link quiet" id="noSplit">Cancel</button></div></div>`
+        : `<div class="eacts">${last ? '' : `<button class="link" data-merge="${esc(u.id)}">Merge with next</button>`}${canSplit ? `<button class="link" data-split="${esc(u.id)}">Split</button>` : ''}<button class="link quiet" data-hide="${esc(u.id)}">Hide</button></div>`}
+    </div>`;
+  };
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px">Edit chapters</span></div>
+  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Fix chapter names, merge or split chapters, or hide parts that aren’t for revising (like answers or the index). Your questions and progress are kept.</p>
+    ${pages ? '' : `<p class="hint" style="margin:0">${book.library ? 'Library books can be renamed, merged or hidden.' : 'Splitting needs the book uploaded again (books uploaded before today can still be renamed, merged or hidden).'}</p>`}
+    <div class="card stack">${book.units.map(row).join('')}</div>
+    ${hidden.length ? `<p style="margin:6px 0 0;font-size:15px;font-weight:600">Hidden (${hidden.length})</p>
+      <div class="card stack">${hidden.map((u) => `<div class="erow hiddenrow"><span data-raw>${esc(u.title)}</span><span class="muted epages">${u.startPage ? `pp. ${u.startPage}–${u.endPage}` : ''}</span><div class="eacts"><button class="link" data-show="${esc(u.id)}">Show</button></div></div>`).join('')}</div>` : ''}
+  </main>
+  <div class="sheet sticky"><button class="btn" id="done">Done</button></div>`;
+  const again = async (split) => { const y = window.scrollY; await renderEdit(bookId, split); window.scrollTo(0, y); };
+  document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+  document.getElementById('done').onclick = () => go({ name: 'book', bookId });
+  $app.querySelectorAll('[data-title]').forEach((inp) => (inp.onchange = async () => {
+    const u = book.units.find((x) => x.id === inp.dataset.title); const t = inp.value.trim();
+    if (!u || !t || t === u.title) return;
+    u.title = t.slice(0, 140); await saveBook(book);
+    const qs = await getQs(bookId, u.id); qs.forEach((q) => { q.section = u.title; }); await setQs(bookId, u.id, qs);
+    toast('Saved');
+  }));
+  $app.querySelectorAll('[data-merge]').forEach((b) => (b.onclick = async () => {
+    const i = book.units.findIndex((x) => x.id === b.dataset.merge), A = book.units[i], B = book.units[i + 1]; if (!A || !B) return;
+    const tA = await store.get(`text:${bookId}:${A.id}`, ''), tB = await store.get(`text:${bookId}:${B.id}`, '');
+    const text = pages && A.startPage && B.endPage ? pages.slice(A.startPage - 1, B.endPage).join('\n\n') : `${tA}\n\n${tB}`;
+    await store.set(`text:${bookId}:${A.id}`, text);
+    const qa = await getQs(bookId, A.id), qb = await getQs(bookId, B.id);
+    await setQs(bookId, A.id, qa.concat(qb.map((q) => ({ ...q, section: A.title }))));
+    const fa = await store.get(`figs:${bookId}:${A.id}`, []), fb = await store.get(`figs:${bookId}:${B.id}`, []);
+    await store.set(`figs:${bookId}:${A.id}`, fa.concat(fb).slice(0, 8));
+    for (const k of [`text:${bookId}:${B.id}`, `qs:${bookId}:${B.id}`, `figs:${bookId}:${B.id}`, `notes:${bookId}:${B.id}`, `notes:${bookId}:${A.id}`]) await store.del(k);
+    A.endPage = B.endPage || A.endPage; A.chars = text.length;
+    book.alias = { ...(book.alias || {}), [B.id]: A.id };
+    book.units.splice(i + 1, 1); pick.ids.delete(B.id);
+    await saveBook(book); toast('Chapters merged'); again();
+  }));
+  $app.querySelectorAll('[data-split]').forEach((b) => (b.onclick = () => again(b.dataset.split)));
+  const ns = document.getElementById('noSplit'); if (ns) ns.onclick = () => again();
+  const ds = document.getElementById('doSplit');
+  if (ds) ds.onclick = async () => {
+    const i = book.units.findIndex((x) => x.id === ds.dataset.u), A = book.units[i];
+    const at = +document.getElementById('splitAt').value;
+    const ids = [...book.units, ...(book.hiddenUnits || [])].map((x) => +String(x.id).replace(/\D/g, '') || 0).concat(Object.keys(book.alias || {}).map((x) => +x.replace(/\D/g, '') || 0));
+    const nid = 'u' + (Math.max(...ids) + 1);
+    const first = pages.slice(A.startPage - 1, at - 1).join('\n\n'), second = pages.slice(at - 1, A.endPage).join('\n\n');
+    const N = { id: nid, title: `${A.title} (part 2)`, chapter: A.chapter || null, startPage: at, endPage: A.endPage, chars: second.length };
+    await store.set(`text:${bookId}:${A.id}`, first); await store.set(`text:${bookId}:${nid}`, second);
+    const figs = await store.get(`figs:${bookId}:${A.id}`, []);
+    await store.set(`figs:${bookId}:${A.id}`, figs.filter((f) => f.page < at)); await store.set(`figs:${bookId}:${nid}`, figs.filter((f) => f.page >= at));
+    await store.del(`notes:${bookId}:${A.id}`);
+    A.endPage = at - 1; A.chars = first.length;
+    book.units.splice(i + 1, 0, N);
+    await saveBook(book); toast('Chapter split. Check the new chapter’s name.'); await again();
+    const inp = $app.querySelector(`[data-title="${nid}"]`); if (inp) { inp.focus(); inp.select(); }
+  };
+  $app.querySelectorAll('[data-hide]').forEach((b) => (b.onclick = async () => {
+    if (book.units.length <= 1) return toast('A book needs at least one chapter.');
+    const i = book.units.findIndex((x) => x.id === b.dataset.hide);
+    book.hiddenUnits = [...(book.hiddenUnits || []), ...book.units.splice(i, 1)]; pick.ids.delete(b.dataset.hide);
+    await saveBook(book); again();
+  }));
+  $app.querySelectorAll('[data-show]').forEach((b) => (b.onclick = async () => {
+    const i = book.hiddenUnits.findIndex((x) => x.id === b.dataset.show);
+    book.units.push(...book.hiddenUnits.splice(i, 1)); book.units.sort((x, y) => (x.startPage || 0) - (y.startPage || 0));
+    await saveBook(book); again();
+  }));
 }
 
 /* ---------- book: chapter list ---------- */
@@ -463,7 +578,8 @@ async function renderBook(bookId) {
     <div class="card stack">${rows.join('')}</div>
     <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
       ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
-      : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
+      : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'ai' ? 'the contents page and headings, checked by AI' : book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
+    <button class="link" id="editch" style="align-self:flex-start;padding:2px 0">Chapter names wrong? Edit chapters</button>
     <label class="kindrow"><span>Subject type</span><select id="kind">${KINDS.map(([k, l]) => `<option value="${k}" ${kindOfBook(book) === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     <p class="muted" style="font-size:12px;margin:-6px 0 0;line-height:1.5">${{ science: 'Questions test ideas, experiments and data.', maths: 'Calculation questions with method marks; a maths keyboard helps you type working.', language: 'Comprehension, vocabulary, grammar and writing tasks marked with a rubric.', humanities: 'Source- and data-based questions, and “to what extent” questions.' }[kindOfBook(book)]}</p>
     <button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
@@ -499,6 +615,7 @@ async function renderBook(bookId) {
   document.getElementById('plus').onclick = () => step((local.count || SESSION_SIZE) >= 20 ? 10 : 5);
   document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || SESSION_SIZE); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
+  document.getElementById('editch').onclick = () => go({ name: 'edit', bookId });
   document.getElementById('kind').onchange = async (e) => {
     const books = await store.get('books', []); const b = books.find((x) => x.id === bookId);
     if (b) { b.kind = e.target.value; await store.set('books', books); bookKinds.set(bookId, b.kind); toast('New questions will suit this subject'); keep(); }
@@ -769,6 +886,7 @@ async function confirmRemove(book) {
     for (const k of await store.keys(`text:${book.id}:`)) await store.del(k);
     for (const k of await store.keys(`qs:${book.id}:`)) await store.del(k);
     for (const pre of ['figs', 'notes']) for (const k of await store.keys(`${pre}:${book.id}:`)) await store.del(k);
+    await store.del(`pages:${book.id}`);
     for (const k of Object.keys(local.stats)) if (k.startsWith(prefix)) delete local.stats[k];
     local.log = local.log.filter((e) => !e.q.startsWith(prefix));
     local.reports = local.reports.filter((id) => !id.startsWith(prefix));
@@ -1155,7 +1273,7 @@ async function mistakeItems(done) {
   const byUnit = new Map();
   for (const [id, m] of Object.entries(local.mistakes || {})) {
     if (!!m.done !== done) continue;
-    const [b, u] = id.split(':'); const k = `${b}:${u}`;
+    const [b, u] = qUnit(id); const k = `${b}:${u}`;
     if (!byUnit.has(k)) byUnit.set(k, []); byUnit.get(k).push([id, m]);
   }
   const groups = [];
@@ -1472,7 +1590,7 @@ function canDrill(q) { return !!(q.id && q.id.split(':').length >= 3) && q.type 
 
 // Make `n` checked questions on one missed idea. Saved to the chapter's bank.
 async function makeDrill(q, idea, types, n = 2) {
-  const [bookId, unitId] = q.id.split(':');
+  const [bookId, unitId] = qUnit(q.id);
   const text = await store.get(`text:${bookId}:${unitId}`, '');
   if (!text) throw new Error('This chapter’s text is missing on this device.');
   const title = q.section;
@@ -1674,7 +1792,7 @@ function bindTutor(q) {
     c.msgs.push({ role: 'user', text, chip }); c.busy = true; c.error = null; redraw();
     document.getElementById('tutor').scrollIntoView({ block: 'end', behavior: 'smooth' });
     try {
-      const [bookId, unitId] = q.id.split(':');
+      const [bookId, unitId] = qUnit(q.id);
       const chapter = await store.get(`text:${bookId}:${unitId}`, '');
       if (!chapter) throw new Error('This chapter’s text is missing on this device.');
       const r = await api('explain', { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: studentAnswerText(q), ask: text, history, lang: langOf(chapter) });
@@ -1746,7 +1864,7 @@ async function markAnswer(sess, idx) {
   } else {
     sess.marks[idx] = { pending: true };
     try {
-      const [bookId, unitId] = q.id.split(':');
+      const [bookId, unitId] = qUnit(q.id);
       const text = await store.get(`text:${bookId}:${unitId}`, '');
       if (!text) throw new Error('missing text');
       sess.marks[idx] = await api('mark', { title: q.section, text, question: qForServer(q), figure: figB64(q), answers, inks: inks.some(Boolean) ? inks.map((x) => (x ? x.split(',')[1] : null)) : undefined, kind: await kindOfId(q.id), lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
