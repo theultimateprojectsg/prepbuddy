@@ -10,12 +10,12 @@ const BUFFER = 3;           // spare questions kept ready beyond the current ses
 // Mix of question kinds, cycled through as a chapter's bank grows.
 const TYPE_CHOICES = [['mcq', 'MCQ'], ['written', 'Written'], ['mix', 'Both']];
 const PLANS = {
-  mcq: [[1, 'mcq'], [2, 'mcq'], [2, 'graph'], [3, 'mcq'], [1, 'mcq'], [2, 'mcq'], [3, 'mcq']],
+  mcq: [[1, 'mcq'], [2, 'mcq'], [2, 'mcq'], [3, 'mcq'], [1, 'mcq'], [2, 'mcq'], [3, 'mcq']],
   written: [[2, 'short'], [3, 'structured'], [2, 'short'], [4, 'structured'], [3, 'short'], [3, 'structured']],
 };
 const choiceType = (q) => q.type === 'mcq' || q.type === 'graph';
 const matchType = (q, types) => !types || types === 'mix' || (types === 'mcq' ? choiceType(q) : !choiceType(q));
-const PLAN = [[2, 'graph'], [1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
+const PLAN = [[2, 'mcq'], [1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
               [4, 'structured'], [1, 'mcq'], [2, 'short'], [3, 'mcq'], [3, 'structured'], [2, 'mcq']];
 
 /* ---------- small local settings + progress (localStorage) ---------- */
@@ -35,7 +35,7 @@ const TYPE = { mcq: 'MCQ', graph: 'Graph MCQ', short: 'Short answer', structured
 const KINDS = [['science', 'Science'], ['maths', 'Maths'], ['language', 'Language'], ['humanities', 'Humanities']];
 const KIND_PLANS = {
   maths: {
-    mcq: [[1, 'mcq'], [2, 'mcq'], [3, 'mcq'], [2, 'graph'], [2, 'mcq'], [3, 'mcq']],
+    mcq: [[1, 'mcq'], [2, 'mcq'], [3, 'mcq'], [2, 'mcq'], [2, 'mcq'], [3, 'mcq']],
     written: [[2, 'short'], [3, 'structured'], [2, 'short'], [3, 'short'], [4, 'structured']],
     mix: [[1, 'mcq'], [2, 'short'], [2, 'mcq'], [3, 'structured'], [3, 'mcq'], [2, 'short'], [4, 'structured'], [2, 'mcq']],
   },
@@ -88,6 +88,7 @@ const langOf = (t) => { const x = String(t || '').slice(0, 20000); const cjk = (
 function usable(q) {
   if (!q || typeof q !== 'object') return false;
   if (missingRef(q)) return false; // mentions a figure/table/page the student can't see
+  if (!GRAPHS_ON && q.type === 'graph') return false;
   if (q.type === 'graph' && !(Array.isArray(q.graphs) && q.graphs.length === 4)) { q.type = 'mcq'; delete q.graphs; }
   if (q.type === 'mcq' || q.type === 'graph') return Array.isArray(q.options) && q.options.length === 4 && 'ABCD'.includes(q.correct_option || '?');
   return Array.isArray(q.parts) && q.parts.length > 0 && q.parts.every((p) => p && p.prompt && Array.isArray(p.mark_scheme) && p.marks > 0);
@@ -138,7 +139,9 @@ function missingRef(q) {
   }
   return '';
 }
-const blocked = (q) => !q || (local.reports || []).includes(q.id) || !!missingRef(q);
+// "Choose the graph" questions are switched off for now (set GRAPHS_ON = true to bring them back).
+const GRAPHS_ON = false;
+const blocked = (q) => !q || (local.reports || []).includes(q.id) || !!missingRef(q) || (!GRAPHS_ON && q.type === 'graph');
 async function getQs(bookId, unitId) { return (await store.get(`qs:${bookId}:${unitId}`, [])).filter((q) => !blocked(q)); }
 async function setQs(bookId, unitId, list) { await store.set(`qs:${bookId}:${unitId}`, list); }
 function scoreOf(questions) {
