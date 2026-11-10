@@ -9,7 +9,8 @@ if (typeof window !== 'undefined') {
 
 const MAX_UNIT = 60000;   // characters; bigger units are split into parts
 const MIN_UNIT = 1500;    // smaller units are dropped (title pages, blank sections)
-const SKIP_TITLE = /^(table of )?contents$|^index$|^preface|^acknowledg|^copyright|^about (the|this)|^cover$|^title page|^bibliography|^references$|^answer key|^dedication/i;
+const MIN_UNIT_ZH = 600;  // the same for Chinese, which packs more into fewer characters
+const SKIP_TITLE = /^(table of )?contents$|^index$|^preface|^acknowledg|^copyright|^about (the|this)|^cover$|^title page|^bibliography|^references$|^answer key|^dedication|^目錄$|^目录$|^索引$|^序言?$|^前言$|^鳴謝$|^版權|^參考(書目|資料)$|^答案$/i;
 
 export async function readBook(data, onProgress = () => {}) {
   const task = pdfjs.getDocument({ data, isEvalSupported: false });
@@ -36,7 +37,7 @@ export async function readBook(data, onProgress = () => {}) {
   units = units
     .filter((u) => !SKIP_TITLE.test(u.title.trim()))
     .flatMap(splitLarge)
-    .filter((u) => u.text.length >= MIN_UNIT);
+    .filter((u) => u.text.length >= (isChinese(u.text) ? MIN_UNIT_ZH : MIN_UNIT));
 
   let title = null;
   try { const meta = await pdf.getMetadata(); title = (meta && meta.info && meta.info.Title) || null; } catch (e) {}
@@ -55,7 +56,8 @@ function itemsToLines(items) {
     if (it.hasEOL) { lines.push(cur); cur = ''; }
   }
   if (cur) lines.push(cur);
-  return lines.map((l) => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  // NFKC turns look-alike forms some Chinese PDFs use (e.g. ⽬ U+2F6C) into normal characters (目).
+  return lines.map((l) => l.normalize('NFKC').replace(/\s+/g, ' ').trim()).filter(Boolean);
 }
 
 // Running headers and footers repeat on many pages (often with a changing page number): remove them.
@@ -124,19 +126,22 @@ async function fromOutline(pdf, pages) {
 function fromHeadings(pages) {
   // Numbered section headings ("2.1 Water") also appear in chapter outlines and summaries.
   // The real heading is the copy followed by the most text before the next heading.
-  const re = /^(\d{1,2}\.\d{1,2})\s+([A-Z][^•|]{3,100})$/;
+  // "2.1 Water" or "2.1 細胞的結構" (Chinese titles can be short and may follow the number without a space)
+  const re = /^(\d{1,2}\.\d{1,2})(?:\s+([A-Z][^•|]{3,100})|\s*([\u3400-\u9fff][^•|]{1,60}))$/;
   const occ = [];
   let offset = 0;
   pages.forEach((lines, p) => lines.forEach((line, l) => {
     const m = line.match(re);
-    if (m && !/\d\s*$/.test(m[2])) occ.push({ num: m[1], p, l, offset, title: `${m[1]} ${m[2].trim()}` });
+    const t = m && (m[2] || m[3]);
+    if (m && !/\d\s*$/.test(t) && !/[.…·]{3,}/.test(t)) occ.push({ num: m[1], p, l, offset, title: `${m[1]} ${t.trim()}` });
     offset += line.length + 1;
   }));
   if (occ.length < 2) return null;
   occ.forEach((o, i) => { o.gap = (i + 1 < occ.length ? occ[i + 1].offset : offset) - o.offset; });
   const best = new Map();
   for (const o of occ) if (!best.has(o.num) || o.gap > best.get(o.num).gap) best.set(o.num, o);
-  const cand = [...best.values()].filter((o) => o.gap >= MIN_UNIT).sort((a, b) => a.offset - b.offset);
+  const minGap = isChinese(pages.slice(0, 30).flat().join('')) ? MIN_UNIT_ZH : MIN_UNIT;
+  const cand = [...best.values()].filter((o) => o.gap >= minGap).sort((a, b) => a.offset - b.offset);
   // keep the heaviest run of headings whose numbers go up through the book
   const cmp = (a, b) => { const [a1, a2] = a.split('.').map(Number), [b1, b2] = b.split('.').map(Number); return a1 - b1 || a2 - b2; };
   const score = cand.map((o) => o.gap), prev = cand.map(() => -1);
@@ -171,9 +176,12 @@ function byPages(pages, size) {
   return units;
 }
 
+// Chinese uses more AI tokens per character, so Chinese chapters are split smaller.
+const isChinese = (t) => { const x = t.slice(0, 20000); return (x.match(/[\u3400-\u9fff]/g) || []).length > (x.match(/[A-Za-z]{2,}/g) || []).length; };
 function splitLarge(u) {
-  if (u.text.length <= MAX_UNIT) return [u];
-  const parts = Math.ceil(u.text.length / 40000);
+  const zh = isChinese(u.text), max = zh ? 25000 : MAX_UNIT, size0 = zh ? 18000 : 40000;
+  if (u.text.length <= max) return [u];
+  const parts = Math.ceil(u.text.length / size0);
   const size = Math.ceil(u.text.length / parts);
   const out = [];
   let pos = 0;

@@ -2,7 +2,7 @@
 // body: { title, text, question, answers: [string per part] }
 // returns: { parts: [{ awarded: [index into mark_scheme], marks, feedback }], tip }
 
-const { MARK_RULES, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
+const { langNote, MARK_RULES, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
 
 module.exports = handler(async (body, usage) => {
   const q = body.question;
@@ -25,7 +25,7 @@ module.exports = handler(async (body, usage) => {
   const out = await callTool({
     system: MARK_RULES,
     sectionBlock: sectionBlock(body.title, body.text),
-    instruction: `<question>\n${q.stem ? q.stem + '\n\n' : ''}${partsText}\n</question>\n\nMark each part. In "awarded", list the numbers of the mark-scheme points earned.`,
+    instruction: `<question>\n${q.stem ? q.stem + '\n\n' : ''}${partsText}\n</question>\n\nMark each part. In "awarded", list the numbers of the mark-scheme points earned.${langNote(body.lang, 'mark')}`,
     toolName: 'mark',
     maxTokens: 2000,
     usage,

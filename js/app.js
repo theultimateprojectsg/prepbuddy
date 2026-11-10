@@ -31,6 +31,8 @@ const LEVEL = { 1: 'Recall', 2: 'Understand', 3: 'Apply', 4: 'Analyse / evaluate
 const TYPE = { mcq: 'MCQ', short: 'Short answer', structured: 'Structured' };
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const marksOf = (q) => (q.type === 'mcq' ? 1 : (q.parts || []).reduce((s, p) => s + p.marks, 0));
+// 'zh-HK' when the text is mostly Chinese characters, else 'en'.
+const langOf = (t) => { const x = String(t || '').slice(0, 20000); const cjk = (x.match(/[\u3400-\u9fff]/g) || []).length; const words = (x.match(/[A-Za-z]{2,}/g) || []).length; return cjk > words ? 'zh-HK' : 'en'; };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const ICON = {
   close: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
@@ -634,7 +636,7 @@ async function doFill(book, unit, job) {
       const avoid = existing.map((q) => (q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200));
       const focus = { part: ((slot / BATCH) % PARALLEL) + 1, of: PARALLEL };
       let gen;
-      try { gen = await api('generate', { title, text, items, avoid, focus }); }
+      try { gen = await api('generate', { title, text, items, avoid, focus, lang: langOf(text) }); }
       catch (e) { if (e.status === 401 || e.status === 0) { stop = true; throw e; } if (!job.error) job.error = e; continue; }
       if (!gen.questions || !gen.questions.length) { if (++empty >= 2) stop = true; continue; }
       const checked = await Promise.all(gen.questions.map((q) =>
@@ -783,7 +785,7 @@ async function makeDrill(q, idea, types, n = 2) {
     : q.type === 'mcq' ? [{ level: 2, type: 'mcq' }, { level: 2, type: 'short' }] : [{ level: 2, type: 'short' }, { level: 2, type: 'mcq' }];
   const items = pool.slice(0, n);
   const avoid = [(q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200)];
-  const gen = await api('generate', { title, text, items, avoid, target: idea });
+  const gen = await api('generate', { title, text, items, avoid, target: idea, lang: langOf(text) });
   const checked = await Promise.all((gen.questions || []).map((x) =>
     api('verify', { title, text, question: x }).then((v) => ({ x, v })).catch((e) => { if (e.status === 401) throw e; return { x, v: { passed: false } }; })));
   const passed = checked.filter((c) => c.v.passed).map((c) => c.x);
@@ -903,7 +905,7 @@ async function markAnswer(sess, idx) {
       const [bookId, unitId] = q.id.split(':');
       const text = await store.get(`text:${bookId}:${unitId}`, '');
       if (!text) throw new Error('missing text');
-      sess.marks[idx] = await api('mark', { title: q.section, text, question: q, answers });
+      sess.marks[idx] = await api('mark', { title: q.section, text, question: q, answers, lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
     } catch (e) {
       sess.marks[idx] = { error: e.status === 0 ? 'You seem to be offline, so the AI could not mark this.' : 'The AI marker is not available right now.' };
     }

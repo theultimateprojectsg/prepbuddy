@@ -2,7 +2,7 @@
 // body: { title, text, items: [{level, type}], avoid: [string] }
 // returns: { questions: [...] } in the same order as items (possibly fewer)
 
-const { LEVELS, GEN_SYSTEM, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
+const { langNote, LEVELS, GEN_SYSTEM, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
 
 const TYPES = { mcq: 'MCQ', short: 'SHORT-ANSWER', structured: 'STRUCTURED' };
 
@@ -31,7 +31,7 @@ module.exports = handler(async (body, usage) => {
       'Do not repeat the original question or simply reword it.'
     : '';
   const instruction =
-    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + focusText + targetText +
+    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + focusText + targetText + langNote(body.lang, 'write') +
     (avoid.length ? `\n\nQuestions already written for this section (test different ideas):\n- ${avoid.join('\n- ')}` : '');
 
   const out = await callTool({
