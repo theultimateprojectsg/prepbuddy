@@ -879,6 +879,15 @@ function newSession(props) {
 // A session over one or more chapters. Ready questions are used first; new ones are made a few at a time,
 // staying about AHEAD questions in front of the student, so stopping early wastes little.
 const AHEAD = 6;
+// Fast students get more questions made ahead, and more batches at once, so they don't catch up with the AI.
+function paceOf(sess) {
+  const t = sess.times || [];
+  if (t.length < 3) return { ahead: AHEAD, par: PARALLEL };
+  const recent = t.slice(-6), secs = (recent[recent.length - 1] - recent[0]) / 1000 / (recent.length - 1);
+  if (secs < 8) return { ahead: 15, par: 5 };
+  if (secs < 20) return { ahead: 10, par: 4 };
+  return { ahead: AHEAD, par: PARALLEL };
+}
 async function startUnits(book, units, count = SESSION_SIZE) {
   const k = units.length, quota = Math.ceil(count / k);
   const types = local.types || 'mix';
@@ -900,7 +909,8 @@ function topUp(sess) {
   if (sess.fill) return pumpPaper(sess);
   if (!sess.units || sess.generating || sess.error) return;
   const ahead = sess.qs.length - (sess.i + 1);
-  const need = Math.min(sess.target - sess.qs.length, AHEAD - ahead);
+  const pace = paceOf(sess);
+  const need = Math.min(sess.target - sess.qs.length, pace.ahead - ahead);
   if (need <= 0) return;
   // spread across the chosen chapters, starting with the ones that have given fewest questions so far
   const used = (u) => sess.qs.filter((q) => q.id.startsWith(`${sess.book.id}:${u.id}:`)).length;
@@ -910,7 +920,7 @@ function topUp(sess) {
   for (const u of order) {
     if (left <= 0) break;
     const want = Math.min(per, left); left -= want;
-    followFill(sess, ensureFill(sess.book, u, want, sess.types));
+    followFill(sess, ensureFill(sess.book, u, want, sess.types, pace.par));
   }
 }
 
@@ -975,7 +985,7 @@ const PARALLEL = 3;
 
 function ensureFill(book, unit, want, types = 'mix', par = PARALLEL) {
   const key = `${book.id}:${unit.id}:${types}`;
-  if (jobs.has(key)) { const j = jobs.get(key); j.want = Math.max(j.want, want); return j; }
+  if (jobs.has(key)) { const j = jobs.get(key); j.want = Math.max(j.want, j.made + want); j.par = Math.max(j.par, par); if (j.spawn) j.spawn(); return j; }
   const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: PLANS[types] || PLAN, par };
   jobs.set(key, job);
   job.promise = doFill(book, unit, job)
@@ -1021,10 +1031,19 @@ async function doFill(book, unit, job) {
       job.listeners.forEach((f) => f(passed, false));
     }
   };
-  const n = Math.min(job.par, Math.ceil(job.want / BATCH));
-  const results = await Promise.allSettled(Array.from({ length: n }, (_, w) => worker(w)));
-  const failed = results.find((r) => r.status === 'rejected');
-  if (failed) throw failed.reason;
+  // Workers run side by side; more join if the student needs questions faster (job.spawn).
+  let running = 0, failed = null, finish;
+  const allDone = new Promise((r) => { finish = r; });
+  job.spawn = () => {
+    while (!stop && !failed && running < Math.min(job.par, Math.ceil((job.want - job.made) / BATCH))) {
+      running++;
+      worker(running).catch((e) => { failed = failed || e; }).finally(() => { running--; if (!running) finish(); });
+    }
+  };
+  job.spawn();
+  if (running) await allDone;
+  job.spawn = null;
+  if (failed) throw failed;
   if (!job.made && empty) throw new Error('No questions could be made from this chapter. It may not have enough teaching content.');
   if (job.made) job.error = null;
 }
@@ -1416,6 +1435,7 @@ function bindCommon(q) {
 }
 
 function advance() {
+  (S.times || (S.times = [])).push(Date.now());
   if (S.i < S.target - 1) {
     S.i++; S.phase = S.review ? 'revealed' : 'answer';
     if (S.mode === 'dse' && !S.review && S.i === S.sectionA && S.sectionA) toast('Section B: written questions');
