@@ -13,7 +13,7 @@ const LKEY = 'prepbuddy.v2';
 function loadLocal() {
   try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; }
 }
-const local = Object.assign({ stats: {}, reports: [], code: '' }, loadLocal());
+const local = Object.assign({ stats: {}, reports: [], code: '', usage: {} }, loadLocal());
 function saveLocal() { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) {} }
 
 /* ---------- helpers ---------- */
@@ -81,8 +81,16 @@ async function api(path, body) {
   } catch (e) { const err = new Error('No internet connection. Questions need a connection to be made.'); err.status = 0; throw err; }
   let data = {};
   try { data = await r.json(); } catch (e) {}
+  if (data.usage) recordUsage(path, data.usage);
   if (!r.ok) { const e = new Error(data.error || `Server error ${r.status}`); e.status = r.status; throw e; }
   return data;
+}
+
+function recordUsage(path, u) {
+  const t = local.usage[path] || (local.usage[path] = { requests: 0, calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0 });
+  t.requests++;
+  for (const k of ['calls', 'input', 'output', 'cache_write', 'cache_read']) t[k] += u[k] || 0;
+  saveLocal();
 }
 
 /* ---------- routing ---------- */
@@ -96,6 +104,7 @@ async function go(v) {
   if (v.name === 'home') return renderHome();
   if (v.name === 'book') return renderBook(v.bookId);
   if (v.name === 'library') return renderLibrary(v.query || '');
+  if (v.name === 'usage') return renderUsage();
 }
 
 /* ---------- home ---------- */
@@ -137,7 +146,8 @@ async function renderHome() {
       </div>
     </section>` : ''}
   </main>
-  <footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong.</footer>`;
+  <footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="link quiet" id="usage" style="font-size:11px;padding:0">AI usage</button></footer>`;
+  document.getElementById('usage').onclick = () => go({ name: 'usage' });
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => startReview(b.dataset.mode)));
   document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
@@ -339,6 +349,32 @@ async function renderBook(bookId) {
   window.scrollTo(0, 0);
 }
 
+/* ---------- AI usage on this device ---------- */
+function renderUsage() {
+  const u = local.usage || {};
+  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions']];
+  const fmt = (n) => (n || 0).toLocaleString('en');
+  const tot = { calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0 };
+  steps.forEach(([k]) => { const r = u[k]; if (r) for (const f in tot) tot[f] += r[f] || 0; });
+  const rows = steps.map(([k, name]) => { const r = u[k] || {}; return `<tr><th scope="row">${name}</th><td>${fmt(r.calls)}</td><td>${fmt(r.input)}</td><td>${fmt(r.cache_write)}</td><td>${fmt(r.cache_read)}</td><td>${fmt(r.output)}</td></tr>`; }).join('');
+  const made = u.made || 0;
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">AI usage on this device</span></div>
+  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+    <p style="margin:0;line-height:1.5;color:#374151">Tokens used since you last reset. Reading PDFs happens on your device and uses no tokens.</p>
+    <div style="overflow-x:auto"><table class="data usage">
+      <tr><th>Step</th><th>AI calls</th><th>Input</th><th>Cache write</th><th>Cache read</th><th>Output</th></tr>
+      ${rows}
+      <tr><th scope="row">Total</th><td>${fmt(tot.calls)}</td><td>${fmt(tot.input)}</td><td>${fmt(tot.cache_write)}</td><td>${fmt(tot.cache_read)}</td><td>${fmt(tot.output)}</td></tr>
+    </table></div>
+    <p class="muted" style="margin:0;font-size:13px;line-height:1.5">Questions that passed checking: <b>${fmt(made)}</b>${made ? `<br>Per question: ${fmt(Math.round((tot.input + tot.cache_write) / made))} input · ${fmt(Math.round(tot.cache_read / made))} cache read · ${fmt(Math.round(tot.output / made))} output` : ''}.<br>
+    Cache reads are billed at about a tenth of normal input; cache writes at a little more than normal input. Output tokens cost the most per token.</p>
+    <button class="btn ghost" id="reset">Reset the counter</button>
+  </main>`;
+  document.getElementById('back').onclick = () => go({ name: 'home' });
+  document.getElementById('reset').onclick = () => { local.usage = {}; saveLocal(); renderUsage(); };
+}
+
 /* ---------- sessions ---------- */
 function newSession(props) {
   return Object.assign({ i: 0, answers: [], got: [], ticks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
@@ -385,6 +421,7 @@ async function startReview(mode) {
 // One background job per chapter. Several batches run side by side, each on a different
 // part of the chapter, so 10 questions take about as long as 3 used to.
 const jobs = new Map();
+const warmed = new Map(); // chapter -> when its text was last put in the AI's cache
 const PARALLEL = 4;
 
 function ensureFill(book, unit, want) {
@@ -402,6 +439,11 @@ async function doFill(book, unit, job) {
   const title = unit.title;
   const text = await store.get(`text:${book.id}:${unit.id}`, '');
   if (!text) throw new Error('This chapter\u2019s text is missing on this device. Try uploading the book again.');
+  const wk = `${book.id}:${unit.id}`;
+  if (!warmed.has(wk) || Date.now() - warmed.get(wk) > 4 * 60 * 1000) {
+    try { await api('warm', { title, text }); } catch (e) { if (e.status === 401 || e.status === 0) throw e; }
+  }
+  warmed.set(wk, Date.now());
   let saving = Promise.resolve();
   let started = (await getQs(book.id, unit.id)).length;
   let empty = 0, stop = false;
@@ -428,6 +470,7 @@ async function doFill(book, unit, job) {
       saving = saving.then(async () => { const list = await getQs(book.id, unit.id); list.push(...passed); await setQs(book.id, unit.id, list); });
       await saving;
       job.made += passed.length;
+      const t = local.usage.made || 0; local.usage.made = t + passed.length; saveLocal();
       job.listeners.forEach((f) => f(passed, false));
     }
   };

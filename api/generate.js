@@ -2,11 +2,11 @@
 // body: { title, text, items: [{level, type}], avoid: [string] }
 // returns: { questions: [...] } in the same order as items (possibly fewer)
 
-const { LEVELS, GEN_SYSTEM, QUESTION_SCHEMA, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
+const { LEVELS, GEN_SYSTEM, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
 
 const TYPES = { mcq: 'MCQ', short: 'SHORT-ANSWER', structured: 'STRUCTURED' };
 
-module.exports = handler(async (body) => {
+module.exports = handler(async (body, usage) => {
   const items = Array.isArray(body.items) ? body.items.slice(0, 4) : [];
   if (!items.length) throw httpError(400, 'No questions requested.');
   for (const it of items) {
@@ -33,7 +33,7 @@ module.exports = handler(async (body) => {
     sectionBlock: sectionBlock(body.title, body.text),
     instruction,
     toolName: 'save_questions',
-    schema: QUESTION_SCHEMA,
+    usage,
   });
 
   const questions = (out.questions || []).slice(0, items.length).map((q, i) => ({
