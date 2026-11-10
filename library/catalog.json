@@ -1,1 +1,112 @@
-[]
+[
+ {
+  "id": "hk-road-users-code-engli-vjdh",
+  "code": "TRA-1234",
+  "title": "HK Road Users’ Code (English)",
+  "subject": "Training Material",
+  "level": "S4–S6 (HKDSE)",
+  "kind": "humanities",
+  "publisher": "Transport Authority",
+  "licence": "CC BY 4.0",
+  "credit": "",
+  "lang": "en",
+  "pageCount": 144,
+  "addedAt": "2026-11-10",
+  "questionCount": 0,
+  "units": [
+   {
+    "id": "u0",
+    "title": "Chapter 1 For All Road Users",
+    "chapter": null,
+    "startPage": 5,
+    "endPage": 7
+   },
+   {
+    "id": "u1",
+    "title": "Chapter 2 For Pedestrians",
+    "chapter": null,
+    "startPage": 8,
+    "endPage": 25,
+    "figs": true
+   },
+   {
+    "id": "u2",
+    "title": "Chapter 3 For Passengers",
+    "chapter": null,
+    "startPage": 26,
+    "endPage": 30,
+    "figs": true
+   },
+   {
+    "id": "u3",
+    "title": "Chapter 4 For Cyclists",
+    "chapter": null,
+    "startPage": 31,
+    "endPage": 42,
+    "figs": true
+   },
+   {
+    "id": "u4",
+    "title": "Chapter 5 For All Drivers (Part 1: Driving and Vehicle Safety)",
+    "chapter": null,
+    "startPage": 43,
+    "endPage": 57,
+    "figs": true
+   },
+   {
+    "id": "u5",
+    "title": "Chapter 5 For All Drivers (Part 2: Other Road Users, Lanes and Roads)",
+    "chapter": null,
+    "startPage": 58,
+    "endPage": 75,
+    "figs": true
+   },
+   {
+    "id": "u6",
+    "title": "Chapter 5 For All Drivers (Part 3: Junctions, Weather, Road Works and Parking)",
+    "chapter": null,
+    "startPage": 76,
+    "endPage": 97,
+    "figs": true
+   },
+   {
+    "id": "u7",
+    "title": "Chapter 6 For Professional Drivers",
+    "chapter": null,
+    "startPage": 98,
+    "endPage": 101,
+    "figs": true
+   },
+   {
+    "id": "u8",
+    "title": "Chapter 7 For Riders of Motor Cycles and Motor Tricycles",
+    "chapter": null,
+    "startPage": 102,
+    "endPage": 105
+   },
+   {
+    "id": "u9",
+    "title": "Chapter 8 The Language of the Road",
+    "chapter": null,
+    "startPage": 106,
+    "endPage": 131,
+    "figs": true
+   },
+   {
+    "id": "u10",
+    "title": "Chapter 9 Children and Elderly People as Road Users",
+    "chapter": null,
+    "startPage": 132,
+    "endPage": 134
+   },
+   {
+    "id": "u11",
+    "title": "Chapter 10 Emergencies",
+    "chapter": null,
+    "startPage": 135,
+    "endPage": 140,
+    "figs": true
+   }
+  ]
+ }
+]
