@@ -548,6 +548,13 @@ body[data-tab] .app{padding-bottom:76px}
   .app>aside.coach{grid-column:2;grid-row:1/span 2;position:sticky;top:24px;margin:32px 0 24px;height:calc(100vh - 56px);min-height:520px}
   .app>aside.coach .coach-msgs{flex:1;max-height:none;min-height:0}
 }
+
+/* ---------- tab pages on wide screens: start at the same left edge as Today ---------- */
+@media (min-width:1200px){
+  body[data-tab] .app{margin-left:calc(220px + max(24px, (100vw - 220px - 1560px) / 2));margin-right:auto}
+  body[data-tab] .app:has(> main[data-view="books"]),body[data-tab] .app:has(> main[data-view="mistakes"]){max-width:1100px}
+  .app:has(> main[data-view="mistakes"])>.sheet.sticky{grid-row:1!important;margin-top:32px!important}
+}
 </style>
 </head>
 <body>
