@@ -89,6 +89,8 @@ function usable(q) {
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const ICON = {
+  pen: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>',
+  keys: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg>',
   chat: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.2M12 16.5h.01"/></svg>',
   send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
   notes: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>',
@@ -1725,7 +1727,9 @@ async function markAnswer(sess, idx) {
   const q = sess.qs[idx];
   const answers = sess.answers[idx] || q.parts.map(() => '');
   sess.marks = sess.marks || {};
-  if (!answers.some((a) => (a || '').trim())) {
+  const inks = q.parts.map((_, k) => inkJPEG(sess, idx, k));
+  (sess.inkImg || (sess.inkImg = {}))[idx] = inks;
+  if (!answers.some((a) => (a || '').trim()) && !inks.some(Boolean)) {
     sess.marks[idx] = { parts: q.parts.map(() => ({ awarded: [], feedback: 'No answer written.' })), tip: '' };
   } else {
     sess.marks[idx] = { pending: true };
@@ -1733,12 +1737,18 @@ async function markAnswer(sess, idx) {
       const [bookId, unitId] = q.id.split(':');
       const text = await store.get(`text:${bookId}:${unitId}`, '');
       if (!text) throw new Error('missing text');
-      sess.marks[idx] = await api('mark', { title: q.section, text, question: qForServer(q), figure: figB64(q), answers, kind: await kindOfId(q.id), lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
+      sess.marks[idx] = await api('mark', { title: q.section, text, question: qForServer(q), figure: figB64(q), answers, inks: inks.some(Boolean) ? inks.map((x) => (x ? x.split(',')[1] : null)) : undefined, kind: await kindOfId(q.id), lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
     } catch (e) {
       sess.marks[idx] = { error: e.status === 0 ? 'You seem to be offline, so the AI could not mark this.' : 'The AI marker is not available right now.' };
     }
   }
   const m = sess.marks[idx];
+  // What the AI read from handwriting becomes the answer text (for the mistake book and the tutor).
+  if (m.parts || m.essay) {
+    const a = sess.answers[idx] = (sess.answers[idx] || q.parts.map(() => '')).slice();
+    if (m.essay && m.essay.read && inks[0]) a[0] = m.essay.read;
+    (m.parts || []).forEach((p, k) => { if (p && p.read && inks[k]) a[k] = p.read; });
+  }
   if (m.parts) sess.ticks[idx] = q.parts.map((p, k) => p.mark_scheme.map((_, j) => ((m.parts[k] || {}).awarded || []).includes(j)));
   if (sess === S && S.i === idx) { const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }
 }
@@ -1748,16 +1758,33 @@ function writtenBody(q, revealed) {
   const stem = figHTML(q) + (q.stem ? renderStem(q.stem) : '');
   if (!revealed) {
     const maths = kindSync(q.id) === 'maths', essay = q.type === 'essay';
-    const parts = q.parts.map((p, k) => `<div class="part">
+    const parts = q.parts.map((p, k) => {
+      const ink = inkOf(S.i, k, true);
+      return `<div class="part">
       <label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
-      ${maths ? mathKeys(`a${k}`) : ''}
-      <textarea id="a${k}" class="${essay ? 'essay' : ''}" placeholder="${essay ? 'Write your answer here' : maths ? 'Show your working, one step per line' : 'Type, or tap the microphone on your keyboard to speak'}">${esc(ans[k])}</textarea>
-      ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}</div>`).join('');
+      <div class="ansmode" role="radiogroup" aria-label="How to answer"><button role="radio" aria-checked="${!ink.on}" class="${ink.on ? '' : 'on'}" data-hand="${k}:0">${ICON.keys} Type</button><button role="radio" aria-checked="${ink.on}" class="${ink.on ? 'on' : ''}" data-hand="${k}:1">${ICON.pen} Write by hand</button></div>
+      ${ink.on ? `<div class="inkpad"><canvas id="ink${k}" data-k="${k}" aria-label="Writing area: write your answer with your finger or a stylus"></canvas>
+          <div class="inktools"><button data-undo="${k}">Undo</button><button data-clear="${k}">Clear</button><button data-more="${k}">More space</button></div></div>`
+        : `${maths ? mathKeys(`a${k}`) : ''}
+      <textarea id="a${k}" data-k="${k}" class="${essay ? 'essay' : ''}" placeholder="${essay ? 'Write your answer here' : maths ? 'Show your working, one step per line' : 'Type, or tap the microphone on your keyboard to speak'}">${esc(ans[k])}</textarea>
+      ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}`}</div>`;
+    }).join('');
     const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
     const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="link quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
     return { main, footer, bind() {
-      const grab = () => { S.answers[S.i] = [...$app.querySelectorAll('textarea')].map((t) => t.value); const wc = document.getElementById('wc'); if (wc) wc.textContent = `${wordCount(S.answers[S.i][0])} words`; };
+      const grab = () => {
+        const prev = S.answers[S.i] || [];
+        S.answers[S.i] = q.parts.map((_, k) => { const t = document.getElementById(`a${k}`); return t ? t.value : (prev[k] || ''); });
+        const wc = document.getElementById('wc'); if (wc) wc.textContent = `${wordCount(S.answers[S.i][0])} words`;
+      };
       bindMathKeys();
+      bindInk(q);
+      $app.querySelectorAll('[data-hand]').forEach((b) => (b.onclick = () => {
+        grab();
+        const [k, on] = b.dataset.hand.split(':'); inkOf(S.i, +k, true).on = on === '1';
+        local.hand = on === '1'; saveLocal();
+        const y = window.scrollY; renderQuestion(); window.scrollTo(0, y);
+      }));
       $app.querySelectorAll('textarea').forEach((t) => (t.oninput = grab));
       document.getElementById('check').onclick = () => {
         grab();
@@ -1775,7 +1802,7 @@ function writtenBody(q, revealed) {
   if (m.pending) {
     return {
       main: `${stem}${q.parts.map((p, k) => `<div class="part"><div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
-        <div class="yours nomath ${ans[k] && ans[k].trim() ? '' : 'empty'}">${ans[k] && ans[k].trim() ? esc(ans[k]) : 'No answer written'}</div></div>`).join('')}`,
+        ${yoursHTML(k, ans[k], null)}</div>`).join('')}`,
       footer: `<div class="sheet" style="align-items:center;text-align:center"><div class="spinner" aria-hidden="true"></div><span class="verdict" style="color:#14181F">Marking your answer…</span><span class="hint">Checking it against the mark scheme, point by point.</span></div>`,
     };
   }
@@ -1787,7 +1814,7 @@ function writtenBody(q, revealed) {
     const got = Math.min(p.marks, ticks[k].filter(Boolean).length);
     return `<div class="part">
       <div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
-      <div class="yours nomath ${ans[k] && ans[k].trim() ? '' : 'empty'}">${ans[k] && ans[k].trim() ? esc(ans[k]) : 'No answer written'}</div>
+      ${yoursHTML(k, ans[k], pm)}
       ${pm ? `<div class="marker ${got === p.marks ? 'full' : ''}"><b>${got} / ${p.marks}</b> ${esc(pm.feedback)}</div>` : ''}
       <span class="hint" style="font-weight:600">${ai ? 'Mark scheme (ticked = points you earned):' : m.skipped ? 'Mark scheme:' : `Tick each point your answer makes${p.mark_scheme.length > p.marks ? ` (max ${p.marks})` : ''}:`}</span>
       ${p.mark_scheme.map((pt, j) => `<button class="point ${ticks[k][j] ? 'on' : ''}" data-k="${k}" data-j="${j}" aria-pressed="${ticks[k][j]}"><span class="box">${ticks[k][j] ? ICON.check : ''}</span><span>${esc(pt.replace(/\s*\(1\)\s*$/, ''))}</span></button>`).join('')}
@@ -1821,10 +1848,83 @@ function bindMathKeys() {
   });
 }
 
+/* ---------- handwriting pad ----------
+   Strokes are kept as points (CSS pixels) so the pad can be redrawn after any re-render.
+   When marking, the writing is turned into a JPEG and the AI reads it, then marks it. */
+function inkOf(i, k, create) {
+  S.ink = S.ink || {};
+  const a = S.ink[i] || (S.ink[i] = {});
+  if (!a[k] && create) a[k] = { on: !!local.hand, strokes: [], h: 260, w: 0 };
+  return a[k];
+}
+function drawStroke(ctx, pts) {
+  if (!pts.length) return;
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  if (pts.length === 1) { ctx.lineTo(pts[0][0] + 0.1, pts[0][1] + 0.1); }
+  for (let i = 1; i < pts.length - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; ctx.quadraticCurveTo(pts[i][0], pts[i][1], mx, my); }
+  if (pts.length > 1) ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
+  ctx.stroke();
+}
+function inkStyle(ctx) { ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 2.6; ctx.strokeStyle = '#111'; }
+function bindInk(q) {
+  $app.querySelectorAll('canvas[data-k]').forEach((cv) => {
+    const k = +cv.dataset.k, ink = inkOf(S.i, k, true);
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const w = cv.parentElement.clientWidth;
+    ink.w = Math.max(ink.w, w);
+    cv.style.height = `${ink.h}px`; cv.width = Math.round(w * dpr); cv.height = Math.round(ink.h * dpr);
+    const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); inkStyle(ctx);
+    const redraw = () => { ctx.clearRect(0, 0, w, ink.h); ink.strokes.forEach((st) => drawStroke(ctx, st)); };
+    redraw();
+    let cur = null, pid = null;
+    const pt = (e) => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * 10) / 10, Math.round((e.clientY - r.top) * 10) / 10]; };
+    cv.onpointerdown = (e) => {
+      if (cur || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      e.preventDefault(); cv.setPointerCapture(e.pointerId); pid = e.pointerId;
+      cur = [pt(e)]; ink.strokes.push(cur); drawStroke(ctx, cur);
+    };
+    cv.onpointermove = (e) => {
+      if (!cur || e.pointerId !== pid) return;
+      e.preventDefault();
+      const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+      for (const ev of evs.length ? evs : [e]) { const p = pt(ev); const l = cur[cur.length - 1]; if (Math.abs(p[0] - l[0]) + Math.abs(p[1] - l[1]) >= 1) cur.push(p); }
+      const n = cur.length; drawStroke(ctx, cur.slice(Math.max(0, n - 4)));
+    };
+    const end = (e) => { if (e.pointerId !== pid) return; cur = null; pid = null; redraw(); };
+    cv.onpointerup = end; cv.onpointercancel = end;
+  });
+  const keep = () => { const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); };
+  $app.querySelectorAll('[data-undo]').forEach((b) => (b.onclick = () => { inkOf(S.i, +b.dataset.undo).strokes.pop(); keep(); }));
+  $app.querySelectorAll('[data-clear]').forEach((b) => (b.onclick = () => { inkOf(S.i, +b.dataset.clear).strokes = []; keep(); }));
+  $app.querySelectorAll('[data-more]').forEach((b) => (b.onclick = () => { const ink = inkOf(S.i, +b.dataset.more); ink.h = Math.min(1600, ink.h + 200); keep(); }));
+}
+// The written area as a JPEG (white background, cropped to what was used). Null if the part was typed.
+function inkJPEG(sess, i, k) {
+  const ink = sess.ink && sess.ink[i] && sess.ink[i][k];
+  if (!ink || !ink.on || !ink.strokes.length) return null;
+  let maxY = 0, maxX = 0; ink.strokes.forEach((st) => st.forEach(([x, y]) => { maxY = Math.max(maxY, y); maxX = Math.max(maxX, x); }));
+  const w = Math.max(200, Math.min(ink.w || 360, maxX + 24)), h = Math.min(ink.h, maxY + 24), sc = Math.min(2, 1100 / w);
+  const c = document.createElement('canvas'); c.width = Math.round(w * sc); c.height = Math.round(h * sc);
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.scale(sc, sc); inkStyle(ctx); ctx.lineWidth = 3;
+  ink.strokes.forEach((st) => drawStroke(ctx, st));
+  return c.toDataURL('image/jpeg', 0.85);
+}
+// The student's answer as shown after marking: their handwriting (if any) and what the AI read.
+function yoursHTML(k, text, pm) {
+  S.inkImg = S.inkImg || {};
+  if (!S.inkImg[S.i]) S.inkImg[S.i] = [];
+  if (S.inkImg[S.i][k] === undefined) S.inkImg[S.i][k] = inkJPEG(S, S.i, k);
+  const img = S.inkImg[S.i][k];
+  if (img) {
+    return `<div class="yours handwritten"><img src="${img}" alt="Your handwritten answer">${pm && pm.read ? `<p class="readas"><span>${LANG === 'zh' ? '我們讀到的答案：' : 'We read your answer as:'}</span> <span data-raw class="readtxt">${esc(pm.read)}</span></p><span class="hint">${LANG === 'zh' ? '如果讀錯了，可以寫清楚一點再試。' : 'If we misread it, write it more clearly and try again.'}</span>` : ''}</div>`;
+  }
+  return `<div class="yours nomath ${text && text.trim() ? '' : 'empty'}">${text && text.trim() ? esc(text) : 'No answer written'}</div>`;
+}
+
 function essayRevealed(q, m, ans, stem) {
   const text = (ans[0] || '').trim();
   const max = marksOf(q);
-  const mine = `<div class="yours nomath ${text ? '' : 'empty'}">${text ? esc(text) : 'No answer written'}</div><span class="hint">${wordCount(text)} words</span>`;
+  const mine = `${yoursHTML(0, text, m.essay ? { read: m.essay.read } : null)}<span class="hint">${wordCount(text)} words</span>`;
   const task = `<div class="part"><div class="ph"><span>${esc(q.parts[0].prompt)}</span><span class="mk">${max} marks</span></div>${mine}</div>`;
   if (!m.essay) {
     return { main: `${stem}${task}`, footer: `<div class="sheet"><span class="verdict no">Not marked</span><p class="hint" style="margin:0;color:#9A3412">${esc(m.error || 'The AI marker is not available right now.')}</p><button class="btn ghost" id="remark">Try marking again</button>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`,
