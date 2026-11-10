@@ -156,70 +156,132 @@ function scoreOf(questions) {
   return total ? Math.round(100 * got / total) : null;
 }
 /* ---------- mastery: how ready you are, per chapter and per book ----------
-   Coverage × latest scores, capped until harder (apply/analyse) questions are done well,
-   with questions overdue for review counting a little less. */
+   A chapter earns its % in six areas. 100% means it has been covered, answered well (including hard and written
+   questions), remembered over days, every mistake fixed, and passed in timed tests on different days. */
+const AREAS = [
+  ['tested', 'Passed timed tests', 30],
+  ['covered', 'Covered every part', 15],
+  ['accurate', 'Accurate in practice', 15],
+  ['deep', 'Deep understanding', 15],
+  ['remembered', 'Remembered over time', 15],
+  ['fixed', 'Mistakes fixed', 10],
+];
+const PASS = 0.8, TEST_MIN_Q = 3;
 function chapterTarget(u) {
   const pages = u.startPage && u.endPage ? u.endPage - u.startPage + 1 : 0;
   const n = pages ? Math.round(pages * 1.2) : Math.round((u.chars || 30000) / 2500);
   return Math.max(8, Math.min(20, n));
 }
-function chapterMastery(u, qs) {
+const normQ = (t) => String(t || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase();
+// Which part of the chapter a question is about, from where its source quote sits in the chapter text.
+function partOf(q, ntext, parts) {
+  if (!ntext || !q.source_quote) return -1;
+  const k = ntext.indexOf(normQ(q.source_quote).slice(0, 60));
+  return k < 0 ? -1 : Math.min(parts - 1, Math.floor(parts * k / ntext.length));
+}
+function testsFor(key) {
+  return (local.tests || []).map((t) => ({ t: t.t, r: t.per && t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
+}
+function chapterMastery(book, u, qs, text) {
   const T = chapterTarget(u), now = Date.now();
-  const done = qs.filter((q) => local.stats[q.id]);
-  const vals = done.map((q) => { const st = local.stats[q.id]; let v = Math.max(0, Math.min(1, st.last || 0)); if (st.due && st.due < now - DAY) v *= 0.75; return v; })
-    .sort((a, b) => b - a).slice(0, T);
-  const base = vals.reduce((t, v) => t + v, 0) / T;
-  const hard = done.filter((q) => (q.level || 2) >= 3 && (local.stats[q.id].last || 0) >= 0.7).length;
-  const cap = hard >= 3 ? 1 : hard >= 1 ? 0.85 : 0.7;
-  const pct = Math.round(100 * Math.min(base, cap));
+  const key = `${book.id}:${u.id}`;
+  const st = (q) => local.stats[q.id];
+  const done = qs.filter((q) => st(q));
+  const good = (q) => (st(q).last || 0) >= 0.7;
+  // covered: every part of the chapter has a question answered well
+  const pages = u.startPage && u.endPage ? u.endPage - u.startPage + 1 : 8;
+  const parts = Math.max(3, Math.min(6, Math.round(pages / 2)));
+  const ntext = text ? normQ(text) : '';
+  const hit = new Set(done.filter(good).map((q) => partOf(q, ntext, parts)).filter((x) => x >= 0));
+  const covered = ntext ? hit.size / parts : Math.min(1, done.filter(good).length / T);
+  // accurate: latest scores, over at least T questions
+  const latest = done.map((q) => Math.max(0, Math.min(1, st(q).last || 0)));
+  const accurate = latest.length ? (latest.reduce((a, b) => a + b, 0) / latest.length) * Math.min(1, latest.length / T) : 0;
+  // deep: right at "apply" and "analyse" level, and full marks on written answers
+  const l3 = done.some((q) => (q.level || 2) === 3 && good(q)), l4 = done.some((q) => (q.level || 2) >= 4 && good(q));
+  const written = done.filter((q) => !choiceType(q) && (st(q).last || 0) >= 1).length;
+  const deep = ((l3 ? 1 : 0) + (l4 ? 1 : 0) + Math.min(2, written)) / 4;
+  // remembered: right again in spaced reviews (box 3+ = right first time and in two reviews days apart)
+  const memTarget = Math.max(4, Math.min(8, Math.round(T / 2)));
+  const remembered = Math.min(1, done.filter((q) => (st(q).box || 0) >= 3).length / memTarget);
+  // mistakes fixed
+  const open = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && qUnit(id).join(':') === key).length;
+  const fixed = done.length ? Math.max(0, 1 - open / 5) : 0;
+  // tested: two passes (80%+) on different days, and the latest test also a pass
+  const tests = testsFor(key);
+  const passDays = new Set(tests.filter((x) => x.r[0] / x.r[1] >= PASS).map((x) => new Date(x.t).toDateString())).size;
+  const lastPass = tests.length ? tests[tests.length - 1].r[0] / tests[tests.length - 1].r[1] >= PASS : false;
+  let tested = Math.min(1, passDays / 2);
+  if (tests.length && !lastPass) tested = Math.min(tested, 0.5);
+  const score = { tested, covered, accurate, deep, remembered, fixed };
+  let pct = Math.round(AREAS.reduce((t, [k, , w]) => t + w * score[k], 0));
+  if (!passDays) pct = Math.min(pct, 70); // not proven in a test yet
+  else if (passDays < 2 || !lastPass) pct = Math.min(pct, 95);
   return {
-    pct, target: T, done: done.length,
-    more: Math.max(0, T - done.length),
-    hard: Math.max(0, 3 - hard),
-    due: done.filter((q) => local.stats[q.id].due <= now).length,
-    wrong: done.filter((q) => (local.stats[q.id].last || 0) < 1).length,
-    weight: (u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500),
+    pct, score, target: T, done: done.length, parts, uncovered: parts - hit.size,
+    more: Math.max(0, T - done.length), needL3: !l3, needL4: !l4, needWritten: Math.max(0, 2 - written),
+    due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
+    weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
   };
 }
 async function bookMastery(book) {
   const chapters = [];
-  for (const u of book.units) chapters.push({ unit: u, ...chapterMastery(u, await getQs(book.id, u.id)) });
+  for (const u of book.units) {
+    const text = await store.get(`text:${book.id}:${u.id}`, '');
+    chapters.push({ unit: u, ...chapterMastery(book, u, await getQs(book.id, u.id), text) });
+  }
   const w = chapters.reduce((t, c) => t + c.weight, 0) || 1;
   const pct = Math.round(chapters.reduce((t, c) => t + c.pct * c.weight, 0) / w);
-  return { pct, chapters };
+  const areas = Object.fromEntries(AREAS.map(([k]) => [k, chapters.reduce((t, c) => t + c.score[k] * c.weight, 0) / w]));
+  return { pct, chapters, areas };
 }
 function masteryLabel(p) {
-  return p >= 95 ? 'Mastered' : p >= 80 ? 'Well versed' : p >= 60 ? 'Getting there' : p >= 30 ? 'Building up' : p > 0 ? 'Just started' : 'Not started';
+  return p >= 100 ? 'Mastered' : p >= 85 ? 'Exam ready' : p >= 70 ? 'Well versed' : p >= 50 ? 'Getting there' : p >= 25 ? 'Building up' : p > 0 ? 'Just started' : 'Not started';
 }
-// The few most useful things to do next, weakest chapters first.
+// The next things to do, from the weakest areas of the weakest chapters.
 function masterySteps(m) {
   const steps = [];
-  const weak = m.chapters.filter((c) => c.pct < 95).sort((a, b) => a.pct - b.pct);
+  const weak = m.chapters.filter((c) => c.pct < 100).sort((a, b) => a.pct - b.pct);
   for (const c of weak) {
     if (steps.length >= 3) break;
-    if (c.due) steps.push({ unit: c.unit, text: `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${c.unit.title}` });
-    else if (c.more) steps.push({ unit: c.unit, text: `Practise ${c.more} more question${c.more > 1 ? 's' : ''} in ${c.unit.title}` });
-    else if (c.hard) steps.push({ unit: c.unit, text: `Try harder questions in ${c.unit.title}` });
-    else if (c.wrong) steps.push({ unit: c.unit, text: `Get ${c.wrong} question${c.wrong > 1 ? 's' : ''} right in ${c.unit.title}` });
+    const t = c.unit.title;
+    const opts = [];
+    if (c.more) opts.push([1 - c.score.accurate, `Practise ${c.more} more question${c.more > 1 ? 's' : ''} in ${t}`, 'practise']);
+    else if (c.score.accurate < 0.9) opts.push([1 - c.score.accurate, `Get more questions right in ${t}`, 'practise']);
+    if (c.uncovered > 0 && c.done) opts.push([1 - c.score.covered, `Practise the parts of ${t} you haven’t covered yet`, 'practise']);
+    if (c.needL4 || c.needL3) opts.push([1 - c.score.deep, `Get an ${c.needL4 ? 'analyse' : 'apply'} question right in ${t}`, 'practise']);
+    else if (c.needWritten) opts.push([1 - c.score.deep, `Get full marks on ${c.needWritten} written question${c.needWritten > 1 ? 's' : ''} in ${t}`, 'practise']);
+    if (c.open) opts.push([1 - c.score.fixed + 0.2, `Fix ${c.open} mistake${c.open > 1 ? 's' : ''} in ${t}`, 'mistakes']);
+    if (c.due) opts.push([1 - c.score.remembered + 0.1, `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, 'review']);
+    else if (c.score.remembered < 1 && c.done >= 4) opts.push([0.3 * (1 - c.score.remembered), `Come back for reviews over the next few days to prove you remember ${t}`, 'wait']);
+    if (c.done >= Math.min(6, c.target)) {
+      if (!c.passDays) opts.push([1.2, `Pass a chapter test on ${t} (80% or more)`, 'test']);
+      else if (c.passDays < 2 || !c.lastPass) opts.push([0.9, `Pass another chapter test on ${t} on a different day`, 'test']);
+    }
+    opts.sort((a, b) => b[0] - a[0]);
+    if (opts[0]) steps.push({ unit: c.unit, text: opts[0][1], kind: opts[0][2] });
   }
   return steps;
 }
-// "Get me closer to 100%": the weakest chapter, starting with its due reviews and mistakes, then new questions at the right level.
 function masteryCard(m) {
   const steps = masterySteps(m);
   const p = m.pct;
   return `<section class="mastery" aria-label="Mastery">
-    <div class="m-top"><div class="ring ${p >= 80 ? 'good' : p >= 60 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% mastered"><span>${p}%</span></div>
-      <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 95 ? 'You know this book well. Keep up your reviews.' : p ? `${100 - p}% to go. Here’s what will get you there:` : 'Practise a chapter to see how ready you are.'}</span></div></div>
-    ${steps.length ? `<ul class="m-steps">${steps.map((x) => `<li><button class="link" data-step-unit="${esc(x.unit.id)}">${esc(x.text)}</button></li>`).join('')}</ul>` : ''}
+    <div class="m-top"><div class="ring ${p >= 85 ? 'good' : p >= 50 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% mastered"><span>${p}%</span></div>
+      <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. Here’s what will get you there:` : 'Practise a chapter to see how ready you are.'}</span></div></div>
+    <details class="areas"><summary>How this is worked out</summary>${AREAS.map(([k, label, w]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}<small>${w}%</small></span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
+      <p class="hint" style="margin:6px 0 0">A chapter can’t go above 70% until you pass a timed test on it, or reach 100% until you’ve passed two on different days.</p></details>
+    ${steps.length ? `<ul class="m-steps">${steps.map((x) => `<li><button class="link" data-step-unit="${esc(x.unit.id)}" data-step-kind="${x.kind}">${esc(x.text)}</button></li>`).join('')}</ul>` : ''}
     ${p < 100 ? `<button class="btn" id="boost">${ICON.target} Get me closer to 100%</button>` : ''}
   </section>`;
 }
-
+// "Get me closer to 100%": works on the weakest chapter's weakest area.
 async function boostSession(book) {
   const m = await bookMastery(book);
   const c = m.chapters.filter((x) => x.pct < 100).sort((a, b) => a.pct - b.pct)[0];
   if (!c) return toast('Every chapter is at 100%. Keep up your reviews!');
+  const step = masterySteps({ ...m, chapters: [c] })[0];
+  if (step && step.kind === 'test') return startChapterTest(book, [c.unit]);
   const qs = await getQs(book.id, c.unit.id), now = Date.now();
   const again = shuffle(qs.filter((q) => { const st = local.stats[q.id]; return st && (st.due <= now || (st.last || 0) < 1); })).slice(0, 6).map(shuffleOptions);
   await startUnits(book, [c.unit], Math.max(6, 10 - again.length));
@@ -228,6 +290,22 @@ async function boostSession(book) {
     const add = again.filter((q) => !have.has(q.id));
     S.qs.splice(S.i, 0, ...add); S.target += add.length; S.title = c.unit.title;
     if (S.i < S.qs.length) renderQuestion();
+  }
+}
+// A chapter test: about 10 new questions, timed, no help until the end. Counts towards "Passed timed tests".
+async function startChapterTest(book, units) {
+  const nA = Math.min(16, 6 + 2 * units.length), nB = Math.min(4, 1 + units.length);
+  const mins = paperMinutes(nA, nB);
+  try {
+    const paper = await preparePaper(book, units, nA, nB, 'sit');
+    if (!paper) return;
+    startDse(book, paper, mins);
+    S.title = units.length === 1 ? `${LANG === 'zh' ? '章節測驗' : 'Chapter test'} · ${units[0].title}` : (LANG === 'zh' ? '章節測驗' : 'Chapter test');
+    S.test = true;
+    toast(`${mins} min · pass mark 80%`);
+  } catch (e) {
+    toast(e.status === 0 ? 'You seem to be offline.' : (e.message || 'Could not prepare the test.'));
+    go({ name: 'book', bookId: book.id });
   }
 }
 
@@ -735,6 +813,8 @@ async function renderBook(bookId) {
   bookKinds.set(book.id, kindOfBook(book));
   const t = local.types || 'mix';
   const count = local.count || SESSION_SIZE;
+  const bm = await bookMastery(book);
+  const bmByUnit = Object.fromEntries(bm.chapters.map((c) => [c.unit.id, c]));
   const rows = [];
   let lastChapter = null;
   for (const u of book.units) {
@@ -742,7 +822,7 @@ async function renderBook(bookId) {
     const qs = await getQs(book.id, u.id);
     const unseen = qs.filter((q) => !local.stats[q.id] && matchType(q, t)).length;
     const done = qs.filter((q) => local.stats[q.id]).length;
-    const sc = chapterMastery(u, qs).pct;
+    const sc = (bmByUnit[u.id] || { pct: 0 }).pct;
     const on = pick.ids.has(u.id);
     const sh = levelShift(book.id, u.id);
     const status = (qs.length || done ? `${unseen} ready · ${done} done` : 'New questions will be made') + (sh > 0 ? ' · harder questions now' : sh < 0 ? ' · more basics first' : '');
@@ -751,7 +831,6 @@ async function renderBook(bookId) {
       <span class="muted" style="font-size:12px;padding-left:36px">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
       ${done ? `<div class="bar ${sc < 60 ? 'warn' : sc < 80 ? 'mid' : ''}" style="margin-left:36px"><i style="width:${sc}%"></i></div>` : ''}</button>`);
   }
-  const bm = await bookMastery(book);
   const n = pick.ids.size;
   const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
   $app.innerHTML = `
@@ -788,6 +867,7 @@ async function renderBook(bookId) {
       </div>
     </div>
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter above'}</button>
+    <button class="btn ghost" id="ctest" ${n ? '' : 'disabled'}>${ICON.clock} Take a chapter test</button>
     <div class="revise-row"><button class="btn ghost" id="notes" ${n ? '' : 'disabled'}>${ICON.notes} Notes</button><button class="btn ghost" id="cards" ${n ? '' : 'disabled'}>${ICON.cards} Flashcards</button></div>
     <button class="link" id="paper" style="align-self:center;padding:2px 0">Or make a DSE-style mock paper / worksheet</button>
   </div>`;
@@ -803,7 +883,14 @@ async function renderBook(bookId) {
   document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || SESSION_SIZE); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
   const bst = document.getElementById('boost'); if (bst) bst.onclick = () => boostSession(book);
-  $app.querySelectorAll('[data-step-unit]').forEach((b) => (b.onclick = () => { pick.ids = new Set([b.dataset.stepUnit]); keep(); }));
+  $app.querySelectorAll('[data-step-unit]').forEach((b) => (b.onclick = () => {
+    const u = book.units.find((x) => x.id === b.dataset.stepUnit);
+    if (b.dataset.stepKind === 'test' && u) return startChapterTest(book, [u]);
+    if (b.dataset.stepKind === 'mistakes') return go({ name: 'mistakes' });
+    if (b.dataset.stepKind === 'review') return startReview('spaced');
+    pick.ids = new Set([b.dataset.stepUnit]); keep();
+  }));
+  document.getElementById('ctest').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); if (units.length) startChapterTest(book, units); };
   document.getElementById('editch').onclick = () => go({ name: 'edit', bookId });
   document.getElementById('kind').onchange = async (e) => {
     const books = await store.get('books', []); const b = books.find((x) => x.id === bookId);
@@ -2375,6 +2462,13 @@ function renderSummary() {
   const missedIdx = qs.map((q, k) => k).filter((k) => (S.got[k] || 0) < marksOf(qs[k]));
   const drillable = missedIdx.filter((k) => canDrill(qs[k])).slice(0, 10); // drill up to 10 missed ideas
   const unitRef = S.units ? { book: S.book, units: S.units } : null;
+  // Timed tests and mock papers count towards mastery (per chapter, only when finished).
+  if (S.mode === 'dse' && !S.ws && !S.endedEarly && !S.recorded) {
+    S.recorded = true;
+    const per = {};
+    qs.forEach((q, k) => { const key = qUnit(q.id).join(':'); const r = per[key] || (per[key] = [0, 0]); r[0] += S.got[k] || 0; r[1] += marksOf(q); });
+    local.tests = [...(local.tests || []), { t: Date.now(), per }].slice(-300); saveLocal();
+  }
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
     <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? 'var(--good)' : 'var(--miss-dark)'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
