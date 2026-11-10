@@ -315,6 +315,7 @@ const EXACT = {
   'Ask about your progress…': '問問你的學習進度…',
   'Study coach': '溫習教練',
   'The coach is not available right now. Try again in a moment.': '教練暫時未能回應，請稍後再試。',
+  'Home': '主頁',
   'Worth another go': '值得再試一次',
   'Redo this set (shuffled)': '重做這一組（次序打亂）',
   'Weak-spot drill': '弱項操練',

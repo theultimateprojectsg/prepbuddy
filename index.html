@@ -555,6 +555,15 @@ body[data-tab] .app{padding-bottom:76px}
   body[data-tab] .app:has(> main[data-view="books"]),body[data-tab] .app:has(> main[data-view="mistakes"]){max-width:1100px}
   .app:has(> main[data-view="mistakes"])>.sheet.sticky{grid-row:1!important;margin-top:32px!important}
 }
+
+/* ---------- clear navigation: back buttons and small buttons that look tappable ---------- */
+.backbtn{display:inline-flex;align-items:center;gap:2px;min-height:40px;padding:6px 14px 6px 8px;border:1.5px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:600 14px var(--ui);cursor:pointer;flex:none;box-shadow:0 1px 2px rgba(30,42,90,.05)}
+.backbtn svg{width:20px;height:20px;color:var(--accent)}
+.backbtn:hover{border-color:var(--accent-tint);background:var(--accent-soft)}
+.topbar:has(.backbtn){gap:14px}
+.btn-sm{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:6px 14px;border:1.5px solid var(--accent-tint);border-radius:999px;background:#fff;color:var(--accent);font:600 13.5px var(--ui);cursor:pointer}
+.btn-sm:hover{background:var(--accent-soft)}
+.btn-sm.quiet{border-color:var(--line);color:var(--text-2)}
 </style>
 </head>
 <body>

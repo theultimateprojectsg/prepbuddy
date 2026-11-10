@@ -60,7 +60,7 @@ async function renderLibrary(note) {
       <div class="acts"><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
   </div>
   <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy.</p>
-  <button class="link" id="out" style="align-self:flex-start">Sign out</button>`;
+  <button class="btn ghost small" id="out" style="align-self:flex-start">Sign out</button>`;
   loadReports();
   $('add').onclick = () => renderUpload();
   $('out').onclick = () => { sessionStorage.removeItem(PW_KEY); pw = ''; renderLogin(); };
@@ -110,7 +110,7 @@ let draft = null; // { fileName, pageCount, pageTexts, units: [{ title, startPag
 const steps = (k) => `<div class="steps">${['1. Upload', '2. Check chapters', '3. Details', '4. Publish'].map((s, i) => `<span class="${i === k ? 'on' : ''}">${s}</span>`).join('')}</div>`;
 
 function renderUpload(msg) {
-  app.innerHTML = `<header><h1>Add a textbook</h1><button class="link" id="back">Back to library</button></header>${steps(0)}
+  app.innerHTML = `<header><h1>Add a textbook</h1><button class="btn ghost small" id="back">Back to library</button></header>${steps(0)}
   <div class="card">
     <h2>Upload the PDF</h2>
     <p class="hint" style="margin:0">Only add books you have the right to share with every student (for example free, openly licensed books like OpenStax, or with the publisher’s permission).</p>
@@ -148,7 +148,7 @@ function renderUpload(msg) {
 
 function renderChapters(openSplit = -1) {
   const d = draft;
-  app.innerHTML = `<header><h1>Check the chapters</h1><button class="link" id="back">Start again</button></header>${steps(1)}
+  app.innerHTML = `<header><h1>Check the chapters</h1><button class="btn ghost small" id="back">Start again</button></header>${steps(1)}
   <div class="card">
     <p class="hint" style="margin:0">${d.units.length} chapters found in ${d.pageCount} pages${d.method === 'ai' ? ', checked by AI' : ''}. Rename, merge, split or hide parts students shouldn’t revise (contents, index, answers). Open “Preview” to check a chapter starts in the right place.</p>
     <div>${d.units.map((u, i) => `<div class="chap">
@@ -197,7 +197,7 @@ async function renderDetails(existing, cat) {
   const d = draft;
   const b = existing || {};
   const defTitle = b.title || (d && (d.title && d.title.length > 3 && !/^untitled|microsoft word/i.test(d.title) ? d.title : d.fileName.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ')));
-  app.innerHTML = `<header><h1>${existing ? 'Edit book details' : 'Book details'}</h1><button class="link" id="back">${existing ? 'Back to library' : 'Back to chapters'}</button></header>${existing ? '' : steps(2)}
+  app.innerHTML = `<header><h1>${existing ? 'Edit book details' : 'Book details'}</h1><button class="btn ghost small" id="back">${existing ? 'Back to library' : 'Back to chapters'}</button></header>${existing ? '' : steps(2)}
   <form class="card" id="f">
     <label>Title<input id="title" required value="${esc(defTitle)}"></label>
     <div class="grid2">

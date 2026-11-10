@@ -539,7 +539,7 @@ async function renderHome() {
     ${head}
     <section class="plan" aria-label="Today's plan"><h2><span class="hl">Today’s plan</span></h2>${items.join('')}</section>
     <section class="stack g10" aria-label="My textbooks">
-      <div class="sect-head"><h2>My textbooks</h2><button class="link" id="allbooks" style="padding:0">See all</button></div>
+      <div class="sect-head"><h2>My textbooks</h2><button class="btn-sm" id="allbooks">See all</button></div>
       <div class="shelf">${covers.join('')}<button class="bookcover add" id="addbook">${ICON.plus}<span>Add a book</span></button></div>
     </section>
     <section class="stack g10" aria-label="Practice">
@@ -630,7 +630,7 @@ async function renderLibrary(query) {
   try { list = await getCatalog(); } catch (e) { toast(e.message); return go({ name: 'home' }); }
   const mine = new Set((await getBooks()).map((b) => b.id));
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to Books">${ICON.back}</button><span style="font-weight:600;font-size:15px">Textbook library</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Books</span></button><span style="font-weight:600;font-size:15px">Textbook library</span></div>
   <main class="stack g14" data-view="books" style="flex:1;padding:4px 20px 24px">
     <form id="find" class="searchbox light" role="search">
       <span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
@@ -795,7 +795,7 @@ async function renderEdit(bookId, openSplit) {
     </div>`;
   };
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px">Edit chapters</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button><span style="font-weight:600;font-size:15px">Edit chapters</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Fix chapter names, merge or split chapters, or hide parts that aren’t for revising (like answers or the index). Your questions and progress are kept.</p>
     ${pages ? '' : `<p class="hint" style="margin:0">${book.library ? 'Library books can be renamed, merged or hidden.' : 'Splitting needs the book uploaded again (books uploaded before today can still be renamed, merged or hidden).'}</p>`}
@@ -923,7 +923,7 @@ async function renderBook(bookId) {
   const n = pick.ids.size;
   const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-raw>${esc(book.title)}</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-raw>${esc(book.title)}</span></div>
   <div class="bookpage">
   <main class="bk-main stack g14">
     <div class="chtools">
@@ -958,7 +958,7 @@ async function renderBook(bookId) {
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter'}</button>
     <button class="btn ghost" id="ctest" ${n ? '' : 'disabled'}>${ICON.clock} Take a chapter test</button>
     <div class="revise-row"><button class="btn ghost" id="notes" ${n ? '' : 'disabled'}>${ICON.notes} Notes</button><button class="btn ghost" id="cards" ${n ? '' : 'disabled'}>${ICON.cards} Flashcards</button></div>
-    <button class="link" id="paper" style="align-self:center;padding:2px 0">Or make a DSE-style mock paper / worksheet</button>
+    <button class="btn ghost" id="paper">Or make a DSE-style mock paper / worksheet</button>
   </div>
   </aside>
   </div>`;
@@ -1040,7 +1040,7 @@ async function renderNotes(bookId) {
   if (!book) return go({ name: 'home' });
   const units = paperUnits(book), myView = view;
   $app.innerHTML = `
-  <div class="topbar noprint"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1">Revision notes</span><button class="link quiet" id="printn" style="padding:0 8px">Print</button></div>
+  <div class="topbar noprint"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button><span style="font-weight:600;font-size:15px;flex:1">Revision notes</span><button class="btn-sm" id="printn">Print</button></div>
   <main class="stack g18 notes" style="flex:1;padding:4px 20px 24px">
     ${units.map((u) => `<section class="ncard" id="n-${esc(u.id)}"><h2 class="ntitle" data-raw>${esc(u.title)}</h2><div class="nwait"><div class="spinner small" aria-hidden="true"></div><span>Writing notes from your textbook…</span></div></section>`).join('')}
     <p class="hint" style="margin:0;line-height:1.5">Written by AI from your textbook. If something looks wrong, check it against the book.</p>
@@ -1076,7 +1076,7 @@ async function renderCards(bookId, only) {
   if (!book) return go({ name: 'home' });
   const units = paperUnits(book), myView = view;
   if (!only) {
-    $app.innerHTML = `<div class="topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button></div>
+    $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button></div>
     <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
       <div class="spinner" aria-hidden="true"></div><h1 class="display" style="margin:0;font-size:22px">Making your flashcards</h1>
       <p class="muted" id="cw" style="margin:0;line-height:1.5;max-width:320px">Written from your textbook. The first time takes about 20–40 seconds per chapter.</p></main>`;
@@ -1225,7 +1225,7 @@ function renderUsage() {
   const rows = steps.map(([k, name]) => { const r = u[k] || {}; return `<tr><th scope="row">${name}</th><td>${fmt(r.calls)}</td><td>${fmt(r.input)}</td><td>${fmt(r.cache_write)}</td><td>${fmt(r.cache_read)}</td><td>${fmt(r.output)}</td><td><b>${usd(r.usd)}</b></td></tr>`; }).join('');
   const made = u.made || 0;
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">AI usage on this device</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px">AI usage on this device</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p style="margin:0;line-height:1.5;color:var(--text-2)">Tokens used since you last reset. Reading PDFs happens on your device and uses no tokens.</p>
     <div style="overflow-x:auto"><table class="data usage">
@@ -1250,7 +1250,7 @@ async function confirmRemove(book) {
   const answered = Object.keys(local.stats).filter((k) => k.startsWith(prefix)).length;
   const activity = local.log.filter((e) => e.q.startsWith(prefix)).length;
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back">${ICON.back}</button></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Back</span></button></div>
   <main class="pad stack g18" style="flex:1;padding-top:4px">
     <h1 class="display" style="margin:0;font-size:24px;line-height:1.25">Remove this textbook?</h1>
     <p style="margin:0;font-size:16px;line-height:1.5;font-weight:600" data-raw>${esc(book.title)}</p>
@@ -1310,13 +1310,13 @@ async function renderPaper(bookId, from) {
   const { a, b } = paperSet;
   const mins = paperMinutes(a, b);
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
     <p style="margin:0;line-height:1.5;color:var(--text-2)">A DSE-style paper: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here and get it marked, or print it and enter your answers in the app afterwards to get them marked.</p>
     <div class="card stack g6" style="padding:14px 16px">
       <span class="muted" style="font-size:13px">Chapters</span>
       <b style="font-weight:600;line-height:1.4">${units.length === book.units.length ? `All ${book.units.length} chapters` : esc(units.map((u) => u.title).join(' · '))}</b>
-      <button class="link" id="change" style="align-self:flex-start;padding:4px 0 0">Change chapters</button>
+      <button class="btn-sm" id="change" style="align-self:flex-start">Change chapters</button>
     </div>
     <div class="stack g10">
       <span style="font-size:15px;font-weight:600">Length</span>
@@ -1475,7 +1475,7 @@ async function renderPrint(book, units, paper, mins, existing) {
   const draw = () => {
     const who = (local.name || '').trim();
     $app.innerHTML = `
-  <div class="noprint topbar"><button class="icon-btn" id="back" aria-label="Back">${ICON.back}</button><span style="font-weight:600;font-size:15px">Worksheet ${ws.code}</span></div>
+  <div class="noprint topbar"><button class="backbtn" id="back">${ICON.back}<span>Back</span></button><span style="font-weight:600;font-size:15px">Worksheet ${ws.code}</span></div>
   <div class="noprint stack g10" style="padding:0 20px 16px">
     <label for="wsname" style="font-size:13px;font-weight:600;color:var(--muted)">Name on every page</label>
     <input id="wsname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(who)}">
@@ -1512,11 +1512,11 @@ async function renderWorksheets() {
   for (const c of local.worksheets || []) { const ws = await store.get('ws:' + c, null); if (ws && books.some((b) => b.id === ws.bookId)) list.push(ws); }
   const when = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">Printed worksheets</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px">Printed worksheets</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Pick the worksheet you did. Check the code at the bottom of the page. Enter what you wrote on paper, and PrepBuddy marks it.</p>
     ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:13px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:13px"><span data-raw>${esc(b.subject || b.title)}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
-      <div style="display:flex;gap:14px;margin-top:8px"><button class="link" data-ws="${ws.code}">${ws.score ? 'Mark again' : 'Enter answers'}</button><button class="link quiet" data-reprint="${ws.code}">Print again</button></div></div>`; }).join('')}</div>`
+      <div style="display:flex;gap:14px;margin-top:8px"><button class="btn-sm" data-ws="${ws.code}">${ws.score ? 'Mark again' : 'Enter answers'}</button><button class="btn-sm quiet" data-reprint="${ws.code}">Print again</button></div></div>`; }).join('')}</div>`
       : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.</p></div>'}
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'home' });
@@ -1728,7 +1728,7 @@ async function renderMistakes(tab) {
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Every question you didn’t get fully right is kept here. Get it right again and it moves to Mastered.</p>
     ${chips}
     <div class="seg" style="grid-template-columns:1fr 1fr" role="tablist"><button role="tab" class="${tab === 'todo' ? 'on' : ''}" data-tab="todo">To get right (${todo})</button><button role="tab" class="${tab === 'done' ? 'on' : ''}" data-tab="done">Mastered (${done})</button></div>
-    ${groups.length ? groups.map((g, gi) => `<section class="stack g10"><div class="mhead"><span><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><br><span class="muted" style="font-size:12.5px" data-raw>${esc(g.book.subject || g.book.title)}</span></span>${tab === 'todo' ? `<button class="link" data-redo="${gi}" style="padding:0;white-space:nowrap">Redo these ${g.items.length}</button>` : ''}</div>
+    ${groups.length ? groups.map((g, gi) => `<section class="stack g10"><div class="mhead"><span><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><br><span class="muted" style="font-size:12.5px" data-raw>${esc(g.book.subject || g.book.title)}</span></span>${tab === 'todo' ? `<button class="btn-sm" data-redo="${gi}" style="white-space:nowrap">Redo these ${g.items.length}</button>` : ''}</div>
       ${g.items.map((x) => mistakeCard(x.q, x.m)).join('')}</section>`).join('')
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">${tab === 'todo' ? 'Nothing here. Questions you get wrong will appear here automatically.' : 'Questions you get right after missing them will appear here.'}</p></div>`}
   </main>
@@ -1760,7 +1760,7 @@ async function renderPick(mode) {
     : `${b.units.length} chapters`));
   if (mode === 'weak') rows.unshift(row('', 'All my textbooks', `${weakIn('')} questions to work on`));
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">${mode === 'weak' ? 'Weak topics' : 'Mock paper'}</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px">${mode === 'weak' ? 'Weak topics' : 'Mock paper'}</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <h2 style="margin:0;font-size:17px">Which textbook?</h2>
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">${mode === 'weak' ? 'Practise the questions you found hard.' : 'You choose the chapters and length next.'}</p>
@@ -1946,7 +1946,7 @@ function renderWaiting() {
       ? `<h1 class="display" style="margin:0;font-size:22px">${e ? 'Couldn’t make questions' : 'No more questions right now'}</h1>
          <p style="margin:0;line-height:1.5;max-width:320px">${esc(e ? e.message : 'Try this chapter again in a moment.')}</p>
          <button class="btn" id="retry" style="max-width:320px">Try again</button>
-         ${S.qs.length ? '<button class="link" id="finish">See my results</button>' : '<button class="link" id="home">Back</button>'}`
+         ${S.qs.length ? '<button class="btn ghost" id="finish">See my results</button>' : '<button class="btn ghost" id="home">Back</button>'}`
       : `<div class="spinner" aria-hidden="true"></div>
          <h1 class="display" style="margin:0;font-size:22px">${S.qs.length ? 'Preparing the next question' : 'Writing your questions'}</h1>
          <p class="muted" style="margin:0;line-height:1.5;max-width:320px">${esc(S.mode === 'drill' ? 'New questions on the ideas you missed' : S.units ? S.units.map((u) => u.title).join(', ') : '')}<br>Each question is written from your textbook, then checked by a second AI. The first ones take 30–60 seconds; after that the next set is made while you practise.</p>`}
@@ -1961,7 +1961,7 @@ function renderWaiting() {
 }
 
 function renderAccess(onOk, msg) {
-  $app.innerHTML = `<div class="topbar"><button class="icon-btn" id="back" aria-label="Back">${ICON.back}</button></div>
+  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Back</span></button></div>
   <main class="pad stack g14" style="flex:1">
     <h1 class="display" style="margin:0;font-size:24px">Enter your access code</h1>
     <p style="margin:0;line-height:1.5;color:var(--text-2)">PrepBuddy is in testing. You need a code to make new questions. Ask the person who invited you.</p>
@@ -2677,7 +2677,7 @@ function renderSummary() {
       ${missed.length ? `<button class="btn ghost" id="retry">Retry the ${missed.length} I missed</button>` : ''}
       ${qs.length ? '<button class="btn ghost" id="redo">Redo this set (shuffled)</button>' : ''}
       </div>
-      <button class="link rback" id="home">${S.book ? 'Back to chapters' : 'Back to home'}</button>
+      <button class="btn ghost" id="home">${S.book ? 'Back to chapters' : 'Back to home'}</button>
     </div>
     </div>
     <section class="rlist"><h2>Your answers</h2>
