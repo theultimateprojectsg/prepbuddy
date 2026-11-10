@@ -108,5 +108,122 @@
     "figs": true
    }
   ]
+ },
+ {
+  "id": "hk-road-users-code-chine-d7e7",
+  "code": "TRA-1234C",
+  "title": "HK Road Users’ Code (Chinese)",
+  "subject": "Training Material",
+  "level": "S4–S6 (HKDSE)",
+  "kind": "humanities",
+  "publisher": "Transport Authority",
+  "licence": "CC BY 4.0",
+  "credit": "",
+  "lang": "zh-HK",
+  "pageCount": 144,
+  "addedAt": "2026-11-10",
+  "questionCount": 0,
+  "units": [
+   {
+    "id": "u0",
+    "title": "第一章 所有道路使用者須知",
+    "chapter": null,
+    "startPage": 6,
+    "endPage": 7
+   },
+   {
+    "id": "u1",
+    "title": "第二章 行人須知",
+    "chapter": null,
+    "startPage": 8,
+    "endPage": 25,
+    "figs": true
+   },
+   {
+    "id": "u2",
+    "title": "第三章 乘客須知",
+    "chapter": null,
+    "startPage": 26,
+    "endPage": 30,
+    "figs": true
+   },
+   {
+    "id": "u3",
+    "title": "第四章 騎單車者須知",
+    "chapter": null,
+    "startPage": 31,
+    "endPage": 42,
+    "figs": true
+   },
+   {
+    "id": "u4",
+    "title": "第五章 所有駕駛人須知（一）",
+    "chapter": null,
+    "startPage": 43,
+    "endPage": 56,
+    "figs": true
+   },
+   {
+    "id": "u5",
+    "title": "第五章 所有駕駛人須知（二）",
+    "chapter": null,
+    "startPage": 57,
+    "endPage": 74,
+    "figs": true
+   },
+   {
+    "id": "u6",
+    "title": "第五章 所有駕駛人須知（三）",
+    "chapter": null,
+    "startPage": 75,
+    "endPage": 85
+   },
+   {
+    "id": "u7",
+    "title": "第五章 所有駕駛人須知（四）",
+    "chapter": null,
+    "startPage": 86,
+    "endPage": 97,
+    "figs": true
+   },
+   {
+    "id": "u8",
+    "title": "第六章 職業司機須知",
+    "chapter": null,
+    "startPage": 98,
+    "endPage": 101,
+    "figs": true
+   },
+   {
+    "id": "u9",
+    "title": "第七章 電單車及機動三輪車駕駛人須知",
+    "chapter": null,
+    "startPage": 102,
+    "endPage": 105
+   },
+   {
+    "id": "u10",
+    "title": "第八章 道路語言",
+    "chapter": null,
+    "startPage": 106,
+    "endPage": 131,
+    "figs": true
+   },
+   {
+    "id": "u11",
+    "title": "第九章 兒童及長者使用道路",
+    "chapter": null,
+    "startPage": 132,
+    "endPage": 134
+   },
+   {
+    "id": "u12",
+    "title": "第十章 緊急事故",
+    "chapter": null,
+    "startPage": 135,
+    "endPage": 140,
+    "figs": true
+   }
+  ]
  }
 ]
