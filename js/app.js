@@ -44,6 +44,10 @@ function usable(q) {
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const ICON = {
+  chat: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.2M12 16.5h.01"/></svg>',
+  send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  notes: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>',
+  cards: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="14" height="12" rx="2"/><path d="M7 7V5h12a2 2 0 0 1 2 2v10h-4"/></svg>',
   close: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   back: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
   check: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L19 8"/></svg>',
@@ -168,6 +172,8 @@ async function go(v) {
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
   if (v.name === 'worksheets') return renderWorksheets();
+  if (v.name === 'notes') return renderNotes(v.bookId);
+  if (v.name === 'cards') return renderCards(v.bookId, v.only);
 }
 
 /* ---------- home ---------- */
@@ -300,6 +306,7 @@ async function addFromLibrary(entry, btn) {
       const tr = await fetch(`library/${entry.id}/${u.id}.txt`);
       if (!tr.ok) throw new Error('Part of this textbook could not be downloaded. Please try again.');
       await store.set(`text:${id}:${u.id}`, await tr.text());
+      if (u.figs) { const fr = await fetch(`library/${entry.id}/figs/${u.id}.json`); if (fr.ok) await store.set(`figs:${id}:${u.id}`, await fr.json()); }
       const existing = await getQs(id, u.id);
       const have = new Set(existing.map((q) => q.id));
       const ready = (bank[u.id] || []).map((q) => ({ ...q, id: `${id}:${u.id}:${q.id}`, section: u.title, pages: q.pages || `${u.startPage}-${u.endPage}` }))
@@ -333,16 +340,19 @@ async function uploadBook(file) {
     if (file.size > 300 * 1024 * 1024) throw new Error('This file is over 300 MB. Try a smaller PDF or one chapter at a time.');
     const [{ readBook }, data] = await Promise.all([import('./book.js'), file.arrayBuffer()]);
     let last = 0;
-    const book = await readBook(new Uint8Array(data), (i, n) => {
-      const now = Date.now(); if (now - last < 150 && i < n) return; last = now;
-      show(Math.round(100 * i / n), `Page ${i} of ${n}`);
+    const book = await readBook(new Uint8Array(data), (i, n, msg) => {
+      const now = Date.now(); if (now - last < 150 && i < n && !msg) return; last = now;
+      show(Math.round(100 * i / n), msg || `Page ${i} of ${n}`);
     });
     if (!book.units.length) throw new Error('No chapters with enough text were found in this PDF.');
     show(100, `Found ${book.units.length} chapters. Saving…`);
     await store.persist();
     const id = 'b' + uid();
     const units = book.units.map((u, i) => ({ id: 'u' + i, title: u.title, chapter: u.chapter || null, startPage: u.startPage, endPage: u.endPage, chars: u.text.length }));
-    for (let i = 0; i < book.units.length; i++) await store.set(`text:${id}:u${i}`, book.units[i].text);
+    for (let i = 0; i < book.units.length; i++) {
+      await store.set(`text:${id}:u${i}`, book.units[i].text);
+      if ((book.units[i].figures || []).length) await store.set(`figs:${id}:u${i}`, book.units[i].figures);
+    }
     const title = (book.title && book.title.length > 3 && !/^untitled|microsoft word/i.test(book.title)) ? book.title : file.name.replace(/\.pdf$/i, '').replace(/^[0-9a-f]{6,}[-_ ]+/i, '').replace(/[_]+/g, ' ').replace(/\s+-\s+/g, ' – ').trim() || 'My book';
     const books = await store.get('books', []);
     books.unshift({ id, title, fileName: file.name, addedAt: Date.now(), pageCount: book.pageCount, method: book.method, units });
@@ -414,6 +424,7 @@ async function renderBook(bookId) {
       </div>
     </div>
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter above'}</button>
+    <div class="revise-row"><button class="btn ghost" id="notes" ${n ? '' : 'disabled'}>${ICON.notes} Notes</button><button class="btn ghost" id="cards" ${n ? '' : 'disabled'}>${ICON.cards} Flashcards</button></div>
     <button class="link" id="paper" style="align-self:center;padding:2px 0">Or make a DSE-style mock paper / worksheet</button>
   </div>`;
   const keep = async () => { const y = window.scrollY; await renderBook(bookId); window.scrollTo(0, y); };
@@ -428,7 +439,148 @@ async function renderBook(bookId) {
   document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || SESSION_SIZE); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
   document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
+  document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
+  document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
   window.scrollTo(0, 0);
+}
+
+/* ---------- revision notes and flashcards (made once per chapter, kept on this device) ---------- */
+const notesJobs = new Map();
+function getNotes(book, unit, fresh) {
+  const key = `notes:${book.id}:${unit.id}`;
+  if (!fresh && notesJobs.has(key)) return notesJobs.get(key);
+  const p = (async () => {
+    if (!fresh) { const have = await store.get(key, null); if (have) return have; }
+    const text = await store.get(`text:${book.id}:${unit.id}`, '');
+    if (!text) throw new Error('This chapter’s text is missing on this device.');
+    const n = await api('notes', { title: unit.title, text, lang: langOf(text) });
+    delete n.usage;
+    n.at = Date.now();
+    await store.set(key, n);
+    return n;
+  })();
+  notesJobs.set(key, p);
+  p.catch(() => notesJobs.delete(key));
+  return p;
+}
+const notesError = (e) => (e.status === 0 ? 'You seem to be offline.' : e.status === 401 ? 'That access code didn’t work.' : 'Couldn’t make notes for this chapter. Try again in a moment.');
+
+function notesHTML(u, n) {
+  return `<h2 class="ntitle" data-raw>${esc(u.title)}</h2>
+    <div data-raw class="nbody">
+    ${n.sections.map((s) => `<h3>${esc(s.heading)}</h3><ul>${s.points.map((p) => `<li>${tutorMd(p).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ul>`).join('')}
+    ${n.formulas.length ? `<h3 class="nlabel">${LANG === 'zh' ? '公式' : 'Formulas'}</h3>${n.formulas.map((f) => `<div class="fml"><div>${esc(f.formula)}</div><span>${esc(f.meaning)}</span></div>`).join('')}` : ''}
+    ${n.key_terms.length ? `<h3 class="nlabel">${LANG === 'zh' ? '關鍵詞' : 'Key terms'}</h3><dl class="terms">${n.key_terms.map((k) => `<div><dt>${esc(k.term)}</dt><dd>${esc(k.meaning)}</dd></div>`).join('')}</dl>` : ''}
+    </div>`;
+}
+
+async function renderNotes(bookId) {
+  const book = (await getBooks()).find((b) => b.id === bookId);
+  if (!book) return go({ name: 'home' });
+  const units = paperUnits(book), myView = view;
+  $app.innerHTML = `
+  <div class="topbar noprint"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1">Revision notes</span><button class="link quiet" id="printn" style="padding:0 8px">Print</button></div>
+  <main class="stack g18 notes" style="flex:1;padding:4px 20px 24px">
+    ${units.map((u) => `<section class="ncard" id="n-${esc(u.id)}"><h2 class="ntitle" data-raw>${esc(u.title)}</h2><div class="nwait"><div class="spinner small" aria-hidden="true"></div><span>Writing notes from your textbook…</span></div></section>`).join('')}
+    <p class="hint" style="margin:0;line-height:1.5">Written by AI from your textbook. If something looks wrong, check it against the book.</p>
+  </main>
+  <div class="sheet sticky noprint">
+    <button class="btn" id="tocards">${ICON.cards} Practise with flashcards</button>
+    <span class="hint" style="text-align:center">Notes are saved on this device, so they open instantly next time.</span>
+  </div>`;
+  document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+  document.getElementById('printn').onclick = () => window.print();
+  document.getElementById('tocards').onclick = () => go({ name: 'cards', bookId });
+  const fill = (u, fresh) => {
+    const el = document.getElementById(`n-${u.id}`); if (!el) return;
+    if (fresh) el.innerHTML = `<h2 class="ntitle" data-raw>${esc(u.title)}</h2><div class="nwait"><div class="spinner small" aria-hidden="true"></div><span>Writing notes from your textbook…</span></div>`;
+    getNotes(book, u, fresh).then((n) => {
+      if (view !== myView) return;
+      const e2 = document.getElementById(`n-${u.id}`); if (!e2) return;
+      e2.innerHTML = notesHTML(u, n) + `<button class="link quiet noprint" data-remake="${esc(u.id)}" style="align-self:flex-start;font-size:12px;padding:4px 0 0">Make these notes again</button>`;
+      e2.querySelector('[data-remake]').onclick = () => fill(u, true);
+    }).catch((e) => {
+      if (view !== myView) return;
+      const e2 = document.getElementById(`n-${u.id}`); if (!e2) return;
+      e2.innerHTML = `<h2 class="ntitle" data-raw>${esc(u.title)}</h2><p class="hint" style="margin:0;color:#9A3412">${esc(notesError(e))}</p><button class="link" data-retry>Try again</button>`;
+      e2.querySelector('[data-retry]').onclick = () => fill(u, false);
+    });
+  };
+  units.forEach((u) => fill(u, false));
+}
+
+let C = null; // the flashcard session
+async function renderCards(bookId, only) {
+  const book = (await getBooks()).find((b) => b.id === bookId);
+  if (!book) return go({ name: 'home' });
+  const units = paperUnits(book), myView = view;
+  if (!only) {
+    $app.innerHTML = `<div class="topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button></div>
+    <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
+      <div class="spinner" aria-hidden="true"></div><h1 class="display" style="margin:0;font-size:22px">Making your flashcards</h1>
+      <p class="muted" id="cw" style="margin:0;line-height:1.5;max-width:320px">Written from your textbook. The first time takes about 20–40 seconds per chapter.</p></main>`;
+    document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+    const res = await Promise.allSettled(units.map((u) => getNotes(book, u).then((n) => n.flashcards.map((c) => ({ ...c, unit: u.title })))));
+    if (view !== myView) return;
+    const deck = res.filter((r) => r.status === 'fulfilled').flatMap((r) => r.value);
+    if (!deck.length) {
+      const e = (res.find((r) => r.status === 'rejected') || {}).reason || {};
+      $app.querySelector('main').innerHTML = `<h1 class="display" style="margin:0;font-size:22px">Couldn’t make flashcards</h1><p style="margin:0;line-height:1.5;max-width:320px">${esc(notesError(e))}</p><button class="btn" id="again" style="max-width:320px">Try again</button>`;
+      document.getElementById('again').onclick = () => renderCards(bookId);
+      return;
+    }
+    only = shuffle(deck);
+  }
+  C = { bookId, queue: [...only], total: only.length, seen: 0, missed: [], firstTry: new Set(), flipped: false };
+  drawCard();
+}
+function drawCard() {
+  const c = C.queue[0];
+  if (!c) return cardsDone();
+  const done = C.total - C.queue.length;
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="quit" aria-label="Stop flashcards">${ICON.close}</button><div class="progress"><i style="width:${Math.round(100 * done / C.total)}%"></i></div><span class="count">${done + 1} / ${C.total}</span></div>
+  <main class="pad stack g18" style="flex:1;padding-top:12px">
+    <span class="chip grey" style="align-self:flex-start" data-raw>${esc(c.unit)}</span>
+    <button class="fcard ${C.flipped ? 'flipped' : ''}" id="flip" aria-live="polite" data-hotkey=" ">
+      <span class="fside">${C.flipped ? (LANG === 'zh' ? '答案' : 'Answer') : (LANG === 'zh' ? '問題' : 'Question')}</span>
+      <span class="ffront" data-raw>${esc(c.front)}</span>
+      ${C.flipped ? `<span class="fback" data-raw>${esc(c.back)}</span>` : `<span class="hint">Tap to see the answer</span>`}
+    </button>
+  </main>
+  <div class="sheet">
+    ${C.flipped ? `<div class="revise-row"><button class="btn ghost" id="again" data-hotkey="ArrowLeft">Again</button><button class="btn" id="know" data-hotkey="ArrowRight">Got it</button></div>`
+      : `<button class="btn" id="show">Show answer</button>`}
+  </div>`;
+  const flip = () => { C.flipped = !C.flipped; drawCard(); };
+  document.getElementById('flip').onclick = flip;
+  const sh = document.getElementById('show'); if (sh) sh.onclick = flip;
+  const k = (knew) => {
+    const card = C.queue.shift(); C.flipped = false;
+    if (knew) { if (!C.missed.includes(card)) C.firstTry.add(card); }
+    else { if (!C.missed.includes(card)) C.missed.push(card); C.queue.splice(Math.min(C.queue.length, 4), 0, card); }
+    drawCard();
+  };
+  const a = document.getElementById('again'); if (a) a.onclick = () => k(false);
+  const n = document.getElementById('know'); if (n) n.onclick = () => k(true);
+  document.getElementById('quit').onclick = () => go({ name: 'book', bookId: C.bookId });
+}
+function cardsDone() {
+  const missed = C.missed.length;
+  $app.innerHTML = `<main class="pad stack g22" style="flex:1">
+    <div class="stack g6"><span class="muted" style="font-size:13px">Flashcards · done</span><span class="score">${C.firstTry.size} / ${C.total}</span><span style="font-size:15px;font-weight:600;color:#0F766E">known first time</span></div>
+    ${missed ? `<p style="margin:0;line-height:1.5;color:#374151">${missed} card${missed > 1 ? 's' : ''} needed another go. Going through them again helps them stick.</p>` : '<p style="margin:0;line-height:1.5;color:#374151">You knew every card first time.</p>'}
+    <div class="stack g10">
+      ${missed ? `<button class="btn" id="redo">Go through the ${missed} I missed</button>` : ''}
+      <button class="btn ${missed ? 'ghost' : ''}" id="all">Shuffle all and go again</button>
+      <button class="btn ghost" id="practise">Practise questions on these chapters</button>
+      <button class="btn ghost" id="back">Back to chapters</button>
+    </div></main>`;
+  const deck = [...C.firstTry, ...C.missed];
+  const r = document.getElementById('redo'); if (r) r.onclick = () => { const m = shuffle([...C.missed]); const id = C.bookId; C = null; renderCards(id, m); };
+  document.getElementById('all').onclick = () => { const id = C.bookId; renderCards(id, shuffle(deck)); };
+  document.getElementById('practise').onclick = async () => { const b = (await getBooks()).find((x) => x.id === C.bookId); startUnits(b, paperUnits(b), local.count || SESSION_SIZE); };
+  document.getElementById('back').onclick = () => go({ name: 'book', bookId: C.bookId });
 }
 
 /* ---------- my progress + report for parents ---------- */
@@ -491,7 +643,7 @@ async function renderProgress() {
 /* ---------- AI usage on this device ---------- */
 function renderUsage() {
   const u = local.usage || {};
-  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions'], ['mark', 'Marking answers']];
+  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions'], ['mark', 'Marking answers'], ['explain', 'Tutor (I don’t get it)'], ['notes', 'Notes and flashcards']];
   const fmt = (n) => (n || 0).toLocaleString('en');
   const tot = { calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0, usd: 0 };
   const usd = (n) => '$' + (n || 0).toFixed((n || 0) >= 1 ? 2 : 3);
@@ -507,7 +659,7 @@ function renderUsage() {
       ${rows}
       <tr><th scope="row">Total</th><td>${fmt(tot.calls)}</td><td>${fmt(tot.input)}</td><td>${fmt(tot.cache_write)}</td><td>${fmt(tot.cache_read)}</td><td>${fmt(tot.output)}</td><td><b>${usd(tot.usd)}</b></td></tr>
     </table></div>
-    <p style="margin:0;font-size:15px;line-height:1.5">Estimated cost: <b>${usd(tot.usd)}</b>${made ? ` · about ${usd((tot.usd - ((u.mark || {}).usd || 0)) / made)} per question made` : ''}${(u.mark || {}).requests ? ` · ${usd(u.mark.usd / u.mark.requests)} per answer marked` : ''}</p>
+    <p style="margin:0;font-size:15px;line-height:1.5">Estimated cost: <b>${usd(tot.usd)}</b>${made ? ` · about ${usd((tot.usd - ['mark', 'explain', 'notes'].reduce((x, k) => x + ((u[k] || {}).usd || 0), 0)) / made)} per question made` : ''}${(u.mark || {}).requests ? ` · ${usd(u.mark.usd / u.mark.requests)} per answer marked` : ''}</p>
     <p class="muted" style="margin:0;font-size:13px;line-height:1.5">Questions that passed checking: <b>${fmt(made)}</b>${made ? `<br>Per question: ${fmt(Math.round((tot.input + tot.cache_write) / made))} input · ${fmt(Math.round(tot.cache_read / made))} cache read · ${fmt(Math.round(tot.output / made))} output` : ''}.<br>
     Costs are estimates from Claude's published prices; your bill on console.anthropic.com is the exact figure. Older entries made before this update have no cost recorded.</p>
     <button class="btn ghost" id="reset">Reset the counter</button>
@@ -550,6 +702,7 @@ async function confirmRemove(book) {
     await store.set('books', books);
     for (const k of await store.keys(`text:${book.id}:`)) await store.del(k);
     for (const k of await store.keys(`qs:${book.id}:`)) await store.del(k);
+    for (const pre of ['figs', 'notes']) for (const k of await store.keys(`${pre}:${book.id}:`)) await store.del(k);
     for (const k of Object.keys(local.stats)) if (k.startsWith(prefix)) delete local.stats[k];
     local.log = local.log.filter((e) => !e.q.startsWith(prefix));
     local.reports = local.reports.filter((id) => !id.startsWith(prefix));
@@ -739,9 +892,9 @@ async function renderPrint(book, units, paper, mins, existing) {
   }
   const total = qs.reduce((s, q) => s + marksOf(q), 0);
   const lines = (n) => `<div class="lines">${'<div></div>'.repeat(n)}</div>`;
-  const mcq = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">1 mark</span></div>${q.type === 'graph' ? graphStem(q) : renderStem(q.stem, 'pstem')}
+  const mcq = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">1 mark</span></div>${figHTML(q, 'pfig')}${q.type === 'graph' ? graphStem(q) : renderStem(q.stem, 'pstem')}
     ${q.type === 'graph' ? graphOptions(q, true) : `<ol type="A" class="popts">${(q.options || []).map((o) => `<li>${esc(o)}</li>`).join('')}</ol>`}</div>`;
-  const written = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">${marksOf(q)} marks</span></div>${q.stem ? renderStem(q.stem, 'pstem') : ''}
+  const written = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">${marksOf(q)} marks</span></div>${figHTML(q, 'pfig')}${q.stem ? renderStem(q.stem, 'pstem') : ''}
     ${q.parts.map((p) => `<div class="ppart"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="pm">(${p.marks})</span></div>${lines(Math.max(2, p.marks + 1))}`).join('')}</div>`;
   const draw = () => {
     const who = (local.name || '').trim();
@@ -1011,13 +1164,29 @@ async function doFill(book, unit, job) {
       const slot = started; started += BATCH;
       const items = Array.from({ length: BATCH }, (_, k) => job.plan[(slot + k) % job.plan.length]).map(([level, type]) => ({ level, type }));
       const avoid = existing.map((q) => (q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200));
-      const focus = { part: ((slot / BATCH) % job.par) + 1, of: job.par };
+      const batchNo = Math.floor(slot / BATCH);
+      const focus = { part: (batchNo % job.par) + 1, of: job.par };
+      // Every other batch includes one question about a diagram from the chapter's pages, if it has any.
+      const figs = job.figs || (job.figs = await figsFor(book, unit));
+      let pages = null;
+      if (figs.length && batchNo % 2 === 0) {
+        const k = items.findIndex((it) => it.type !== 'graph');
+        if (k >= 0) { items[k] = { ...items[k], figure: true }; pages = shuffle([...figs]).slice(0, 2); }
+      }
       let gen;
-      try { gen = await api('generate', { title, text, items, avoid, focus, lang: langOf(text) }); }
+      try { gen = await api('generate', { title, text, items, avoid, focus, lang: langOf(text), figures: pages ? pages.map((f) => f.img.split(',')[1]) : undefined }); }
       catch (e) { if (e.status === 401 || e.status === 0) { stop = true; throw e; } if (!job.error) job.error = e; continue; }
       if (!gen.questions || !gen.questions.length) { if (++empty >= 2) stop = true; continue; }
+      for (const q of gen.questions) {
+        if (!q.figure) continue;
+        const src = pages && pages[q.figure.image - 1];
+        const img = src ? await cropFigure(src.img, q.figure.box).catch(() => null) : null;
+        q.figure = img ? { page: src.page, box: q.figure.box, img } : null;
+        if (!img) q.drop = true;
+      }
+      gen.questions = gen.questions.filter((q) => !q.drop).map((q) => (q.figure ? q : (delete q.figure, q)));
       const checked = await Promise.all(gen.questions.map((q) =>
-        api('verify', { title, text, question: q }).then((v) => ({ q, v })).catch((e) => { if (e.status === 401) { stop = true; throw e; } return { q, v: { passed: false } }; })));
+        api('verify', { title, text, question: qForServer(q), figure: figB64(q) }).then((v) => ({ q, v })).catch((e) => { if (e.status === 401) { stop = true; throw e; } return { q, v: { passed: false } }; })));
       const passed = checked.filter((x) => x.v.passed && usable(x.q)).map((x) => x.q);
       if (!passed.length) continue;
       passed.forEach((q) => {
@@ -1268,10 +1437,118 @@ function renderQuestion() {
   window.scrollTo(0, 0);
 }
 
+// Pictures of the chapter's diagram pages. Library books added before diagrams existed fetch them now.
+async function figsFor(book, unit) {
+  const key = `figs:${book.id}:${unit.id}`;
+  const have = await store.get(key, null);
+  if (have) return have;
+  let figs = [];
+  if (book.library) { try { const r = await fetch(`library/${book.library}/figs/${unit.id}.json`); if (r.ok) figs = await r.json(); } catch (e) { return []; } }
+  await store.set(key, figs);
+  return figs;
+}
+
+// Cut the diagram out of the page picture (with a little margin) for the student and the checker.
+function cropFigure(pageUrl, box) {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => {
+      const pad = 0.03;
+      const x0 = Math.max(0, box[0] - pad), y0 = Math.max(0, box[1] - pad), x1 = Math.min(1, box[2] + pad), y1 = Math.min(1, box[3] + pad);
+      const sw = (x1 - x0) * im.width, sh = (y1 - y0) * im.height;
+      if (sw < 40 || sh < 30) return reject(new Error('figure too small'));
+      const k = Math.min(1, 900 / sw);
+      const c = document.createElement('canvas'); c.width = Math.round(sw * k); c.height = Math.round(sh * k);
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(im, x0 * im.width, y0 * im.height, sw, sh, 0, 0, c.width, c.height);
+      resolve(c.toDataURL('image/jpeg', 0.85));
+    };
+    im.onerror = () => reject(new Error('bad image'));
+    im.src = pageUrl;
+  });
+}
+const figHTML = (q, cls = 'qfig') => (q.figure && q.figure.img ? `<figure class="${cls}"><img src="${q.figure.img}" alt="Diagram for this question"></figure>` : '');
+
 function feedbackBits(q) {
   return `<p class="expl">${esc(q.explanation)}</p>
     ${q.source_quote ? `<p class="src">${esc(q.section || 'Textbook')}${q.pages ? `, pp. ${esc(q.pages)}` : ''}: “${esc(q.source_quote)}”</p>` : ''}
+    <div class="tutor" id="tutor">${tutorHTML(q)}</div>
     <div style="display:flex;justify-content:flex-end"><button class="link quiet" id="report">Report a problem</button></div>`;
+}
+
+/* ---------- "I don't get it": ask the AI tutor about this question ---------- */
+const qForServer = (q) => (q.figure ? { ...q, figure: { image: q.figure.image, box: q.figure.box } } : q);
+const figB64 = (q) => (q.figure && q.figure.img ? q.figure.img.split(',')[1] : undefined);
+function chatOf() { S.chat = S.chat || {}; return S.chat[S.i] || (S.chat[S.i] = { open: false, msgs: [], busy: false }); }
+// Tutor replies: **bold**, "- " bullets and line breaks; formulas are drawn by KaTeX afterwards.
+function tutorMd(t) {
+  const lines = esc(t).split('\n');
+  let html = '', list = false;
+  for (const raw of lines) {
+    const l = raw.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    const li = l.match(/^\s*(?:[-•*]|\d+[.)])\s+(.*)$/);
+    if (li) { if (!list) { html += '<ul>'; list = true; } html += `<li>${li[1]}</li>`; continue; }
+    if (list) { html += '</ul>'; list = false; }
+    if (l.trim()) html += `<p>${l}</p>`;
+  }
+  return html + (list ? '</ul>' : '');
+}
+function wrongAnswer(q) {
+  const k = S.i;
+  if (choiceType(q)) return S.answers[k] && S.answers[k] !== q.correct_option;
+  return S.got[k] !== undefined && S.got[k] !== null ? S.got[k] < marksOf(q) : true;
+}
+function tutorHTML(q) {
+  const c = chatOf();
+  if (!c.open) return `<button class="btn ghost tutor-open" id="tutorOpen">${ICON.chat} I don’t get it</button>`;
+  const chips = [
+    ...(wrongAnswer(q) ? [['why', 'Why is my answer wrong?']] : []),
+    ['simple', 'Explain it more simply'],
+    ['steps', 'Go through it step by step'],
+    ['example', 'Give me another example'],
+  ];
+  return `<div class="tchat">
+    <div class="thead"><b>${ICON.chat} Ask about this question</b><button class="link quiet" id="tutorClose" style="padding:0">Close</button></div>
+    ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
+    ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
+    ${c.error ? `<p class="hint" style="margin:0;color:#9A3412">${esc(c.error)}</p>` : ''}
+    ${c.busy ? '' : `<div class="tchips">${chips.filter(([k]) => !c.msgs.some((m) => m.chip === k)).map(([k, l]) => `<button class="tchip" data-chip="${k}">${l}</button>`).join('')}</div>`}
+    <form class="tform" id="tform"><input id="tq" class="tinput" placeholder="Type your question…" autocomplete="off" ${c.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${c.busy ? 'disabled' : ''}>${ICON.send}</button></form>
+  </div>`;
+}
+function studentAnswerText(q) {
+  const a = S.answers[S.i];
+  if (choiceType(q)) return a ? `Chose ${a}: ${(q.options || [])['ABCD'.indexOf(a)] || ''}` : '(did not answer)';
+  return (q.parts || []).map((p, k) => `${p.label || 'Answer'} ${(a && a[k]) || '(blank)'}`).join('\n');
+}
+function bindTutor(q) {
+  const box = document.getElementById('tutor'); if (!box) return;
+  const c = chatOf(), idx = S.i, sess = S;
+  const redraw = () => { if (S !== sess || S.i !== idx) return; const b = document.getElementById('tutor'); if (!b) return; b.innerHTML = tutorHTML(q); bindTutor(q); };
+  const ask = async (text, chip) => {
+    text = String(text || '').trim(); if (!text || c.busy) return;
+    const history = c.msgs.map((m) => ({ role: m.role, text: m.text }));
+    c.msgs.push({ role: 'user', text, chip }); c.busy = true; c.error = null; redraw();
+    document.getElementById('tutor').scrollIntoView({ block: 'end', behavior: 'smooth' });
+    try {
+      const [bookId, unitId] = q.id.split(':');
+      const chapter = await store.get(`text:${bookId}:${unitId}`, '');
+      if (!chapter) throw new Error('This chapter’s text is missing on this device.');
+      const r = await api('explain', { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: studentAnswerText(q), ask: text, history, lang: langOf(chapter) });
+      c.msgs.push({ role: 'assistant', text: r.reply });
+    } catch (e) {
+      c.msgs.pop();
+      c.error = e.status === 0 ? 'You seem to be offline.' : (e.message && e.status !== 500 ? e.message : 'The tutor is not available right now. Try again in a moment.');
+    }
+    c.busy = false; redraw();
+    const t = document.getElementById('tutor'); if (t) t.scrollIntoView({ block: 'end', behavior: 'smooth' });
+  };
+  const open = document.getElementById('tutorOpen');
+  if (open) open.onclick = () => { c.open = true; redraw(); const i = document.getElementById('tq'); if (i && matchMedia('(hover: hover)').matches) i.focus(); };
+  const close = document.getElementById('tutorClose'); if (close) close.onclick = () => { c.open = false; redraw(); };
+  box.querySelectorAll('[data-chip]').forEach((b) => (b.onclick = () => ask(b.textContent, b.dataset.chip)));
+  const f = document.getElementById('tform');
+  if (f) f.onsubmit = (e) => { e.preventDefault(); const i = document.getElementById('tq'); ask(i.value); };
 }
 function nextLabel() {
   if (S.i < S.target - 1) return 'Next question';
@@ -1291,7 +1568,7 @@ function mcqBody(q, revealed) {
     return `<button class="opt ${cls}" data-opt="${L}" ${revealed ? 'disabled' : ''} aria-pressed="${L === picked}"><span class="dot">${dot}</span><span>${esc(o)}</span></button>`;
   }).join('');
   const right = picked === q.correct_option;
-  const main = `${renderStem(q.stem, 'q')}<div class="${q.type === 'graph' ? 'ggrid' : 'stack g10'}">${opts}</div>`;
+  const main = `${figHTML(q)}${renderStem(q.stem, 'q')}<div class="${q.type === 'graph' ? 'ggrid' : 'stack g10'}">${opts}</div>`;
   let footer = '';
   if (revealed) footer = `<div class="sheet"><span class="verdict ${right ? 'ok' : 'no'}">${right ? 'Correct' : picked ? `Not quite. The answer is ${q.correct_option}.` : `No answer. The answer is ${q.correct_option}.`}</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
   else if (isExam()) footer = `<div class="pad" style="padding-top:0"><button class="btn" id="next" ${picked ? '' : 'disabled'}>${nextLabel()}</button></div>`;
@@ -1324,7 +1601,7 @@ async function markAnswer(sess, idx) {
       const [bookId, unitId] = q.id.split(':');
       const text = await store.get(`text:${bookId}:${unitId}`, '');
       if (!text) throw new Error('missing text');
-      sess.marks[idx] = await api('mark', { title: q.section, text, question: q, answers, lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
+      sess.marks[idx] = await api('mark', { title: q.section, text, question: qForServer(q), figure: figB64(q), answers, lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
     } catch (e) {
       sess.marks[idx] = { error: e.status === 0 ? 'You seem to be offline, so the AI could not mark this.' : 'The AI marker is not available right now.' };
     }
@@ -1336,7 +1613,7 @@ async function markAnswer(sess, idx) {
 
 function writtenBody(q, revealed) {
   const ans = S.answers[S.i] || q.parts.map(() => '');
-  const stem = q.stem ? renderStem(q.stem) : '';
+  const stem = figHTML(q) + (q.stem ? renderStem(q.stem) : '');
   if (!revealed) {
     const parts = q.parts.map((p, k) => `<div class="part">
       <label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
@@ -1362,7 +1639,7 @@ function writtenBody(q, revealed) {
   if (m.pending) {
     return {
       main: `${stem}${q.parts.map((p, k) => `<div class="part"><div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
-        <div class="yours ${ans[k] && ans[k].trim() ? '' : 'empty'}">${ans[k] && ans[k].trim() ? esc(ans[k]) : 'No answer written'}</div></div>`).join('')}`,
+        <div class="yours nomath ${ans[k] && ans[k].trim() ? '' : 'empty'}">${ans[k] && ans[k].trim() ? esc(ans[k]) : 'No answer written'}</div></div>`).join('')}`,
       footer: `<div class="sheet" style="align-items:center;text-align:center"><div class="spinner" aria-hidden="true"></div><span class="verdict" style="color:#14181F">Marking your answer…</span><span class="hint">Checking it against the mark scheme, point by point.</span></div>`,
     };
   }
@@ -1373,7 +1650,7 @@ function writtenBody(q, revealed) {
     const got = Math.min(p.marks, ticks[k].filter(Boolean).length);
     return `<div class="part">
       <div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
-      <div class="yours ${ans[k] && ans[k].trim() ? '' : 'empty'}">${ans[k] && ans[k].trim() ? esc(ans[k]) : 'No answer written'}</div>
+      <div class="yours nomath ${ans[k] && ans[k].trim() ? '' : 'empty'}">${ans[k] && ans[k].trim() ? esc(ans[k]) : 'No answer written'}</div>
       ${pm ? `<div class="marker ${got === p.marks ? 'full' : ''}"><b>${got} / ${p.marks}</b> ${esc(pm.feedback)}</div>` : ''}
       <span class="hint" style="font-weight:600">${ai ? 'Mark scheme (ticked = points you earned):' : m.skipped ? 'Mark scheme:' : `Tick each point your answer makes${p.mark_scheme.length > p.marks ? ` (max ${p.marks})` : ''}:`}</span>
       ${p.mark_scheme.map((pt, j) => `<button class="point ${ticks[k][j] ? 'on' : ''}" data-k="${k}" data-j="${j}" aria-pressed="${ticks[k][j]}"><span class="box">${ticks[k][j] ? ICON.check : ''}</span><span>${esc(pt.replace(/\s*\(1\)\s*$/, ''))}</span></button>`).join('')}
@@ -1430,6 +1707,7 @@ function bindCommon(q) {
     }
     advance();
   };
+  bindTutor(q);
   const r = document.getElementById('report');
   if (r) r.onclick = () => { if (!local.reports.includes(q.id)) { local.reports.push(q.id); saveLocal(); } toast('Thanks. This question is flagged for checking.'); };
 }
@@ -1525,6 +1803,9 @@ document.addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   const t = e.target;
   if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (t && t.tagName === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return; // the button handles these itself
+  const hk = document.querySelector(`[data-hotkey="${e.key === ' ' ? ' ' : e.key}"]`);
+  if (hk && !hk.disabled) { e.preventDefault(); hk.click(); return; }
   const k = e.key.toUpperCase();
   const L = { 1: 'A', 2: 'B', 3: 'C', 4: 'D' }[k] || (/^[A-D]$/.test(k) ? k : null);
   if (L) { const b = document.querySelector(`[data-opt="${L}"]:not(:disabled)`); if (b) { e.preventDefault(); b.click(); } return; }
@@ -1532,6 +1813,22 @@ document.addEventListener('keydown', (e) => {
     const b = document.querySelector('#next:not(:disabled), #check:not(:disabled)'); if (b) { e.preventDefault(); b.click(); }
   }
 });
+
+// Formulas: anything between $…$ (written by the AI in LaTeX) is drawn as proper maths/chemistry.
+const MATH_OPTS = {
+  delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }],
+  ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option', 'svg', 'input'],
+  ignoredClasses: ['nomath'],
+  throwOnError: false,
+};
+function renderMath(root) {
+  if (!window.renderMathInElement || !root || root.nodeType !== 1) return;
+  if (!/\$|\\\(/.test(root.textContent || '')) return;
+  try { window.renderMathInElement(root, MATH_OPTS); } catch (e) {}
+}
+new MutationObserver((muts) => {
+  for (const m of muts) m.addedNodes.forEach((n) => { if (n.nodeType === 1 && !n.closest('.katex')) renderMath(n); });
+}).observe(document.body, { childList: true, subtree: true });
 
 initLang();
 watch(document.body);

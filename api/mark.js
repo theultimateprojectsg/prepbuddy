@@ -30,6 +30,7 @@ module.exports = handler(async (body, usage) => {
     maxTokens: 2000,
     usage,
     step: 'mark',
+    images: q.figure && typeof body.figure === 'string' ? [body.figure] : [],
   });
 
   const parts = q.parts.map((p, i) => {

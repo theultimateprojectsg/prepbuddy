@@ -16,11 +16,12 @@ export async function readBook(data, onProgress = () => {}) {
   const task = pdfjs.getDocument({ data, isEvalSupported: false });
   const pdf = await task.promise;
   const n = pdf.numPages;
-  const raw = [];
+  const raw = [], info = [];
   for (let i = 1; i <= n; i++) {
     const page = await pdf.getPage(i);
     const tc = await page.getTextContent();
     raw.push(itemsToLines(tc.items));
+    info.push(await drawingsOn(page));
     page.cleanup();
     onProgress(i, n);
   }
@@ -38,6 +39,9 @@ export async function readBook(data, onProgress = () => {}) {
     .filter((u) => !SKIP_TITLE.test(u.title.trim()))
     .flatMap(splitLarge)
     .filter((u) => u.text.length >= (isChinese(u.text) ? MIN_UNIT_ZH : MIN_UNIT));
+
+  // Pictures of the pages with diagrams, for diagram questions.
+  try { await addFigures(pdf, units, raw, info, onProgress); } catch (e) { units.forEach((u) => { u.figures = u.figures || []; }); }
 
   let title = null;
   try { const meta = await pdf.getMetadata(); title = (meta && meta.info && meta.info.Title) || null; } catch (e) {}
@@ -75,6 +79,64 @@ function joinLines(lines) {
 
 function slicePages(pages, start, end) { // inclusive page indexes
   return joinLines(pages.slice(start, end + 1).flat());
+}
+
+/* ---------- figures ----------
+   A page probably has a diagram if it draws pictures or lots of lines, especially with a caption
+   such as "Figure 2.3" or 「圖 2.3」. Up to MAX_FIGS such pages per chapter are saved as JPEG images. */
+const MAX_FIGS = 6;
+const CAPTION = /^(fig(ure)?\.?\s*\d|圖\s*[\d一二三四五六七八九十])/i;
+async function drawingsOn(page) {
+  try {
+    const ops = await page.getOperatorList();
+    let images = 0, paths = 0;
+    for (const f of ops.fnArray) {
+      if (f === pdfjs.OPS.paintImageXObject || f === pdfjs.OPS.paintInlineImageXObject || f === pdfjs.OPS.paintImageMaskXObject) images++;
+      else if (f === pdfjs.OPS.constructPath) paths++;
+    }
+    return { images, paths };
+  } catch (e) { return { images: 0, paths: 0 }; }
+}
+async function addFigures(pdf, units, raw, info, onProgress) {
+  // Pictures drawn on almost every page (logos, page borders) don't count.
+  const med = (k) => { const v = info.map((x) => x[k]).sort((a, b) => a - b); return v[Math.floor(v.length / 2)] || 0; };
+  const baseImg = med('images'), basePath = med('paths');
+  const score = info.map((x, i) => {
+    const cap = raw[i].some((l) => CAPTION.test(l.trim()));
+    const img = x.images - baseImg, path = x.paths - basePath;
+    if (img <= 0 && path < 60) return 0;
+    return (cap ? 3 : 0) + Math.min(img, 3) + (path >= 60 ? 1 : 0);
+  });
+  const chosen = new Map(); // page index -> image
+  const plan = units.map((u) => {
+    if (!u.startPage) return [];
+    const pages = [];
+    for (let p = u.startPage - 1; p <= Math.min(u.endPage - 1, score.length - 1); p++) if (score[p] >= 2) pages.push(p);
+    return pages.sort((a, b) => score[b] - score[a]).slice(0, MAX_FIGS).sort((a, b) => a - b);
+  });
+  const all = [...new Set(plan.flat())];
+  for (let k = 0; k < all.length; k++) {
+    const p = all[k];
+    chosen.set(p, await pageImage(pdf, p + 1));
+    onProgress(info.length, info.length, `Saving diagrams ${k + 1} of ${all.length}`);
+  }
+  units.forEach((u, i) => { u.figures = plan[i].map((p) => ({ page: p + 1, img: chosen.get(p) })).filter((f) => f.img); });
+}
+async function pageImage(pdf, num) {
+  if (typeof document === 'undefined') return null;
+  const page = await pdf.getPage(num);
+  const v1 = page.getViewport({ scale: 1 });
+  const scale = Math.min(2.2, 1100 / v1.width);
+  const vp = page.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  page.cleanup();
+  const url = canvas.toDataURL('image/jpeg', 0.72);
+  canvas.width = canvas.height = 0;
+  return url;
 }
 
 /* ---------- 1. bookmarks ---------- */

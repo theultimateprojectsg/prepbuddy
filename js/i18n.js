@@ -27,6 +27,41 @@ const EXACT = {
   'You choose the chapters and length next.': '下一步選擇章節和長度。',
   'All my textbooks': '我的所有課本',
   'Introduction': '引言',
+  'Tutor (I don’t get it)': 'AI 導師（我不明白）',
+  'Notes and flashcards': '筆記及溫習卡',
+  'I don’t get it': '我不明白',
+  'Ask about this question': '問問這條題目',
+  'Close': '關閉',
+  'Why is my answer wrong?': '為甚麼我答錯了？',
+  'Explain it more simply': '用簡單一點的方法解釋',
+  'Go through it step by step': '一步一步解釋',
+  'Give me another example': '再給我一個例子',
+  'Type your question…': '輸入你的問題…',
+  'Send': '傳送',
+  'The tutor is not available right now. Try again in a moment.': 'AI 導師暫時未能使用，請稍後再試。',
+  'Notes': '筆記',
+  'Flashcards': '溫習卡',
+  'Revision notes': '溫習筆記',
+  'Print': '列印',
+  'Writing notes from your textbook…': '正在根據你的課本編寫筆記…',
+  'Written by AI from your textbook. If something looks wrong, check it against the book.': '由 AI 根據你的課本編寫。如發現錯誤，請對照課本。',
+  'Practise with flashcards': '用溫習卡練習',
+  'Notes are saved on this device, so they open instantly next time.': '筆記會儲存在這部裝置，下次可即時打開。',
+  'Make these notes again': '重新編寫筆記',
+  'Couldn’t make notes for this chapter. Try again in a moment.': '未能為這一章編寫筆記，請稍後再試。',
+  'Making your flashcards': '正在製作溫習卡',
+  'Written from your textbook. The first time takes about 20–40 seconds per chapter.': '根據你的課本編寫。首次製作每章約需 20–40 秒。',
+  'Couldn’t make flashcards': '未能製作溫習卡',
+  'Tap to see the answer': '按一下查看答案',
+  'Show answer': '顯示答案',
+  'Again': '再來一次',
+  'Got it': '記得了',
+  'Flashcards · done': '溫習卡 · 完成',
+  'known first time': '第一次已記得',
+  'You knew every card first time.': '你第一次已記得全部溫習卡。',
+  'Shuffle all and go again': '打亂次序再做一次',
+  'Practise questions on these chapters': '練習這些章節的題目',
+  'Stop flashcards': '停止溫習卡',
   'No weak spots yet': '暫時沒有弱項',
   '12 questions, 20 min': '12 題，20 分鐘',
   'My progress': '我的進度',
@@ -288,6 +323,9 @@ const PATTERNS = [
   [/^(\d+) questions to work on$/, '$1 題需要加強'],
   [/^Weak topics · (.+)$/, '弱項 · $1'],
   [/^Part (\d+)$/, '第 $1 部分'],
+  [/^(\d+) cards? needed another go\. Going through them again helps them stick\.$/, '有 $1 張需要再溫習。再做一次會記得更牢。'],
+  [/^Go through the (\d+) I missed$/, '再溫習未記得的 $1 張'],
+  [/^Saving diagrams (\d+) of (\d+)$/, '正在儲存圖表 $1 / $2'],
   [/^(\d+) chapters$/, '$1 個章節'],
 ];
 
@@ -322,7 +360,7 @@ export function tr(text) {
 
 const ATTRS = ['placeholder', 'aria-label', 'title'];
 // Book content and questions: never translate.
-const RAW = '[data-raw], .stem, p.q, .pstem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
+const RAW = '[data-raw], .point > span:last-child, .marker, .fml, .terms, .stem, p.q, .pstem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
 const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(RAW)); };
 export function translateTree(root) {
   if (LANG !== 'zh' || !root) return;
