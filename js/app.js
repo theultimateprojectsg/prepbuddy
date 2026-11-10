@@ -834,13 +834,23 @@ function renderSummary() {
     <div class="stack g10">
       ${unitRef ? `<button class="btn" id="more">10 more on ${unitRef.units.length > 1 ? 'these chapters' : 'this chapter'}</button>` : ''}
       ${missed.length ? `<button class="btn ${unitRef ? 'ghost' : ''}" id="retry">Retry the ${missed.length} I missed</button>` : ''}
+      ${qs.length ? '<button class="btn ghost" id="redo">Redo this set (shuffled)</button>' : ''}
       <button class="btn ghost" id="home">${S.book ? 'Back to chapters' : 'Back to home'}</button>
     </div></main>`;
   document.getElementById('home').onclick = () => (S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' }));
   const m = document.getElementById('more'); if (m) m.onclick = () => startUnits(unitRef.book, unitRef.units);
   const r = document.getElementById('retry');
-  if (r) r.onclick = () => { S = newSession({ mode: 'retry', title: 'Retry', book: S.book, qs: missed, target: missed.length }); renderQuestion(); };
+  const again = (list, title) => { const l = shuffle(list).map(shuffleOptions); S = newSession({ mode: 'retry', title, book: S.book, qs: l, target: l.length }); renderQuestion(); };
+  if (r) r.onclick = () => again(missed, 'Retry');
+  const rd = document.getElementById('redo'); if (rd) rd.onclick = () => again(qs, 'Redo');
   window.scrollTo(0, 0);
+}
+
+// Same question, MCQ options in a new order (so a redo tests the idea, not the letter).
+function shuffleOptions(q) {
+  if (q.type !== 'mcq' || !Array.isArray(q.options)) return q;
+  const order = shuffle(q.options.map((_, i) => i));
+  return { ...q, options: order.map((i) => q.options[i]), correct_option: 'ABCD'[order.indexOf('ABCD'.indexOf(q.correct_option))] };
 }
 
 /* ---------- mock timer ---------- */
