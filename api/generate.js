@@ -2,9 +2,9 @@
 // body: { title, text, items: [{level, type}], avoid: [string] }
 // returns: { questions: [...] } in the same order as items (possibly fewer)
 
-const { langNote, LEVELS, GEN_SYSTEM, FIGURE_RULES, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
+const { langNote, kindNote, KIND_RULES, LEVELS, GEN_SYSTEM, FIGURE_RULES, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
 
-const TYPES = { mcq: 'MCQ', graph: 'CHOOSE-THE-GRAPH', short: 'SHORT-ANSWER', structured: 'STRUCTURED' };
+const TYPES = { mcq: 'MCQ', graph: 'CHOOSE-THE-GRAPH', short: 'SHORT-ANSWER', structured: 'STRUCTURED', essay: 'ESSAY (extended writing)' };
 
 module.exports = handler(async (body, usage) => {
   const items = Array.isArray(body.items) ? body.items.slice(0, 4) : [];
@@ -20,6 +20,7 @@ module.exports = handler(async (body, usage) => {
     `${i + 1}. A level ${it.level} ${TYPES[it.type]} ${it.figure && figures.length && it.type !== 'graph' ? 'FIGURE ' : ''}question. Level ${it.level} means: ${LEVELS[it.level]}` +
     (it.type === 'structured' ? ' Give a short scenario or data in the stem, then 2-4 parts totalling 4-8 marks.' : '') +
     (it.type === 'short' ? ' One part, 2-3 marks.' : '') +
+    (it.type === 'essay' ? ' One part holding the writing task (genre, purpose, audience, about 200-400 words), with a rubric.' : '') +
     (it.type === 'graph' ? ' The student picks which of 4 sketch graphs correctly shows a relationship the section describes ' +
       '(e.g. enzyme activity against temperature, population against time). Give the 4 graphs in "graphs" with identical axes and ' +
       'labels, 5-12 points each, as sketch values that show the shape; make the wrong graphs plausible misconceptions. ' +
@@ -38,7 +39,7 @@ module.exports = handler(async (body, usage) => {
       'Do not repeat the original question or simply reword it.'
     : '';
   const instruction =
-    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + focusText + targetText +
+    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + (KIND_RULES[body.kind] !== undefined ? kindNote(body.kind) : '') + focusText + targetText +
     (figures.length && items.some((it) => it.figure) ? `\n\n${FIGURE_RULES}` : '') + langNote(body.lang, 'write') +
     (avoid.length ? `\n\nQuestions already written for this section (test different ideas):\n- ${avoid.join('\n- ')}` : '');
 
@@ -55,6 +56,8 @@ module.exports = handler(async (body, usage) => {
     let type = items[i].type;
     // A graph request the section couldn't support comes back as an ordinary MCQ.
     if (type === 'graph' && !(Array.isArray(q.graphs) && q.graphs.length === 4)) type = 'mcq';
+    // An essay the section can't support (not a language book) comes back as a structured question.
+    if (type === 'essay' && !(Array.isArray(q.rubric) && q.rubric.length >= 2)) type = 'structured';
     const choice = type === 'mcq' || type === 'graph';
     return {
       ...q,
@@ -63,7 +66,8 @@ module.exports = handler(async (body, usage) => {
       options: choice ? q.options : undefined,
       correct_option: choice ? q.correct_option : undefined,
       graphs: type === 'graph' ? q.graphs : undefined,
-      parts: choice ? [] : (q.parts || []),
+      parts: choice ? [] : type === 'essay' ? [{ ...((q.parts || [])[0] || { label: '', prompt: q.stem || '' }), label: '', marks: q.rubric.reduce((t, r) => t + (Number(r.marks) || 0), 0), mark_scheme: ((q.parts || [])[0] || {}).mark_scheme || [] }] : (q.parts || []),
+      rubric: type === 'essay' ? q.rubric : undefined,
       figure: items[i].figure && type !== 'graph' && q.figure && Number(q.figure.image) >= 1 && Number(q.figure.image) <= figures.length ? q.figure : undefined,
     };
   });

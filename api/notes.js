@@ -15,6 +15,8 @@ module.exports = handler(async (body, usage) => {
     system: NOTES_RULES,
     sectionBlock: sectionBlock(body.title, body.text),
     instruction: 'Write the revision notes, key terms, formulas and flashcards for this section.' +
+      (body.kind === 'maths' ? ' Focus on methods, formulas and worked-example steps; flashcards can ask for a formula or the next step of a method.' : '') +
+      (body.kind === 'language' ? ' Focus on the vocabulary, grammar points, text-type features and writing skills taught; key_terms are words/phrases with meanings and an example sentence.' : '') +
       (body.lang === 'zh-HK' ? '\n\nLANGUAGE: Write everything in Traditional Chinese as used in Hong Kong schools (standard written Chinese, Hong Kong subject terms).' : ''),
     toolName: 'save_notes',
     maxTokens: 8000,

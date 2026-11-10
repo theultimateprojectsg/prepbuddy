@@ -1,6 +1,6 @@
 // PrepBuddy app: books, chapters, on-demand questions, practice sessions.
 import * as store from './store.js';
-import { buildReport, encodeReport, headline } from './report.js';
+import { buildReport, encodeReport, headline, skillsHTML, REPORT_CSS } from './report.js';
 import { initLang, setLang, watch, LANG } from './i18n.js';
 
 /* ---------- settings ---------- */
@@ -23,14 +23,59 @@ const LKEY = 'prepbuddy.v2';
 function loadLocal() {
   try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; }
 }
-const local = Object.assign({ stats: {}, reports: [], code: '', usage: {}, log: [], name: '', types: 'mix' }, loadLocal());
+const local = Object.assign({ stats: {}, reports: [], code: '', usage: {}, log: [], name: '', types: 'mix', mistakes: {} }, loadLocal());
 function saveLocal() { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) {} }
 
 /* ---------- helpers ---------- */
 const $app = document.getElementById('app');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const LEVEL = { 1: 'Recall', 2: 'Understand', 3: 'Apply', 4: 'Analyse / evaluate' };
-const TYPE = { mcq: 'MCQ', graph: 'Graph MCQ', short: 'Short answer', structured: 'Structured' };
+const TYPE = { mcq: 'MCQ', graph: 'Graph MCQ', short: 'Short answer', structured: 'Structured', essay: 'Writing' };
+// Subject types change the kinds of question made and how answers are marked.
+const KINDS = [['science', 'Science'], ['maths', 'Maths'], ['language', 'Language'], ['humanities', 'Humanities']];
+const KIND_PLANS = {
+  maths: {
+    mcq: [[1, 'mcq'], [2, 'mcq'], [3, 'mcq'], [2, 'graph'], [2, 'mcq'], [3, 'mcq']],
+    written: [[2, 'short'], [3, 'structured'], [2, 'short'], [3, 'short'], [4, 'structured']],
+    mix: [[1, 'mcq'], [2, 'short'], [2, 'mcq'], [3, 'structured'], [3, 'mcq'], [2, 'short'], [4, 'structured'], [2, 'mcq']],
+  },
+  language: {
+    mcq: [[1, 'mcq'], [2, 'mcq'], [3, 'mcq'], [2, 'mcq'], [3, 'mcq']],
+    written: [[2, 'short'], [3, 'short'], [3, 'structured'], [2, 'short'], [4, 'essay'], [3, 'structured']],
+    mix: [[2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [3, 'mcq'], [3, 'short'], [2, 'mcq'], [4, 'essay']],
+  },
+};
+// Adaptive difficulty: from the last answers in a chapter, move new questions up or down a thinking level.
+// Strong recent results (80%+) push harder; weak ones (under 50%) bring in more of the basics.
+function levelShift(bookId, unitId) {
+  const pre = `${bookId}:${unitId}:`;
+  const recent = [];
+  for (let i = local.log.length - 1; i >= 0 && recent.length < 15; i--) { const e = local.log[i]; if (e.q && e.q.startsWith(pre) && e.k !== 'mistakes') recent.push(e); }
+  if (recent.length < 5) return 0;
+  const m = recent.reduce((t, e) => t + e.m, 0), g = recent.reduce((t, e) => t + e.g, 0);
+  const acc = m ? g / m : 0, avgL = recent.reduce((t, e) => t + (e.l || 2), 0) / recent.length;
+  const target = avgL + (acc >= 0.8 ? 1 : acc < 0.5 ? -1 : 0);
+  return Math.max(-1, Math.min(2, Math.round(target - 2)));
+}
+const shiftLevel = (l, d) => Math.max(1, Math.min(4, l + d));
+
+function guessKind(title, text) {
+  const t = String(title || '');
+  if (/math|數學|algebra|calculus|statistic|geometry|trigonom/i.test(t)) return 'maths';
+  if (/english|chinese|中文|中國語文|語文|literature|reading|writing|grammar|vocabulary|閱讀|寫作/i.test(t)) return 'language';
+  if (/history|geograph|econom|citizenship|liberal|social|business|accounting|歷史|地理|經濟|公民|社會|企業/i.test(t)) return 'humanities';
+  const x = String(text || '').slice(0, 30000);
+  const eq = (x.match(/=/g) || []).length, words = Math.max(1, x.length / 6);
+  if (eq / words > 0.02) return 'maths';
+  return 'science';
+}
+const kindOfBook = (book) => (book && book.kind) || 'science';
+const bookKinds = new Map(); // bookId -> kind, for calls that only know the question id
+async function kindOfId(qid) {
+  const id = String(qid || '').split(':')[0];
+  if (!bookKinds.has(id)) { const b = (await getBooks()).find((x) => x.id === id); bookKinds.set(id, kindOfBook(b)); }
+  return bookKinds.get(id);
+}
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const marksOf = (q) => (q.type === 'mcq' || q.type === 'graph' ? 1 : (q.parts || []).reduce((s, p) => s + p.marks, 0));
 // 'zh-HK' when the text is mostly Chinese characters, else 'en'.
@@ -162,6 +207,7 @@ let S = null; // current practice session
 
 async function go(v) {
   view = v;
+  getBooks().then((bs) => bs.forEach((b) => bookKinds.set(b.id, kindOfBook(b))));
   document.querySelectorAll('.toast').forEach((x) => x.remove());
   stopTimer();
   if (v.name === 'home') return renderHome();
@@ -173,6 +219,7 @@ async function go(v) {
   if (v.name === 'pick') return renderPick(v.mode);
   if (v.name === 'worksheets') return renderWorksheets();
   if (v.name === 'notes') return renderNotes(v.bookId);
+  if (v.name === 'mistakes') return renderMistakes(v.tab || 'todo');
   if (v.name === 'cards') return renderCards(v.bookId, v.only);
 }
 
@@ -219,6 +266,7 @@ async function renderHome() {
         <button class="tile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="tile" data-mode="mock">${ICON.clock}<b>Mock paper</b><span>DSE-style, timed</span></button>
       </div>
+      ${mistakeCount() ? `<button class="row card" id="mistakes" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">Mistake book</b><br><span class="muted" style="font-size:13px">${mistakeCount()} question${mistakeCount() > 1 ? 's' : ''} to get right</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>` : ''}
       ${(local.worksheets || []).length ? `<button class="row card" id="worksheets" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">Mark a printed worksheet</b><br><span class="muted" style="font-size:13px">Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>` : ''}
       <button class="row card" id="progress" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">My progress</b><br><span class="muted" style="font-size:13px">This week, and a report to send your parents</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>
     </section>` : ''}
@@ -228,6 +276,7 @@ async function renderHome() {
   document.getElementById('lang').onclick = () => { setLang(LANG === 'zh' ? 'en' : 'zh'); go({ name: 'home' }); };
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   const wsb = document.getElementById('worksheets'); if (wsb) wsb.onclick = () => go({ name: 'worksheets' });
+  const mkb = document.getElementById('mistakes'); if (mkb) mkb.onclick = () => go({ name: 'mistakes' });
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
@@ -316,7 +365,7 @@ async function addFromLibrary(entry, btn) {
     await store.persist();
     const books = (await store.get('books', [])).filter((b) => b.id !== id);
     books.unshift({ id, library: entry.id, code: entry.code, title: entry.title, subject: entry.subject, level: entry.level,
-      credit: entry.credit, pageCount: entry.pageCount, addedAt: Date.now(), units: entry.units.map((u) => ({ ...u })) });
+      credit: entry.credit, pageCount: entry.pageCount, addedAt: Date.now(), units: entry.units.map((u) => ({ ...u })), kind: entry.kind || guessKind(`${entry.subject || ''} ${entry.title}`, '') });
     await store.set('books', books);
     toast('Added to your textbooks');
     go({ name: 'book', bookId: id });
@@ -355,7 +404,7 @@ async function uploadBook(file) {
     }
     const title = (book.title && book.title.length > 3 && !/^untitled|microsoft word/i.test(book.title)) ? book.title : file.name.replace(/\.pdf$/i, '').replace(/^[0-9a-f]{6,}[-_ ]+/i, '').replace(/[_]+/g, ' ').replace(/\s+-\s+/g, ' – ').trim() || 'My book';
     const books = await store.get('books', []);
-    books.unshift({ id, title, fileName: file.name, addedAt: Date.now(), pageCount: book.pageCount, method: book.method, units });
+    books.unshift({ id, title, fileName: file.name, addedAt: Date.now(), pageCount: book.pageCount, method: book.method, units, kind: guessKind(title, book.units.map((u) => u.text).join('\n')) });
     await store.set('books', books);
     toast(`Added ${units.length} chapters`);
     go({ name: 'book', bookId: id });
@@ -375,6 +424,13 @@ async function renderBook(bookId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   if (!book) return go({ name: 'home' });
   if (pick.bookId !== bookId) pick = { bookId, ids: new Set() };
+  if (!book.kind) {
+    const books = await store.get('books', []); const b = books.find((x) => x.id === bookId);
+    const sample = book.units[0] ? await store.get(`text:${bookId}:${book.units[0].id}`, '') : '';
+    book.kind = guessKind(`${book.subject || ''} ${book.title}`, sample);
+    if (b) { b.kind = book.kind; await store.set('books', books); }
+  }
+  bookKinds.set(book.id, kindOfBook(book));
   const t = local.types || 'mix';
   const count = local.count || SESSION_SIZE;
   const rows = [];
@@ -386,7 +442,8 @@ async function renderBook(bookId) {
     const done = qs.filter((q) => local.stats[q.id]).length;
     const sc = scoreOf(qs);
     const on = pick.ids.has(u.id);
-    const status = qs.length || done ? `${unseen} ready · ${done} done` : 'New questions will be made';
+    const sh = levelShift(book.id, u.id);
+    const status = (qs.length || done ? `${unseen} ready · ${done} done` : 'New questions will be made') + (sh > 0 ? ' · harder questions now' : sh < 0 ? ' · more basics first' : '');
     rows.push(`<button class="row selectable ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}">
       <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span data-raw>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div>
       <span class="muted" style="font-size:12px;padding-left:36px">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
@@ -405,6 +462,8 @@ async function renderBook(bookId) {
     <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
       ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
       : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
+    <label class="kindrow"><span>Subject type</span><select id="kind">${KINDS.map(([k, l]) => `<option value="${k}" ${kindOfBook(book) === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    <p class="muted" style="font-size:12px;margin:-6px 0 0;line-height:1.5">${{ science: 'Questions test ideas, experiments and data.', maths: 'Calculation questions with method marks; a maths keyboard helps you type working.', language: 'Comprehension, vocabulary, grammar and writing tasks marked with a rubric.', humanities: 'Source- and data-based questions, and “to what extent” questions.' }[kindOfBook(book)]}</p>
     <button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>
   <div class="sheet sticky setup">
@@ -438,6 +497,10 @@ async function renderBook(bookId) {
   document.getElementById('plus').onclick = () => step((local.count || SESSION_SIZE) >= 20 ? 10 : 5);
   document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || SESSION_SIZE); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
+  document.getElementById('kind').onchange = async (e) => {
+    const books = await store.get('books', []); const b = books.find((x) => x.id === bookId);
+    if (b) { b.kind = e.target.value; await store.set('books', books); bookKinds.set(bookId, b.kind); toast('New questions will suit this subject'); keep(); }
+  };
   document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
   document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
@@ -453,7 +516,7 @@ function getNotes(book, unit, fresh) {
     if (!fresh) { const have = await store.get(key, null); if (have) return have; }
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     if (!text) throw new Error('This chapter’s text is missing on this device.');
-    const n = await api('notes', { title: unit.title, text, lang: langOf(text) });
+    const n = await api('notes', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
     delete n.usage;
     n.at = Date.now();
     await store.set(key, n);
@@ -607,6 +670,7 @@ async function renderProgress() {
       <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${hm}</b><span>practising</span></div>
       <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.a === null ? '–' : r.a + '%'}</b>${trend}</div>
     </div>
+    <div class="skills-wrap" data-raw>${skillsHTML(r, LANG === 'zh')}</div>
     <div class="card stack g10" style="padding:14px 16px">
       <b style="font-size:15px">Your report for parents</b>
       <span style="font-size:14px;line-height:1.5;color:#374151">A one-page summary of this week: practice, scores by chapter, what is improving and what needs work.</span>
@@ -1045,7 +1109,12 @@ async function startUnits(book, units, count = SESSION_SIZE) {
   const k = units.length, quota = Math.ceil(count / k);
   const types = local.types || 'mix';
   const pools = [];
-  for (const u of units) pools.push(shuffle((await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types))));
+  for (const u of units) {
+    const want = 2 + levelShift(book.id, u.id);
+    const pool = shuffle((await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types)));
+    // closest to the student's level first, with some variety
+    pools.push(pool.map((q) => [q, Math.abs((q.level || 2) - want) + Math.random() * 1.5]).sort((a, b) => a[1] - b[1]).map((x) => x[0]));
+  }
   let qs = [];
   pools.forEach((p) => qs.push(...p.slice(0, quota)));
   if (qs.length < count) pools.forEach((p) => qs.push(...p.slice(quota)));   // top up from chapters that have more
@@ -1073,8 +1142,66 @@ function topUp(sess) {
   for (const u of order) {
     if (left <= 0) break;
     const want = Math.min(per, left); left -= want;
-    followFill(sess, ensureFill(sess.book, u, want, sess.types, pace.par));
+    followFill(sess, ensureFill(sess.book, u, want, sess.types, pace.par, true));
   }
+}
+
+/* ---------- mistake book (錯題簿) ---------- */
+const mistakeCount = () => Object.values(local.mistakes || {}).filter((m) => !m.done).length;
+async function mistakeItems(done) {
+  const books = await getBooks();
+  const byUnit = new Map();
+  for (const [id, m] of Object.entries(local.mistakes || {})) {
+    if (!!m.done !== done) continue;
+    const [b, u] = id.split(':'); const k = `${b}:${u}`;
+    if (!byUnit.has(k)) byUnit.set(k, []); byUnit.get(k).push([id, m]);
+  }
+  const groups = [];
+  for (const [k, list] of byUnit) {
+    const [b, u] = k.split(':');
+    const book = books.find((x) => x.id === b); if (!book) continue;
+    const unit = book.units.find((x) => x.id === u);
+    const qs = await getQs(b, u);
+    const items = list.map(([id, m]) => ({ q: qs.find((x) => x.id === id), m })).filter((x) => x.q).sort((x, y) => y.m.t - x.m.t);
+    if (items.length) groups.push({ book, unit, items });
+  }
+  return groups.sort((a, b) => Math.max(...b.items.map((x) => x.m.t)) - Math.max(...a.items.map((x) => x.m.t)));
+}
+function mistakeCard(q, m) {
+  const yours = choiceType(q) ? (m.ansText || (LANG === 'zh' ? '未有作答' : 'No answer'))
+    : (Array.isArray(m.ans) ? m.ans.filter((a) => a && a.trim()).join('\n') : '') || 'No answer written';
+  const right = choiceType(q) ? `${(q.options || [])['ABCD'.indexOf(q.correct_option)] || ''}`
+    : q.type === 'essay' ? '' : q.parts.map((p) => `${p.label ? p.label + ' ' : ''}${p.mark_scheme.map((x) => '• ' + x).join('\n')}`).join('\n');
+  return `<div class="mcard" data-raw>
+    ${figHTML(q)}${renderStem(q.type === 'graph' || choiceType(q) ? q.stem : (q.stem || ''), 'stem')}
+    ${!choiceType(q) ? q.parts.map((p) => `<p class="mprompt">${esc(p.label)} ${esc(p.prompt)}</p>`).join('') : ''}
+    <div class="mrow bad"><span>${LANG === 'zh' ? '你的答案' : 'Your answer'}</span><p class="nomath">${esc(yours)}</p></div>
+    ${right ? `<div class="mrow good"><span>${LANG === 'zh' ? '答案' : 'Answer'}</span><p>${esc(right)}</p></div>` : ''}
+    <p class="expl">${esc(q.explanation || '')}</p>
+    ${m.chat && m.chat.length ? `<details class="mchat"><summary>${LANG === 'zh' ? '你和 AI 導師的對話' : 'Your chat with the tutor'} (${m.chat.length})</summary>${m.chat.map((x) => x.role === 'user' ? `<div class="tmsg me nomath">${esc(x.text)}</div>` : `<div class="tmsg ai">${tutorMd(x.text)}</div>`).join('')}</details>` : ''}
+    <div class="mfoot"><span class="hint">${m.n > 1 ? `${LANG === 'zh' ? `錯了 ${m.n} 次` : `Missed ${m.n} times`}` : ''}</span>${m.done ? '' : `<button class="link quiet" data-dismiss="${esc(q.id)}" style="padding:0;font-size:13px">${LANG === 'zh' ? '我已明白，移除' : 'I understand it now'}</button>`}</div>
+  </div>`;
+}
+async function renderMistakes(tab) {
+  const groups = await mistakeItems(tab === 'done');
+  const todo = mistakeCount(), done = Object.values(local.mistakes || {}).filter((m) => m.done).length;
+  const all = groups.flatMap((g) => g.items.map((x) => x.q));
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">Mistake book</span></div>
+  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Every question you didn’t get fully right is kept here. Get it right again and it moves to Mastered.</p>
+    <div class="seg" style="grid-template-columns:1fr 1fr" role="tablist"><button role="tab" class="${tab === 'todo' ? 'on' : ''}" data-tab="todo">To get right (${todo})</button><button role="tab" class="${tab === 'done' ? 'on' : ''}" data-tab="done">Mastered (${done})</button></div>
+    ${groups.length ? groups.map((g, gi) => `<section class="stack g10"><div class="mhead"><span><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><br><span class="muted" style="font-size:12.5px" data-raw>${esc(g.book.subject || g.book.title)}</span></span>${tab === 'todo' ? `<button class="link" data-redo="${gi}" style="padding:0;white-space:nowrap">Redo these ${g.items.length}</button>` : ''}</div>
+      ${g.items.map((x) => mistakeCard(x.q, x.m)).join('')}</section>`).join('')
+      : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:#374151">${tab === 'todo' ? 'Nothing here. Questions you get wrong will appear here automatically.' : 'Questions you get right after missing them will appear here.'}</p></div>`}
+  </main>
+  ${tab === 'todo' && all.length ? `<div class="sheet sticky"><button class="btn" id="redoall">Redo all ${all.length}</button><span class="hint" style="text-align:center">The answer options are shuffled, so you can’t just remember the letter.</span></div>` : ''}`;
+  document.getElementById('back').onclick = () => go({ name: 'home' });
+  $app.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab: b.dataset.tab })));
+  const start = (qs, title) => { S = newSession({ mode: 'mistakes', title, qs: shuffle(qs).slice(0, 30).map(shuffleOptions), target: Math.min(qs.length, 30) }); renderQuestion(); };
+  const ra = document.getElementById('redoall'); if (ra) ra.onclick = () => start(all, LANG === 'zh' ? '錯題簿' : 'Mistake book');
+  $app.querySelectorAll('[data-redo]').forEach((b) => (b.onclick = () => { const g = groups[+b.dataset.redo]; start(g.items.map((x) => x.q), g.unit ? g.unit.title : 'Mistake book'); }));
+  $app.querySelectorAll('[data-dismiss]').forEach((b) => (b.onclick = () => { const m = local.mistakes[b.dataset.dismiss]; if (m) { m.done = true; m.doneAt = Date.now(); m.manual = true; saveLocal(); } const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }));
 }
 
 /* ---------- choose a textbook for weak topics / mock paper ---------- */
@@ -1136,10 +1263,11 @@ const jobs = new Map();
 const warmed = new Map(); // chapter -> when its text was last put in the AI's cache
 const PARALLEL = 3;
 
-function ensureFill(book, unit, want, types = 'mix', par = PARALLEL) {
+function ensureFill(book, unit, want, types = 'mix', par = PARALLEL, adapt = false) {
   const key = `${book.id}:${unit.id}:${types}`;
   if (jobs.has(key)) { const j = jobs.get(key); j.want = Math.max(j.want, j.made + want); j.par = Math.max(j.par, par); if (j.spawn) j.spawn(); return j; }
-  const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: PLANS[types] || PLAN, par };
+  const kp = KIND_PLANS[kindOfBook(book)];
+  const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: (kp && kp[types]) || PLANS[types] || PLAN, par, adapt };
   jobs.set(key, job);
   job.promise = doFill(book, unit, job)
     .catch((e) => { job.error = e; if (e.status === 401) { local.code = ''; saveLocal(); } })
@@ -1162,7 +1290,8 @@ async function doFill(book, unit, job) {
     for (let round = 0; round < 3 && !stop && job.made < job.want; round++) {
       const existing = await getQs(book.id, unit.id);
       const slot = started; started += BATCH;
-      const items = Array.from({ length: BATCH }, (_, k) => job.plan[(slot + k) % job.plan.length]).map(([level, type]) => ({ level, type }));
+      const d = job.adapt ? levelShift(book.id, unit.id) : 0;
+      const items = Array.from({ length: BATCH }, (_, k) => job.plan[(slot + k) % job.plan.length]).map(([level, type]) => ({ level: type === 'essay' ? level : shiftLevel(level, d), type }));
       const avoid = existing.map((q) => (q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200));
       const batchNo = Math.floor(slot / BATCH);
       const focus = { part: (batchNo % job.par) + 1, of: job.par };
@@ -1174,7 +1303,7 @@ async function doFill(book, unit, job) {
         if (k >= 0) { items[k] = { ...items[k], figure: true }; pages = shuffle([...figs]).slice(0, 2); }
       }
       let gen;
-      try { gen = await api('generate', { title, text, items, avoid, focus, lang: langOf(text), figures: pages ? pages.map((f) => f.img.split(',')[1]) : undefined }); }
+      try { gen = await api('generate', { title, text, items, avoid, focus, kind: kindOfBook(book), lang: langOf(text), figures: pages ? pages.map((f) => f.img.split(',')[1]) : undefined }); }
       catch (e) { if (e.status === 401 || e.status === 0) { stop = true; throw e; } if (!job.error) job.error = e; continue; }
       if (!gen.questions || !gen.questions.length) { if (++empty >= 2) stop = true; continue; }
       for (const q of gen.questions) {
@@ -1325,7 +1454,7 @@ function missedIdea(q, idx) {
   }).filter(Boolean).join('\n\n') || `Question: ${q.stem}`;
 }
 
-function canDrill(q) { return !!(q.id && q.id.split(':').length >= 3); }
+function canDrill(q) { return !!(q.id && q.id.split(':').length >= 3) && q.type !== 'essay'; }
 
 // Make `n` checked questions on one missed idea. Saved to the chapter's bank.
 async function makeDrill(q, idea, types, n = 2) {
@@ -1341,7 +1470,7 @@ async function makeDrill(q, idea, types, n = 2) {
     : q.type === 'mcq' ? [{ level: 2, type: 'mcq' }, { level: 2, type: 'short' }] : [{ level: 2, type: 'short' }, { level: 2, type: 'mcq' }];
   const items = pool.slice(0, n);
   const avoid = [(q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200)];
-  const gen = await api('generate', { title, text, items, avoid, target: idea, lang: langOf(text) });
+  const gen = await api('generate', { title, text, items, avoid, target: idea, kind: await kindOfId(q.id), lang: langOf(text) });
   const checked = await Promise.all((gen.questions || []).map((x) =>
     api('verify', { title, text, question: x }).then((v) => ({ x, v })).catch((e) => { if (e.status === 401) throw e; return { x, v: { passed: false } }; })));
   const passed = checked.filter((c) => c.v.passed && usable(c.x)).map((c) => c.x);
@@ -1536,6 +1665,8 @@ function bindTutor(q) {
       if (!chapter) throw new Error('This chapter’s text is missing on this device.');
       const r = await api('explain', { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: studentAnswerText(q), ask: text, history, lang: langOf(chapter) });
       c.msgs.push({ role: 'assistant', text: r.reply });
+      const mk = local.mistakes[q.id];
+      if (mk) { mk.chat = c.msgs.slice(-12).map((x) => ({ role: x.role, text: x.text.slice(0, 2500) })); saveLocal(); }
     } catch (e) {
       c.msgs.pop();
       c.error = e.status === 0 ? 'You seem to be offline.' : (e.message && e.status !== 500 ? e.message : 'The tutor is not available right now. Try again in a moment.');
@@ -1582,6 +1713,7 @@ function mcqBody(q, revealed) {
 }
 
 function partsGot(q) {
+  if (q.type === 'essay') { const m = (S.marks || {})[S.i]; return m && m.essay ? m.total : 0; }
   const ticks = S.ticks[S.i];
   return (q.parts || []).reduce((s, p, k) => s + Math.min(p.marks, ticks ? ticks[k].filter(Boolean).length : 0), 0);
 }
@@ -1601,7 +1733,7 @@ async function markAnswer(sess, idx) {
       const [bookId, unitId] = q.id.split(':');
       const text = await store.get(`text:${bookId}:${unitId}`, '');
       if (!text) throw new Error('missing text');
-      sess.marks[idx] = await api('mark', { title: q.section, text, question: qForServer(q), figure: figB64(q), answers, lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
+      sess.marks[idx] = await api('mark', { title: q.section, text, question: qForServer(q), figure: figB64(q), answers, kind: await kindOfId(q.id), lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
     } catch (e) {
       sess.marks[idx] = { error: e.status === 0 ? 'You seem to be offline, so the AI could not mark this.' : 'The AI marker is not available right now.' };
     }
@@ -1615,13 +1747,17 @@ function writtenBody(q, revealed) {
   const ans = S.answers[S.i] || q.parts.map(() => '');
   const stem = figHTML(q) + (q.stem ? renderStem(q.stem) : '');
   if (!revealed) {
+    const maths = kindSync(q.id) === 'maths', essay = q.type === 'essay';
     const parts = q.parts.map((p, k) => `<div class="part">
       <label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
-      <textarea id="a${k}" placeholder="Type, or tap the microphone on your keyboard to speak">${esc(ans[k])}</textarea></div>`).join('');
-    const main = `${stem}${parts}<p class="hint">Aim for one clear point per mark.</p>`;
+      ${maths ? mathKeys(`a${k}`) : ''}
+      <textarea id="a${k}" class="${essay ? 'essay' : ''}" placeholder="${essay ? 'Write your answer here' : maths ? 'Show your working, one step per line' : 'Type, or tap the microphone on your keyboard to speak'}">${esc(ans[k])}</textarea>
+      ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}</div>`).join('');
+    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
     const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="link quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
     return { main, footer, bind() {
-      const grab = () => { S.answers[S.i] = [...$app.querySelectorAll('textarea')].map((t) => t.value); };
+      const grab = () => { S.answers[S.i] = [...$app.querySelectorAll('textarea')].map((t) => t.value); const wc = document.getElementById('wc'); if (wc) wc.textContent = `${wordCount(S.answers[S.i][0])} words`; };
+      bindMathKeys();
       $app.querySelectorAll('textarea').forEach((t) => (t.oninput = grab));
       document.getElementById('check').onclick = () => {
         grab();
@@ -1643,6 +1779,7 @@ function writtenBody(q, revealed) {
       footer: `<div class="sheet" style="align-items:center;text-align:center"><div class="spinner" aria-hidden="true"></div><span class="verdict" style="color:#14181F">Marking your answer…</span><span class="hint">Checking it against the mark scheme, point by point.</span></div>`,
     };
   }
+  if (q.type === 'essay') return essayRevealed(q, m, ans, stem);
   const ai = !!m.parts;
   const ticks = S.ticks[S.i] || (S.ticks[S.i] = q.parts.map((p) => p.mark_scheme.map(() => false)));
   const partHtml = q.parts.map((p, k) => {
@@ -1666,6 +1803,42 @@ function writtenBody(q, revealed) {
   } };
 }
 
+const wordCount = (t) => { const x = String(t || '').trim(); if (!x) return 0; const cjk = (x.match(/[㐀-鿿]/g) || []).length; return cjk > 20 ? cjk : x.split(/\s+/).length; };
+const kindSync = (qid) => bookKinds.get(String(qid || '').split(':')[0]) || 'science';
+const MATH_KEYS = ['²', '³', '√', 'π', '×', '÷', '±', '≤', '≥', '≠', '≈', '°', 'θ', '½', '⁻¹', '(', ')', 'sin', 'cos', 'tan', 'log'];
+const mathKeys = (id) => `<div class="mathkb" role="toolbar" aria-label="Maths symbols">${MATH_KEYS.map((k) => `<button type="button" data-mk="${k}" data-for="${id}">${k}</button>`).join('')}</div>`;
+function bindMathKeys() {
+  $app.querySelectorAll('[data-mk]').forEach((b) => {
+    b.onmousedown = (e) => e.preventDefault(); // keep the cursor in the answer box
+    b.onclick = () => {
+      const t = document.getElementById(b.dataset.for); if (!t) return;
+      const ins = /^[a-z]+$/.test(b.dataset.mk) ? b.dataset.mk + '(' : b.dataset.mk;
+      const a = t.selectionStart ?? t.value.length, z = t.selectionEnd ?? a;
+      t.value = t.value.slice(0, a) + ins + t.value.slice(z);
+      t.focus(); t.selectionStart = t.selectionEnd = a + ins.length;
+      t.dispatchEvent(new Event('input'));
+    };
+  });
+}
+
+function essayRevealed(q, m, ans, stem) {
+  const text = (ans[0] || '').trim();
+  const max = marksOf(q);
+  const mine = `<div class="yours nomath ${text ? '' : 'empty'}">${text ? esc(text) : 'No answer written'}</div><span class="hint">${wordCount(text)} words</span>`;
+  const task = `<div class="part"><div class="ph"><span>${esc(q.parts[0].prompt)}</span><span class="mk">${max} marks</span></div>${mine}</div>`;
+  if (!m.essay) {
+    return { main: `${stem}${task}`, footer: `<div class="sheet"><span class="verdict no">Not marked</span><p class="hint" style="margin:0;color:#9A3412">${esc(m.error || 'The AI marker is not available right now.')}</p><button class="btn ghost" id="remark">Try marking again</button>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`,
+      bind() { document.getElementById('remark').onclick = () => { S.marks[S.i] = null; markAnswer(S, S.i); renderQuestion(); }; } };
+  }
+  const e = m.essay;
+  const crit = e.criteria.map((c) => `<div class="crit"><div class="crit-top"><b data-raw>${esc(c.criterion)}</b><span>${c.score} / ${c.max}</span></div>
+    <div class="bar ${c.score / c.max < 0.5 ? 'warn' : ''}"><i style="width:${Math.round(100 * c.score / c.max)}%"></i></div><p data-raw>${esc(c.feedback)}</p></div>`).join('');
+  const imp = e.improvements.length ? `<div class="stack g6"><span class="hint" style="font-weight:600">How to improve it</span><ul class="improve" data-raw>${e.improvements.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+  const footer = `<div class="sheet"><span class="verdict ${m.total >= max * 0.7 ? 'ok' : 'no'}">${m.total} / ${max} marks</span>
+    ${e.tip ? `<p class="tipline"><b>Tip:</b> <span data-raw>${esc(e.tip)}</span></p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
+  return { main: `${stem}${task}<p class="hint" style="margin:0">Marked by AI against the rubric.</p><div class="card stack g14" style="padding:14px 16px">${crit}</div>${imp}`, footer };
+}
+
 function record(q, got) {
   const s = local.stats[q.id] || { seen: 0, got: 0, total: 0, last: 0 };
   s.seen++; s.got += got; s.total += marksOf(q); s.last = got / marksOf(q);
@@ -1673,6 +1846,17 @@ function record(q, got) {
   local.stats[q.id] = s;
   // Activity log for progress reports: when, which question/chapter, marks, and how it was practised.
   local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '' });
+  // Mistake book: every question not fully right goes in; getting it fully right later marks it mastered.
+  const mk = local.mistakes[q.id];
+  if (got < marksOf(q)) {
+    const k = S ? S.qs.indexOf(q) : -1;
+    const ans = k >= 0 ? S.answers[k] : null;
+    // MCQ options are shuffled per session, so keep the text of the chosen option, not just its letter.
+    const ansText = choiceType(q) && ans ? (q.options || [])['ABCD'.indexOf(ans)] || '' : null;
+    local.mistakes[q.id] = { t: Date.now(), n: ((mk && mk.n) || 0) + 1, got, ans: Array.isArray(ans) ? ans.map((a) => String(a || '').slice(0, 1500)) : null, ansText, chat: (mk && mk.chat) || null, done: false };
+  } else if (mk && !mk.done) { mk.done = true; mk.doneAt = Date.now(); }
+  const ids = Object.keys(local.mistakes);
+  if (ids.length > 600) ids.sort((a, b) => local.mistakes[a].t - local.mistakes[b].t).slice(0, ids.length - 600).forEach((id) => delete local.mistakes[id]);
   if (local.log.length > 5000) local.log = local.log.slice(-5000);
   saveLocal();
 }
@@ -1830,6 +2014,7 @@ new MutationObserver((muts) => {
   for (const m of muts) m.addedNodes.forEach((n) => { if (n.nodeType === 1 && !n.closest('.katex')) renderMath(n); });
 }).observe(document.body, { childList: true, subtree: true });
 
+{ const st = document.createElement('style'); st.textContent = REPORT_CSS; document.head.appendChild(st); }
 initLang();
 watch(document.body);
 go({ name: 'home' });

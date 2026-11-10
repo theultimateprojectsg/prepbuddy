@@ -82,11 +82,14 @@ export function buildReport({ log, stats, name, books, lang }) {
     ? T(`Two 15-minute sessions on ${weakChapter}, and keep up daily review.`, `為「${weakChapter}」做兩次 15 分鐘練習，並保持每日溫習。`)
     : week.length ? T('Keep up daily review, and start the next chapter.', '保持每日溫習，並開始下一章。') : T('Start with one 15-minute session on the current chapter.', '先為目前的章節做一次 15 分鐘練習。');
 
+  // Thinking skills over the last 30 days: % of marks by question level (1 recall … 4 analyse/evaluate).
+  const month = log.filter((e) => e.t >= today - 29 * DAY);
+  const sk = [1, 2, 3, 4].map((l) => { const es = month.filter((e) => (e.l || 2) === l); return [acc(es), es.length]; });
   const daysPractised = days.filter((m) => m > 0).length;
   const a = acc(week), pa = acc(prev);
   return {
     v: 1, u: zh ? 'zh' : 'en', n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
-    days, q: week.length, a, pa, dp: daysPractised, ch: chapters, up, weak, rev, next,
+    days, q: week.length, a, pa, dp: daysPractised, ch: chapters, up, weak, rev, next, sk,
   };
 }
 
@@ -151,11 +154,30 @@ export function reportHTML(r) {
     </section>` : ''}
     ${r.up ? `<section class="rep-good"><small>${T('Getting better at', '有進步')}</small><p>${esc(r.up)}</p></section>` : ''}
     ${r.weak ? `<section class="rep-weak"><small>${T('Needs more practice', '需要多加練習')}</small><p>${esc(r.weak)}</p></section>` : ''}
+    ${skillsHTML(r)}
     <section class="rep-card"><h2>${T('Remembering what was learned', '記住所學')}</h2><p>${esc(r.rev)}</p></section>
     <section class="rep-next"><small>${T('Suggested for next week', '下週建議')}</small><p>${esc(r.next)}</p></section>
     <p class="rep-foot">${T(`Snapshot sent by ${esc(who)} from PrepBuddy on ${fmtDate(r.at, { weekday: 'short', day: 'numeric', month: 'short' })}, ${new Date(r.at).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' })}. Scores come from PrepBuddy practice questions written from the student's own textbook; written answers are marked by AI against a mark scheme.`,
       `由${esc(who)}於 ${fmtDate(r.at, { month: 'long', day: 'numeric', weekday: 'short' })} ${new Date(r.at).toLocaleTimeString('zh-HK', { hour: 'numeric', minute: '2-digit' })} 從 PrepBuddy 傳送。分數來自根據學生自己課本編寫的 PrepBuddy 練習題；文字題由 AI 按評分準則批改。`)}</p>
   </main>`;
+}
+
+// Shared by the report and the in-app progress screen.
+export const SKILL_NAMES = { en: ['Recall', 'Understand', 'Apply', 'Analyse / evaluate'], zh: ['記憶', '理解', '應用', '分析／評鑑'] };
+export function skillsHTML(r, zhOverride) {
+  if (zhOverride !== undefined) ZH = zhOverride;
+  const sk = r.sk || [];
+  if (!sk.some(([, n]) => n >= 3)) return '';
+  const names = SKILL_NAMES[ZH ? 'zh' : 'en'];
+  const rated = sk.map(([a, n], i) => ({ a, n, i })).filter((x) => x.n >= 3 && x.a !== null);
+  const best = rated.slice().sort((x, y) => y.a - x.a)[0], worst = rated.slice().sort((x, y) => x.a - y.a)[0];
+  const insight = best && worst && best.i !== worst.i && best.a - worst.a >= 15
+    ? T(`Strongest at ${names[best.i].toLowerCase()} questions (${best.a}%). ${names[worst.i]} questions need the most work (${worst.a}%).`,
+        `最擅長${names[best.i]}題（${best.a}%）；${names[worst.i]}題最需要加強（${worst.a}%）。`)
+    : T('Skills are fairly even across question types.', '各類題型的表現大致平均。');
+  return `<section class="rep-card"><h2>${T('Thinking skills (last 30 days)', '思考能力（過去 30 日）')}</h2>
+    ${sk.map(([a, n], i) => n ? `<div class="rep-ch"><div><span>${names[i]}</span><b class="${a >= 70 ? 'ok' : 'warn'}">${a}%</b></div><div class="rep-bar ${a >= 70 ? 'ok' : 'warn'}"><i style="width:${a}%"></i></div><small>${T(`${n} answer${n === 1 ? '' : 's'}`, `${n} 個作答`)}</small></div>` : '').join('')}
+    <p class="rep-note">${insight}</p></section>`;
 }
 
 export const REPORT_CSS = `
