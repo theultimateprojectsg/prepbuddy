@@ -1,0 +1,321 @@
+// English / 繁體中文 (Hong Kong) for the app's own buttons, menus and messages.
+// Screens are written in English; when Chinese is on, text is swapped as it appears.
+// Book content and questions are never translated here (they are already in the book's language).
+
+const EXACT = {
+  // home
+  'Exam practice from your textbooks': '用你的課本溫習應試',
+  'Add a textbook': '加入課本',
+  'Find your textbook and practise any chapter': '搵你的課本，練習任何章節',
+  'Search by title, subject or book code': '以書名、科目或課本編號搜尋',
+  'Search the library': '搜尋課本庫',
+  'Find a textbook': '搵課本',
+  'My textbooks': '我的課本',
+  'No textbooks yet. Search above to add one from the library.': '仲未有課本。喺上面搜尋，從課本庫加入。',
+  'Not in the library? Upload your own PDF': '課本庫冇你本書？上載你自己的 PDF',
+  'Review across all textbooks': '溫習所有課本',
+  'Spaced review': '間隔溫習',
+  'Start': '開始',
+  'Questions you answer come back here to help you remember them.': '你答過的題目會喺呢度再出現，幫你記得更牢。',
+  'Weak topics': '弱項',
+  'Questions you found hard': '你覺得難的題目',
+  'Mini mock': '小型模擬測驗',
+  '12 questions, 20 min': '12 題，20 分鐘',
+  'My progress': '我的進度',
+  'This week, and a report to send your parents': '今個星期的表現，以及可傳給家長的報告',
+  'Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong.':
+    '試用版。你的課本、題目和進度只儲存在這部裝置。題目由 AI 編寫及檢查；如發現錯誤，請按「報告問題」。',
+  'AI usage': 'AI 用量',
+  'uploaded': '自行上載',
+  // library
+  'Textbook library': '課本庫',
+  'Book code matched': '課本編號吻合',
+  'Add to my textbooks': '加入我的課本',
+  'Added · open': '已加入 · 打開',
+  'Adding…': '加入中…',
+  'Check the book code, or upload your own PDF from the home screen.': '請檢查課本編號，或在主頁上載你自己的 PDF。',
+  'Added to your textbooks': '已加入你的課本',
+  'The library could not be loaded.': '未能載入課本庫。',
+  'Part of this textbook could not be downloaded. Please try again.': '部分課本內容未能下載，請再試。',
+  'Could not add this textbook.': '未能加入這本課本。',
+  // upload
+  'Reading your book': '正在讀取你的課本',
+  'Opening the file…': '正在打開檔案…',
+  'That book couldn\'t be read': '未能讀取這本書',
+  'That book couldn’t be read': '未能讀取這本書',
+  'Back to home': '返回主頁',
+  'No chapters with enough text were found in this PDF.': '這個 PDF 內找不到有足夠文字的章節。',
+  'This file is over 300 MB. Try a smaller PDF or one chapter at a time.': '檔案超過 300 MB。請試較細的 PDF，或每次上載一章。',
+  'This PDF has almost no text. It may be scanned pages (pictures of text), which PrepBuddy cannot read yet.':
+    '這個 PDF 幾乎沒有文字，可能是掃描頁（文字的圖片），PrepBuddy 暫時未能讀取。',
+  // book screen
+  '1. Choose chapters': '1. 選擇章節',
+  'Select all': '全選',
+  'Clear all': '全部取消',
+  'New questions will be made': '會編寫新題目',
+  'Remove from my textbooks': '從我的課本移除',
+  '2. Set up your practice': '2. 設定練習',
+  'Questions': '題型',
+  'How many': '題數',
+  'MCQ': '選擇題',
+  'Written': '文字題',
+  'Both': '兩者都要',
+  'Tick at least one chapter above': '請在上面剔選最少一個章節',
+  'Or make a DSE-style mock paper / worksheet': '或製作 DSE 模式模擬試卷／工作紙',
+  'Fewer questions': '減少題目',
+  'More questions': '增加題目',
+  'Back to chapters': '返回章節',
+  // remove
+  'Remove this textbook?': '移除這本課本？',
+  'This deletes from this device:': '以下內容會從這部裝置刪除：',
+  'Remove and delete my progress': '移除並刪除我的進度',
+  'Keep this textbook': '保留這本課本',
+  'Textbook and its progress removed': '已移除課本及其進度',
+  'You can add the book again from the library, but your progress will start from zero.': '你可以從課本庫再次加入，但進度會由零開始。',
+  'To use it again you will need to upload the PDF again.': '如要再用，需要重新上載 PDF。',
+  // practice
+  'End session': '結束練習',
+  'Recall': '記憶',
+  'Understand': '理解',
+  'Apply': '應用',
+  'Analyse / evaluate': '分析／評鑑',
+  'Correct': '答對了',
+  'Report a problem': '報告問題',
+  'Next question': '下一題',
+  'See results': '查看結果',
+  'Finish and review': '完成並檢討',
+  'Mark my answer': '批改我的答案',
+  'Show the answer without trying': '不作答，直接看答案',
+  'Type, or tap the microphone on your keyboard to speak': '打字，或按鍵盤上的咪高峰用語音輸入（可以講廣東話）',
+  'Aim for one clear point per mark.': '每一分寫一個清楚的要點。',
+  'No answer written': '未有作答',
+  'No answer written.': '未有作答。',
+  'Marking your answer…': '正在批改你的答案…',
+  'Checking it against the mark scheme, point by point.': '正逐點對照評分準則。',
+  'Mark scheme (ticked = points you earned):': '評分準則（已剔＝你取得的分數）：',
+  'Mark scheme:': '評分準則：',
+  'Marked by AI. Think it got one wrong? Tap a point to change it.': '由 AI 批改。覺得批錯？按一下該要點修改。',
+  'Tip:': '提示：',
+  'Thanks. This question is flagged for checking.': '多謝。這題已標記待檢查。',
+  'Tap × again to stop and see your results': '再按一次 × 停止並查看結果',
+  'Review': '檢討',
+  'Time to review. Tick the points you made in written answers.': '開始檢討。文字題會由 AI 批改。',
+  'The AI marker is not available right now.': 'AI 批改暫時未能使用。',
+  'You seem to be offline, so the AI could not mark this.': '你似乎未連接網絡，AI 未能批改。',
+  'Tick the points you made instead.': '請自行剔選你寫到的要點。',
+  'Time\'s up': '時間到',
+  "Time's up": '時間到',
+  // waiting
+  'Writing your questions': '正在編寫你的題目',
+  'Preparing the next question': '正在準備下一題',
+  'Couldn’t make questions': '未能編寫題目',
+  'No more questions right now': '暫時沒有更多題目',
+  'Try again': '再試一次',
+  'See my results': '查看我的結果',
+  'Back': '返回',
+  'Try this chapter again in a moment.': '請稍後再試這一章。',
+  'New questions on the ideas you missed': '針對你答錯的概念的新題目',
+  'Each question is written from your textbook, then checked by a second AI. The first ones take 30–60 seconds; after that the next set is made while you practise.':
+    '每條題目都根據你的課本編寫，再由另一個 AI 檢查。首批需時 30–60 秒，之後會在你練習時準備下一批。',
+  'No internet connection. Questions need a connection to be made.': '沒有網絡連線。編寫題目需要上網。',
+  'You seem to be offline.': '你似乎未連接網絡。',
+  'This chapter’s text is missing on this device. Try uploading the book again.': '這部裝置上找不到這一章的內容，請重新上載課本。',
+  'This chapter’s text is missing on this device.': '這部裝置上找不到這一章的內容。',
+  'No questions could be made from this chapter. It may not have enough teaching content.': '未能為這一章編寫題目，可能內容不足。',
+  'Something went wrong.': '出現問題。',
+  'Couldn’t make drill questions this time. Try again.': '這次未能編寫操練題目，請再試。',
+  // access code
+  'Enter your access code': '輸入使用碼',
+  'PrepBuddy is in testing. You need a code to make new questions. Ask the person who invited you.': 'PrepBuddy 正在試用階段，編寫新題目需要使用碼。請向邀請你的人索取。',
+  'Access code': '使用碼',
+  'Continue': '繼續',
+  // summary
+  'Excellent work': '非常好',
+  'Good, solid work': '做得不錯',
+  'Getting there': '漸入佳境',
+  'Worth another go': '值得再試一次',
+  'Redo this set (shuffled)': '重做這一組（次序打亂）',
+  'Weak-spot drill': '弱項操練',
+  'Questions you got right come back later and later. The ones you missed come back tomorrow.': '答對的題目會相隔愈來愈久才再出現；答錯的明天會再出現。',
+  'Nothing to review today.': '今日沒有需要溫習的題目。',
+  'Practise a chapter first, then come back here.': '請先練習一個章節，再回來這裏。',
+  'Answer a few questions first, so PrepBuddy knows your weak spots.': '請先答幾條題目，PrepBuddy 才知道你的弱項。',
+  // papers
+  'Mock paper or worksheet': '模擬試卷或工作紙',
+  'A DSE-style paper:': 'DSE 模式試卷：',
+  'Section A': '甲部',
+  'Section B': '乙部',
+  'multiple choice, then': '多項選擇題，然後',
+  'written questions. Sit it timed here and get it marked, or print it with an answer key.': '文字題。可在這裏限時應考並獲批改，或連答案列印出來。',
+  'Chapters': '章節',
+  'Change chapters': '更改章節',
+  'Length': '長度',
+  'Short': '短卷',
+  'Half paper': '半份試卷',
+  'Full paper': '整份試卷',
+  'Section A · MCQ': '甲部 · 多項選擇題',
+  'Section B · Written': '乙部 · 文字題',
+  'Section B · written': '乙部 · 文字題',
+  'Time allowed:': '作答時間：',
+  'Fewer MCQs': '減少多項選擇題',
+  'More MCQs': '增加多項選擇題',
+  'Fewer written questions': '減少文字題',
+  'More written questions': '增加文字題',
+  'Print worksheet with answer key': '列印工作紙（附答案）',
+  'Preparing your paper': '正在準備你的試卷',
+  'Checking which questions are ready…': '正在檢查已有的題目…',
+  'Cancel': '取消',
+  'DSE-style mock paper': 'DSE 模式模擬試卷',
+  'Section B: written questions': '乙部：文字題',
+  'No questions could be made for these chapters.': '未能為這些章節編寫題目。',
+  'Could not prepare the paper.': '未能準備試卷。',
+  'Worksheet ready': '工作紙已準備好',
+  'Print or save as PDF': '列印或儲存為 PDF',
+  'On a phone: tap the button, then choose': '用手機：按上面的按鈕，然後選擇',
+  'Save as PDF': '儲存為 PDF',
+  'or share the PDF. The answer key starts on a new page.': '或分享 PDF。答案由新一頁開始。',
+  'Section A · Multiple choice': '甲部 · 多項選擇題',
+  'Section B · Written': '乙部 · 文字題',
+  'Choose the best answer for each question.': '每題選出最適當的答案。',
+  'Answer all questions in the spaces provided.': '在空位作答所有題目。',
+  'Answer key': '答案',
+  'Name:': '姓名：',
+  'Class:': '班別：',
+  'All chapters': '所有章節',
+  '1 mark': '1 分',
+  // progress / report screen
+  'Last 7 days': '過去 7 日',
+  'questions': '題目',
+  'practising': '練習時間',
+  'correct': '正確',
+  'Your report for parents': '給家長的報告',
+  'A one-page summary of this week: practice, scores by chapter, what is improving and what needs work.': '一頁摘要：本週練習、各章分數、進步之處和需要加強的地方。',
+  'Your name on the report': '報告上的名字',
+  'e.g. Ka Yan': '例如：嘉欣',
+  'Preview the report': '預覽報告',
+  'Send report to parent': '傳送報告給家長',
+  'Opens WhatsApp or another app with a link. Your parent doesn\'t need to sign in.': '會用 WhatsApp 或其他應用程式傳送連結，家長不需登入。',
+  'Send the report': '傳送報告',
+  'Send on WhatsApp': '用 WhatsApp 傳送',
+  'Copy the link': '複製連結',
+  'Link copied': '已複製連結',
+  'Copy this link:': '複製這個連結：',
+  // misc
+  'Back to chapters ': '返回章節',
+};
+
+// Text with numbers or names in it.
+const PATTERNS = [
+  [/^(.*?)(\d+) chapters · (\d+) questions( · uploaded)?$/, (m, pre, c, q, up) => `${pre}${c} 個章節 · ${q} 條題目${up ? ' · 自行上載' : ''}`],
+  [/^pp\. (\d+)–(\d+) · (\d+) ready · (\d+) done$/, '第 $1–$2 頁 · $3 條可用 · 已做 $4 條'],
+  [/^pp\. (\d+)–(\d+) · New questions will be made$/, '第 $1–$2 頁 · 會編寫新題目'],
+  [/^(\d+) ready · (\d+) done$/, '$1 條可用 · 已做 $2 條'],
+  [/^Start (\d+) questions · about (\d+) min$/, '開始 $1 題 · 約 $2 分鐘'],
+  [/^Start mock paper · (\d+) min$/, '開始模擬試卷 · $1 分鐘'],
+  [/^Level (\d) · (Recall|Understand|Apply|Analyse \/ evaluate)$/, (m, n, l) => `程度 ${n} · ${EXACT[l]}`],
+  [/^(MCQ|Graph MCQ|Short answer|Structured) · (\d+) marks?$/, (m, t, n) => `${{ MCQ: '多項選擇題', 'Graph MCQ': '圖表選擇題', 'Short answer': '短答題', Structured: '結構題' }[t]} · ${n} 分`],
+  [/^(\d+) marks?$/, '$1 分'],
+  [/^Not quite\. The answer is ([A-D])\.$/, '不太對。答案是 $1。'],
+  [/^No answer\. The answer is ([A-D])\.$/, '未有作答。答案是 $1。'],
+  [/^(\d+) \/ (\d+) marks$/, '$1 / $2 分'],
+  [/^Tick each point your answer makes(?: \(max (\d+)\))?:$/, (m, n) => `剔選你答案寫到的要點${n ? `（最多 ${n} 分）` : ''}：`],
+  [/^Retry the (\d+) I missed$/, '重做答錯的 $1 題'],
+  [/^(\d+) more on (this chapter|these chapters)$/, (m, n, w) => `${w === 'this chapter' ? '這一章' : '這些章節'}再多 ${n} 題`],
+  [/^Drill my weak spots · (\d+) new questions$/, '操練我的弱項 · $1 條新題目'],
+  [/^(.+) · done$/, '$1 · 完成'],
+  [/^(.+) · stopped after (\d+)$/, '$1 · 做了 $2 題後停止'],
+  [/^(Excellent work|Good, solid work|Getting there|Worth another go) · (\d+)%$/, (m, w, p) => `${EXACT[w]} · ${p}%`],
+  [/^(\d+) questions? due today · about (\d+) min$/, '今日有 $1 題要溫習 · 約 $2 分鐘'],
+  [/^All caught up\. Next review (tomorrow|in (\d+) days|in about a week|in (\d+) weeks)\.$/, (m, w, d, wk) =>
+    `全部溫習完畢。下次溫習：${w === 'tomorrow' ? '明天' : d ? `${d} 日後` : wk ? `${wk} 星期後` : '約一星期後'}。`],
+  [/^(\d+) of 7 days practised$/, '7 日中有 $1 日練習'],
+  [/^↑ (\d+) from last week$/, '比上週 ↑ $1'],
+  [/^↓ (\d+) from last week$/, '比上週 ↓ $1'],
+  [/^All (\d+) chapters$/, '全部 $1 個章節'],
+  [/^(\d+) MCQ · (\d+) written · (\d+) min$/, '$1 題選擇 · $2 題文字 · $3 分鐘'],
+  [/^(\d+) min$/, '$1 分鐘'],
+  [/^(\d+)h (\d+)m$/, '$1 小時 $2 分'],
+  [/^(?:Section A: (\d+) multiple choice · )?(?:Section B: (\d+) written · )?Time: (\d+) min · Total: (\d+) marks$/, (m, a, b, t, tot) =>
+    `${a ? `甲部：${a} 題多項選擇題 · ` : ''}${b ? `乙部：${b} 題文字題 · ` : ''}時間：${t} 分鐘 · 總分：${tot} 分`],
+  [/^Score:\s*\/ (\d+)$/, '分數：　　／ $1'],
+  [/^Section A: (\d+) multiple-choice questions$/, '甲部：$1 題多項選擇題'],
+  [/^Only (\d+) questions could be prepared for these chapters\.$/, '這些章節只能準備 $1 條題目。'],
+  [/^(\d+) of (\d+) questions ready\. New ones are written from your textbook and checked first, so a long paper can take a few minutes the first time\.$/,
+    '已準備 $1 / $2 題。新題目會根據你的課本編寫並先經檢查，所以首次製作長試卷可能需時數分鐘。'],
+  [/^From the PrepBuddy library · book code (.+)$/, '來自 PrepBuddy 課本庫 · 課本編號 $1'],
+  [/^Made with PrepBuddy from (.+?)\.(.*) Questions are written and checked by AI\.$/, '由 PrepBuddy 根據《$1》製作。$2 題目由 AI 編寫及檢查。'],
+  [/^Source: (.+)$/, '來源：$1'],
+  [/^Uploaded by you · (\d+) pages · chapters found from (.+)$/, (m, n, how) =>
+    `自行上載 · ${n} 頁 · 章節來自${how.startsWith('the book') ? '課本書籤' : how.startsWith('numbered') ? '編號標題' : '每 8 頁一節（找不到標題）'}`],
+  [/^(\d+) practice questions?$/, '$1 條練習題目'],
+  [/^your scores on (\d+) questions?, and their spaced-review schedule$/, '你在 $1 條題目的分數及其間隔溫習時間表'],
+  [/^(\d+) answers? in your progress history \(used for parent reports\)$/, '進度紀錄中的 $1 個作答（用於家長報告）'],
+  [/^This can't be undone\. (.*)$/, (m, rest) => `此操作無法復原。${EXACT[rest] || rest}`],
+  [/^(\d+) chapters · (?:(\d+) questions ready · )?code$/, (m, c, q) => `${c} 個章節 · ${q ? `${q} 條題目已準備 · ` : ''}編號`],
+  [/^No textbook matches “(.*)”\.$/, '找不到符合「$1」的課本。'],
+  [/^Added (\d+) chapters$/, '已加入 $1 個章節'],
+  [/^Page (\d+) of (\d+)$/, '第 $1 / $2 頁'],
+  [/^Found (\d+) chapters\. Saving…$/, '找到 $1 個章節，正在儲存…'],
+  [/^(\d+) chapters$/, '$1 個章節'],
+];
+
+export let LANG = 'en';
+const KEY = 'prepbuddy.ui';
+
+export function initLang() {
+  let saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  const phoneZh = (navigator.languages || [navigator.language || '']).some((l) => /^zh/i.test(l));
+  LANG = saved || (phoneZh ? 'zh' : 'en');
+  document.documentElement.lang = LANG === 'zh' ? 'zh-HK' : 'en';
+  return LANG;
+}
+
+export function setLang(l) {
+  LANG = l;
+  try { localStorage.setItem(KEY, l); } catch (e) {}
+  document.documentElement.lang = l === 'zh' ? 'zh-HK' : 'en';
+}
+
+export function tr(text) {
+  if (LANG !== 'zh') return null;
+  const t = text.trim();
+  if (!t || !/[A-Za-z]/.test(t)) return null;
+  if (Object.prototype.hasOwnProperty.call(EXACT, t)) return text.replace(t, EXACT[t]);
+  for (const [re, rep] of PATTERNS) {
+    if (re.test(t)) return text.replace(t, t.replace(re, rep));
+  }
+  return null;
+}
+
+const ATTRS = ['placeholder', 'aria-label', 'title'];
+// Book content and questions: never translate.
+const RAW = '[data-raw], .stem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
+const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(RAW)); };
+export function translateTree(root) {
+  if (LANG !== 'zh' || !root) return;
+  if (root.nodeType === 3) { if (isRaw(root)) return; const x = tr(root.nodeValue); if (x !== null && x !== root.nodeValue) root.nodeValue = x; return; }
+  if (root.nodeType !== 1) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const n of nodes) { if (isRaw(n)) continue; const x = tr(n.nodeValue); if (x !== null && x !== n.nodeValue) n.nodeValue = x; }
+  const els = [root, ...root.querySelectorAll('[placeholder],[aria-label],[title]')];
+  for (const el of els) for (const a of ATTRS) {
+    if (!el.hasAttribute || !el.hasAttribute(a) || (a === 'title' && isRaw(el))) continue;
+    const x = tr(el.getAttribute(a));
+    if (x !== null) el.setAttribute(a, x);
+  }
+}
+
+// Translate everything already on screen and anything added later.
+export function watch(root = document.body) {
+  translateTree(root);
+  new MutationObserver((muts) => {
+    if (LANG !== 'zh') return;
+    for (const m of muts) {
+      if (m.type === 'characterData') translateTree(m.target);
+      m.addedNodes.forEach((n) => translateTree(n));
+    }
+  }).observe(root, { childList: true, subtree: true, characterData: true });
+}

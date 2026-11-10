@@ -27,10 +27,13 @@ try {
   const data = new URLSearchParams(location.hash.slice(1)).get('d');
   if (!data) throw new Error('no data');
   const r = decodeReport(data);
+  const zh = r.u === 'zh';
+  if (zh) document.documentElement.lang = 'zh-HK';
   document.title = headline(r) + ' · PrepBuddy';
-  el.innerHTML = reportHTML(r) + '<div class="cta">PrepBuddy turns your child’s own textbook into exam practice with AI marking. <a href="./">Learn more</a></div>';
+  el.innerHTML = reportHTML(r) + (zh ? '<div class="cta">PrepBuddy 把你子女自己的課本變成應試練習，並由 AI 批改。<a href="./">了解更多</a></div>' : '<div class="cta">PrepBuddy turns your child’s own textbook into exam practice with AI marking. <a href="./">Learn more</a></div>');
 } catch (e) {
-  el.innerHTML = '<p class="err">This report link looks incomplete. Ask for the report to be sent again from PrepBuddy.</p>';
+  const zhPhone = /^zh/i.test(navigator.language || '');
+  el.innerHTML = zhPhone ? '<p class="err">這個報告連結不完整。請從 PrepBuddy 再傳送一次報告。</p>' : '<p class="err">This report link looks incomplete. Ask for the report to be sent again from PrepBuddy.</p>';
 }
 </script>
 </body>

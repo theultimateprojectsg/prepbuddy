@@ -1,6 +1,7 @@
 // PrepBuddy app: books, chapters, on-demand questions, practice sessions.
 import * as store from './store.js';
 import { buildReport, encodeReport, headline } from './report.js';
+import { initLang, setLang, watch, LANG } from './i18n.js';
 
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
@@ -170,12 +171,13 @@ async function renderHome() {
     for (const u of b.units) { const l = await getQs(b.id, u.id); n += l.length; qs.push(...l); }
     const sc = scoreOf(qs);
     cards.push(`<button class="row" data-book="${esc(b.id)}">
-      <div class="top"><span style="display:flex;gap:10px;align-items:flex-start">${ICON.book}<span><b style="font-weight:600">${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.subject ? esc(b.subject) + ' · ' : ''}${b.units.length} chapters · ${n} questions${b.library ? '' : ' · uploaded'}</span></span></span>
+      <div class="top"><span style="display:flex;gap:10px;align-items:flex-start">${ICON.book}<span><b style="font-weight:600" data-raw>${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.subject ? esc(b.subject) + ' · ' : ''}${b.units.length} chapters · ${n} questions${b.library ? '' : ' · uploaded'}</span></span></span>
       <span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div></button>`);
   }
   $app.innerHTML = `
   <main class="pad stack g22" style="flex:1">
-    <div><p class="muted" style="margin:0 0 2px;font-size:13px">Exam practice from your textbooks</p><h1 class="brand">PrepBuddy</h1></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><p class="muted" style="margin:0 0 2px;font-size:13px">Exam practice from your textbooks</p><h1 class="brand">PrepBuddy</h1></div>
+      <button class="langbtn" id="lang" lang="${LANG === 'zh' ? 'en' : 'zh-HK'}" aria-label="${LANG === 'zh' ? 'Switch to English' : '切換至中文'}">${LANG === 'zh' ? 'EN' : '中文'}</button></div>
     <section class="hero" aria-label="Find a textbook">
       <small>Add a textbook</small>
       <span class="title">Find your textbook and practise any chapter</span>
@@ -205,6 +207,7 @@ async function renderHome() {
   </main>
   <footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="link quiet" id="usage" style="font-size:11px;padding:0">AI usage</button></footer>`;
   document.getElementById('usage').onclick = () => go({ name: 'usage' });
+  document.getElementById('lang').onclick = () => { setLang(LANG === 'zh' ? 'en' : 'zh'); go({ name: 'home' }); };
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => startReview(b.dataset.mode)));
@@ -255,7 +258,7 @@ async function renderLibrary(query) {
         return `<div class="card libcard">
           <div class="cover" aria-hidden="true">${esc((b.subject || '?').slice(0, 3))}</div>
           <div class="stack g6" style="flex:1;min-width:0">
-            <b style="font-size:15px;line-height:1.35">${esc(b.title)}</b>
+            <b style="font-size:15px;line-height:1.35" data-raw>${esc(b.title)}</b>
             <span class="muted" style="font-size:13px">${esc([b.subject, b.level, b.publisher].filter(Boolean).join(' · '))}</span>
             <span class="muted" style="font-size:12px">${b.units.length} chapters · ${b.questionCount ? b.questionCount + ' questions ready · ' : ''}code <span style="white-space:nowrap">${esc(b.code)}</span></span>
             ${added
@@ -362,14 +365,14 @@ async function renderBook(bookId) {
     const on = pick.ids.has(u.id);
     const status = qs.length || done ? `${unseen} ready · ${done} done` : 'New questions will be made';
     rows.push(`<button class="row selectable ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}">
-      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div>
+      <div class="top"><span style="display:flex;gap:12px;align-items:flex-start"><span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span><span data-raw>${esc(u.title)}</span></span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div>
       <span class="muted" style="font-size:12px;padding-left:36px">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
       ${sc !== null ? `<div class="bar ${sc < 50 ? 'warn' : ''}" style="margin-left:36px"><i style="width:${sc}%"></i></div>` : ''}</button>`);
   }
   const n = pick.ids.size;
   const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(book.title)}</span></div>
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-raw>${esc(book.title)}</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
       <p style="margin:0;font-size:15px;font-weight:600">1. Choose chapters</p>
@@ -420,12 +423,12 @@ async function currentReport() {
   const books = await getBooks();
   const practised = new Set(local.log.filter((e) => e.t >= Date.now() - 7 * DAY).map((e) => e.q.split(':')[0]));
   const names = books.filter((b) => practised.has(b.id)).map((b) => b.subject || b.title);
-  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)] });
+  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG });
 }
 
 async function renderProgress() {
   const r = await currentReport();
-  const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString('en-GB', { weekday: 'narrow' }));
+  const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'narrow' }));
   const mins = r.days.reduce((a, m) => a + m, 0);
   const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`;
   const trend = r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<span style="color:#0F766E;font-weight:600">↑ ${r.a - r.pa} from last week</span>` : `<span style="color:#9A3412;font-weight:600">↓ ${r.pa - r.a} from last week</span>`) : '<span>correct</span>';
@@ -459,9 +462,9 @@ async function renderProgress() {
   document.getElementById('preview').onclick = async (e) => { e.preventDefault(); const { url } = await link(); window.open(url, '_blank', 'noopener'); };
   document.getElementById('send').onclick = async () => {
     const { rep, url } = await link();
-    const text = `${headline(rep)}. Here is ${rep.n ? rep.n + '\u2019s' : 'my'} PrepBuddy report for this week:`;
+    const text = LANG === 'zh' ? `${headline(rep)}。這是${rep.n || '我'}本週的 PrepBuddy 報告：` : `${headline(rep)}. Here is ${rep.n ? rep.n + '\u2019s' : 'my'} PrepBuddy report for this week:`;
     if (navigator.share) {
-      try { await navigator.share({ title: 'PrepBuddy weekly report', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+      try { await navigator.share({ title: LANG === 'zh' ? 'PrepBuddy 每週報告' : 'PrepBuddy weekly report', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
     }
     document.getElementById('fallback').innerHTML = `<div class="card stack g10" style="padding:14px 16px">
       <b style="font-size:15px">Send the report</b>
@@ -511,7 +514,7 @@ async function confirmRemove(book) {
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back">${ICON.back}</button></div>
   <main class="pad stack g18" style="flex:1;padding-top:4px">
     <h1 class="display" style="margin:0;font-size:24px;line-height:1.25">Remove this textbook?</h1>
-    <p style="margin:0;font-size:16px;line-height:1.5;font-weight:600">${esc(book.title)}</p>
+    <p style="margin:0;font-size:16px;line-height:1.5;font-weight:600" data-raw>${esc(book.title)}</p>
     <div class="card stack g8" style="padding:14px 16px;border-color:#F3C9B1;background:#FFF8F3">
       <b style="color:#9A3412">This deletes from this device:</b>
       <ul style="margin:0;padding-left:20px;line-height:1.7;color:#374151">
@@ -683,7 +686,7 @@ function renderPrint(book, units, paper, mins) {
     <span class="hint">On a phone: tap the button, then choose <b>Save as PDF</b> or share the PDF. The answer key starts on a new page.</span>
   </div>
   <article class="paper">
-    <h1>${esc(book.title)}</h1>
+    <h1 data-raw>${esc(book.title)}</h1>
     <p class="pmeta">${esc(chapterText)}<br>${paper.A.length ? `Section A: ${paper.A.length} multiple choice · ` : ''}${paper.B.length ? `Section B: ${paper.B.length} written · ` : ''}Time: ${mins} min · Total: ${total} marks</p>
     <div class="pfields"><span>Name:</span><span>Class:</span><span>Score: &nbsp;&nbsp;&nbsp;&nbsp; / ${total}</span></div>
     ${paper.A.length ? `<h2>Section A · Multiple choice</h2><p class="pnote">Choose the best answer for each question.</p>${paper.A.map((q, i) => mcq(q, i + 1)).join('')}` : ''}
@@ -1160,7 +1163,7 @@ function writtenBody(q, revealed) {
   const note = m.error ? `<p class="hint" style="margin:0;color:#9A3412">${esc(m.error)} Tick the points you made instead.</p>`
     : ai ? '<p class="hint" style="margin:0">Marked by AI. Think it got one wrong? Tap a point to change it.</p>' : '';
   const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} marks</span>
-    ${m.tip ? `<p class="expl"><b>Tip:</b> ${esc(m.tip)}</p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
+    ${m.tip ? `<p class="tipline"><b>Tip:</b> <span data-raw>${esc(m.tip)}</span></p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
   return { main: `${stem}${note}${partHtml}`, footer, bind() {
     $app.querySelectorAll('.point').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, j = +b.dataset.j; ticks[k][j] = !ticks[k][j]; const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }));
   } };
@@ -1295,4 +1298,6 @@ function startTimer() {
 }
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
 
+initLang();
+watch(document.body);
 go({ name: 'home' });

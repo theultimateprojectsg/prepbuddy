@@ -22,7 +22,8 @@ function acc(entries) {
 const shortTitle = (c) => c.replace(/\s*\(part \d+ of \d+\)$/i, '');
 
 // Build the report from the log. `stats` gives the spaced-review box per question.
-export function buildReport({ log, stats, name, books }) {
+export function buildReport({ log, stats, name, books, lang }) {
+  const zh = lang === 'zh'; const T = (en, c) => (zh ? c : en);
   const today = dayStart(Date.now());
   const from = today - 6 * DAY, prevFrom = from - 7 * DAY;
   const week = log.filter((e) => e.t >= from);
@@ -50,8 +51,9 @@ export function buildReport({ log, stats, name, books }) {
     const es = byChapter.get(low[0]);
     const missed = es.filter((e) => e.g < e.m).length;
     const g = gainOf(low[0]);
-    weak = `${low[0]}: ${missed} of ${es.length} questions not fully right` +
-      (g && g.now > g.was ? `, though improving (up from ${g.was}% last week).` : '.');
+    weak = T(`${low[0]}: ${missed} of ${es.length} questions not fully right` +
+      (g && g.now > g.was ? `, though improving (up from ${g.was}% last week).` : '.'),
+      `${low[0]}：${es.length} 題中有 ${missed} 題未完全答對` + (g && g.now > g.was ? `，但有進步（上週 ${g.was}%）。` : '。'));
   }
 
   // getting better: biggest gain vs last week (not the chapter that still needs work); otherwise the best chapter
@@ -62,27 +64,28 @@ export function buildReport({ log, stats, name, books }) {
     const g = gainOf(c);
     if (g && g.now > g.was && (!best || g.now - g.was > best.now - best.was)) best = { c, ...g };
   }
-  if (best) up = `${best.c}: up from ${best.was}% to ${best.now}% since last week.`;
+  if (best) up = T(`${best.c}: up from ${best.was}% to ${best.now}% since last week.`, `${best.c}：由上週 ${best.was}% 進步至 ${best.now}%。`);
   else {
     const top = chapters.filter((x) => x[2] >= 3 && x[0] !== weakChapter).sort((a, b) => b[1] - a[1])[0];
-    if (top && top[1] >= 70) up = `${top[0]}: ${top[1]}% correct this week.`;
+    if (top && top[1] >= 70) up = T(`${top[0]}: ${top[1]}% correct this week.`, `${top[0]}：本週答對 ${top[1]}%。`);
   }
 
   // spaced review
   const reviewDays = new Set(week.filter((e) => e.k === 'spaced').map((e) => dayStart(e.t))).size;
   const longTerm = Object.values(stats || {}).filter((s) => (s.box || 0) >= 3).length;
   const rev = reviewDays || longTerm
-    ? `Did spaced review on ${reviewDays} day${reviewDays === 1 ? '' : 's'} this week. ${longTerm} question${longTerm === 1 ? ' is' : 's are'} now remembered a week or more after first learning ${longTerm === 1 ? 'it' : 'them'}.`
-    : 'Spaced review starts the day after the first practice: questions come back so they stick.';
+    ? T(`Did spaced review on ${reviewDays} day${reviewDays === 1 ? '' : 's'} this week. ${longTerm} question${longTerm === 1 ? ' is' : 's are'} now remembered a week or more after first learning ${longTerm === 1 ? 'it' : 'them'}.`,
+        `本週有 ${reviewDays} 日做了間隔溫習。現有 ${longTerm} 條題目在初次學習一星期或以上後仍然記得。`)
+    : T('Spaced review starts the day after the first practice: questions come back so they stick.', '間隔溫習會在首次練習翌日開始：題目會再出現，幫助記牢。');
 
   const next = weakChapter
-    ? `Two 15-minute sessions on ${weakChapter}, and keep up daily review.`
-    : week.length ? 'Keep up daily review, and start the next chapter.' : 'Start with one 15-minute session on the current chapter.';
+    ? T(`Two 15-minute sessions on ${weakChapter}, and keep up daily review.`, `為「${weakChapter}」做兩次 15 分鐘練習，並保持每日溫習。`)
+    : week.length ? T('Keep up daily review, and start the next chapter.', '保持每日溫習，並開始下一章。') : T('Start with one 15-minute session on the current chapter.', '先為目前的章節做一次 15 分鐘練習。');
 
   const daysPractised = days.filter((m) => m > 0).length;
   const a = acc(week), pa = acc(prev);
   return {
-    v: 1, n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
+    v: 1, u: zh ? 'zh' : 'en', n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
     days, q: week.length, a, pa, dp: daysPractised, ch: chapters, up, weak, rev, next,
   };
 }
@@ -100,53 +103,58 @@ export function decodeReport(s) {
 }
 
 /* ---------- rendering (used by the report page and the in-app preview) ---------- */
-const fmtDate = (t, opts) => new Date(t).toLocaleDateString('en-GB', opts);
-function hm(min) { const h = Math.floor(min / 60), m = min % 60; return h ? `${h}h ${m}m` : `${m} min`; }
+let ZH = false;
+const T = (en, c) => (ZH ? c : en);
+const fmtDate = (t, opts) => new Date(t).toLocaleDateString(ZH ? 'zh-HK' : 'en-GB', opts);
+function hm(min) { const h = Math.floor(min / 60), m = min % 60; return ZH ? (h ? `${h} 小時 ${m} 分鐘` : `${m} 分鐘`) : (h ? `${h}h ${m}m` : `${m} min`); }
 
 export function headline(r) {
-  const who = r.n || 'Your child';
-  if (!r.q) return `${who} didn't practise this week`;
-  if (r.dp >= 5 || (r.a !== null && r.pa !== null && r.a - r.pa >= 5)) return `${who} had a strong week`;
-  if (r.dp >= 3) return `${who} had a steady week`;
-  return `${who} made a start this week`;
+  ZH = r.u === 'zh';
+  const who = r.n || T('Your child', '你的子女');
+  if (!r.q) return T(`${who} didn't practise this week`, `${who}本週沒有練習`);
+  if (r.dp >= 5 || (r.a !== null && r.pa !== null && r.a - r.pa >= 5)) return T(`${who} had a strong week`, `${who}本週表現出色`);
+  if (r.dp >= 3) return T(`${who} had a steady week`, `${who}本週表現穩定`);
+  return T(`${who} made a start this week`, `${who}本週已經起步`);
 }
 
 export function reportHTML(r) {
-  const who = r.n || 'Your child';
+  ZH = r.u === 'zh';
+  const who = r.n || T('Your child', '你的子女');
   const range = `${fmtDate(r.from, { day: 'numeric', month: 'short' })}–${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short', year: 'numeric' })}`;
   const maxMin = Math.max(30, ...r.days);
   const dayNames = Array.from({ length: 7 }, (_, i) => fmtDate(r.from + i * DAY, { weekday: 'narrow' }));
   const longest = r.days.indexOf(Math.max(...r.days));
   const trend = r.a !== null && r.pa !== null
-    ? (r.a >= r.pa ? `<span class="up">up from ${r.pa}%</span>` : `<span class="down">from ${r.pa}% last week</span>`) : '<span>correct</span>';
-  const label = (p) => (p >= 80 ? ['Strong', 'ok'] : p >= 70 ? ['Good', 'ok'] : ['Needs work', 'warn']);
+    ? (r.a >= r.pa ? `<span class="up">${T(`up from ${r.pa}%`, `上週 ${r.pa}%`)}</span>` : `<span class="down">${T(`from ${r.pa}% last week`, `上週 ${r.pa}%`)}</span>`) : `<span>${T('correct', '答對')}</span>`;
+  const label = (p) => (p >= 80 ? [T('Strong', '強'), 'ok'] : p >= 70 ? [T('Good', '良好'), 'ok'] : [T('Needs work', '需加強'), 'warn']);
   return `
   <header class="rep-head">
-    <small>PrepBuddy weekly report</small>
+    <small>${T('PrepBuddy weekly report', 'PrepBuddy 每週報告')}</small>
     <h1>${esc(headline(r))}</h1>
-    <p>${esc(r.b && r.b.length ? r.b.join(', ') + ' · ' : '')}${range} · practised ${r.dp} of 7 days</p>
+    <p>${esc(r.b && r.b.length ? r.b.join(', ') + ' · ' : '')}${range} · ${T(`practised ${r.dp} of 7 days`, `7 日中有 ${r.dp} 日練習`)}</p>
   </header>
   <main class="rep">
     <div class="rep-stats">
-      <div><b>${r.q}</b><span>questions answered</span></div>
-      <div><b>${hm(r.days.reduce((s, m) => s + m, 0))}</b><span>time practising</span></div>
+      <div><b>${r.q}</b><span>${T('questions answered', '已答題目')}</span></div>
+      <div><b>${hm(r.days.reduce((s, m) => s + m, 0))}</b><span>${T('time practising', '練習時間')}</span></div>
       <div><b>${r.a === null ? '–' : r.a + '%'}</b>${trend}</div>
     </div>
     <section class="rep-card">
-      <h2>Practice this week</h2>
-      <div class="rep-bars" role="img" aria-label="Minutes practised each day: ${r.days.map((m, i) => `${dayNames[i]} ${m}`).join(', ')}">
+      <h2>${T('Practice this week', '本週練習')}</h2>
+      <div class="rep-bars" role="img" aria-label="${T('Minutes practised each day', '每日練習分鐘')}: ${r.days.map((m, i) => `${dayNames[i]} ${m}`).join(', ')}">
         ${r.days.map((m, i) => `<div><i style="height:${m ? Math.max(6, Math.round(70 * m / maxMin)) : 3}px" class="${m ? '' : 'none'}"></i><span>${dayNames[i]}</span></div>`).join('')}
       </div>
-      <p class="rep-note">${r.q ? `Bars show minutes practised each day. Longest: ${fmtDate(r.from + longest * DAY, { weekday: 'long' })}, ${r.days[longest]} min.` : 'No practice recorded in these 7 days.'}</p>
+      <p class="rep-note">${r.q ? T(`Bars show minutes practised each day. Longest: ${fmtDate(r.from + longest * DAY, { weekday: 'long' })}, ${r.days[longest]} min.`, `棒形顯示每日練習分鐘。最長：${fmtDate(r.from + longest * DAY, { weekday: 'long' })}，${r.days[longest]} 分鐘。`) : T('No practice recorded in these 7 days.', '這 7 日沒有練習紀錄。')}</p>
     </section>
-    ${r.ch.length ? `<section class="rep-card"><h2>Chapters</h2>
-      ${r.ch.map(([c, p, n]) => { const [l, k] = label(p); return `<div class="rep-ch"><div><span>${esc(c)}</span><b class="${k}">${p}% · ${l}</b></div><div class="rep-bar ${k}"><i style="width:${p}%"></i></div><small>${n} answer${n === 1 ? '' : 's'}</small></div>`; }).join('')}
+    ${r.ch.length ? `<section class="rep-card"><h2>${T('Chapters', '章節')}</h2>
+      ${r.ch.map(([c, p, n]) => { const [l, k] = label(p); return `<div class="rep-ch"><div><span>${esc(c)}</span><b class="${k}">${p}% · ${l}</b></div><div class="rep-bar ${k}"><i style="width:${p}%"></i></div><small>${T(`${n} answer${n === 1 ? '' : 's'}`, `${n} 個作答`)}</small></div>`; }).join('')}
     </section>` : ''}
-    ${r.up ? `<section class="rep-good"><small>Getting better at</small><p>${esc(r.up)}</p></section>` : ''}
-    ${r.weak ? `<section class="rep-weak"><small>Needs more practice</small><p>${esc(r.weak)}</p></section>` : ''}
-    <section class="rep-card"><h2>Remembering what was learned</h2><p>${esc(r.rev)}</p></section>
-    <section class="rep-next"><small>Suggested for next week</small><p>${esc(r.next)}</p></section>
-    <p class="rep-foot">Snapshot sent by ${esc(who)} from PrepBuddy on ${fmtDate(r.at, { weekday: 'short', day: 'numeric', month: 'short' })}, ${new Date(r.at).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' })}. Scores come from PrepBuddy practice questions written from the student's own textbook; written answers are marked by AI against a mark scheme.</p>
+    ${r.up ? `<section class="rep-good"><small>${T('Getting better at', '有進步')}</small><p>${esc(r.up)}</p></section>` : ''}
+    ${r.weak ? `<section class="rep-weak"><small>${T('Needs more practice', '需要多加練習')}</small><p>${esc(r.weak)}</p></section>` : ''}
+    <section class="rep-card"><h2>${T('Remembering what was learned', '記住所學')}</h2><p>${esc(r.rev)}</p></section>
+    <section class="rep-next"><small>${T('Suggested for next week', '下週建議')}</small><p>${esc(r.next)}</p></section>
+    <p class="rep-foot">${T(`Snapshot sent by ${esc(who)} from PrepBuddy on ${fmtDate(r.at, { weekday: 'short', day: 'numeric', month: 'short' })}, ${new Date(r.at).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' })}. Scores come from PrepBuddy practice questions written from the student's own textbook; written answers are marked by AI against a mark scheme.`,
+      `由${esc(who)}於 ${fmtDate(r.at, { month: 'long', day: 'numeric', weekday: 'short' })} ${new Date(r.at).toLocaleTimeString('zh-HK', { hour: 'numeric', minute: '2-digit' })} 從 PrepBuddy 傳送。分數來自根據學生自己課本編寫的 PrepBuddy 練習題；文字題由 AI 按評分準則批改。`)}</p>
   </main>`;
 }
 
