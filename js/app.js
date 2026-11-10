@@ -1,6 +1,5 @@
 // PrepBuddy app: books, chapters, on-demand questions, practice sessions.
 import * as store from './store.js';
-import { SAMPLE_QUESTIONS } from './sample.js';
 
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
@@ -15,12 +14,6 @@ function loadLocal() {
   try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; }
 }
 const local = Object.assign({ stats: {}, reports: [], code: '' }, loadLocal());
-try { // carry over progress from the first prototype
-  const old = JSON.parse(localStorage.getItem('prepbuddy.v1') || 'null');
-  if (old && old.stats && !Object.keys(local.stats).length) {
-    for (const [k, v] of Object.entries(old.stats)) local.stats['sample:' + k] = v;
-  }
-} catch (e) {}
 function saveLocal() { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) {} }
 
 /* ---------- helpers ---------- */
@@ -36,6 +29,8 @@ const ICON = {
   back: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
   check: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L19 8"/></svg>',
   book: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h7"/></svg>',
+  search: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   upload: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>',
   target: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>',
   clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>',
@@ -58,19 +53,8 @@ function renderStem(stem, cls = 'stem') {
 }
 
 /* ---------- books ---------- */
-const SAMPLE_BOOK = (() => {
-  const sections = [...new Set(SAMPLE_QUESTIONS.map((q) => q.section))].sort();
-  return {
-    id: 'sample', sample: true, title: 'Sample: Biology (OpenStax Biology 2e)', pageCount: null,
-    units: sections.map((s, i) => ({ id: 'u' + i, title: s, static: true })),
-  };
-})();
-function sampleQuestions(unitId) {
-  const unit = SAMPLE_BOOK.units.find((u) => u.id === unitId);
-  return SAMPLE_QUESTIONS.filter((q) => q.section === unit.title).map((q) => ({ ...q, id: 'sample:' + q.id }));
-}
-async function getBooks() { return (await store.get('books', [])).concat([SAMPLE_BOOK]); }
-async function getQs(bookId, unitId) { return bookId === 'sample' ? sampleQuestions(unitId) : store.get(`qs:${bookId}:${unitId}`, []); }
+async function getBooks() { return store.get('books', []); }
+async function getQs(bookId, unitId) { return store.get(`qs:${bookId}:${unitId}`, []); }
 async function setQs(bookId, unitId, list) { await store.set(`qs:${bookId}:${unitId}`, list); }
 function scoreOf(questions) {
   let got = 0, total = 0;
@@ -107,9 +91,11 @@ let S = null; // current practice session
 
 async function go(v) {
   view = v;
+  document.querySelectorAll('.toast').forEach((x) => x.remove());
   stopTimer();
   if (v.name === 'home') return renderHome();
   if (v.name === 'book') return renderBook(v.bookId);
+  if (v.name === 'library') return renderLibrary(v.query || '');
 }
 
 /* ---------- home ---------- */
@@ -122,37 +108,131 @@ async function renderHome() {
     for (const u of b.units) { const l = await getQs(b.id, u.id); n += l.length; qs.push(...l); }
     const sc = scoreOf(qs);
     cards.push(`<button class="row" data-book="${esc(b.id)}">
-      <div class="top"><span style="display:flex;gap:10px;align-items:flex-start">${ICON.book}<span><b style="font-weight:600">${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.units.length} chapters · ${n} questions${b.sample ? ' · built in' : ''}</span></span></span>
+      <div class="top"><span style="display:flex;gap:10px;align-items:flex-start">${ICON.book}<span><b style="font-weight:600">${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.subject ? esc(b.subject) + ' · ' : ''}${b.units.length} chapters · ${n} questions${b.library ? '' : ' · uploaded'}</span></span></span>
       <span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div></button>`);
   }
   $app.innerHTML = `
   <main class="pad stack g22" style="flex:1">
-    <div><p class="muted" style="margin:0 0 2px;font-size:13px">Practice from your own textbook</p><h1 class="brand">PrepBuddy</h1></div>
-    <section class="hero" aria-label="Upload">
-      <small>Add a book</small>
-      <span class="title">Upload your ebook and get fresh practice questions for any chapter</span>
-      <span style="font-size:13px;color:#E6F7F5">PDF files with selectable text. Your book stays on this device.</span>
-      <label class="btn light" style="align-self:flex-start;display:inline-flex;gap:8px;align-items:center;cursor:pointer">${ICON.upload}<span>Upload a PDF</span>
+    <div><p class="muted" style="margin:0 0 2px;font-size:13px">Exam practice from your textbooks</p><h1 class="brand">PrepBuddy</h1></div>
+    <section class="hero" aria-label="Find a textbook">
+      <small>Add a textbook</small>
+      <span class="title">Find your textbook and practise any chapter</span>
+      <form id="find" class="searchbox" role="search">
+        <span aria-hidden="true" style="color:#4B5563;display:flex">${ICON.search}</span>
+        <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off">
+      </form>
+    </section>
+    <section class="stack g10" aria-label="My textbooks">
+      <h2 style="margin:0;font-size:15px">My textbooks</h2>
+      ${cards.length ? `<div class="card stack">${cards.join('')}</div>`
+        : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:#374151">No textbooks yet. Search above to add one from the library.</p></div>`}
+      <label class="link" style="align-self:flex-start;display:inline-flex;gap:6px;align-items:center;cursor:pointer">${ICON.upload}<span>Not in the library? Upload your own PDF</span>
         <input type="file" id="file" accept="application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0"></label>
     </section>
-    <section class="stack g10" aria-label="My books">
-      <h2 style="margin:0;font-size:15px">My books</h2>
-      <div class="card stack">${cards.join('')}</div>
-    </section>
-    <section class="stack g10" aria-label="Review">
-      <h2 style="margin:0;font-size:15px">Review across all books</h2>
+    ${cards.length ? `<section class="stack g10" aria-label="Review">
+      <h2 style="margin:0;font-size:15px">Review across all textbooks</h2>
       <div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">
         <button class="tile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="tile" data-mode="mock">${ICON.clock}<b>Mini mock</b><span>12 questions, 20 min</span></button>
       </div>
-    </section>
+    </section>` : ''}
   </main>
-  <footer>Prototype. Your books, questions and progress are saved on this device only. Questions are made by AI and checked by AI; tap "Report a problem" if one looks wrong.
-  Built-in sample: <a href="https://openstax.org/details/books/biology-2e" target="_blank" rel="noopener">OpenStax Biology 2e</a>, CC BY-NC-SA 4.0. Access for free at openstax.org.</footer>`;
+  <footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong.</footer>`;
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => startReview(b.dataset.mode)));
   document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
+  const q = document.getElementById('q');
+  q.onfocus = () => go({ name: 'library', query: q.value });
+  document.getElementById('find').onsubmit = (e) => { e.preventDefault(); go({ name: 'library', query: q.value }); };
   window.scrollTo(0, 0);
+}
+
+/* ---------- library (books uploaded once by the admin) ---------- */
+let catalog = null;
+async function getCatalog() {
+  if (catalog) return catalog;
+  const r = await fetch('library/catalog.json', { cache: 'no-cache' });
+  if (!r.ok) throw new Error('The library could not be loaded.');
+  catalog = await r.json();
+  return catalog;
+}
+const libBookId = (entry) => 'lib-' + entry.id;
+const normCode = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+async function renderLibrary(query) {
+  let list;
+  try { list = await getCatalog(); } catch (e) { toast(e.message); return go({ name: 'home' }); }
+  const mine = new Set((await getBooks()).map((b) => b.id));
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">Textbook library</span></div>
+  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+    <form id="find" class="searchbox light" role="search">
+      <span aria-hidden="true" style="color:#4B5563;display:flex">${ICON.search}</span>
+      <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off" value="${esc(query)}">
+    </form>
+    <div id="results" class="stack g10" aria-live="polite"></div>
+  </main>`;
+  const q = document.getElementById('q');
+  const draw = () => {
+    const raw = q.value.trim(), words = raw.toLowerCase().split(/\s+/).filter(Boolean), code = normCode(raw);
+    const hits = list.filter((b) => {
+      if (code && normCode(b.code) === code) return true;
+      const hay = `${b.title} ${b.subject} ${b.level} ${b.publisher} ${b.code}`.toLowerCase();
+      return words.every((w) => hay.includes(w));
+    });
+    const codeHit = code.length >= 4 && hits.find((b) => normCode(b.code) === code);
+    document.getElementById('results').innerHTML = (codeHit ? '<p class="hint" style="margin:0;font-weight:600;color:#0F766E">Book code matched</p>' : '') + (hits.length
+      ? hits.map((b) => {
+        const added = mine.has(libBookId(b));
+        return `<div class="card libcard">
+          <div class="cover" aria-hidden="true">${esc((b.subject || '?').slice(0, 3))}</div>
+          <div class="stack g6" style="flex:1;min-width:0">
+            <b style="font-size:15px;line-height:1.35">${esc(b.title)}</b>
+            <span class="muted" style="font-size:13px">${esc([b.subject, b.level, b.publisher].filter(Boolean).join(' · '))}</span>
+            <span class="muted" style="font-size:12px">${b.units.length} chapters · ${b.questionCount ? b.questionCount + ' questions ready · ' : ''}code <span style="white-space:nowrap">${esc(b.code)}</span></span>
+            ${added
+              ? `<button class="btn ghost small" data-open="${esc(b.id)}">${ICON.check} Added · open</button>`
+              : `<button class="btn small" data-add="${esc(b.id)}">${ICON.plus} Add to my textbooks</button>`}
+          </div></div>`;
+      }).join('')
+      : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">No textbook matches “${esc(raw)}”.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Check the book code, or upload your own PDF from the home screen.</p></div>`);
+    document.querySelectorAll('[data-add]').forEach((btn) => (btn.onclick = () => addFromLibrary(list.find((b) => b.id === btn.dataset.add), btn)));
+    document.querySelectorAll('[data-open]').forEach((btn) => (btn.onclick = () => go({ name: 'book', bookId: 'lib-' + btn.dataset.open })));
+  };
+  q.oninput = draw;
+  document.getElementById('find').onsubmit = (e) => { e.preventDefault(); q.blur(); };
+  document.getElementById('back').onclick = () => go({ name: 'home' });
+  draw();
+  q.focus();
+}
+
+async function addFromLibrary(entry, btn) {
+  const id = libBookId(entry);
+  if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+  try {
+    const qr = await fetch(`library/${entry.id}/questions.json`);
+    const bank = qr.ok ? await qr.json() : {};
+    for (const u of entry.units) {
+      const tr = await fetch(`library/${entry.id}/${u.id}.txt`);
+      if (!tr.ok) throw new Error('Part of this textbook could not be downloaded. Please try again.');
+      await store.set(`text:${id}:${u.id}`, await tr.text());
+      const existing = await getQs(id, u.id);
+      const have = new Set(existing.map((q) => q.id));
+      const ready = (bank[u.id] || []).map((q) => ({ ...q, id: `${id}:${u.id}:${q.id}`, section: u.title, pages: q.pages || `${u.startPage}-${u.endPage}` }))
+        .filter((q) => !have.has(q.id));
+      await setQs(id, u.id, existing.concat(ready));
+    }
+    await store.persist();
+    const books = (await store.get('books', [])).filter((b) => b.id !== id);
+    books.unshift({ id, library: entry.id, code: entry.code, title: entry.title, subject: entry.subject, level: entry.level,
+      credit: entry.credit, pageCount: entry.pageCount, addedAt: Date.now(), units: entry.units.map((u) => ({ ...u })) });
+    await store.set('books', books);
+    toast('Added to your textbooks');
+    go({ name: 'book', bookId: id });
+  } catch (e) {
+    toast(e.message || 'Could not add this textbook.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Try again'; }
+  }
 }
 
 /* ---------- upload ---------- */
@@ -205,7 +285,7 @@ async function renderBook(bookId) {
     const qs = await getQs(book.id, u.id);
     const unseen = qs.filter((q) => !local.stats[q.id]).length;
     const sc = scoreOf(qs);
-    const status = qs.length ? `${unseen} new · ${qs.length - unseen} done` : (u.static ? '' : 'Tap to make questions');
+    const status = qs.length ? `${unseen} new · ${qs.length - unseen} done` : 'Tap to make questions';
     rows.push(`<button class="row" data-unit="${esc(u.id)}">
       <div class="top"><span>${esc(u.title)}</span><span style="font-weight:600;white-space:nowrap;color:${sc === null ? '#6B7280' : sc < 50 ? '#C2410C' : '#0F766E'}">${sc === null ? '' : sc + '%'}</span></div>
       <span class="muted" style="font-size:12px">${u.startPage ? `pp. ${u.startPage}–${u.endPage} · ` : ''}${status}</span>
@@ -214,21 +294,23 @@ async function renderBook(bookId) {
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(book.title)}</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
-    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Tap a chapter for 10 questions. ${book.sample ? 'This sample has a fixed set of questions.' : 'New questions are made whenever you run low.'}</p>
+    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Tap a chapter for 10 questions. New questions are made whenever you run low.</p>
     <div class="card stack">${rows.join('')}</div>
-    ${book.sample ? '' : `<p class="muted" style="font-size:12px;margin:0">${book.pageCount} pages · chapters found from ${book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}</p>
-      <button class="link quiet" id="delete" style="align-self:flex-start">Remove this book from this device</button>`}
+    <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
+      ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
+      : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
+    <button class="link quiet" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'home' });
   $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => startUnit(book, book.units.find((u) => u.id === b.dataset.unit))));
   const d = document.getElementById('delete');
   if (d) d.onclick = async () => {
-    if (!confirm(`Remove "${book.title}" and its questions from this device?`)) return;
+    if (!confirm(`Remove "${book.title}" from your textbooks? Its questions on this device are removed too.`)) return;
     const books = (await store.get('books', [])).filter((b) => b.id !== book.id);
     await store.set('books', books);
     for (const k of await store.keys(`text:${book.id}:`)) await store.del(k);
     for (const k of await store.keys(`qs:${book.id}:`)) await store.del(k);
-    toast('Book removed'); go({ name: 'home' });
+    toast('Textbook removed'); go({ name: 'home' });
   };
   window.scrollTo(0, 0);
 }
@@ -242,9 +324,8 @@ async function startUnit(book, unit) {
   const all = await getQs(book.id, unit.id);
   const unseen = shuffle(all.filter((q) => !local.stats[q.id]));
   let qs = unseen.slice(0, SESSION_SIZE);
-  if (unit.static) qs = shuffle(all).slice(0, SESSION_SIZE);
-  S = newSession({ mode: 'unit', title: unit.title, book, unit, qs, target: unit.static ? qs.length : SESSION_SIZE });
-  if (!unit.static) {
+  S = newSession({ mode: 'unit', title: unit.title, book, unit, qs, target: SESSION_SIZE });
+  {
     // Fill this session, and keep the next 10 ready so "10 more" starts instantly.
     const spare = unseen.length - qs.length;
     const want = (SESSION_SIZE - qs.length) + Math.max(0, SESSION_SIZE - spare);
@@ -520,7 +601,7 @@ function advance() {
   if (S.i < S.target - 1) {
     S.i++; S.phase = S.review ? 'revealed' : 'answer';
     if (S.i < S.qs.length) return renderQuestion();
-    if (!S.generating && !S.error && S.unit && !S.unit.static) refill(S);
+    if (!S.generating && !S.error && S.unit) refill(S);
     return renderWaiting();
   }
   if (S.mode === 'mock' && !S.review) {
@@ -543,7 +624,7 @@ function renderSummary() {
     return `<div class="res"><span class="tick ${full ? 'full' : 'part'}">${full ? ICON.check : g}</span><span style="flex:1">${esc(String(label).slice(0, 90))}${String(label).length > 90 ? '…' : ''}</span><span class="muted" style="white-space:nowrap">${g}/${m}</span></div>`;
   }).join('');
   const missed = qs.filter((q, k) => (S.got[k] || 0) < marksOf(q));
-  const unitRef = S.unit && !S.unit.static ? { book: S.book, unit: S.unit } : null;
+  const unitRef = S.unit ? { book: S.book, unit: S.unit } : null;
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
     <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · done</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? '#0F766E' : '#9A3412'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
     <div class="card stack">${list}</div>

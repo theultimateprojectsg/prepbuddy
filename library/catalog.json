@@ -1,0 +1,37 @@
+[
+ {
+  "id": "bio2e",
+  "code": "BIO-2E7K",
+  "title": "Biology 2e: The Study of Life and The Chemical Foundation of Life",
+  "subject": "Biology",
+  "level": "S4–S6 (HKDSE)",
+  "publisher": "OpenStax",
+  "licence": "CC BY-NC-SA 4.0",
+  "credit": "OpenStax Biology 2e, CC BY-NC-SA 4.0. Access for free at openstax.org.",
+  "pageCount": 63,
+  "units": [
+   {
+    "id": "u0",
+    "title": "1.1 The Science of Biology",
+    "chapter": null,
+    "startPage": 29,
+    "endPage": 39
+   },
+   {
+    "id": "u1",
+    "title": "1.2 Themes and Concepts of Biology",
+    "chapter": null,
+    "startPage": 39,
+    "endPage": 53
+   },
+   {
+    "id": "u2",
+    "title": "2.1 Atoms, Isotopes, Ions, and Molecules: The Building Blocks",
+    "chapter": null,
+    "startPage": 53,
+    "endPage": 63
+   }
+  ],
+  "questionCount": 18
+ }
+]
