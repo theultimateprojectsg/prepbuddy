@@ -224,13 +224,25 @@ async function publish(details, codeIn) {
   files.push({ path: `library/${id}/questions.json`, content: '{}' });
   app.innerHTML = `<header><h1>Publishing</h1></header>${steps(3)}
     <div class="card"><div class="progress"><i id="bar" style="width:0%"></i></div><p class="hint" id="pmsg">Uploading files…</p></div>`;
-  const out = [];
-  for (let k = 0; k < files.length; k++) {
-    $('pmsg').textContent = `Uploading file ${k + 1} of ${files.length}…`;
-    const { sha } = await adminApi({ action: 'blob', content: b64(files[k].content) });
-    out.push({ path: files[k].path, sha });
-    $('bar').style.width = `${Math.round(90 * (k + 1) / files.length)}%`;
-  }
+  // Upload 4 files at a time; each file gets up to 3 tries if the connection hiccups.
+  const out = new Array(files.length);
+  let next = 0, doneCount = 0;
+  const upload = async (k) => {
+    for (let tryNo = 1; ; tryNo++) {
+      try { const { sha } = await adminApi({ action: 'blob', content: b64(files[k].content) }); out[k] = { path: files[k].path, sha }; return; }
+      catch (err) { if (tryNo >= 3 || err.status === 401) throw err; await new Promise((r) => setTimeout(r, 1500 * tryNo)); }
+    }
+  };
+  const worker = async () => {
+    while (next < files.length) {
+      const k = next++;
+      await upload(k);
+      doneCount++;
+      $('pmsg').textContent = `Uploaded ${doneCount} of ${files.length} files…`;
+      $('bar').style.width = `${Math.round(90 * doneCount / files.length)}%`;
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(4, files.length) }, worker));
   $('pmsg').textContent = 'Adding it to the library…';
   const entry = {
     id, code, ...details, lang: d.lang, pageCount: d.pageCount, addedAt: new Date().toISOString().slice(0, 10), questionCount: 0,
