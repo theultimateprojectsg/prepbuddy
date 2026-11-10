@@ -509,6 +509,19 @@ body[data-tab] .app{padding-bottom:76px}
   .qkeys{margin-top:6px;font-size:13px}.qkeys kbd{display:inline-block;min-width:22px;text-align:center;font-family:inherit;font-size:12px;font-weight:600;padding:1px 6px;margin-right:2px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:#fff;color:var(--ink)}
   .app:has(> main.qpaper)>.sheet .verdict.ok,.app:has(> main.qpaper)>.sheet .verdict.no{font-size:25px}
 }
+
+/* ---------- progress on laptops: two columns, send button inside the report card ---------- */
+.pg-send{display:none}
+.pg-cols{display:flex;flex-direction:column;gap:18px}#fallback:empty,.skills-wrap:empty{display:none}
+@media (min-width:1024px){
+  .app:has(> main[data-view="progress"]):has(> .sheet.sticky){display:flex;flex-direction:column;max-width:1200px}
+  .app:has(> main[data-view="progress"])>.pg-sheet{display:none}
+  .pg-send{display:flex;margin-top:4px}
+  .pg-cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start}
+  .pg-col>*{margin:0}
+}
+/* AI usage table: room for every column on laptops */
+@media (min-width:1024px){.app:has(table.usage){max-width:1100px}.app:has(table.usage) table.usage{width:100%}.app:has(table.usage) main>.btn{align-self:flex-start;width:auto;padding-left:28px;padding-right:28px}}
 </style>
 </head>
 <body>

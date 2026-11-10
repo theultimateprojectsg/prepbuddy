@@ -1103,26 +1103,31 @@ async function renderProgress() {
   $app.innerHTML = `
   <main class="pad stack g18" data-view="progress" style="flex:1">
     <h1 class="pagetitle">Progress</h1>
-    <div class="stack g6"><span class="muted" style="font-size:13px">Last 7 days</span><span class="display" style="font-size:26px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span></div>
+    <div class="pg-cols"><div class="pg-col stack g18">
+    <section class="pg-week stack g18"><div class="stack g6"><span class="muted" style="font-size:13px">Last 7 days</span><span class="display" style="font-size:26px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span></div>
     <div class="week">${r.days.map((m, i) => `<div><span class="${m ? 'on' : ''} ${i === 6 ? 'today' : ''}" title="${m} min"></span><small>${dayNames[i]}</small></div>`).join('')}</div>
     <div class="tiles">
       <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.q}</b><span>questions</span></div>
       <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${hm}</b><span>practising</span></div>
       <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.a === null ? '–' : r.a + '%'}</b>${trend}</div>
-    </div>
+    </div></section>
     ${mastHTML}
+    </div><div class="pg-col stack g18">
     <div class="skills-wrap" data-raw>${skillsHTML(r, LANG === 'zh')}</div>
-    <div class="card stack g10" style="padding:14px 16px">
+    <div class="card stack g10 pg-report" style="padding:14px 16px">
       <b style="font-size:15px">Your report for parents</b>
       <span style="font-size:14px;line-height:1.5;color:var(--text-2)">A one-page summary of this week: practice, scores by chapter, what is improving and what needs work.</span>
       <label for="name" style="font-size:13px;font-weight:600;color:var(--muted)">Your name on the report</label>
       <input id="name" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name)}">
       <a id="preview" href="#" style="font-size:14px;font-weight:600;color:var(--good)">Preview the report</a>
+      <div class="pg-send stack g8"><button class="btn" data-send style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
+      <span class="hint" style="text-align:center">Opens WhatsApp or another app with a link. Your parent doesn't need to sign in.</span></div>
     </div>
     <div id="fallback"></div>
+    </div></div>
   </main>
-  <div class="sheet sticky">
-    <button class="btn" id="send" style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
+  <div class="sheet sticky pg-sheet">
+    <button class="btn" id="send" data-send style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
     <span class="hint" style="text-align:center">Opens WhatsApp or another app with a link. Your parent doesn't need to sign in.</span>
   </div>`;
   $app.querySelectorAll('.mrowb[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
@@ -1130,7 +1135,7 @@ async function renderProgress() {
   nameEl.oninput = () => { local.name = nameEl.value.trim().slice(0, 30); saveLocal(); };
   const link = async () => { const rep = await currentReport(); return { rep, url: `${location.origin}${location.pathname.replace(/[^/]*$/, '')}report.html#d=${encodeReport(rep)}` }; };
   document.getElementById('preview').onclick = async (e) => { e.preventDefault(); const { url } = await link(); window.open(url, '_blank', 'noopener'); };
-  document.getElementById('send').onclick = async () => {
+  const send = async () => {
     const { rep, url } = await link();
     const text = LANG === 'zh' ? `${headline(rep)}。這是${rep.n || '我'}本週的 PrepBuddy 報告：` : `${headline(rep)}. Here is ${rep.n ? rep.n + '\u2019s' : 'my'} PrepBuddy report for this week:`;
     if (navigator.share) {
@@ -1143,6 +1148,7 @@ async function renderProgress() {
     document.getElementById('copy').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch (e) { prompt('Copy this link:', url); } };
     document.getElementById('fallback').scrollIntoView({ behavior: 'smooth' });
   };
+  $app.querySelectorAll('[data-send]').forEach((b) => (b.onclick = send));
 }
 
 /* ---------- AI usage on this device ---------- */
