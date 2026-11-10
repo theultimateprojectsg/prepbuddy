@@ -158,11 +158,48 @@ async function addFigures(pdf, units, raw, info, onProgress) {
   const all = [...new Set(plan.flat())];
   for (let k = 0; k < all.length; k++) {
     const p = all[k];
-    chosen.set(p, await pageImage(pdf, p + 1));
+    const img = await pageImage(pdf, p + 1);
+    let rects = [];
+    try { const pg = await pdf.getPage(p + 1); rects = await imageRects(pg); pg.cleanup(); } catch (e) {}
+    chosen.set(p, img ? { img, rects } : null);
     onProgress(info.length, info.length, `Saving diagrams ${k + 1} of ${all.length}`);
   }
-  units.forEach((u, i) => { u.figures = plan[i].map((p) => ({ page: p + 1, img: chosen.get(p) })).filter((f) => f.img); });
+  units.forEach((u, i) => { u.figures = plan[i].map((p) => ({ page: p + 1, ...(chosen.get(p) || {}) })).filter((f) => f.img); });
 }
+// Exact positions of the pictures drawn on a page, as [left, top, right, bottom] fractions of the page.
+// Used to make diagram crops include the whole picture even when the AI's box is a little off.
+async function imageRects(page) {
+  try {
+    const vp = page.getViewport({ scale: 1 });
+    const ops = await page.getOperatorList();
+    const O = pdfjs.OPS;
+    const mul = (m, n) => [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]];
+    let ctm = [1, 0, 0, 1, 0, 0]; const stack = [], rects = [];
+    ops.fnArray.forEach((f, i) => {
+      const a = ops.argsArray[i];
+      if (f === O.save) stack.push(ctm);
+      else if (f === O.restore) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+      else if (f === O.transform) ctm = mul(ctm, a);
+      else if (f === O.paintFormXObjectBegin) { stack.push(ctm); if (a && a[0]) ctm = mul(ctm, a[0]); }
+      else if (f === O.paintFormXObjectEnd) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+      else if (f === O.paintImageXObject || f === O.paintInlineImageXObject || f === O.paintImageMaskXObject) {
+        const pts = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([x, y]) => vp.convertToViewportPoint(ctm[0] * x + ctm[2] * y + ctm[4], ctm[1] * x + ctm[3] * y + ctm[5]));
+        const xs = pts.map((p) => p[0] / vp.width), ys = pts.map((p) => p[1] / vp.height);
+        const r = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map((v) => Math.round(Math.max(0, Math.min(1, v)) * 1000) / 1000);
+        const w = r[2] - r[0], h = r[3] - r[1];
+        if (w > 0.06 && h > 0.04 && !(w > 0.95 && h > 0.95)) rects.push(r);
+      }
+    });
+    // merge pictures that overlap (e.g. a photo split into tiles)
+    const out = [];
+    for (const r of rects) {
+      const o = out.find((q) => !(r[2] < q[0] - 0.01 || r[0] > q[2] + 0.01 || r[3] < q[1] - 0.01 || r[1] > q[3] + 0.01));
+      if (o) { o[0] = Math.min(o[0], r[0]); o[1] = Math.min(o[1], r[1]); o[2] = Math.max(o[2], r[2]); o[3] = Math.max(o[3], r[3]); } else out.push([...r]);
+    }
+    return out.slice(0, 8);
+  } catch (e) { return []; }
+}
+
 async function pageImage(pdf, num) {
   if (typeof document === 'undefined') return null;
   const page = await pdf.getPage(num);

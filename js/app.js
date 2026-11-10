@@ -87,6 +87,7 @@ const langOf = (t) => { const x = String(t || '').slice(0, 20000); const cjk = (
 // Drop or repair malformed questions before they reach a student.
 function usable(q) {
   if (!q || typeof q !== 'object') return false;
+  if (missingRef(q)) return false; // mentions a figure/table/page the student can't see
   if (q.type === 'graph' && !(Array.isArray(q.graphs) && q.graphs.length === 4)) { q.type = 'mcq'; delete q.graphs; }
   if (q.type === 'mcq' || q.type === 'graph') return Array.isArray(q.options) && q.options.length === 4 && 'ABCD'.includes(q.correct_option || '?');
   return Array.isArray(q.parts) && q.parts.length > 0 && q.parts.every((p) => p && p.prompt && Array.isArray(p.mark_scheme) && p.marks > 0);
@@ -128,7 +129,17 @@ function renderStem(stem, cls = 'stem') {
 
 /* ---------- books ---------- */
 async function getBooks() { return store.get('books', []); }
-async function getQs(bookId, unitId) { return store.get(`qs:${bookId}:${unitId}`, []); }
+// Questions that mention a figure/table/page the student can't see, or that the student reported, are never used.
+const REF = /\b(?:fig(?:ure)?s?\.?|tables?|diagrams?|photos?|images?|charts?|graphs?|pages?|pp?\.|examples?|activit(?:y|ies)|exercises?)\s*\d+[a-z]?(?:[.\-–]\d+)*\b|(?:圖|表|頁|例題|練習)\s*[0-9０-９一二三四五六七八九十]+(?:\s*[.\-．]\s*[0-9]+)*|第\s*[0-9０-９]+\s*頁/i;
+function missingRef(q) {
+  for (const t of [q.stem, ...(q.options || []), ...(q.parts || []).map((p) => p && p.prompt)].filter(Boolean).map(String)) {
+    const m = t.match(REF);
+    if (m && !(/^tables?\b/i.test(m[0]) && /\|.*\|/.test(q.stem || ''))) return m[0];
+  }
+  return '';
+}
+const blocked = (q) => !q || (local.reports || []).includes(q.id) || !!missingRef(q);
+async function getQs(bookId, unitId) { return (await store.get(`qs:${bookId}:${unitId}`, [])).filter((q) => !blocked(q)); }
 async function setQs(bookId, unitId, list) { await store.set(`qs:${bookId}:${unitId}`, list); }
 function scoreOf(questions) {
   let got = 0, total = 0;
@@ -1435,13 +1446,13 @@ async function doFill(book, unit, job) {
         if (k >= 0) { items[k] = { ...items[k], figure: true }; pages = shuffle([...figs]).slice(0, 2); }
       }
       let gen;
-      try { gen = await api('generate', { title, text, items, avoid, focus, kind: kindOfBook(book), lang: langOf(text), figures: pages ? pages.map((f) => f.img.split(',')[1]) : undefined }); }
+      try { gen = await api('generate', { title, text, items, avoid, focus, kind: kindOfBook(book), lang: langOf(text), figures: pages ? pages.map((f) => f.img.split(',')[1]) : undefined, figureRegions: pages ? pages.map((f) => f.rects || []) : undefined }); }
       catch (e) { if (e.status === 401 || e.status === 0) { stop = true; throw e; } if (!job.error) job.error = e; continue; }
       if (!gen.questions || !gen.questions.length) { if (++empty >= 2) stop = true; continue; }
       for (const q of gen.questions) {
         if (!q.figure) continue;
         const src = pages && pages[q.figure.image - 1];
-        const img = src ? await cropFigure(src.img, q.figure.box).catch(() => null) : null;
+        const img = src ? await cropFigure(src.img, figureBox(q.figure, src.rects)).catch(() => null) : null;
         q.figure = img ? { page: src.page, box: q.figure.box, img } : null;
         if (!img) q.drop = true;
       }
@@ -1702,20 +1713,41 @@ function renderQuestion() {
 async function figsFor(book, unit) {
   const key = `figs:${book.id}:${unit.id}`;
   const have = await store.get(key, null);
-  if (have) return have;
+  if (have && !(book.library && have.length && !have.some((f) => f.rects))) return have;
   let figs = [];
   if (book.library) { try { const r = await fetch(`library/${book.library}/figs/${unit.id}.json`); if (r.ok) figs = await r.json(); } catch (e) { return []; } }
   await store.set(key, figs);
   return figs;
 }
 
+// The crop: the AI's box, grown to include the whole of any picture it overlaps (picture positions come from
+// the PDF itself, so they are exact), or the picture region the AI named.
+function figureBox(fig, rects) {
+  let b = Array.isArray(fig.box) && fig.box.length === 4 ? fig.box.slice() : null;
+  const rs = Array.isArray(rects) ? rects : [];
+  const named = rs[(Number(fig.region) || 0) - 1];
+  let snapped = false;
+  if (named) { snapped = true; b = b ? [Math.min(b[0], named[0]), Math.min(b[1], named[1]), Math.max(b[2], named[2]), Math.max(b[3], named[3])] : named.slice(); }
+  if (!b) return null;
+  for (const r of rs) {
+    const ix = Math.max(0, Math.min(b[2], r[2]) - Math.max(b[0], r[0])), iy = Math.max(0, Math.min(b[3], r[3]) - Math.max(b[1], r[1]));
+    const area = (r[2] - r[0]) * (r[3] - r[1]);
+    const cx = (fig.box ? (fig.box[0] + fig.box[2]) / 2 : -1), cy = (fig.box ? (fig.box[1] + fig.box[3]) / 2 : -1);
+    const centred = cx >= r[0] && cx <= r[2] && cy >= r[1] && cy <= r[3];
+    if (area > 0 && (centred || (ix * iy) / area > 0.1)) snapped = true, b = [Math.min(b[0], r[0]), Math.min(b[1], r[1]), Math.max(b[2], r[2]), Math.max(b[3], r[3])];
+  }
+  b.pad = snapped ? 0.012 : 0.035; // exact picture: small margin, so the caption and nearby text stay out
+  return b;
+}
+
 // Cut the diagram out of the page picture (with a little margin) for the student and the checker.
 function cropFigure(pageUrl, box) {
   return new Promise((resolve, reject) => {
     const im = new Image();
+    if (!box) return reject(new Error('no box'));
     im.onload = () => {
-      const pad = 0.03;
-      const x0 = Math.max(0, box[0] - pad), y0 = Math.max(0, box[1] - pad), x1 = Math.min(1, box[2] + pad), y1 = Math.min(1, box[3] + pad);
+      const pad = box.pad ?? 0.035;
+      const x0 = Math.max(0, box[0] - pad), y0 = Math.max(0, box[1] - pad), x1 = Math.min(1, box[2] + pad), y1 = Math.min(1, box[3] + (box.pad ? Math.min(pad, 0.004) : pad)); // captions sit just below figures
       const sw = (x1 - x0) * im.width, sh = (y1 - y0) * im.height;
       if (sw < 40 || sh < 30) return reject(new Error('figure too small'));
       const k = Math.min(1, 900 / sw);
@@ -2123,7 +2155,7 @@ function bindCommon(q) {
   };
   bindTutor(q);
   const r = document.getElementById('report');
-  if (r) r.onclick = () => { if (!local.reports.includes(q.id)) { local.reports.push(q.id); saveLocal(); } toast('Thanks. This question is flagged for checking.'); };
+  if (r) r.onclick = () => { if (!local.reports.includes(q.id)) { local.reports.push(q.id); saveLocal(); } toast('Thanks. You won’t see this question again.'); };
 }
 
 function advance() {

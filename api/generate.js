@@ -14,6 +14,12 @@ module.exports = handler(async (body, usage) => {
   }
   // Page images for FIGURE questions (base64 JPEG), at most 2 per call.
   const figures = (Array.isArray(body.figures) ? body.figures : []).filter((f) => typeof f === 'string' && f.length < 900000).slice(0, 2);
+  // Picture regions found in each page image (from the PDF itself), to help the AI box the whole figure.
+  const regions = (Array.isArray(body.figureRegions) ? body.figureRegions : []).slice(0, figures.length)
+    .map((rs) => (Array.isArray(rs) ? rs.filter((r) => Array.isArray(r) && r.length === 4 && r.every(Number.isFinite)).slice(0, 8) : []));
+  const regionText = regions.some((rs) => rs.length)
+    ? '\n\nDetected picture regions ([left, top, right, bottom] fractions):\n' + regions.map((rs, i) => rs.length ? `Image ${i + 1}: ${rs.map((r, k) => `R${k + 1} [${r.join(', ')}]`).join('; ')}` : '').filter(Boolean).join('\n')
+    : '';
   const avoid = (Array.isArray(body.avoid) ? body.avoid : []).slice(-40).map((s) => String(s).slice(0, 200));
 
   const wanted = items.map((it, i) =>
@@ -40,7 +46,7 @@ module.exports = handler(async (body, usage) => {
     : '';
   const instruction =
     `Write exactly these ${items.length} questions, in this order:\n${wanted}` + (KIND_RULES[body.kind] !== undefined ? kindNote(body.kind) : '') + focusText + targetText +
-    (figures.length && items.some((it) => it.figure) ? `\n\n${FIGURE_RULES}` : '') + langNote(body.lang, 'write') +
+    (figures.length && items.some((it) => it.figure) ? `\n\n${FIGURE_RULES}${regionText}` : '') + langNote(body.lang, 'write') +
     (avoid.length ? `\n\nQuestions already written for this section (test different ideas):\n- ${avoid.join('\n- ')}` : '');
 
   const out = await callTool({

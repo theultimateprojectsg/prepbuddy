@@ -27,6 +27,7 @@ const EXACT = {
   'You choose the chapters and length next.': '下一步選擇章節和長度。',
   'All my textbooks': '我的所有課本',
   'Introduction': '引言',
+  'Thanks. You won’t see this question again.': '多謝。你不會再看到這條題目。',
   'Checking chapter names…': '正在檢查章節名稱…',
   'Chapter names wrong? Edit chapters': '章節名稱有誤？編輯章節',
   'Edit chapters': '編輯章節',

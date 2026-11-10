@@ -36,6 +36,8 @@ module.exports = handler(async (body, usage) => {
   if (!check.key_correct) problems.push('answer key disputed');
   if (!check.unambiguous) problems.push('ambiguous');
   if (!check.level_ok) problems.push('level mismatch');
+  if (check.self_contained === false) problems.push('not self-contained');
+  if (fig.length && check.figure_complete === false) problems.push('figure cut off or unreadable');
   if (problems.length && check.problems) problems.push('checker notes: ' + check.problems);
 
   return { passed: problems.length === 0, problems };
