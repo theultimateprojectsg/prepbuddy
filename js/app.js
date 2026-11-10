@@ -158,6 +158,7 @@ async function go(v) {
   if (v.name === 'progress') return renderProgress();
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
+  if (v.name === 'worksheets') return renderWorksheets();
 }
 
 /* ---------- home ---------- */
@@ -203,6 +204,7 @@ async function renderHome() {
         <button class="tile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="tile" data-mode="mock">${ICON.clock}<b>Mock paper</b><span>DSE-style, timed</span></button>
       </div>
+      ${(local.worksheets || []).length ? `<button class="row card" id="worksheets" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">Mark a printed worksheet</b><br><span class="muted" style="font-size:13px">Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>` : ''}
       <button class="row card" id="progress" style="border:1px solid #E3E6EA;border-radius:14px"><div class="top"><span><b style="font-weight:600">My progress</b><br><span class="muted" style="font-size:13px">This week, and a report to send your parents</span></span><span aria-hidden="true" style="color:#0F766E;font-weight:700">›</span></div></button>
     </section>` : ''}
   </main>
@@ -210,6 +212,7 @@ async function renderHome() {
   document.getElementById('usage').onclick = () => go({ name: 'usage' });
   document.getElementById('lang').onclick = () => { setLang(LANG === 'zh' ? 'en' : 'zh'); go({ name: 'home' }); };
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
+  const wsb = document.getElementById('worksheets'); if (wsb) wsb.onclick = () => go({ name: 'worksheets' });
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   document.getElementById('file').onchange = (e) => e.target.files[0] && uploadBook(e.target.files[0]);
@@ -571,7 +574,7 @@ async function renderPaper(bookId, from) {
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
-    <p style="margin:0;line-height:1.5;color:#374151">A DSE-style paper: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here and get it marked, or print it with an answer key.</p>
+    <p style="margin:0;line-height:1.5;color:#374151">A DSE-style paper: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here and get it marked, or print it and enter your answers in the app afterwards to get them marked.</p>
     <div class="card stack g6" style="padding:14px 16px">
       <span class="muted" style="font-size:13px">Chapters</span>
       <b style="font-weight:600;line-height:1.4">${units.length === book.units.length ? `All ${book.units.length} chapters` : esc(units.map((u) => u.title).join(' · '))}</b>
@@ -589,7 +592,7 @@ async function renderPaper(bookId, from) {
   </main>
   <div class="sheet sticky">
     <button class="btn" id="sit" ${a + b ? '' : 'disabled'}>Start mock paper · ${mins} min</button>
-    <button class="btn ghost" id="print" ${a + b ? '' : 'disabled'}>Print worksheet with answer key</button>
+    <button class="btn ghost" id="print" ${a + b ? '' : 'disabled'}>Print as a worksheet</button>
   </div>`;
   document.getElementById('back').onclick = () => go(from === 'pick' ? { name: 'pick', mode: 'mock' } : from === 'home' ? { name: 'home' } : { name: 'book', bookId });
   document.getElementById('change').onclick = () => go({ name: 'book', bookId });
@@ -667,37 +670,91 @@ function startDse(book, paper, mins) {
   toast(paper.A.length ? `Section A: ${paper.A.length} multiple-choice questions` : 'Section B: written questions');
 }
 
-function renderPrint(book, units, paper, mins) {
+/* ---------- printed worksheets ----------
+   No answer key is printed. Each worksheet has a code; the student enters their answers
+   in the app to get them marked. Every page carries the student's name and a QR code. */
+const QR_SVG = '<svg class="pqr" role="img" aria-label="QR code for PrepBuddy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path fill="#000" d="M4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM15 4h1v1h-1zM19 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM26 4h1v1h-1zM27 4h1v1h-1zM30 4h1v1h-1zM31 4h1v1h-1zM32 4h1v1h-1zM33 4h1v1h-1zM34 4h1v1h-1zM35 4h1v1h-1zM36 4h1v1h-1zM4 5h1v1h-1zM10 5h1v1h-1zM15 5h1v1h-1zM21 5h1v1h-1zM23 5h1v1h-1zM24 5h1v1h-1zM26 5h1v1h-1zM28 5h1v1h-1zM30 5h1v1h-1zM36 5h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM13 6h1v1h-1zM17 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM25 6h1v1h-1zM30 6h1v1h-1zM32 6h1v1h-1zM33 6h1v1h-1zM34 6h1v1h-1zM36 6h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h1v1h-1zM14 7h1v1h-1zM15 7h1v1h-1zM16 7h1v1h-1zM18 7h1v1h-1zM21 7h1v1h-1zM22 7h1v1h-1zM24 7h1v1h-1zM27 7h1v1h-1zM30 7h1v1h-1zM32 7h1v1h-1zM33 7h1v1h-1zM34 7h1v1h-1zM36 7h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM18 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM26 8h1v1h-1zM27 8h1v1h-1zM30 8h1v1h-1zM32 8h1v1h-1zM33 8h1v1h-1zM34 8h1v1h-1zM36 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM12 9h1v1h-1zM14 9h1v1h-1zM18 9h1v1h-1zM20 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM26 9h1v1h-1zM30 9h1v1h-1zM36 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM26 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM31 10h1v1h-1zM32 10h1v1h-1zM33 10h1v1h-1zM34 10h1v1h-1zM35 10h1v1h-1zM36 10h1v1h-1zM12 11h1v1h-1zM14 11h1v1h-1zM18 11h1v1h-1zM19 11h1v1h-1zM20 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM25 11h1v1h-1zM27 11h1v1h-1zM28 11h1v1h-1zM4 12h1v1h-1zM8 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1zM21 12h1v1h-1zM23 12h1v1h-1zM25 12h1v1h-1zM26 12h1v1h-1zM28 12h1v1h-1zM29 12h1v1h-1zM30 12h1v1h-1zM31 12h1v1h-1zM32 12h1v1h-1zM33 12h1v1h-1zM36 12h1v1h-1zM4 13h1v1h-1zM5 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM11 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM17 13h1v1h-1zM18 13h1v1h-1zM19 13h1v1h-1zM22 13h1v1h-1zM27 13h1v1h-1zM29 13h1v1h-1zM33 13h1v1h-1zM34 13h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1zM12 14h1v1h-1zM14 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM19 14h1v1h-1zM21 14h1v1h-1zM24 14h1v1h-1zM25 14h1v1h-1zM27 14h1v1h-1zM29 14h1v1h-1zM30 14h1v1h-1zM33 14h1v1h-1zM35 14h1v1h-1zM4 15h1v1h-1zM5 15h1v1h-1zM8 15h1v1h-1zM12 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM21 15h1v1h-1zM22 15h1v1h-1zM25 15h1v1h-1zM26 15h1v1h-1zM27 15h1v1h-1zM29 15h1v1h-1zM30 15h1v1h-1zM35 15h1v1h-1zM36 15h1v1h-1zM4 16h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM9 16h1v1h-1zM10 16h1v1h-1zM13 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM22 16h1v1h-1zM24 16h1v1h-1zM28 16h1v1h-1zM30 16h1v1h-1zM32 16h1v1h-1zM33 16h1v1h-1zM4 17h1v1h-1zM6 17h1v1h-1zM8 17h1v1h-1zM9 17h1v1h-1zM11 17h1v1h-1zM12 17h1v1h-1zM14 17h1v1h-1zM16 17h1v1h-1zM20 17h1v1h-1zM21 17h1v1h-1zM23 17h1v1h-1zM27 17h1v1h-1zM31 17h1v1h-1zM34 17h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM7 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM13 18h1v1h-1zM14 18h1v1h-1zM15 18h1v1h-1zM16 18h1v1h-1zM17 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM25 18h1v1h-1zM27 18h1v1h-1zM29 18h1v1h-1zM30 18h1v1h-1zM33 18h1v1h-1zM34 18h1v1h-1zM35 18h1v1h-1zM4 19h1v1h-1zM7 19h1v1h-1zM9 19h1v1h-1zM11 19h1v1h-1zM13 19h1v1h-1zM15 19h1v1h-1zM17 19h1v1h-1zM18 19h1v1h-1zM21 19h1v1h-1zM23 19h1v1h-1zM24 19h1v1h-1zM25 19h1v1h-1zM26 19h1v1h-1zM27 19h1v1h-1zM29 19h1v1h-1zM30 19h1v1h-1zM32 19h1v1h-1zM7 20h1v1h-1zM8 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM12 20h1v1h-1zM13 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM19 20h1v1h-1zM21 20h1v1h-1zM24 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM27 20h1v1h-1zM30 20h1v1h-1zM32 20h1v1h-1zM35 20h1v1h-1zM5 21h1v1h-1zM7 21h1v1h-1zM9 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM19 21h1v1h-1zM20 21h1v1h-1zM21 21h1v1h-1zM22 21h1v1h-1zM25 21h1v1h-1zM27 21h1v1h-1zM33 21h1v1h-1zM34 21h1v1h-1zM5 22h1v1h-1zM7 22h1v1h-1zM9 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM15 22h1v1h-1zM16 22h1v1h-1zM17 22h1v1h-1zM19 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM28 22h1v1h-1zM31 22h1v1h-1zM33 22h1v1h-1zM5 23h1v1h-1zM6 23h1v1h-1zM12 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM23 23h1v1h-1zM24 23h1v1h-1zM26 23h1v1h-1zM27 23h1v1h-1zM28 23h1v1h-1zM30 23h1v1h-1zM31 23h1v1h-1zM35 23h1v1h-1zM36 23h1v1h-1zM4 24h1v1h-1zM7 24h1v1h-1zM8 24h1v1h-1zM10 24h1v1h-1zM13 24h1v1h-1zM14 24h1v1h-1zM17 24h1v1h-1zM18 24h1v1h-1zM20 24h1v1h-1zM23 24h1v1h-1zM26 24h1v1h-1zM28 24h1v1h-1zM30 24h1v1h-1zM31 24h1v1h-1zM32 24h1v1h-1zM33 24h1v1h-1zM4 25h1v1h-1zM7 25h1v1h-1zM8 25h1v1h-1zM13 25h1v1h-1zM14 25h1v1h-1zM15 25h1v1h-1zM16 25h1v1h-1zM17 25h1v1h-1zM22 25h1v1h-1zM23 25h1v1h-1zM24 25h1v1h-1zM27 25h1v1h-1zM29 25h1v1h-1zM31 25h1v1h-1zM33 25h1v1h-1zM34 25h1v1h-1zM35 25h1v1h-1zM6 26h1v1h-1zM7 26h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM11 26h1v1h-1zM13 26h1v1h-1zM15 26h1v1h-1zM18 26h1v1h-1zM19 26h1v1h-1zM22 26h1v1h-1zM24 26h1v1h-1zM25 26h1v1h-1zM27 26h1v1h-1zM28 26h1v1h-1zM32 26h1v1h-1zM35 26h1v1h-1zM6 27h1v1h-1zM7 27h1v1h-1zM8 27h1v1h-1zM12 27h1v1h-1zM13 27h1v1h-1zM14 27h1v1h-1zM15 27h1v1h-1zM16 27h1v1h-1zM17 27h1v1h-1zM19 27h1v1h-1zM20 27h1v1h-1zM21 27h1v1h-1zM22 27h1v1h-1zM25 27h1v1h-1zM26 27h1v1h-1zM36 27h1v1h-1zM4 28h1v1h-1zM5 28h1v1h-1zM7 28h1v1h-1zM10 28h1v1h-1zM11 28h1v1h-1zM13 28h1v1h-1zM16 28h1v1h-1zM17 28h1v1h-1zM18 28h1v1h-1zM21 28h1v1h-1zM23 28h1v1h-1zM24 28h1v1h-1zM25 28h1v1h-1zM26 28h1v1h-1zM28 28h1v1h-1zM29 28h1v1h-1zM30 28h1v1h-1zM31 28h1v1h-1zM32 28h1v1h-1zM12 29h1v1h-1zM17 29h1v1h-1zM18 29h1v1h-1zM19 29h1v1h-1zM20 29h1v1h-1zM26 29h1v1h-1zM28 29h1v1h-1zM32 29h1v1h-1zM34 29h1v1h-1zM35 29h1v1h-1zM4 30h1v1h-1zM5 30h1v1h-1zM6 30h1v1h-1zM7 30h1v1h-1zM8 30h1v1h-1zM9 30h1v1h-1zM10 30h1v1h-1zM12 30h1v1h-1zM13 30h1v1h-1zM14 30h1v1h-1zM19 30h1v1h-1zM20 30h1v1h-1zM21 30h1v1h-1zM25 30h1v1h-1zM26 30h1v1h-1zM28 30h1v1h-1zM30 30h1v1h-1zM32 30h1v1h-1zM33 30h1v1h-1zM4 31h1v1h-1zM10 31h1v1h-1zM14 31h1v1h-1zM20 31h1v1h-1zM21 31h1v1h-1zM22 31h1v1h-1zM23 31h1v1h-1zM24 31h1v1h-1zM25 31h1v1h-1zM28 31h1v1h-1zM32 31h1v1h-1zM35 31h1v1h-1zM36 31h1v1h-1zM4 32h1v1h-1zM6 32h1v1h-1zM7 32h1v1h-1zM8 32h1v1h-1zM10 32h1v1h-1zM12 32h1v1h-1zM13 32h1v1h-1zM14 32h1v1h-1zM15 32h1v1h-1zM22 32h1v1h-1zM24 32h1v1h-1zM28 32h1v1h-1zM29 32h1v1h-1zM30 32h1v1h-1zM31 32h1v1h-1zM32 32h1v1h-1zM33 32h1v1h-1zM36 32h1v1h-1zM4 33h1v1h-1zM6 33h1v1h-1zM7 33h1v1h-1zM8 33h1v1h-1zM10 33h1v1h-1zM18 33h1v1h-1zM20 33h1v1h-1zM23 33h1v1h-1zM25 33h1v1h-1zM26 33h1v1h-1zM30 33h1v1h-1zM31 33h1v1h-1zM32 33h1v1h-1zM33 33h1v1h-1zM34 33h1v1h-1zM35 33h1v1h-1zM4 34h1v1h-1zM6 34h1v1h-1zM7 34h1v1h-1zM8 34h1v1h-1zM10 34h1v1h-1zM14 34h1v1h-1zM16 34h1v1h-1zM20 34h1v1h-1zM21 34h1v1h-1zM22 34h1v1h-1zM23 34h1v1h-1zM25 34h1v1h-1zM26 34h1v1h-1zM27 34h1v1h-1zM29 34h1v1h-1zM30 34h1v1h-1zM31 34h1v1h-1zM32 34h1v1h-1zM33 34h1v1h-1zM34 34h1v1h-1zM4 35h1v1h-1zM10 35h1v1h-1zM14 35h1v1h-1zM15 35h1v1h-1zM16 35h1v1h-1zM17 35h1v1h-1zM18 35h1v1h-1zM21 35h1v1h-1zM23 35h1v1h-1zM24 35h1v1h-1zM25 35h1v1h-1zM28 35h1v1h-1zM30 35h1v1h-1zM33 35h1v1h-1zM4 36h1v1h-1zM5 36h1v1h-1zM6 36h1v1h-1zM7 36h1v1h-1zM8 36h1v1h-1zM9 36h1v1h-1zM10 36h1v1h-1zM12 36h1v1h-1zM13 36h1v1h-1zM16 36h1v1h-1zM18 36h1v1h-1zM19 36h1v1h-1zM20 36h1v1h-1zM21 36h1v1h-1zM24 36h1v1h-1zM25 36h1v1h-1zM27 36h1v1h-1zM28 36h1v1h-1zM33 36h1v1h-1zM36 36h1v1h-1z"/></svg>';
+const wsCode = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c = ''; for (let i = 0; i < 4; i++) c += A[Math.floor(Math.random() * A.length)]; return 'PB-' + c; };
+async function saveWorksheetScore(code, score) {
+  const ws = await store.get('ws:' + code, null); if (!ws) return;
+  ws.score = score; ws.markedAt = Date.now(); await store.set('ws:' + code, ws);
+}
+
+async function renderPrint(book, units, paper, mins, existing) {
   const qs = [...paper.A, ...paper.B];
-  local.printed = [...new Set([...(local.printed || []), ...qs.map((q) => q.id)])].slice(-3000); saveLocal();
+  let ws = existing;
+  if (!ws) {
+    local.printed = [...new Set([...(local.printed || []), ...qs.map((q) => q.id)])].slice(-3000);
+    ws = { code: wsCode(), bookId: book.id, at: Date.now(), mins, chapters: units.length === book.units.length ? 'All chapters' : units.map((u) => u.title).join(' · '), A: paper.A, B: paper.B, score: null };
+    await store.set('ws:' + ws.code, ws);
+    local.worksheets = [ws.code, ...(local.worksheets || [])].slice(0, 30); saveLocal();
+  }
   const total = qs.reduce((s, q) => s + marksOf(q), 0);
-  const chapterText = units.length === book.units.length ? 'All chapters' : units.map((u) => u.title).join(' · ');
   const lines = (n) => `<div class="lines">${'<div></div>'.repeat(n)}</div>`;
   const mcq = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">1 mark</span></div>${q.type === 'graph' ? graphStem(q) : renderStem(q.stem, 'pstem')}
     ${q.type === 'graph' ? graphOptions(q, true) : `<ol type="A" class="popts">${(q.options || []).map((o) => `<li>${esc(o)}</li>`).join('')}</ol>`}</div>`;
   const written = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">${marksOf(q)} marks</span></div>${q.stem ? renderStem(q.stem, 'pstem') : ''}
     ${q.parts.map((p) => `<div class="ppart"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="pm">(${p.marks})</span></div>${lines(Math.max(2, p.marks + 1))}`).join('')}</div>`;
-  const key = qs.map((q, i) => `<div class="pk"><b>${i + 1}.</b> ${isMcqLike(q) ? `<b>${esc(q.correct_option)}</b>` : ''}
-    ${isMcqLike(q) ? '' : q.parts.map((p) => `<div><b>${esc(p.label || '')}</b> (${p.marks} mark${p.marks > 1 ? 's' : ''})<ul>${p.mark_scheme.map((pt) => `<li>${esc(pt)}</li>`).join('')}</ul></div>`).join('')}
-    <div class="pexp">${esc(q.explanation)}${q.pages ? ` <span class="psrc">(${esc(q.section)}, pp. ${esc(q.pages)})</span>` : ''}</div></div>`).join('');
-  $app.innerHTML = `
-  <div class="noprint topbar"><button class="icon-btn" id="back" aria-label="Back to chapters">${ICON.back}</button><span style="font-weight:600;font-size:15px">Worksheet ready</span></div>
-  <div class="noprint stack g8" style="padding:0 20px 16px">
-    <button class="btn" id="doprint">Print or save as PDF</button>
-    <span class="hint">On a phone: tap the button, then choose <b>Save as PDF</b> or share the PDF. The answer key starts on a new page.</span>
+  const draw = () => {
+    const who = (local.name || '').trim();
+    $app.innerHTML = `
+  <div class="noprint topbar"><button class="icon-btn" id="back" aria-label="Back">${ICON.back}</button><span style="font-weight:600;font-size:15px">Worksheet ${ws.code}</span></div>
+  <div class="noprint stack g10" style="padding:0 20px 16px">
+    <label for="wsname" style="font-size:13px;font-weight:600;color:#4B5563">Name on every page</label>
+    <input id="wsname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(who)}">
+    <button class="btn" id="doprint" ${who ? '' : 'disabled'}>Print or save as PDF</button>
+    <span class="hint">${who ? 'There is no answer key on the paper. When you finish, open PrepBuddy, tap <b>Mark a printed worksheet</b> and enter your answers to get them marked.' : 'Add your name first. It is printed on every page.'}</span>
   </div>
   <article class="paper">
+    <table class="ptable"><tbody><tr><td>
     <h1 data-raw>${esc(book.title)}</h1>
-    <p class="pmeta">${esc(chapterText)}<br>${paper.A.length ? `Section A: ${paper.A.length} multiple choice · ` : ''}${paper.B.length ? `Section B: ${paper.B.length} written · ` : ''}Time: ${mins} min · Total: ${total} marks</p>
-    <div class="pfields"><span>Name:</span><span>Class:</span><span>Score: &nbsp;&nbsp;&nbsp;&nbsp; / ${total}</span></div>
+    <p class="pmeta"><span data-raw>${esc(ws.chapters)}</span><br>${paper.A.length ? `Section A: ${paper.A.length} multiple choice · ` : ''}${paper.B.length ? `Section B: ${paper.B.length} written · ` : ''}Time: ${mins} min · Total: ${total} marks</p>
+    <div class="pfields"><span>Name: <b data-raw>${esc(who)}</b></span><span>Worksheet: <b>${ws.code}</b></span></div>
     ${paper.A.length ? `<h2>Section A · Multiple choice</h2><p class="pnote">Choose the best answer for each question.</p>${paper.A.map((q, i) => mcq(q, i + 1)).join('')}` : ''}
     ${paper.B.length ? `<h2>Section B · Written</h2><p class="pnote">Answer all questions in the spaces provided.</p>${paper.B.map((q, i) => written(q, paper.A.length + i + 1)).join('')}` : ''}
-    <section class="pkey"><h1>Answer key</h1>${key}</section>
-    <p class="pfoot">Made with PrepBuddy from ${esc(book.title)}.${book.credit ? ' ' + esc(book.credit) : ''} Questions are written and checked by AI.</p>
+    <p class="pfoot">Made with PrepBuddy from <span data-raw>${esc(book.title)}</span>.${book.credit ? ' <span data-raw>' + esc(book.credit) + '</span>' : ''} Questions are written and checked by AI.</p>
+    </td></tr></tbody>
+    <tfoot><tr><td><div class="pbrand">${QR_SVG}<div data-raw>${LANG === 'zh'
+      ? `<b>${esc(who || '________')} 專用 · ${ws.code}</b><span>批改：打開 PrepBuddy › 批改已列印的工作紙 › ${ws.code}</span><span>用你自己的課本練習：prepbuddy.givingtree.sg</span>`
+      : `<b>Made for ${esc(who || '________')} · ${ws.code}</b><span>Get marked: open PrepBuddy › Mark a printed worksheet › ${ws.code}</span><span>Practise from your own textbook: prepbuddy.givingtree.sg</span>`}</div></div></td></tr></tfoot>
+    </table>
   </article>`;
-  document.getElementById('back').onclick = () => go({ name: 'book', bookId: book.id });
-  document.getElementById('doprint').onclick = () => window.print();
+    document.getElementById('back').onclick = () => (existing ? go({ name: 'worksheets' }) : go({ name: 'book', bookId: book.id }));
+    const nm = document.getElementById('wsname');
+    nm.onchange = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); draw(); };
+    nm.oninput = () => { document.getElementById('doprint').disabled = !nm.value.trim(); };
+    document.getElementById('doprint').onclick = () => { if (nm.value.trim() !== (local.name || '')) { local.name = nm.value.trim().slice(0, 30); saveLocal(); draw(); } window.print(); };
+  };
+  draw();
   window.scrollTo(0, 0);
+}
+
+async function renderWorksheets() {
+  const books = await getBooks();
+  const list = [];
+  for (const c of local.worksheets || []) { const ws = await store.get('ws:' + c, null); if (ws && books.some((b) => b.id === ws.bookId)) list.push(ws); }
+  const when = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
+  $app.innerHTML = `
+  <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">Printed worksheets</span></div>
+  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
+    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Pick the worksheet you did. Check the code at the bottom of the page. Enter what you wrote on paper, and PrepBuddy marks it.</p>
+    ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:13px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:13px"><span data-raw>${esc(b.subject || b.title)}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
+      <div style="display:flex;gap:14px;margin-top:8px"><button class="link" data-ws="${ws.code}">${ws.score ? 'Mark again' : 'Enter answers'}</button><button class="link quiet" data-reprint="${ws.code}">Print again</button></div></div>`; }).join('')}</div>`
+      : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:#374151">No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.</p></div>'}
+  </main>`;
+  document.getElementById('back').onclick = () => go({ name: 'home' });
+  const open = async (code) => { const ws = await store.get('ws:' + code, null); return [ws, ws && books.find((b) => b.id === ws.bookId)]; };
+  $app.querySelectorAll('[data-ws]').forEach((el) => (el.onclick = async () => {
+    const [ws, book] = await open(el.dataset.ws); if (!ws || !book) return;
+    const qs = [...ws.A, ...ws.B];
+    S = newSession({ mode: 'dse', ws: ws.code, title: `Worksheet ${ws.code}`, book, qs, target: qs.length, sectionA: ws.A.length });
+    renderQuestion();
+    toast('Enter the answers you wrote on paper');
+  }));
+  $app.querySelectorAll('[data-reprint]').forEach((el) => (el.onclick = async () => {
+    const [ws, book] = await open(el.dataset.reprint); if (!ws || !book) return;
+    renderPrint(book, book.units, { A: ws.A, B: ws.B }, ws.mins, ws);
+  }));
 }
 
 /* ---------- sessions ---------- */
@@ -1271,12 +1328,13 @@ function renderSummary() {
   const list = qs.map((q, k) => {
     const g = S.got[k] || 0, m = marksOf(q), full = g === m;
     const label = choiceType(q) ? q.stem : ((q.parts[0] && q.parts[0].prompt) || q.stem);
-    return `<div class="res"><span class="tick ${full ? 'full' : 'part'}">${full ? ICON.check : g}</span><span style="flex:1">${esc(String(label).slice(0, 90))}${String(label).length > 90 ? '…' : ''}</span><span class="muted" style="white-space:nowrap">${g}/${m}</span></div>`;
+    return `<div class="res"><span class="tick ${full ? 'full' : 'part'}">${full ? ICON.check : g}</span><span style="flex:1" data-raw>${esc(String(label).slice(0, 90))}${String(label).length > 90 ? '…' : ''}</span><span class="muted" style="white-space:nowrap">${g}/${m}</span></div>`;
   }).join('');
   const missed = qs.filter((q, k) => (S.got[k] || 0) < marksOf(q));
   const missedIdx = qs.map((q, k) => k).filter((k) => (S.got[k] || 0) < marksOf(qs[k]));
   const drillable = missedIdx.filter((k) => canDrill(qs[k])).slice(0, 10); // drill up to 10 missed ideas
   const unitRef = S.units ? { book: S.book, units: S.units } : null;
+  if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
     <div class="stack g6"><span class="muted" style="font-size:13px">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span><span class="score">${got} / ${total}</span><span style="font-size:15px;font-weight:600;color:${pct >= 70 ? '#0F766E' : '#9A3412'}">${pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go'} · ${pct}%</span></div>
     ${S.mode === 'dse' ? (() => {
