@@ -4,6 +4,7 @@ import * as store from './store.js';
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
 const BATCH = 3;            // questions requested per generate call
+const BUFFER = 3;           // spare questions kept ready beyond the current session (costs credits)
 // Mix of question kinds, cycled through as a chapter's bank grows.
 const PLAN = [[1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
               [4, 'structured'], [1, 'mcq'], [2, 'short'], [3, 'mcq'], [3, 'structured'], [2, 'mcq']];
@@ -87,9 +88,9 @@ async function api(path, body) {
 }
 
 function recordUsage(path, u) {
-  const t = local.usage[path] || (local.usage[path] = { requests: 0, calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0 });
+  const t = local.usage[path] || (local.usage[path] = { requests: 0, calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0, usd: 0 });
   t.requests++;
-  for (const k of ['calls', 'input', 'output', 'cache_write', 'cache_read']) t[k] += u[k] || 0;
+  for (const k of ['calls', 'input', 'output', 'cache_write', 'cache_read', 'usd']) t[k] = (t[k] || 0) + (u[k] || 0);
   saveLocal();
 }
 
@@ -352,23 +353,25 @@ async function renderBook(bookId) {
 /* ---------- AI usage on this device ---------- */
 function renderUsage() {
   const u = local.usage || {};
-  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions']];
+  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions'], ['mark', 'Marking answers']];
   const fmt = (n) => (n || 0).toLocaleString('en');
-  const tot = { calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0 };
+  const tot = { calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0, usd: 0 };
+  const usd = (n) => '$' + (n || 0).toFixed((n || 0) >= 1 ? 2 : 3);
   steps.forEach(([k]) => { const r = u[k]; if (r) for (const f in tot) tot[f] += r[f] || 0; });
-  const rows = steps.map(([k, name]) => { const r = u[k] || {}; return `<tr><th scope="row">${name}</th><td>${fmt(r.calls)}</td><td>${fmt(r.input)}</td><td>${fmt(r.cache_write)}</td><td>${fmt(r.cache_read)}</td><td>${fmt(r.output)}</td></tr>`; }).join('');
+  const rows = steps.map(([k, name]) => { const r = u[k] || {}; return `<tr><th scope="row">${name}</th><td>${fmt(r.calls)}</td><td>${fmt(r.input)}</td><td>${fmt(r.cache_write)}</td><td>${fmt(r.cache_read)}</td><td>${fmt(r.output)}</td><td><b>${usd(r.usd)}</b></td></tr>`; }).join('');
   const made = u.made || 0;
   $app.innerHTML = `
   <div class="topbar"><button class="icon-btn" id="back" aria-label="Back to home">${ICON.back}</button><span style="font-weight:600;font-size:15px">AI usage on this device</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p style="margin:0;line-height:1.5;color:#374151">Tokens used since you last reset. Reading PDFs happens on your device and uses no tokens.</p>
     <div style="overflow-x:auto"><table class="data usage">
-      <tr><th>Step</th><th>AI calls</th><th>Input</th><th>Cache write</th><th>Cache read</th><th>Output</th></tr>
+      <tr><th>Step</th><th>AI calls</th><th>Input</th><th>Cache write</th><th>Cache read</th><th>Output</th><th>Cost (USD)</th></tr>
       ${rows}
-      <tr><th scope="row">Total</th><td>${fmt(tot.calls)}</td><td>${fmt(tot.input)}</td><td>${fmt(tot.cache_write)}</td><td>${fmt(tot.cache_read)}</td><td>${fmt(tot.output)}</td></tr>
+      <tr><th scope="row">Total</th><td>${fmt(tot.calls)}</td><td>${fmt(tot.input)}</td><td>${fmt(tot.cache_write)}</td><td>${fmt(tot.cache_read)}</td><td>${fmt(tot.output)}</td><td><b>${usd(tot.usd)}</b></td></tr>
     </table></div>
+    <p style="margin:0;font-size:15px;line-height:1.5">Estimated cost: <b>${usd(tot.usd)}</b>${made ? ` · about ${usd((tot.usd - ((u.mark || {}).usd || 0)) / made)} per question made` : ''}${(u.mark || {}).requests ? ` · ${usd(u.mark.usd / u.mark.requests)} per answer marked` : ''}</p>
     <p class="muted" style="margin:0;font-size:13px;line-height:1.5">Questions that passed checking: <b>${fmt(made)}</b>${made ? `<br>Per question: ${fmt(Math.round((tot.input + tot.cache_write) / made))} input · ${fmt(Math.round(tot.cache_read / made))} cache read · ${fmt(Math.round(tot.output / made))} output` : ''}.<br>
-    Cache reads are billed at about a tenth of normal input; cache writes at a little more than normal input. Output tokens cost the most per token.</p>
+    Costs are estimates from Claude's published prices; your bill on console.anthropic.com is the exact figure. Older entries made before this update have no cost recorded.</p>
     <button class="btn ghost" id="reset">Reset the counter</button>
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'home' });
@@ -391,11 +394,12 @@ async function startUnits(book, units) {
   qs = shuffle(qs.slice(0, SESSION_SIZE));
   const title = k === 1 ? units[0].title : `${k} chapters`;
   S = newSession({ mode: 'unit', title, book, units, qs, target: SESSION_SIZE, pending: 0 });
-  // Make what's missing for this session, plus the next set, so "10 more" starts instantly.
+  // Make only what this session still needs, plus a small buffer, while the student practises.
+  const buffer = Math.max(1, Math.ceil(BUFFER / k));
   units.forEach((u, i) => {
     const used = qs.filter((q) => q.id.startsWith(`${book.id}:${u.id}:`)).length;
     const spare = pools[i].length - used;
-    const want = Math.max(0, quota - used) + Math.max(0, quota - spare);
+    const want = Math.max(0, quota - used) + Math.max(0, buffer - spare);
     if (want > 0) followFill(S, ensureFill(book, u, want));
   });
   if (S.qs.length) renderQuestion(); else renderWaiting();
@@ -422,7 +426,7 @@ async function startReview(mode) {
 // part of the chapter, so 10 questions take about as long as 3 used to.
 const jobs = new Map();
 const warmed = new Map(); // chapter -> when its text was last put in the AI's cache
-const PARALLEL = 4;
+const PARALLEL = 3;
 
 function ensureFill(book, unit, want) {
   const key = `${book.id}:${unit.id}`;
@@ -512,7 +516,7 @@ function followFill(sess, job) {
 function refill(sess) {
   sess.error = null;
   sess.target = Math.max(sess.target, sess.qs.length + 1);
-  const per = Math.ceil((sess.target - sess.qs.length + SESSION_SIZE) / sess.units.length);
+  const per = Math.ceil((sess.target - sess.qs.length) / sess.units.length);
   sess.units.forEach((u) => followFill(sess, ensureFill(sess.book, u, per)));
 }
 

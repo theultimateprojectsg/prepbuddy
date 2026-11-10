@@ -29,6 +29,7 @@ module.exports = handler(async (body, usage) => {
     toolName: 'mark',
     maxTokens: 2000,
     usage,
+    step: 'mark',
   });
 
   const parts = q.parts.map((p, i) => {

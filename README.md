@@ -16,7 +16,9 @@ Students upload their own ebook (PDF). PrepBuddy finds the chapters on their dev
 |---|---|
 | `ANTHROPIC_API_KEY` | Claude API key from console.anthropic.com |
 | `PREPBUDDY_ACCESS_CODE` | Optional. If set, the app asks for this code before making questions (protects your API credit) |
-| `PREPBUDDY_MODEL` | Optional. Defaults to `claude-sonnet-5-5` |
+| `PREPBUDDY_MODEL_WRITE` | Optional. Model that writes questions. Default `claude-sonnet-5-5` |
+| `PREPBUDDY_MODEL_CHECK` | Optional. Model that checks questions. Default `claude-haiku-5-5` |
+| `PREPBUDDY_MODEL_MARK` | Optional. Model that marks answers. Default `claude-sonnet-5-5` |
 
 ## Credits
 

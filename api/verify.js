@@ -14,7 +14,7 @@ module.exports = handler(async (body, usage) => {
   if (problems.length) return { passed: false, problems };
 
   const blind = await callTool({
-    system: VERIFY_SYSTEM, sectionBlock: block, toolName: 'answer', maxTokens: 2000, usage,
+    system: VERIFY_SYSTEM, sectionBlock: block, toolName: 'answer', maxTokens: 2000, usage, step: 'check',
     instruction: `<question>\n${questionForChecker(q, false)}\n</question>\n\nAnswer this question as a top student would, using only the section.`,
   });
   if (q.type === 'mcq' && blind.option !== q.correct_option) {
@@ -22,7 +22,7 @@ module.exports = handler(async (body, usage) => {
   }
 
   const check = await callTool({
-    system: VERIFY_SYSTEM, sectionBlock: block, toolName: 'report', maxTokens: 2000, usage,
+    system: VERIFY_SYSTEM, sectionBlock: block, toolName: 'report', maxTokens: 2000, usage, step: 'check',
     instruction: `<question>\n${questionForChecker(q, true)}\n</question>\n\n<independent_answer>\n${blind.answer}\n</independent_answer>\n\n` +
       'Judge the answer key. Where the independent answer and the key disagree, decide which the section supports.',
   });

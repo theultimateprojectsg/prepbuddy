@@ -3,6 +3,7 @@
 const { warmCache, sectionBlock, handler } = require('../lib/claude');
 
 module.exports = handler(async (body, usage) => {
-  await warmCache({ sectionBlock: sectionBlock(body.title, body.text), usage });
+  const block = sectionBlock(body.title, body.text);
+  await Promise.all([warmCache({ sectionBlock: block, usage, step: 'write' }), warmCache({ sectionBlock: block, usage, step: 'check' })]);
   return { ok: true };
 });
