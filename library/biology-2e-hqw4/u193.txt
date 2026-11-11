@@ -1,0 +1,73 @@
+FIGURE 23.6 Secondary endosymbiosis. The hypothesized process of several endosymbiotic events leading to the evolution of
+chlorarachniophytes is shown. In a primary endosymbiotic event, a heterotrophic eukaryote consumed a cyanobacterium. In a secondary
+endosymbiotic event, the cell resulting from primary endosymbiosis was consumed by a second cell. The resulting organelle became a
+plastid in modern chlorarachniophytes.
+Several lines of evidence support that chlorarachniophytes evolved from secondary endosymbiosis. The
+chloroplasts contained within the green algal endosymbionts still are capable of photosynthesis, making
+chlorarachniophytes photosynthetic. The green algal endosymbiont also exhibits a vestigial nucleus. In fact, it
+appears that chlorarachniophytes are the products of an evolutionarily recent secondary endosymbiotic event. The
+plastids of chlorarachniophytes are surrounded by
+four membranes: The first two correspond to the inner and outer
+membranes of the photosynthetic cyanobacterium, the third corresponds to plasma membrane of the green alga,
+and the fourth corresponds to the vacuole that surrounded the green alga when it was engulfed by the
+chlorarachniophyte ancestor. In other lineages that involved secondary endosymbiosis, only
+three membranes can
+be identified around plastids. This is currently interpreted as a sequential loss of a membrane during the course of
+evolution.
+The process of secondary endosymbiosis is not unique to chlorarachniophytes. Secondary plastids are also found in
+the Excavates and the Chromalveolates. In the Excavates, secondary endosymbiosis of green algae led to euglenid
+protists, while in the Chromalveolates, secondary endosymbiosis of red algae led to the evolution of plastids in
+dinoflagellates, apicomplexans, and stramenopiles.
+23.2 Characteristics of Protists
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Describe the cell structure characteristics of protists
+• Describe the metabolic diversity of protists
+• Describe the life cycle diversity of protists
+There are over 100,000 described living species of protists, and it is unclear how many undescribed species may
+exist. Since many protists live as commensals or parasites in other organisms and these relationships are often
+species-specific, there is a huge potential for protist diversity that matches the diversity of their hosts. Because the
+name "protist" serves as a catchall term for eukaryotic organisms that are not animal, plant, or fungi, it is not
+surprising that very few characteristics are common to all protists. On the other hand, familiar characteristics of
+plants and animals are foreshadowed in various protists.
+Cell Structure
+The cells of protists are among the most elaborate of all cells. Multicellular plants, animals, and fungi are embedded
+among the protists in eukaryotic phylogeny. In most plants and animals and some fungi, complexity arises out ofmulticellularity,
+tissue specialization, and subsequent interaction because of these features. Although a
+rudimentary form of multicellularity exists among some of the organisms labelled as “protists,” those that have
+remained unicellular show how complexity can evolve in the absence of true multicellularity, with the differentiation
+of cellular morphology and function. A few protists live as colonies that behave in some ways as a group of freeliving cells and in other ways as a multicellular organism. Some protists are composed of enormous, multinucleate,
+604 23 • Protists
+single cells that look like amorphous blobs of slime, or in other cases, like ferns. In some species of protists, the
+nuclei are different sizes and have distinct roles in protist cell function.
+Single protist cells range in size from less than a micrometer to three meters in length to hectares! Protist cells may
+be enveloped by animal-like cell membranes or plant-like cell walls. Others are encased in glassy silica-based shells
+or wound with pellicles of interlocking protein strips. The pellicle functions like a flexible coat of armor, preventing
+the protist from being torn or pierced without compromising its range of motion.
+Metabolism
+Protists exhibit many forms of nutrition and may be aerobic or anaerobic. Those that store energy by photosynthesis
+belong to a group of
+photoautotrophs and are characterized by the presence of chloroplasts. Other protists areheterotrophic and consume organic materials (such as other organisms) to obtain nutrition. Amoebas and some
+other heterotrophic protist species ingest particles by a process called
+phagocytosis, in which the cell membrane
+engulfs a food particle and brings it inward, pinching off an intracellular membranous sac, or vesicle, called a food
+vacuole (Figure 23.7). In some protists, food vacuoles can be formed anywhere on the body surface, whereas in
+others, they may be restricted to the base of a specialized feeding structure. The vesicle containing the ingested
+particle, the phagosome, then fuses with a lysosome containing hydrolytic enzymes to produce a phagolysosome,
+and the food particle is broken down into small molecules that can diffuse into the cytoplasm and be used in cellular
+metabolism. Undigested remains ultimately are expelled from the cell via
+exocytosis.
+FIGURE 23.7 Phagocytosis. The stages of phagocytosis include the engulfment of a food particle, the digestion of the particle using
+hydrolytic enzymes contained within a lysosome, and the expulsion of undigested materials from the cell.
+Subtypes of heterotrophs, called saprobes, absorb nutrients from dead organisms or their organic wastes. Some
+protists can function as mixotrophs, obtaining nutrition by photoautotrophic or heterotrophic routes, depending on
+whether sunlight or organic nutrients are available.
+Motility
+The majority of protists are motile, but different types of protists have evolved varied modes of movement (Figure
+23.8). Some protists have one or more flagella, which they rotate or whip. Others are covered in rows or tufts of tiny
+cilia that they beat in a coordinated manner to swim. Still others form cytoplasmic extensions called
+pseudopodia
+anywhere on the cell, anchor the pseudopodia to a substrate, and pull themselves forward. Some protists can move
+toward or away from a stimulus, a movement referred to as taxis. For example, movement toward light, termed
+phototaxis, is accomplished by coupling their locomotion strategy with a light-sensing organ.
+23.2 • Characteristics of Protists 605

@@ -1,0 +1,103 @@
+that is not translated into protein. These regions lie
+before (upstream or 5') and after (downstream or 3')
+the protein-coding region
+Chapter Summary
+16.1 Regulation of Gene Expression
+While all somatic cells within an organism contain the
+same DNA, not all cells within that organism express
+the same proteins. Prokaryotic organisms express
+most of their genes most of the time. However, some
+genes are expressed only when they are needed.
+Eukaryotic organisms, on the other hand, express only
+a subset of their genes in any given cell. To express a
+protein, the DNA is first transcribed into RNA, which is
+then translated into proteins, which are then targeted
+to specific cellular locations. In prokaryotic cells,
+transcription and translation occur almost
+simultaneously. In eukaryotic cells, transcription
+occurs in the nucleus and is separate from the
+translation that occurs in the cytoplasm. Gene
+expression in prokaryotes is mostly regulated at the
+transcriptional level (some epigenetic and posttranslational regulation is also present), whereas in
+eukaryotic cells, gene expression is regulated at the
+epigenetic, transcriptional, post-transcriptional,
+translational, and post-translational levels.
+16.2 Prokaryotic Gene Regulation
+The regulation of gene expression in prokaryotic cells
+occurs at the transcriptional level. There are two
+majors kinds of proteins that control prokaryotic
+transcription: repressors and activators. Repressors
+bind to an operator region to block the action of RNA
+polymerase. Activators bind to the promoter to
+enhance the binding of RNA polymerase. Inducer
+molecules can increase transcription either by
+inactivating repressors or by activating activator
+proteins. In the
+trp operon, the
+trp repressor is itself
+activated by binding to tryptophan. Therefore, if
+tryptophan is not needed, the repressor is bound to the
+operator and transcription remains off. The
+lac operon
+is activated by the CAP (catabolite activator protein),
+which binds to the promoter to stabilize RNA
+polymerase binding. CAP is itself activated by cAMP,
+whose concentration rises as the concentration of
+glucose falls. However, the
+lac operon also requires the
+presence of lactose for transcription to occur. Lactose
+inactivates the
+lac repressor, and prevents the
+repressor protein from binding to the
+lac operator. With
+the repressor inactivated, transcription may proceed.
+Therefore glucose must be absent and lactose must be
+present for effective transcription of the
+lac operon.
+16.3 Eukaryotic Epigenetic Gene Regulation
+In eukaryotic cells, the first stage of gene-expression
+control occurs at the epigenetic level. Epigenetic
+mechanisms control access to the chromosomal region
+to allow genes to be turned on or off. Chromatin
+remodeling controls how DNA is packed into the
+nucleus by regulating how tightly the DNA is wound
+around histone proteins. The DNA itself may be
+methylated to selectively silence genes. The addition
+or removal of chemical modifications (or flags) to
+histone proteins or DNA signals the cell to open or
+close a chromosomal region. Therefore, eukaryotic
+cells can control whether a gene is expressed by
+controlling accessibility to the binding of RNA
+polymerase and its transcription factors.
+16.4 Eukaryotic Transcription Gene
+Regulation
+To start transcription, general transcription factors,
+such as TFIID, TFIIB, and others, must first bind to the
+TATA box and recruit RNA polymerase to that location.
+Additional transcription factors may also bind to other
+regulatory elements at the promoter to increase or
+prevent transcription. In addition to promoter
+sequences, enhancer regions help augment
+transcription. Enhancers can be upstream,
+downstream, within a gene itself, or on other
+chromosomes. Specific transcription factors bound to
+enhancer regions may either increase or prevent
+transcription.
+16.5 Eukaryotic Post-transcriptional Gene
+Regulation
+Post-transcriptional control can occur at any stage
+after transcription, including RNA splicing and RNA
+stability. Once RNA is transcribed, it must be processed
+to create a mature RNA that is ready to be translated.
+This involves the removal of introns that do not code
+for protein. Spliceosomes bind to the signals that mark
+the exon/intron border to remove the introns and ligate
+the exons together. Once this occurs, the RNA is
+mature and can be translated. Alternative splicing can
+produce more than one mRNA from a given transcript.
+Different splicing variants may be produced under
+different conditions.
+RNA is created and spliced in the nucleus, but needs to
+be transported to the cytoplasm to be translated. RNA
+is transported to the cytoplasm through the nuclear
+434 16 • Chapter Summary

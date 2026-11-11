@@ -1,0 +1,75 @@
+INTRODUCTION
+CHAPTER 37
+The Endocrine System
+37.1 Types of Hormones
+37.2 How Hormones Work
+37.3 Regulation of Body Processes
+37.4 Regulation of Hormone Production
+37.5 Endocrine Glands
+An animal’s endocrine system controls body processes through the production, secretion, and
+regulation of hormones, which serve as chemical “messengers” functioning in cellular and organ activity and,
+ultimately, maintaining the body’s homeostasis. The endocrine system plays a role in growth, metabolism, and
+sexual development. In humans, common endocrine system diseases include thyroid disease and diabetes mellitus.
+In organisms that undergo metamorphosis, the process is controlled by the endocrine system. The transformation
+from tadpole to frog, for example, is complex and nuanced to adapt to specific environments and ecological
+circumstances.
+37.1 Types of Hormones
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• List the different types of hormones
+• Explain their role in maintaining homeostasis
+Maintaining homeostasis within the body requires the coordination of many different systems and organs.
+Communication between neighboring cells, and between cells and tissues in distant parts of the body, occurs
+through the release of chemicals called hormones. Hormones are released into body fluids (usually blood) that carry
+these chemicals to their target cells. At the target cells, which are cells that have a receptor for a signal or ligand
+from a signal cell, the hormones elicit a response. The cells, tissues, and organs that secrete hormones make up the
+endocrine system. Examples of glands of the endocrine system include the adrenal glands, which produce
+hormones such as epinephrine and norepinephrine that regulate responses to stress, and the thyroid gland, which
+produces thyroid hormones that regulate metabolic rates.
+Although there are many different hormones in the human body, they can be divided into three classes based on
+their chemical structure: lipid-derived, amino acid-derived, and peptide (peptide and proteins) hormones. One of
+the key distinguishing features of lipid-derived hormones is that they can diffuse across plasma membranes
+whereas the amino acid-derived and peptide hormones cannot.
+Lipid-Derived Hormones (or Lipid-soluble Hormones)
+Most lipid hormones are derived from cholesterol and thus are structurally similar to it, as illustrated in Figure 37.2.
+FIGURE 37.1 The process of amphibian metamorphosis, as seen in the tadpole-to-frog stages shown here, is driven by hormones. (credit
+"tadpole": modification of work by Brian Gratwicke)
+CHAPTER OUTLINE
+The primary class of lipid hormones in humans is the steroid hormones. Chemically, these hormones are usually
+ketones or alcohols; their chemical names will end in “-ol” for alcohols or “-one” for ketones. Examples of steroid
+hormones include estrogens (such as estradiol) and androgens (such as testosterone), both of which regulate bone
+and tissue development in all humans.
+Gonadal hormones, produced by the gonads, include both steroid and peptide hormones. Androgens and estrogens
+resemble one another in chemical structure and originate from the same molecule. Estrogens are chief drivers of
+sexual development in an ovarian reproductive system, while androgens drive development in a testicular
+reproductive system. The ovaries produce steroid hormones such as estradiol and progesterone. When androgens
+are produced, some of them are later converted to estrogens. Minute amounts of estrogen occur through aromatase
+actions in adipose, brain, skin, and bone, which convert testosterone to estrogen. The testes and the adrenal cortex
+both secrete testosterone.
+Other steroid hormones include aldosterone and cortisol, which are released by the adrenal glands along with some
+other types of androgens. Steroid hormones are insoluble in water, and they are transported by transport proteins in
+blood. As a result, they remain in circulation longer than peptide hormones. For example, cortisol has a half-life of
+60 to 90 minutes, while epinephrine, an amino acid derived-hormone, has a half-life of approximately one minute.
+FIGURE 37.2 The structures shown here represent (a) cholesterol, plus the steroid hormones (b) testosterone and (c) estradiol.
+Amino Acid-Derived Hormones
+The amino acid-derived hormones are relatively small molecules that are derived from the amino acids tyrosine
+and tryptophan, shown in Figure 37.3. If a hormone is amino acid-derived, its chemical name will end in “-ine”.
+Examples of amino acid-derived hormones include epinephrine and norepinephrine, which are synthesized in the
+medulla of the adrenal glands, and thyroxine, which is produced by the thyroid gland. The pineal gland in the brain
+makes and secretes melatonin which regulates sleep cycles.
+1080 37 • The Endocrine System
+FIGURE 37.3 (a) The hormone epinephrine, which triggers the fight-or-flight response, is derived from the amino acid tyrosine. (b) The
+hormone melatonin, which regulates circadian rhythms, is derived from the amino acid tryptophan.
+Peptide Hormones
+The structure of peptide hormones is that of a polypeptide chain (chain of amino acids). The peptide hormones
+include molecules that are short polypeptide chains, such as antidiuretic hormone and oxytocin produced in the
+brain and released into the blood in the posterior pituitary gland. This class also includes small proteins, like growth
+hormones produced by the pituitary, and large glycoproteins such as follicle-stimulating hormone produced by the
+pituitary. Figure 37.4 illustrates these peptide hormones.
+Secreted peptides like insulin are stored within vesicles in the cells that synthesize them. They are then released in
+response to stimuli such as high blood glucose levels in the case of insulin. Amino acid-derived and polypeptide
+hormones are water-soluble and insoluble in lipids. These hormones cannot pass through plasma membranes of
+cells; therefore, their receptors are found on the surface of the target cells.
+FIGURE 37.4 The structures of peptide hormones (a) oxytocin, (b) growth hormone, and (c) follicle-stimulating hormone are shown. These
+peptide hormones are much larger than those derived from cholesterol or amino acids.
+37.1 • Types of Hormones 1081

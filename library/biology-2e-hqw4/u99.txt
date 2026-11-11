@@ -1,0 +1,185 @@
+10.5 Prokaryotic Cell Division
+In both prokaryotic and eukaryotic cell division, the
+genomic DNA is replicated and then each copy is
+allocated into a daughter cell. In addition, the
+cytoplasmic contents are divided evenly and
+distributed to the new cells. However, there are many
+differences between prokaryotic and eukaryotic cell
+division. Bacteria have a single, circular DNA
+chromosome but no nucleus. Therefore, mitosis
+(karyokinesis) is not necessary in bacterial cell division.
+Bacterial cytokinesis is directed by a ring composed of
+a protein called FtsZ. Ingrowth of membrane and cell
+wall material from the periphery of the cells results in
+the formation of a septum that eventually constructs
+the separate cell walls of the daughter cells.
+Visual Connection Questions
+1 . Figure 10.14 Rb and other proteins that
+negatively regulate the cell cycle are sometimes
+called tumor suppressors. Why do you think the
+name tumor suppressor might be appropriate
+for these proteins?
+2 . Figure 10.16 Human papillomavirus can cause
+cervical cancer. The virus encodes E6, a protein
+that binds p53. Based on this fact and what you
+know about p53, what effect do you think E6
+binding has on p53 activity?
+a. E6 activates p53
+b. E6 inactivates p53
+c. E6 mutates p53
+d. E6 binding marks p53 for degradation
+Review Questions
+3 . A diploid cell has_______ the number of
+chromosomes as a haploid cell.
+a. one-fourth
+b. half
+c. twice
+d. four times
+4 . An organism’s traits are determined by the
+specific combination of inherited _____.
+a. cells.
+b. genes.
+c. proteins.
+d. chromatids.
+5 . The first level of DNA organization in a
+eukaryotic cell is maintained by which molecule?
+a. cohesin
+b. condensin
+c. chromatin
+d. histone
+6 . Identical copies of chromatin held together by
+cohesin at the centromere are called _____.
+a. histones.
+b. nucleosomes.
+c. chromatin.
+d. sister chromatids.
+7 . Chromosomes are duplicated during what stage
+of the cell cycle?
+a. G1 phase
+b. S phase
+c. prophase
+d. prometaphase
+8. Which of the following events does not occur
+during some stages of interphase?
+a. DNA duplication
+b. organelle duplication
+c. increase in cell size
+d. separation of sister chromatids
+9. The mitotic spindles arise from which cell
+structure?
+a. centromere
+b. centrosome
+c. kinetochore
+d. cleavage furrow
+10. Attachment of the mitotic spindle fibers to the
+kinetochores is a characteristic of which stage of
+mitosis?
+a. prophase
+b. prometaphase
+c. metaphase
+d. anaphase
+11. Unpacking of chromosomes and the formation of
+a new nuclear envelope is a characteristic of
+which stage of mitosis?
+a. prometaphase
+b. metaphase
+c. anaphase
+d. telophase
+12. Separation of the sister chromatids is a
+10 • Visual Connection Questions 287
+characteristic of which stage of mitosis?
+a. prometaphase
+b. metaphase
+c. anaphase
+d. telophase
+13. The chromosomes become visible under a light
+microscope during which stage of mitosis?
+a. prophase
+b. prometaphase
+c. metaphase
+d. anaphase
+14. The fusing of Golgi vesicles at the metaphase
+plate of dividing plant cells forms what
+structure?
+a. cell plate
+b. actin ring
+c. cleavage furrow
+d. mitotic spindle
+15. Figure 10.6 Which of the following is the correct
+order of events in mitosis?
+a. Sister chromatids line up at the
+metaphase plate. The kinetochore
+becomes attached to the mitotic spindle.
+The nucleus reforms and the cell divides.
+Cohesin proteins break down and the
+sister chromatids separate.
+b. The kinetochore becomes attached to the
+mitotic spindle. Cohesin proteins break
+down and the sister chromatids separate.
+Sister chromatids line up at the
+metaphase plate. The nucleus reforms and
+the cell divides.
+c. The kinetochore becomes attached to the
+cohesin proteins. Sister chromatids line up
+at the metaphase plate. The kinetochore
+breaks down and the sister chromatids
+separate. The nucleus reforms and the cell
+divides.
+d. The kinetochore becomes attached to the
+mitotic spindle. Sister chromatids line up
+at the metaphase plate. Cohesin proteins
+break down and the sister chromatids
+separate. The nucleus reforms and the cell
+divides.
+16. At which of the cell-cycle checkpoints do
+external forces have the greatest influence?
+a. G1 checkpoint
+b. G2 checkpoint
+c. M checkpoint
+d. G0 checkpoint
+17. What is the main prerequisite for clearance at
+the G2 checkpoint?
+a. cell has reached a sufficient size
+b. an adequate stockpile of nucleotides
+c. accurate and complete DNA replication
+d. proper attachment of mitotic spindle
+fibers to kinetochores
+18. If the M checkpoint is not cleared, what stage of
+mitosis will be blocked?
+a. prophase
+b. prometaphase
+c. metaphase
+d. anaphase
+19. Which protein is a positive regulator that
+phosphorylates other proteins when activated?
+a. p53
+b. retinoblastoma protein (Rb)
+c. cyclin
+d. cyclin-dependent kinase (Cdk)
+20. Many of the negative regulator proteins of the
+cell cycle were discovered in what type of cells?
+a. gametes
+b. cells in G0
+c. cancer cells
+d. stem cells
+21. Which negative regulatory molecule can trigger
+cell suicide (apoptosis) if vital cell cycle events
+do not occur?
+a. p53
+b. p21
+c. retinoblastoma protein (Rb)
+d. cyclin-dependent kinase (Cdk)
+22. ___________ are changes to the order of
+nucleotides in a segment of DNA that codes for a
+protein.
+a. Proto-oncogenes
+b. Tumor suppressor genes
+c. Gene mutations
+d. Negative regulators
+23. A gene that codes for a positive cell-cycle
+regulator is called a(n) _____.
+a. kinase inhibitor.
+b. tumor suppressor gene.
+c. proto-oncogene.
+d. oncogene.
+288 10 • Review Questions

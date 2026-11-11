@@ -1,0 +1,34 @@
+INTRODUCTION
+CHAPTER 21
+Viruses
+21.1 Viral Evolution, Morphology, and Classification
+21.2 Virus Infections and Hosts
+21.3 Prevention and Treatment of Viral Infections
+21.4 Other Acellular Entities: Prions and Viroids
+Viruses are noncellular parasitic entities that cannot be classified within any kingdom. They can
+infect organisms as diverse as bacteria, plants, and animals. In fact, viruses exist in a sort of netherworld between a
+living organism and a nonliving entity. Living things grow, metabolize, and reproduce. In contrast, viruses are not
+cellular, do not have a metabolism or grow, and cannot divide by cell division. Viruses
+can copy, or replicate
+themselves; however, they are entirely dependent on resources derived from their host cells to produce progeny
+viruses—which are assembled in their mature form. No one knows exactly when or how viruses evolved or from what
+ancestral source because viruses have not left a fossil record. Some virologists contend that modern viruses are a
+mosaic of bits and pieces of nucleic acids picked up from various sources along their respective evolutionary paths.
+21.1 Viral Evolution, Morphology, and Classification
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Describe how viruses were first discovered and how they are detected
+• Discuss three hypotheses about how viruses evolved
+• Describe the general structure of a virus
+• Recognize the basic shapes of viruses
+• Understand past and emerging classification systems for viruses
+• Describe the basis for the Baltimore classification system
+Viruses are diverse entities: They vary in structure, methods of replication, and the hosts they infect. Nearly all
+forms of life—from prokaryotic bacteria and archaeans, to eukaryotes such as plants, animals, and fungi—have
+viruses that infect them. While most biological diversity can be understood through evolutionary history (such as
+how species have adapted to changing environmental conditions and how different species are related to one
+another through common descent), much about virus origins and evolution remains unknown.
+FIGURE 21.1 The tobacco mosaic virus, seen here by transmission electron microscopy (left), was the first virus to be discovered. The
+virus causes disease in tobacco and other plants, such as the orchid (right). (credit a: USDA ARS; credit b: modification of work by USDA
+Forest Service, Department of Plant Pathology Archive North Carolina State University; scale-bar data from Matt Russell)
+CHAPTER OUTLINE

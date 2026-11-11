@@ -1,0 +1,98 @@
+into nucleosomes, and have two distinct regions that
+can be distinguished by staining, reflecting different
+states of packaging and compaction.
+14.3 Basics of DNA Replication
+During cell division, each daughter cell receives a copy
+of each molecule of DNA by a process known as DNA
+replication. The single chromosome of a prokaryote or
+each chromosome of a eukaryote consists of a single
+continuous double helix. The model for DNA replication
+suggests that the two strands of the double helix
+separate during replication, and each strand serves as
+a template from which the new complementary strand
+is copied. In the conservative model of replication, the
+parental DNA is conserved, and the daughter DNA is
+newly synthesized. The semi-conservative model
+suggests that each of the two parental DNA strands
+acts as template for new DNA to be synthesized; after
+replication, each double-stranded DNA retains the
+parental or “old” strand and one “new” strand. The
+dispersive model suggested that the two copies of the
+DNA would have segments of parental DNA and newly
+synthesized DNA. The Meselson and Stahl experiment
+supported the semi-conservative model of replication,
+in which an entire replicated chromosome consists of
+one parental strand and one newly synthesized strand
+of DNA.
+14.4 DNA Replication in Prokaryotes
+Replication in prokaryotes starts from a sequence
+found on the chromosome called the origin of
+replication—the point at which the DNA opens up.
+Helicase opens up the DNA double helix, resulting in
+the formation of the replication fork. Single-strand
+binding proteins bind to the single-stranded DNA near
+the replication fork to keep the fork open. Primase
+synthesizes an RNA primer to initiate synthesis by DNA
+polymerase, which can add nucleotides only to the 3'
+end of a previously synthesized primer strand. Both
+new DNA strands grow according to their respective
+5'-3' directions. One strand is synthesized continuously
+in the direction of the replication fork; this is called the
+leading strand. The other strand is synthesized in a
+direction away from the replication fork, in short
+stretches of DNA known as Okazaki fragments. This
+strand is known as the lagging strand. Once replication
+is completed, the RNA primers are replaced by DNA
+nucleotides and the DNA is sealed with DNA ligase,
+which creates phosphodiester bonds between the 3'-
+OH of one end and the 5' phosphate of the other
+strand.
+14.5 DNA Replication in Eukaryotes
+Replication in eukaryotes starts at multiple origins of
+replication. The mechanism is quite similar to that in
+prokaryotes. A primer is required to initiate synthesis,
+which is then extended by DNA polymerase as it adds
+nucleotides one by one to the growing chain. The
+leading strand is synthesized continuously, whereas
+the lagging strand is synthesized in short stretches
+called Okazaki fragments. The RNA primers are
+replaced with DNA nucleotides; the DNA Okazaki
+fragments are linked into one continuous strand by
+DNA ligase. The ends of the chromosomes pose a
+problem as the primer RNA at the 5’ ends of the DNA
+cannot be replaced with DNA, and the chromosome is
+progressively shortened. Telomerase, an enzyme with
+an inbuilt RNA template, extends the ends by copying
+the RNA template and extending one strand of the
+chromosome. DNA polymerase can then fill in the
+complementary DNA strand using the regular
+replication enzymes. In this way, the ends of the
+chromosomes are protected.
+14.6 DNA Repair
+DNA polymerase can make mistakes while adding
+nucleotides. It edits the DNA by proofreading every
+newly added base. Incorrect bases are removed and
+replaced by the correct base before proceeding with
+elongation. Most mistakes are corrected during
+replication, although when this does not happen, the
+mismatch repair mechanism is employed. Mismatch
+repair enzymes recognize the wrongly incorporated
+base and excise it from the DNA, replacing it with the
+correct base. In yet another type of repair, nucleotide
+excision repair, a damaged base is removed along with
+a few bases on the 5' and 3' end, and these are
+replaced by copying the template with the help of DNA
+polymerase. The ends of the newly synthesized
+fragment are attached to the rest of the DNA using DNA
+ligase, which creates a phosphodiester bond.
+Most mistakes are corrected, and if they are not, they
+may result in a mutation, defined as a permanent
+change in the DNA sequence. Mutations can be of
+many types, such as substitution, deletion, insertion,
+and trinucleotide repeat expansions. Mutations in
+repair genes may lead to serious consequences such
+as cancer. Mutations can be induced or may occur
+spontaneously.
+Visual Connection Questions
+1 . Figure 14.10 In eukaryotic cells, DNA and RNA synthesis occur in a separate compartment from
+14 • Visual Connection Questions 383

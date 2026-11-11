@@ -1,0 +1,92 @@
+bonds with the amino acid at the P site. The entire
+mRNA is translated in three-nucleotide “steps” of the
+ribosome. When a nonsense codon is encountered, a
+release factor binds and dissociates the components
+and frees the new protein. Folding of the protein occurs
+during and after translation.
+Visual Connection Questions
+1 . Figure 15.11 A scientist splices a eukaryotic
+promoter in front of a bacterial gene and inserts
+the gene in a bacterial chromosome. Would you
+expect the bacteria to transcribe the gene?
+2 . Figure 15.13 Errors in splicing are implicated in
+cancers and other human diseases. What kinds
+of mutations might lead to splicing errors? Think
+of different possible outcomes if splicing errors
+occur.
+3 . Figure 15.18 Many antibiotics inhibit bacterial
+protein synthesis. For example, tetracycline
+blocks the A site on the bacterial ribosome, and
+chloramphenicol blocks peptidyl transfer. What
+specific effect would you expect each of these
+antibiotics to have on protein synthesis?
+Tetracycline would directly affect:
+a. tRNA binding to the ribosome
+b. ribosome assembly
+c. growth of the protein chain
+Chloramphenicol would directly affect
+a. tRNA binding to the ribosome
+b. ribosome assembly
+c. growth of the protein chain
+Review Questions
+4 . The AUC and AUA codons in mRNA both specify
+isoleucine. What feature of the genetic code
+explains this?
+a. complementarity
+b. nonsense codons
+c. universality
+d. degeneracy
+5 . How many nucleotides are in 12 mRNA codons?
+a. 12
+b. 24
+c. 36
+d. 48
+6 . Which event contradicts the central dogma of
+molecular biology?
+a. Poly-A polymerase enzymes process
+mRNA in the nucleus.
+b. Endonuclease enzymes splice out and
+repair damaged DNA.
+c. Scientists use reverse transcriptase
+enzymes to make DNA from RNA.
+d. Codons specifying amino acids are
+degenerate and universal.
+7 . Which subunit of the
+E. coli polymerase confers
+specificity to transcription?
+a.
+α
+b.
+β
+c.
+β'
+d.
+σ
+8 . The -10 and -35 regions of prokaryotic
+promoters are called consensus sequences
+because ________.
+a. they are identical in all bacterial species
+b. they are similar in all bacterial species
+c. they exist in all organisms
+d. they have the same function in all
+organisms
+9. Three different bacteria species have the following
+consensus sequences upstream of a conserved gene.
+Species A Species B Species C
+-10 TAATAAT TTTAAT TATATT
+-35 TTGACA TTGGCC TTGAAA
+TABLE 15.2
+Order the bacteria from most to least efficient initiation
+of gene transcription.
+a. A > B > C
+b. B > C > A
+c. C > B > A
+d. A > C > B
+10. Which feature of promoters can be found in both
+prokaryotes and eukaryotes?
+a. GC box
+b. TATA box
+c. octamer box
+d. -10 and -35 sequences
+11. What transcripts will be most affected by low
+412 15 • Visual Connection Questions

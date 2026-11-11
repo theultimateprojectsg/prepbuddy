@@ -1,0 +1,177 @@
+FIGURE 24.9 Sporangiospores. This bright field light micrograph shows the release of spores from a sporangium at the end of a hypha
+called a sporangiophore. The organism is a
+Mucor sp. fungus, a mold often found indoors. (credit: modification of work by Dr. Lucille Georg,
+CDC; scale-bar data from Matt Russell)
+Sexual Reproduction
+Sexual reproduction introduces genetic variation into a population of fungi. In fungi,
+sexual reproduction often
+occurs in response to adverse environmental conditions. During sexual reproduction, two
+mating types are
+produced. When both mating types are present in the same mycelium, it is called homothallic, or self-fertile.
+Heterothallic mycelia require two different, but compatible, mycelia to reproduce sexually.
+Although there are many variations in fungal sexual reproduction, all include the following three stages (Figure
+24.8). First, during plasmogamy (literally, “marriage or union of cytoplasm”), two haploid cells fuse, leading to a
+dikaryotic stage where two haploid nuclei coexist in a single cell. During karyogamy (“nuclear marriage”), the
+haploid nuclei fuse to form a diploid zygote nucleus. Finally, meiosis takes place in the gametangia (singular,
+gametangium) organs, in which gametes of different mating types are generated. At this stage, spores are
+disseminated into the environment.
+LINK TO LEARNING
+Review the characteristics of fungi by watching this video (https://openstax.org/l/fungi_kingdom).
+24.2 Classifications of Fungi
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Identify fungi and place them into the five major phyla according to current classification
+• Describe each phylum in terms of major representative species and patterns of reproduction
+The kingdom Fungi contains five major phyla that were established according to their mode of sexual reproduction
+or using molecular data. Unrelated fungi that reproduce without a sexual cycle, were once placed for convenience in
+a sixth group, the Deuteromycota, called a “form phylum,” because superficially they appeared to be similar, a
+polyphyletic group (group of organisms that is of mixed evolutionary origin). However, most mycologists have
+discontinued this practice. Rapid advances in molecular biology and the sequencing of 18S rRNA (ribosomal RNA)
+continue to show new and different relationships among the various categories of fungi.
+The five true phyla of fungi are the Chytridiomycota (Chytrids), the Zygomycota (conjugated fungi), the Ascomycota
+(sac fungi), the Basidiomycota (club fungi) and the recently described Phylum Glomeromycota (Figure 24.10).
+640 24 • Fungi
+FIGURE 24.10 Fungal phyla. Note: “-mycota” is used to designate a phylum while “-mycetes” formally denotes a class or is used informally
+to refer to all members of the phylum.
+Chytridiomycota: The Chytrids
+The only class in the Phylum Chytridiomycota is the Chytridiomycetes. The chytrids are the simplest and most
+primitive Eumycota, or true fungi. The evolutionary record shows that the first recognizable chytrids appeared
+during the late pre-Cambrian period, more than 500 million years ago. Like all fungi, chytrids have chitin in their cell
+walls, but one group of chytrids has both cellulose and chitin in the cell wall. Most chytrids are unicellular; however,
+a few form multicellular organisms and hyphae, which have no septa between cells (coenocytic). The Chytrids are
+the only fungi that have retained flagella. They produce both gametes and diploid zoospores that swim with the help
+of a single flagellum. An unusual feature of the chytrids is that both male and female gametes are flagellated.
+The ecological habitat and cell structure of chytrids have much in common with protists. Chytrids usually live in
+aquatic environments, although some species live on land. Some species thrive as parasites on plants, insects, or
+amphibians (Figure 24.11), while others are saprobes. The chytrid species
+Allomyces is well characterized as an
+experimental organism. Its reproductive cycle includes both asexual and sexual phases.
+Allomyces produces diploid
+or haploid flagellated zoospores in a sporangium.
+24.2 • Classifications of Fungi 641
+FIGURE 24.11 Chytrids. The chytrid
+Batrachochytrium dendrobatidis is seen in these light micrographs as transparent spheres growing on
+(a) a freshwater arthropod (water mite) and (b) algae. This chytrid causes skin diseases in many species of amphibians, resulting in species
+decline and extinction. (credit: modification of work by Johnson ML, Speare R., CDC)
+Zygomycota: The Conjugated Fungi
+The zygomycetes are a relatively small group of fungi belonging to the Phylum Zygomycota. They include the
+familiar bread mold,
+Rhizopus stolonifer, which rapidly propagates on the surfaces of breads, fruits, and vegetables.
+Most species are saprobes, living off decaying organic material; a few are parasites, particularly of insects.
+Zygomycetes play a considerable commercial role. For example, the metabolic products of some species ofRhizopus are intermediates in the synthesis of semi-synthetic steroid hormones.
+Zygomycetes have a thallus of coenocytic hyphae in which the nuclei are haploid when the organism is in the
+vegetative stage. The fungi usually reproduce asexually by producing sporangiospores (Figure 24.12). The black tips
+of bread mold are the swollen sporangia packed with black spores (Figure 24.13). When spores land on a suitable
+substrate, they germinate and produce a new mycelium. Sexual reproduction starts when environmental conditions
+become unfavorable. Two opposing mating strains (type + and type –) must be in close proximity for gametangia
+from the hyphae to be produced and fuse, leading to karyogamy. Each zygospore can contain several diploid nuclei.
+The developing diploid zygospores have thick coats that protect them from desiccation and other hazards. They
+may remain dormant until environmental conditions are favorable. When the zygospore germinates, it undergoes
+meiosis and produces haploid spores, which will, in turn, grow into a new organism. This form of sexual reproduction
+in fungi is called conjugation (although it differs markedly from conjugation in bacteria and protists), giving rise to
+the name “conjugated fungi”.
+642 24 • Fungi
+FIGURE 24.12 Zygomycete life cycle. Zygomycetes have asexual and sexual phases in their life cycles. In the asexual phase, spores are
+produced from haploid sporangia by mitosis (not shown). In the sexual phase, plus and minus haploid mating types conjugate to form a
+heterokaryotic zygosporangium. Karyogamy then produces a diploid zygote. Diploid cells in the zygote undergo meiosis and germinate to
+form a haploid sporangium, which releases the next generation of haploid spores.
+FIGURE 24.13 Rhizopus spores. Asexual sporangia grow at the end of stalks, which appear as (a) white fuzz seen on this bread mold,
+Rhizopus stolonifer. The black tips (b) of bread mold are the spore-containing sporangia. (credit b: modification of work by
+"polandeze"/Flickr)
+Ascomycota: The Sac Fungi
+The majority of known fungi belong to the Phylum Ascomycota, which is characterized by the formation of an ascus
+(plural, asci), a sac-like structure that contains haploid
+ascospores. Filamentous ascomycetes produce hyphae
+divided by perforated septa, allowing streaming of cytoplasm from one cell to another. Conidia and asci, which are
+24.2 • Classifications of Fungi 643
+used respectively for asexual and sexual reproduction, are usually separated from the vegetative hyphae by blocked
+(non-perforated) septa. Many ascomycetes are of commercial importance. Some play a beneficial role for humanity,
+such as the yeasts used in baking, brewing, and wine fermentation, and directly as food delicacies such as truffles
+and morels.
+Aspergillus oryzae is used in the fermentation of rice to produce sake. Other ascomycetes parasitize
+plants and animals, including humans. For example, fungal pneumonia poses a significant threat to AIDS patients
+who have a compromised immune system. Ascomycetes not only infest and destroy crops directly; they also
+produce poisonous secondary metabolites that make crops unfit for consumption.
+Asexual reproduction is frequent and involves the production of conidiophores that release haploid
+conidiospores
+(Figure 24.14). Sexual reproduction starts with the development of special hyphae from either one of two types of
+mating strains (Figure 24.14). The “male” strain produces an antheridium and the “female” strain develops an
+ascogonium. At fertilization, the antheridium and the ascogonium combine in plasmogamy, without nuclear fusion.
+Special dikaryotic ascogenous (ascus-producing) hyphae arise from this dikaryon, in which each cell has pairs of
+nuclei: one from the “male” strain and one from the “female” strain. In each ascus, two haploid nuclei fuse in
+karyogamy. Thousands of asci fill a fruiting body called the ascocarp. The diploid nucleus in each ascus gives rise to
+haploid nuclei by meiosis, and spore walls form around each nucleus. The spores in each ascus contain the meiotic
+products of a single diploid nucleus. The ascospores are then released, germinate, and form hyphae that are
+disseminated in the environment and start new mycelia (Figure 24.15).
+644 24 • Fungi
+VISUAL CONNECTION
+FIGURE 24.14 Ascomycete life cycle. The lifecycle of an ascomycete is characterized by the production of asci during the sexual phase. In
+each ascus, the four nuclei produced by meiosis divide once mitotically for a total of eight haploid ascospores. The haploid phase is the
+predominant phase of the life cycle in Ascomycetes.
+Which of the following statements is true?
+a. A dikaryotic ascus that forms in the ascocarp undergoes karyogamy, meiosis, and mitosis to form eight
+ascospores.
+b. A diploid ascus that forms in the ascocarp undergoes karyogamy, meiosis, and mitosis to form eight
+ascospores.
+c. A haploid zygote that forms in the ascocarp undergoes karyogamy, meiosis, and mitosis to form eight
+24.2 • Classifications of Fungi 645
+ascospores.
+d. A dikaryotic ascus that forms in the ascocarp undergoes plasmogamy, meiosis, and mitosis to form eight
+ascospores.
+FIGURE 24.15 Ascospores. The bright field light micrograph shows ascospores being released from asci in the fungus
+Talaromyces flavus
+var.
+flavus. (credit: modification of work by Dr. Lucille Georg, CDC; scale-bar data from Matt Russell)
+Basidiomycota: The Club Fungi
+The fungi in the Phylum Basidiomycota are easily recognizable under a light microscope by their club-shaped
+fruiting bodies called basidia (singular, basidium), which are the swollen terminal cells of hyphae. The basidia,
+which are the reproductive organs of these fungi, are often contained within the familiar mushroom, commonly seen
+in fields after rain, on the supermarket shelves, and growing on your lawn (Figure 24.16). These mushroomproducing basidiomycetes are sometimes referred to as
+“gill fungi” because of the presence of gill-like structures on
+the underside of the cap. The gills are actually
+compacted hyphae on which the basidia are borne. This group also
+includes shelf fungi, which cling to the bark of trees like small shelves. In addition, the basidiomycota include smuts
+and rusts, which are important plant pathogens. Most edible fungi belong to the Phylum Basidiomycota; however,
+some basidiomycota are inedible and produce deadly toxins. For example,
+Cryptococcus neoformans causes severe
+respiratory illness. The infamous death cap mushroom (
+Amanita phalloides) is related to the fly agaric seen at the
+beginning of the previous section.
+646 24 • Fungi
+FIGURE 24.16 Fairy ring. The fruiting bodies of a basidiomycete form a ring in a meadow, commonly called “fairy ring.” The best-known
+fairy ring fungus has the scientific name
+Marasmius oreades. The body of this fungus, its mycelium, is underground and grows outward in a
+circle. As it grows, the mycelium depletes the soil of nitrogen, causing the mycelia to grow away from the center and leading to the “fairy
+ring” of fruiting bodies where there is adequate soil nitrogen. (Credit: "Cropcircles"/Wikipedia Commons)]
+The lifecycle of basidiomycetes includes sexual and asexual reproduction (Figure 24.17). Most fungi are haploid
+through most of their life cycles, but the basidiomycetes produce
+both haploid and dikaryotic mycelia, with the
+dikaryotic phase being dominant. (Note: The dikaryotic phase is technically not diploid, since the nuclei remain
+unfused until shortly before spore production.) In the basidiomycetes, sexual spores are more common than
+asexual spores. The sexual spores form in the club-shaped basidium and are called basidiospores. In the basidium,
+nuclei of two different mating strains fuse (karyogamy), giving rise to a diploid zygote that then undergoes meiosis.
+The haploid nuclei migrate into four different chambers appended to the basidium, and then become basidiospores.
+Each basidiospore germinates and generates
+monokaryotic haploid hyphae. The mycelium that results is called a
+primary mycelium. Mycelia of different mating strains can combine and produce a secondary mycelium that contains
+haploid nuclei of two different mating strains. This is the dominant dikaryotic stage of the basidiomycete life cycle.
+Thus, each cell in this mycelium has two haploid nuclei, which will not fuse until formation of the basidium.
+Eventually, the secondary mycelium generates a basidiocarp, a fruiting body that protrudes from the ground—this is
+what we think of as a mushroom. The basidiocarp bears the developing basidia on the gills under its cap.
+24.2 • Classifications of Fungi 647
+VISUAL CONNECTION
+FIGURE 24.17 Basidiomycete life cycle. The lifecycle of a basidiomycete has sexual and asexual reproduction with haploid and dikaryotic
+mycelia. Haploid primary mycelia fuse to form a dikaryotic secondary mycelium, which is the dominant stage of the life cycle, and produces
+the basidiocarp.
+Which of the following statements is true?
+a. A basidium is the fruiting body of a mushroom-producing fungus, and it forms four basidiocarps.
+b. The result of the plasmogamy step is four basidiospores.
+c. Karyogamy results directly in the formation of mycelia.
+d. A basidiocarp is the fruiting body of a mushroom-producing fungus.
+Asexual Ascomycota and Basidiomycota
+Imperfect fungi—those that do not display a sexual phase—were formerly classified in the form phylum
+Deuteromycota, an invalid taxon no longer used in the present, ever-developing classification of organisms. While
+Deuteromycota was once a classification taxon, recent molecular analysis has shown that some of the members
+classified in this group belong to the Ascomycota (Figure 24.18) or the Basidiomycota. Because some members of
+this group have not yet been appropriately classified, they are less well described in comparison to members of
+648 24 • Fungi

@@ -1,0 +1,139 @@
+produce lightweight fruit that can float on water.
+Animals and birds eat fruits, and the seeds that are not digested are excreted in their droppings some distance
+away. Some animals, like squirrels, bury seed-containing fruits for later use; if the squirrel does not find its stash of
+fruit, and if conditions are favorable, the seeds germinate. Some fruits, like the cocklebur, have hooks or sticky
+structures that stick to an animal's coat and are then transported to another place. Humans also play a big role in
+dispersing seeds when they carry fruits to new places and throw away the inedible part that contains the seeds.
+All of the above mechanisms allow for seeds to be dispersed through space, much like an animal’s offspring can
+move to a new location. Seed dormancy, which was described earlier, allows plants to disperse their progeny
+through time: something animals cannot do. Dormant seeds can wait months, years, or even decades for the proper
+conditions for germination and propagation of the species.
+FIGURE 32.23 Fruits and seeds are dispersed by various means. (a) Dandelion seeds are dispersed by wind, the (b) coconut seed is
+dispersed by water, and the (c) acorn is dispersed by animals that cache and then forget it. (credit a: modification of work by
+"Rosendahl"/Flickr; credit b: modification of work by Shine Oa; credit c: modification of work by Paolo Neo)
+32.3 Asexual Reproduction
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Compare the mechanisms and methods of natural and artificial asexual reproduction
+• Describe the advantages and disadvantages of natural and artificial asexual reproduction
+• Discuss plant life spans
+Many plants are able to propagate themselves using asexual reproduction. This method does not require the
+investment required to produce a flower, attract pollinators, or find a means of seed dispersal. Asexual reproduction
+produces plants that are genetically identical to the parent plant because no mixing of male and female gametes
+takes place. Traditionally, these plants survive well under stable environmental conditions when compared with
+plants produced from sexual reproduction because they carry genes identical to those of their parents.
+Many different types of roots exhibit asexual reproduction (Figure 32.24). The corm is used by gladiolus and garlic.
+Bulbs, such as a scaly bulb in lilies and a tunicate bulb in daffodils, are other common examples. A potato is a stem
+tuber, while parsnip propagates from a taproot. Ginger and iris produce rhizomes, while ivy uses an adventitious root
+(a root arising from a plant part other than the main or primary root), and the strawberry plant has a stolon, which is
+also called a runner.
+940 32 • Plant Reproduction
+FIGURE 32.24 Different types of stems allow for asexual reproduction. (a) The corm of a garlic plant looks similar to (b) a tulip bulb, but the
+corm is solid tissue, while the bulb consists of layers of modified leaves that surround an underground stem. Both corms and bulbs can selfpropagate, giving rise to new plants. (c) Ginger forms masses of stems called rhizomes that can give rise to multiple plants. (d) Potato
+plants form fleshy stem tubers. Each eye in the stem tuber can give rise to a new plant. (e) Strawberry plants form stolons: stems that grow
+at the soil surface or just below ground and can give rise to new plants. (credit a: modification of work by Dwight Sipler; credit c:
+modification of work by Albert Cahalan, USDA ARS; credit d: modification of work by Richard North; credit e: modification of work by Julie
+Magro)
+Some plants can produce seeds without fertilization. Either the ovule or part of the ovary, which is diploid in nature,
+gives rise to a new seed. This method of reproduction is known as apomixis.
+An advantage of asexual reproduction is that the resulting plant will reach maturity faster. Since the new plant is
+arising from an adult plant or plant parts, it will also be sturdier than a seedling. Asexual reproduction can take place
+32.3 • Asexual Reproduction 941
+by natural or artificial (assisted by humans) means.
+Natural Methods of Asexual Reproduction
+Natural methods of asexual reproduction include strategies that plants have developed to self-propagate. Many
+plants—like ginger, onion, gladioli, and dahlia—continue to grow from buds that are present on the surface of the
+stem. In some plants, such as the sweet potato, adventitious roots or runners can give rise to new plants (Figure
+32.25). In
+Bryophyllum and kalanchoe, the leaves have small buds on their margins. When these are detached from
+the plant, they grow into independent plants; or, they may start growing into independent plants if the leaf touches
+the soil. Some plants can be propagated through cuttings alone.
+FIGURE 32.25 A stolon, or runner, is a stem that runs along the ground. At the nodes, it forms adventitious roots and buds that grow into a
+new plant.
+Artificial Methods of Asexual Reproduction
+These methods are frequently employed to give rise to new, and sometimes novel, plants. They include grafting,
+cutting, layering, and micropropagation.
+Grafting
+Grafting has long been used to produce novel varieties of roses, citrus species, and other plants. In grafting, two
+plant species are used; part of the stem of the desirable plant is grafted onto a rooted plant called the stock. The
+part that is grafted or attached is called the scion. Both are cut at an oblique angle (any angle other than a right
+angle), placed in close contact with each other, and are then held together (Figure 32.26). Matching up these two
+surfaces as closely as possible is extremely important because these will be holding the plant together. The vascular
+systems of the two plants grow and fuse, forming a graft. After a period of time, the scion starts producing shoots,
+and eventually starts bearing flowers and fruits. Grafting is widely used in viticulture (grape growing) and the citrus
+industry. Scions capable of producing a particular fruit variety are grafted onto root stock with specific resistance to
+disease.
+942 32 • Plant Reproduction
+FIGURE 32.26 Grafting is an artificial method of asexual reproduction used to produce plants combining favorable stem characteristics
+with favorable root characteristics. The stem of the plant to be grafted is known as the scion, and the root is called the stock.
+Cutting
+Plants such as coleus and money plant are propagated through stem cuttings, where a portion of the stem
+containing nodes and internodes is placed in moist soil and allowed to root. In some species, stems can start
+producing a root even when placed only in water. For example, leaves of the African violet will root if kept in water
+undisturbed for several weeks.
+Layering
+Layering is a method in which a stem attached to the plant is bent and covered with soil. Young stems that can be
+bent easily without any injury are preferred. Jasmine and bougainvillea (paper flower) can be propagated this way
+(Figure 32.27). In some plants, a modified form of layering known as air layering is employed. A portion of the bark
+or outermost covering of the stem is removed and covered with moss, which is then taped. Some gardeners also
+apply rooting hormone. After some time, roots will appear, and this portion of the plant can be removed and
+transplanted into a separate pot.
+FIGURE 32.27 In layering, a part of the stem is buried so that it forms a new plant. (credit: modification of work by Pearson Scott Foresman,
+donated to the Wikimedia Foundation)
+32.3 • Asexual Reproduction 943
+Micropropagation
+Micropropagation (also called plant tissue culture) is a method of propagating a large number of plants from a
+single plant in a short time under laboratory conditions (Figure 32.28). This method allows propagation of rare,
+endangered species that may be difficult to grow under natural conditions, are economically important, or are in
+demand as disease-free plants.
+FIGURE 32.28 Micropropagation is used to propagate plants in sterile conditions. (credit: Nikhilesh Sanyal)
+To start plant tissue culture, a part of the plant such as a stem, leaf, embryo, anther, or seed can be used. The plant
+material is thoroughly sterilized using a combination of chemical treatments standardized for that species. Under
+sterile conditions, the plant material is placed on a plant tissue culture medium that contains all the minerals,
+vitamins, and hormones required by the plant. The plant part often gives rise to an undifferentiated mass known as
+callus, from which individual plantlets begin to grow after a period of time. These can be separated and are first
+grown under greenhouse conditions before they are moved to field conditions.
+Plant Life Spans
+The length of time from the beginning of development to the death of a plant is called its life span. The life cycle, on
+the other hand, is the sequence of stages a plant goes through from seed germination to seed production of the
+mature plant. Some plants, such as annuals, only need a few weeks to grow, produce seeds and die. Other plants,
+such as the bristlecone pine, live for thousands of years. Some bristlecone pines have a documented age of 4,500
+years (Figure 32.29). Even as some parts of a plant, such as regions containing meristematic tissue—the area of
+active plant growth consisting of undifferentiated cells capable of cell division—continue to grow, some parts
+undergo programmed cell death (apoptosis). The cork found on stems, and the water-conducting tissue of the
+xylem, for example, are composed of dead cells.
+944 32 • Plant Reproduction
+FIGURE 32.29 The bristlecone pine, shown here in the Ancient Bristlecone Pine Forest in the White Mountains of eastern California, has
+been known to live for 4,500 years. (credit: Rick Goldwaser)
+Plant species that complete their lifecycle in one season are known as annuals, an example of which is
+Arabidopsis,
+or mouse-ear cress. Biennials such as carrots complete their lifecycle in two seasons. In a biennial’s first season,
+the plant has a vegetative phase, whereas in the next season, it completes its reproductive phase. Commercial
+growers harvest the carrot roots after the first year of growth, and do not allow the plants to flower. Perennials, such
+as the magnolia, complete their lifecycle in two years or more.
+In another classification based on flowering frequency, monocarpic plants flower only once in their lifetime;
+examples include bamboo and yucca. During the vegetative period of their life cycle (which may be as long as 120
+years in some bamboo species), these plants may reproduce asexually and accumulate a great deal of food material
+that will be required during their once-in-a-lifetime flowering and setting of seed after fertilization. Soon after
+flowering, these plants die. Polycarpic plants form flowers many times during their lifetime. Fruit trees, such as
+apple and orange trees, are polycarpic; they flower every year. Other polycarpic species, such as perennials, flower
+several times during their life span, but not each year. By this means, the plant does not require all its nutrients to be
+channelled towards flowering each year.
+As is the case with all living organisms, genetics and environmental conditions have a role to play in determining
+how long a plant will live. Susceptibility to disease, changing environmental conditions, drought, cold, and
+competition for nutrients are some of the factors that determine the survival of a plant. Plants continue to grow,
+despite the presence of dead tissue such as cork. Individual parts of plants, such as flowers and leaves, have
+different rates of survival. In many trees, the older leaves turn yellow and eventually fall from the tree. Leaf fall is
+triggered by factors such as a decrease in photosynthetic efficiency, due to shading by upper leaves, or oxidative
+damage incurred as a result of photosynthetic reactions. The components of the part to be shed are recycled by the
+plant for use in other processes, such as development of seed and storage. This process is known as nutrient
+recycling.
+The aging of a plant and all the associated processes is known as senescence, which is marked by several complex
+biochemical changes. One of the characteristics of senescence is the breakdown of chloroplasts, which is
+characterized by the yellowing of leaves. The chloroplasts contain components of photosynthetic machinery such as
+membranes and proteins. Chloroplasts also contain DNA. The proteins, lipids, and nucleic acids are broken down by
+specific enzymes into smaller molecules and salvaged by the plant to support the growth of other plant tissues.
+The complex pathways of nutrient recycling within a plant are not well understood. Hormones are known to play a
+role in senescence. Applications of cytokinins and ethylene delay or prevent senescence; in contrast, abscissic acid
+causes premature onset of senescence.
+32.3 • Asexual Reproduction 945

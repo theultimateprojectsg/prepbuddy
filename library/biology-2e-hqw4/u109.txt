@@ -1,0 +1,202 @@
+recombination serves to exchange genetic material on
+homologous chromosomes such that maternal and
+paternal alleles may be recombined on the same
+chromosome. This is why alleles on a given
+chromosome are not always inherited together.
+Recombination is a random event occurring anywhere
+on a chromosome. Therefore, genes that are far apart
+on the same chromosome are likely to still assort
+independently because of recombination events that
+occurred in the intervening chromosomal space.
+Whether or not they are sorting independently, genes
+may interact at the level of gene products such that the
+expression of an allele for one gene masks or modifies
+the expression of an allele for a different gene. This is
+called epistasis.
+Visual Connection Questions
+1 . Figure 12.5 In pea plants, round peas (R) are
+dominant to wrinkled peas (r). You do a test
+cross between a pea plant with wrinkled peas
+(genotype
+rr) and a plant of unknown genotype
+that has round peas. You end up with three
+plants, all which have round peas. From this
+data, can you tell if the round pea parent plant is
+homozygous dominant or heterozygous? If the
+round pea parent plant is heterozygous, what is
+the probability that a random sample of 3
+progeny peas will all be round?
+2 . Figure 12.6 What are the genotypes of the
+individuals labeled 1, 2, and 3?
+3. Figure 12.12 What ratio of offspring would result
+from a cross between a white-eyed male and a
+female that is heterozygous for red eye color?
+4. Figure 12.16 In pea plants, round seed shape
+(R) is dominant to wrinkled seed shape (r) and
+yellow peas (Y) are dominant to green peas (y).
+What are the possible genotypes and
+phenotypes for a cross between RrYY and rrYy
+pea plants? How many squares do you need to
+do a Punnett square analysis of this cross?
+Review Questions
+5 . Mendel performed hybridizations by transferring
+pollen from the _______ of the male plant to the
+female ova.
+a. anther
+b. pistil
+c. stigma
+d. seed
+6 . Which is one of the seven characteristics that
+Mendel observed in pea plants?
+a. flower size
+b. seed texture
+c. leaf shape
+d. stem color
+7 . Imagine you are performing a cross involving
+seed color in garden pea plants. What F1
+offspring would you expect if you cross truebreeding parents with green seeds and yellow
+seeds? Yellow seed color is dominant over
+green.
+a. 100 percent yellow-green seeds
+b. 100 percent yellow seeds
+c. 50 percent yellow, 50 percent green seeds
+d. 25 percent green, 75 percent yellow seeds
+8 . Consider a cross to investigate the pea pod
+texture trait, involving constricted or inflated
+pods. Mendel found that the traits behave
+according to a dominant/recessive pattern in
+which inflated pods were dominant. If you
+performed this cross and obtained 650 inflatedpod plants in the F2 generation, approximately
+how many constricted-pod plants would you
+expect to have?
+a. 600
+b. 165
+c. 217
+d. 468
+9. A scientist pollinates a true-breeding pea plant
+with violet, terminal flowers with pollen from a
+true-breeding pea plant with white, axial
+flowers. Which of the following observations
+would most accurately describe the F2
+generation?
+a. 75% violet flowers; 75% terminal flowers
+b. 75% white flowers in a terminal position
+c. 75% violet flowers; 75% axial flowers
+d. 75% violet flowers in an axial position
+10. The observable traits expressed by an organism
+are described as its ________.
+a. phenotype
+b. genotype
+c. alleles
+d. zygote
+338 12 • Visual Connection Questions
+11. A recessive trait will be observed in individuals
+that are ________ for that trait.
+a. heterozygous
+b. homozygous or heterozygous
+c. homozygous
+d. diploid
+12. If black and white true-breeding mice are mated
+and the result is all gray offspring, what
+inheritance pattern would this be indicative of?
+a. dominance
+b. codominance
+c. multiple alleles
+d. incomplete dominance
+13. The ABO blood groups in humans are expressed
+as the
+IA,
+IB, and
+i alleles. The
+IA allele encodes
+the A blood group antigen,
+IB encodes B, and
+i
+encodes O. Both A and B are dominant to O. If a
+heterozygous blood type A parent (IAi) and a
+heterozygous blood type B parent (IBi) mate,
+one quarter of their offspring will have AB blood
+type (IAIB) in which both antigens are expressed
+equally. Therefore, ABO blood groups are an
+example of:
+a. multiple alleles and incomplete
+dominance
+b. codominance and incomplete dominance
+c. incomplete dominance only
+d. multiple alleles and codominance
+14. In a mating between two individuals that are
+heterozygous for a recessive lethal allele that is
+expressed
+in utero, what genotypic ratio
+(homozygous
+dominant:heterozygous:homozygous recessive)
+would you expect to observe in the offspring?
+a. 1:2:1
+b. 3:1:1
+c. 1:2:0
+d. 0:2:1
+15. If the allele encoding polydactyly (six fingers) is
+dominant why do most people have five fingers?
+a. Genetic elements suppress the polydactyl
+gene.
+b. Polydactyly is embryonic lethal.
+c. The sixth finger is removed at birth.
+d. The polydactyl allele is very rare in the
+human population.
+16. A farmer raises black and white chickens. To his
+surprise, when the first generation of eggs hatch
+all the chickens are black with white speckles
+throughout their feathers. What should the
+farmer expect when the eggs laid after
+interbreeding the speckled chickens hatch?
+a. All the offspring will be speckled.
+b. 75% of the offspring will be speckled, and
+25% will be black.
+c. 50% of the offspring will be speckled,
+25% will be black, and 25% will be white.
+d. 50% of the offspring will be black and
+50% of the offspring will be white.
+17. Assuming no gene linkage, in a dihybrid cross of
+AABB x
+aabb with
+AaBb F1 heterozygotes, what
+is the ratio of the F1 gametes (
+AB,
+aB,
+Ab,
+ab)
+that will give rise to the F2 offspring?
+a. 1:1:1:1
+b. 1:3:3:1
+c. 1:2:2:1
+d. 4:3:2:1
+18. The forked line and probability methods make
+use of what probability rule?
+a. test cross
+b. product rule
+c. monohybrid rule
+d. sum rule
+19. How many different offspring genotypes are
+expected in a trihybrid cross between parents
+heterozygous for all three traits when the traits
+behave in a dominant and recessive pattern?
+How many phenotypes?
+a. 64 genotypes; 16 phenotypes
+b. 16 genotypes; 64 phenotypes
+c. 8 genotypes; 27 phenotypes
+d. 27 genotypes; 8 phenotypes
+20. Labrador retrievers’ fur color is controlled by two
+alleles, E and B. Any dog with the ee__ genotype
+develops into a yellow lab, while B_E_ dogs
+become black labs and bbE_ dogs become
+chocolate labs. This is an example of _____.
+a. epistasis
+b. codominance
+c. incomplete dominance
+d. linkage
+21. Which of the following situations does not follow
+the Law of Independent Assortment?
+a. A blond person and a brown-haired person
+produce three offspring over time, all of
+who have blond hair.
+12 • Review Questions 339

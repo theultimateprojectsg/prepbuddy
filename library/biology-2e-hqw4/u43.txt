@@ -1,0 +1,100 @@
+semipermeable)
+solute substance dissolved in a liquid to form a
+solution
+symporter transporter that carries two different ions
+or small molecules, both in the same direction
+tonicity amount of solute in a solution
+transport protein membrane protein that facilitates a
+substance's passage across a membrane by binding
+it
+transporter specific carrier proteins or pumps that
+facilitate movement
+uniporter transporter that carries one specific ion or
+molecule
+Chapter Summary
+5.1 Components and Structure
+Modern scientists refer to the plasma membrane as the
+fluid mosaic model. A phospholipid bilayer comprises
+the plasma membrane, with hydrophobic, fatty acid
+tails in contact with each other. The membrane's
+landscape is studded with proteins, some which span
+the membrane. Some of these proteins serve to
+transport materials into or out of the cell.
+Carbohydrates are attached to some of the proteins
+and lipids on the membrane's outward-facing surface,
+forming complexes that function to identify the cell to
+other cells. The membrane's fluid nature is due to
+temperature, fatty acid tail configuration (some kinked
+by double bonds), cholesterol presence embedded in
+the membrane, and the mosaic nature of the proteins
+and protein-carbohydrate combinations, which are not
+firmly fixed in place. Plasma membranes enclose and
+define the cells' borders. Not static, they are dynamic
+and constantly in flux.
+5.2 Passive Transport
+The passive transport forms, diffusion and osmosis,
+move materials of small molecular weight across
+membranes. Substances diffuse from high to lower
+concentration areas, and this process continues until
+the substance evenly distributes itself in a system. In
+solutions containing more than one substance, each
+molecule type diffuses according to its own
+concentration gradient, independent of other
+substances diffusing. Many factors can affect the
+diffusion rate, such as concentration gradient,
+diffusing, particle sizes, and the system's temperature.
+In living systems, the plasma membrane mediates
+substances diffusing in and out of cells. Some
+materials diffuse readily through the membrane, but
+others are hindered and only can pass through due to
+specialized proteins such as channels and
+transporters. The chemistry of living things occurs in
+aqueous solutions, and balancing the concentrations of
+those solutions is an ongoing problem. In living
+systems, diffusing some substances would be slow or
+difficult without membrane proteins that facilitate
+transport.
+5.3 Active Transport
+The combined gradient that affects an ion includes its
+concentration gradient and its electrical gradient. A
+positive ion, for example, might diffuse into a new area,
+down its concentration gradient, but if it is diffusing
+into an area of net positive charge, its electrical
+gradient hampers its diffusion. When dealing with ions
+in aqueous solutions, one must consider
+electrochemical and concentration gradient
+combinations, rather than just the concentration
+gradient alone. Living cells need certain substances
+that exist inside the cell in concentrations greater than
+they exist in the extracellular space. Moving
+substances up their electrochemical gradients requires
+energy from the cell. Active transport uses energy
+stored in ATP to fuel this transport. Active transport of
+small molecular-sized materials uses integral proteins
+in the cell membrane to move the materials. These
+proteins are analogous to pumps. Some pumps, which
+carry out primary active transport, couple directly with
+ATP to drive their action. In co-transport (or secondary
+active transport), energy from primary transport can
+move another substance into the cell and up its
+concentration gradient.
+5.4 Bulk Transport
+Active transport methods require directly using ATP to
+fuel the transport. In a process scientists call
+phagocytosis, other cells can engulf large particles,
+such as macromolecules, cell parts, or whole cells. In
+phagocytosis, a portion of the membrane invaginates
+and flows around the particle, eventually pinching off
+and leaving the particle entirely enclosed by a plasma
+membrane's envelope. The cell breaks down vesicle
+contents, with the particles either used as food or
+dispatched. Pinocytosis is a similar process on a
+smaller scale. The plasma membrane invaginates and
+pinches off, producing a small envelope of fluid from
+outside the cell. Pinocytosis imports substances that
+the cell needs from the extracellular fluid. The cell
+expels waste in a similar but reverse manner. It pushes
+a membranous vacuole to the plasma membrane,
+allowing the vacuole to fuse with the membrane and
+incorporate itself into the membrane structure,
+5 • Chapter Summary 157

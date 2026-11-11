@@ -1,0 +1,102 @@
+21.4 Other Acellular Entities: Prions and Viroids
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Describe prions and their basic properties
+• Define viroids and their targets of infection
+Prions and viroids are pathogens (agents with the ability to cause disease) that have simpler structures than viruses
+but, in the case of prions, still can produce deadly diseases.
+Prions
+Prions, so-called because they are proteinaceous, are infectious particles—smaller than viruses—that contain no
+nucleic acids (neither DNA nor RNA). Historically, the idea of an infectious agent that did not use nucleic acids was
+considered impossible, but pioneering work by Nobel Prize-winning biologist Stanley Prusiner has convinced the
+majority of biologists that such agents do indeed exist.
+Fatal neurodegenerative diseases, such as kuru in humans and bovine spongiform encephalopathy (BSE) in cattle
+(commonly known as “mad cow disease”) were shown to be transmitted by prions. The disease was spread by the
+consumption of meat, nervous tissue, or internal organs between members of the same species. Kuru, native to
+humans in Papua New Guinea, was spread from human to human via ritualistic cannibalism. BSE, originally detected
+in the United Kingdom, was spread between cattle by the practice of including cattle nervous tissue in feed for other
+cattle. Individuals with kuru and BSE show symptoms of loss of motor control and unusual behaviors, such as
+uncontrolled bursts of laughter with kuru, followed by death. Kuru was controlled by inducing the population to
+have been used in gene therapy. Gene therapy is used to treat genetic diseases such as severe combined
+immunodeficiency (SCID), a heritable, recessive disease in which children are born with severely compromised
+immune systems. One common type of SCID is due to the lack of an enzyme, adenosine deaminase (ADA), which
+breaks down purine bases. To treat this disease by gene therapy, bone marrow cells are taken from a SCID
+patient and the ADA gene is inserted. This is where viruses come in, and their use relies on their ability to
+penetrate living cells and bring genes in with them. Viruses such as adenovirus, an upper-respiratory human
+virus, are modified by the addition of the ADA gene, and the virus then transports this gene into the cell. The
+modified cells, now capable of making ADA, are then given back to the patients in the hope of curing them. Gene
+therapy using viruses as carriers of genes (viral vectors), although still experimental, holds promise for the
+treatment of many genetic diseases. Still, many technological problems need to be solved for this approach to
+be a viable method for treating genetic disease.
+Another medical use for viruses relies on their specificity and ability to kill the cells they infect. Oncolytic
+viruses are engineered in the laboratory specifically to attack and kill cancer cells. A genetically modified
+adenovirus known as H101 has been used since 2005 in clinical trials in China to treat head and neck cancers.
+The results have been promising, with a greater short-term response rate to the combination of chemotherapy
+and viral therapy than to chemotherapy treatment alone. This ongoing research may herald the beginning of a
+new age of cancer therapy, where viruses are engineered to find and specifically kill cancer cells, regardless of
+where in the body they may have spread.
+A third use of viruses in medicine relies on their specificity and involves using bacteriophages in the treatment of
+bacterial infections. Bacterial diseases have been treated with antibiotics since the 1940s. However, over time,
+many bacteria have evolved resistance to antibiotics. A good example is methicillin-resistant
+Staphylococcus
+aureus (MRSA, pronounced “mersa”), an infection commonly acquired in hospitals. This bacterium is resistant to
+a variety of antibiotics, making it difficult to treat. The use of bacteriophages specific for such bacteria would
+bypass their resistance to antibiotics and specifically kill them. Although phage therapy is in use in the Republic
+of Georgia to treat antibiotic-resistant bacteria, its use to treat human diseases has not been approved in most
+countries. However, the safety of the treatment was confirmed in the United States when the U.S. Food and Drug
+Administration approved spraying meats with bacteriophages to destroy the food pathogen
+Listeria. As more
+and more antibiotic-resistant strains of bacteria evolve, the use of bacteriophages might be a potential solution
+to the problem, and the development of phage therapy is of much interest to researchers worldwide.
+21.4 • Other Acellular Entities: Prions and Viroids 551
+abandon its ritualistic cannibalism.
+On the other hand, BSE was initially thought to only affect cattle. Cattle dying of the disease were shown to have
+developed lesions or “holes” in the brain, causing the brain tissue to resemble a sponge. Later on in the outbreak,
+however, it was shown that a similar encephalopathy in humans, known as variant Creutzfeldt-Jakob disease (CJD),
+could be acquired from eating beef from animals infected with BSE, sparking bans by various countries on the
+importation of British beef and causing considerable economic damage to the British beef industry (Figure 21.17).
+BSE still exists in various areas, and although a rare disease, individuals that acquire CJD are difficult to treat. The
+disease can be spread from human to human by blood, so many countries have banned blood donation from regions
+associated with BSE.
+The cause of spongiform encephalopathies, such as kuru and BSE, is an infectious structural variant of a normal
+cellular protein called PrP (prion protein). It is this variant that constitutes the prion particle. PrP exists in two forms,
+PrPc, the normal form of the protein, and PrPsc, the infectious form. Once introduced into the body, the PrPsc
+contained within the prion binds to PrPc and converts it to PrPsc. This leads to an exponential increase of the PrPsc
+protein, which aggregates. PrPsc is folded abnormally, and the resulting conformation (shape) is directly responsible
+for the lesions seen in the brains of infected cattle. Thus, although not without some detractors among scientists,
+the prion seems likely to be an entirely new form of infectious agent, the first one found whose transmission is not
+reliant upon genes made of DNA or RNA.
+FIGURE 21.17 Mad Cow Disease in humans. (a) Endogenous normal prion protein (PrPc) is converted into the disease-causing form (PrPsc)
+when it encounters this variant form of the protein. PrPsc may arise spontaneously in brain tissue, especially if a mutant form of the protein
+is present, or it may occur via the spread of misfolded prions consumed in food into brain tissue. (b) This prion-infected brain tissue,
+visualized using light microscopy, shows the vacuoles that give it a spongy texture, typical of transmissible spongiform encephalopathies.
+(credit b: modification of work by Dr. Al Jenny, USDA APHIS; scale-bar data from Matt Russell)
+Viroids
+Viroids are plant pathogens: small, single-stranded, circular RNA particles that are much simpler than a virus. They
+do not have a capsid or outer envelope, but like viruses can reproduce only within a host cell. Viroids do not,
+however, manufacture any proteins, and they only produce a single, specific RNA molecule. Human diseases caused
+by viroids have yet to be identified.
+Viroids are known to infect plants (Figure 21.18) and are responsible for crop failures and the loss of millions of
+dollars in agricultural revenue each year. Some of the plants they infect include potatoes, cucumbers, tomatoes,
+chrysanthemums, avocados, and coconut palms.
+552 21 • Viruses
+FIGURE 21.18 These potatoes have been infected by the potato spindle tuber viroid (PSTV), which is typically spread when infected knives
+are used to cut healthy potatoes, which are then planted. (credit: Pamela Roberts, University of Florida Institute of Food and Agricultural
+Sciences, USDA ARS)
+CAREER CONNECTION
+Virologist
+Virology is the study of viruses, and a virologist is an individual trained in this discipline. Training in virology can lead
+to many different career paths. Virologists are actively involved in academic research and teaching in colleges and
+medical schools. Some virologists treat patients or are involved in the generation and production of vaccines. They
+might participate in epidemiologic studies (Figure 21.19) or become science writers, to name just a few possible
+careers.
+FIGURE 21.19 This virologist is engaged in fieldwork, sampling eggs from this nest for avian influenza. (credit: Don Becker, USGS EROS,
+U.S. Fish and Wildlife Service)
+If you think you may be interested in a career in virology, find a mentor in the field. Many large medical centers have
+departments of virology, and smaller hospitals usually have virology labs within their microbiology departments.
+Volunteer in a virology lab for a semester or work in one over the summer. Discussing the profession and getting a
+21.4 • Other Acellular Entities: Prions and Viroids 553
+first-hand look at the work will help you decide whether a career in virology is right for you. The American Society of
+Virology’s website (https://openstax.org/l/asv) is a good resource for information regarding training and careers in
+virology.
+554 21 • Viruses

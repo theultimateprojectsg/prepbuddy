@@ -1,0 +1,88 @@
+driven electron transport
+wavelength distance between consecutive points of
+equal position (two crests or two troughs) of a wave
+in a graphic representation; inversely proportional
+to the energy of the radiation
+Chapter Summary
+8.1 Overview of Photosynthesis
+The process of photosynthesis transformed life on
+Earth. By harnessing energy from the sun, the evolution
+of photosynthesis allowed living things access to
+enormous amounts of energy. Because of
+photosynthesis, living things gained access to sufficient
+energy that allowed them to build new structures and
+achieve the biodiversity evident today.
+Only certain organisms (photoautotrophs), can perform
+photosynthesis; they require the presence of
+chlorophyll, a specialized pigment that absorbs certain
+wavelengths of the visible spectrum and can capture
+energy from sunlight. Photosynthesis uses carbon
+dioxide and water to assemble carbohydrate molecules
+and release oxygen as a byproduct into the
+atmosphere. Eukaryotic autotrophs, such as plants and
+algae, have organelles called chloroplasts in which
+photosynthesis takes place, and starch accumulates.
+In prokaryotes, such as cyanobacteria, the process is
+less localized and occurs within folded membranes,
+extensions of the plasma membrane, and in the
+cytoplasm.
+8.2 The Light-Dependent Reactions of
+Photosynthesis
+The pigments of the first part of photosynthesis, the
+light-dependent reactions, absorb energy from
+sunlight. A photon strikes the antenna pigments of
+photosystem II to initiate photosynthesis. The energy
+travels to the reaction center that contains chlorophyll
+a and then to the electron transport chain, which
+pumps hydrogen ions into the thylakoid interior. This
+action builds up a high concentration of hydrogen ions.
+The hydrogen ions flow through ATP synthase during
+chemiosmosis to form molecules of ATP, which are
+used for the formation of sugar molecules in the
+second stage of photosynthesis. Photosystem I
+absorbs a second photon, which results in the
+formation of an NADPH molecule, another energy and
+reducing carrier for the light-independent reactions.
+8.3 Using Light Energy to Make Organic
+Molecules
+Using the energy carriers formed in the first steps of
+photosynthesis, the light-independent reactions, or the
+Calvin cycle, take in CO2 from the atmosphere. An
+enzyme, RuBisCO, catalyzes a reaction with CO2 and
+another organic compound, RuBP. After three cycles, a
+three-carbon molecule of G3P leaves the cycle to
+become part of a carbohydrate molecule. The
+remaining G3P molecules stay in the cycle to be
+regenerated into RuBP, which is then ready to react
+with more CO2. Photosynthesis forms an energy cycle
+with the process of cellular respiration. Because plants
+contain both chloroplasts and mitochondria, they rely
+upon both photosynthesis and respiration for their
+ability to function in both the light and dark, and to be
+able to interconvert essential metabolites.
+Visual Connection Questions
+1 . Figure 8.6 On a hot, dry day, the guard cells of
+plants close their stomata to conserve water.
+What impact will this have on photosynthesis?
+2 . Figure 8.17 What is the initial source of
+electrons for the chloroplast electron transport
+chain?
+a. Water
+b. Oxygen
+c. Carbon dioxide
+d. NADPH
+3 . Figure 8.19 Which of the following statements is
+true?
+a. In photosynthesis, oxygen, carbon dioxide,
+ATP, and NADPH are reactants. G3P and
+water are products.
+b. In photosynthesis, chlorophyll, water, and
+carbon dioxide are reactants. G3P and
+oxygen are products.
+c. In photosynthesis, water, carbon dioxide,
+ATP, and NADPH are reactants. RuBP and
+oxygen are products.
+d. In photosynthesis, water and carbon
+dioxide are reactants. G3P and oxygen are
+products.
+8 • Chapter Summary 233

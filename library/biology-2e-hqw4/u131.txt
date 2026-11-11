@@ -1,0 +1,99 @@
+polymerase
+RNA editing direct alteration of one or more
+nucleotides in an mRNA that has already been
+synthesized
+Shine-Dalgarno sequence (AGGAGG); initiates
+prokaryotic translation by interacting with rRNA
+molecules comprising the 30S ribosome
+signal sequence short tail of amino acids that directs
+a protein to a specific cellular compartment
+small nuclear RNA molecules synthesized by RNA
+polymerase III that have a variety of functions,
+including splicing pre-mRNAs and regulating
+transcription factors
+splicing process of removing introns and
+reconnecting exons in a pre-mRNA
+start codon AUG (or rarely, GUG) on an mRNA from
+which translation begins; always specifies
+methionine
+TATA box conserved promoter sequence in
+eukaryotes and prokaryotes that helps to establish
+the initiation site for transcription
+template strand strand of DNA that specifies the
+complementary mRNA molecule
+transcription bubble region of locally unwound DNA
+that allows for transcription of mRNA
+upstream nucleotides preceding the initiation site; in
+general, sequences toward the 5' end relative to a
+site on the mRNA
+Chapter Summary
+15.1 The Genetic Code
+The genetic code refers to the DNA alphabet (A, T, C,
+G), the RNA alphabet (A, U, C, G), and the polypeptide
+alphabet (20 amino acids). The central dogma
+describes the flow of genetic information in the cell
+from genes to mRNA to proteins. Genes are used to
+make mRNA by the process of transcription; mRNA is
+used to synthesize proteins by the process of
+translation. The genetic code is degenerate because 64
+triplet codons in mRNA specify only 20 amino acids
+and three nonsense codons. Most amino acids have
+several similar codons. Almost every species on the
+planet uses the same genetic code.
+15.2 Prokaryotic Transcription
+In prokaryotes, mRNA synthesis is initiated at a
+promoter sequence on the DNA template comprising
+two consensus sequences that recruit RNA
+polymerase. The prokaryotic polymerase consists of a
+core enzyme of four protein subunits and a
+σ protein
+that assists only with initiation. Elongation synthesizes
+mRNA in the 5' to 3' direction at a rate of 40
+nucleotides per second. Termination liberates the
+mRNA and occurs either by rho protein interaction or
+by the formation of an mRNA hairpin.
+15.3 Eukaryotic Transcription
+Transcription in eukaryotes involves one of three types
+of polymerases, depending on the gene being
+transcribed. RNA polymerase II transcribes all of the
+protein-coding genes, whereas RNA polymerase I
+transcribes the tandemly duplicated rRNA genes, and
+RNA polymerase III transcribes various small RNAs,
+like the 5S rRNA, tRNA, and small nuclear RNA genes.
+The initiation of transcription in eukaryotes involves the
+binding of several transcription factors to complex
+promoter sequences that are usually located upstream
+of the gene being copied. The mRNA is synthesized in
+the 5' to 3' direction, and the FACT complex moves and
+reassembles nucleosomes as the polymerase passes
+by. Whereas RNA polymerases I and III terminate
+transcription by protein- or RNA hairpin-dependent
+methods, RNA polymerase II transcribes for 1,000 or
+more nucleotides beyond the gene template and
+cleaves the excess during pre-mRNA processing.
+15.4 RNA Processing in Eukaryotes
+Eukaryotic pre-mRNAs are modified with a 5'
+methylguanosine cap and a poly-A tail. These
+structures protect the mature mRNA from degradation
+and help export it from the nucleus. Pre-mRNAs also
+undergo splicing, in which introns are removed and
+exons are reconnected with single-nucleotide
+accuracy. Only finished mRNAs that have undergone 5'
+capping, 3' polyadenylation, and intron splicing are
+exported from the nucleus to the cytoplasm. PrerRNAs and pre-tRNAs may be processed by
+intramolecular cleavage, splicing, methylation, and
+chemical conversion of nucleotides. Rarely, RNA
+editing is also performed to insert missing bases after
+an mRNA has been synthesized.
+15.5 Ribosomes and Protein Synthesis
+The players in translation include the mRNA template,
+ribosomes, tRNAs, and various enzymatic factors. The
+small ribosomal subunit binds to the mRNA template
+either at the Shine-Dalgarno sequence (prokaryotes) or
+the 5' cap (eukaryotes). Translation begins at the
+initiating AUG on the mRNA, specifying methionine.
+The formation of peptide bonds occurs between
+sequential amino acids matched to the mRNA template
+by their tRNAs according to the genetic code. Charged
+tRNAs enter the ribosomal A site, and their amino acid
+15 • Chapter Summary 411

@@ -1,0 +1,92 @@
+recombination serves to exchange genetic material on
+homologous chromosomes such that maternal and
+paternal alleles may be recombined on the same
+chromosome. This is why alleles on a given
+chromosome are not always inherited together.
+Recombination is a random event occurring anywhere
+on a chromosome. Therefore, genes that are far apart
+on the same chromosome are likely to still assort
+independently because of recombination events that
+occurred in the intervening chromosomal space.
+Whether or not they are sorting independently, genes
+may interact at the level of gene products such that the
+expression of an allele for one gene masks or modifies
+the expression of an allele for a different gene. This is
+called epistasis.
+Visual Connection Questions
+1 . Figure 12.5 In pea plants, round peas (R) are
+dominant to wrinkled peas (r). You do a test
+cross between a pea plant with wrinkled peas
+(genotype
+rr) and a plant of unknown genotype
+that has round peas. You end up with three
+plants, all which have round peas. From this
+data, can you tell if the round pea parent plant is
+homozygous dominant or heterozygous? If the
+round pea parent plant is heterozygous, what is
+the probability that a random sample of 3
+progeny peas will all be round?
+2 . Figure 12.6 What are the genotypes of the
+individuals labeled 1, 2, and 3?
+3. Figure 12.12 What ratio of offspring would result
+from a cross between a white-eyed male and a
+female that is heterozygous for red eye color?
+4. Figure 12.16 In pea plants, round seed shape
+(R) is dominant to wrinkled seed shape (r) and
+yellow peas (Y) are dominant to green peas (y).
+What are the possible genotypes and
+phenotypes for a cross between RrYY and rrYy
+pea plants? How many squares do you need to
+do a Punnett square analysis of this cross?
+Review Questions
+5 . Mendel performed hybridizations by transferring
+pollen from the _______ of the male plant to the
+female ova.
+a. anther
+b. pistil
+c. stigma
+d. seed
+6 . Which is one of the seven characteristics that
+Mendel observed in pea plants?
+a. flower size
+b. seed texture
+c. leaf shape
+d. stem color
+7 . Imagine you are performing a cross involving
+seed color in garden pea plants. What F1
+offspring would you expect if you cross truebreeding parents with green seeds and yellow
+seeds? Yellow seed color is dominant over
+green.
+a. 100 percent yellow-green seeds
+b. 100 percent yellow seeds
+c. 50 percent yellow, 50 percent green seeds
+d. 25 percent green, 75 percent yellow seeds
+8 . Consider a cross to investigate the pea pod
+texture trait, involving constricted or inflated
+pods. Mendel found that the traits behave
+according to a dominant/recessive pattern in
+which inflated pods were dominant. If you
+performed this cross and obtained 650 inflatedpod plants in the F2 generation, approximately
+how many constricted-pod plants would you
+expect to have?
+a. 600
+b. 165
+c. 217
+d. 468
+9. A scientist pollinates a true-breeding pea plant
+with violet, terminal flowers with pollen from a
+true-breeding pea plant with white, axial
+flowers. Which of the following observations
+would most accurately describe the F2
+generation?
+a. 75% violet flowers; 75% terminal flowers
+b. 75% white flowers in a terminal position
+c. 75% violet flowers; 75% axial flowers
+d. 75% violet flowers in an axial position
+10. The observable traits expressed by an organism
+are described as its ________.
+a. phenotype
+b. genotype
+c. alleles
+d. zygote
+338 12 • Visual Connection Questions

@@ -1,0 +1,96 @@
+psychrophile organism that grows at temperatures of
+-15 °C or lower
+radioresistant organism that grows in high levels of
+radiation
+resuscitation process by which prokaryotes that are
+in the VBNC state return to viability
+S-layer surface-layer protein present on the outside
+of cell walls of archaea and bacteria
+serotype strain of bacterium that carries a set of
+similar antigens on its cell surface, often many in a
+bacterial species
+stromatolite layered sedimentary structure formed
+by precipitation of minerals by prokaryotes in
+microbial mats
+teichoic acid polymer associated with the cell wall of
+Gram-positive bacteria
+thermophile organism that lives at temperatures
+between 60–80 °C
+transduction process by which a bacteriophage
+moves DNA from one prokaryote to another
+transformation process by which a prokaryote takes
+in DNA found in its environment that is shed by
+other prokaryotes
+viable-but-non-culturable (VBNC) state survival
+mechanism of bacteria facing environmental stress
+conditions
+zoonosis disease that primarily infects animals that is
+transmitted to humans
+Chapter Summary
+22.1 Prokaryotic Diversity
+Prokaryotes existed for billions of years before plants
+and animals appeared. Hot springs and hydrothermal
+vents may have been the environments in which life
+began. Microbial mats are thought to represent the
+earliest forms of life on Earth. A microbial mat is a
+multi-layered sheet of prokaryotes that grows at
+interfaces between different types of material, mostly
+on moist surfaces. Fossilized microbial mats are called
+stromatolites and consist of laminated organosedimentary structures formed by precipitation of
+minerals by prokaryotes. They represent the earliest
+fossil record of life on Earth.
+During the first two billion years, the atmosphere was
+anoxic and only anaerobic organisms were able to live.
+Cyanobacteria evolved from early phototrophs and
+began the oxygenation o the atmosphere. The increase
+in oxygen concentration allowed the evolution of other
+life forms.
+Bacteria and archaea grow in virtually every
+environment. Those that survive under extreme
+conditions are called extremophiles (extreme lovers).
+Some prokaryotes cannot grow in a laboratory setting,
+but they are not dead. They are in the viable-but-nonculturable (VBNC) state. The VBNC state occurs when
+prokaryotes enter a dormant state in response to
+environmental stressors. Most prokaryotes are colonial
+and prefer to live in communities where interactions
+take place. A biofilm is a microbial community held
+together in a gummy-textured matrix.
+22.2 Structure of Prokaryotes: Bacteria and
+Archaea
+Prokaryotes (domains Archaea and Bacteria) are
+single-celled organisms that lack a nucleus. They have
+a single piece of circular DNA in the nucleoid area of
+the cell. Most prokaryotes have a cell wall that lies
+outside the boundary of the plasma membrane. Some
+prokaryotes may have additional structures such as a
+capsule, flagella, and pili. Bacteria and Archaea differ
+in the lipid composition of their cell membranes and
+the characteristics of the cell wall. In archaeal
+membranes, phytanyl units, rather than fatty acids, are
+linked to glycerol. Some archaeal membranes are lipid
+monolayers instead of bilayers.
+The cell wall is located outside the cell membrane and
+prevents osmotic lysis. The chemical composition of
+cell walls varies between species. Bacterial cell walls
+contain peptidoglycan. Archaean cell walls do not have
+peptidoglycan, but they may have
+pseudopeptidoglycan, polysaccharides, glycoproteins,
+or protein-based cell walls. Bacteria can be divided
+into two major groups: Gram positive and Gram
+negative, based on the Gram stain reaction. Grampositive organisms have a thick peptidoglycan layer
+fortified with teichoic acids. Gram-negative organisms
+have a thin cell wall and an outer envelope containing
+lipopolysaccharides and lipoproteins.
+Prokaryotes can transfer DNA from one cell to another
+by three mechanisms: transformation (uptake of
+environmental DNA), transduction (transfer of genomic
+DNA via viruses), and conjugation (transfer of DNA by
+direct cell contact).
+22.3 Prokaryotic Metabolism
+As the oldest living inhabitants of Earth, prokaryotes
+are also the most metabolically diverse; they flourish in
+many different environments with various energy and
+carbon sources, variable temperature, pH, pressure,
+oxygen and water availability. Nutrients required in
+large amounts are called macronutrients, whereas
+22 • Chapter Summary 591

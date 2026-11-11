@@ -1,0 +1,69 @@
+SCIENTIFIC METHOD CONNECTION
+Transfer of Energy and the Resulting Entropy
+Set up a simple experiment to understand how energy transfers and how a change in entropy results.
+1. Take a block of ice. This is water in solid form, so it has a high structural order. This means that the molecules
+cannot move very much and are in a fixed position. The ice's temperature is 0°C or less. As a result, the
+system's entropy is low.
+2. Allow the ice to melt at room temperature. What is the state of molecules in the liquid water now? How did the
+energy transfer take place? Is the system's entropy higher or lower? Why?
+3. Heat the water to its boiling point. What happens to the system's entropy when the water is heated?
+Think of all physical systems in this way: Living things are highly ordered, requiring constant energy input to
+maintain themselves in a state of low entropy. As living systems take in energy-storing molecules and transform
+them through chemical reactions, they lose some amount of usable energy in the process, because no reaction is
+completely efficient. They also produce waste and by-products that are not useful energy sources. This process
+increases the entropy of the system’s surroundings. Since all energy transfers result in losing some usable energy,
+the second law of thermodynamics states that every energy transfer or transformation increases the universe's
+entropy. Even though living things are highly ordered and maintain a state of low entropy, the universe's entropy in
+total is constantly increasing due to losing usable energy with each energy transfer that occurs. Essentially, living
+things are in a continuous uphill battle against this constant increase in universal entropy.
+FIGURE 6.12 Entropy is a measure of randomness or disorder in a system. Gases have higher entropy than liquids, and liquids have higher
+entropy than solids.
+6.4 ATP: Adenosine Triphosphate
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Explain ATP's role as the cellular energy currency
+• Describe how energy releases through ATP hydrolysis
+Even exergonic, energy-releasing reactions require a small amount of activation energy in order to proceed.
+However, consider endergonic reactions, which require much more energy input, because their products have more
+free energy than their reactants. Within the cell, from where does energy to power such reactions come? The answer
+lies with an energy-supplying molecule scientists call adenosine triphosphate, or ATP. This is a small, relatively
+simple molecule (Figure 6.13), but within some of its bonds, it contains the potential for a quick burst of energy that
+can be harnessed to perform cellular work. Think of this molecule as the cells' primary energy currency in much the
+172 6 • Metabolism
+same way that money is the currency that people exchange for things they need. ATP powers the majority of energyrequiring cellular reactions.
+FIGURE 6.13 ATP is the cell's primary energy currency. It has an adenosine backbone with three phosphate groups attached.
+As its name suggests, adenosine triphosphate is comprised of adenosine bound to three phosphate groups (Figure
+6.13). Adenosine is a nucleoside consisting of the nitrogenous base adenine and a five-carbon sugar, ribose. The
+three phosphate groups, in order of closest to furthest from the ribose sugar, are alpha, beta, and gamma. Together,
+these chemical groups constitute an energy powerhouse. However, not all bonds within this molecule exist in a
+particularly high-energy state. Both bonds that link the phosphates are equally high-energy bonds
+(phosphoanhydride bonds) that, when broken, during chemical reactions can release sufficient energy to power a
+variety of cellular reactions and processes. These high-energy bonds are the bonds between the second and third
+(or beta and gamma) phosphate groups and between the first and second phosphate groups. These bonds are
+“high-energy” because the products of hydrolysis—adenosine diphosphate (ADP) and one inorganic phosphate
+group (Pi)—have considerably lower free energy than the reactants: ATP and a water molecule. In other words, ATP
+hydrolyzes into ADP in the following reaction:
+Like most chemical reactions, ATP to ADP hydrolysis is reversible. The reverse reaction regenerates ATP from ADP +
+Pi. Cells rely on ATP regeneration just as people rely on regenerating spent money through some sort of income.
+Since ATP hydrolysis releases energy, ATP regeneration must require an input of free energy. This equation
+expresses ATP formation:
+Two prominent questions remain with regard to using ATP as an energy source. Exactly how much free energy
+releases with ATP hydrolysis, and how does that free energy do cellular work? The calculated ∆G for the hydrolysis
+of one ATP mole into ADP and Pi is −7.3 kcal/mole (−30.5 kJ/mol). Since this calculation is true under standard
+conditions, one would expect a different value exists under cellular conditions. In fact, the ∆G for one ATP mole's
+hydrolysis in a living cell is almost double the value at standard conditions: –14 kcal/mol (−57 kJ/mol).
+ATP is a highly unstable molecule. Unless quickly used to perform work, ATP spontaneously dissociates into ADP +
+Pi, and the free energy released during this process is lost as heat. The second question we posed above discusses
+how ATP hydrolysis energy release performs work inside the cell. This depends on a strategy scientists call energy
+coupling. Cells couple the ATP hydrolysis' exergonic reaction allowing them to proceed. One example of energy
+coupling using ATP involves a transmembrane ion pump that is extremely important for cellular function. This
+sodium-potassium pump (Na+/K+ pump) drives sodium out of the cell and potassium into the cell (Figure 6.14). A
+large percentage of a cell’s ATP powers this pump, because cellular processes bring a considerable amount of
+sodium into the cell and potassium out of it. The pump works constantly to stabilize cellular concentrations of
+sodium and potassium. In order for the pump to turn one cycle (exporting three Na+ ions and importing two K+
+ions), one ATP molecule must hydrolyze. When ATP hydrolyzes, its gamma phosphate does not simply float away,
+but it actually transfers onto the pump protein. Scientists call this process of a phosphate group binding to a
+molecule phosphorylation. As with most ATP hydrolysis cases, a phosphate from ATP transfers onto another
+molecule. In a phosphorylated state, the Na+/K+ pump has more free energy and is triggered to undergo a
+conformational change. This change allows it to release Na+ to the cell's outside. It then binds extracellular K+,
+6.4 • ATP: Adenosine Triphosphate 173

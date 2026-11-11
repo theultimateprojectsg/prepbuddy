@@ -1,0 +1,189 @@
+factor.
+Bacterial signaling is called quorum sensing. Bacteria
+secrete signaling molecules called autoinducers that
+are either small, hydrophobic molecules or peptidebased signals. The hydrophobic autoinducers, such as
+AHL, bind transcription factors and directly affect gene
+expression. The peptide-based molecules bind kinases
+and initiate signaling cascades in the cells.
+Visual Connection Questions
+1 . Figure 9.8 HER2 is a receptor tyrosine kinase. In
+30 percent of human breast cancers, HER2 is
+permanently activated, resulting in unregulated
+cell division. Lapatinib, a drug used to treat
+breast cancer, inhibits HER2 receptor tyrosine
+kinase autophosphorylation (the process by
+which the receptor adds phosphates onto itself),
+thus reducing tumor growth by 50 percent.
+Besides autophosphorylation, which of the
+following steps would be inhibited by Lapatinib?
+a. Signaling molecule binding, dimerization,
+and the downstream cellular response.
+b. Dimerization, and the downstream cellular
+response.
+c. The downstream cellular response.
+d. Phosphatase activity, dimerization, and
+the downsteam cellular response.
+2 . Figure 9.10 In certain cancers, the GTPase
+activity of the RAS G-protein is inhibited. This
+means that the RAS protein can no longer
+hydrolyze GTP into GDP. What effect would this
+have on downstream cellular events?
+3. Figure 9.17 Which of the following statements
+about quorum sensing is false?
+a. Autoinducer must bind to receptor to turn
+on transcription of genes responsible for
+the production of more autoinducer.
+b. The receptor stays in the bacterial cell, but
+the autoinducer diffuses out.
+c. Autoinducer can only act on a different
+cell: it cannot act on the cell in which it is
+made.
+d. Autoinducer turns on genes that enable
+the bacteria to form a biofilm.
+4. Figure 9.18 What advantage might biofilm
+production confer on the
+S. aureus inside the
+catheter?
+Review Questions
+5 . What property prevents the ligands of cellsurface receptors from entering the cell?
+a. The molecules bind to the extracellular
+domain.
+b. The molecules are hydrophilic and cannot
+penetrate the hydrophobic interior of the
+plasma membrane.
+c. The molecules are attached to transport
+proteins that deliver them through the
+bloodstream to target cells.
+d. The ligands are able to penetrate the
+membrane and directly influence gene
+expression upon receptor binding.
+6 . The secretion of hormones by the pituitary gland
+is an example of _______________.
+a. autocrine signaling
+b. paracrine signaling
+c. endocrine signaling
+d. direct signaling across gap junctions
+7 . Why are ion channels necessary to transport
+ions into or out of a cell?
+a. Ions are too large to diffuse through the
+membrane.
+b. Ions are charged particles and cannot
+diffuse through the hydrophobic interior of
+the membrane.
+c. Ions do not need ion channels to move
+through the membrane.
+d. Ions bind to carrier proteins in the
+bloodstream, which must be removed
+before transport into the cell.
+8. Endocrine signals are transmitted more slowly
+than paracrine signals because ___________.
+a. the ligands are transported through the
+bloodstream and travel greater distances
+b. the target and signaling cells are close
+together
+c. the ligands are degraded rapidly
+d. the ligands don't bind to carrier proteins
+during transport
+9. A scientist notices that when she adds a small,
+water-soluble molecule to a dish of cells, the
+cells turn off transcription of a gene. She
+hypothesizes that the ligand she added binds to
+a(n) ______ receptor.
+260 9 • Visual Connection Questions
+a. Intracellular
+b. Hormone
+c. Enzyme-linked
+d. Gated ion channel-linked
+10. Where do DAG and IP3 originate?
+a. They are formed by phosphorylation of
+cAMP.
+b. They are ligands expressed by signaling
+cells.
+c. They are hormones that diffuse through
+the plasma membrane to stimulate protein
+production.
+d. They are the cleavage products of the
+inositol phospholipid, PIP2.
+11. What property enables the residues of the amino
+acids serine, threonine, and tyrosine to be
+phosphorylated?
+a. They are polar.
+b. They are non-polar.
+c. They contain a hydroxyl group.
+d. They occur more frequently in the amino
+acid sequence of signaling proteins.
+12. Histamine binds to the H1 G-protein-linked
+receptor to initiate the itchiness and airway
+constriction associated with an allergic
+response. If a mutation in the associated Gprotein’s alpha subunit prevented the hydrolysis
+of GTP how would the allergic response change?
+a. More severe allergic response compared
+to normal G-protein signaling.
+b. Less severe allergic response compared to
+normal G-protein signaling.
+c. No allergic response.
+d. No change compared to normal G-protein
+signaling.
+13. A scientist observes a mutation in the
+transmembrane region of EGFR that eliminates
+its ability to be stabilized by binding interactions
+during dimerization after ligand binding. Which
+hypothesis regarding the effect of this mutation
+on EGF signaling is most likely to be correct?
+a. EGF signaling cascades would be active
+for longer in the cell.
+b. EGF signaling cascades would be active
+for a shorter period of time in the cell.
+c. EGF signaling cascades would not occur.
+d. EGF signaling would be unaffected.
+14. What is the function of a phosphatase?
+a. A phosphatase removes phosphorylated
+amino acids from proteins.
+b. A phosphatase removes the phosphate
+group from phosphorylated amino acid
+residues in a protein.
+c. A phosphatase phosphorylates serine,
+threonine, and tyrosine residues.
+d. A phosphatase degrades second
+messengers in the cell.
+15. How does NF-κB induce gene expression?
+a. A small, hydrophobic ligand binds to NF-
+κB, activating it.
+b. Phosphorylation of the inhibitor Iκ-B
+dissociates the complex between it and
+NF-κB, and allows NF-κB to enter the
+nucleus and stimulate transcription.
+c. NF-κB is phosphorylated and is then free
+to enter the nucleus and bind DNA.
+d. NF-κB is a kinase that phosphorylates a
+transcription factor that binds DNA and
+promotes protein production.
+16. Apoptosis can occur in a cell when the cell is
+________________.
+a. damaged
+b. no longer needed
+c. infected by a virus
+d. all of the above
+17. What is the effect of an inhibitor binding an
+enzyme?
+a. The enzyme is degraded.
+b. The enzyme is activated.
+c. The enzyme is inactivated.
+d. The complex is transported out of the cell.
+18. How does PKC’s signaling role change in
+response to growth factor signaling versus an
+immune response?
+a. PKC interacts directly with signaling
+molecules in both cascades, but only
+exhibits kinase activity during growth
+factor signaling.
+b. PKC interacts directly with signaling
+molecules in growth factor cascades, but
+interacts with signaling inhibitors during
+immune signaling.
+c. PKC amplifies growth factor cascades, but
+turns off immune cascades.
+d. PKC is activated during growth factor
+cascades, but is inactivated during
+immune response cascades.
+9 • Review Questions 261

@@ -1,0 +1,88 @@
+reservoir
+resilience (ecological) speed at which an ecosystem
+recovers equilibrium after being disturbed
+resistance (ecological) ability of an ecosystem to
+remain at equilibrium in spite of disturbances
+secondary consumer usually a carnivore that eats
+primary consumers
+simulation model ecosystem model that is created
+with computer programs to holistically model
+ecosystems and to predict the effects of
+environmental disturbances on ecosystem structure
+and dynamics
+subduction movement of one tectonic plate beneath
+another
+tertiary consumer carnivore that eats other
+carnivores
+trophic level position of a species or group of species
+in a food chain or a food web
+trophic level transfer efficiency (TLTE) energy
+transfer efficiency between two successive trophic
+levels
+Chapter Summary
+46.1 Ecology of Ecosystems
+Ecosystems exist on land, at sea, in the air, and
+underground. Different ways of modeling ecosystems
+are necessary to understand how environmental
+disturbances will affect ecosystem structure and
+dynamics. Conceptual models are useful to show the
+general relationships between organisms and the flow
+of materials or energy between them. Analytical
+models are used to describe linear food chains, and
+simulation models work best with holistic food webs.
+46.2 Energy Flow through Ecosystems
+Organisms in an ecosystem acquire energy in a variety
+of ways, which is transferred between trophic levels as
+the energy flows from the bottom to the top of the food
+web, with energy being lost at each transfer. The
+efficiency of these transfers is important for
+understanding the different behaviors and eating
+habits of warm-blooded versus cold-blooded animals.
+Modeling of ecosystem energy is best done with
+ecological pyramids of energy, although other
+ecological pyramids provide other vital information
+about ecosystem structure.
+46.3 Biogeochemical Cycles
+Mineral nutrients are cycled through ecosystems and
+their environment. Of particular importance are water,
+carbon, nitrogen, phosphorus, and sulfur. All of these
+cycles have major impacts on ecosystem structure and
+function. A variety of human activities, such as
+pollution, oil spills, and other events have damaged
+ecosystems, potentially causing global climate change.
+The health of Earth depends on understanding these
+cycles and how to protect the environment from
+irreversible damage.
+Visual Connection Questions
+1 . Figure 46.8 Why do you think the value for gross
+productivity of the primary producers is the
+same as the value for total heat and respiration
+(20,810 kcal/m2/yr)?
+2 . Figure 46.10 Pyramids depicting the number of
+organisms or biomass may be inverted, upright,
+or even diamond-shaped. Energy pyramids,
+however, are always upright. Why?
+3 . Figure 46.17 Which of the following statements
+about the nitrogen cycle is false?
+a. Ammonification converts organic
+nitrogenous matter from living organisms
+into ammonium (NH4+).
+b. Denitrification by bacteria converts
+nitrates (NO3−) to nitrogen gas (N2).
+c. Nitrification by bacteria converts nitrates
+(NO3−) to nitrites (NO2−).
+d. Nitrogen fixing bacteria convert nitrogen
+gas (N2) into organic compounds.
+Review Questions
+4 . The ability of an ecosystem to return to its
+equilibrium state after an environmental
+disturbance is called ________.
+a. resistance
+b. restoration
+c. reformation
+d. resilience
+5. A re-created ecosystem in a laboratory
+environment is known as a ________.
+a. mesocosm
+b. simulation
+46 • Chapter Summary 1399

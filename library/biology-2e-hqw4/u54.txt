@@ -1,0 +1,100 @@
+Key Terms
+activation energy energy necessary for reactions to
+occur
+active site enzyme's specific region to which the
+substrate binds
+allosteric inhibition inhibition by a binding event at a
+site different from the active site, which induces a
+conformational change and reduces the enzyme's
+affinity for its substrate
+anabolic (also, anabolism) pathways that require an
+energy input to synthesize complex molecules from
+simpler ones
+ATP adenosine triphosphate, the cell’s energy
+currency
+bioenergetics study of energy flowing through living
+systems
+catabolic (also, catabolism) pathways in which
+complex molecules break down into simpler ones
+chemical energy potential energy in chemical bonds
+that releases when those bonds are broken
+coenzyme small organic molecule, such as a vitamin
+or its derivative, which is required to enhance an
+enzyme's activity
+cofactor inorganic ion, such as iron and magnesium
+ions, required for optimal enzyme activity regulation
+competitive inhibition type of inhibition in which the
+inhibitor competes with the substrate molecule by
+binding to the enzyme's active site
+denature process that changes a substance's natural
+properties
+endergonic describes chemical reactions that require
+energy input
+energy coupling process during which energy
+released by one reaction is used to drive another
+reaction
+enthalpy a system's total energy
+entropy (S) measure of randomness or disorder
+within a system
+exergonic describes chemical reactions that release
+free energy
+feedback inhibition a product's effect of a reaction
+sequence to decrease its further production by
+inhibiting the first enzyme's activity in the pathway
+that produces it
+free energy Gibbs free energy is the usable energy, or
+energy that is available to do work
+heat energy transferred from one system to another
+that is not work (energy of the molecules' motion or
+particles)
+heat energy total bond energy of reactants or
+products in a chemical reaction
+induced fit dynamic fit between the enzyme and its
+substrate, in which both components modify their
+structures to allow for ideal binding
+kinetic energy energy type that takes place with
+objects or particles in motion
+metabolism all the chemical reactions that take
+place inside cells, including anabolism and
+catabolism
+phosphoanhydride bond bond that connects
+phosphates in an ATP molecule
+potential energy energy type that has the potential to
+do work; stored energy
+substrate molecule on which the enzyme acts
+thermodynamics study of energy and energy transfer
+involving physical matter
+transition state high-energy, unstable state (an
+intermediate form between the substrate and the
+product) occurring during a chemical reaction
+Chapter Summary
+6.1 Energy and Metabolism
+Cells perform the functions of life through various
+chemical reactions. A cell’s metabolism refers to the
+chemical reactions that take place within it. There are
+metabolic reactions that involve breaking down
+complex chemicals into simpler ones, such as breaking
+down large macromolecules. Scientists refer to this
+process as catabolism, and we associate such
+reactions an energy release. On the other end of the
+spectrum, anabolism refers to metabolic processes
+that build complex molecules out of simpler ones, such
+as macromolecule synthesis. Anabolic processes
+require energy. Glucose synthesis and glucose
+breakdown are examples of anabolic and catabolic
+pathways, respectively.
+6.2 Potential, Kinetic, Free, and Activation
+Energy
+Energy comes in many different forms. Objects in
+motion do physical work, and kinetic energy is the
+energy of objects in motion. Objects that are not in
+motion may have the potential to do work, and thus,
+have potential energy. Molecules also have potential
+energy because breaking molecular bonds has the
+potential to release energy. Living cells depend on
+harvesting potential energy from molecular bonds to
+perform work. Free energy is a measure of energy that
+is available to do work. A system's free energy changes
+during energy transfers such as chemical reactions,
+and scientists refer to this change as ∆G.
+182 6 • Key Terms

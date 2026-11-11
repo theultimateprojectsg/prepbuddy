@@ -1,0 +1,170 @@
+kinetoplastid subgroup is named after the kinetoplast, a large modified mitochondrion carrying multiple circular
+DNAs. This subgroup includes several parasites, collectively called trypanosomes, which cause devastating human
+diseases and infect an insect species during a portion of their life cycle.
+T. brucei develops in the gut of the tsetse fly
+after the fly bites an infected human or other mammalian host. The parasite then travels to the insect salivary
+glands to be transmitted to another human or other mammal when the infected tsetse fly consumes another blood
+meal.
+T. brucei is common in central Africa and is the causative agent of African sleeping sickness, a disease
+associated with severe chronic fatigue, coma, and can be fatal if left untreated since it leads to progressive decline
+of the function of the central nervous system.
+FIGURE 23.31 Sleeping sickness.
+Trypanosoma brucei, the causative agent of sleeping sickness, spends part of its life cycle in the tsetse fly
+and part in humans. (credit: modification of work by CDC)
+LINK TO LEARNING
+Watch this video to see
+T.
+brucei swimming.
+Access multimedia content (http://openstax.org/books/biology-2e/pages/23-3-groups-of-protists)
+23.4 Ecology of Protists
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Describe the role that protists play in the ecosystem
+• Describe important pathogenic species of protists
+Protists function in various ecological niches. Whereas some protist species are essential components of the food
+chain and generators of biomass, others function in the decomposition of organic materials. Still other protists are
+dangerous human pathogens or causative agents of devastating plant diseases.
+Primary Producers/Food Sources
+Protists are essential sources of food and provide nutrition for many other organisms. In some cases, as with
+zooplankton, protists are consumed directly. Alternatively, photosynthetic protists serve as producers of nutrition for
+other organisms.
+Paramecium bursaria and several other species of ciliates are
+mixotrophic due to a symbiotic
+23.4 • Ecology of Protists 623
+relationship with green algae. This is a temporary version of the secondarily endosymbiotic chloroplast found inEuglena. But these symbiotic associations are not restricted to protists. For instance, photosynthetic dinoflagellates
+called
+zooxanthellae provide nutrients for the coral polyps (Figure 23.32) that house them, giving corals a boost of
+energy to secrete their calcium carbonate skeleton. In turn, the corals provide the protist with a protected
+environment and the compounds needed for photosynthesis. This type of symbiotic relationship is important in
+nutrient-poor environments. Without dinoflagellate symbionts, corals lose algal pigments in a process called
+coral
+bleaching, and they eventually die. This explains why reef-building corals typically do not reside in waters deeper
+than 20 meters: insufficient light reaches those depths for dinoflagellates to photosynthesize.
+FIGURE 23.32 Coral with symbiotic dinoflagellates. Coral polyps obtain nutrition through a symbiotic relationship with dinoflagellates.
+The protists and their products of photosynthesis are essential—directly or indirectly—to the survival of organisms
+ranging from bacteria to mammals (Figure 23.33). As primary producers, protists feed a large proportion of the
+world’s aquatic species. (On land, terrestrial plants serve as primary producers.) In fact, approximately 25 percent
+of the world’s photosynthesis is conducted by photosynthetic protists, particularly dinoflagellates, diatoms, and
+multicellular algae.
+624 23 • Protists
+FIGURE 23.33 Protists contribute to the food chain. Virtually all aquatic organisms depend directly or indirectly on protists for food. (credit
+“mollusks”: modification of work by Craig Stihler, USFWS; credit “crab”: modification of work by David Berkowitz; credit “dolphin”:
+modification of work by Mike Baird; credit “fish”: modification of work by Tim Sheerman-Chase; credit “penguin”: modification of work by
+Aaron Logan)
+Protists do not create food sources only for sea-dwelling organisms. Recall that certain anaerobic parabasalid
+species exist in the digestive tracts of termites and wood-eating cockroaches, where they contribute an essential
+step in the digestion of cellulose ingested by these insects as they consume wood.
+Human Pathogens
+As we have seen, a pathogen is anything that causes disease. Parasitic organisms live in or on a host organism and
+harm the organism. A small number of protists are serious pathogenic parasites that must infect other organisms to
+survive and propagate. For example, protist parasites include the causative agents of malaria, African sleeping
+sickness, amoebic encephalitis, and waterborne gastroenteritis in humans. Other protist pathogens prey on plants,
+effecting massive destruction of food crops.
+Plasmodium Species
+In 2015 WHO reported over 200 million cases of malaria, mostly in Africa, South America, and southern Asia.
+However, it is not well known that malaria was also a prevalent and debilitating disease of the North Central region
+of the United States, particularly Michigan, with its thousands of lakes and numerous swamps. Prior to the civil war,
+and the drainage of many swamps, virtually everyone who immigrated to Michigan picked up malaria (
+ague as it was
+called in the late 1800s), and the pale, sallow, bloated faces of that period were the rule. The only healthy faces
+were worn by those immigrants who had just arrived. In fact, there were more deaths due to malaria in Michigan
+than those from the Civil War.
+We now know that malaria is caused by several species of the apicomplexan protist genus
+Plasmodium. Members ofPlasmodium must sequentially require both a mosquito and a vertebrate to complete their life cycle. In vertebrates,
+the parasite develops in liver cells (the exoerythrocytic stage) and goes on to infect red blood cells (the erythrocytic
+stage), bursting from and destroying the blood cells with each asexual replication cycle (Figure 23.34). Of the fourPlasmodium species known to infect humans,
+P.
+falciparum accounts for 50 percent of all malaria cases and is the
+primary (and deadliest) cause of disease-related fatalities in tropical regions of the world. In 2015, it was estimated
+that malaria caused over 400,000 deaths, mostly in African children. During the course of malaria,
+P.
+falciparum can
+infect and destroy more than one-half of a human’s circulating blood cells, leading to severe anemia. In response to
+23.4 • Ecology of Protists 625
+waste products released as the parasites burst from infected blood cells, the host immune system mounts a
+massive inflammatory response with episodes of delirium-inducing fever (paroxysms) as parasites lyse red blood
+cells, spilling parasite waste into the bloodstream.
+P.
+falciparum is transmitted to humans by the African mosquito,Anopheles gambiae. Techniques to kill, sterilize, or avoid exposure to this highly aggressive mosquito species are
+crucial to malaria control. Ironically, a type of genetic control has arisen in parts of the world where malaria is
+endemic. Possession of one copy of the HbS beta globin allele results in malaria resistance. Unfortunately, this allele
+also has an unfortunate second effect; when homozygous it causes sickle cell disease.
+FIGURE 23.34 Malaria parasite. Red blood cells are shown to be infected with
+P.
+falciparum, the causative agent of malaria. In this light
+microscopic image taken using a 100× oil immersion lens, the ring-shaped
+P.
+falciparum stains purple. (credit: modification of work by
+Michael Zahniser; scale-bar data from Matt Russell)
+LINK TO LEARNING
+This movie (https://openstax.org/l/malaria) depicts the pathogenesis of
+Plasmodium falciparum, the causative agent
+of malaria.
+TrypanosomesTrypanosoma brucei (Figure 23.35), transmitted by tsetse flies (
+Glossina spp.) in Africa, and related flies in South
+America, is a flagellated endoparasite responsible for the deadly disease nagana in cattle and horses, and for
+African sleeping sickness in humans. This trypanosome confounds the human immune system by changing its thick
+layer of surface glycoproteins with each infectious cycle. (The glycoproteins are identified by the immune system as
+foreign antigens, and a specific antibody defense is mounted against the parasite.) However,
+T.
+brucei has
+thousands of possible antigens, and with each subsequent generation, the protist switches to a glycoprotein coating
+with a different molecular structure. In this way,
+T.
+brucei is capable of replicating continuously without the immune
+system ever succeeding in clearing the parasite. Without treatment,
+T.
+brucei attacks red blood cells, causing the
+patient to lapse into a coma and eventually die. During epidemic periods, mortality from the disease can be high.
+Greater surveillance and control measures lead to a reduction in reported cases; some of the lowest numbers
+reported in 50 years (fewer than 10,000 cases in all of sub-Saharan Africa) have happened since 2009.
+LINK TO LEARNING
+This movie (https://openstax.org/l/African_sleep) discusses the pathogenesis of
+Trypanosoma brucei, the causative
+agent of African sleeping sickness.
+In Latin America, another species of trypanosome,
+T.
+cruzi, is responsible for Chagas disease.
+T.
+cruzi infections are
+mainly caused by a blood-sucking “kissing bug” in the genus
+Triatoma. These “true bugs” bite the host during the
+night and then defecate on the wound, transmitting the trypanosome to the victim. The victim scratches the wound,
+further inoculating the site with trypanosomes at the location of the bite. After about 10 weeks, individuals enter the
+626 23 • Protists
+chronic phase but most never develop further symptoms. In about 30 percent of cases, however, the trypanosome
+causes further damage, especially to the heart and digestive system tissues in the chronic phase of infection,
+leading to malnutrition and heart failure due to abnormal heart rhythms. An estimated 10 million people are
+infected with Chagas disease, and it is estimated to cause 10,000-12,000 deaths per year.
+FIGURE 23.35 Trypanosomes. Trypanosomes are shown among red blood cells. (credit: modification of work by Dr. Myron G. Shultz; scalebar data from Matt Russell)
+Plant Parasites
+Protist parasites of terrestrial plants include agents that destroy food crops. The oomycete
+Plasmopara viticola
+parasitizes grape plants, causing a disease called
+downy mildew (Figure 23.36). Grape plants infected with
+P.viticola appear stunted and have discolored, withered leaves. The spread of downy mildew nearly collapsed the
+French wine industry in the nineteenth century.
+FIGURE 23.36 Protist plant infections. Both downy and powdery mildews on this grape leaf are caused by an infection of
+P.
+viticola. (credit:
+modification of work by USDA)Phytophthora infestans is an oomycete responsible for potato late blight, which causes potato stalks and stems to
+decay into black slime (Figure 23.37). Widespread potato blight caused by
+P.
+infestans precipitated the well-known
+Irish potato famine in the nineteenth century that claimed the lives of approximately 1 million people and led to the
+emigration of at least 1 million more from Ireland. Late blight continues to plague potato crops in certain parts of the
+United States and Russia, wiping out as much as 70 percent of crops when no pesticides are applied.
+23.4 • Ecology of Protists 627
+FIGURE 23.37 Potato blight. These unappetizing remnants result from an infection with
+P.
+infestans, the causative agent of potato late
+blight. (credit: USDA)
+Protist Decomposers
+The fungus-like protist
+saprobes are specialized to absorb nutrients from nonliving organic matter, such as dead
+organisms or their wastes. For instance, many types of oomycetes grow on dead animals or algae. Saprobic protists
+have the essential function of returning inorganic nutrients to the soil and water. This process allows for new plant
+growth, which in turn generates sustenance for other organisms along the food chain. Indeed, without saprobe
+species, such as protists, fungi, and bacteria, life would cease to exist as all organic carbon became “tied up” in
+dead organisms.
+628 23 • Protists

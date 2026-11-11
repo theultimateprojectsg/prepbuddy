@@ -1,0 +1,200 @@
+2.2 Water
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Describe the properties of water that are critical to maintaining life
+• Explain why water is an excellent solvent
+• Provide examples of water’s cohesive and adhesive properties
+• Discuss the role of acids, bases, and buffers in homeostasis
+Why do scientists spend time looking for water on other planets? Why is water so important? It is because water is
+essential to life as we know it. Water is one of the more abundant molecules and the one most critical to life on
+Earth. Water comprises approximately 60–70 percent of the human body. Without it, life as we know it simply would
+not exist.
+The polarity of the water molecule and its resulting hydrogen bonding make water a unique substance with special
+properties that are intimately tied to the processes of life. Life originally evolved in a watery environment, and most
+of an organism’s cellular chemistry and metabolism occur inside the watery contents of the cell’s cytoplasm. Special
+properties of water are its high heat capacity and heat of vaporization, its ability to dissolve polar molecules, its
+cohesive and adhesive properties, and its dissociation into ions that leads to generating pH. Understanding these
+characteristics of water helps to elucidate its importance in maintaining life.
+Water’s Polarity
+One of water’s important properties is that it is composed of polar molecules: the hydrogen and oxygen within water
+molecules (H2O) form polar covalent bonds. While there is no net charge to a water molecule, water's polarity
+creates a slightly positive charge on hydrogen and a slightly negative charge on oxygen, contributing to water’s
+properties of attraction. Water generates charges because oxygen is more electronegative than hydrogen, making it
+more likely that a shared electron would be near the oxygen nucleus than the hydrogen nucleus, thus generating the
+partial negative charge near the oxygen.
+As a result of water’s polarity, each water molecule attracts other water molecules because of the opposite charges
+between water molecules, forming hydrogen bonds. Water also attracts or is attracted to other polar molecules and
+ions. We call a polar substance that interacts readily with or dissolves in water hydrophilic (hydro- = “water”; -philic
+= “loving”). In contrast, nonpolar molecules such as oils and fats do not interact well with water, as Figure 2.13
+shows. A good example of this is vinegar and oil salad dressing (an acidic water solution). We call such nonpolar
+compounds hydrophobic (hydro- = “water”; -phobic = “fearing”).
+FIGURE 2.13 The polarity of water. The polarity of water is due to the differing electronegativities of hydrogen and oxygen. As a
+consequence, hydrogen bonds are formed when the slightly negative oxygen on one water molecule is attracted to the slightly positive
+hydrogen of another water molecule. Credit: Rao, A., Fletcher, S., Ryan, K., Tag, A. and Hawkins, A. Department of Biology, Texas A&M
+University
+2.2 • Water 47
+Water’s States: Gas, Liquid, and Solid
+The formation of hydrogen bonds is an important quality of the liquid water that is crucial to life as we know it. As
+water molecules make hydrogen bonds with each other, water takes on some unique chemical characteristics
+compared to other liquids and, since living things have a high water content, understanding these chemical features
+is key to understanding life. In liquid water, hydrogen bonds constantly form and break as the water molecules slide
+past each other. The water molecules' motion (kinetic energy) causes the bonds to break due to the heat contained
+in the system. When the heat rises as water boils, the water molecules' higher kinetic energy causes the hydrogen
+bonds to break completely and allows water molecules to escape into the air as gas (steam or water vapor).
+Alternatively, when water temperature reduces and water freezes, the water molecules form a crystalline structure
+maintained by hydrogen bonding (there is not enough energy to break the hydrogen bonds) that makes ice less
+dense than liquid water, a phenomenon that we do not see when other liquids solidify.
+Water’s lower density in its solid form is due to the way hydrogen bonds orient as they freeze: the water molecules
+push farther apart compared to liquid water. With most other liquids, solidification when the temperature drops
+includes lowering kinetic energy between molecules, allowing them to pack even more tightly than in liquid form
+and giving the solid a greater density than the liquid.
+The lower density of ice, as Figure 2.14 depicts, causes it to float at the surface of liquid water, such as in an iceberg
+or ice cubes in a glass of water. In lakes and ponds, ice will form on the water's surface creating an insulating barrier
+that protects the animals and plant life in the pond from freezing. Without this insulating ice layer, plants and
+animals living in the pond would freeze in the solid block of ice and could not survive. The expansion of ice relative
+to liquid water causes the detrimental effect of freezing on living organisms. The ice crystals that form upon freezing
+rupture the delicate membranes essential for living cells to function, irreversibly damaging them. Cells can only
+survive freezing if another liquid like glycerol temporarily replaces the water in them.
+FIGURE 2.14 Hydrogen bonding makes ice less dense than liquid water. The (a) lattice structure of ice makes it less dense than the liquid
+water's freely flowing molecules, enabling it to (b) float on water. (credit a: modification of work by Jane Whitney, image created using
+Visual Molecular Dynamics (VMD) software1 ; credit b: modification of work by Carlos Ponte)
+LINK TO LEARNING
+Click here (https://openstax.org/l/ice_lattice2) to see a 3-D animation of an ice lattice structure.
+Water’s High Heat Capacity
+Water’s high heat capacity is a property that hydrogen bonding among water molecules causes. Water has the
+highest specific heat capacity of any common liquid. We define specific heat as the amount of heat one gram of a
+substance must absorb or lose to change its temperature by one degree Celsius. For water, this amount is one
+calorie. It therefore takes water a long time to heat and a long time to cool. In fact, water's specific heat capacity is
+about five times more than that of sand. This explains why the land cools faster than the sea. Due to its high heat
+capacity, warm blooded animals use water to more evenly disperse heat in their bodies: it acts in a similar manner
+to a car’s cooling system, transporting heat from warm places to cool places, causing the body to maintain a more
+1 W. Humphrey W., A. Dalke, and K. Schulten, “VMD—Visual Molecular Dynamics,”
+Journal of Molecular Graphics 14 (1996): 33-38.
+48 2 • The Chemical Foundation of Life
+even temperature.
+Water’s Heat of Vaporization
+Water also has a high heat of vaporization, the amount of energy required to change one gram of a liquid substance
+to a gas. A considerable amount of heat energy (586 cal) is required to accomplish this change in water. This process
+occurs on the water's surface. As liquid water heats up, hydrogen bonding makes it difficult to separate the liquid
+water molecules from each other, which is required for it to enter its gaseous phase (steam). As a result, water acts
+as a heat sink or heat reservoir and requires much more heat to boil than does a liquid such as ethanol (grain
+alcohol), whose hydrogen bonding with other ethanol molecules is weaker than water’s hydrogen bonding.
+Eventually, as water reaches its boiling point of 100° Celsius (212° Fahrenheit), the heat is able to break the
+hydrogen bonds between the water molecules, and the kinetic energy (motion) between the water molecules allows
+them to escape from the liquid as a gas. Even when below its boiling point, water’s individual molecules acquire
+enough energy from other water molecules such that some surface water molecules can escape and vaporize: we
+call this process evaporation.
+The fact that hydrogen bonds need to be broken for water to evaporate means that bonds use a substantial amount
+of energy in the process. As the water evaporates, energy is taken up by the process, cooling the environment where
+the evaporation is taking place. In many living organisms, including in humans, the evaporation of sweat, which is 90
+percent water, allows the organism to cool so that it can maintain homeostasis of body temperature.
+Water’s Solvent Properties
+Since water is a polar molecule with slightly positive and slightly negative charges, ions and polar molecules can
+readily dissolve in it. Therefore, we refer to water as a solvent, a substance capable of dissolving other polar
+molecules and ionic compounds. The charges associated with these molecules will form hydrogen bonds with water,
+surrounding the particle with water molecules. We refer to this as a sphere of hydration, or a hydration shell, as
+Figure 2.15 illustrates and serves to keep the particles separated or dispersed in the water.
+When we add ionic compounds to water, the individual ions react with the water molecules' polar regions and their
+ionic bonds are disrupted in the process of dissociation. Dissociation occurs when atoms or groups of atoms break
+off from molecules and form ions. Consider table salt (NaCl, or sodium chloride): when we add NaCl crystals to
+water, the NaCl molecules dissociate into Na+ and Cl– ions, and spheres of hydration form around the ions, as Figure
+2.15 illustrates. The partially negative charge of the water molecule’s oxygen surrounds the positively charged
+sodium ion. The hydrogen's partially positive charge on the water molecule surrounds the negatively charged
+chloride ion.
+FIGURE 2.15 When we mix table salt (NaCl) in water, it forms spheres of hydration around the ions.
+Water’s Cohesive and Adhesive Properties
+Have you ever filled a glass of water to the very top and then slowly added a few more drops? Before it overflows,
+the water forms a dome-like shape above the rim of the glass. This water can stay above the glass because of the
+property of cohesion. In cohesion, water molecules are attracted to each other (because of hydrogen bonding),
+keeping the molecules together at the liquid-gas (water-air) interface, although there is no more room in the glass.
+Cohesion allows for surface tension, the capacity of a substance to withstand rupturing when placed under tension
+or stress. This is also why water forms droplets when on a dry surface rather than flattening by gravity. When we
+place a small scrap of paper onto a water droplet, the paper floats on top even though paper is denser (heavier) than
+the water. Cohesion and surface tension keep the water molecules' hydrogen bonds intact and support the item
+floating on the top. It’s even possible to “float” a needle on top of a glass of water if you place it gently without
+2.2 • Water 49
+breaking the surface tension, as Figure 2.16 shows.
+FIGURE 2.16 A needle's weight pulls the surface downward. At the same time, the surface tension pulls it up, suspending it on the water's
+surface preventing it from sinking. Notice the indentation in the water around the needle. (credit: Cory Zanker)
+These cohesive forces are related to water’s property of adhesion, or the attraction between water molecules and
+other molecules. This attraction is sometimes stronger than water’s cohesive forces, especially when the water is
+exposed to charged surfaces such as those on the inside of thin glass tubes known as capillary tubes. We observe
+adhesion when water “climbs” up the tube placed in a glass of water: notice that the water appears to be higher on
+the tube's sides than in the middle. This is because the water molecules are attracted to the capillary's charged
+glass walls more than they are to each other and therefore adhere to it. We call this type of adhesion capillary
+action, as Figure 2.17 illustrates.
+FIGURE 2.17 The adhesive forces exerted by the glass' internal surface exceeding the cohesive forces between the water molecules
+themselves causes capillary action in a glass tube. (credit: modification of work by Pearson-Scott Foresman, donated to the Wikimedia
+Foundation)
+Why are cohesive and adhesive forces important for life? Cohesive and adhesive forces are important for
+transporting water from the roots to the leaves in plants. These forces create a “pull” on the water column. This pull
+results from the tendency of water molecules evaporating on the plant's surface to stay connected to water
+molecules below them, and so they are pulled along. Plants use this natural phenomenon to help transport water
+from their roots to their leaves. Without these properties of water, plants would be unable to receive the water and
+the dissolved minerals they require. In another example, insects such as the water strider, as Figure 2.18 shows, use
+the water's surface tension to stay afloat on the water's surface layer and even mate there.
+50 2 • The Chemical Foundation of Life
+FIGURE 2.18 Water’s cohesive and adhesive properties allow this water strider (Gerris sp.) to stay afloat. (credit: Tim Vickers)
+pH, Buffers, Acids, and Bases
+The pH of a solution indicates its acidity or basicity.
+You may have used litmus or pH paper, filter paper treated with a natural water-soluble dye for use as a pH
+indicator. It tests how much acid (acidity) or base (basicity) exists in a solution. You might have even used some to
+test whether the water in a swimming pool is properly treated. In both cases, the pH test measures hydrogen ions'
+concentration in a given solution.
+Hydrogen ions spontaneously generate in pure water by the dissociation (ionization) of a small percentage of water
+molecules into equal numbers of hydrogen (H+) ions and hydroxide (OH-) ions. While the hydroxide ions are kept in
+solution by their hydrogen bonding with other water molecules, the hydrogen ions, consisting of naked protons,
+immediately attract to un-ionized water molecules, forming hydronium ions (H3O+). Still, by convention, scientists
+refer to hydrogen ions and their concentration as if they were free in this state in liquid water.
+The concentration of hydrogen ions dissociating from pure water is 1 × 10-7 moles H+ ions per liter of water. Moles
+(mol) are a way to express the amount of a substance (which can be atoms, molecules, ions, etc.). One mole
+represents the atomic weight of a substance, expressed in grams, which equals the amount of the substance
+containing as many units as there are atoms in 12 grams of 12C. Mathematically, one mole is equal to 6.02 × 1023
+particles of the substance. Therefore, 1 mole of water is equal to 6.02 × 1023 water molecules. We calculate the pH
+as the negative of the base 10 logarithm of this concentration. The log10 of 1 × 10-7 is -7.0, and the negative of this
+number (indicated by the “p” of “pH”) yields a pH of 7.0, which is also a neutral pH. The pH inside of human cells
+and blood are examples of two body areas where near-neutral pH is maintained.
+Non-neutral pH readings result from dissolving acids or bases in water. Using the negative logarithm to generate
+positive integers, high concentrations of hydrogen ions yield a low pH number; whereas, low levels of hydrogen ions
+result in a high pH. An acid is a substance that increases hydrogen ions' (H+) concentration in a solution, usually by
+having one of its hydrogen atoms dissociate. A base provides either hydroxide ions (OH–) or other negatively
+charged ions that combine with hydrogen ions, reducing their concentration in the solution and thereby raising the
+pH. In cases where the base releases hydroxide ions, these ions bind to free hydrogen ions, generating new water
+molecules.
+The stronger the acid, the more readily it donates H+. For example, hydrochloric acid (HCl) completely dissociates
+into hydrogen and chloride ions and is highly acidic; whereas the acids in tomato juice or vinegar do not completely
+dissociate and are weak acids. Conversely, strong bases are those substances that readily donate OH– or take up
+hydrogen ions. Sodium hydroxide (NaOH) and many household cleaners are highly alkaline and give up OH– rapidly
+when we place them in water, thereby raising the pH. An example of a weak basic solution is seawater, which has a
+pH near 8.0 This is close enough to a neutral pH that marine organisms have adapted in order to live and thrive in a
+saline environment.
+The pH scale is, as we previously mentioned, an inverse logarithm and ranges from 0 to 14 (Figure 2.19). Anything
+below 7.0 (ranging from 0.0 to 6.9) is acidic, and anything above 7.0 (from 7.1 to 14.0) is alkaline. Extremes in pH in
+either direction from 7.0 are usually inhospitable to life. The pH inside cells (6.8) and the pH in the blood (7.4) are
+2.2 • Water 51
+both very close to neutral. However, the environment in the stomach is highly acidic, with a pH of 1 to 2. As a result,
+how do stomach cells survive in such an acidic environment? How do they homeostatically maintain the near neutral
+pH inside them? The answer is that they cannot do it and are constantly dying. The stomach constantly produces
+new cells to replace dead ones, which stomach acids digest. Scientists estimate that the human body completely
+replaces the stomach lining every seven to ten days.
+FIGURE 2.19 The pH scale measures hydrogen ions' (H+) concentration in a solution. (credit: modification of work by Edward Stevens)
+LINK TO LEARNING
+Watch this video for a straightforward explanation of pH and its logarithmic scale.
+Access multimedia content (http://openstax.org/books/biology-2e/pages/2-2-water)
+How can organisms whose bodies require a near-neutral pH ingest acidic and basic substances (a human drinking
+orange juice, for example) and survive? Buffers are the key. Buffers readily absorb excess H+ or OH–, keeping the
+body's pH carefully maintained in the narrow range required for survival. Maintaining a constant blood pH is critical
+to a person’s well-being. The buffer maintaining the pH of human blood involves carbonic acid (H2CO3), bicarbonate
+ion (HCO3–), and carbon dioxide (CO2). When bicarbonate ions combine with free hydrogen ions and become
+carbonic acid, it removes hydrogen ions and moderates pH changes. Similarly, as Figure 2.20 shows, excess
+carbonic acid can convert to carbon dioxide gas which we exhale through the lungs. This prevents too many free
+hydrogen ions from building up in the blood and dangerously reducing the blood’s pH. Likewise, if too much OH–
+enters into the system, carbonic acid will combine with it to create bicarbonate, lowering the pH. Without this buffer
+system, the body’s pH would fluctuate enough to put survival in jeopardy.
+FIGURE 2.20 This diagram shows the body’s buffering of blood pH levels. The blue arrows show the process of raising pH as more CO2 is
+made. The purple arrows indicate the reverse process: the lowering of pH as more bicarbonate is created.
+Other examples of buffers are antacids that some people use to combat excess stomach acid. Many of these overthe-counter medications work in the same way as blood buffers, usually with at least one ion capable of absorbing
+hydrogen and moderating pH, bringing relief to those who suffer “heartburn” after eating. Water's unique properties
+that contribute to this capacity to balance pH—as well as water’s other characteristics—are essential to sustaining
+life on Earth.
+52 2 • The Chemical Foundation of Life

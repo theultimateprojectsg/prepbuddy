@@ -1,0 +1,161 @@
+Prokaryotic organisms Eukaryotic organisms
+RNA transcription and protein
+formation occur almost
+simultaneously
+RNA transcription occurs prior to protein formation, and it takes place in
+the nucleus. Translation of RNA to protein occurs in the cytoplasm.
+Gene expression is regulated
+primarily at the transcriptional
+level
+Gene expression is regulated at many levels (epigenetic, transcriptional,
+nuclear shuttling, post-transcriptional, translational, and posttranslational)
+TABLE 16.1
+EVOLUTION CONNECTION
+Evolution of Gene Regulation
+Prokaryotic cells can only regulate gene expression by controlling the amount of transcription. As eukaryotic cells
+evolved, the complexity of the control of gene expression increased. For example, with the evolution of eukaryotic
+cells came compartmentalization of important cellular components and cellular processes. A nuclear region that
+contains the DNA was formed. Transcription and translation were physically separated into two different cellular
+compartments. It therefore became possible to control gene expression by regulating transcription in the nucleus,
+and also by controlling the RNA levels and protein translation present outside the nucleus.
+Most gene regulation is done to conserve cell resources. However, other regulatory processes may be defensive.
+Cellular processes such as gene silencing developed to protect the cell from viral or parasitic infections. If the cell
+could quickly shut off gene expression for a short period of time, it would be able to survive an infection when other
+organisms could not. Therefore, the organism evolved a new process that helped it survive, and it was able to pass
+this new development to offspring.
+16.2 Prokaryotic Gene Regulation
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Describe the steps involved in prokaryotic gene regulation
+• Explain the roles of activators, inducers, and repressors in gene regulation
+The DNA of prokaryotes is organized into a circular chromosome, supercoiled within the nucleoid region of the cell
+cytoplasm. Proteins that are needed for a specific function, or that are involved in the same biochemical pathway,
+are encoded together in blocks called operons. For example, all of the genes needed to use lactose as an energy
+source are coded next to each other in the lactose (or
+lac) operon, and transcribed into a single mRNA.
+In prokaryotic cells, there are three types of regulatory molecules that can affect the expression of operons:
+repressors, activators, and inducers. Repressors and activators are proteins produced in the cell. Both repressors
+and activators regulate gene expression by binding to specific DNA sites
+adjacent to the genes they control.
+In
+general, activators bind to the promoter site, while repressors bind to operator regions. Repressors prevent
+transcription of a gene in response to an external stimulus, whereas activators increase the transcription of a gene
+in response to an external stimulus. Inducers are small molecules that> may be produced by the cell or that are in
+the cell’s environment. Inducers either activate or repress transcription depending on the needs of the cell and the
+availability of substrate.
+The
+trp Operon: A Repressible Operon
+Bacteria such as
+Escherichia coli need amino acids to survive, and are able to synthesize many of them. Tryptophan
+is one such amino acid that
+E. coli can either ingest from the environment or synthesize using enzymes that are
+encoded by five genes. These five genes are next to each other in what is called the tryptophan (
+trp) operon (Figure
+16.4). The genes are transcribed into a single mRNA, which is then translated to produce all five enzymes. If
+418 16 • Gene Expression
+tryptophan is present in the environment, then
+E. coli does not need to synthesize it and the
+trp operon is switched
+off. However, when tryptophan availability is low, the switch controlling the operon is turned on, the mRNA is
+transcribed, the enzyme proteins are translated, and tryptophan is synthesized.
+FIGURE 16.4 The tryptophan operon. The five genes that are needed to synthesize tryptophan in
+E. coli are located next to each other in
+the
+trp operon. When tryptophan is plentiful, two tryptophan molecules bind the repressor protein at the operator sequence. This physically
+blocks the RNA polymerase from transcribing the tryptophan genes. When tryptophan is absent, the repressor protein does not bind to the
+operator and the genes are transcribed.
+The
+trp operon includes three important regions: the coding region, the
+trp operator and the
+trp promoter. The
+coding region includes the genes for the five tryptophan biosynthesis enzymes. Just before the coding region is the
+transcriptional start site. The promoter sequence, to which RNA polymerase binds to initiate transcription, is
+before or “upstream” of the transcriptional start site. Between the promoter and the transcriptional start site is the
+operator region.
+The
+trp operator contains the DNA code to which the
+trp repressor protein can bind. However, the repressor alone
+cannot bind to the operator. When tryptophan is present in the cell, two tryptophan molecules bind to the
+trp
+repressor, which changes the shape of the repressor protein to a form that can bind to the
+trp operator. Binding of
+the tryptophan–repressor complex at the operator physically prevents the RNA polymerase from binding to the
+promoter and transcribing the downstream genes.
+When tryptophan is not present in the cell, the repressor by itself does not bind to the operator, the polymerase can
+transcribe the enzyme genes, and tryptophan is synthesized. Because the repressor protein actively binds to the
+operator to keep the genes turned off, the
+trp operon is said to be
+negatively regulated and the proteins that bind to
+the operator to silence
+trp expression are negative regulators.
+LINK TO LEARNING
+Watch this video to learn more about the
+trp operon.
+Access multimedia content (http://openstax.org/books/biology-2e/pages/16-2-prokaryotic-gene-regulation)
+Catabolite Activator Protein (CAP): A Transcriptional Activator
+Just as the
+trp operon is negatively regulated by tryptophan molecules, there are proteins that bind to the promoter
+sequences that act as positive regulators to turn genes on and activate them. For example, when glucose is scarce,E. coli bacteria can turn to other sugar sources for fuel. To do this, new genes to process these alternate sugars must
+be transcribed. When glucose levels drop, cyclic AMP (cAMP) begins to accumulate in the cell. The cAMP molecule is
+a signaling molecule that is involved in glucose and energy metabolism in
+E. coli. Accumulating cAMP binds to the
+positive regulator catabolite activator protein (CAP), a protein that binds to the promoters of operons which
+16.2 • Prokaryotic Gene Regulation 419
+control the processing of alternative sugars. When cAMP binds to CAP, the complex then binds to the promoter
+region of the genes that are needed to use the alternate sugar sources (Figure 16.5). In these operons, a CAPbinding site is located upstream of the RNA-polymerase-binding site in the promoter. CAP binding stabilizes the
+binding of RNA polymerase to the promoter region and increases transcription of the associated protein-coding
+genes.
+FIGURE 16.5 Transcriptional activation by the CAP protein. When glucose levels fall,
+E. coli may use other sugars for fuel but must
+transcribe new genes to do so. As glucose supplies become limited, cAMP levels increase. This cAMP binds to the CAP protein, a positive
+regulator that binds to a promoter region upstream of the genes required to use other sugar sources.
+The
+lac Operon: An Inducible Operon
+The third type of gene regulation in prokaryotic cells occurs through
+inducible operons, which have proteins that
+bind to activate or repress transcription depending on the local environment and the needs of the cell. The
+lac
+operon is a typical inducible operon. As mentioned previously,
+E. coli is able to use other sugars as energy sources
+when glucose concentrations are low. One such sugar source is lactose. The
+lac operon encodes the genes
+necessary to acquire and process the lactose from the local environment. The Z gene of the
+lac operon encodes
+beta-galactosidase, which breaks lactose down to glucose and galactose.
+However, for the
+lac operon to be activated, two conditions must be met. First, the level of glucose must be very low
+or non-existent. Second, lactose must be present. Only when glucose is absent and lactose is present will the
+lac
+operon be transcribed (Figure 16.6). In the absence of glucose, the binding of the CAP protein makes transcription
+of the
+lac operon more effective. When lactose is present, its metabolite, allolactose, binds to the
+lac repressor and
+changes its shape so that it cannot bind to the
+lac operator to prevent transcription. This combination of conditions
+makes sense for the cell, because it would be energetically wasteful to synthesize the enzymes to process lactose if
+glucose was plentiful or lactose was not available. It should be mentioned that the lac operon is transcribed at a
+very low rate even when glucose is present and lactose absent.
+420 16 • Gene Expression
+VISUAL CONNECTION
+FIGURE 16.6 Regulation of the
+lac operon. Transcription of the
+lac operon is carefully regulated so that its expression only occurs when
+glucose is limited and lactose is present to serve as an alternative fuel source.
+In
+E. coli, the
+trp operon is on by default, while the
+lac operon is off. Why do you think this is the case?
+If glucose is present, then CAP fails to bind to the promoter sequence to activate transcription. If lactose is absent,
+then the repressor binds to the operator to prevent transcription. If either of these conditions is met, then
+transcription remains off. Only when glucose is absent and lactose is present is the
+lac operon transcribed at a
+higher rate. If both glucose and lactose are present, the transcription rate is low as the CAP is not bound to promote
+maximal rates of
+lac operon transcription (Table 16.2).
+Signals that Induce or Repress Transcription of the
+lac Operon
+Glucose CAP binds Lactose Repressor binds Transcription
++ - - + No
++ - + - Some
+TABLE 16.2
+16.2 • Prokaryotic Gene Regulation 421

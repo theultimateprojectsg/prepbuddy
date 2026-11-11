@@ -1,0 +1,187 @@
+Although the human genome sequences provide key
+insights to medical professionals, researchers use
+whole-genome sequences of model organisms to
+better understand the species' genome. Automation
+and the decreased cost of whole-genome sequencing
+may lead to personalized medicine in the future.
+17.4 Applying Genomics
+Imagination is the only barrier to the applicability of
+genomics. Researchers are applying genomics to most
+fields of biology. They use it for personalized medicine,
+prediction of disease risks at an individual level,
+studying drug interactions before conducting clinical
+trials, and studying microorganisms in the environment
+as opposed to the laboratory. They are also applying it
+to developments such as generating new biofuels,
+genealogical assessment using mitochondria,
+advances in forensic science, and improvements in
+agriculture.
+17.5 Genomics and Proteomics
+Proteomics is the study of the entire set of proteins
+expressed by a given type of cell under certain
+environmental conditions. In a multicellular organism,
+different cell types will have different proteomes, and
+these will vary with environmental changes. Unlike a
+genome, a proteome is dynamic and in constant flux,
+which makes it both more complicated and more
+useful than the knowledge of genomes alone.
+Proteomics approaches rely on protein analysis.
+Researchers are constantly upgrading these
+techniques. Researchers have used proteomics to
+study different cancer types. Medical professionals are
+using different biomarkers and protein signatures to
+analyze each cancer type. The future goal is to have a
+personalized treatment plan for each individual.
+Visual Connection Questions
+1 . Figure 17.7 You are working in a molecular
+biology lab and, unbeknownst to you, your lab
+partner left the foreign genomic DNA that you
+are planning to clone on the lab bench overnight
+instead of storing it in the freezer. As a result, it
+was degraded by nucleases, but still used in the
+experiment. The plasmid, on the other hand, is
+fine. What results would you expect from your
+molecular cloning experiment?
+a. There will be no colonies on the bacterial
+plate.
+b. There will be blue colonies only.
+c. There will be blue and white colonies.
+d. The will be white colonies only.
+2 . Figure 17.8 Do you think Dolly was a Finn-Dorset
+or a Scottish Blackface sheep?
+3 . Figure 17.15 In 2011, the United States
+Preventative Services Task Force recommended
+against using the PSA test to screen healthy
+people for prostate cancer. Their
+recommendation is based on evidence that
+screening does not reduce the risk of death from
+prostate cancer. Prostate cancer often develops
+very slowly and does not cause problems, while
+the cancer treatment can have severe side
+effects. The
+PCA3 test is more accurate, but
+screening may still result in people who would
+not have been harmed by the cancer itself
+suffering side effects from treatment. What do
+you think? Should healthy people be screened
+for prostate cancer using the
+PCA3 or PSA test?
+Should people in general be screened to find out
+if they have a genetic risk for cancer or other
+diseases?
+Review Questions
+4 . GMOs are created by ________.
+a. generating genomic DNA fragments with
+restriction endonucleases
+b. introducing recombinant DNA into an
+organism by any means
+c. overexpressing proteins in
+E. coli
+d. all of the above
+5 . Gene therapy can be used to introduce foreign
+DNA into cells ________.
+a. for molecular cloning
+b. by PCR
+c. of tissues to cure inheritable disease
+d. all of the above
+6. Insulin produced by molecular cloning:
+a. is of pig origin
+b. is a recombinant protein
+c. is made by the human pancreas
+d. is recombinant DNA
+7. Bt toxin is considered to be ________.
+464 17 • Visual Connection Questions
+a. a gene for modifying insect DNA
+b. an organic insecticide produced by
+bacteria
+c. useful for humans to fight against insects
+d. a recombinant protein
+8 . The Flavr Savr Tomato:
+a. is a variety of vine-ripened tomato in the
+supermarket
+b. was created to have better flavor and
+shelf-life
+c. does not undergo soft rot
+d. all of the above
+9 . ESTs are ________.
+a. generated after a cDNA library is made
+b. unique sequences in the genome
+c. useful for mapping using sequence
+information
+d. all of the above
+10. Linkage analysis ________.
+a. is used to create a physical map
+b. is based on the natural recombination
+process
+c. requires radiation hybrid mapping
+d. involves breaking and rejoining of DNA
+artificially
+11. Genetic recombination occurs by which process?
+a. independent assortment
+b. crossing over
+c. chromosome segregation
+d. sister chromatids
+12. Individual genetic maps in a given species are:
+a. genetically similar
+b. genetically identical
+c. genetically dissimilar
+d. not useful in species analysis
+13. Information obtained by microscopic analysis of
+stained chromosomes is used in:
+a. radiation hybrid mapping
+b. sequence mapping
+c. RFLP mapping
+d. cytogenetic mapping
+14. The chain termination method of sequencing:
+a. uses labeled ddNTPs
+b. uses only dideoxynucleotides
+c. uses only deoxynucleotides
+d. uses labeled dNTPs
+15. Whole-genome sequencing can be used for
+advances in:
+a. the medical field
+b. agriculture
+c. biofuels
+d. all of the above
+16. Sequencing an individual person’s genome
+a. is currently possible
+b. could lead to legal issues regarding
+discrimination and privacy
+c. could help make informed choices about
+medical treatment
+d. all of the above
+17. What is the most challenging issue facing
+genome sequencing?
+a. the inability to develop fast and accurate
+sequencing techniques
+b. the ethics of using information from
+genomes at the individual level
+c. the availability and stability of DNA
+d. all of the above
+18. Genomics can be used in agriculture to:
+a. generate new hybrid strains
+b. improve disease resistance
+c. improve yield
+d. all of the above
+19. Genomics can be used on a personal level to:
+a. decrease transplant rejection
+b. predict genetic diseases that a person may
+have inherited
+c. determine the risks of genetic diseases for
+an individual’s children
+d. all of the above
+20. What is a biomarker?
+a. the color coding of different genes
+b. a protein that is uniquely produced in a
+diseased state
+c. a molecule in the genome or proteome
+d. a marker that is genetically inherited
+21. A protein signature is:
+a. the path followed by a protein after it is
+synthesized in the nucleus
+b. the path followed by a protein in the
+cytoplasm
+c. a protein expressed on the cell surface
+d. a unique set of proteins present in a
+diseased state
+17 • Review Questions 465

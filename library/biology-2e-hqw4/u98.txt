@@ -1,0 +1,89 @@
+10.5 Prokaryotic Cell Division
+In both prokaryotic and eukaryotic cell division, the
+genomic DNA is replicated and then each copy is
+allocated into a daughter cell. In addition, the
+cytoplasmic contents are divided evenly and
+distributed to the new cells. However, there are many
+differences between prokaryotic and eukaryotic cell
+division. Bacteria have a single, circular DNA
+chromosome but no nucleus. Therefore, mitosis
+(karyokinesis) is not necessary in bacterial cell division.
+Bacterial cytokinesis is directed by a ring composed of
+a protein called FtsZ. Ingrowth of membrane and cell
+wall material from the periphery of the cells results in
+the formation of a septum that eventually constructs
+the separate cell walls of the daughter cells.
+Visual Connection Questions
+1 . Figure 10.14 Rb and other proteins that
+negatively regulate the cell cycle are sometimes
+called tumor suppressors. Why do you think the
+name tumor suppressor might be appropriate
+for these proteins?
+2 . Figure 10.16 Human papillomavirus can cause
+cervical cancer. The virus encodes E6, a protein
+that binds p53. Based on this fact and what you
+know about p53, what effect do you think E6
+binding has on p53 activity?
+a. E6 activates p53
+b. E6 inactivates p53
+c. E6 mutates p53
+d. E6 binding marks p53 for degradation
+Review Questions
+3 . A diploid cell has_______ the number of
+chromosomes as a haploid cell.
+a. one-fourth
+b. half
+c. twice
+d. four times
+4 . An organism’s traits are determined by the
+specific combination of inherited _____.
+a. cells.
+b. genes.
+c. proteins.
+d. chromatids.
+5 . The first level of DNA organization in a
+eukaryotic cell is maintained by which molecule?
+a. cohesin
+b. condensin
+c. chromatin
+d. histone
+6 . Identical copies of chromatin held together by
+cohesin at the centromere are called _____.
+a. histones.
+b. nucleosomes.
+c. chromatin.
+d. sister chromatids.
+7 . Chromosomes are duplicated during what stage
+of the cell cycle?
+a. G1 phase
+b. S phase
+c. prophase
+d. prometaphase
+8. Which of the following events does not occur
+during some stages of interphase?
+a. DNA duplication
+b. organelle duplication
+c. increase in cell size
+d. separation of sister chromatids
+9. The mitotic spindles arise from which cell
+structure?
+a. centromere
+b. centrosome
+c. kinetochore
+d. cleavage furrow
+10. Attachment of the mitotic spindle fibers to the
+kinetochores is a characteristic of which stage of
+mitosis?
+a. prophase
+b. prometaphase
+c. metaphase
+d. anaphase
+11. Unpacking of chromosomes and the formation of
+a new nuclear envelope is a characteristic of
+which stage of mitosis?
+a. prometaphase
+b. metaphase
+c. anaphase
+d. telophase
+12. Separation of the sister chromatids is a
+10 • Visual Connection Questions 287

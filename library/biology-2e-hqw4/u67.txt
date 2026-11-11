@@ -1,0 +1,96 @@
+Key Terms
+acetyl CoA combination of an acetyl group derived
+from pyruvic acid and coenzyme A, which is made
+from pantothenic acid (a B-group vitamin)
+aerobic respiration process in which organisms
+convert energy in the presence of oxygen
+anaerobic process that does not use oxygen
+anaerobic cellular respiration process in which
+organisms convert energy for their use in the
+absence of oxygen
+ATP synthase (also F1F0 ATP synthase) membraneembedded protein complex that adds a phosphate
+to ADP with energy from protons diffusing through it
+chemiosmosis process in which there is a production
+of adenosine triphosphate (ATP) in cellular
+metabolism by the involvement of a proton gradient
+across a membrane
+citric acid cycle (also Krebs cycle) series of enzymecatalyzed chemical reactions of central importance
+in all living cells for extraction of energy from
+carbohydrates
+dephosphorylation removal of a phosphate group
+from a molecule
+fermentation process of regenerating NAD+ with
+either an inorganic or organic compound serving as
+the final electron acceptor; occurs in the absence of
+oxygen
+GLUT protein integral membrane protein that
+transports glucose
+glycolysis process of breaking glucose into two
+three-carbon molecules with the production of ATP
+and NADH
+isomerase enzyme that converts a molecule into its
+isomer
+Krebs cycle (also citric acid cycle) alternate name for
+the citric acid cycle, named after Hans Krebs, who
+first identified the steps in the pathway in the 1930s
+in pigeon flight muscles; see citric acid cycle
+oxidative phosphorylation production of ATP using
+the process of chemiosmosis in the presence of
+oxygen
+phosphorylation addition of a high-energy phosphate
+to a compound, usually a metabolic intermediate, a
+protein, or ADP
+prosthetic group (also prosthetic cofactor) molecule
+bound to a protein that facilitates the function of the
+protein
+pyruvate three-carbon keto acid that can be
+decarboxylated and oxidized to make acetyl CoA,
+which enters the citric acid cycle under aerobic
+conditions; the end product of glycolysis
+redox reaction chemical reaction that consists of the
+coupling of an oxidation reaction and a reduction
+reaction
+substrate-level phosphorylation production of ATP
+from ADP using the excess energy from a chemical
+reaction and a phosphate group from a reactant
+TCA cycle (also citric acid cycle) alternate name for
+the citric acid cycle, named after the group name for
+citric acid, tricarboxylic acid (TCA); see citric acid
+cycle
+ubiquinone soluble electron transporter in the
+electron transport chain that connects the first or
+second complex to the third
+Chapter Summary
+7.1 Energy in Living Systems
+ATP functions as the energy currency for cells. It allows
+the cell to store energy briefly and transport it within
+the cell to support endergonic chemical reactions. The
+structure of ATP is that of an RNA nucleotide with three
+phosphates attached. As ATP is used for energy, a
+phosphate group or two are detached, and either ADP
+or AMP is produced. Energy derived from glucose
+catabolism is used to convert ADP into ATP. When ATP
+is used in a reaction, the third phosphate is temporarily
+attached to a substrate in a process called
+phosphorylation. The two processes of ATP
+regeneration that are used in conjunction with glucose
+catabolism are substrate-level phosphorylation and
+oxidative phosphorylation through the process of
+chemiosmosis.
+7.2 Glycolysis
+Glycolysis is the first pathway within the cytoplasm
+used in the breakdown of glucose to extract energy. It
+was probably one of the earliest metabolic pathways to
+evolve and is used by nearly all of the organisms on
+Earth. Glycolysis consists of two parts: The first part
+prepares the six-carbon ring of glucose for cleavage
+into two three-carbon sugars. ATP is invested in the
+process during this half to energize the separation. The
+second half of glycolysis extracts ATP and high-energy
+electrons from hydrogen atoms and attaches them to
+NAD+. Two ATP molecules are invested in the first half
+and four ATP molecules are formed by substrate
+phosphorylation during the second half. This produces
+a net gain of two ATP and two NADH molecules for the
+cell.
+7 • Key Terms 211

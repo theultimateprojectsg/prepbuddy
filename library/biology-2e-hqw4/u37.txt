@@ -1,0 +1,26 @@
+INTRODUCTION
+CHAPTER 5
+Structure and Function of Plasma Membranes
+5.1 Components and Structure
+5.2 Passive Transport
+5.3 Active Transport
+5.4 Bulk Transport
+The plasma membrane, the cell membrane, has many functions, but the most basic one is to
+define the cell's borders and keep the cell functional. The plasma membrane is selectively permeable. This means
+that the membrane allows some materials to freely enter or leave the cell, while other materials cannot move freely,
+but require a specialized structure, and occasionally, even energy investment for crossing.
+5.1 Components and Structure
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Understand the cell membrane fluid mosaic model
+• Describe phospholipid, protein, and carbohydrate functions in membranes
+• Discuss membrane fluidity
+A cell’s plasma membrane defines the cell, outlines its borders, and determines the nature of its interaction with its
+environment (see Table 5.1 for a summary). Cells exclude some substances, take in others, and excrete still others,
+all in controlled quantities. The plasma membrane must be very flexible to allow certain cells, such as red and white
+blood cells, to change shape as they pass through narrow capillaries. These are the more obvious plasma membrane
+FIGURE 5.1 Despite its seeming hustle and bustle, Grand Central Station functions with a high level of organization: People and objects
+move from one location to another, they cross or are contained within certain boundaries, and they provide a constant flow as part of
+larger activity. Analogously, a plasma membrane’s functions involve movement within the cell and across boundaries' activities. (credit:
+modification of work by Randy Le’Moine)
+CHAPTER OUTLINE

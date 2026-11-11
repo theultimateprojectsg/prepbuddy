@@ -1,0 +1,132 @@
+method. The only method that is completely effective at preventing conception is abstinence. The choice of
+contraceptive method depends on the goals of the woman or couple. Tubal ligation and vasectomy are considered
+permanent prevention, while other methods are reversible and provide short-term contraception.
+Termination of an existing pregnancy can be spontaneous or voluntary. Spontaneous termination is a miscarriage
+and usually occurs very early in the pregnancy, usually within the first few weeks. This occurs when the fetus cannot
+develop properly and the gestation is naturally terminated. Voluntary termination of a pregnancy is an abortion.
+Laws regulating abortion vary between states and tend to view fetal viability as the criteria for allowing or preventing
+the procedure.
+Infertility
+Infertility is the inability to conceive a child or carry a child to birth. About 75 percent of causes of infertility can be
+identified; these include diseases, such as sexually transmitted diseases that can cause scarring of the reproductive
+tubes in males or females, or developmental problems frequently related to abnormal hormone levels in one of the
+individuals. Inadequate nutrition, especially starvation, can delay menstruation. Stress can also lead to infertility.
+Short-term stress can affect hormone levels, while long-term stress can delay puberty and cause less frequent
+menstrual cycles. Other factors that affect fertility include toxins (such as cadmium), tobacco smoking, marijuana
+use, gonadal injuries, and aging.
+If infertility is identified, several assisted reproductive technologies (ART) are available to aid conception. A common
+type of ART is
+in vitro fertilization (IVF) where an egg and sperm are combined outside the body and then placed in
+the uterus. This technique was first successfully performed in mice by Anne McLaren and John Biggers, whose work
+is credited as among the most significant in reproductive medicine. Eggs are obtained from the woman after
+extensive hormonal treatments that prepare mature eggs for fertilization and prepare the uterus for implantation of
+the fertilized egg. Sperm are obtained, combined with the eggs, and supported through several cell divisions to
+ensure viability of the zygotes. When the embryos have reached the eight-cell stage, one or more is implanted into
+the gestational parent's or carrier's uterus. If fertilization is not accomplished by simple IVF, a procedure that injects
+the sperm into an egg can be used. This is called intracytoplasmic sperm injection (ICSI) and is shown in Figure
+43.22. IVF procedures produce a surplus of fertilized eggs and embryos that can be frozen and stored for future use.
+The procedures can also result in multiple births.
+FIGURE 43.22 A sperm is inserted into an egg for fertilization during intracytoplasmic sperm injection (ICSI). (credit: scale-bar data from
+Matt Russell)
+43.6 Fertilization and Early Embryonic Development
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Discuss how fertilization occurs
+• Explain how the embryo forms from the zygote
+• Discuss the role of cleavage and gastrulation in animal development
+1280 43 • Animal Reproduction and Development
+The process in which an organism develops from a single-celled zygote to a multi-cellular organism is complex and
+well-regulated. The early stages of embryonic development are also crucial for ensuring the fitness of the organism.
+Fertilization
+Fertilization, pictured in Figure 43.23a is the process in which gametes (an egg and sperm) fuse to form a zygote.
+The egg and sperm each contain one set of chromosomes. To ensure that the offspring has only one complete
+diploid set of chromosomes, only one sperm must fuse with one egg. In mammals, the egg is protected by a layer of
+extracellular matrix consisting mainly of glycoproteins called the zona pellucida. When a sperm binds to the zona
+pellucida, a series of biochemical events, called the acrosomal reactions, take place. In placental mammals, the
+acrosome contains digestive enzymes that initiate the degradation of the glycoprotein matrix protecting the egg and
+allowing the sperm plasma membrane to fuse with the egg plasma membrane, as illustrated in Figure 43.23b. The
+fusion of these two membranes creates an opening through which the sperm nucleus is transferred into the ovum.
+The nuclear membranes of the egg and sperm break down and the two haploid genomes condense to form a diploid
+genome.
+FIGURE 43.23 (a) Fertilization is the process in which sperm and egg fuse to form a zygote. (b) Acrosomal reactions help the sperm
+degrade the glycoprotein matrix protecting the egg and allow the sperm to transfer its nucleus. (credit: (b) modification of work by Mariana
+Ruiz Villareal; scale-bar data from Matt Russell)
+To ensure that no more than one sperm fertilizes the egg, once the acrosomal reactions take place at one location of
+the egg membrane, the egg releases proteins in other locations to prevent other sperm from fusing with the egg.
+Ernest Everett Just, who was particularly skilled and knowledgeable in handling invertebrate eggs, demonstrated
+several mechanisms at work at different rates. The fast reaction included what Just called a "wave of negativity," in
+which the membrane potential of the egg cell altered quickly. Then, the slow block involved changing the membrane
+structure itself. If these mechanisms fail, multiple sperm can fuse with the egg, resulting in polyspermy. The
+resulting embryo is not genetically viable and dies within a few days.
+Cleavage and Blastula Stage
+The development of multi-cellular organisms begins from a single-celled zygote, which undergoes rapid cell division
+to form the blastula. The rapid, multiple rounds of cell division are termed cleavage. Cleavage is illustrated in (Figure
+43.24a). After the cleavage has produced over 100 cells, the embryo is called a blastula. The blastula is usually a
+spherical layer of cells (the blastoderm) surrounding a fluid-filled or yolk-filled cavity (the blastocoel). Mammals at
+this stage form a structure called the blastocyst, characterized by an inner cell mass that is distinct from the
+surrounding blastula, shown in Figure 43.24b. During cleavage, the cells divide without an increase in mass; that is,
+one large single-celled zygote divides into multiple smaller cells. Each cell within the blastula is called a blastomere.
+FIGURE 43.24 (a) During cleavage, the zygote rapidly divides into multiple cells without increasing in size. (b) The cells rearrange
+themselves to form a hollow ball with a fluid-filled or yolk-filled cavity called the blastula.
+43.6 • Fertilization and Early Embryonic Development 1281
+Cleavage can take place in two ways: holoblastic (total) cleavage or meroblastic (partial) cleavage. The type of
+cleavage depends on the amount of yolk in the eggs. In placental mammals (including humans) where nourishment
+is provided by the parent’s body, the eggs have a very small amount of yolk and undergo holoblastic cleavage. Other
+species, such as birds, with a lot of yolk in the egg to nourish the embryo during development, undergo meroblastic
+cleavage.
+In mammals, the blastula forms the blastocyst in the next stage of development. Here the cells in the blastula
+arrange themselves in two layers: the inner cell mass, and an outer layer called the trophoblast. The inner cell
+mass is also known as the embryoblast and this mass of cells will go on to form the embryo. At this stage of
+development, illustrated in Figure 43.25 the inner cell mass consists of embryonic stem cells that will differentiate
+into the different cell types needed by the organism. The trophoblast will contribute to the placenta and nourish the
+embryo.
+FIGURE 43.25 The rearrangement of the cells in the mammalian blastula to two layers—the inner cell mass and the trophoblast—results in
+the formation of the blastocyst.
+LINK TO LEARNING
+Visit the Virtual Human Embryo project (https://openstax.org/l/human_embryo) at the Endowment for Human
+Development site to step through an interactive that shows the stages of embryo development, including
+micrographs and rotating 3-D images.
+Gastrulation
+The typical blastula is a ball of cells. The next stage in embryonic development is the formation of the body plan.
+The cells in the blastula rearrange themselves spatially to form three layers of cells. This process is called
+gastrulation. During gastrulation, the blastula folds upon itself to form the three layers of cells. Each of these layers
+is called a germ layer and each germ layer differentiates into different organ systems.
+The three germ layers, shown in Figure 43.26, are the endoderm, the ectoderm, and the mesoderm. The ectoderm
+gives rise to the nervous system and the epidermis. The mesoderm gives rise to the muscle cells and connective
+tissue in the body. The endoderm gives rise to columnar cells found in the digestive system and many internal
+organs.
+FIGURE 43.26 The three germ layers give rise to different cell types in the animal body. (credit: modification of work by NIH, NCBI)
+1282 43 • Animal Reproduction and Development
+EVERYDAY CONNECTION
+Are Designer Babies in Our Future?
+FIGURE 43.27 This logo from the Second International Eugenics Conference in New York City in September of 1921 shows how
+eugenics attempted to merge several fields of study with the goal of producing a genetically superior human race.
+If you could prevent your child from getting a devastating genetic disease, would you do it? Would you select the
+sex of your child or select for their attractiveness, strength, or intelligence? How far would you go to maximize
+the possibility of resistance to disease? The genetic engineering of a human child, the production of "designer
+babies" with desirable phenotypic characteristics, was once a topic restricted to science fiction. This is the case
+no longer: science fiction is now overlapping into science fact. Many phenotypic choices for offspring are already
+available, with many more likely to be possible in the not too distant future. Which traits should be selected and
+how they should be selected are topics of much debate within the worldwide medical community. The ethical
+and moral line is not always clear or agreed upon, and some fear that modern reproductive technologies could
+lead to a new form of eugenics.
+Eugenics is the use of information and technology from a variety of sources to improve the genetic makeup of
+the human race. The goal of creating genetically superior humans was quite prevalent (although controversial) in
+several countries during the early 20th century, but fell into disrepute when Nazi Germany developed an
+extensive eugenics program in the 1930s and 40s. The Nazis forcibly sterilized hundreds of thousands of the socalled "unfit" and killed tens of thousands of people with disabilities who resided in institutions, both as part of a
+systematic program to develop a genetically superior race of Germans known as Aryans. Ever since, eugenic
+ideas have not been as publicly expressed, but there are still those who promote them.
+Efforts have been made in the past to control traits in human children using donated sperm from people with
+desired traits. In fact, eugenicist Robert Klark Graham established a sperm bank in 1980 that included samples
+exclusively from donors with high IQs. The "genius" sperm bank failed to capture the public's imagination and
+the operation closed in 1999.
+In more recent times, the procedure known as prenatal genetic diagnosis (PGD) has been developed. PGD
+involves the screening of human embryos as part of the process of
+in vitro fertilization, during which embryos
+are conceived and grown outside the mother's body for some period of time before they are implanted. The term
+PGD usually refers to both the diagnosis, selection, and the implantation of the selected embryos.
+In the least controversial use of PGD, embryos are tested for the presence of alleles which cause genetic
+diseases such as sickle cell disease, muscular dystrophy, and hemophilia, in which a single disease-causing
+allele or pair of alleles has been identified. By excluding embryos containing these alleles from implantation into
+the mother, the disease is prevented, and the unused embryos are either donated to science or discarded. There
+43.6 • Fertilization and Early Embryonic Development 1283

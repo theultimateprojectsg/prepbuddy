@@ -1,0 +1,83 @@
+43.7 Organogenesis and Vertebrate Axis Formation
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• Describe the process of organogenesis
+• Identify the anatomical axes formed in vertebrates
+Gastrulation leads to the formation of the three germ layers that give rise, during further development, to the
+different organs in the animal body. This process is called organogenesis. Organogenesis is characterized by rapid
+and precise movements of the cells within the embryo.
+Organogenesis
+Organs form from the germ layers through the process of differentiation. During differentiation, the embryonic stem
+cells express specific sets of genes which will determine their ultimate cell type. For example, some cells in the
+ectoderm will express the genes specific to skin cells. As a result, these cells will differentiate into epidermal cells.
+The process of differentiation is regulated by cellular signaling cascades.
+Scientists study organogenesis extensively in the lab in fruit flies (
+Drosophila) and the nematode
+Caenorhabditis
+elegans.
+Drosophila have segments along their bodies, and the patterning associated with the segment formation
+has allowed scientists to study which genes play important roles in organogenesis along the length of the embryo at
+different time points. The nematode
+C.elegans has roughly 1000 somatic cells and scientists have studied the fate
+of each of these cells during their development in the nematode life cycle. There is little variation in patterns of cell
+lineage between individuals, unlike in mammals where cell development from the embryo is dependent on cellular
+cues.
+are relatively few in the worldwide medical community that question the ethics of this type of procedure, which
+allows individuals scared to have children because of the alleles they carry to do so successfully. The major
+limitation to this procedure is its expense. Not usually covered by medical insurance and thus out of reach
+financially for most people, only a very small percentage of all live births use such complicated methodologies.
+Yet, even in cases like these where the ethical issues may seem to be clear-cut, not everyone agrees with the
+morality of these types of procedures. For example, to those who take the position that human life begins at
+conception, the discarding of unused embryos, a necessary result of PGD, is unacceptable under any
+circumstances.
+A murkier ethical situation is found in the selection of a child's sex, which is easily performed by PGD. Currently,
+countries such as Great Britain have banned the selection of a child's sex for reasons other than preventing sexlinked diseases. Other countries allow the procedure for "family balancing", based on the desire of some parents
+to have at least one child of each sex. Still others, including the United States, have taken a scattershot approach
+to regulating these practices, essentially leaving it to the individual practicing physician to decide which
+practices are acceptable and which are not.
+Even murkier are rare instances of people with disabilities who select embryos via PGD to ensure that they share
+their disability. These parents usually cite many positive aspects of their disabilities and associated culture as
+reasons for their choice, which they see as their moral right. To others, to purposely cause a disability in a child
+violates the basic medical principle of
+Primum non nocere, "first, do no harm." This procedure, although not
+illegal in most countries, demonstrates the complexity of ethical issues associated with choosing genetic traits
+in offspring.
+Where could this process lead? Will this technology become more affordable and how should it be used? With
+the ability of technology to progress rapidly and unpredictably, a lack of definitive guidelines for the use of
+reproductive technologies before they arise might make it difficult for legislators to keep pace once they are in
+fact realized, assuming the process needs any government regulation at all. Other bioethicists argue that we
+should only deal with technologies that exist now, and not in some uncertain future. They argue that these types
+of procedures will always be expensive and rare, so the fears of eugenics and "master" races are unfounded and
+overstated. The debate continues.
+1284 43 • Animal Reproduction and Development
+In vertebrates, one of the primary steps during organogenesis is the formation of the neural system. The ectoderm
+forms epithelial cells and tissues, and neuronal tissues. During the formation of the neural system, special signaling
+molecules called growth factors signal some cells at the edge of the ectoderm to become epidermis cells. The
+remaining cells in the center form the neural plate. If the signaling by growth factors were disrupted, then the entire
+ectoderm would differentiate into neural tissue.
+The neural plate undergoes a series of cell movements where it rolls up and forms a tube called the neural tube, as
+illustrated in Figure 43.28. In further development, the neural tube will give rise to the brain and the spinal cord.
+FIGURE 43.28 The central region of the ectoderm forms the neural tube, which gives rise to the brain and the spinal cord.
+The mesoderm that lies on either side of the vertebrate neural tube will develop into the various connective tissues
+of the animal body. A spatial pattern of gene expression reorganizes the mesoderm into groups of cells called
+somites with spaces between them. The somites illustrated in Figure 43.29 will further develop into the cells that
+form the vertebrae and ribs, the dermis of the dorsal skin, the skeletal muscles of the back, and the skeletal muscles
+of the body wall and limbs. The mesoderm also forms a structure called the notochord, which is rod-shaped and
+forms the central axis of the animal body.
+43.7 • Organogenesis and Vertebrate Axis Formation 1285
+FIGURE 43.29 In this five-week old human embryo, somites are segments along the length of the body. (credit: modification of work by Ed
+Uthman)
+Vertebrate Axis Formation
+Even as the germ layers form, the ball of cells still retains its spherical shape. However, animal bodies have lateralmedial (left-right), dorsal-ventral (back-belly), and anterior-posterior (head-feet) axes, illustrated in Figure 43.30.
+FIGURE 43.30 Animal bodies have three axes for symmetry. (credit: modification of work by NOAA)
+How are these established? In one of the most seminal experiments ever to be carried out in developmental biology,
+Spemann and Mangold took dorsal cells from one embryo and transplanted them into the belly region of another
+embryo. They found that the transplanted embryo now had two notochords: one at the dorsal site from the original
+cells and another at the transplanted site. This suggested that the dorsal cells were genetically programmed to form
+the notochord and define the axis. Since then, researchers have identified many genes that are responsible for axis
+formation. Mutations in these genes leads to the loss of symmetry required for organism development.
+Animal bodies have externally visible symmetry. However, the internal organs are not symmetric. For example, the
+heart is on the left side and the liver on the right. The formation of the central left-right axis is an important process
+during development. This internal asymmetry is established very early during development and involves many
+genes. Research is still ongoing to fully understand the developmental implications of these genes.
+1286 43 • Animal Reproduction and Development

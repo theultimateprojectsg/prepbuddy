@@ -1,0 +1,186 @@
+pore complex. Once the RNA is in the cytoplasm, the
+length of time it resides there before being degraded,
+called RNA stability, can also be altered to control the
+overall amount of protein that is synthesized. The RNA
+stability can be increased, leading to longer residency
+time in the cytoplasm, or decreased, leading to
+shortened time and less protein synthesis. RNA
+stability is controlled by RNA-binding proteins (RPBs)
+and microRNAs (miRNAs). These RPBs and miRNAs
+bind to the 5' UTR or the 3' UTR of the RNA to increase
+or decrease RNA stability. MicroRNAs associated with
+RISC complexes may repress translation or lead to
+mRNA breakdown.
+16.6 Eukaryotic Translational and Posttranslational Gene Regulation
+Changing the status of the RNA or the protein itself can
+affect the amount of protein, the function of the
+protein, or how long it is found in the cell. To translate
+the protein, a protein initiator complex must assemble
+on the RNA. Modifications (such as phosphorylation) of
+proteins in this complex can prevent proper translation
+from occurring. Once a protein has been synthesized, it
+can be modified (phosphorylated, acetylated,
+methylated, or ubiquitinated). These post-translational
+modifications can greatly impact the stability,
+degradation, or function of the protein.
+16.7 Cancer and Gene Regulation
+Cancer can be described as a disease of altered gene
+expression. Changes at every level of eukaryotic gene
+expression can be detected in some form of cancer at
+some point in time. In order to understand how
+changes to gene expression can cause cancer, it is
+critical to understand how each stage of gene
+regulation works in normal cells. By understanding the
+mechanisms of control in normal, non-diseased cells, it
+will be easier for scientists to understand what goes
+wrong in disease states including complex ones like
+cancer.
+Visual Connection Questions
+1 . Figure 16.6 In
+E. coli, the
+trp operon is on by
+default, while the
+lac operon is off. Why do you
+think that this is the case?
+2 . Figure 16.8 In females, one of the two X
+chromosomes is inactivated during embryonic
+development because of epigenetic changes to
+the chromatin. What impact do you think these
+changes would have on nucleosome packing?
+3. Figure 16.14 An increase in phosphorylation
+levels of eIF-2 has been observed in patients
+with neurodegenerative diseases such as
+Alzheimer’s, Parkinson’s, and Huntington’s.
+What impact do you think this might have on
+protein synthesis?
+Review Questions
+4 . Control of gene expression in eukaryotic cells
+occurs at which level(s)?
+a. only the transcriptional level
+b. epigenetic and transcriptional levels
+c. epigenetic, transcriptional, and
+translational levels
+d. epigenetic, transcriptional, posttranscriptional, translational, and posttranslational levels
+5 . Post-translational control refers to:
+a. regulation of gene expression after
+transcription
+b. regulation of gene expression after
+translation
+c. control of epigenetic activation
+d. period between transcription and
+translation
+6 . How does the regulation of gene expression
+support continued evolution of more complex
+organisms?
+a. Cells can become specialized within a
+multicellular organism.
+b. Organisms can conserve energy and
+resources.
+c. Cells grow larger to accommodate protein
+production.
+d. Both A and B.
+7. If glucose is absent, but so is lactose, the
+lac
+operon will be ________.
+a. activated
+b. repressed
+c. activated, but only partially
+d. mutated
+8. Prokaryotic cells lack a nucleus. Therefore, the
+genes in prokaryotic cells are:
+a. all expressed, all of the time
+b. transcribed and translated almost
+simultaneously
+16 • Visual Connection Questions 435
+c. transcriptionally controlled because
+translation begins before transcription
+ends
+d. b and c are both true
+9 . The
+ara operon is an inducible operon that
+controls the breakdown of the sugar arabinose.
+When arabinose is present in a bacterium it
+binds to the protein AraC, and the complex binds
+to the initiator site to promote transcription. In
+this scenario, AraC is a(n) ________.
+a. activator
+b. inducer
+c. repressor
+d. operator
+10. What are epigenetic modifications?
+a. the addition of reversible changes to
+histone proteins and DNA
+b. the removal of nucleosomes from the DNA
+c. the addition of more nucleosomes to the
+DNA
+d. mutation of the DNA sequence
+11. Which of the following are true of epigenetic
+changes?
+a. allow DNA to be transcribed
+b. move histones to open or close a
+chromosomal region
+c. are temporary
+d. all of the above
+12. The binding of ________ is required for
+transcription to start.
+a. a protein
+b. DNA polymerase
+c. RNA polymerase
+d. a transcription factor
+13. What will result from the binding of a
+transcription factor to an enhancer region?
+a. decreased transcription of an adjacent
+gene
+b. increased transcription of a distant gene
+c. alteration of the translation of an adjacent
+gene
+d. initiation of the recruitment of RNA
+polymerase
+14. A scientist compares the promoter regions of
+two genes. Gene A’s core promoter plus
+proximal promoter elements encompasses
+70bp. Gene B’s core promoter plus proximal
+promoter elements encompasses 250bp. Which
+of the scientist’s hypotheses is most likely to be
+correct?
+a. More transcripts will be made from Gene
+B.
+b. Transcription of Gene A involves fewer
+transcription factors.
+c. Enhancers control Gene B’s transcription.
+d. Transcription of Gene A is more controlled
+than transcription of Gene B.
+15. Which of the following are involved in posttranscriptional control?
+a. control of RNA splicing
+b. control of RNA shuttling
+c. control of RNA stability
+d. all of the above
+16. Binding of an RNA binding protein will ________
+the stability of the RNA molecule.
+a. increase
+b. decrease
+c. neither increase nor decrease
+d. either increase or decrease
+17. An unprocessed pre-mRNA has the following
+structure.
+Which of the following is not a possible size (in
+bp) of the mature mRNA?
+a. 205bp
+b. 180bp
+c. 150bp
+d. 100bp
+18. Alternative splicing has been estimated to occur
+in more than 95% of multi-exon genes. Which of
+the following is not an evolutionary advantage of
+alternative splicing?
+a. Alternative splicing increases diversity
+without increasing genome size.
+b. Different gene isoforms can be expressed
+in different tissues.
+c. Alternative splicing creates shorter mRNA
+transcripts.
+d. Different gene isoforms can be expressed
+during different stages of development.
+19. Post-translational modifications of proteins can
+affect which of the following?
+436 16 • Review Questions

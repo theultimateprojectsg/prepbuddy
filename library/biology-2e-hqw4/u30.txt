@@ -1,0 +1,135 @@
+photosynthesis, but their chlorophyll is not relegated to an organelle.
+EVOLUTION CONNECTION
+Endosymbiosis
+We have mentioned that both mitochondria and chloroplasts contain DNA and ribosomes. Have you wondered why?
+Strong evidence points to endosymbiosis as the explanation.
+Symbiosis is any type of close and long term relationship between two organisms from different species depend on
+each other for their survival. In some cases both organisms benefit from the relationship. Endosymbiosis (endo- =
+“within”) is a mutually beneficial relationship in which one organism lives inside the other. Endosymbiotic
+relationships abound in nature. We have already mentioned that microbes that produce vitamin K live inside the
+human gut. This relationship is beneficial for us because we are unable to synthesize vitamin K. It is also beneficial
+for the microbes because they are protected from other organisms and from drying out, and they receive abundant
+food from the environment of the large intestine.
+Scientists have long noticed that bacteria, mitochondria, and chloroplasts are similar in size. We also know that
+bacteria have DNA and ribosomes, just like mitochondria and chloroplasts. Scientists believe that host cells and
+bacteria formed an endosymbiotic relationship when the host cells ingested both aerobic and autotrophic bacteria
+(cyanobacteria) but did not destroy them. Through many millions of years of evolution, these ingested bacteria
+became more specialized in their functions, with the aerobic bacteria becoming mitochondria and the autotrophic
+bacteria becoming chloroplasts.
+The Central Vacuole
+Previously, we mentioned vacuoles as essential components of plant cells. If you look at Figure 4.8b, you will see
+that plant cells each have a large central vacuole that occupies most of the cell's volume. The central vacuole plays
+a key role in regulating the cell’s concentration of water in changing environmental conditions. Have you ever
+noticed that if you forget to water a plant for a few days, it wilts? That’s because as the water concentration in the
+soil becomes lower than the water concentration in the plant, water moves out of the central vacuoles and
+cytoplasm. As the central vacuole shrinks, it leaves the cell wall unsupported. This loss of support to the plant's cell
+walls results in the wilted appearance.
+The central vacuole also supports the cell's expansion. When the central vacuole holds more water, the cell
+becomes larger without having to invest considerable energy in synthesizing new cytoplasm.
+4.4 The Endomembrane System and Proteins
+LEARNING OBJECTIVES
+By the end of this section, you will be able to do the following:
+• List the components of the endomembrane system
+• Recognize the relationship between the endomembrane system and its functions
+The endomembrane system (endo = “within”) is a group of membranes and organelles (Figure 4.18) in eukaryotic
+cells that works together to modify, package, and transport lipids and proteins. It includes the nuclear envelope,
+lysosomes, and vesicles, which we have already mentioned, and the endoplasmic reticulum and Golgi apparatus,
+which we will cover shortly. Although not technically
+within the cell, the plasma membrane is included in the
+endomembrane system because, as you will see, it interacts with the other endomembranous organelles. The
+endomembrane system does not include either mitochondria or chloroplast membranes.
+112 4 • Cell Structure
+VISUAL CONNECTION
+FIGURE 4.18 Membrane and secretory proteins are synthesized in the rough endoplasmic reticulum (RER). The RER also sometimes
+modifies proteins. In this illustration, a (green) integral membrane protein is modified by attachment of a (purple) carbohydrate in the ER.
+Vesicles with the integral protein bud from the ER and fuse with the Golgi apparatus' cis face. As the protein passes along the Golgi’s
+cisternae, the addition of more carbohydrates further modifies it. After its synthesis is complete, it exits as an integral membrane protein of
+the vesicle that buds from the Golgi’s trans face. When the vesicle fuses with the cell membrane, the protein becomes an integral portion of
+that cell membrane. (credit: modification of work by Magnus Manske)
+If a peripheral membrane protein were synthesized in the lumen (inside) of the ER, would it end up on the inside or
+outside of the plasma membrane?
+The Endoplasmic Reticulum
+The endoplasmic reticulum (ER) (Figure 4.18) is a series of interconnected membranous sacs and tubules that
+collectively modifies proteins and synthesizes lipids. However, these two functions take place in separate areas of
+the ER: the rough ER and the smooth ER, respectively.
+We call the ER tubules' hollow portion the lumen or cisternal space. The ER's membrane, which is a phospholipid
+bilayer embedded with proteins, is continuous with the nuclear envelope.
+Rough ER
+Scientists have named the rough endoplasmic reticulum (RER) as such because the ribosomes attached to its
+cytoplasmic surface give it a studded appearance when viewing it through an electron microscope (Figure 4.19).
+4.4 • The Endomembrane System and Proteins 113
+FIGURE 4.19 This transmission electron micrograph shows the rough endoplasmic reticulum and other organelles in a pancreatic cell.
+(credit: modification of work by Louisa Howard)
+Ribosomes transfer their newly synthesized proteins into the RER's lumen where they undergo structural
+modifications, such as folding or acquiring side chains. These modified proteins incorporate into cellular
+membranes—the ER or the ER's or other organelles' membranes. The proteins can also secrete from the cell (such
+as protein hormones, enzymes). The RER also makes phospholipids for cellular membranes.
+If the phospholipids or modified proteins are not destined to stay in the RER, they will reach their destinations via
+transport vesicles that bud from the RER’s membrane (Figure 4.18).
+Since the RER is engaged in modifying proteins (such as enzymes, for example) that secrete from the cell, you would
+be correct in assuming that the RER is abundant in cells that secrete proteins. This is the case with liver cells, for
+example.
+Smooth ER
+The smooth endoplasmic reticulum (SER) is continuous with the RER but has few or no ribosomes on its
+cytoplasmic surface (Figure 4.18). SER functions include synthesis of carbohydrates, lipids, and steroid hormones;
+detoxification of medications and poisons; and storing calcium ions.
+In muscle cells, a specialized SER, the sarcoplasmic reticulum, is responsible for storing calcium ions that are
+needed to trigger the muscle cells' coordinated contractions.
+LINK TO LEARNING
+You can watch an excellent animation of the endomembrane system here (https://openstax.org/l/
+insane_in_the_endomembrane). At the end of the animation, there is a short self-assessment.
+CAREER CONNECTION
+Cardiologist
+Heart disease is the leading cause of death in the United States. This is primarily due to our sedentary lifestyle and
+our high trans-fat diets.
+Heart failure is just one of many disabling heart conditions. Heart failure does not mean that the heart has stopped
+working. Rather, it means that the heart can’t pump with sufficient force to transport oxygenated blood to all the
+vital organs. Left untreated, heart failure can lead to kidney failure and other organ failure.
+Cardiac muscle tissue comprises the heart's wall. Heart failure occurs when cardiac muscle cells' endoplasmic
+reticula do not function properly. As a result, an insufficient number of calcium ions are available to trigger a
+sufficient contractile force.
+Cardiologists (cardi- = “heart”; -ologist = “one who studies”) are doctors who specialize in treating heart diseases,
+including heart failure. Cardiologists can diagnose heart failure via a physical examination, results from an
+electrocardiogram (ECG, a test that measures the heart's electrical activity), a chest X-ray to see whether the heart
+is enlarged, and other tests. If the cardiologist diagnoses heart failure, they will typically prescribe appropriate
+114 4 • Cell Structure
+medications and recommend a reduced table salt intake and a supervised exercise program.
+The Golgi Apparatus
+We have already mentioned that vesicles can bud from the ER and transport their contents elsewhere, but where do
+the vesicles go? Before reaching their final destination, the lipids or proteins within the transport vesicles still need
+sorting, packaging, and tagging so that they end up in the right place. Sorting, tagging, packaging, and distributing
+lipids and proteins takes place in the Golgi apparatus (also called the Golgi body), a series of flattened
+membranous sacs (Figure 4.20).
+FIGURE 4.20 The Golgi apparatus in this white blood cell is visible as a stack of semicircular, flattened rings in the lower portion of the
+image. You can see several vesicles near the Golgi apparatus. (credit: modification of work by Louisa Howard)
+The side of the Golgi apparatus that is closer to the ER is called the
+cis face. The opposite side is the
+trans face. The
+transport vesicles that formed from the ER travel to the
+cis face, fuse with it, and empty their contents into the Golgi
+apparatus' lumen. As the proteins and lipids travel through the Golgi, they undergo further modifications that allow
+them to be sorted. The most frequent modification is adding short sugar molecule chains. These newly modified
+proteins and lipids then tag with phosphate groups or other small molecules in order to travel to their proper
+destinations.
+Finally, the modified and tagged proteins are packaged into secretory vesicles that bud from the Golgi's
+trans face.
+While some of these vesicles deposit their contents into other cell parts where they will be used, other secretory
+vesicles fuse with the plasma membrane and release their contents outside the cell.
+In another example of form following function, cells that engage in a great deal of secretory activity (such as salivary
+gland cells that secrete digestive enzymes or immune system cells that secrete antibodies) have an abundance of
+Golgi.
+In plant cells, the Golgi apparatus has the additional role of synthesizing polysaccharides, some of which are
+incorporated into the cell wall and some of which other cell parts use.
+CAREER CONNECTION
+Geneticist
+Many diseases arise from genetic mutations that prevent synthesizing critical proteins. One such disease is Lowe
+disease (or oculocerebrorenal syndrome, because it affects the eyes, brain, and kidneys). In Lowe disease, there is a
+deficiency in an enzyme localized to the Golgi apparatus. Children with Lowe disease are born with cataracts,
+typically develop kidney disease after the first year of life, and may have intellectual disabilities.
+A mutation on the X chromosome causes Lowe disease. The X chromosome is one of the two human sex
+chromosomes, as these chromosomes determine a person's sex. Females possess two X chromosomes while males
+possess one X and one Y chromosome. In females, the genes on only one of the two X chromosomes are expressed.
+Females who carry the Lowe disease gene on one of their X chromosomes are carriers and do not show symptoms
+of the disease. However, males only have one X chromosome and the genes on this chromosome are always
+expressed. Therefore, males will always have Lowe disease if their X chromosome carries the Lowe disease gene.
+4.4 • The Endomembrane System and Proteins 115

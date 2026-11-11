@@ -1,0 +1,109 @@
+a. protein function
+b. transcriptional regulation
+c. chromatin modification
+d. all of the above
+20. A scientist mutates eIF-2 to eliminate its GTP
+hydrolysis capability. How would this mutated
+form of eIF-2 alter translation?
+a. Initiation factors would not be able to bind
+to mRNA.
+b. The large ribosomal subunit would not be
+able to interact with mRNA transcripts.
+c. tRNAi-Met would not scan mRNA
+transcripts for the start codon.
+d. eIF-2 would not be able to interact with
+the small ribosomal subunit.
+21. Cancer causing genes are called ________.
+a. transformation genes
+b. tumor suppressor genes
+c. oncogenes
+d. mutated genes
+22. Targeted therapies are used in patients with a
+set gene expression pattern. A targeted therapy
+that prevents the activation of the estrogen
+receptor in breast cancer would be beneficial to
+which type of patient?
+a. patients who express the EGFR receptor in
+normal cells
+b. patients with a mutation that inactivates
+the estrogen receptor
+c. patients with lots of the estrogen receptor
+expressed in their tumor
+d. patients that have no estrogen receptor
+expressed in their tumor
+Critical Thinking Questions
+23. Name two differences between prokaryotic and
+eukaryotic cells and how these differences
+benefit multicellular organisms.
+24. Describe how controlling gene expression will
+alter the overall protein levels in the cell.
+25. Describe how transcription in prokaryotic cells
+can be altered by external stimulation such as
+excess lactose in the environment.
+26. What is the difference between a repressible
+and an inducible operon?
+27. In cancer cells, alteration to epigenetic
+modifications turns off genes that are normally
+expressed. Hypothetically, how could you
+reverse this process to turn these genes back
+on?
+28. A scientific study demonstrated that rat
+mothering behavior impacts the stress response
+in their pups. Rats that were born and grew up
+with attentive mothers showed low activation of
+stress-response genes later in life, while rats
+with inattentive mothers had high activation of
+stress-response genes in the same situation. An
+additional study that swapped the pups at birth
+(i.e., rats born to inattentive mothers grew up
+with attentive mothers and vice versa) showed
+the same positive effect of attentive mothering.
+How do genetics and/or epigenetics explain the
+results of this study?
+29. Some autoimmune diseases show a positive
+correlation with dramatically decreased
+expression of histone deacetylase 9 (HDAC9, an
+enzyme that removes acetyl groups from
+histones). Why would the decreased expression
+of HDAC9 cause immune cells to produce
+inflammatory genes at inappropriate times?
+30. A mutation within the promoter region can alter
+transcription of a gene. Describe how this can
+happen.
+31. What could happen if a cell had too much of an
+activating transcription factor present?
+32. A scientist identifies a potential transcription
+regulation site 300bp downstream of a gene and
+hypothesizes that it is a repressor. What
+experiment (with results) could he perform to
+support this hypothesis?
+33. Describe how RBPs can prevent miRNAs from
+degrading an RNA molecule.
+34. How can external stimuli alter posttranscriptional control of gene expression?
+35. Protein modification can alter gene expression in
+many ways. Describe how phosphorylation of
+proteins can alter gene expression.
+36. Alternative forms of a protein can be beneficial
+or harmful to a cell. What do you think would
+happen if too much of an alternative protein
+bound to the 3' UTR of an RNA and caused it to
+degrade?
+37. Changes in epigenetic modifications alter the
+accessibility and transcription of DNA. Describe
+16 • Critical Thinking Questions 437
+how environmental stimuli, such as ultraviolet
+light exposure, could modify gene expression.
+38. A scientist discovers a virus encoding a Protein X
+that degrades a subunit of the eIF4F complex.
+Knowing that this virus transcribes its own
+mRNAs in the cytoplasm of human cells, why
+would Protein X be an effective virulence factor?
+39. New drugs are being developed that decrease
+DNA methylation and prevent the removal of
+acetyl groups from histone proteins. Explain how
+these drugs could affect gene expression to help
+kill tumor cells.
+40. How can understanding the gene expression
+pattern in a cancer cell tell you something about
+that specific form of cancer?
+438 16 • Critical Thinking Questions
