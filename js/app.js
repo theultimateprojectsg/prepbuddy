@@ -869,7 +869,6 @@ async function renderBooks() {
       <span class="c-title" data-raw>${esc(b.title)}</span>
       <span class="c-foot"><span class="c-ch">${b.units.length} chapter${b.units.length === 1 ? '' : 's'}</span><b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span></span>
     </button>`;
-  const addTile = '<button class="bookcover add" data-addbook>' + ICON.plus + '<span>Add a book</span></button>';
   const q = document.getElementById('q');
   const draw = () => {
     const shelf = document.getElementById('shelf'); if (!shelf) return;
@@ -877,12 +876,10 @@ async function renderBooks() {
     const hits = items.filter((it) => (booksPick === 'all' || subjectOf(it.b) === booksPick) &&
       textMatch(words, `${it.b.title} ${it.b.subject || ''} ${it.b.code || ''} ${it.b.level || ''}`.toLowerCase()));
     const groups = groupBySubject(hits, (it) => subjectOf(it.b));
-    const plain = booksPick === 'all' && !words.length;
     shelf.innerHTML = groups.length
-      ? groups.map(([k, xs], gi) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="covergrid">${xs.map(cover).join('')}${plain && gi === groups.length - 1 ? addTile : ''}</div></section>`).join('')
+      ? groups.map(([k, xs], gi) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="covergrid">${xs.map(cover).join('')}</div></section>`).join('')
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">None of your textbooks match.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Try another word, or tap Add a textbook to search the library.</p></div>`;
     shelf.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
-    shelf.querySelectorAll('[data-addbook]').forEach((b) => (b.onclick = () => go({ name: 'library', query: '' })));
   };
   const bindChips = () => document.querySelectorAll('#chips [data-subj]').forEach((c) => (c.onclick = () => {
     booksPick = c.dataset.subj;
