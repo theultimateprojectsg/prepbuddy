@@ -3277,6 +3277,23 @@ new MutationObserver((muts) => {
 { const st = document.createElement('style'); st.textContent = REPORT_CSS; document.head.appendChild(st); }
 initLang();
 watch(document.body);
+// Question-writing rules change over time. When they do, questions made under the old rules that the student
+// hasn't answered yet are dropped once, so they're remade under the new ones. Answered questions (and so all
+// progress and mistakes) are kept.
+const QRULES = 2; // 2: every condition stated (no unstated variants such as worst-of / average baskets)
+async function refreshOldQuestions() {
+  if ((local.qrules || 1) >= QRULES) return;
+  for (const b of await getBooks()) {
+    const keys = b.units.map((u) => `qs:${b.id}:${u.id}`);
+    const lists = await store.getMany(keys, []);
+    for (let i = 0; i < keys.length; i++) {
+      const list = lists[i] || [];
+      const keep = list.filter((q) => local.stats[q.id] || (local.mistakes || {})[q.id]);
+      if (keep.length !== list.length) await store.set(keys[i], keep);
+    }
+  }
+  local.qrules = QRULES; saveLocal();
+}
 getBooks().then(pruneMistakes).catch(() => {});
 flushReports().catch(() => {});
-go({ name: 'home' });
+refreshOldQuestions().catch(() => {}).finally(() => go({ name: 'home' }));
