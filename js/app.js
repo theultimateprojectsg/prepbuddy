@@ -2083,19 +2083,11 @@ function newSession(props) {
   return Object.assign({ i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
 }
 
-// A session over one or more chapters: questions are spread evenly across them.
-// A session over one or more chapters. Ready questions are used first; new ones are made a few at a time,
-// staying about AHEAD questions in front of the student, so stopping early wastes little.
-const AHEAD = 6;
-// Fast students get more questions made ahead, and more batches at once, so they don't catch up with the AI.
-function paceOf(sess) {
-  const t = sess.times || [];
-  if (t.length < 3) return { ahead: AHEAD, par: PARALLEL };
-  const recent = t.slice(-6), secs = (recent[recent.length - 1] - recent[0]) / 1000 / (recent.length - 1);
-  if (secs < 8) return { ahead: 15, par: 5 };
-  if (secs < 20) return { ahead: 10, par: 4 };
-  return { ahead: AHEAD, par: PARALLEL };
-}
+// A session over one or more chapters. Ready questions are used first; everything still missing is ordered
+// the moment the session starts (several batches side by side), plus a few spare for next time, so even a
+// fast student rarely catches up with the AI. Spare questions stay in the bank and are used first next session.
+const SPARE = 3;
+const MAKE_PAR = 4;
 async function startUnits(book, units, count = SESSION_SIZE) {
   const k = units.length, quota = Math.ceil(count / k);
   const types = local.types || 'mix';
@@ -2116,24 +2108,29 @@ async function startUnits(book, units, count = SESSION_SIZE) {
   if (S.qs.length) renderQuestion(); else renderWaiting();
 }
 
-// Ask for just enough new questions to stay AHEAD in front of the student.
+// Order every question the session still needs, minus what's already being made for it.
 function topUp(sess) {
   if (sess.mode === 'drill') return pumpDrills(sess);
   if (sess.fill) return pumpPaper(sess);
-  if (!sess.units || sess.generating || sess.error) return;
-  const ahead = sess.qs.length - (sess.i + 1);
-  const pace = paceOf(sess);
-  const need = Math.min(sess.target - sess.qs.length, pace.ahead - ahead);
-  if (need <= 0) return;
+  if (!sess.units || sess.error) return;
+  const coming = [...(sess.jobs || [])].filter((j) => !j.done).reduce((n, j) => n + Math.max(0, j.want - j.made), 0);
+  let need = sess.target - sess.qs.length - coming;
+  const spare = sess.spared ? 0 : Math.max(1, Math.ceil(SPARE / sess.units.length));
+  if (need <= 0 && !spare) return;
+  need = Math.max(0, need);
+  sess.spared = true;
   // spread across the chosen chapters, starting with the ones that have given fewest questions so far
   const used = (u) => sess.qs.filter((q) => q.id.startsWith(`${sess.book.id}:${u.id}:`)).length;
   const order = [...sess.units].sort((a, b) => used(a) - used(b));
   const per = Math.ceil(need / order.length);
   let left = need;
   for (const u of order) {
-    if (left <= 0) break;
     const want = Math.min(per, left); left -= want;
-    followFill(sess, ensureFill(sess.book, u, want, sess.types, pace.par, true));
+    if (want + spare <= 0) continue;
+    // a job already making questions for this session keeps what it still owes, plus the new ones
+    const j = jobs.get(`${sess.book.id}:${u.id}:${sess.types}`);
+    const owed = j && sess.jobs && sess.jobs.has(j) ? Math.max(0, j.want - j.made) : 0;
+    followFill(sess, ensureFill(sess.book, u, owed + want + spare, sess.types, MAKE_PAR, true));
   }
 }
 
@@ -2349,19 +2346,24 @@ async function doFill(book, unit, job) {
         if (!img) q.drop = true;
       }
       gen.questions = gen.questions.filter((q) => !q.drop).map((q) => (q.figure ? q : (delete q.figure, q)));
-      const checked = await Promise.all(gen.questions.map((q) =>
-        api('verify', { title, text, question: qForServer(q), figure: figB64(q) }).then((v) => ({ q, v })).catch((e) => { if (e.status === 401) { stop = true; throw e; } return { q, v: { passed: false } }; })));
-      const passed = checked.filter((x) => x.v.passed && usable(x.q)).map((x) => x.q);
-      if (!passed.length) continue;
-      passed.forEach((q) => {
+      // Each question is checked on its own and joins the bank (and the session) the moment it passes,
+      // rather than waiting for the slowest check in the batch.
+      let ok = 0;
+      await Promise.all(gen.questions.map(async (q) => {
+        let v;
+        try { v = await api('verify', { title, text, question: qForServer(q), figure: figB64(q) }); }
+        catch (e) { if (e.status === 401) { stop = true; throw e; } return; }
+        if (!v.passed || !usable(q)) return;
         q.id = `${book.id}:${unit.id}:${uid()}`;
         q.section = title;
         q.pages = unit.startPage ? `${unit.startPage}-${unit.endPage}` : '';
-      });
-      await addToBank(book.id, unit.id, passed);
-      job.made += passed.length;
-      const t = local.usage.made || 0; local.usage.made = t + passed.length; saveLocal();
-      job.listeners.forEach((f) => f(passed, false));
+        ok++;
+        await addToBank(book.id, unit.id, [q]);
+        job.made++;
+        local.usage.made = (local.usage.made || 0) + 1; saveLocal();
+        job.listeners.forEach((f) => f([q], false));
+      }));
+      if (!ok) continue;
     }
   };
   // Workers run side by side; more join if the student needs questions faster (job.spawn).
@@ -2388,6 +2390,9 @@ function addToBank(bookId, unitId, qs) {
 }
 
 function followFill(sess, job) {
+  sess.jobs = sess.jobs || new Set();
+  if (sess.jobs.has(job)) return;
+  sess.jobs.add(job);
   sess.pending = (sess.pending || 0) + 1;
   sess.generating = true; sess.error = null;
   const listener = (passed, done) => {
@@ -2400,7 +2405,7 @@ function followFill(sess, job) {
       sess.qs.splice(lo + Math.floor(Math.random() * (sess.qs.length - lo + 1)), 0, q);
     });
     if (done) {
-      sess.pending--;
+      sess.pending--; sess.jobs.delete(job);
       if (job.error && !sess.error) sess.error = job.error;
       sess.generating = sess.pending > 0;
       if (!job.made) sess.dry = (sess.dry || 0) + 1; else sess.dry = 0;
@@ -2431,8 +2436,36 @@ function sessionGrew(done) {
   }
 }
 
+// If the student catches up with the AI, they get a question from these chapters they've done before
+// (ones they got wrong first) instead of a spinner. It counts as one of the session's questions.
+const MAX_RECAPS = 3;
+async function recapFor(sess) {
+  const have = new Set(sess.qs.map((q) => q.id));
+  const all = (await Promise.all(sess.units.map((u) => getQs(sess.book.id, u.id)))).flat()
+    .filter((q) => local.stats[q.id] && !have.has(q.id) && matchType(q, sess.types));
+  if (!all.length) return null;
+  const rank = (q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done ? 0 : isWeak(q) ? 1 : 2; };
+  const best = Math.min(...all.map(rank));
+  const pick = shuffle(all.filter((q) => rank(q) === best))[0];
+  return { ...shuffleOptions(pick), recap: true };
+}
+function tryRecap() {
+  const sess = S;
+  if (!sess || sess.mode !== 'unit' || sess.review || sess.recapping || (sess.recaps || 0) >= MAX_RECAPS || !sess.generating) return;
+  sess.recapping = true;
+  recapFor(sess).then((q) => {
+    sess.recapping = false;
+    if (!q || sess !== S || !sess.waiting || sess.i < sess.qs.length || !sess.generating) return;
+    sess.recaps = (sess.recaps || 0) + 1;
+    sess.qs.splice(sess.i, 0, q);
+    sess.waiting = false;
+    renderQuestion();
+  }).catch(() => { sess.recapping = false; });
+}
+
 function renderWaiting() {
   S.waiting = true;
+  tryRecap();
   const e = S.error;
   if (e && e.status === 401) return renderAccess(() => { refill(S); renderWaiting(); }, 'That access code didn’t work. Please check it and try again.');
   const failed = !S.generating && S.i >= S.qs.length;
@@ -2445,7 +2478,7 @@ function renderWaiting() {
          ${S.qs.length ? '<button class="btn ghost" id="finish">See my results</button>' : '<button class="btn ghost" id="home">Back</button>'}`
       : `<div class="spinner" aria-hidden="true"></div>
          <h1 class="display" style="margin:0;font-size:22px">${S.qs.length ? 'Preparing the next question' : 'Writing your questions'}</h1>
-         <p class="muted" style="margin:0;line-height:1.5;max-width:320px">${esc(S.mode === 'drill' ? 'New questions on the ideas you missed' : S.units ? S.units.map((u) => u.title).join(', ') : '')}<br>Each question is written from your textbook, then checked by a second AI. The first ones take 30–60 seconds; after that the next set is made while you practise.</p>`}
+         <p class="muted" style="margin:0;line-height:1.5;max-width:320px">${esc(S.mode === 'drill' ? 'New questions on the ideas you missed' : S.units ? S.units.map((u) => u.title).join(', ') : '')}<br>Each question is written from your textbook, then checked by a second AI. The first ones take 30–60 seconds; the rest of your set is made while you practise.</p>`}
   </main>`;
   document.getElementById('quit').onclick = async () => { if (await confirmLeave(leaveText('wait'))) go(S && S.book ? { name: 'book', bookId: S.book.id } : { name: 'home' }); };
   const r = document.getElementById('retry'); if (r) r.onclick = () => {
@@ -2606,7 +2639,7 @@ function renderQuestion() {
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
-    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}</div>
+    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? preTutorHTML(q) : ''}
   </main>

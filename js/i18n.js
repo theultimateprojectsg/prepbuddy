@@ -304,6 +304,8 @@ const EXACT = {
   // waiting
   'Writing your questions': '正在編寫你的題目',
   'Preparing the next question': '正在準備下一題',
+  'Quick recap': '快速重溫',
+  'Done before. A quick recap while the next new question is checked': '之前做過的題目，在新題目檢查期間快速重溫',
   'Couldn’t make questions': '未能編寫題目',
   'No more questions right now': '暫時沒有更多題目',
   'Try again': '再試一次',
