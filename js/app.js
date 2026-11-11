@@ -4,6 +4,7 @@ import { buildReport, encodeReport, headline, skillsHTML, REPORT_CSS } from './r
 import { initLang, setLang, watch, LANG } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
 import { logoSVG, buddySVG, buddyFace } from './buddy.js';
+import { menuIcon, subjectIcon, subjectTile, subjectColour, actionIcon, actionTile } from './icons.js';
 
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
@@ -488,14 +489,7 @@ async function go(v) {
 
 /* ---------- home ---------- */
 // Book covers: one colour per subject, so the shelf is easy to scan.
-const COVER_COLOURS = ['#26357A', '#18966A', '#C2452D', '#6B4FB0', '#0E7C8C', '#A3661A', '#B0346A', '#3E6B2F'];
-function coverColour(b) {
-  const k = String(b.subject || b.title || '').toLowerCase();
-  const fixed = { biology: 1, chemistry: 4, physics: 0, mathematics: 5, maths: 5, english: 6, chinese: 2, history: 3, geography: 7, economics: 5 };
-  for (const [w, i] of Object.entries(fixed)) if (k.includes(w)) return COVER_COLOURS[i];
-  let h = 0; for (const c of k) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return COVER_COLOURS[h % COVER_COLOURS.length];
-}
+function coverColour(b) { return subjectColour(b.subject, b.title); }
 async function bookSummary(b) {
   const qs = []; for (const u of b.units) qs.push(...await getQs(b.id, u.id));
   return { n: qs.length, sc: scoreOf(qs) };
@@ -763,19 +757,19 @@ async function renderHome() {
   const mk = mistakeCount();
   const last = lastChapter(books);
   const items = [];
-  if (due.length) items.push(`<button class="plan-item" data-mode="spaced"><span class="pi-icon pi-review">${ICON.review}</span><span class="pi-text"><b>Review ${due.length} question${due.length > 1 ? 's' : ''}</b><span class="sub">About ${Math.max(1, Math.round(Math.min(due.length, 15) * 0.6))} min · keeps what you learned fresh</span></span><span class="go">Start</span></button>`);
-  if (mk) items.push(`<button class="plan-item" id="mistakes"><span class="pi-icon pi-mistake">${ICON.pen}</span><span class="pi-text"><b>Fix ${mk} mistake${mk > 1 ? 's' : ''}</b><span class="sub">Questions you didn’t get fully right</span></span><span class="go">Open</span></button>`);
+  if (due.length) items.push(`<button class="plan-item" data-mode="spaced"><span class="pi-icon pi-review">${actionIcon('review', 24)}</span><span class="pi-text"><b>Review ${due.length} question${due.length > 1 ? 's' : ''}</b><span class="sub">About ${Math.max(1, Math.round(Math.min(due.length, 15) * 0.6))} min · keeps what you learned fresh</span></span><span class="go">Start</span></button>`);
+  if (mk) items.push(`<button class="plan-item" id="mistakes"><span class="pi-icon pi-mistake">${actionIcon('mistakes', 24)}</span><span class="pi-text"><b>Fix ${mk} mistake${mk > 1 ? 's' : ''}</b><span class="sub">Questions you didn’t get fully right</span></span><span class="go">Open</span></button>`);
   if (last) {
     const qs = await getQs(last.book.id, last.unit.id); const sc = scoreOf(qs);
-    items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${ICON.play}</span><span class="pi-text"><b data-raw>${esc(last.unit.title)}</b><span class="sub">Keep going${sc !== null ? ` · ${sc}% so far` : ''}</span></span><span class="go">Practise</span></button>`);
+    items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b data-raw>${esc(last.unit.title)}</b><span class="sub">Keep going${sc !== null ? ` · ${sc}% so far` : ''}</span></span><span class="go">Practise</span></button>`);
   } else {
-    items.push(`<button class="plan-item" data-book="${esc(books[0].id)}"><span class="pi-icon pi-continue">${ICON.play}</span><span class="pi-text"><b>Practise your first chapter</b><span class="sub" data-raw>${esc(books[0].title)}</span></span><span class="go">Choose</span></button>`);
+    items.push(`<button class="plan-item" data-book="${esc(books[0].id)}"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b>Practise your first chapter</b><span class="sub" data-raw>${esc(books[0].title)}</span></span><span class="go">Choose</span></button>`);
   }
-  if (!due.length && Object.keys(local.stats).length) items.push(`<div class="plan-item done"><span class="pi-icon pi-review">${ICON.review}</span><span class="pi-text"><b>Reviews done</b><span class="sub">${nextAt < Infinity ? `Next review ${whenText(nextAt)}` : ''}</span></span><span class="go">✓</span></div>`);
+  if (!due.length && Object.keys(local.stats).length) items.push(`<div class="plan-item done"><span class="pi-icon pi-review">${actionIcon('review', 24)}</span><span class="pi-text"><b>Reviews done</b><span class="sub">${nextAt < Infinity ? `Next review ${whenText(nextAt)}` : ''}</span></span><span class="go">✓</span></div>`);
   const covers = [];
   for (const b of books) {
     const sc = (await bookMastery(b)).pct;
-    covers.push(`<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}"><span class="c-sub" data-raw>${esc(b.subject || (b.library ? '' : 'My upload'))}</span><span class="c-title" data-raw>${esc(b.title)}</span><span class="c-foot"><b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span></span></button>`);
+    covers.push(`<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}"><span class="c-ic">${subjectIcon(b.subject, 22, '#FFFFFF', b.title)}</span><span class="c-sub" data-raw>${esc(b.subject || (b.library ? '' : 'My upload'))}</span><span class="c-title" data-raw>${esc(b.title)}</span><span class="c-foot"><b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span></span></button>`);
   }
   const r = await currentReport();
   $app.innerHTML = `
@@ -789,8 +783,8 @@ async function renderHome() {
     <section class="stack g10" aria-label="Practice">
       <div class="sect-head"><h2>Practice</h2></div>
       <div class="quick">
-        <button class="qtile" data-mode="weak">${ICON.target}<b>Weak topics</b><span>Questions you found hard</span></button>
-        <button class="qtile" data-mode="mock">${ICON.clock}<b>Mock paper</b><span>DSE-style, timed</span></button>
+        <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
+        <button class="qtile" data-mode="mock">${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -827,7 +821,8 @@ function groupBySubject(items, subj) {
 }
 function subjectChips(groups, picked, total) {
   if (groups.length < 2) return '';
-  const chip = (k, label, n) => `<button class="fchip ${picked === k ? 'on' : ''}" data-subj="${esc(k)}" aria-pressed="${picked === k}"><span data-raw>${esc(label)}</span><small>${n}</small></button>`;
+  const ic = (k, on) => (k === 'all' ? '' : subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 18, on ? '#FFFFFF' : null, k));
+  const chip = (k, label, n) => `<button class="fchip ${picked === k ? 'on' : ''}" data-subj="${esc(k)}" aria-pressed="${picked === k}">${ic(k, picked === k)}<span data-raw>${esc(label)}</span><small>${n}</small></button>`;
   return `<div class="fchips" role="group" aria-label="Subjects">${chip('all', subjLabel('all'), total)}${groups.map(([k, xs]) => chip(k, subjLabel(k), xs.length)).join('')}</div>`;
 }
 const textMatch = (words, hay) => words.every((w) => hay.includes(w));
@@ -857,7 +852,7 @@ async function renderBooks() {
     <div id="shelf" class="stack g18" aria-live="polite"></div>`
     : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No textbooks yet. Tap Add a textbook to find yours in the library.</p></div>`}
   </main>`;
-  const row = ({ b, n, sc }) => `<button class="row" data-book="${esc(b.id)}"><div class="top"><span style="display:flex;gap:12px;align-items:center"><span class="spine" style="background:${coverColour(b)}" aria-hidden="true"></span><span><b style="font-weight:600" data-raw>${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.units.length} chapter${b.units.length === 1 ? '' : 's'} · ${n} question${n === 1 ? '' : 's'}${b.library ? '' : ' · uploaded'}</span></span></span>
+  const row = ({ b, n, sc }) => `<button class="row" data-book="${esc(b.id)}"><div class="top"><span style="display:flex;gap:12px;align-items:center">${subjectTile(b.subject, 40, b.title)}<span><b style="font-weight:600" data-raw>${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.units.length} chapter${b.units.length === 1 ? '' : 's'} · ${n} question${n === 1 ? '' : 's'}${b.library ? '' : ' · uploaded'}</span></span></span>
       <span class="m-pill ${sc >= 80 ? 'good' : sc >= 60 ? 'mid' : ''}">${sc}%<small>mastered</small></span></div></button>`;
   const q = document.getElementById('q');
   const draw = () => {
@@ -867,7 +862,7 @@ async function renderBooks() {
       textMatch(words, `${it.b.title} ${it.b.subject || ''} ${it.b.code || ''} ${it.b.level || ''}`.toLowerCase()));
     const groups = groupBySubject(hits, (it) => subjectOf(it.b));
     shelf.innerHTML = groups.length
-      ? groups.map(([k, xs]) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2><span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="card stack">${xs.map(row).join('')}</div></section>`).join('')
+      ? groups.map(([k, xs]) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="card stack">${xs.map(row).join('')}</div></section>`).join('')
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">None of your textbooks match.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Try another word, or tap Add a textbook to search the library.</p></div>`;
     shelf.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   };
@@ -891,7 +886,7 @@ function renderTabs(active = tabNow) {
   if (!active) { delete document.body.dataset.tab; return; }
   document.body.dataset.tab = active;
   const mk = mistakeCount();
-  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${ICON[ic]}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
+  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = async () => {
     const q = inSession();
     if (q) {
@@ -948,7 +943,7 @@ async function renderLibrary(query) {
   const card = (b) => {
     const added = mine.has(libBookId(b));
     return `<div class="card libcard">
-          <div class="cover" aria-hidden="true">${esc((b.subject || '?').slice(0, 3))}</div>
+          <div class="cover" aria-hidden="true" style="background:${subjectColour(b.subject, b.title)}1F">${subjectIcon(b.subject, 30, null, b.title)}</div>
           <div class="stack g6" style="flex:1;min-width:0">
             <b style="font-size:15px;line-height:1.35" data-raw>${esc(b.title)}</b>
             <span class="muted" style="font-size:13px">${esc([b.subject, b.level, b.publisher].filter(Boolean).join(' · '))}</span>
@@ -969,7 +964,7 @@ async function renderLibrary(query) {
     const codeHit = code.length >= 4 && hits.find((b) => normCode(b.code) === code);
     const grouped = groupBySubject(hits, subjectOf);
     document.getElementById('results').innerHTML = (codeHit ? '<p class="hint" style="margin:0;font-weight:600;color:var(--good)">Book code matched</p>' : '') + (hits.length
-      ? (grouped.length > 1 ? grouped.map(([k, xs]) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2><span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2>${xs.map(card).join('')}</section>`).join('') : hits.map(card).join(''))
+      ? (grouped.length > 1 ? grouped.map(([k, xs]) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2>${xs.map(card).join('')}</section>`).join('') : hits.map(card).join(''))
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">No textbook matches “${esc(raw)}”.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Check the spelling or the book code and try again.</p></div>`);
     document.querySelectorAll('[data-add]').forEach((btn) => (btn.onclick = () => addFromLibrary(list.find((b) => b.id === btn.dataset.add), btn)));
     document.querySelectorAll('[data-open]').forEach((btn) => (btn.onclick = () => go({ name: 'book', bookId: 'lib-' + btn.dataset.open })));
@@ -1266,8 +1261,8 @@ async function renderBook(bookId) {
       </div>
     </div>
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter'}</button>
-    <button class="btn ghost" id="ctest" ${n ? '' : 'disabled'}>${ICON.clock} Take a chapter test</button>
-    <div class="revise-row"><button class="btn ghost" id="notes" ${n ? '' : 'disabled'}>${ICON.notes} Notes</button><button class="btn ghost" id="cards" ${n ? '' : 'disabled'}>${ICON.cards} Flashcards</button></div>
+    <button class="btn ghost" id="ctest" ${n ? '' : 'disabled'}>${actionIcon('mock', 22)} Take a chapter test</button>
+    <div class="revise-row"><button class="btn ghost" id="notes" ${n ? '' : 'disabled'}>${actionIcon('notes', 22)} Notes</button><button class="btn ghost" id="cards" ${n ? '' : 'disabled'}>${actionIcon('flashcards', 22)} Flashcards</button></div>
     <button class="btn ghost" id="paper">Or make a DSE-style mock paper / worksheet</button>
   </div>
   </aside>
@@ -1467,7 +1462,7 @@ async function renderProgress() {
   const r = await currentReport();
   const mbooks = await getBooks();
   const mrows = [];
-  for (const b of mbooks) { const m = await bookMastery(b); mrows.push(`<button class="mrowb" data-book="${esc(b.id)}"><span class="spine" style="background:${coverColour(b)}" aria-hidden="true"></span><span class="mt"><b data-raw>${esc(b.subject || b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : ''}">${m.pct}%</span></button>`); }
+  for (const b of mbooks) { const m = await bookMastery(b); mrows.push(`<button class="mrowb" data-book="${esc(b.id)}">${subjectTile(b.subject, 36, b.title)}<span class="mt"><b data-raw>${esc(b.subject || b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : ''}">${m.pct}%</span></button>`); }
   const mastHTML = mrows.length ? `<section class="card stack g10" style="padding:14px 16px"><b style="font-size:15px">How ready you are</b>${mrows.join('')}<span class="hint">Mastery counts how much of each book you’ve practised, how well, and whether you’ve kept it fresh with reviews.</span></section>` : '';
   const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'narrow' }));
   const mins = r.days.reduce((a, m) => a + m, 0);
