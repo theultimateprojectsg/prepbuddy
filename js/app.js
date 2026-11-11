@@ -433,7 +433,7 @@ function lastChapter(books) {
 /* ---------- Today (home) ---------- */
 /* ---------- voice chat: one tap, then just talk (browser speech, free) ---------- */
 // Only one voice chat runs at a time: on the Today coach, or the tutor on a question.
-const VC = { where: null, key: null, ctrl: null, state: 'off', heard: '', lang: 'en', notice: null };
+const VC = { where: null, key: null, ctrl: null, state: 'off', heard: '', saying: '', lang: 'en', notice: null };
 const VL = (en, zh) => (LANG === 'zh' ? zh : en);
 const VSTATE = () => ({ listening: VL('Listening… just talk', '聆聽中…直接講就得'), thinking: VL('Thinking…', '諗緊…'), speaking: VL('Speaking · talk to interrupt', '講緊 · 你一開口就會停') }[VC.state] || '');
 function voiceBarHTML() {
@@ -445,7 +445,92 @@ function voiceBarHTML() {
 }
 const voiceOn = (where, key) => VC.where === where && (key === undefined || VC.key === key);
 function voiceNoticeHTML(where) { return VC.notice && VC.notice.where === where ? `<p class="hint" style="margin:0;color:var(--text-2)" data-raw>${esc(VC.notice.text)}</p>` : ''; }
+// Full-screen voice mode: a living orb in the middle, like talking to someone. Captions are off unless asked for.
+const VSTATE_BIG = () => ({ listening: VL('Listening', '聆聽中'), thinking: VL('Thinking', '諗緊'), speaking: VL('Speaking', '講緊') }[VC.state] || '');
+const VHINT = () => ({ listening: VL('Just talk. Pause when you’re done.', '直接講，講完停一停就得。'), thinking: '', speaking: VL('Talk any time to interrupt', '你隨時開口都可以打斷') }[VC.state] || '');
+function openVoiceOverlay(title) {
+  closeVoiceOverlay();
+  const el = document.createElement('div');
+  el.className = 'vov'; el.id = 'vov'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', VL('Voice chat', '語音對話')); el.setAttribute('data-raw', '');
+  el.innerHTML = `<div class="vov-top"><span class="vov-title">${esc(title)}</span>
+      <button class="vov-cc ${local.voiceCC ? 'on' : ''}" id="vovCC" aria-pressed="${local.voiceCC ? 'true' : 'false'}" title="${VL('Show what’s being said', '顯示字幕')}">CC</button></div>
+    <div class="vov-mid"><canvas id="vovOrb" aria-hidden="true"></canvas></div>
+    <div class="vov-low">
+      <div class="vov-state" id="vovState" aria-live="polite">${VSTATE_BIG()}</div>
+      <div class="vov-hint" id="vovHint">${VHINT()}</div>
+      <div class="vov-cap" id="vovCap"></div>
+      <div class="vov-ctrls"><button class="vov-lang" id="vovLang">${VC.lang === 'yue' ? '廣東話' : 'English'}</button>
+        <button class="vov-end" id="vovEnd" aria-label="${VL('End voice chat', '結束語音對話')}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    </div>`;
+  document.body.appendChild(el);
+  document.body.classList.add('vov-open');
+  el.querySelector('#vovEnd').onclick = () => VC.ctrl && VC.ctrl.stop();
+  el.querySelector('#vovLang').onclick = () => VC.ctrl && VC.ctrl.setLang(VC.lang === 'yue' ? 'en' : 'yue');
+  el.querySelector('#vovCC').onclick = (e) => { local.voiceCC = !local.voiceCC; saveLocal(); e.currentTarget.classList.toggle('on', local.voiceCC); e.currentTarget.setAttribute('aria-pressed', String(!!local.voiceCC)); paintVoice(); };
+  el.onkeydown = (e) => { if (e.key === 'Escape' && VC.ctrl) VC.ctrl.stop(); };
+  el.querySelector('#vovEnd').focus();
+  animateOrb(el.querySelector('#vovOrb'));
+}
+function closeVoiceOverlay() { const el = document.getElementById('vov'); if (el) el.remove(); document.body.classList.remove('vov-open'); }
+function animateOrb(cv) {
+  const ctx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let scale = 1, amp = 0.03, hue = 0, t0 = performance.now();
+  const COL = { listening: ['#A9B8FF', '#4A5FD0', '#26357A'], speaking: ['#C4CFFF', '#5B72F0', '#2B3C96'], thinking: ['#D7DCF0', '#8A93B8', '#4A5373'] };
+  const frame = (now) => {
+    if (!cv.isConnected) return;
+    const t = (now - t0) / 1000, dpr = window.devicePixelRatio || 1;
+    const W = cv.clientWidth, H = cv.clientHeight;
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    const lv = VC.ctrl ? VC.ctrl.level() : { mic: 0, speak: 0 };
+    const st = VC.state === 'thinking' || VC.state === 'speaking' ? VC.state : 'listening';
+    const breathe = 0.025 * Math.sin(t * 1.6);
+    const tScale = st === 'listening' ? 1 + breathe + lv.mic * 0.32 : st === 'speaking' ? 1.04 + lv.speak * 0.14 : 0.86 + 0.02 * Math.sin(t * 4);
+    const tAmp = st === 'listening' ? 0.025 + lv.mic * 0.12 : st === 'speaking' ? 0.035 + lv.speak * 0.07 : 0.015;
+    scale += (tScale - scale) * 0.18; amp += (tAmp - amp) * 0.12;
+    hue += st === 'thinking' ? 0.05 : 0.008;
+    const R = Math.min(W, H) * 0.3 * scale, cx = W / 2, cy = H / 2;
+    const [c1, c2, c3] = COL[st];
+    // soft halo
+    const HR = Math.min(R * 1.9, Math.min(W, H) / 2 - 2);
+    const halo = ctx.createRadialGradient(cx, cy, R * 0.6, cx, cy, HR);
+    halo.addColorStop(0, st === 'thinking' ? 'rgba(160,170,210,.28)' : 'rgba(110,135,255,.38)'); halo.addColorStop(1, 'rgba(110,135,255,0)');
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, HR, 0, Math.PI * 2); ctx.fill();
+    // the blob
+    const tt = reduce ? 0 : t;
+    ctx.beginPath();
+    for (let i = 0; i <= 96; i++) {
+      const a = (i / 96) * Math.PI * 2;
+      const w = Math.sin(3 * a + tt * 1.3) * 0.5 + Math.sin(5 * a - tt * 1.9) * 0.3 + Math.sin(2 * a + tt * 0.8) * 0.2;
+      const r = R * (1 + amp * w);
+      const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    const hx = cx + Math.cos(hue * Math.PI * 2 - 2.3) * R * 0.38, hy = cy + Math.sin(hue * Math.PI * 2 - 2.3) * R * 0.38;
+    const g = ctx.createRadialGradient(hx, hy, R * 0.05, cx, cy, R * 1.05);
+    g.addColorStop(0, c1); g.addColorStop(0.55, c2); g.addColorStop(1, c3);
+    ctx.fillStyle = g; ctx.fill();
+    // a light inner ripple while the tutor talks
+    if (st === 'speaking') {
+      ctx.strokeStyle = `rgba(255,255,255,${0.12 + lv.speak * 0.25})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, R * (0.55 + lv.speak * 0.2), 0, Math.PI * 2); ctx.stroke();
+    }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
 function paintVoice() {
+  const ov = document.getElementById('vov');
+  if (ov) {
+    ov.dataset.state = VC.state;
+    document.getElementById('vovState').textContent = VSTATE_BIG();
+    document.getElementById('vovHint').textContent = VHINT();
+    document.getElementById('vovLang').textContent = VC.lang === 'yue' ? '廣東話' : 'English';
+    const cap = document.getElementById('vovCap');
+    cap.textContent = local.voiceCC ? (VC.state === 'speaking' ? VC.saying : VC.state === 'listening' ? VC.heard : '') : '';
+    cap.className = `vov-cap ${VC.state === 'speaking' ? 'ai' : ''}`;
+  }
   const b = document.getElementById('vbar'); if (!b) return;
   b.className = `vbar ${VC.state}`;
   document.getElementById('vstate').textContent = VSTATE();
@@ -457,23 +542,26 @@ function bindVoiceBar() {
   const l = document.getElementById('vlang'); if (l) l.onclick = () => VC.ctrl && VC.ctrl.setLang(VC.lang === 'yue' ? 'en' : 'yue');
 }
 // where: 'coach' | 'tutor'; send(text, voiceLang) -> reply text; redraw() redraws that chat.
-function startVoiceChat({ where, key, lang, send, alive, redraw }) {
+function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
   if (VC.ctrl) VC.ctrl.stop();
   VC.notice = null;
   if (!voiceSupported()) { VC.notice = { where, text: VL('Voice chat works in Chrome, Edge or Safari. This browser can’t listen yet, so please type instead.', '語音對話要用 Chrome、Edge 或 Safari。呢個瀏覽器聽唔到聲，請打字。') }; return redraw(); }
-  Object.assign(VC, { where, key, state: 'listening', heard: '', lang });
+  Object.assign(VC, { where, key, state: 'listening', heard: '', saying: '', lang });
   VC.ctrl = startVoice({
     lang, alive,
     send: (text) => send(text, VC.lang),
     onUpdate: (u) => {
       const ended = u.state === 'off' && VC.where === where;
-      Object.assign(VC, { state: u.state, heard: u.heard, lang: u.lang });
+      Object.assign(VC, { state: u.state, heard: u.heard, saying: u.saying || '', lang: u.lang });
       if (!ended) return paintVoice();
       VC.where = null; VC.key = null; VC.ctrl = null;
+      closeVoiceOverlay();
       if (u.error) VC.notice = { where, text: u.error === 'idle' ? VL('Voice chat stopped after 2 minutes of quiet. Tap Talk to start again.', '靜咗兩分鐘，語音對話停咗。撳「傾偈」再開始。') : u.error };
       redraw();
     },
   });
+  openVoiceOverlay(title || '');
+  paintVoice();
   redraw();
 }
 
@@ -540,7 +628,7 @@ function bindCoach() {
   const f = document.getElementById('coachForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); ask(document.getElementById('coachQ').value); };
   const c = document.getElementById('coachClear'); if (c) c.onclick = () => { local.coach = []; coach.error = null; saveLocal(); redraw(); };
   const tk = document.getElementById('coachTalk');
-  if (tk) tk.onclick = () => startVoiceChat({ where: 'coach', lang: LANG === 'zh' ? 'yue' : 'en', send: (t, l) => ask(t, undefined, l), alive: () => !!document.getElementById('coach'), redraw });
+  if (tk) tk.onclick = () => startVoiceChat({ where: 'coach', lang: LANG === 'zh' ? 'yue' : 'en', send: (t, l) => ask(t, undefined, l), alive: () => !!document.getElementById('coach'), redraw, title: VL('Study coach', '溫習教練') });
   bindVoiceBar();
   const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight;
 }
@@ -2350,7 +2438,7 @@ function bindTutor(q) {
     const [bookId, unitId] = qUnit(q.id);
     const chapter = await store.get(`text:${bookId}:${unitId}`, '');
     const lang = (LANG === 'zh' || langOf(chapter) === 'zh-HK') ? 'yue' : 'en';
-    startVoiceChat({ where: 'tutor', key: `${q.id}#${idx}`, lang, send: (t, l) => ask(t, undefined, l), alive: () => S === sess && S.i === idx && c.open && !!document.getElementById('tutor'), redraw });
+    startVoiceChat({ where: 'tutor', key: `${q.id}#${idx}`, lang, send: (t, l) => ask(t, undefined, l), alive: () => S === sess && S.i === idx && c.open && !!document.getElementById('tutor'), redraw, title: VL('Tutor · this question', '導師 · 呢條題目') });
   };
   bindVoiceBar();
   box.querySelectorAll('[data-chip]').forEach((b) => (b.onclick = () => ask(b.textContent, b.dataset.chip)));

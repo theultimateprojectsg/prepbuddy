@@ -43,9 +43,29 @@ function looksLikeEcho(heard, speaking) {
 //   lang: 'en' | 'yue'      send(text) -> Promise<reply text>      onUpdate({ state, heard, error })
 //   alive() -> false when the screen it belongs to has gone (then it stops itself)
 export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () => true }) {
-  const v = { state: 'listening', heard: '', error: '', lang, on: true };
+  const v = { state: 'listening', heard: '', saying: '', error: '', lang, on: true };
   let netErrors = 0, rec = null, recLangIdx = 0, finalText = '', interim = '', timer = null, speakingText = '', queue = [], lastActivity = Date.now(), turn = 0;
-  const update = () => onUpdate({ state: v.state, heard: v.heard, error: v.error, lang: v.lang });
+  const update = () => onUpdate({ state: v.state, heard: v.heard, saying: v.saying, error: v.error, lang: v.lang });
+
+  // Loudness of the student's voice (0-1), so the orb can react to it. Skipped on iPhone/iPad, where a second
+  // microphone user can stop speech recognition.
+  let mic = null, wordAt = 0;
+  const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!iOS && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then((stream) => {
+      if (!v.on) return stream.getTracks().forEach((t) => t.stop());
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const an = ctx.createAnalyser(); an.fftSize = 512;
+      ctx.createMediaStreamSource(stream).connect(an);
+      mic = { ctx, an, stream, data: new Uint8Array(an.fftSize) };
+    }).catch(() => {});
+  }
+  function micLevel() {
+    if (!mic) return 0;
+    mic.an.getByteTimeDomainData(mic.data);
+    let sum = 0; for (const x of mic.data) { const d = (x - 128) / 128; sum += d * d; }
+    return Math.min(1, Math.sqrt(sum / mic.data.length) * 5);
+  }
 
   // iOS only lets a page speak if the first utterance comes from a tap: say nothing, now.
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {}
@@ -117,8 +137,10 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
     const next = () => {
       if (!v.on || v.state !== 'speaking') return;
       const s = queue.shift();
-      if (!s) { v.state = 'listening'; v.heard = ''; lastActivity = Date.now(); update(); return; }
+      if (!s) { v.state = 'listening'; v.heard = ''; v.saying = ''; lastActivity = Date.now(); update(); return; }
       const u = new SpeechSynthesisUtterance(s);
+      v.saying = s; wordAt = performance.now(); update();
+      u.onboundary = () => { wordAt = performance.now(); };
       if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = v.lang === 'yue' ? 'zh-HK' : 'en-GB';
       u.rate = v.lang === 'yue' ? 1 : 1.05;
       u.onend = next; u.onerror = next;
@@ -127,13 +149,14 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
     speechSynthesis.cancel();
     next();
   }
-  function stopSpeaking() { queue = []; speakingText = ''; try { speechSynthesis.cancel(); } catch (e) {} }
+  function stopSpeaking() { queue = []; speakingText = ''; v.saying = ''; try { speechSynthesis.cancel(); } catch (e) {} }
 
   function fail(msg) { v.error = msg; stop(); }
   function stop() {
     v.on = false; v.state = 'off'; clearTimeout(timer); clearInterval(watch);
     stopSpeaking();
     if (rec) { try { rec.onend = null; rec.abort(); } catch (e) {} rec = null; }
+    if (mic) { mic.stream.getTracks().forEach((t) => t.stop()); try { mic.ctx.close(); } catch (e) {} mic = null; }
     update();
   }
   // Stop when the student leaves the screen, or nobody has spoken for a while.
@@ -150,5 +173,11 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
     // switch between English and Cantonese mid-conversation
     setLang(l) { if (!REC_LANGS[l] || l === v.lang) return; v.lang = l; recLangIdx = 0; stopSpeaking(); finalText = ''; interim = ''; v.heard = ''; v.state = 'listening'; turn++; listen(); update(); },
     get lang() { return v.lang; },
+    // for the animation: how loud the student is, and how much the tutor is "talking" right now (0-1)
+    level() {
+      const t = performance.now();
+      const speak = v.state === 'speaking' ? Math.max(Math.exp(-(t - wordAt) / 180), 0.35 + 0.3 * Math.abs(Math.sin(t / 110)) * Math.abs(Math.sin(t / 370))) : 0;
+      return { mic: micLevel(), speak };
+    },
   };
 }
