@@ -798,8 +798,15 @@ function renderTabs(active = tabNow) {
   nav.innerHTML = `<span class="brand-side">PrepBuddy</span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${ICON[ic]}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.tabgo })));
 }
-// The tab bar shows on the four main screens and hides everywhere else (practice, settings, papers).
-new MutationObserver(() => { const m = $app.querySelector('main[data-view]'); renderTabs(m ? m.dataset.view : null); }).observe($app, { childList: true });
+// The menu shows on every screen except while answering questions or flipping flashcards (those screens have
+// a ✕ to quit, and stay distraction-free). Screens that aren't one of the four tabs light up the tab they belong to.
+const TAB_OF = { book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+new MutationObserver(() => {
+  const m = $app.querySelector('main[data-view]');
+  if (m) return renderTabs(m.dataset.view);
+  if ($app.querySelector('#quit')) return renderTabs(null);
+  renderTabs((view && TAB_OF[view.name]) || null);
+}).observe($app, { childList: true });
 
 /* ---------- library (books uploaded once by the admin) ---------- */
 let catalog = null;
