@@ -1658,7 +1658,7 @@ async function renderPaper(bookId, from) {
   const { a, b } = paperSet;
   const mins = paperMinutes(a, b);
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${from === 'pick' ? 'Mock paper' : from === 'home' ? 'Home' : 'Chapters'}</span></button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
     <p style="margin:0;line-height:1.5;color:var(--text-2)">A DSE-style paper: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here and get it marked, or print it and enter your answers in the app afterwards to get them marked.</p>
     <div class="card stack g6" style="padding:14px 16px">
@@ -2096,28 +2096,45 @@ const isWeak = (q) => { const st = local.stats[q.id]; return !!st && st.last < 1
 async function renderPick(mode) {
   const books = await getBooks();
   if (!books.length) return go({ name: 'home' });
+  const weakMode = mode === 'weak';
   const items = await allQuestions();
-  const weakIn = (id) => items.filter((x) => (!id || x.book.id === id) && isWeak(x.q)).length;
-  if (books.length === 1) {   // only one textbook: nothing to choose
-    if (mode === 'mock') return go({ name: 'paper', bookId: books[0].id, from: 'home' });
-    return startReview('weak', books[0].id);
+  const inBook = (id) => items.filter((x) => !id || x.book.id === id);
+  const weakIn = (id) => inBook(id).filter((x) => isWeak(x.q)).length;
+  const triedIn = (id) => inBook(id).filter((x) => local.stats[x.q.id]).length;
+  // Same rules as startReview: weak topics need a few answered questions to pick from.
+  const ready = (id) => !weakMode || (inBook(id).length >= 4 && triedIn(id) >= 3);
+  const row = (id, title, sub, ok, subject, name) => `<button class="row pickrow" ${ok ? `data-pick="${esc(id)}"` : 'disabled aria-disabled="true"'}>
+      <div class="top"><span style="display:flex;gap:12px;align-items:center;min-width:0">${id ? subjectTile(subject, 40, name) : `<span class="stile" style="width:40px;height:40px;background:#EEF1FB">${menuIcon('books', true, 24)}</span>`}
+        <span style="min-width:0"><b style="font-weight:600" ${id ? 'data-raw' : ''}>${esc(title)}</b><br><span class="muted" style="font-size:13px">${sub}</span></span></span>
+      ${ok ? `<span class="go-arrow" aria-hidden="true">›</span>` : ''}</div></button>`;
+  const rows = books.map((b) => {
+    if (!weakMode) return row(b.id, b.title, `${b.units.length} chapter${b.units.length === 1 ? '' : 's'}`, true, b.subject, b.title);
+    const n = weakIn(b.id), ok = ready(b.id);
+    return row(b.id, b.title, ok ? (n ? `${n} question${n === 1 ? '' : 's'} to work on` : 'Questions you found hardest so far') : 'Answer a few questions first', ok, b.subject, b.title);
+  });
+  if (weakMode && books.length > 1) {
+    const n = weakIn(''), ok = ready('');
+    rows.unshift(row('', 'All my textbooks', ok ? `${n} question${n === 1 ? '' : 's'} to work on` : 'Answer a few questions first', ok));
   }
-  const row = (id, title, sub) => `<button class="row" data-pick="${esc(id)}"><div class="top"><span><b style="font-weight:600" ${id ? 'data-raw' : ''}>${esc(title)}</b><br><span class="muted" style="font-size:13px">${sub}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></div></button>`;
-  const rows = books.map((b) => row(b.id, b.title, mode === 'weak'
-    ? (weakIn(b.id) ? `${weakIn(b.id)} questions to work on` : 'No weak spots yet')
-    : `${b.units.length} chapters`));
-  if (mode === 'weak') rows.unshift(row('', 'All my textbooks', `${weakIn('')} questions to work on`));
+  const anyReady = !weakMode || books.some((b) => ready(b.id)) || ready('');
+  const title = weakMode ? 'Weak topics' : 'Mock paper';
+  const intro = weakMode
+    ? `The questions you didn’t get fully right, mixed together so you can fix them.${anyReady ? ' Choose a textbook.' : ''}`
+    : 'A DSE-style paper: Section A multiple choice, then Section B written questions, timed. Choose a textbook, then the chapters and length.';
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px">${mode === 'weak' ? 'Weak topics' : 'Mock paper'}</span></div>
-  <main class="stack g14" style="flex:1;padding:4px 20px 24px">
-    <h2 style="margin:0;font-size:17px">Which textbook?</h2>
-    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">${mode === 'weak' ? 'Practise the questions you found hard.' : 'You choose the chapters and length next.'}</p>
-    <div class="card stack">${rows.join('')}</div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button></div>
+  <main class="pad stack g18 pickpage" style="flex:1">
+    <div class="pick-head">${actionTile(weakMode ? 'weak' : 'mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${title}</h1><p class="muted" style="margin:0;line-height:1.5;font-size:15px">${intro}</p></div></div>
+    ${anyReady ? `<div class="card stack">${rows.join('')}</div>` : `<div class="card pick-empty">
+      ${buddySVG('think', 84)}
+      <div class="stack g6"><b style="font-size:17px">No weak topics yet</b><span class="muted" style="line-height:1.5">As you practise, the questions you find hard collect here so you can come back and fix them.</span></div>
+      <button class="btn" id="practise" style="width:auto;padding:12px 22px">Practise a chapter</button></div>`}
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'home' });
-  $app.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = () => (mode === 'mock'
-    ? go({ name: 'paper', bookId: b.dataset.pick, from: 'pick' })
-    : startReview('weak', b.dataset.pick || null))));
+  const pr = document.getElementById('practise'); if (pr) pr.onclick = () => go({ name: 'books' });
+  $app.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = () => (weakMode
+    ? startReview('weak', b.dataset.pick || null)
+    : go({ name: 'paper', bookId: b.dataset.pick, from: 'pick' }))));
 }
 
 async function startReview(mode, bookId = null) {

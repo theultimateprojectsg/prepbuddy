@@ -271,6 +271,11 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .covergrid .bookcover{width:100%;min-width:0;height:auto;aspect-ratio:118/162;min-height:170px}
 .bookcover .c-ch{font-size:11.5px;opacity:.85;font-weight:500}
 @media (hover:hover){.covergrid .bookcover:not(.add){transition:transform .12s ease,box-shadow .12s ease}.covergrid .bookcover:not(.add):hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(20,27,69,.18)}}
+.pickpage{max-width:760px}
+.pick-head{display:flex;gap:16px;align-items:flex-start}
+.pickrow .go-arrow{color:var(--accent);font-weight:700;font-size:22px;line-height:1}
+.pickrow:disabled{cursor:default;opacity:.55}
+.pick-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:28px 22px}
 /* voice chat: the orb panel inside the coach / tutor chat box */
 .vtalk{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;line-height:1;padding:8px 14px;min-height:36px;cursor:pointer}.vtalk svg{width:16px;height:16px}
 .tutor-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tutor-row .btn{display:flex;align-items:center;justify-content:center}
