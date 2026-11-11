@@ -2419,7 +2419,8 @@ function bindReport(q) {
 /* ---------- "I don't get it": ask the AI tutor about this question ---------- */
 const qForServer = (q) => (q.figure ? { ...q, figure: { image: q.figure.image, box: q.figure.box } } : q);
 const figB64 = (q) => (q.figure && q.figure.img ? q.figure.img.split(',')[1] : undefined);
-function chatOf() { S.chat = S.chat || {}; return S.chat[S.i] || (S.chat[S.i] = { open: false, msgs: [], busy: false }); }
+// The tutor chat is always open under every question: no extra tap to start asking.
+function chatOf() { S.chat = S.chat || {}; return S.chat[S.i] || (S.chat[S.i] = { open: true, msgs: [], busy: false }); }
 // Tutor replies: **bold**, "- " bullets and line breaks; formulas are drawn by KaTeX afterwards.
 function tutorMd(t) {
   const lines = esc(t).split('\n');
@@ -2442,7 +2443,6 @@ function tutorHTML(q) {
   const c = chatOf();
   const vkey = `${q.id}#${S.i}`, von = voiceOn('tutor', vkey);
   const before = S.phase !== 'revealed';
-  if (!c.open) return `<div class="tutor-row"><button class="btn ghost tutor-open" id="tutorOpen">${ICON.chat} ${before ? 'Ask about it' : 'I don’t get it'}</button><button class="btn ghost tutor-open" id="tutorTalk">${ICON.mic} Talk it through</button></div>${voiceNoticeHTML('tutor')}`;
   const chips = before ? [
     ['mean', 'What is this question asking?'],
     ['words', 'Explain the key words'],
@@ -2454,7 +2454,7 @@ function tutorHTML(q) {
     ['example', 'Give me another example'],
   ];
   return `<div class="tchat">
-    <div class="thead"><b>${ICON.chat} Ask about this question</b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}<button class="btn-sm quiet" id="tutorClose" >Close</button></span></div>
+    <div class="thead"><b>${ICON.chat} Ask about this question</b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}</span></div>
     ${von ? voicePanelHTML() + (c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : '') : `
     ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
     ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
@@ -2497,9 +2497,6 @@ function bindTutor(q) {
     const t = document.getElementById('tutor'); if (t) t.scrollIntoView({ block: 'end', behavior: 'smooth' });
     return reply;
   };
-  const open = document.getElementById('tutorOpen');
-  if (open) open.onclick = () => { c.open = true; redraw(); const i = document.getElementById('tq'); if (i && matchMedia('(hover: hover)').matches) i.focus(); };
-  const close = document.getElementById('tutorClose'); if (close) close.onclick = () => { if (voiceOn('tutor')) VC.ctrl.stop(); c.open = false; redraw(); };
   const talk = document.getElementById('tutorTalk');
   if (talk) talk.onclick = async () => {
     c.open = true;
