@@ -1,0 +1,511 @@
+The Basics
+What are equity-linked investments (ELIs)? 1
+Bull ELI linked to a single stock 2
+Bull ELI linked to a basket of stocks 4
+Special Features
+Airbag 6
+Daily accrual 9
+Early call 13
+Contents
+About the Investor and Financial Education Council
+Established in 2012 and supported by four financial regulators and the Education Bureau,
+the Investor and Financial Education Council (IFEC) is a public organisation dedicated
+to leading financial literacy in Hong Kong. The IFEC promotes and delivers free and
+impartial financial education resources and programmes through its consumer education
+platform, The Chin Family, and leads the Financial Literacy Strategy to create a conducive
+environment for stakeholders to deliver more quality financial education to various
+segments of the Hong Kong population.
+1
+What are equity-linked investments?
+Equity-linked investments (ELIs) are structured investment products
+embedded with derivatives, the investment returns of which are linked
+to the performance of the reference assets. The reference assets can be
+shares in a listed company, units in an exchange-traded fund or equity
+indices.
+Some issuers include one or more additional special features in their ELIs.
+These features may affect the potential gain or loss of the ELIs in different
+ways.
+To understand how an ELI works, it is important to first note its key dates.
+Following is an example of the key dates for an ELI:
+Offer period
+The period when the ELI is available for purchase from your
+distributor.
+However, certain specific terms may only be finalised after you are
+committed to invest in the ELI.
+Trade date
+The date on which the ELI purchase order will be executed by the
+issuer. All terms are finalised and the initial price of the reference
+asset(s) is determined on this date.
+Issue date
+The date on which an ELI is issued.
+Final valuation date
+The closing price of the reference asset(s) on the final valuation
+date is recorded to determine the settlement of the ELI at maturity.
+Maturity date
+Depending on the terms of the ELI, you will receive, at maturity,
+payment in cash or physical delivery of the reference asset(s).
+
+Final valuation date
+Is the final price of Stock B AT or
+ABOVE the strike price of $40?
+Final valuation date
+Is the final price of the reference asset
+AT or ABOVE the strike price? Yes
+Bull ELI linked to a single stock
+When you buy a bull ELI, you will make a pre-determined gain if the
+closing price of the reference asset on the final valuation date (final price)
+is at or above a predetermined price (strike price).
+You are selling a put option on the reference asset to the issuer. As the
+seller of a put option, you will be obliged to buy the reference asset from
+the issuer at the strike price if the final price of the reference asset is
+below the strike price.
+No Yes
+Please note that expenses are not taken into account in the examples used in
+this booklet.
+Example: Bull ELI linked to Stock B
+Purchase price* $97,799
+Initial spot price of Stock B $50
+Mode of settlement in case the final
+price is below the strike price Physical delivery
+You will receive the
+nominal amount of
+$100,000 in cash, a
+gain of: $100,000 -
+$97,799 = $2,201
+You will receive:
+Strike price = $40 = 2,500 shares of Stock B
+Based on the final price of $38, the market
+value of your shares will be worth less than your
+original investment, representing a paper loss of:
+$97,799 - ($38 x 2,500 shares) = $2,799
+Assume the final price of Stock B is $38
+You will receive on the maturity date a
+designated number of the reference asset
+(physical delivery) or, if applicable, its
+cash equivalent amount (cash delivery)
+less expenses. You will suffer a loss if the
+market value of the reference asset is less
+than your original investment. In the worst
+case scenario, the reference asset may be
+worthless.
+In case of physical delivery, as the reference
+asset will only be delivered to you on the
+maturity date, you will be exposed to
+changes in its market price as from the final
+valuation date. Also, if you choose not to
+sell the reference asset on the maturity date,
+you will be exposed to the market risk of
+holding the reference asset.
+You will receive the
+nominal amount
+of the ELI in cash.
+Your maximum
+potential gain is
+capped at the
+difference between
+the nominal amount
+and the purchase
+price of the ELI.
+* For some ELIs, the purchase price is equal to the nominal amount of the ELI.
+If the final price of the reference asset is at or above the strike price, you will
+receive the sum of nominal amount and coupon amount in cash, or otherwise,
+physical delivery of the reference asset, which is equal to, depending on the
+terms of the ELI,
+Nominal amount + Coupon amount
+or
+Strike price + Coupon amount in cash
+Nominal amount
+
+You will receive the nominal amount of $12,000 in cash, a gain of:
+$12,000 - $11,640 = $360
+Assume the final price of Stock B is $30, and the final price of Stock C is $45.
+Example: Bull basket ELI linked to Stock B and Stock C
+Initial spot price of
+Stock B and Stock C $50
+Strike price 80% of initial spot price (ie $40) for both
+stocks
+Reference asset
+Worst-performing stock (ie the stock that
+has the lowest performance* among the
+basket of stocks)
+Mode of settlement in case
+the final price is below the
+Physical delivery
+Bull ELI linked to a basket of stocks
+The reference asset(s) of an ELI may be a basket of stocks. You are selling
+a put option over the stocks in the basket. You will be obliged to buy the
+worst-performing stock in the basket at its strike price if the final price of
+the worst-performing stock is below its strike price.
+*Performance of a stock is determined as:
+Closing price on final valuation day x 100%
+Initial spot price
+Performance of Stock B: $30 = 60%
+$50
+Performance of Stock C: $45 = 90%
+$50
+Stock B is the worst-performing stock.
+You will receive Stock B:
+Strike price of Stock B = $40 = 300 shares
+Based on the final price, the market value of your shares will be worth
+less than your original investment, representing a paper loss of:
+$11,640 - ($30 x 300 shares) = $2,640Final valuation date
+Is the final price of the worst-performing stock
+AT or ABOVE its strike price?
+Yes
+
+(Scenario 3)
+ie airbag lapse event occurs
+You will receive Stock B :
+Strike price = $40 = 515 shares
+Based on the final price, the market value of your
+shares will be worth less than your original investment,
+representing a paper loss of:
+$20,000 - ($36 x 515 shares) = $1,460
+Airbag
+An airbag, also known as knock-in, is a special feature often used by
+issuers. It is a precondition for the put option to become exercisable by
+the issuer.
+Jargon buster
+Airbag level for a reference stock is usually expressed as a
+percentage of its initial spot price. It is set at a level lower than the
+strike price (eg 70% of the initial spot price).
+Airbag observation period can be set as each exchange business
+day or certain periodic dates (eg monthly, quarterly) during the
+investment period or the final valuation date.
+Airbag lapse event occurs when the closing price of the reference
+stock on any exchange business day during the airbag observation
+period is at or below its airbag level.
+Example: Bull ELI linked to Stock B with an airbag feature
+Initial spot price of Stock B $50
+Airbag level 70% of initial spot price (ie $35)
+Issue date 1 January
+Final valuation date 30 June
+Maturity date 2 July
+Airbag observation period Each exchange business day from
+2 January to 30 June
+Mode of settlement in case
+the final price is below the strike
+price
+Physical delivery
+Assume the
+final price of
+Stock B is $36
+Are Stock B’s closing
+prices on all
+exchange business
+days during the
+airbag observation
+period ABOVE its
+airbag level of $35?Final
+Is Stock B’s final price
+AT or ABOVE
+the strike price of $40?
+(Scenario 1 and 2)
+You will receive the nominal amount of $20,600 in cash,
+a gain of: $20,600 - $20,000 = $600
+Yes
+YesNo
+
+Payoffs for different scenarios in graph:
+Daily accrual
+Daily accrual feature gives you the opportunity to receive a potential
+distribution amount which is determined by the daily price movements of
+the reference stock.
+For ordinary bull ELIs, the potential distribution amount, if any, is
+determined only on the final valuation date. However, the potential
+distribution amount of a bull ELI with a daily accrual feature will be
+determined by the number of exchange business days on which the
+closing price of the reference stock is at or above the coupon accrual
+price within a calculation period.
+It is possible that you will not receive any potential distribution amount for
+the entire investment period.
+If a bull ELI is linked to a basket of stocks, the potential distribution amount
+on a particular exchange business day during the calculation period will be
+determined by:
+• which linked stock has become the reference stock (ie the worstperforming stock) on that day; and
+• whether its closing price is at or above its coupon accrual price.
+Stock B’s closing
+price on final
+Profits/(loss)
+$600 $35 $36
+($1,460)
+($20,000)
+Strike price = $40
+Price movement of Stock B under different scenarios:
+Time
+Airbag observation period
+Airbag lapse event occurs Final valuation date
+Stock B’s closing price
+Initial spot price
+Airbag level
+Scenario 1 : final price is AT or ABOVE the strike price.
+Scenario 2 : final price is BELOW the strike price BUT
+airbag lapse event has NOT occurred.
+Scenario 3 : final price is BELOW the strike price AND
+airbag lapse event has occurred.
+Scenario 1 : final price is AT or ABOVE the strike price.
+Scenario 2 : final price is BELOW the strike price BUT
+airbag lapse event has NOT occurred.
+Scenario 3 : final price is BELOW the strike price AND
+airbag lapse event has occurred.
+Jargon buster
+Total number of days is the total number of exchange business days
+during the calculation period.
+Calculation period can be set as each exchange business day or certain
+periodic dates (eg monthly, quarterly) during the investment period.
+Coupon rate is predefined by the issuer and is used to determine the
+potential distribution amount for each calculation period (eg 4% of the
+nominal amount).
+Accrued days is the total number of exchange business days on which
+the closing price of the reference stock is at or above its coupon
+accrual price within the relevant calculation period.
+Coupon accrual price of the reference stock is predefined by the issuer
+and is set at a specified percentage of its initial spot price (eg 70%
+of the initial spot price). It is the benchmark for determining whether
+potential coupon amount will be accrued on a particular exchange
+business day.
+
+Assume the final price of Stock B is $35
+You will receive the
+nominal amount of
+$30,000 in cash.
+If accrued days = 0
+Potential distribution amount = $30,000 x 4% x 0 day = 0
+120 days
+If accrued days = 120
+Potential distribution amount = $30,000 x 4% x 120 days = $1,200
+120 days
+If 0 < accrued days <120
+$0 < potential distribution amount < $1,200
+In this example, the potential distribution amount will be paid on the
+maturity date.
+Example: Bull ELI on Stock B with a daily accrual feature
+Initial spot price of
+Stock B $50
+Issue date 2 January
+Final valuation date 29 June
+Maturity date 1 July
+Calculation period
+Each exchange business day from 2 January to 29
+June, assuming total number of days equal to 120
+days
+Coupon accrual price 70% of initial spot price (ie $35)
+Accrued days
+The number of exchange business days on which
+Stock B’s closing price is at or above $35 (ie coupon
+accrual price) within the calculation period
+Coupon rate 4%
+Potential distribution
+amount
+Nominal amount x Coupon rate x Accrued days
+Total number of days
+per calculation period
+Mode of settlement in
+case the final price is
+below the strike price
+Physical delivery
+You will receive Stock B:
+Strike price = $40 = 750 shares
+Based on the final price, the market value
+of your shares will be worth less than your
+original investment, representing a paper
+loss of:
+$30,000 - ($35 x 750 shares) = $3,750
+Final
+Is Stock B’s final price
+AT or ABOVE
+the strike price of $40?
+YesNo
+
+Early call
+An early call feature allows the issuer to terminate your investment before
+maturity if certain conditions are met.
+A bull ELI with an early call feature will be terminated before its maturity
+date if the closing price of the reference asset on a call date is at or above
+the pre-determined call price.
+In case of an early call, you will receive on the early settlement date the
+nominal amount, plus (in case the daily accrual feature is applicable) any
+potential distribution amount accrued up to the relevant call date. In
+other words, the potential gain of an ELI with early call feature depends
+on whether it is terminated before maturity. If the ELI is not called early,
+the potential gain or loss of the ELI will then depend on whether the final
+price is at or above the strike price.
+The issuer may set multiple call dates, which can be in the form of every
+exchange business day (daily call feature) or certain periodic dates (eg
+monthly, quarterly) within the investment period (periodic call feature).
+Different call prices can also be set for different call dates.
+If an ELI is terminated before its maturity date, you will bear the reinvestment risk. That is, if an early call occurs, you will not receive any
+further potential distribution amount. You may not be able to get the
+same rate of return if you re-invest in another product with similar risk
+parameters.
+Payoffs for different scenarios in graph
+Example in graph: Bull ELI on Stock B with a daily accrual feature
+Scenario 1 Scenario 3 Scenario 2
+Accrued days
+$1,200
+Scenario 1 : accrued days = 0
+Scenario 3 : 0 < accrued days < 120
+Scenario 2 : accrued days = 120
+Profits/(loss)
+Stock B’s closing
+price on final
+$1,200
+$0
+($28,800)
+($30,000)
+Potential distribution amount
+Scenario 1 : accrued days = 0
+Scenario 3 : 0 < accrued days < 120
+Scenario 2 : accrued days = 120
+Jargon buster
+Call date is a date to evaluate if early call conditions are met.
+Call price of the reference stock is predefined by the issuer and is set at
+a specified percentage of its initial spot price.
+Early settlement date is usually set at a number of business days
+following the call date on which the call feature is triggered.
+
+Example: Bull ELI on Stock B with an early call feature and a fixed
+coupon accrual feature
+Issue date 23 January
+Initial spot price of Stock B $50
+Call price 96% of initial spot price (ie $48)
+Quarterly coupon rate 1.5%
+Coupon accrual price 92% of initial spot price (ie $46)
+Distribution observation date 23 April, 22 July
+Call date 23 April
+Early settlement date 25 April
+Scheduled final valuation date 22 July
+Scheduled maturity date 24 July
+Scheduled investment period 6 months
+Price movement of Stock B under different scenarios:
+Time
+Stock B’s closing price
+Call price
+Call date
+and first distribution
+observation date
+Final valuation date
+and second
+distribution
+observation date
+Initial spot price
+Coupon accrual price
+Scenario 1: early call
+Scenario 2a
+Scenario 2b
+Scenario 1: early call
+Scenario 2a
+Scenario 2b
+Payoffs for different scenarios in graph:
+$600
+$300
+$0
+($20,000)
+($19,700)
+Profit/(loss)
+Stock B’s
+closing price
+on the final
+*Note: Stock B’s closing price on
+the final valuation date is not
+relevant as the ELI is
+terminated early.
+In this example, there is also a fixed coupon accrual feature. If the closing
+price of Stock B on the distribution observation date for the period is at or
+above the applicable coupon accrual price, you will receive a fixed coupon
+amount at the quarterly coupon rate for such period.
+Your total gain/loss will be determined by the closing price of Stock B on:
+• The first distribution observation date
+• The call date
+• The second distribution observation date (if early call condition is not
+met); and
+• The final valuation date (if early call condition is not met)
+In this example, the periodic potential distribution amount, if any, will
+be determined by the closing price of Stock B on the corresponding
+distribution observation date.
+Based on the assumed price movement of Stock B under different
+scenarios as shown in the above diagram, you can expect the following
+results:
+Scenario 1: You will receive the nominal amount and the first potential distribution
+amount. An investment gain of: $20,000 + $300 - $20,000 = $300
+Scenario 2a (best case): You will receive the nominal amount and the first and second
+potential distribution amounts. An investment gain of:
+$20,000 +$300 + $300 - $20,000 = $600
+Scenario 2b (loss case): You will receive 500 shares of Stock B and the first potential
+distribution amount. A paper loss of: $17,500 + $300 - $20,000 = ($2,200)
+Scenario 3 (loss case): You will receive 500 shares of Stock B and no potential
+distribution amount. A paper loss of: $17,500 - $20,000 = ($2,500)
+
+(Scenarios 1, 2a and 2b)
+(Scenario 1)
+(Scenario 2a)
+(Scenario 3)
+(Scenarios 2a, 2b and 3)
+Assume the final price of Stock B is $35 (Scenarios 2b and 3)
+(Scenarios 2b and 3)
+You will receive Stock B:
+Nominal amount $20,000 = 500 sharesStrike price = $40
+Based on the final price of $35, the market value of
+your shares will be worth $35 x 500 shares = $17,500,
+less than your original investment of $20,000.
+First potential distribution amount: Nominal amount x
+quarterly coupon rate = $20,000 x 1.5% = $300
+The ELI is early terminated. You will receive the nominal
+amount of $20,000 in cash plus the first potential
+distribution amount accrued.
+Second potential distribution amount: Nominal amount
+x quarterly coupon rate = $20,000 x 1.5% = $300
+You will receive the
+nominal amount of
+$20,000 in cash plus
+the second potential
+distribution amount
+accrued.
+(Scenario 2a)
+No first potential
+distribution amount
+The ELI is
+not early terminated
+No second potential
+distribution amount
+Yes
+Yes
+Yes
+Yes
+First distribution observation date: Is Stock B’s closing price AT or
+ABOVE the coupon accrual price of $46?
+Second distribution observation date: Is Stock B’s closing price
+AT or ABOVE the coupon accrual price of $46?
+Call date: Is Stock B’s closing price AT or ABOVE the call price of $48?
+Final valuation date: Is Stock B’s closing price
+AT or ABOVE the strike price of $40?
+As always, before you invest, make sure you fully understand the
+product’s features and risks. Some of the key risks of ELIs you should
+watch out for include:
+• Not principal protected: ELIs are not principal protected. You may
+suffer a loss if the price(s) of the reference asset(s) of an ELI go
+against your view. In extreme cases, you could lose your entire
+investment.
+• Limited potential gain: The potential gain on your ELI may be
+capped at a predetermined level specified by the issuer.
+• Credit risk of the issuer: When you purchase an ELI, you rely on
+the credit-worthiness of the issuer. In case of default or insolvency
+of the issuer, you will have to rely on your distributor to take
+action on your behalf to claim as an unsecured creditor of the
+issuer regardless of the performance of the reference asset(s).
+• No collateral: ELIs are not secured on any assets or collateral.
+• Limited market making: Issuers may provide limited market
+making arrangement for their ELIs. However, if you try to
+terminate an ELI before maturity under the market making
+arrangement provided by the issuer, you may receive an amount
+which is substantially less than your original investment amount.
+• Investing in an ELI is not the same as investing in the reference
+asset(s): During the investment period, you have no rights in the
+reference asset(s). Changes in the market prices of such reference
+asset(s) may not lead to a corresponding change in the market
+value and/or potential payout of the ELI.
+• Conflicts of interest: Issuer of an ELI may also play different roles,
+such as the arranger, the market agent and the calculation agent
+of the ELI. Conflicts of interest may arise from the different roles
+played by the issuer, its subsidiaries and affiliates in connection
+with the ELI.
