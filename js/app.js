@@ -509,7 +509,7 @@ async function go(v) {
 }
 
 /* ---------- home ---------- */
-// Book covers: one colour per subject, so the shelf is easy to scan.
+// Book colours: one per subject (used on the book page and in lists).
 function coverColour(b) { return subjectColour(b.subject, b.title); }
 async function bookSummary(b) {
   const qs = (await store.getMany(b.units.map((u) => `qs:${b.id}:${u.id}`), [])).flat().filter((q) => q && !blocked(q));
@@ -787,20 +787,11 @@ async function renderHome() {
     items.push(`<button class="plan-item" data-book="${esc(books[0].id)}"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b>Practise your first chapter</b><span class="sub" data-raw>${esc(books[0].title)}</span></span><span class="go">Choose</span></button>`);
   }
   if (!due.length && Object.keys(local.stats).length) items.push(`<div class="plan-item done"><span class="pi-icon pi-review">${actionIcon('review', 24)}</span><span class="pi-text"><b>Reviews done</b><span class="sub">${nextAt < Infinity ? `Next review ${whenText(nextAt)}` : ''}</span></span><span class="go">✓</span></div>`);
-  const covers = [];
-  for (const b of books) {
-    const sc = (await bookMastery(b)).pct;
-    covers.push(`<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}"><span class="c-ic">${subjectIcon(b.subject, 22, '#FFFFFF', b.title)}</span><span class="c-sub" data-raw>${esc(b.subject || (b.library ? '' : 'My upload'))}</span><span class="c-title" data-raw>${esc(b.title)}</span><span class="c-foot"><b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span></span></button>`);
-  }
   const r = await currentReport();
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head}
     <section class="plan" aria-label="Today's plan"><h2><span class="hl">Today’s plan</span></h2>${items.join('')}</section>
-    <section class="stack g10" aria-label="My textbooks">
-      <div class="sect-head"><h2>My textbooks</h2><button class="btn-sm" id="allbooks">See all</button></div>
-      <div class="shelf">${covers.join('')}<button class="bookcover add" id="addbook">${ICON.plus}<span>Add a book</span></button></div>
-    </section>
     <section class="stack g10" aria-label="Practice">
       <div class="sect-head"><h2>Practice</h2></div>
       <div class="quick">
@@ -819,8 +810,6 @@ async function renderHome() {
   const mkb = document.getElementById('mistakes'); if (mkb) mkb.onclick = () => go({ name: 'mistakes' });
   const ct = document.getElementById('continue');
   if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
-  document.getElementById('allbooks').onclick = () => go({ name: 'books' });
-  document.getElementById('addbook').onclick = () => go({ name: 'books' });
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   window.scrollTo(0, 0);
