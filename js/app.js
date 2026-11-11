@@ -2541,6 +2541,13 @@ function paintCard() {
     ${cards.length > 1 ? `<button class="btn-sm quiet wnext" id="wnext">Next card ›</button>` : ''}`;
   const n = document.getElementById('wnext');
   if (n) n.onclick = () => { S.cardAt++; S.cardTick = Date.now(); paintCard(); };
+  box.onclick = () => readingNow();
+}
+// Any touch on the card means the student is reading: stop the auto-start and let them press Start.
+function readingNow() {
+  if (!S) return;
+  S.readAt = Date.now();
+  if (S.countdown) { clearInterval(S.countdown); S.countdown = null; S.autoOff = true; const b = document.getElementById('startnow'); if (b) b.innerHTML = 'Start practising <span aria-hidden="true">→</span>'; }
 }
 function paintWait() {
   if (!S || !document.getElementById('wcard')) return renderWaiting();
@@ -2552,10 +2559,23 @@ function paintWait() {
     g.innerHTML = `<button class="btn" id="startnow">Start practising <span aria-hidden="true">→</span></button>`;
     document.getElementById('startnow').onclick = startFromWait;
     const h = document.getElementById('wtitle'); if (h) h.textContent = 'Your first question is ready';
+    const sub = document.getElementById('wsub'); if (sub) sub.textContent = 'One more look before you start';
+    // Not reading (no touch on the cards in the last 8 seconds)? Start by itself after a short countdown.
+    if (!S.autoOff && !(S.readAt && Date.now() - S.readAt < 8000)) {
+      const sess = S; let left = 5;
+      const btn = document.getElementById('startnow');
+      const show = () => { btn.innerHTML = `Starting in ${left}… <span class="cdhint">tap to start now</span>`; };
+      show();
+      sess.countdown = setInterval(() => {
+        if (sess !== S || !document.getElementById('startnow')) { clearInterval(sess.countdown); sess.countdown = null; return; }
+        if (--left <= 0) { clearInterval(sess.countdown); sess.countdown = null; startFromWait(); } else show();
+      }, 1000);
+    }
   }
 }
 function startFromWait() {
   if (!S || S.i >= S.qs.length) return;
+  if (S.countdown) { clearInterval(S.countdown); S.countdown = null; }
   S.holdStart = false; S.waiting = false;
   renderQuestion();
 }
@@ -2585,7 +2605,7 @@ function renderWaiting() {
       <p class="muted" data-raw>${esc(where)}</p>
       <div class="wait-prog"><div class="progress"><i id="wbar" style="width:0%"></i></div><span id="wready" class="hint"></span></div>
     </div>
-    <p class="hint wait-sub">${S.holdStart ? 'While you wait, a quick look at this chapter' : 'A quick look while it’s checked'}</p>
+    <p class="hint wait-sub" id="wsub">${S.holdStart ? 'While you wait, a quick look at this chapter' : 'A quick look while it’s checked'}</p>
     <section class="card wcard" id="wcard" aria-live="polite"></section>
     <div id="wgo" class="wgo"></div>
     <p class="hint wait-foot">Each question is written from your textbook, then checked by a second AI.</p>
@@ -3406,7 +3426,7 @@ document.addEventListener('keydown', (e) => {
   const L = { 1: 'A', 2: 'B', 3: 'C', 4: 'D' }[k] || (/^[A-D]$/.test(k) ? k : null);
   if (L) { const b = document.querySelector(`[data-opt="${L}"]:not(:disabled)`); if (b) { e.preventDefault(); b.click(); } return; }
   if (e.key === 'Enter' && (!t || t.tagName !== 'BUTTON')) {
-    const b = document.querySelector('#next:not(:disabled), #check:not(:disabled)'); if (b) { e.preventDefault(); b.click(); }
+    const b = document.querySelector('#next:not(:disabled), #check:not(:disabled), #startnow'); if (b) { e.preventDefault(); b.click(); }
   }
 });
 

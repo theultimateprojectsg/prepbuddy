@@ -311,6 +311,8 @@ const EXACT = {
   'While you wait, a quick look at this chapter': '等候期間，快速重溫這一章',
   'A quick look while it’s checked': '檢查期間，快速重溫一下',
   'Start practising': '開始練習',
+  'One more look before you start': '開始前再看一眼',
+  'tap to start now': '按此立即開始',
   'Next card ›': '下一張 ›',
   'Checking your next question': '正在檢查下一題',
   'Each question is written from your textbook, then checked by a second AI.': '每條題目都根據你的課本編寫，再由另一個 AI 檢查。',
@@ -471,6 +473,7 @@ const EXACT = {
 
 // Text with numbers or names in it.
 const PATTERNS = [
+  [/^Starting in (\d)…\s*$/, '$1 秒後開始…'],
   [/^(\d+) of (\d+) ready$/, '已準備 $1 / $2 題'],
   [/^(\d+) chapters?$/, '$1 個章節'],
   [/^(\d+) chapters? · code$/, '$1 個章節 · 課本編號'],
