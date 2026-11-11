@@ -74,6 +74,23 @@ h1,.display{font-family:'Lexend','PingFang HK','PingFang TC','Microsoft JhengHei
 .wnext{align-self:flex-end}
 .wgo:empty{display:none}
 .wait-foot{margin:4px 0 0}
+@media (min-width:1024px){
+  body[data-tab] .app:has(> main.waitpage){max-width:none;margin:0 0 0 220px!important;padding:0 40px}
+  .app:has(> main.waitpage)>.topbar{padding-left:0;padding-right:0}
+  .waitpage{gap:18px;padding-bottom:64px!important}
+  .waitpage>*{max-width:680px}
+  .wait-head h1{font-size:32px}
+  .wait-head p{font-size:16px}
+  .wait-prog{max-width:420px;margin-top:12px}
+  .wait-prog .progress{height:8px}
+  .wait-sub{font-size:14px;margin-top:18px}
+  .wcard{padding:28px 32px 18px;min-height:250px;gap:12px;border-top-width:5px}
+  .wk{font-size:13px}
+  .wtitle{font-size:24px}
+  .wtext{font-size:19px;line-height:1.6}
+  .wgo .btn{max-width:360px;margin:0 auto;display:flex}
+  .wait-foot{font-size:14px}
+}
 .stem{margin:0;font-size:15px;line-height:1.55;color:#374151;white-space:pre-line}
 .q{margin:0;font-size:18px;line-height:1.45;font-weight:500}
 .opt{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:15px;line-height:1.4;color:var(--ink);cursor:pointer;width:100%}
