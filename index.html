@@ -280,6 +280,11 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .today-week .sect-head h2{margin:0}
 .today-week .tile{padding:12px 14px}
 
+.settings{max-width:720px}
+.langopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.langopt{display:flex;flex-direction:column;gap:2px;text-align:left;border:2px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px;cursor:pointer;font-family:inherit;color:var(--ink);min-height:56px}
+.langopt b{font-size:16px}.langopt span{font-size:12.5px;color:var(--muted)}
+.langopt.on{border-color:var(--accent);background:var(--accent-soft)}
 /* voice chat: the orb panel inside the coach / tutor chat box */
 .vtalk{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;line-height:1;padding:8px 14px;min-height:36px;cursor:pointer}.vtalk svg{width:16px;height:16px}
 .tutor-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tutor-row .btn{display:flex;align-items:center;justify-content:center}
@@ -522,7 +527,7 @@ body[data-tab] .sheet.sticky{bottom:calc(64px + env(safe-area-inset-bottom))}
 .tabs{display:none}
 body[data-tab] .tabs{display:flex}
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));justify-content:center}
-.tabs .tabs-in{display:grid;grid-template-columns:repeat(4,1fr);width:100%;max-width:520px}
+.tabs .tabs-in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:560px}
 .tabs button{border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-family:var(--ui);font-size:11.5px;font-weight:500;color:var(--muted-2);cursor:pointer;position:relative;min-height:48px}
 .tabs button.on{color:var(--ink);font-weight:600}
 .tabs button.on svg{color:var(--accent)}
@@ -531,7 +536,8 @@ body[data-tab] .app{padding-bottom:76px}
 .tabs .brand-side{display:none}
 @media (min-width:1024px){
   body[data-tab] .tabs{top:0;bottom:0;right:auto;width:220px;border-top:none;border-right:1px solid var(--line);flex-direction:column;justify-content:flex-start;padding:24px 14px}
-  .tabs .tabs-in{display:flex;flex-direction:column;gap:4px}
+  .tabs .tabs-in{display:flex;flex-direction:column;gap:4px;flex:1}
+  .tabs button[data-tabgo="settings"]{margin-top:auto}
   .tabs .brand-side{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;color:var(--ink);padding:0 12px 22px}
   .tabs button{flex-direction:row;gap:12px;justify-content:flex-start;padding:10px 12px;border-radius:12px;font-size:14.5px;min-height:44px}
   .tabs button.on{background:var(--accent-soft)}

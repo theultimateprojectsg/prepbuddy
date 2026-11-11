@@ -498,6 +498,7 @@ async function go(v) {
   if (v.name === 'book') return renderBook(v.bookId);
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
+  if (v.name === 'settings') return renderSettings();
   if (v.name === 'progress') return renderProgress();
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
@@ -757,8 +758,7 @@ async function renderHome() {
   const name = (local.name || '').trim();
   const dateText = new Date().toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div>
-      <button class="langbtn" id="lang" lang="${LANG === 'zh' ? 'en' : 'zh-HK'}" aria-label="${LANG === 'zh' ? 'Switch to English' : '切換至中文'}">${LANG === 'zh' ? 'EN' : '中文'}</button></div>`;
+      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div></div>`;
   if (!books.length) {
     $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
     <section class="empty-start" aria-label="Add a textbook">
@@ -823,7 +823,6 @@ async function renderHome() {
 const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="btn-sm quiet" id="usage" >AI usage</button></footer>`;
 function bindHomeCommon() {
   document.getElementById('usage').onclick = () => go({ name: 'usage' });
-  document.getElementById('lang').onclick = () => { setLang(LANG === 'zh' ? 'en' : 'zh'); go({ name: 'home' }); renderTabs(); };
 }
 
 /* ---------- Books: my textbooks, the library and uploads ---------- */
@@ -898,8 +897,39 @@ async function renderBooks() {
   window.scrollTo(0, 0);
 }
 
+/* ---------- settings ---------- */
+function renderSettings() {
+  const zh = LANG === 'zh';
+  const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" lang="${k === 'zh' ? 'zh-HK' : 'en'}" data-raw><b>${label}</b><span>${sub}</span></button>`;
+  $app.innerHTML = `
+  <main class="pad stack g18 settings" data-view="settings" style="flex:1">
+    <h1 class="pagetitle">Settings</h1>
+    <section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">Language</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">For PrepBuddy’s buttons and messages. Your textbooks and their questions stay in the book’s own language.</span>
+      <div class="langopts" role="group" aria-label="Language">${opt('en', 'English', 'English')}${opt('zh', '中文（繁體）', 'Traditional Chinese')}</div>
+    </section>
+    <section class="card stack g10" style="padding:16px">
+      <label for="sname" style="font-size:15px;font-weight:700">Your name</label>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">Used to greet you and on the weekly report you send your parents.</span>
+      <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
+    </section>
+    <section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">AI usage</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
+      <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
+    </section>
+    <p class="hint" style="margin:0;line-height:1.5">Prototype. Your textbooks, questions and progress are saved on this device only.</p>
+  </main>`;
+  $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { if (b.dataset.lang === LANG) return; setLang(b.dataset.lang); go({ name: 'settings' }); }));
+  const nm = document.getElementById('sname');
+  nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
+  document.getElementById('susage').onclick = () => go({ name: 'usage' });
+  window.scrollTo(0, 0);
+}
+
 /* ---------- tab bar ---------- */
-const TABS = [['home', 'Today', 'today'], ['books', 'Books', 'books'], ['mistakes', 'Mistakes', 'pen'], ['progress', 'Progress', 'chart']];
+const TABS = [['home', 'Today', 'today'], ['books', 'Books', 'books'], ['mistakes', 'Mistakes', 'pen'], ['progress', 'Progress', 'chart'], ['settings', 'Settings', 'gear']];
 let tabNow = null;
 function renderTabs(active = tabNow) {
   tabNow = active;
@@ -919,7 +949,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
