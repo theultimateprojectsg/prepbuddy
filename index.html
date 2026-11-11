@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="/icons/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <title>PrepBuddy</title>
 <meta name="description" content="Upload your textbook and practise with fresh exam-style questions.">
 <meta name="theme-color" content="#1E2A5A">
@@ -222,12 +225,18 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .cdlg h2{margin:0;font-size:19px;color:var(--ink)}.cdlg p{margin:0 0 10px;color:var(--text-2);line-height:1.5;font-size:15px}
 .cdlg-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cdlg .btn{padding:13px}.cdlg .btn.leave{background:var(--miss-dark)}
 @keyframes cdlgIn{from{opacity:0}to{opacity:1}}
+.coach-ic.buddy-ic{width:46px;height:46px;background:none;border-radius:0}.coach-ic.buddy-ic svg{width:46px;height:46px}
+.thead b .buddy{flex:none}
+.rtop{position:relative}.rbuddy{margin-left:auto;align-self:center;flex:none}
+.vorbbox{position:relative;flex:1;width:100%;min-height:200px;display:flex}
+.vorbbox canvas{flex:1;width:100%;min-height:200px}
+.vbuddy{position:absolute;left:50%;top:50%;width:120px;height:120px;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 6px 14px rgba(10,16,48,.35))}
 /* voice chat: the orb panel inside the coach / tutor chat box */
 .vtalk{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;line-height:1;padding:8px 14px;min-height:36px;cursor:pointer}.vtalk svg{width:16px;height:16px}
 .tutor-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tutor-row .btn{display:flex;align-items:center;justify-content:center}
 .vpanel{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;color:#fff;border-radius:16px;padding:12px 14px 16px;min-height:340px;background:radial-gradient(120% 90% at 50% 38%,#25327A 0%,#141B45 60%,#0B1030 100%);outline:none}
 .coach .vpanel{flex:1;min-height:380px}
-.vpanel canvas{width:100%;flex:1;min-height:200px}
+
 .vov-state{font-size:19px;font-weight:600}
 .vov-hint{font-size:13px;opacity:.7;min-height:18px}
 .vov-cap{font-size:15px;line-height:1.5;max-width:520px;opacity:.9;color:#C9D2FF}.vov-cap.ai{color:#fff}.vov-cap:empty{display:none}
@@ -474,7 +483,7 @@ body[data-tab] .app{padding-bottom:76px}
 @media (min-width:1024px){
   body[data-tab] .tabs{top:0;bottom:0;right:auto;width:220px;border-top:none;border-right:1px solid var(--line);flex-direction:column;justify-content:flex-start;padding:24px 14px}
   .tabs .tabs-in{display:flex;flex-direction:column;gap:4px}
-  .tabs .brand-side{display:block;font-weight:700;font-size:20px;color:var(--ink);padding:0 12px 22px}
+  .tabs .brand-side{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;color:var(--ink);padding:0 12px 22px}
   .tabs button{flex-direction:row;gap:12px;justify-content:flex-start;padding:10px 12px;border-radius:12px;font-size:14.5px;min-height:44px}
   .tabs button.on{background:var(--accent-soft)}
   .tabs button .badge{position:static;margin-left:auto}

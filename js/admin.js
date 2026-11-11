@@ -28,7 +28,7 @@ const rand = (n, set = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789') => Array.from({ lengt
 
 /* ---------- sign in ---------- */
 function renderLogin(msg) {
-  app.innerHTML = `<header><h1>PrepBuddy admin</h1></header>
+  app.innerHTML = `<header><h1 style="display:flex;align-items:center;gap:10px"><img src="/icons/logo.svg" width="32" height="32" alt="">PrepBuddy admin</h1></header>
   <form class="card" id="login">
     <h2>Sign in</h2>
     <label>Admin password<input type="password" id="pw" autocomplete="current-password" required></label>

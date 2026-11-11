@@ -3,6 +3,7 @@ import * as store from './store.js';
 import { buildReport, encodeReport, headline, skillsHTML, REPORT_CSS } from './report.js';
 import { initLang, setLang, watch, LANG } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
+import { logoSVG, buddySVG, buddyFace } from './buddy.js';
 
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
@@ -521,7 +522,7 @@ const VHINT = () => ({ listening: VL('Just talk. Pause when you’re done.', '�
 // Voice mode lives inside the chat box: a living orb instead of the messages. Captions only if CC is on.
 function voicePanelHTML() {
   return `<div class="vpanel" id="vov" data-state="${VC.state}" data-raw tabindex="-1">
-    <canvas id="vovOrb" aria-hidden="true"></canvas>
+    <div class="vorbbox"><canvas id="vovOrb" aria-hidden="true"></canvas><svg class="vbuddy" id="vovBuddy" viewBox="0 0 100 100" aria-hidden="true" focusable="false">${buddyFace('listen')}</svg></div>
     <div class="vov-state" id="vovState" aria-live="polite">${VSTATE_BIG()}</div>
     <div class="vov-hint" id="vovHint">${VHINT()}</div>
     <div class="vov-cap" id="vovCap"></div>
@@ -551,6 +552,15 @@ function animateOrb(cv) {
     scale += (tScale - scale) * 0.18; amp += (tAmp - amp) * 0.12;
     hue += st === 'thinking' ? 0.05 : 0.008;
     const R = Math.min(W, H) * 0.3 * scale, cx = W / 2, cy = H / 2;
+    // Buddy sits in the middle of the glow: listening, thinking, or talking (mouth opens on the words).
+    const bd = cv.parentNode && cv.parentNode.querySelector('.vbuddy');
+    if (bd) {
+      const face = st === 'thinking' ? 'think' : st === 'speaking' ? (lv.speak > 0.62 ? 'listen' : 'happy') : 'listen';
+      if (bd.dataset.face !== face) { bd.dataset.face = face; bd.innerHTML = buddyFace(face); }
+      const size = R * 1.25;
+      bd.style.width = bd.style.height = size + 'px';
+      bd.style.transform = `translate(-50%, -50%) rotate(${st === 'speaking' && !reduce ? Math.sin(t * 6) * 3 : 0}deg)`;
+    }
     const [c1, c2, c3] = COL[st];
     // soft halo
     const HR = Math.min(R * 1.9, Math.min(W, H) / 2 - 2);
@@ -677,7 +687,7 @@ const COACH_CHIPS = ['How am I doing?', 'What should I work on this week?', 'Whi
 const coach = { busy: false, error: null };
 function coachHTML() {
   const msgs = local.coach || [];
-  return `<div class="coach-head"><span class="coach-ic" aria-hidden="true">${ICON.chat}</span><div><b>Your study coach</b><span>Sees your scores, mistakes and reviews</span></div>
+  return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div><b>Your study coach</b><span>Sees your scores, mistakes and reviews</span></div>
       <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
       ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk</button>`}</span></div>
     ${voiceOn('coach') ? voicePanelHTML() + (coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : '') : `<div class="coach-msgs" id="coachMsgs">
@@ -841,7 +851,7 @@ function renderTabs(active = tabNow) {
   if (!active) { delete document.body.dataset.tab; return; }
   document.body.dataset.tab = active;
   const mk = mistakeCount();
-  nav.innerHTML = `<span class="brand-side">PrepBuddy</span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${ICON[ic]}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
+  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${ICON[ic]}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = async () => {
     const q = inSession();
     if (q) {
@@ -2507,7 +2517,7 @@ function tutorHTML(q) {
     ['example', 'Give me another example'],
   ];
   return `<div class="tchat">
-    <div class="thead"><b>${ICON.chat} Ask about this question</b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}</span></div>
+    <div class="thead"><b>${buddySVG('happy', 28)} Ask about this question</b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}</span></div>
     ${von ? voicePanelHTML() + (c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : '') : `
     ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
     ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
@@ -2937,7 +2947,8 @@ function renderSummary() {
     <section class="rhero ${band}">
       <span class="rmeta">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span>
       <div class="rtop"><div class="ring ${band}" style="--p:${pct}" role="img" aria-label="${pct}%"><span>${pct}%</span></div>
-        <div class="rhead"><b>${head}</b><span>${got} of ${total} marks</span></div></div>
+        <div class="rhead"><b>${head}</b><span>${got} of ${total} marks</span></div>
+        <span class="rbuddy">${buddySVG(pct >= 85 ? 'done' : pct >= 50 ? 'happy' : 'think', 76)}</span></div>
       <p class="rsub">${sub}</p>
       <div class="rcounts"><span class="right">${V} ${nRight} right</span>${nPart ? `<span class="part">${H} ${nPart} partly</span>` : ''}<span class="miss">${X} ${nMiss} missed</span></div>
       ${sections}

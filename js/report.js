@@ -140,7 +140,7 @@ export function reportHTML(r) {
   const ring = (p, size = 64) => `<span class="rp-ring ${tone(p)}" style="--p:${p};width:${size}px;height:${size}px"><b>${p}%</b></span>`;
   return `<div class="rp">
   <header class="rp-head">
-    <div class="rp-brand"><span class="rp-logo">PrepBuddy</span><span>${T('Weekly report', '每週報告')} · ${range}</span></div>
+    <div class="rp-brand"><span class="rp-logo"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><circle cx="57" cy="44" r="26" fill="#FFFFFF"/><path d="M31 44 H44 V77 L31 90 Z" fill="#FFFFFF"/><circle cx="57" cy="44" r="11" fill="#FFE066"/></svg>PrepBuddy</span><span>${T('Weekly report', '每週報告')} · ${range}</span></div>
     <div class="rp-hero">
       <div class="rp-title">
         <h1>${esc(headline(r))}</h1>
@@ -219,7 +219,7 @@ export const REPORT_CSS = `
 .rp{--ink:#1E2A5A;--accent:#26357A;--muted:#5A6380;--line:#DCE2EE;--good:#18966A;--mid:#26357A;--low:#E07A2E;color:var(--ink);font-family:'Lexend',system-ui,-apple-system,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif}
 .rp-head{background:var(--ink);color:#fff;padding:20px 20px 24px;display:flex;flex-direction:column;gap:18px}
 .rp-brand{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:13px;color:#C9D0EA}
-.rp-logo{font-weight:700;font-size:16px;color:#fff}
+.rp-logo{font-weight:700;font-size:16px;color:#fff;display:inline-flex;align-items:center;gap:6px}
 .rp-hero{display:flex;flex-direction:column;gap:18px}
 .rp-title{display:flex;flex-direction:column;gap:8px}
 .rp-title h1{margin:0;font-size:27px;line-height:1.2;font-weight:700}
