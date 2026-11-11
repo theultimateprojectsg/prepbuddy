@@ -22,5 +22,122 @@
     "endPage": 10
    }
   ]
+ },
+ {
+  "id": "book-df2g",
+  "code": "MAT-EL2C",
+  "title": "道路使用者守則",
+  "subject": "道路使用者守則",
+  "level": "S4–S6 (HKDSE)",
+  "kind": "humanities",
+  "publisher": "Transport Authority",
+  "licence": "CC BY 4.0",
+  "credit": "",
+  "lang": "zh-HK",
+  "pageCount": 144,
+  "addedAt": "2026-11-11",
+  "questionCount": 0,
+  "units": [
+   {
+    "id": "u0",
+    "title": "第一章 所有道路使用者須知",
+    "chapter": null,
+    "startPage": 6,
+    "endPage": 7
+   },
+   {
+    "id": "u1",
+    "title": "第二章 行人須知",
+    "chapter": null,
+    "startPage": 8,
+    "endPage": 25,
+    "figs": true
+   },
+   {
+    "id": "u2",
+    "title": "第三章 乘客須知",
+    "chapter": null,
+    "startPage": 26,
+    "endPage": 30,
+    "figs": true
+   },
+   {
+    "id": "u3",
+    "title": "第四章 騎單車者須知",
+    "chapter": null,
+    "startPage": 31,
+    "endPage": 42,
+    "figs": true
+   },
+   {
+    "id": "u4",
+    "title": "第五章 所有駕駛人須知 (一) 駕駛車輛至駕駛速度",
+    "chapter": null,
+    "startPage": 43,
+    "endPage": 57,
+    "figs": true
+   },
+   {
+    "id": "u5",
+    "title": "第五章 所有駕駛人須知 (二) 超車、行人、其他道路使用者及行車線",
+    "chapter": null,
+    "startPage": 58,
+    "endPage": 74,
+    "figs": true
+   },
+   {
+    "id": "u6",
+    "title": "第五章 所有駕駛人須知 (三) 隧道區、路口、迴旋處及惡劣天氣",
+    "chapter": null,
+    "startPage": 75,
+    "endPage": 89
+   },
+   {
+    "id": "u7",
+    "title": "第五章 所有駕駛人須知 (四) 道路工程、不准停車及泊車",
+    "chapter": null,
+    "startPage": 90,
+    "endPage": 97,
+    "figs": true
+   },
+   {
+    "id": "u8",
+    "title": "第六章 職業司機須知",
+    "chapter": null,
+    "startPage": 98,
+    "endPage": 101,
+    "figs": true
+   },
+   {
+    "id": "u9",
+    "title": "第七章 電單車及機動三輪車駕駛人須知",
+    "chapter": null,
+    "startPage": 102,
+    "endPage": 105
+   },
+   {
+    "id": "u10",
+    "title": "第八章 道路語言",
+    "chapter": null,
+    "startPage": 106,
+    "endPage": 131,
+    "figs": true
+   },
+   {
+    "id": "u11",
+    "title": "第九章 兒童及長者使用道路",
+    "chapter": null,
+    "startPage": 132,
+    "endPage": 134
+   },
+   {
+    "id": "u12",
+    "title": "第十章 緊急事故",
+    "chapter": null,
+    "startPage": 135,
+    "endPage": 140,
+    "figs": true
+   }
+  ]
  }
 ]
