@@ -3417,8 +3417,32 @@ const MATH_OPTS = {
   ignoredClasses: ['nomath'],
   throwOnError: false,
 };
+// The AI sometimes writes plain sums in LaTeX ("$100{,}000 - 97{,}799 = 2{,}201$"). Drawn as maths these switch to a
+// serif font, and a slip in the LaTeX leaves "{,}" on screen. Plain arithmetic is turned back into normal text, a
+// stray "{,}" becomes a comma, and words inside real formulas are set upright instead of in italics.
+const PLAIN_SUM = /^[\s\d.,+\-−×÷=%()\/:<>≈]*$/;
+function tidyMath(text) {
+  let out = text.replace(/(\$\$?)([^$]+?)\1/g, (m, d, inner) => {
+    const flat = inner.replace(/\{,\}/g, ',').replace(/\\times/g, '×').replace(/\\div/g, '÷').replace(/\\cdot/g, '×')
+      .replace(/\\%/g, '%').replace(/\\approx/g, '≈').replace(/\\[,;:! ]/g, ' ').replace(/\\left|\\right/g, '')
+      .replace(/\\(?:text|mathrm)\{\s*(HKD|USD|RMB)\s*\}/g, '$1').replace(/\s+/g, ' ').trim();
+    const bare = flat.replace(/\b(HKD|USD|RMB)\b/g, '');
+    if (/\d/.test(bare) && PLAIN_SUM.test(bare)) return flat.replace(/(\d) ?- ?(\d)/g, '$1 − $2').replace(/ ?([=×÷+−]) ?/g, ' $1 ');
+    if (/\\ce\{/.test(inner)) return m;
+    // whole words (3+ letters, not commands) inside a formula are words, not variables: set them upright
+    return d + inner.replace(/(^|[^\\A-Za-z{])([A-Za-z]{3,})(?![A-Za-z{])/g, '$1\\text{$2}') + d;
+  });
+  return out.replace(/(\d)\{,\}(\d)/g, '$1,$2');
+}
+function tidyMathIn(root) {
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.parentElement && n.parentElement.closest('.nomath,.katex,textarea,script,style,code,pre') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
+  const nodes = []; while (w.nextNode()) nodes.push(w.currentNode);
+  for (const n of nodes) { const v = n.nodeValue; if (v.includes('$') || v.includes('{,}')) { const t = tidyMath(v); if (t !== v) n.nodeValue = t; } }
+}
 function renderMath(root) {
-  if (!window.renderMathInElement || !root || root.nodeType !== 1) return;
+  if (!root || root.nodeType !== 1) return;
+  if (/\$|\{,\}/.test(root.textContent || '')) tidyMathIn(root);
+  if (!window.renderMathInElement) return;
   if (!/\$|\\\(/.test(root.textContent || '')) return;
   try { window.renderMathInElement(root, MATH_OPTS); } catch (e) {}
 }
