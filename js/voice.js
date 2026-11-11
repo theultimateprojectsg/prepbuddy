@@ -44,7 +44,7 @@ function looksLikeEcho(heard, speaking) {
 //   alive() -> false when the screen it belongs to has gone (then it stops itself)
 export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () => true }) {
   const v = { state: 'listening', heard: '', error: '', lang, on: true };
-  let rec = null, recLangIdx = 0, finalText = '', interim = '', timer = null, speakingText = '', queue = [], lastActivity = Date.now(), turn = 0;
+  let netErrors = 0, rec = null, recLangIdx = 0, finalText = '', interim = '', timer = null, speakingText = '', queue = [], lastActivity = Date.now(), turn = 0;
   const update = () => onUpdate({ state: v.state, heard: v.heard, error: v.error, lang: v.lang });
 
   // iOS only lets a page speak if the first utterance comes from a tap: say nothing, now.
@@ -62,6 +62,7 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
         const t = e.results[i][0].transcript;
         if (e.results[i].isFinal) fin += t; else mid += t;
       }
+      netErrors = 0;
       if (v.state === 'thinking') return; // ignore noise while waiting for the reply
       if (v.state === 'speaking') {
         const heardNow = (fin + mid).trim();
@@ -81,7 +82,12 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') return fail(v.lang === 'yue' ? '請允許使用咪高峰，然後再試。' : 'Please allow the microphone, then try again.');
       if (e.error === 'language-not-supported' && recLangIdx + 1 < REC_LANGS[v.lang].length) { recLangIdx++; return; }
       if (e.error === 'language-not-supported') return fail(v.lang === 'yue' ? '呢個瀏覽器唔支援廣東話語音。' : 'This browser can’t listen in this language.');
-      if (e.error === 'network') return fail('Voice needs an internet connection.');
+      // 'network' also means this browser has no speech service (Brave, in-app browsers, some Chromium builds).
+      if (e.error === 'network') {
+        if (!navigator.onLine) return fail(v.lang === 'yue' ? '語音對話要連接互聯網。' : 'Voice chat needs an internet connection.');
+        if (++netErrors <= 1) return; // retry once: onend restarts it
+        return fail(v.lang === 'yue' ? '呢個瀏覽器用唔到語音辨識。請用 Google Chrome、Microsoft Edge 或 Safari 開 PrepBuddy。' : 'Voice listening doesn’t work in this browser. Open PrepBuddy in Google Chrome, Microsoft Edge or Safari. (Brave, Firefox and the browsers built into other apps can’t listen yet.)');
+      }
       // 'no-speech' and 'aborted' are normal: onend restarts it.
     };
     r.onend = () => { if (v.on && rec === r) setTimeout(() => { if (v.on && rec === r) { try { r.start(); } catch (e) {} } }, 150); };
