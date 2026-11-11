@@ -788,6 +788,7 @@ async function renderHome() {
   }
   if (!due.length && Object.keys(local.stats).length) items.push(`<div class="plan-item done"><span class="pi-icon pi-review">${actionIcon('review', 24)}</span><span class="pi-text"><b>Reviews done</b><span class="sub">${nextAt < Infinity ? `Next review ${whenText(nextAt)}` : ''}</span></span><span class="go">✓</span></div>`);
   const r = await currentReport();
+  const ready = await readyRowsHTML(4);
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head}
@@ -800,12 +801,19 @@ async function renderHome() {
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
-    <button class="weekstrip" id="progress"><span class="dots" aria-hidden="true">${r.days.map((m) => `<i class="${m ? 'on' : ''}"></i>`).join('')}</span><span class="wt"><b>${r.dp} of 7 days practised</b><span>See your progress and send a report to your parents</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>
+    <section class="card stack g14 today-week" aria-label="Your week">
+      <div class="sect-head"><h2>Your week</h2><button class="btn-sm" id="progress">See progress</button></div>
+      <span class="display" style="font-size:22px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span>
+      ${weekHTML(r)}
+      ${ready.n ? `<div class="stack g6 tw-ready"><b style="font-size:15px">How ready you are</b>${ready.html}${ready.more ? `<button class="btn-sm quiet" id="moreready" style="align-self:flex-start">See all ${ready.n} books</button>` : ''}</div>` : ''}
+    </section>
   </main>
   <aside class="coach" id="coach" aria-label="Study coach">${coachHTML()}</aside>${footerHTML()}`;
   bindHomeCommon();
   bindCoach();
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
+  const mr = document.getElementById('moreready'); if (mr) mr.onclick = () => go({ name: 'progress' });
+  $app.querySelectorAll('.today-week .mrowb[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   const wsb = document.getElementById('worksheets'); if (wsb) wsb.onclick = () => go({ name: 'worksheets' });
   const mkb = document.getElementById('mistakes'); if (mkb) mkb.onclick = () => go({ name: 'mistakes' });
   const ct = document.getElementById('continue');
@@ -1501,27 +1509,40 @@ async function currentReport() {
   return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms });
 }
 
-async function renderProgress() {
-  const r = await currentReport();
-  const mbooks = await getBooks();
-  const mrows = [];
-  for (const b of mbooks) { const m = await bookMastery(b); mrows.push(`<button class="mrowb" data-book="${esc(b.id)}">${subjectTile(b.subject, 36, b.title)}<span class="mt"><b data-raw>${esc(b.subject || b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : ''}">${m.pct}%</span></button>`); }
-  const mastHTML = mrows.length ? `<section class="card stack g10" style="padding:14px 16px"><b style="font-size:15px">How ready you are</b>${mrows.join('')}<span class="hint">Mastery counts how much of each book you’ve practised, how well, and whether you’ve kept it fresh with reviews.</span></section>` : '';
+// The week (days practised + three numbers) and "How ready you are", shared by Today and Progress.
+function weekHTML(r) {
   const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'narrow' }));
   const mins = r.days.reduce((a, m) => a + m, 0);
   const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`;
   const trend = r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<span style="color:var(--good);font-weight:600">↑ ${r.a - r.pa} from last week</span>` : `<span style="color:var(--miss-dark);font-weight:600">↓ ${r.pa - r.a} from last week</span>`) : '<span>correct</span>';
+  return `<div class="week">${r.days.map((m, i) => `<div><span class="${m ? 'on' : ''} ${i === 6 ? 'today' : ''}" title="${m} min"></span><small>${dayNames[i]}</small></div>`).join('')}</div>
+    <div class="tiles">
+      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.q}</b><span>questions</span></div>
+      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${hm}</b><span>practising</span></div>
+      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.a === null ? '–' : r.a + '%'}</b>${trend}</div>
+    </div>`;
+}
+async function readyRowsHTML(limit = Infinity) {
+  const books = await getBooks(), rows = [];
+  for (const b of books) {
+    const m = await bookMastery(b);
+    rows.push({ b, pct: m.pct, html: `<button class="mrowb" data-book="${esc(b.id)}">${subjectTile(b.subject, 36, b.title)}<span class="mt"><b data-raw>${esc(b.subject || b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : ''}">${m.pct}%</span></button>` });
+  }
+  // On Today, the books you've made most progress in come first.
+  if (limit < Infinity) rows.sort((x, y) => y.pct - x.pct);
+  return { html: rows.slice(0, limit).map((x) => x.html).join(''), more: Math.max(0, rows.length - limit), n: rows.length };
+}
+async function renderProgress() {
+  const r = await currentReport();
+  const ready = await readyRowsHTML();
+  const mastHTML = ready.n ? `<section class="card stack g10" style="padding:14px 16px"><b style="font-size:15px">How ready you are</b>${ready.html}<span class="hint">Mastery counts how much of each book you’ve practised, how well, and whether you’ve kept it fresh with reviews.</span></section>` : '';
   $app.innerHTML = `
   <main class="pad stack g18" data-view="progress" style="flex:1">
     <h1 class="pagetitle">Progress</h1>
     <div class="pg-cols"><div class="pg-col stack g18">
     <section class="pg-week stack g18"><div class="stack g6"><span class="muted" style="font-size:13px">Last 7 days</span><span class="display" style="font-size:26px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span></div>
-    <div class="week">${r.days.map((m, i) => `<div><span class="${m ? 'on' : ''} ${i === 6 ? 'today' : ''}" title="${m} min"></span><small>${dayNames[i]}</small></div>`).join('')}</div>
-    <div class="tiles">
-      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.q}</b><span>questions</span></div>
-      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${hm}</b><span>practising</span></div>
-      <div class="tile" style="cursor:default"><b class="display" style="font-size:22px">${r.a === null ? '–' : r.a + '%'}</b>${trend}</div>
-    </div></section>
+    ${weekHTML(r)}
+    </section>
     ${mastHTML}
     </div><div class="pg-col stack g18">
     <div class="skills-wrap" data-raw>${skillsHTML(r, LANG === 'zh')}</div>
