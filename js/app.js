@@ -1450,6 +1450,7 @@ async function renderBook(bookId) {
   if (a) a.onclick = () => { if (pick.ids.size === book.units.length) pick.ids.clear(); else book.units.forEach((u) => pick.ids.add(u.id)); keep(); };
   function bindRows() { $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => { const id = b.dataset.unit; pick.ids.has(id) ? pick.ids.delete(id) : pick.ids.add(id); keep(); })); }
   bindRows();
+  prefetch(book, book.units.filter((u) => pick.ids.has(u.id)));
   $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; saveLocal(); keep(); }));
   const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || SESSION_SIZE) + d)); saveLocal(); keep(); };
   document.getElementById('minus').onclick = () => step((local.count || SESSION_SIZE) > 20 ? -10 : -5);
@@ -1469,6 +1470,20 @@ async function renderBook(bookId) {
   document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
   window.scrollTo(0, 0);
+}
+
+// As soon as chapters are ticked, the first batch of questions (and the quick-look cards) starts being made,
+// so by the time the student presses Start there is little or nothing left to wait for.
+async function prefetch(book, units) {
+  if (!units.length || units.length > 3 || navigator.onLine === false) return;
+  const types = local.types || 'mix', count = local.count || SESSION_SIZE;
+  for (const u of units) {
+    getSnippets(book, u).catch(() => {});
+    if (jobs.has(`${book.id}:${u.id}:${types}`)) continue;
+    const fresh = (await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types)).length;
+    const want = Math.ceil(count / units.length);
+    if (fresh < want) ensureFill(book, u, Math.min(BATCH, want - fresh), types, 1, true);
+  }
 }
 
 /* ---------- revision notes and flashcards (made once per chapter, kept on this device) ---------- */
@@ -1696,7 +1711,7 @@ async function renderProgress() {
 /* ---------- AI usage on this device ---------- */
 function renderUsage() {
   const u = local.usage || {};
-  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions'], ['mark', 'Marking answers'], ['explain', 'Tutor (I don’t get it)'], ['notes', 'Notes and flashcards'], ['coach', 'Study coach']];
+  const steps = [['warm', 'Storing the chapter (cache)'], ['generate', 'Writing questions'], ['verify', 'Checking questions'], ['mark', 'Marking answers'], ['explain', 'Tutor (I don’t get it)'], ['notes', 'Notes and flashcards'], ['snippets', 'Quick-look cards'], ['coach', 'Study coach']];
   const fmt = (n) => (n || 0).toLocaleString('en');
   const tot = { calls: 0, input: 0, output: 0, cache_write: 0, cache_read: 0, usd: 0 };
   const usd = (n) => '$' + (n || 0).toFixed((n || 0) >= 1 ? 2 : 3);
@@ -2429,8 +2444,10 @@ function refill(sess) {
 function sessionGrew(done) {
   if (!S) return;
   if (S.waiting) {
-    if (S.i < S.qs.length) { S.waiting = false; renderQuestion(); }
-    else if (done) renderWaiting();
+    // At the start of a session the student is reading a card: offer a Start button instead of jumping away.
+    if (S.i < S.qs.length && !S.holdStart) { S.waiting = false; renderQuestion(); }
+    else if (done && S.i >= S.qs.length && !S.generating) renderWaiting();
+    else paintWait();
   } else {
     const c = document.getElementById('count'); if (c) c.textContent = `${S.i + 1} / ${S.target}`;
   }
@@ -2451,7 +2468,7 @@ async function recapFor(sess) {
 }
 function tryRecap() {
   const sess = S;
-  if (!sess || sess.mode !== 'unit' || sess.review || sess.recapping || (sess.recaps || 0) >= MAX_RECAPS || !sess.generating) return;
+  if (!sess || sess.mode !== 'unit' || !sess.i || sess.review || sess.recapping || (sess.recaps || 0) >= MAX_RECAPS || !sess.generating) return;
   sess.recapping = true;
   recapFor(sess).then((q) => {
     sess.recapping = false;
@@ -2463,23 +2480,125 @@ function tryRecap() {
   }).catch(() => { sess.recapping = false; });
 }
 
+/* While questions are being written the student reads short cards about the chapter (key terms, key
+   ideas, exam tips, made once per chapter by the fast model) mixed with a little encouragement. */
+const CHEERS = [
+  ['Keep going', 'Getting a question wrong now is how you get it right in the exam. Every mistake is saved in your Mistake book.'],
+  ['Little and often', 'Short, regular practice beats cramming the night before.'],
+  ['Exam tip', 'Read every option before you choose. In DSE papers the wrong options are often almost right.'],
+  ['Stuck?', 'Ask the tutor beside the question for a hint. Working it out yourself makes it stick.'],
+];
+const snipJobs = new Map();
+function getSnippets(book, unit) {
+  const key = `snips:${book.id}:${unit.id}`;
+  if (snipJobs.has(key)) return snipJobs.get(key);
+  const p = (async () => {
+    const have = await store.get(key, null); if (have) return have;
+    const notes = await store.get(`notes:${book.id}:${unit.id}`, null);
+    if (notes && (notes.key_terms || []).length) {
+      const fromNotes = [...notes.key_terms.slice(0, 3).map((k) => ({ kind: 'term', title: k.term, text: k.meaning })),
+        ...(notes.sections || []).flatMap((x) => x.points.slice(0, 1).map((pt) => ({ kind: 'fact', title: x.heading, text: pt }))).slice(0, 3)];
+      if (fromNotes.length >= 3) return fromNotes;
+    }
+    const text = await store.get(`text:${book.id}:${unit.id}`, '');
+    if (!text) return [];
+    const r = await api('snippets', { title: unit.title, text, lang: langOf(text) });
+    const list = (r.snippets || []).filter((x) => x.title && x.text);
+    if (list.length) await store.set(key, list);
+    return list;
+  })();
+  snipJobs.set(key, p);
+  p.catch(() => snipJobs.delete(key));
+  return p;
+}
+const SNIP_LABEL = { term: 'Key term', fact: 'Key idea', tip: 'Exam tip', cheer: '' };
+function waitCards(sess) {
+  if (sess.cards) return sess.cards;
+  const cheers = shuffle(CHEERS.map(([title, text]) => ({ kind: 'cheer', title, text })));
+  sess.cards = [cheers[0]];
+  sess.cardAt = 0;
+  if (sess.book && sess.units) {
+    Promise.all(sess.units.slice(0, 2).map((u) => getSnippets(sess.book, u).catch(() => []))).then((lists) => {
+      const snips = shuffle(lists.flat());
+      const mixed = [];
+      snips.forEach((x, k) => { mixed.push(x); if (k % 3 === 2 && cheers[1 + Math.floor(k / 3)]) mixed.push(cheers[1 + Math.floor(k / 3)]); });
+      if (!snips.length) mixed.push(...cheers.slice(1));
+      sess.cards = [sess.cards[sess.cardAt] || cheers[0], ...mixed];
+      sess.cardAt = 0;
+      if (sess === S && S.waiting) paintCard();
+    });
+  } else sess.cards = cheers;
+  return sess.cards;
+}
+function paintCard() {
+  const box = document.getElementById('wcard'); if (!box || !S) return;
+  const cards = waitCards(S), c = cards[S.cardAt % cards.length];
+  box.className = `card wcard k-${c.kind}`;
+  box.innerHTML = `<div class="wcard-top">${c.kind === 'cheer' ? `<span class="wbuddy" aria-hidden="true">${buddySVG('happy', 30)}</span>` : `<span class="wk">${SNIP_LABEL[c.kind]}</span>`}
+      ${cards.length > 1 ? `<span class="wdots" aria-hidden="true">${cards.map((_, k) => `<i class="${k === S.cardAt % cards.length ? 'on' : ''}"></i>`).join('')}</span>` : ''}</div>
+    <b class="wtitle" ${c.kind === 'cheer' ? '' : 'data-raw'}>${esc(c.title)}</b>
+    <p class="wtext" ${c.kind === 'cheer' ? '' : 'data-raw'}>${esc(c.text)}</p>
+    ${cards.length > 1 ? `<button class="btn-sm quiet wnext" id="wnext">Next card ›</button>` : ''}`;
+  const n = document.getElementById('wnext');
+  if (n) n.onclick = () => { S.cardAt++; S.cardTick = Date.now(); paintCard(); };
+}
+function paintWait() {
+  if (!S || !document.getElementById('wcard')) return renderWaiting();
+  const ready = Math.min(S.target, S.qs.length), go = S.holdStart && S.i < S.qs.length;
+  const bar = document.getElementById('wbar'); if (bar) bar.style.width = `${Math.round(100 * ready / Math.max(1, S.target))}%`;
+  const r = document.getElementById('wready'); if (r) r.textContent = S.holdStart ? `${ready} of ${S.target} ready` : 'Checking your next question';
+  const g = document.getElementById('wgo');
+  if (g && go && !g.firstChild) {
+    g.innerHTML = `<button class="btn" id="startnow">Start practising <span aria-hidden="true">→</span></button>`;
+    document.getElementById('startnow').onclick = startFromWait;
+    const h = document.getElementById('wtitle'); if (h) h.textContent = 'Your first question is ready';
+  }
+}
+function startFromWait() {
+  if (!S || S.i >= S.qs.length) return;
+  S.holdStart = false; S.waiting = false;
+  renderQuestion();
+}
+
 function renderWaiting() {
   S.waiting = true;
   tryRecap();
   const e = S.error;
   if (e && e.status === 401) return renderAccess(() => { refill(S); renderWaiting(); }, 'That access code didn’t work. Please check it and try again.');
   const failed = !S.generating && S.i >= S.qs.length;
-  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="quit" data-kind="wait">${ICON.back}<span>Back</span></button><div class="progress"><i style="width:${Math.round(100 * S.i / Math.max(1, S.target))}%"></i></div><span class="count">${Math.min(S.i + 1, S.target)} / ${S.target}</span></div>
+  if (!failed && S.i === 0 && !S.answers.length && S.holdStart === undefined) S.holdStart = true;
+  const top = `<div class="topbar"><button class="backbtn" id="quit" data-kind="wait">${ICON.back}<span>Back</span></button><div class="progress"><i style="width:${Math.round(100 * S.i / Math.max(1, S.target))}%"></i></div><span class="count">${Math.min(S.i + 1, S.target)} / ${S.target}</span></div>`;
+  if (failed) {
+    $app.innerHTML = `${top}
   <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
-    ${failed
-      ? `<h1 class="display" style="margin:0;font-size:22px">${e ? 'Couldn’t make questions' : 'No more questions right now'}</h1>
-         <p style="margin:0;line-height:1.5;max-width:320px">${esc(e ? e.message : 'Try this chapter again in a moment.')}</p>
-         <button class="btn" id="retry" style="max-width:320px">Try again</button>
-         ${S.qs.length ? '<button class="btn ghost" id="finish">See my results</button>' : '<button class="btn ghost" id="home">Back</button>'}`
-      : `<div class="spinner" aria-hidden="true"></div>
-         <h1 class="display" style="margin:0;font-size:22px">${S.qs.length ? 'Preparing the next question' : 'Writing your questions'}</h1>
-         <p class="muted" style="margin:0;line-height:1.5;max-width:320px">${esc(S.mode === 'drill' ? 'New questions on the ideas you missed' : S.units ? S.units.map((u) => u.title).join(', ') : '')}<br>Each question is written from your textbook, then checked by a second AI. The first ones take 30–60 seconds; the rest of your set is made while you practise.</p>`}
+    <h1 class="display" style="margin:0;font-size:22px">${e ? 'Couldn’t make questions' : 'No more questions right now'}</h1>
+    <p style="margin:0;line-height:1.5;max-width:320px">${esc(e ? e.message : 'Try this chapter again in a moment.')}</p>
+    <button class="btn" id="retry" style="max-width:320px">Try again</button>
+    ${S.qs.length ? '<button class="btn ghost" id="finish">See my results</button>' : '<button class="btn ghost" id="home">Back</button>'}
   </main>`;
+  } else {
+    const where = S.mode === 'drill' ? 'New questions on the ideas you missed' : S.units ? S.units.map((u) => u.title).join(', ') : '';
+    $app.innerHTML = `${top}
+  <main class="pad waitpage" style="flex:1">
+    <div class="wait-head">
+      <h1 class="display" id="wtitle">${S.holdStart ? 'Getting your questions ready' : 'Your next question is almost ready'}</h1>
+      <p class="muted" data-raw>${esc(where)}</p>
+      <div class="wait-prog"><div class="progress"><i id="wbar" style="width:0%"></i></div><span id="wready" class="hint"></span></div>
+    </div>
+    <p class="hint wait-sub">${S.holdStart ? 'While you wait, a quick look at this chapter' : 'A quick look while it’s checked'}</p>
+    <section class="card wcard" id="wcard" aria-live="polite"></section>
+    <div id="wgo" class="wgo"></div>
+    <p class="hint wait-foot">Each question is written from your textbook, then checked by a second AI.</p>
+  </main>`;
+    paintCard(); paintWait();
+    // the cards turn over by themselves every 9 seconds (a tap on Next restarts the clock)
+    clearInterval(S.cardTimer);
+    const sess = S; sess.cardTick = Date.now();
+    sess.cardTimer = setInterval(() => {
+      if (sess !== S || !document.getElementById('wcard')) return clearInterval(sess.cardTimer);
+      if (Date.now() - sess.cardTick >= 9000 && (sess.cards || []).length > 1) { sess.cardAt++; sess.cardTick = Date.now(); paintCard(); }
+    }, 1000);
+  }
   document.getElementById('quit').onclick = async () => { if (await confirmLeave(leaveText('wait'))) go(S && S.book ? { name: 'book', bookId: S.book.id } : { name: 'home' }); };
   const r = document.getElementById('retry'); if (r) r.onclick = () => {
     if (S.mode === 'drill') { S.error = null; S.target = Math.max(S.target, S.qs.length + 1); pumpDrills(S); return renderWaiting(); }

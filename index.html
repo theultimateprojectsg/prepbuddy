@@ -53,6 +53,27 @@ h1,.display{font-family:'Lexend','PingFang HK','PingFang TC','Microsoft JhengHei
 .chip{font-size:12px;font-weight:600;color:var(--accent-dark);background:var(--accent-tint);padding:4px 10px;border-radius:999px}
 .chip.grey{color:var(--muted);background:#E9EBEE;font-weight:500}
 .chip.recap{background:#FFF4DB;color:#8A5A00}
+.waitpage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.waitpage>*{width:100%;max-width:460px}
+.wait-head{display:flex;flex-direction:column;align-items:center;gap:6px}
+.wait-head h1{margin:0;font-size:22px}
+.wait-head p{margin:0;font-size:14px}
+.wait-prog{display:flex;align-items:center;gap:10px;width:100%;max-width:300px;margin-top:8px}
+.wait-prog .progress{height:6px}
+.wait-prog .hint{white-space:nowrap;font-weight:600}
+.wait-sub{margin:10px 0 -4px;text-align:left}
+.wcard{text-align:left;padding:18px 18px 12px;min-height:170px;display:flex;flex-direction:column;gap:8px;border-top:4px solid var(--accent);animation:wcin .35s ease}
+.wcard.k-tip{border-top-color:#E8A317}.wcard.k-term{border-top-color:#3F7FD9}.wcard.k-fact{border-top-color:#2E9E6A}.wcard.k-cheer{border-top-color:#F2B630;background:#FFFBF0}
+@keyframes wcin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.wcard-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:30px}
+.wk{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.wbuddy{display:flex}
+.wdots{display:flex;gap:5px}.wdots i{width:6px;height:6px;border-radius:3px;background:var(--line)}.wdots i.on{background:var(--accent);width:16px}
+.wtitle{font-size:18px;line-height:1.35}
+.wtext{margin:0;font-size:15.5px;line-height:1.55;color:var(--text-2);flex:1}
+.wnext{align-self:flex-end}
+.wgo:empty{display:none}
+.wait-foot{margin:4px 0 0}
 .stem{margin:0;font-size:15px;line-height:1.55;color:#374151;white-space:pre-line}
 .q{margin:0;font-size:18px;line-height:1.45;font-weight:500}
 .opt{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:15px;line-height:1.4;color:var(--ink);cursor:pointer;width:100%}
