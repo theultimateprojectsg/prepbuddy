@@ -223,6 +223,24 @@ function stemBlocks(text) {
   blocks.push({ p: sents.slice(qs).join(' '), ask: true });
   return blocks;
 }
+// Written questions put each question in its part, but the AI sometimes also ends the stem with the same question.
+// Drop any closing sentence of the stem that repeats a part's prompt, so it isn't asked twice.
+const normAsk = (t) => String(t || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+function writtenStem(q) {
+  let stem = String(q.stem || '').trim();
+  const prompts = (q.parts || []).map((p) => normAsk(p.prompt)).filter((x) => x.length > 8);
+  if (!stem || !prompts.length) return stem;
+  const repeats = (t) => { const n = normAsk(t); return n.length >= 20 && prompts.some((p) => p === n || (Math.min(n.length, p.length) >= 0.75 * Math.max(n.length, p.length) && (p.includes(n) || n.includes(p)))); };
+  for (let k = 0; k < 4 && stem; k++) {
+    const paras = stem.split(/\n\s*\n/);
+    const lastPara = paras[paras.length - 1];
+    if (repeats(lastPara)) { paras.pop(); stem = paras.join('\n\n').trim(); continue; }
+    const sents = splitSentences(lastPara);
+    if (sents.length > 1 && repeats(sents[sents.length - 1])) { paras[paras.length - 1] = sents.slice(0, -1).join(' '); stem = paras.join('\n\n').trim(); continue; }
+    break;
+  }
+  return stem;
+}
 function renderStem(stem, cls = 'stem') {
   if (!stem) return '';
   // Tables (pipe rows) keep the old handling.
@@ -1964,7 +1982,7 @@ async function renderPrint(book, units, paper, mins, existing) {
   const lines = (n) => `<div class="lines">${'<div></div>'.repeat(n)}</div>`;
   const mcq = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">1 mark</span></div>${figHTML(q, 'pfig')}${q.type === 'graph' ? graphStem(q) : renderStem(q.stem, 'pstem')}
     ${q.type === 'graph' ? graphOptions(q, true) : `<ol type="A" class="popts">${(q.options || []).map((o) => `<li>${esc(o)}</li>`).join('')}</ol>`}</div>`;
-  const written = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">${marksOf(q)} marks</span></div>${figHTML(q, 'pfig')}${q.stem ? renderStem(q.stem, 'pstem') : ''}
+  const written = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">${marksOf(q)} marks</span></div>${figHTML(q, 'pfig')}${q.stem ? renderStem(writtenStem(q), 'pstem') : ''}
     ${q.parts.map((p) => `<div class="ppart"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="pm">(${p.marks})</span></div>${lines(Math.max(2, p.marks + 1))}`).join('')}</div>`;
   const draw = () => {
     const who = (local.name || '').trim();
@@ -2190,7 +2208,7 @@ function mistakeCard(q, m) {
   const right = choiceType(q) ? `${(q.options || [])['ABCD'.indexOf(q.correct_option)] || ''}`
     : q.type === 'essay' ? '' : q.parts.map((p) => `${p.label ? p.label + ' ' : ''}${p.mark_scheme.map((x) => '• ' + x).join('\n')}`).join('\n');
   return `<div class="mcard" data-raw>
-    ${figHTML(q)}${renderStem(q.type === 'graph' || choiceType(q) ? q.stem : (q.stem || ''), 'stem')}
+    ${figHTML(q)}${renderStem(q.type === 'graph' || choiceType(q) ? q.stem : writtenStem(q), 'stem')}
     ${!choiceType(q) ? q.parts.map((p) => `<p class="mprompt">${esc(p.label)} ${esc(p.prompt)}</p>`).join('') : ''}
     <div class="mrow bad"><span>${LANG === 'zh' ? '你的答案' : 'Your answer'}</span><p class="nomath">${esc(yours)}</p></div>
     ${right ? `<div class="mrow good"><span>${LANG === 'zh' ? '答案' : 'Answer'}</span><p>${esc(right)}</p></div>` : ''}
@@ -3054,7 +3072,7 @@ async function markAnswer(sess, idx) {
 
 function writtenBody(q, revealed) {
   const ans = S.answers[S.i] || q.parts.map(() => '');
-  const stem = figHTML(q) + (q.stem ? renderStem(q.stem) : '');
+  const stem = figHTML(q) + (q.stem ? renderStem(writtenStem(q)) : '');
   if (!revealed) {
     const maths = kindSync(q.id) === 'maths', essay = q.type === 'essay';
     const parts = q.parts.map((p, k) => {
