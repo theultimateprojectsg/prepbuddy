@@ -817,28 +817,68 @@ function bindHomeCommon() {
 }
 
 /* ---------- Books: my textbooks, the library and uploads ---------- */
+// Books are grouped by subject. With lots of books, subject buttons and a search box narrow the list.
+const subjectOf = (b) => String(b.subject || '').trim() || (b.library ? 'Other' : 'My uploads');
+const LAST_GROUPS = ['Other', 'My uploads'];
+function groupBySubject(items, subj) {
+  const map = new Map();
+  for (const it of items) { const k = subj(it); if (!map.has(k)) map.set(k, []); map.get(k).push(it); }
+  return [...map.entries()].sort((a, b) => (LAST_GROUPS.indexOf(a[0]) - LAST_GROUPS.indexOf(b[0])) || a[0].localeCompare(b[0]));
+}
+function subjectChips(groups, picked, total) {
+  if (groups.length < 2) return '';
+  const chip = (k, label, n) => `<button class="fchip ${picked === k ? 'on' : ''}" data-subj="${esc(k)}" aria-pressed="${picked === k}"><span data-raw>${esc(label)}</span><small>${n}</small></button>`;
+  return `<div class="fchips" role="group" aria-label="Subjects">${chip('all', subjLabel('all'), total)}${groups.map(([k, xs]) => chip(k, subjLabel(k), xs.length)).join('')}</div>`;
+}
+const textMatch = (words, hay) => words.every((w) => hay.includes(w));
+// Subject names come from the books (not translated); the app's own group names are.
+const subjLabel = (k) => (LANG === 'zh' ? { all: '全部', Other: '其他', 'My uploads': '我上載的' }[k] : { all: 'All' }[k]) || k;
+let booksPick = 'all';
+
 async function renderBooks() {
   const books = await getBooks();
-  const rows = [];
+  const items = [];
   for (const b of books) {
     const { n } = await bookSummary(b); const sc = (await bookMastery(b)).pct;
-    rows.push(`<button class="row" data-book="${esc(b.id)}"><div class="top"><span style="display:flex;gap:12px;align-items:center"><span class="spine" style="background:${coverColour(b)}" aria-hidden="true"></span><span><b style="font-weight:600" data-raw>${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.subject ? esc(b.subject) + ' · ' : ''}${b.units.length} chapters · ${n} questions${b.library ? '' : ' · uploaded'}</span></span></span>
-      <span class="m-pill ${sc >= 80 ? 'good' : sc >= 60 ? 'mid' : ''}">${sc}%<small>mastered</small></span></div></button>`);
+    items.push({ b, n, sc });
   }
+  const groupsAll = groupBySubject(items, (it) => subjectOf(it.b));
+  if (booksPick !== 'all' && !groupsAll.some(([k]) => k === booksPick)) booksPick = 'all';
+  const many = books.length > 6;
   $app.innerHTML = `
   <main class="pad stack g18" data-view="books" style="flex:1">
-    <h1 class="pagetitle">Books</h1>
-    <form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
-      <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off"></form>
-    <section class="stack g10" aria-label="My textbooks">
-      <h2 style="margin:0;font-size:16px">My textbooks</h2>
-      ${rows.length ? `<div class="card stack">${rows.join('')}</div>` : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No textbooks yet. Search above to add one from the library.</p></div>`}
-    </section>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 class="pagetitle" style="margin:0">Books</h1>
+      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} Add a textbook</button>
+    </div>
+    ${books.length ? `${many ? `<form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
+      <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form>` : ''}
+    <div id="chips">${subjectChips(groupsAll, booksPick, books.length)}</div>
+    <div id="shelf" class="stack g18" aria-live="polite"></div>`
+    : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No textbooks yet. Tap Add a textbook to find yours in the library.</p></div>`}
   </main>`;
-  $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
+  const row = ({ b, n, sc }) => `<button class="row" data-book="${esc(b.id)}"><div class="top"><span style="display:flex;gap:12px;align-items:center"><span class="spine" style="background:${coverColour(b)}" aria-hidden="true"></span><span><b style="font-weight:600" data-raw>${esc(b.title)}</b><br><span class="muted" style="font-size:13px">${b.units.length} chapter${b.units.length === 1 ? '' : 's'} · ${n} question${n === 1 ? '' : 's'}${b.library ? '' : ' · uploaded'}</span></span></span>
+      <span class="m-pill ${sc >= 80 ? 'good' : sc >= 60 ? 'mid' : ''}">${sc}%<small>mastered</small></span></div></button>`;
   const q = document.getElementById('q');
-  q.onfocus = () => go({ name: 'library', query: q.value });
-  document.getElementById('find').onsubmit = (e) => { e.preventDefault(); go({ name: 'library', query: q.value }); };
+  const draw = () => {
+    const shelf = document.getElementById('shelf'); if (!shelf) return;
+    const words = (q ? q.value : '').toLowerCase().split(/\s+/).filter(Boolean);
+    const hits = items.filter((it) => (booksPick === 'all' || subjectOf(it.b) === booksPick) &&
+      textMatch(words, `${it.b.title} ${it.b.subject || ''} ${it.b.code || ''} ${it.b.level || ''}`.toLowerCase()));
+    const groups = groupBySubject(hits, (it) => subjectOf(it.b));
+    shelf.innerHTML = groups.length
+      ? groups.map(([k, xs]) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2><span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="card stack">${xs.map(row).join('')}</div></section>`).join('')
+      : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">None of your textbooks match.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Try another word, or tap Add a textbook to search the library.</p></div>`;
+    shelf.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
+  };
+  const bindChips = () => document.querySelectorAll('#chips [data-subj]').forEach((c) => (c.onclick = () => {
+    booksPick = c.dataset.subj;
+    document.getElementById('chips').innerHTML = subjectChips(groupsAll, booksPick, books.length); bindChips(); draw();
+  }));
+  bindChips();
+  if (q) { q.oninput = draw; document.getElementById('find').onsubmit = (e) => { e.preventDefault(); q.blur(); }; }
+  document.getElementById('addbook').onclick = () => go({ name: 'library', query: '' });
+  draw();
   window.scrollTo(0, 0);
 }
 
@@ -895,31 +935,41 @@ async function renderLibrary(query) {
       <span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off" value="${esc(query)}">
     </form>
+    <div id="chips"></div>
     <div id="results" class="stack g10" aria-live="polite"></div>
   </main>`;
   const q = document.getElementById('q');
-  const draw = () => {
-    const raw = q.value.trim(), words = raw.toLowerCase().split(/\s+/).filter(Boolean), code = normCode(raw);
-    const hits = list.filter((b) => {
-      if (code && normCode(b.code) === code) return true;
-      const hay = `${b.title} ${b.subject} ${b.level} ${b.publisher} ${b.code}`.toLowerCase();
-      return words.every((w) => hay.includes(w));
-    });
-    const codeHit = code.length >= 4 && hits.find((b) => normCode(b.code) === code);
-    document.getElementById('results').innerHTML = (codeHit ? '<p class="hint" style="margin:0;font-weight:600;color:var(--good)">Book code matched</p>' : '') + (hits.length
-      ? hits.map((b) => {
-        const added = mine.has(libBookId(b));
-        return `<div class="card libcard">
+  const groupsAll = groupBySubject(list, subjectOf);
+  let pickSubj = 'all';
+  const drawChips = () => {
+    document.getElementById('chips').innerHTML = subjectChips(groupsAll, pickSubj, list.length);
+    document.querySelectorAll('#chips [data-subj]').forEach((c) => (c.onclick = () => { pickSubj = c.dataset.subj; drawChips(); draw(); }));
+  };
+  const card = (b) => {
+    const added = mine.has(libBookId(b));
+    return `<div class="card libcard">
           <div class="cover" aria-hidden="true">${esc((b.subject || '?').slice(0, 3))}</div>
           <div class="stack g6" style="flex:1;min-width:0">
             <b style="font-size:15px;line-height:1.35" data-raw>${esc(b.title)}</b>
             <span class="muted" style="font-size:13px">${esc([b.subject, b.level, b.publisher].filter(Boolean).join(' · '))}</span>
-            <span class="muted" style="font-size:12px">${b.units.length} chapters · ${b.questionCount ? b.questionCount + ' questions ready · ' : ''}code <span style="white-space:nowrap">${esc(b.code)}</span></span>
+            <span class="muted" style="font-size:12px">${b.units.length} chapter${b.units.length === 1 ? '' : 's'} · ${b.questionCount ? b.questionCount + ' questions ready · ' : ''}code <span style="white-space:nowrap">${esc(b.code)}</span></span>
             ${added
               ? `<button class="btn ghost small" data-open="${esc(b.id)}">${ICON.check} Added · open</button>`
               : `<button class="btn small" data-add="${esc(b.id)}">${ICON.plus} Add to my textbooks</button>`}
           </div></div>`;
-      }).join('')
+  };
+  const draw = () => {
+    const raw = q.value.trim(), words = raw.toLowerCase().split(/\s+/).filter(Boolean), code = normCode(raw);
+    const hits = list.filter((b) => {
+      if (code && normCode(b.code) === code) return true;
+      if (pickSubj !== 'all' && subjectOf(b) !== pickSubj) return false;
+      const hay = `${b.title} ${b.subject} ${b.level} ${b.publisher} ${b.code}`.toLowerCase();
+      return words.every((w) => hay.includes(w));
+    });
+    const codeHit = code.length >= 4 && hits.find((b) => normCode(b.code) === code);
+    const grouped = groupBySubject(hits, subjectOf);
+    document.getElementById('results').innerHTML = (codeHit ? '<p class="hint" style="margin:0;font-weight:600;color:var(--good)">Book code matched</p>' : '') + (hits.length
+      ? (grouped.length > 1 ? grouped.map(([k, xs]) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2><span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2>${xs.map(card).join('')}</section>`).join('') : hits.map(card).join(''))
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">No textbook matches “${esc(raw)}”.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Check the spelling or the book code and try again.</p></div>`);
     document.querySelectorAll('[data-add]').forEach((btn) => (btn.onclick = () => addFromLibrary(list.find((b) => b.id === btn.dataset.add), btn)));
     document.querySelectorAll('[data-open]').forEach((btn) => (btn.onclick = () => go({ name: 'book', bookId: 'lib-' + btn.dataset.open })));
@@ -927,6 +977,7 @@ async function renderLibrary(query) {
   q.oninput = draw;
   document.getElementById('find').onsubmit = (e) => { e.preventDefault(); q.blur(); };
   document.getElementById('back').onclick = () => go({ name: 'books' });
+  drawChips();
   draw();
   q.focus();
 }

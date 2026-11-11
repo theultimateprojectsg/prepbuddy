@@ -231,6 +231,12 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .vorbbox{position:relative;flex:1;width:100%;min-height:200px;display:flex}
 .vorbbox canvas{flex:1;width:100%;min-height:200px}
 .vbuddy{position:absolute;left:50%;top:50%;width:120px;height:120px;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 6px 14px rgba(10,16,48,.35))}
+.fchips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}.fchips::-webkit-scrollbar{display:none}
+.fchip{flex:none;display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:0 14px;min-height:40px;font:600 14px var(--ui);color:var(--ink);cursor:pointer;white-space:nowrap}
+.fchip small{font-weight:500;font-size:12.5px;color:var(--muted)}
+.fchip.on{background:var(--accent);border-color:var(--accent);color:#fff}.fchip.on small{color:#D6DCF3}
+.bgroup h2{margin:0;font-size:16px;display:flex;align-items:center;gap:8px}
+.bgroup h2 small{font-size:12.5px;font-weight:600;color:var(--muted);background:#E9ECF3;border-radius:999px;padding:2px 8px}
 /* voice chat: the orb panel inside the coach / tutor chat box */
 .vtalk{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;line-height:1;padding:8px 14px;min-height:36px;cursor:pointer}.vtalk svg{width:16px;height:16px}
 .tutor-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tutor-row .btn{display:flex;align-items:center;justify-content:center}
