@@ -792,7 +792,7 @@ async function renderHome() {
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head}
-    <section class="plan" aria-label="Today's plan"><h2><span class="hl">Today’s plan</span></h2>${items.join('')}</section>
+    <section class="stack g10" aria-label="Today's plan"><div class="sect-head"><h2>Today’s plan</h2></div><div class="plan">${items.join('')}</div></section>
     <section class="stack g10" aria-label="Practice">
       <div class="sect-head"><h2>Practice</h2></div>
       <div class="quick">
@@ -801,9 +801,9 @@ async function renderHome() {
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
-    ${ready.n ? `<section class="card stack g6 today-week" aria-label="How ready you are">
+    ${ready.n ? `<section class="stack g10" aria-label="How ready you are">
       <div class="sect-head"><h2>How ready you are</h2><button class="btn-sm" id="progress">See progress</button></div>
-      ${ready.html}${ready.more ? `<button class="btn-sm quiet" id="moreready" style="align-self:flex-start;margin-top:4px">See all ${ready.n} books</button>` : ''}
+      <div class="card stack g6 today-week">${ready.html}${ready.more ? `<button class="btn-sm quiet" id="moreready" style="align-self:flex-start;margin-top:4px">See all ${ready.n} books</button>` : ''}</div>
     </section>` : ''}
   </main>
   <aside class="coach" id="coach" aria-label="Study coach">${coachHTML()}</aside>${footerHTML()}`;
