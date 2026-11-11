@@ -119,6 +119,52 @@ const ICON = {
   target: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>',
   clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>',
 };
+// A small pop-up asking the student to confirm before leaving a practice. Resolves true to leave.
+function confirmLeave({ title, body, stay, leave }) {
+  return new Promise((resolve) => {
+    document.querySelectorAll('.cdlg-wrap').forEach((x) => x.remove());
+    const back = document.activeElement;
+    const w = document.createElement('div');
+    w.className = 'cdlg-wrap';
+    w.innerHTML = `<div class="cdlg" role="alertdialog" aria-modal="true" aria-labelledby="cdlgT" aria-describedby="cdlgB">
+      <h2 id="cdlgT">${esc(title)}</h2><p id="cdlgB">${esc(body)}</p>
+      <div class="cdlg-btns"><button class="btn ghost" data-v="0">${esc(stay)}</button><button class="btn leave" data-v="1">${esc(leave)}</button></div></div>`;
+    const btns = [...w.querySelectorAll('button')];
+    const done = (v) => { document.removeEventListener('keydown', onKey, true); w.remove(); if (!v && back && back.focus) back.focus(); resolve(v); };
+    // While it's open, keys only work the pop-up (A–D and Enter mustn't answer the question underneath).
+    const onKey = (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); return done(false); }
+      if (e.key === 'Tab') { e.preventDefault(); const i = btns.indexOf(document.activeElement); btns[(i + (e.shiftKey ? btns.length - 1 : 1)) % btns.length].focus(); }
+      e.stopPropagation();
+    };
+    document.addEventListener('keydown', onKey, true);
+    w.onclick = (e) => { if (e.target === w) done(false); };
+    btns.forEach((b) => (b.onclick = () => done(b.dataset.v === '1')));
+    document.body.appendChild(w);
+    btns[0].focus();
+  });
+}
+// What the pop-up says depends on what the student is leaving.
+function leaveText(kind, viaMenu) {
+  const zh = LANG === 'zh';
+  if (kind === 'exam') return zh ? { title: '離開呢份試卷？', body: '試卷會停止計時，亦唔會評分。', stay: '繼續作答', leave: '離開' }
+    : { title: 'Leave this paper?', body: 'The timer stops and this paper won’t be marked.', stay: 'Keep going', leave: 'Leave' };
+  if (kind === 'cards') return zh ? { title: '停止溫習字卡？', body: '你可以隨時再溫。', stay: '繼續', leave: '離開' }
+    : { title: 'Stop these flashcards?', body: 'You can come back to them any time.', stay: 'Keep going', leave: 'Leave' };
+  if (kind === 'wait') return zh ? { title: '停止呢次練習？', body: '題目仲做緊，離開就會停止。', stay: '繼續等', leave: '離開' }
+    : { title: 'Stop this practice?', body: 'Your questions are still being made. Leaving stops them.', stay: 'Keep waiting', leave: 'Leave' };
+  return zh ? { title: '離開呢次練習？', body: viaMenu ? '你答過嘅題目已經儲存。' : '你答過嘅題目已經儲存，跟住會見到你嘅成績。', stay: '繼續練習', leave: '離開' }
+    : { title: 'Leave this practice?', body: viaMenu ? 'The answers you’ve given are saved.' : 'The answers you’ve given are saved. You’ll see your results next.', stay: 'Keep practising', leave: 'Leave' };
+}
+// A written answer that's been marked but not yet counted (the student hadn't pressed Next) is counted now.
+function saveOpenAnswer() {
+  if (!S || !S.qs) return;
+  const q = S.qs[S.i];
+  if (q && S.phase === 'revealed' && !choiceType(q) && (S.got[S.i] === undefined || S.got[S.i] === null) && !((S.marks || {})[S.i] || {}).pending) {
+    S.got[S.i] = partsGot(q); record(q, S.got[S.i]);
+  }
+}
+const inSession = () => document.getElementById('quit');
 function toast(msg) { document.querySelectorAll('.toast').forEach((x) => x.remove()); const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
 
 function renderStem(stem, cls = 'stem') {
@@ -796,7 +842,14 @@ function renderTabs(active = tabNow) {
   document.body.dataset.tab = active;
   const mk = mistakeCount();
   nav.innerHTML = `<span class="brand-side">PrepBuddy</span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${ICON[ic]}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
-  nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.tabgo })));
+  nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = async () => {
+    const q = inSession();
+    if (q) {
+      if (!(await confirmLeave(leaveText(q.dataset.kind, true)))) return;
+      if (q.dataset.kind === 'practice') saveOpenAnswer();
+    }
+    go({ name: b.dataset.tabgo });
+  }));
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
@@ -1296,7 +1349,7 @@ function drawCard() {
   if (!c) return cardsDone();
   const done = C.total - C.queue.length;
   $app.innerHTML = `
-  <div class="topbar"><button class="icon-btn" id="quit" aria-label="Stop flashcards">${ICON.close}</button><div class="progress"><i style="width:${Math.round(100 * done / C.total)}%"></i></div><span class="count">${done + 1} / ${C.total}</span></div>
+  <div class="topbar"><button class="backbtn" id="quit" data-kind="cards">${ICON.back}<span>Back</span></button><div class="progress"><i style="width:${Math.round(100 * done / C.total)}%"></i></div><span class="count">${done + 1} / ${C.total}</span></div>
   <main class="pad stack g18" style="flex:1;padding-top:12px">
     <span class="chip grey" style="align-self:flex-start" data-raw>${esc(c.unit)}</span>
     <button class="fcard ${C.flipped ? 'flipped' : ''}" id="flip" aria-live="polite" data-hotkey=" ">
@@ -1320,7 +1373,7 @@ function drawCard() {
   };
   const a = document.getElementById('again'); if (a) a.onclick = () => k(false);
   const n = document.getElementById('know'); if (n) n.onclick = () => k(true);
-  document.getElementById('quit').onclick = () => go({ name: 'book', bookId: C.bookId });
+  document.getElementById('quit').onclick = async () => { if (await confirmLeave(leaveText('cards'))) go({ name: 'book', bookId: C.bookId }); };
 }
 function cardsDone() {
   const missed = C.missed.length;
@@ -2136,7 +2189,7 @@ function renderWaiting() {
   const e = S.error;
   if (e && e.status === 401) return renderAccess(() => { refill(S); renderWaiting(); }, 'That access code didn’t work. Please check it and try again.');
   const failed = !S.generating && S.i >= S.qs.length;
-  $app.innerHTML = `<div class="topbar"><button class="icon-btn" id="quit" aria-label="End session">${ICON.close}</button><div class="progress"><i style="width:${Math.round(100 * S.i / Math.max(1, S.target))}%"></i></div><span class="count">${Math.min(S.i + 1, S.target)} / ${S.target}</span></div>
+  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="quit" data-kind="wait">${ICON.back}<span>Back</span></button><div class="progress"><i style="width:${Math.round(100 * S.i / Math.max(1, S.target))}%"></i></div><span class="count">${Math.min(S.i + 1, S.target)} / ${S.target}</span></div>
   <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
     ${failed
       ? `<h1 class="display" style="margin:0;font-size:22px">${e ? 'Couldn’t make questions' : 'No more questions right now'}</h1>
@@ -2147,7 +2200,7 @@ function renderWaiting() {
          <h1 class="display" style="margin:0;font-size:22px">${S.qs.length ? 'Preparing the next question' : 'Writing your questions'}</h1>
          <p class="muted" style="margin:0;line-height:1.5;max-width:320px">${esc(S.mode === 'drill' ? 'New questions on the ideas you missed' : S.units ? S.units.map((u) => u.title).join(', ') : '')}<br>Each question is written from your textbook, then checked by a second AI. The first ones take 30–60 seconds; after that the next set is made while you practise.</p>`}
   </main>`;
-  document.getElementById('quit').onclick = () => go({ name: 'home' });
+  document.getElementById('quit').onclick = async () => { if (await confirmLeave(leaveText('wait'))) go(S && S.book ? { name: 'book', bookId: S.book.id } : { name: 'home' }); };
   const r = document.getElementById('retry'); if (r) r.onclick = () => {
     if (S.mode === 'drill') { S.error = null; S.target = Math.max(S.target, S.qs.length + 1); pumpDrills(S); return renderWaiting(); }
     if (S.fill) { S.error = null; S.fill.rounds = 0; pumpPaper(S); return renderWaiting(); }
@@ -2279,7 +2332,7 @@ function graphOptions(q, print) {
 function header() {
   const n = S.target, pct = Math.round(100 * S.i / Math.max(1, n));
   return `<div class="topbar">
-    <button class="icon-btn" id="quit" aria-label="End session">${ICON.close}</button>
+    <button class="backbtn" id="quit" data-kind="${isExam() && !S.review ? 'exam' : 'practice'}">${ICON.back}<span>Back</span></button>
     <div class="progress" role="progressbar" aria-valuenow="${S.i}" aria-valuemin="0" aria-valuemax="${n}"><i style="width:${pct}%"></i></div>
     <span class="count">${S.deadline && !S.review ? '<span class="timer" id="timer"></span>' : `<span id="count">${S.i + 1} / ${n}</span>`}</span>
   </div>`;
@@ -2788,13 +2841,9 @@ function record(q, got) {
   saveLocal();
 }
 
-let quitArmed = 0;
 function endEarly() {
   if (isExam() && !S.review) return S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' });
-  const q = S.qs[S.i];
-  if (q && S.phase === 'revealed' && !choiceType(q) && (S.got[S.i] === undefined || S.got[S.i] === null) && !(S.marks[S.i] || {}).pending) {
-    S.got[S.i] = partsGot(q); record(q, S.got[S.i]);
-  }
+  saveOpenAnswer();
   const answered = S.qs.map((_, k) => k).filter((k) => S.got[k] !== undefined && S.got[k] !== null);
   if (!answered.length) return S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' });
   const pickK = (arr) => answered.map((k) => (arr || [])[k]);
@@ -2805,9 +2854,8 @@ function endEarly() {
   renderSummary();
 }
 function bindCommon(q) {
-  document.getElementById('quit').onclick = () => {
-    if (Date.now() - quitArmed < 2500) return endEarly();
-    quitArmed = Date.now(); toast('Tap × again to stop and see your results');
+  document.getElementById('quit').onclick = async () => {
+    if (await confirmLeave(leaveText(isExam() && !S.review ? 'exam' : 'practice'))) endEarly();
   };
   const n = document.getElementById('next');
   if (n) n.onclick = () => {
