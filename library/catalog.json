@@ -3154,5 +3154,30 @@
     "endPage": 1451
    }
   ]
+ },
+ {
+  "id": "equity-linked-note-eln-wzze",
+  "code": "FIN-KTPK",
+  "title": "Equity Linked Note (ELN)",
+  "subject": "Finance",
+  "level": "S4–S6 (HKDSE)",
+  "kind": "science",
+  "publisher": "",
+  "licence": "CC BY 4.0",
+  "credit": "",
+  "lang": "en",
+  "pageCount": 8,
+  "addedAt": "2026-11-11",
+  "questionCount": 0,
+  "units": [
+   {
+    "id": "u0",
+    "title": "Part 1",
+    "chapter": null,
+    "startPage": 1,
+    "endPage": 8,
+    "figs": true
+   }
+  ]
  }
 ]

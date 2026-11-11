@@ -1,0 +1,555 @@
+Equity Linked Note (ELN)
+Generic Product Description
+An Equity Linked Note (ELN) is a
+structured derivative, the return on
+which depends on the performance of
+one or more underlying equity shares
+or indices. An ELN may pay a higher
+yield than traditional money market
+investments reflecting the risk of the
+underlying share or index.
+An ELN with an underlying share (or
+reference share) can be structured to
+allow for physical settlement or cash
+settlement on the redemption date.
+When the underlying is an index,
+physical settlement is not possible
+and the ELN will be settled in cash on
+the redemption date.
+An ELN can be tailored to suit
+different risk/return profiles.
+How Does an ELN work?
+You purchase an ELN at a discount to the
+principal amount of the ELN after agreeing on
+the tenor, currency, underlying stock or index,
+strike level and yield.
+The repayment of the principal amount on the
+redemption date is dependent on the closing
+price of the underlying as observed on the final
+fixing date, which is usually 2 or 3 business days
+before redemption date. If the closing price of
+the underlying is at or above the strike level, the
+ELN will be redeemed at 100% of its principal
+amount in cash. The gain will be the difference
+between the discounted purchase price and the
+principal amount of the ELN.
+For an ELN with an underlying share, if the
+closing price of the underlying on the final
+fixing date is below the strike level, you will
+receive physical shares or their cash equivalent.
+For every ELN you hold, the number of shares
+you receive will be calculated by dividing the
+denomination of the ELN by the strike level. The
+cash equivalent represents the market closing
+value of that number of shares on the final
+fixing date. This will result in a loss to you.
+Where the ELN is physically settled, the loss will
+not be realized until you sell any shares you
+receive.
+For an ELN with an underlying index, if the
+closing price of the index is below the strike
+level, you will receive on the redemption date
+an amount in cash for every ELN held. The cash
+amount is calculated by multiplying the
+denomination of the ELN by the closing price of
+the index and then dividing by the strike level.
+This will result in a loss to you.
+Who should invest
+in an ELN?
+The risk exposure for ELN depends on the
+product underlying and other factors. Please
+check with your Client Advisor whether a
+specific ELN product is suitable for you.
+August 2025
+Consider an ELN if:
+− You are expecting a flat to slightly positive
+performance in the underlying share or
+index
+− You are comfortable investing for the entire
+tenor and do not mind receiving the
+underlying share at the strike level
+What are the benefits of an ELN?
+− An ELN may provide a higher yield on the
+redemption date compared with traditional
+money market investments
+− An ELN is likely to outperform a direct
+investment in the underlying share or index
+if the price of the underlying share or index
+remains flat or only slightly positive during
+the tenor of the ELN
+− The downside risk of investing in an ELN
+would be no higher than the downside risk
+of a direct investment in the underlying
+share or index
+What are the key risks of an ELN?
+− An ELN is not a principal protected
+investment. If the closing price of the
+underlying share or index is below the strike
+level on the final fixing date, you are
+exposed on the downside to the market
+value of the underlying share or index. The
+underlying share or index can trade
+considerably below the strike level, which
+may lead to a partial or total loss of the
+principal amount
+− An ELN’s potential return is limited on the
+upside to the difference between the
+discounted purchase price and the principal
+amount of the ELN. If the price of the
+underlying share or the index rises
+considerably, you may have obtained a
+better return by a direct purchase of the
+underlying share or index.
+− An ELN may have little or no liquidity. You
+should be prepared to hold the ELN for its
+entire tenor. Furthermore, if a secondary
+market exists, the value of the ELN will
+fluctuate depending on a number of factors
+such as the movement in the underlying
+share price or index, currency fluctuations,
+volatilities, the financial condition of the
+issuer and its creditworthiness.
+− An ELN does not give you ownership rights
+in the underlying share, or the shares
+comprising the underlying index, and does
+not entitle you to any voting rights or
+dividend payments in respect of the shares
+during the tenor of the ELN
+− If the underlying is an index (or indices), the
+index sponsors are responsible for
+calculating and maintaining the underlying
+index or indices. Actions of the index
+sponsor, including changes to the
+calculation methodology, may change the
+value of the underlying index at any time.
+The calculation of the repayment on the
+redemption date will be adjusted to reflect
+such event(s).
+− You bear the risk that the issuer and the
+guarantor (if any) of the ELN may become
+insolvent, which may lead to a partial or
+total loss of the principal amount.
+Illustrative example of an ELN
+An ELN with one underlying share
+You invest HKD 987,800 to purchase a single
+ELN with principal amount of HKD 1,000,000
+on the issue date.
+Underlying stock Company A
+Initial level HKD 50
+Strike level HKD 40 (80% of the initial level)
+Yield 8.05% p.a.
+Tenor 56 days
+Denomination per
+note HKD 1,000,000
+Number of shares
+per note 25,000
+Issue price of note 98.78%
+Best case scenario: The closing price of
+the shares of Company A is at or above
+the strike level
+If the closing price of the shares of Company
+A is at or above the strike level on the final
+fixing date, you will receive on the
+redemption date a repayment of HKD
+1,000,000, and achieve an annualized yield
+of 8.05%.
+Moderate case scenario: The closing price
+of the shares of Company A is below the
+strike level
+If the closing price of the shares of Company
+A is below the strike level on the final fixing
+date, you will receive on the redemption date
+shares of Company A. The numbers of shares
+per note are calculated by dividing the
+denomination by the strike level, in other
+words, HKD 1,000,000/HKD 40, which is
+equal to 25,000.
+Worst case scenario:
+If the closing price of the shares of Company
+A has dropped to zero, the market value of
+the shares you receive on the redemption
+date will be zero. In this case, you will lose
+the entire principal amount of the ELN.
+Example of potential scenarios on the
+redemption date
+Closing
+price of
+Company
+A on final
+fixing date
+Repayment on
+the redemption
+date
+(if you choose
+for physical
+delivery)
+Repayment on
+the redemption
+date
+(if you choose
+for cash
+settlement)
+HKD 0 (-
+100%)
+(The worst
+case)
+25,000 shares of
+Company A (zero
+market value)
+HKD 0
+HKD 35 (-
+30%)
+25,000 shares of
+Company A HKD 875,000
+HKD 40 (-
+20%)
+Strike level
+HKD 1,000,000 HKD 1,000,000
+HKD 50
+(0%) HKD 1,000,000 HKD 1,000,000
+HKD 60
+(+20%) HKD 1,000,000 HKD 1,000,000
+Graphical illustration
+Variation
+The “Worst of” ELN
+A “Worst of” ELN is linked to more than one
+underlying share or index and its return
+depends on the performance of the worst
+performing underlying in the basket. The
+worst performing underlying stock or index is
+determined by comparing its closing price on
+the final fixing date against its initial level. For
+a “Worst of” ELN, you are exposed to the
+downside risk of the worst performing
+underlying share, even if, for all other
+underlying shares, the closing price is above
+the strike level on the final fixing date.
+An ELN with more than one underlying
+share
+You invest HKD 960,800 to purchase a
+“Worst of” ELN with principal amount
+of HKD 1,000,000 on the issue date.
+Underlyi
+ng stock
+Company
+A
+Company
+B
+Tenor 73
+days
+Initial
+level HKD 50 HKD
+62.50
+Denomi
+nation
+per
+note
+HKD
+1,000
+,000
+Strike
+level
+HKD 40
+(80% of
+the Initial
+level)
+HKD 50
+(80% of
+the Initial
+level)
+Yield
+20.40
+%
+p.a.
+Number
+of shares
+per note
+25,000 20,000
+Issue
+price
+of note
+96.08
+%
+Best case scenario: If the closing price of
+the shares of Companies A and B are at
+or above their respective strike levels
+If the closing prices of the shares of Company
+A and Company B are at or above their
+respective strike levels on the final fixing date,
+you will receive on the redemption date
+a repayment of HKD 1,000,000 in cash,
+achieving an annualized yield of 20.40%.
+Moderate case scenario: If the closing
+price of the shares of Company A or B is
+below the respective strike levels
+If the closing price of the shares of either
+Company A or Company B is below its
+respective strike level on the final fixing date,
+you will receive on the redemption date
+shares of the worst performing underlying
+share as determined below:
+1. If Company A is the worst performing
+underlying share, you will receive 25,000
+shares per note
+2. If Company B is the worst performing
+underlying share, you will receive 20,000
+shares per note
+3. In both cases, the fractional share (if any)
+will be settled in cash at the closing price
+as set out in the later section on
+Additional Information – Rounding
+Worst case scenario: If the closing price
+of the shares of Company A or B has
+reached 0
+In this case, the market value of the shares
+you receive will be zero. In this case, you will
+lose the entire principal amount of the ELN.
+Example: Potential scenarios on the
+redemption date
+Company A
+closing
+price on
+final fixing
+date (in %
+of its initial
+level)
+Company B
+closing
+price on
+final fixing
+date (in %
+of its initial
+level)
+Worstperforming
+underlying
+stock
+(compared
+to strike
+level)
+Repayment
+on the
+redemption
+date (if you
+choose
+physical
+delivery)
+0%
+(The worst
+case)
+10%
+Company A
+(< Strike
+level)
+25,000
+shares
+of Company
+A
+(zero market
+value)
+20% 40%
+Company A
+(< Strike
+level)
+25,000
+shares
+of Company
+A
+80% 70%
+Company B
+(< Strike
+level)
+20,000
+shares
+of Company
+B
+75% 110%
+Company A
+(< Strike
+level)
+25,000
+shares
+of Company
+A
+95% 90%
+Company B
+(> Strike
+level)
+HKD
+1,000,000
+in cash
+100% 80%
+Company B
+(= Strike
+level)
+HKD
+1,000,000
+in cash
+105% 110%
+Company A
+(> Strike
+level)
+HKD
+1,000,000
+in cash
+Additional information – adjusting
+the risk/ return profile
+The risk/return profile of an ELN can be varied
+by adjusting its terms. One of the most
+common parameters that can be adjusted is
+the strike level. The closer the strike level is to
+the market price of the underlying share (or
+index) on the trade date, the greater the risk
+that the underlying share (or index) will close
+below the strike level on the final fixing date,
+which may result in a loss for you. The higher
+risk is in return for a higher yield on the ELN.
+The lower the strike level, the more defensive
+the ELN would be, and consequently the
+lower the yield on the ELN.
+The secondary market price of an ELN
+depends directly on the underlying share’s (or
+index’s) performance. The ELN loses value
+quickly when the price of the underlying
+share declines, even if the underlying share is
+still trading above the strike level. For this
+reason, an ELN should not be seen as
+comparable to traditional money market
+investments.
+The choice of underlying share (or index) is
+the most influential factor in determining the
+yield of an ELN. The more volatile the
+underlying share (or index) is, and therefore
+the more likely that the underlying may fall
+below the strike level, the higher the yield.
+The currency of the investment is also a
+factor, as interest rates vary from currency to
+currency. However, this does not mean that
+an ELN has to be structured in the same
+currency as the underlying share (or index).
+Additional information – Price
+behavior of a “Worst of” ELN
+The secondary market price of a “Worst of”
+ELN is affected in a similar way to that of an
+ELN. It should be remembered that the price is,
+above all, influenced by the price movement of
+the worst performing share (or index). In
+addition, price behavior is also affected by the
+correlation between the underlying shares (or
+indices). If the correlation between the
+underlying shares (or indices) increases during
+the tenor, this could have a small positive
+impact on the price of the “Worst of” ELN.
+Correlation should also be taken into account
+when structuring the terms of a “Worst of” ELN
+at the beginning of the tenor. The lower the
+correlation between the underlying shares (or
+indices), the more attractive the terms, or the
+higher the yield, of the “Worst of” ELN. On the
+other hand, if two companies are in the same
+industry, their share (or index) prices are
+expected to have similar movements or higher
+correlation. In this case it is less likely that only
+one share (or index) will fall below the strike
+level. You will receive a lower yield in return for
+this lower risk on a “Worst of” ELN.
+Additional information – Rounding
+The number of shares for physical delivery is
+calculated by dividing the denomination of the
+ELN by the strike level of the underlying share.
+The actual number of shares for delivery will be
+the nearest whole number to this figure, while
+you will receive on the redemption date a cash
+equivalent for the fractional share, calculated by
+reference to the closing price of the underlying
+share on final fixing date.
+Important Disclaimer
+The contents of this document have not been reviewed by any regulatory authority in
+Australia Investors are advised to exercise caution in relation to any offer. If an Investor is in
+any doubt about any of the contents of this document, the Investor should obtain
+independent professional advice.
+This document is communicated by UBS AG and/or its affiliates ("UBS") for the exclusive use of the
+party to whom UBS delivers this document. UBS may from time to time, as principal or agent, have
+positions in, or may buy or sell, or make a market in any securities, currencies, financial instruments or
+other assets underlying the transaction to which any term sheet, Information Memorandum, Prospectus,
+confirmation or other documentation for the issue of the product or to which the transaction relates
+(collectively, the "Documentation"). UBS may provide investment banking and other services to, or
+have officers who serve as directors of the companies referred to in the Documentation. UBS may pay or
+receive fees in connection with transactions of securities to or from third parties. Further information on
+any discount to the issue price provided by UBS Investment Bank division to UBS Wealth Management
+division is available in the pricing schedule or other similar document which may be provided by UBS
+Wealth Management division from time to time. UBS has policies and procedures designed to minimize
+the risk that officers and employees are influenced by any conflicting interest or duty and that
+confidential information is improperly disclosed or made available. The investor acknowledges that UBS
+may retain all or part of such fees.
+UBS generally hedges its exposure under structured transactions, although it may elect not to hedge or
+to partially hedge any transaction. UBS’ hedging activity may be conducted through transactions in the
+underlying asset, index or instrument or in options, futures or other derivatives related to the underlying
+asset, index or instrument on publicly traded markets or otherwise, and may have an impact on the
+price of the underlying asset. If a transaction is cash settled, UBS will generally unwind or offset any
+hedge it has for such transaction in close proximity to the relevant valuation time or period. In some
+cases, this activity may affect the value of the transaction.
+Prospective investors should be aware that receipt of any payment (whether coupon payment,
+redemption amount or otherwise) or any securities by an investor in connection with the transaction is
+subject to the credit risk of the issuer of the securities (the "Issuer") or counterparty to the transaction
+(the "Counterparty"). Investors assume the risk that the Issuer or Counterparty will not be able
+to satisfy its obligations under the transaction. Except where specifically provided otherwise, the
+Issuer's or the Counterparty's obligations under the transaction will constitute general and unsecured
+contractual obligations of the Issuer or Counterparty, respectively, and such obligations will rank equally
+with all other unsecured contractual obligations of the Issuer or Counterparty, respectively, and any
+subsequent unsecured obligations of the Issuer or Counterparty, respectively. In the case of an
+insolvency of the Issuer or Counterparty, preferred liabilities of the Issuer or Counterparty, respectively,
+will have priority over unsecured obligations such as the transaction.
+Any credit rating of the Issuer or the Counterparty stated in the Documentation reflects the
+independent opinion of the referenced rating agency as to the creditworthiness of the rated entity but is
+not a guarantee of credit quality of the Issuer or the Counterparty. Any downgrading of the credit
+ratings of the Issuer or Counterparty or their respective affiliates, by any rating agency could result in a
+reduction in the value of the product.
+Structured transactions are complex and may involve a high risk of loss. Prior to entering into a
+transaction you should consult with your own independent legal, regulatory, tax, financial and
+accounting advisors to the extent you consider it necessary, and make your own investment, hedging
+and trading decisions (including decisions regarding the suitability of this transaction) based upon your
+own judgment and advice from those advisers you consider necessary. Save as otherwise expressly
+agreed, UBS is not acting as your financial adviser or fiduciary in any transaction.
+Products which have not undergone UBS CIO’s Sustainable Investing (SI) labelling methodology (i.e.
+non-SI vetted products) have not been labelled as such. We do not express any SI view on non-vetted SI
+products and we make no commitment or representation as to the Environmental, Social & Governance
+(ESG) references relating to non-SI vetted products. ESG relevant content / SI references with regard to
+and describing a non-SI vetted product are taken in good faith from the underlying product provider
+and/or third party sources and we make no representation or warranty and assume no responsibility for
+the accuracy, completeness and reliability of such ESG relevant content / SI references. In general, the
+use of ESG / SI references or other related terminologies in the product material does not necessarily
+mean that the product has been classified as SI according to UBS’s assessment and in-house approach.
+SI classification is subject to change without notice due to the evolving regulatory standards and
+industry practices.
+This document is for information purposes only and has no regard to the specific investment objectives,
+financial situations or particular needs of any specific recipient. Any charts and scenarios are for
+illustrative purposes only. Historical performance is no guarantee for and is not an indication of future
+performance. The information herein is not intended to be a complete statement or summary of the
+developments referred to in this document. No representation or warranty is provided in relation to any
+information herein which is derived from independent sources.
+The analysis contained herein is based on numerous assumptions. Different assumptions could result in
+materially different results. The information and any opinions expressed in this document are subject to
+change without notice and may differ or be contrary to opinions expressed by other business areas or
+groups of UBS as a result of using different assumptions and criteria. UBS is under no obligation to
+update or keep current the information contained in this document.
+This document does not constitute and should not be construed as an offer, recommendation
+or solicitation to conclude a transaction nor should it be treated as an investment advice. The
+terms of the transaction will be exclusively subject to the detailed provisions, including any risk
+considerations, contained in the Documentation. Any investment or any other decisions should not be
+made based solely on this material. Neither UBS AG nor any of its affiliates, directors, employees or
+agents accepts any liability for any loss or damage arising out of the use of all or any part of this
+material.
+UBS specifically prohibits the redistribution or reproduction of this document and any of the material in
+this document in whole or in part without the prior written permission of UBS and UBS accepts no
+liability whatsoever for the actions of third parties in this respect.
+No action has been or will be taken in any jurisdiction that would permit a public offering of the
+securities described in this document, save where explicitly stated in the Documentation. Where
+applicable, the securities must be sold in accordance with all applicable selling restrictions in the
+jurisdictions in which they are sold.
+Not for distribution in the United States or to U.S. persons.
+This document is provided by UBS AG Australia Branch AFSL 231087 and is intended for exclusive use
+by recipients who qualify as wholesale clients as that term is defined in the Corporations Act 2001 (Cth).
+© UBS 2025 All rights reserved.
+UBS AG Australia Branch
+GPO Box 4151 Sydney
+NSW 2001
