@@ -155,7 +155,8 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .pqr{width:52px;height:52px;flex:none}
 @media print{
   html,body{background:#fff}
-  .noprint{display:none!important}
+  .noprint,.tabs{display:none!important}
+  body[data-tab] .app{margin:0 auto!important;padding-bottom:0!important}
   .app{max-width:none}
   .paper{padding:0}
   @page{margin:14mm 16mm 10mm}
