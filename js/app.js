@@ -798,14 +798,15 @@ function renderTabs(active = tabNow) {
   nav.innerHTML = `<span class="brand-side">PrepBuddy</span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${ICON[ic]}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.tabgo })));
 }
-// The menu shows on every screen except while answering questions or flipping flashcards (those screens have
-// a ✕ to quit, and stay distraction-free). Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+// The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
+// whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
+const TAB_OF = { home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
   if (m) return renderTabs(m.dataset.view);
-  if ($app.querySelector('#quit')) return renderTabs(null);
-  renderTabs((view && TAB_OF[view.name]) || null);
+  if (timedPaper()) return renderTabs(null);
+  renderTabs((view && TAB_OF[view.name]) || 'home');
 }).observe($app, { childList: true });
 
 /* ---------- library (books uploaded once by the admin) ---------- */
