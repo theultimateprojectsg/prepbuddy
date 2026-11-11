@@ -1,0 +1,35 @@
+{
+ "t": 1794377794393,
+ "reason": "unclear",
+ "note": "",
+ "lang": "en",
+ "book": {
+  "id": "lib-ifec-eli-booklet-en-235b",
+  "title": "Equity Linked Notes (Basic)",
+  "library": "ifec-eli-booklet-en-235b",
+  "code": "FIN-65TQ"
+ },
+ "unit": {
+  "id": "u0",
+  "title": "The Basics"
+ },
+ "q": {
+  "type": "mcq",
+  "level": 2,
+  "stem": "A bull ELI is linked to a basket of two stocks, Stock B and Stock C. Both stocks have an initial spot price of $50. On the final valuation date, Stock B closes at $30 and Stock C closes at $45. Which statement correctly identifies the reference asset and its performance?",
+  "options": [
+   "Stock C is the reference asset, with a performance of 90%.",
+   "Stock B is the reference asset, with a performance of 60%.",
+   "Stock B is the reference asset, with a performance of 40%.",
+   "Both stocks count equally, so the reference performance is 75%."
+  ],
+  "correct_option": "B",
+  "explanation": "Performance of a stock = closing price on final valuation day / initial spot price x 100%.\nStock B: $30 / $50 x 100% = 60%.\nStock C: $45 / $50 x 100% = 90%.\nThe reference asset is the worst-performing stock, which is Stock B (60% is lower than 90%).",
+  "source_quote": "Stock B is the worst-performing stock.",
+  "parts": [],
+  "id": "lib-ifec-eli-booklet-en-235b:u0:mwbq2k6qbi14",
+  "section": "The Basics",
+  "pages": "2-10"
+ },
+ "answer": "D"
+}
