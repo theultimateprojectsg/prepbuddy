@@ -1,7 +1,7 @@
 // POST /api/coach — the study coach on the Today screen. It sees a snapshot of the student's progress
 // (made on their device) and answers questions like "How am I doing?" or "What should I work on this week?".
 // body: { snapshot (text), ask, history: [{role, text}], lang, voice: 'en' | 'yue' when it's a spoken chat }   returns: { reply, action (or null): what to open in the app, usage }
-const { callTextWithAction, voiceNote, checkAccess, readJson, newUsage, httpError } = require('../lib/claude');
+const { callTextWithAction, streamText, ndjson, MODELS, voiceNote, checkAccess, readJson, newUsage, httpError } = require('../lib/claude');
 
 const COACH = `You are the study coach inside PrepBuddy, an exam-practice app for Hong Kong secondary students (HKDSE). PrepBuddy turns the student's own textbooks into practice questions.
 Below is a snapshot of this student's progress, made just now from their practice history. Use it to answer.
@@ -49,10 +49,18 @@ module.exports = async (req, res) => {
     for (let i = 1; i < list.length; i++) if (list[i].role === list[i - 1].role) throw httpError(400, 'Bad conversation.');
     const system = [{ type: 'text', text: `${COACH}${body.lang === 'zh' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>` }];
     const usage = newUsage();
+    const fallback = (out) => out.text || (out.action ? (body.lang === 'zh' ? '好，而家幫你打開。' : 'Okay, opening it now.') : '') || 'Sorry, I could not answer that. Please try asking another way.';
+    if (body.stream) {
+      // Spoken chat: stream the words so the browser can start speaking the first sentence straight away.
+      const write = ndjson(res);
+      const out = await streamText({ body: { model: body.voice ? MODELS.voice : MODELS.tutor, max_tokens: body.voice ? 500 : 2500, tools: [OPEN_TOOL], tool_choice: { type: 'auto' }, system, messages: list },
+        usage, toolName: OPEN_TOOL.name, onText: (t) => write({ d: t }) });
+      return res.end(JSON.stringify({ done: true, reply: fallback(out), action: out.action, usage }) + '\n');
+    }
     const out = await callTextWithAction({ messages: { system, list }, usage, step: 'tutor', maxTokens: body.voice ? 500 : 2500, tool: OPEN_TOOL });
-    const reply = out.text || (out.action ? (body.lang === 'zh' ? '好，而家幫你打開。' : 'Okay, opening it now.') : '');
-    res.statusCode = 200; res.end(JSON.stringify({ reply: reply || 'Sorry, I could not answer that. Please try asking another way.', action: out.action, usage }));
+    res.statusCode = 200; res.end(JSON.stringify({ reply: fallback(out), action: out.action, usage }));
   } catch (e) {
+    if (res.headersSent) return res.end(JSON.stringify({ error: e.message || 'Server error' }) + '\n');
     res.statusCode = e.status || 500; res.end(JSON.stringify({ error: e.message || 'Server error' }));
   }
 };

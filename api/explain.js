@@ -2,7 +2,7 @@
 // body: { title, text, question, answer: what the student answered, ask: the student's question, history: [{role, text}], lang, figure, voice: 'en' | 'yue' when it's a spoken chat }
 // returns: { reply }
 
-const { callText, voiceNote, systemBlocks, sectionBlock, questionForChecker, handler, httpError } = require('../lib/claude');
+const { callText, streamText, MODELS, TOOLS, voiceNote, systemBlocks, sectionBlock, questionForChecker, handler, httpError } = require('../lib/claude');
 
 const TUTOR = `You are now a patient tutor. A secondary-school student is stuck on the practice question below.
 - Answer what they ask, in plain words a 15-year-old understands. Build on what they wrote, and say exactly where their thinking went wrong if it did.
@@ -14,7 +14,7 @@ const TUTOR = `You are now a patient tutor. A secondary-school student is stuck 
 - If they ask about something unrelated to this subject, gently bring them back to the question.`;
 const ZH = `Reply in Traditional Chinese as used in Hong Kong (standard written Chinese, with Hong Kong subject terms). The student may write in English, Chinese or Cantonese.`;
 
-module.exports = handler(async (body, usage) => {
+module.exports = handler(async (body, usage, emit) => {
   const q = body.question;
   if (!q || typeof q !== 'object') throw httpError(400, 'No question sent.');
   const ask = String(body.ask || '').trim().slice(0, 1500);
@@ -34,6 +34,9 @@ module.exports = handler(async (body, usage) => {
   if (history.length) list.push({ role: 'user', content: ask });
   // turns must alternate
   for (let i = 1; i < list.length; i++) if (list[i].role === list[i - 1].role) throw httpError(400, 'Bad conversation.');
-  const reply = await callText({ messages: { system: systemBlocks(sectionBlock(body.title, body.text)), list }, usage, step: 'tutor', maxTokens: body.voice ? 500 : 1200 });
+  const system = systemBlocks(sectionBlock(body.title, body.text));
+  const reply = emit
+    ? (await streamText({ body: { model: MODELS.tutor, max_tokens: body.voice ? 500 : 1200, tools: TOOLS, tool_choice: { type: 'none' }, system, messages: list }, usage, onText: emit })).text
+    : await callText({ messages: { system, list }, usage, step: 'tutor', maxTokens: body.voice ? 500 : 1200 });
   return { reply: reply || 'Sorry, I could not answer that. Please try asking another way.' };
 });

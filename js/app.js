@@ -329,6 +329,38 @@ async function api(path, body) {
   await slot();
   try { return await apiOnce(path, body); } finally { release(); }
 }
+// Like api(), but the reply streams in: onChunk(words) is called as they are written. Returns the final result.
+async function apiStream(path, body, onChunk) {
+  let r;
+  try {
+    r = await fetch('/api/' + path, { method: 'POST', headers: { 'content-type': 'application/json', 'x-access-code': local.code || '' }, body: JSON.stringify({ ...body, stream: true }) });
+  } catch (e) { const err = new Error('No internet connection.'); err.status = 0; throw err; }
+  if (!r.ok || !/ndjson/.test(r.headers.get('content-type') || '') || !r.body) {
+    let data = {}; try { data = await r.json(); } catch (e) {}
+    if (data.usage) recordUsage(path, data.usage);
+    if (!r.ok) { const e = new Error(data.error || `Server error ${r.status}`); e.status = r.status; throw e; }
+    return data;
+  }
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', done = null;
+  for (;;) {
+    const { value, done: end } = await reader.read();
+    if (value) buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+      if (!line) continue;
+      let m; try { m = JSON.parse(line); } catch (e) { continue; }
+      if (m.d) onChunk(m.d);
+      else if (m.error) { const e = new Error(m.error); e.status = 502; throw e; }
+      else if (m.done) done = m;
+    }
+    if (end) break;
+  }
+  if (!done) { const e = new Error('The reply was cut off.'); e.status = 502; throw e; }
+  if (done.usage) recordUsage(path, done.usage);
+  return done;
+}
 async function apiOnce(path, body) {
   let r;
   try {
@@ -531,7 +563,7 @@ function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
   Object.assign(VC, { where, key, state: 'listening', heard: '', saying: '', lang });
   VC.ctrl = startVoice({
     lang, alive,
-    send: (text) => send(text, VC.lang),
+    send: (text, onChunk) => send(text, VC.lang, onChunk),
     onUpdate: (u) => {
       const ended = u.state === 'off' && VC.where === where;
       Object.assign(VC, { state: u.state, heard: u.heard, saying: u.saying || '', lang: u.lang });
@@ -615,14 +647,15 @@ function coachHTML() {
 function bindCoach() {
   const box = document.getElementById('coach'); if (!box) return;
   const redraw = () => { const b = document.getElementById('coach'); if (!b) return; b.innerHTML = coachHTML(); bindCoach(); const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight; };
-  const ask = async (text, chip, voice) => {
+  const ask = async (text, chip, voice, onChunk) => {
     text = String(text || '').trim(); if (!text || coach.busy) return;
     let reply = '';
     const msgs = local.coach || (local.coach = []);
     const history = msgs.slice(-10).map((m) => ({ role: m.role, text: m.text }));
     msgs.push({ role: 'user', text, chip }); coach.busy = true; coach.error = null; redraw();
     try {
-      const r = await api('coach', { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh' : 'en') : LANG, voice });
+      const req = { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh' : 'en') : LANG, voice };
+      const r = onChunk ? await apiStream('coach', req, onChunk) : await api('coach', req);
       msgs.push({ role: 'assistant', text: r.reply, voice: !!voice }); reply = r.reply;
       if (r.action) {
         // Spoken: open it once the coach has finished saying so. Typed: open it after a moment to read the line.
@@ -640,7 +673,7 @@ function bindCoach() {
   const f = document.getElementById('coachForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); ask(document.getElementById('coachQ').value); };
   const c = document.getElementById('coachClear'); if (c) c.onclick = () => { local.coach = []; coach.error = null; saveLocal(); redraw(); };
   const tk = document.getElementById('coachTalk');
-  if (tk) tk.onclick = () => startVoiceChat({ where: 'coach', lang: LANG === 'zh' ? 'yue' : 'en', send: (t, l) => ask(t, undefined, l), alive: () => !!document.getElementById('coach'), redraw, title: VL('Study coach', '溫習教練') });
+  if (tk) tk.onclick = () => startVoiceChat({ where: 'coach', lang: LANG === 'zh' ? 'yue' : 'en', send: (t, l, onChunk) => ask(t, undefined, l, onChunk), alive: () => !!document.getElementById('coach'), redraw, title: VL('Study coach', '溫習教練') });
   bindVoiceBar();
   const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight;
 }
@@ -2420,7 +2453,7 @@ function bindTutor(q) {
   const box = document.getElementById('tutor'); if (!box) return;
   const c = chatOf(), idx = S.i, sess = S;
   const redraw = () => { if (S !== sess || S.i !== idx) return; const b = document.getElementById('tutor'); if (!b) return; b.innerHTML = tutorHTML(q); bindTutor(q); };
-  const ask = async (text, chip, voice) => {
+  const ask = async (text, chip, voice, onChunk) => {
     text = String(text || '').trim(); if (!text || c.busy) return;
     let reply = '';
     const history = c.msgs.map((m) => ({ role: m.role, text: m.text }));
@@ -2430,7 +2463,8 @@ function bindTutor(q) {
       const [bookId, unitId] = qUnit(q.id);
       const chapter = await store.get(`text:${bookId}:${unitId}`, '');
       if (!chapter) throw new Error('This chapter’s text is missing on this device.');
-      const r = await api('explain', { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: studentAnswerText(q), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh-HK' : 'en') : langOf(chapter), voice });
+      const req = { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: studentAnswerText(q), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh-HK' : 'en') : langOf(chapter), voice };
+      const r = onChunk ? await apiStream('explain', req, onChunk) : await api('explain', req);
       c.msgs.push({ role: 'assistant', text: r.reply }); reply = r.reply;
       const mk = local.mistakes[q.id];
       if (mk) { mk.chat = c.msgs.slice(-12).map((x) => ({ role: x.role, text: x.text.slice(0, 2500) })); saveLocal(); }
@@ -2451,7 +2485,7 @@ function bindTutor(q) {
     const [bookId, unitId] = qUnit(q.id);
     const chapter = await store.get(`text:${bookId}:${unitId}`, '');
     const lang = (LANG === 'zh' || langOf(chapter) === 'zh-HK') ? 'yue' : 'en';
-    startVoiceChat({ where: 'tutor', key: `${q.id}#${idx}`, lang, send: (t, l) => ask(t, undefined, l), alive: () => S === sess && S.i === idx && c.open && !!document.getElementById('tutor'), redraw, title: VL('Tutor · this question', '導師 · 呢條題目') });
+    startVoiceChat({ where: 'tutor', key: `${q.id}#${idx}`, lang, send: (t, l, onChunk) => ask(t, undefined, l, onChunk), alive: () => S === sess && S.i === idx && c.open && !!document.getElementById('tutor'), redraw, title: VL('Tutor · this question', '導師 · 呢條題目') });
   };
   bindVoiceBar();
   box.querySelectorAll('[data-chip]').forEach((b) => (b.onclick = () => ask(b.textContent, b.dataset.chip)));

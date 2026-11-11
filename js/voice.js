@@ -5,8 +5,8 @@
 const SR = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 export const voiceSupported = () => !!(SR && window.speechSynthesis);
 
-const PAUSE_MS = 1300;       // quiet time after the student's last words before we treat the turn as finished
-const PAUSE_INTERIM_MS = 2200; // longer when the recogniser hasn't settled on final words yet
+const PAUSE_MS = 850;        // quiet time after the student's last words before we treat the turn as finished
+const PAUSE_INTERIM_MS = 1600; // longer when the recogniser hasn't settled on final words yet
 const IDLE_STOP_MS = 120000; // stop after 2 minutes with nobody talking, so the mic isn't left on
 
 // Speech-recognition language codes. Chrome knows Cantonese as yue-Hant-HK; Safari as zh-HK.
@@ -40,7 +40,7 @@ function looksLikeEcho(heard, speaking) {
 }
 
 // start a voice session.
-//   lang: 'en' | 'yue'      send(text) -> Promise<reply text>      onUpdate({ state, heard, error })
+//   lang: 'en' | 'yue'      send(text, onChunk) -> Promise<reply text>, calling onChunk(words) as the reply streams in      onUpdate({ state, heard, error })
 //   alive() -> false when the screen it belongs to has gone (then it stops itself)
 export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () => true }) {
   const v = { state: 'listening', heard: '', saying: '', error: '', lang, on: true };
@@ -88,7 +88,7 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
         const heardNow = (fin + mid).trim();
         const enough = /[㐀-鿿]/.test(heardNow) ? heardNow.length >= 2 : heardNow.split(/\s+/).length >= 2;
         if (!enough || looksLikeEcho(heardNow, speakingText)) return;
-        stopSpeaking(); // the student is talking over the tutor: stop and listen
+        stopSpeaking(); turn++; // the student is talking over the tutor: stop, drop the rest of that reply, listen
         v.state = 'listening';
       }
       finalText += fin; interim = mid;
@@ -115,46 +115,60 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
   }
   function listen() { if (rec) { try { rec.onend = null; rec.abort(); } catch (e) {} } rec = newRec(); try { rec.start(); } catch (e) {} }
 
+  // The reply is spoken while it is still being written: each finished sentence goes into the queue as it arrives.
+  let full = '', fed = 0, talking = false, streamDone = true, voice = null;
+  function feed(final) {
+    const rest = full.slice(fed);
+    let cut = final ? rest.length : -1;
+    if (!final) { const re = /[.!?](?=["”’)]*\s)|[。！？\n]/g; let m; while ((m = re.exec(rest))) cut = m.index + 1; }
+    if (cut <= 0) return;
+    const parts = sentences(spokenText(rest.slice(0, cut)));
+    fed += cut;
+    if (!parts.length) return;
+    queue.push(...parts); speakingText += ' ' + parts.join(' ');
+    if (v.state !== 'speaking') { v.state = 'speaking'; update(); }
+    if (!talking) next();
+  }
+  function next() {
+    if (!v.on || v.state !== 'speaking') { talking = false; return; }
+    const s = queue.shift();
+    if (!s) {
+      talking = false;
+      if (!streamDone) return; // more is still being written: feed() starts us again
+      if (afterSpeak) { const f = afterSpeak; afterSpeak = null; setTimeout(f, 250); }
+      v.state = 'listening'; v.heard = ''; v.saying = ''; speakingText = ''; lastActivity = Date.now(); update(); return;
+    }
+    talking = true;
+    const u = new SpeechSynthesisUtterance(s);
+    v.saying = s; wordAt = performance.now(); update();
+    u.onboundary = () => { wordAt = performance.now(); };
+    if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = v.lang === 'yue' ? 'zh-HK' : 'en-GB';
+    u.rate = v.lang === 'yue' ? 1 : 1.05;
+    u.onend = next; u.onerror = next;
+    speechSynthesis.speak(u);
+  }
+
   async function endOfTurn() {
     const text = v.heard.trim();
     finalText = ''; interim = '';
     if (!text || !v.on) return;
     v.state = 'thinking'; update();
     const my = ++turn;
+    stopSpeaking();
+    full = ''; fed = 0; streamDone = false; voice = pickVoice(v.lang);
     let reply = '';
-    try { reply = await send(text); } catch (e) { reply = ''; }
+    try { reply = await send(text, (chunk) => { if (v.on && my === turn) { full += chunk; feed(false); } }); } catch (e) { reply = ''; }
     if (!v.on || my !== turn) return;
     v.heard = '';
     // a reply can carry something to do once it has been said, e.g. { text, after: open a practice session }
     const say = reply && typeof reply === 'object' ? reply.text : reply;
     afterSpeak = reply && typeof reply === 'object' && typeof reply.after === 'function' ? reply.after : null;
-    if (!say) { v.state = 'listening'; update(); if (afterSpeak) { const f = afterSpeak; afterSpeak = null; f(); } return; }
-    speak(say);
+    if (say && say.length > full.length && say.startsWith(full.slice(0, fed))) full = say; // nothing (or not all) came through streaming
+    streamDone = true;
+    feed(true);
+    if (!talking && !queue.length) { v.state = 'speaking'; next(); } // nothing to say: finish the turn
   }
-
-  function speak(text) {
-    const voice = pickVoice(v.lang);
-    queue = sentences(spokenText(text));
-    speakingText = queue.join(' ');
-    v.state = 'speaking'; update();
-    const next = () => {
-      if (!v.on || v.state !== 'speaking') return;
-      const s = queue.shift();
-      if (!s) {
-        if (afterSpeak) { const f = afterSpeak; afterSpeak = null; setTimeout(f, 250); }
-        v.state = 'listening'; v.heard = ''; v.saying = ''; lastActivity = Date.now(); update(); return; }
-      const u = new SpeechSynthesisUtterance(s);
-      v.saying = s; wordAt = performance.now(); update();
-      u.onboundary = () => { wordAt = performance.now(); };
-      if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = v.lang === 'yue' ? 'zh-HK' : 'en-GB';
-      u.rate = v.lang === 'yue' ? 1 : 1.05;
-      u.onend = next; u.onerror = next;
-      speechSynthesis.speak(u);
-    };
-    speechSynthesis.cancel();
-    next();
-  }
-  function stopSpeaking() { queue = []; speakingText = ''; v.saying = ''; afterSpeak = null; try { speechSynthesis.cancel(); } catch (e) {} }
+  function stopSpeaking() { queue = []; speakingText = ''; v.saying = ''; afterSpeak = null; talking = false; try { speechSynthesis.cancel(); } catch (e) {} }
 
   function fail(msg) { v.error = msg; stop(); }
   function stop() {
