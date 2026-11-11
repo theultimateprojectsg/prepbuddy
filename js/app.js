@@ -435,44 +435,26 @@ function lastChapter(books) {
 // Only one voice chat runs at a time: on the Today coach, or the tutor on a question.
 const VC = { where: null, key: null, ctrl: null, state: 'off', heard: '', saying: '', lang: 'en', notice: null };
 const VL = (en, zh) => (LANG === 'zh' ? zh : en);
-const VSTATE = () => ({ listening: VL('Listening… just talk', '聆聽中…直接講就得'), thinking: VL('Thinking…', '諗緊…'), speaking: VL('Speaking · talk to interrupt', '講緊 · 你一開口就會停') }[VC.state] || '');
-function voiceBarHTML() {
-  return `<div class="vbar ${VC.state}" id="vbar" data-raw>
-    <span class="vorb" aria-hidden="true"><i></i>${ICON.mic}</span>
-    <div class="vtext"><b id="vstate" aria-live="polite">${VSTATE()}</b><span id="vheard">${esc(VC.heard)}</span></div>
-    <button class="vlang" id="vlang" title="${VL('Change the language you speak', '轉講嘅語言')}">${VC.lang === 'yue' ? '廣東話' : 'English'}</button>
-    <button class="vend" id="vend">${VL('End', '結束')}</button></div>`;
-}
 const voiceOn = (where, key) => VC.where === where && (key === undefined || VC.key === key);
 function voiceNoticeHTML(where) { return VC.notice && VC.notice.where === where ? `<p class="hint" style="margin:0;color:var(--text-2)" data-raw>${esc(VC.notice.text)}</p>` : ''; }
 // Full-screen voice mode: a living orb in the middle, like talking to someone. Captions are off unless asked for.
 const VSTATE_BIG = () => ({ listening: VL('Listening', '聆聽中'), thinking: VL('Thinking', '諗緊'), speaking: VL('Speaking', '講緊') }[VC.state] || '');
 const VHINT = () => ({ listening: VL('Just talk. Pause when you’re done.', '直接講，講完停一停就得。'), thinking: '', speaking: VL('Talk any time to interrupt', '你隨時開口都可以打斷') }[VC.state] || '');
-function openVoiceOverlay(title) {
-  closeVoiceOverlay();
-  const el = document.createElement('div');
-  el.className = 'vov'; el.id = 'vov'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', VL('Voice chat', '語音對話')); el.setAttribute('data-raw', '');
-  el.innerHTML = `<div class="vov-top"><span class="vov-title">${esc(title)}</span>
-      <button class="vov-cc ${local.voiceCC ? 'on' : ''}" id="vovCC" aria-pressed="${local.voiceCC ? 'true' : 'false'}" title="${VL('Show what’s being said', '顯示字幕')}">CC</button></div>
-    <div class="vov-mid"><canvas id="vovOrb" aria-hidden="true"></canvas></div>
-    <div class="vov-low">
-      <div class="vov-state" id="vovState" aria-live="polite">${VSTATE_BIG()}</div>
-      <div class="vov-hint" id="vovHint">${VHINT()}</div>
-      <div class="vov-cap" id="vovCap"></div>
-      <div class="vov-ctrls"><button class="vov-lang" id="vovLang">${VC.lang === 'yue' ? '廣東話' : 'English'}</button>
-        <button class="vov-end" id="vovEnd" aria-label="${VL('End voice chat', '結束語音對話')}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-    </div>`;
-  document.body.appendChild(el);
-  document.body.classList.add('vov-open');
-  el.querySelector('#vovEnd').onclick = () => VC.ctrl && VC.ctrl.stop();
-  el.querySelector('#vovLang').onclick = () => VC.ctrl && VC.ctrl.setLang(VC.lang === 'yue' ? 'en' : 'yue');
-  el.querySelector('#vovCC').onclick = (e) => { local.voiceCC = !local.voiceCC; saveLocal(); e.currentTarget.classList.toggle('on', local.voiceCC); e.currentTarget.setAttribute('aria-pressed', String(!!local.voiceCC)); paintVoice(); };
-  el.onkeydown = (e) => { if (e.key === 'Escape' && VC.ctrl) VC.ctrl.stop(); };
-  el.querySelector('#vovEnd').focus();
-  animateOrb(el.querySelector('#vovOrb'));
+// Voice mode lives inside the chat box: a living orb instead of the messages. Captions only if CC is on.
+function voicePanelHTML() {
+  return `<div class="vpanel" id="vov" data-state="${VC.state}" data-raw tabindex="-1">
+    <canvas id="vovOrb" aria-hidden="true"></canvas>
+    <div class="vov-state" id="vovState" aria-live="polite">${VSTATE_BIG()}</div>
+    <div class="vov-hint" id="vovHint">${VHINT()}</div>
+    <div class="vov-cap" id="vovCap"></div>
+    <div class="vov-ctrls">
+      <button class="vov-cc ${local.voiceCC ? 'on' : ''}" id="vovCC" aria-pressed="${local.voiceCC ? 'true' : 'false'}" title="${VL('Show what’s being said', '顯示字幕')}">CC</button>
+      <button class="vov-lang" id="vovLang">${VC.lang === 'yue' ? '廣東話' : 'English'}</button>
+      <button class="vov-end" id="vovEnd" aria-label="${VL('End voice chat', '結束語音對話')}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div></div>`;
 }
-function closeVoiceOverlay() { const el = document.getElementById('vov'); if (el) el.remove(); document.body.classList.remove('vov-open'); }
 function animateOrb(cv) {
+  if (!cv || cv.dataset.on) return; cv.dataset.on = '1';
   const ctx = cv.getContext('2d');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let scale = 1, amp = 0.03, hue = 0, t0 = performance.now();
@@ -531,15 +513,15 @@ function paintVoice() {
     cap.textContent = local.voiceCC ? (VC.state === 'speaking' ? VC.saying : VC.state === 'listening' ? VC.heard : '') : '';
     cap.className = `vov-cap ${VC.state === 'speaking' ? 'ai' : ''}`;
   }
-  const b = document.getElementById('vbar'); if (!b) return;
-  b.className = `vbar ${VC.state}`;
-  document.getElementById('vstate').textContent = VSTATE();
-  document.getElementById('vheard').textContent = VC.heard;
-  document.getElementById('vlang').textContent = VC.lang === 'yue' ? '廣東話' : 'English';
 }
 function bindVoiceBar() {
-  const e = document.getElementById('vend'); if (e) e.onclick = () => VC.ctrl && VC.ctrl.stop();
-  const l = document.getElementById('vlang'); if (l) l.onclick = () => VC.ctrl && VC.ctrl.setLang(VC.lang === 'yue' ? 'en' : 'yue');
+  const el = document.getElementById('vov'); if (!el) return;
+  el.querySelector('#vovEnd').onclick = () => VC.ctrl && VC.ctrl.stop();
+  el.querySelector('#vovLang').onclick = () => VC.ctrl && VC.ctrl.setLang(VC.lang === 'yue' ? 'en' : 'yue');
+  el.querySelector('#vovCC').onclick = (e) => { local.voiceCC = !local.voiceCC; saveLocal(); e.currentTarget.classList.toggle('on', local.voiceCC); e.currentTarget.setAttribute('aria-pressed', String(!!local.voiceCC)); paintVoice(); };
+  el.onkeydown = (e) => { if (e.key === 'Escape' && VC.ctrl) VC.ctrl.stop(); };
+  animateOrb(el.querySelector('#vovOrb'));
+  paintVoice();
 }
 // where: 'coach' | 'tutor'; send(text, voiceLang) -> reply text; redraw() redraws that chat.
 function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
@@ -555,13 +537,10 @@ function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
       Object.assign(VC, { state: u.state, heard: u.heard, saying: u.saying || '', lang: u.lang });
       if (!ended) return paintVoice();
       VC.where = null; VC.key = null; VC.ctrl = null;
-      closeVoiceOverlay();
       if (u.error) VC.notice = { where, text: u.error === 'idle' ? VL('Voice chat stopped after 2 minutes of quiet. Tap Talk to start again.', '靜咗兩分鐘，語音對話停咗。撳「傾偈」再開始。') : u.error };
       redraw();
     },
   });
-  openVoiceOverlay(title || '');
-  paintVoice();
   redraw();
 }
 
@@ -595,15 +574,15 @@ function coachHTML() {
   return `<div class="coach-head"><span class="coach-ic" aria-hidden="true">${ICON.chat}</span><div><b>Your study coach</b><span>Sees your scores, mistakes and reviews</span></div>
       <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
       ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk</button>`}</span></div>
-    <div class="coach-msgs" id="coachMsgs">
+    ${voiceOn('coach') ? voicePanelHTML() + (coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : '') : `<div class="coach-msgs" id="coachMsgs">
       <div class="tmsg ai">Hi${local.name ? ` ${esc(local.name)}` : ''}! Ask me how you’re doing, what to focus on, or for a study plan.</div>
       ${msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
       ${coach.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
       ${coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : ''}
       ${voiceNoticeHTML('coach')}
     </div>
-    ${voiceOn('coach') ? voiceBarHTML() : coach.busy ? '' : `<div class="tchips">${COACH_CHIPS.filter((t) => !msgs.some((m) => m.chip === t)).map((t) => `<button class="tchip" data-coach="${esc(t)}">${t}</button>`).join('')}</div>`}
-    ${voiceOn('coach') ? '' : `<form class="tform" id="coachForm"><input id="coachQ" class="tinput" placeholder="Ask about your progress…" autocomplete="off" ${coach.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${coach.busy ? 'disabled' : ''}>${ICON.send}</button></form>`}`;
+    ${coach.busy ? '' : `<div class="tchips">${COACH_CHIPS.filter((t) => !msgs.some((m) => m.chip === t)).map((t) => `<button class="tchip" data-coach="${esc(t)}">${t}</button>`).join('')}</div>`}
+    <form class="tform" id="coachForm"><input id="coachQ" class="tinput" placeholder="Ask about your progress…" autocomplete="off" ${coach.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${coach.busy ? 'disabled' : ''}>${ICON.send}</button></form>`}`;
 }
 function bindCoach() {
   const box = document.getElementById('coach'); if (!box) return;
@@ -2390,12 +2369,13 @@ function tutorHTML(q) {
   ];
   return `<div class="tchat">
     <div class="thead"><b>${ICON.chat} Ask about this question</b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}<button class="btn-sm quiet" id="tutorClose" >Close</button></span></div>
+    ${von ? voicePanelHTML() + (c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : '') : `
     ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
     ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
     ${c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : ''}
     ${voiceNoticeHTML('tutor')}
-    ${von ? voiceBarHTML() : c.busy ? '' : `<div class="tchips">${chips.filter(([k]) => !c.msgs.some((m) => m.chip === k)).map(([k, l]) => `<button class="tchip" data-chip="${k}">${l}</button>`).join('')}</div>`}
-    ${von ? '' : `<form class="tform" id="tform"><input id="tq" class="tinput" placeholder="Type your question…" autocomplete="off" ${c.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${c.busy ? 'disabled' : ''}>${ICON.send}</button></form>`}
+    ${c.busy ? '' : `<div class="tchips">${chips.filter(([k]) => !c.msgs.some((m) => m.chip === k)).map(([k, l]) => `<button class="tchip" data-chip="${k}">${l}</button>`).join('')}</div>`}
+    <form class="tform" id="tform"><input id="tq" class="tinput" placeholder="Type your question…" autocomplete="off" ${c.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${c.busy ? 'disabled' : ''}>${ICON.send}</button></form>`}
   </div>`;
 }
 function studentAnswerText(q) {
