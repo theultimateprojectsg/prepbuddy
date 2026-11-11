@@ -133,6 +133,8 @@ const EXACT = {
   'Tutor (I don’t get it)': 'AI 導師（我不明白）',
   'Notes and flashcards': '筆記及溫習卡',
   'I don’t get it': '我不明白',
+  'Talk': '傾偈',
+  'Talk it through': '講出嚟問',
   'Ask about this question': '問問這條題目',
   'Close': '關閉',
   'Why is my answer wrong?': '為甚麼我答錯了？',

@@ -1,8 +1,8 @@
 // POST /api/explain   — the "I don't get it" tutor
-// body: { title, text, question, answer: what the student answered, ask: the student's question, history: [{role, text}], lang, figure }
+// body: { title, text, question, answer: what the student answered, ask: the student's question, history: [{role, text}], lang, figure, voice: 'en' | 'yue' when it's a spoken chat }
 // returns: { reply }
 
-const { callText, systemBlocks, sectionBlock, questionForChecker, handler, httpError } = require('../lib/claude');
+const { callText, voiceNote, systemBlocks, sectionBlock, questionForChecker, handler, httpError } = require('../lib/claude');
 
 const TUTOR = `You are now a patient tutor. A secondary-school student is stuck on the practice question below.
 - Answer what they ask, in plain words a 15-year-old understands. Build on what they wrote, and say exactly where their thinking went wrong if it did.
@@ -23,7 +23,7 @@ module.exports = handler(async (body, usage) => {
     .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string' && m.text.trim())
     .map((m) => ({ role: m.role, content: m.text.slice(0, 3000) }));
   const fig = q.figure && typeof body.figure === 'string' ? [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: body.figure } }] : [];
-  const context = `${TUTOR}${body.lang === 'zh-HK' ? '\n' + ZH : ''}\n\n<question>\n${questionForChecker(q, true)}\n</question>\n` +
+  const context = `${TUTOR}${body.lang === 'zh-HK' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, true)}\n</question>\n` +
     `<explanation_shown>${String(q.explanation || '')}</explanation_shown>\n<student_answer>${String(body.answer || '(none)').slice(0, 3000)}</student_answer>`;
   // First turn carries the context; later turns are the conversation so far.
   const list = [];
@@ -34,6 +34,6 @@ module.exports = handler(async (body, usage) => {
   if (history.length) list.push({ role: 'user', content: ask });
   // turns must alternate
   for (let i = 1; i < list.length; i++) if (list[i].role === list[i - 1].role) throw httpError(400, 'Bad conversation.');
-  const reply = await callText({ messages: { system: systemBlocks(sectionBlock(body.title, body.text)), list }, usage, step: 'tutor' });
+  const reply = await callText({ messages: { system: systemBlocks(sectionBlock(body.title, body.text)), list }, usage, step: 'tutor', maxTokens: body.voice ? 500 : 1200 });
   return { reply: reply || 'Sorry, I could not answer that. Please try asking another way.' };
 });

@@ -2,6 +2,7 @@
 import * as store from './store.js';
 import { buildReport, encodeReport, headline, skillsHTML, REPORT_CSS } from './report.js';
 import { initLang, setLang, watch, LANG } from './i18n.js';
+import { startVoice, voiceSupported } from './voice.js';
 
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
@@ -104,6 +105,7 @@ const ICON = {
   pen: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg>',
   keys: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></svg>',
   chat: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.2M12 16.5h.01"/></svg>',
+  mic: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
   send: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
   notes: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>',
   cards: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="14" height="12" rx="2"/><path d="M7 7V5h12a2 2 0 0 1 2 2v10h-4"/></svg>',
@@ -429,6 +431,52 @@ function lastChapter(books) {
 }
 
 /* ---------- Today (home) ---------- */
+/* ---------- voice chat: one tap, then just talk (browser speech, free) ---------- */
+// Only one voice chat runs at a time: on the Today coach, or the tutor on a question.
+const VC = { where: null, key: null, ctrl: null, state: 'off', heard: '', lang: 'en', notice: null };
+const VL = (en, zh) => (LANG === 'zh' ? zh : en);
+const VSTATE = () => ({ listening: VL('Listening… just talk', '聆聽中…直接講就得'), thinking: VL('Thinking…', '諗緊…'), speaking: VL('Speaking · talk to interrupt', '講緊 · 你一開口就會停') }[VC.state] || '');
+function voiceBarHTML() {
+  return `<div class="vbar ${VC.state}" id="vbar" data-raw>
+    <span class="vorb" aria-hidden="true"><i></i>${ICON.mic}</span>
+    <div class="vtext"><b id="vstate" aria-live="polite">${VSTATE()}</b><span id="vheard">${esc(VC.heard)}</span></div>
+    <button class="vlang" id="vlang" title="${VL('Change the language you speak', '轉講嘅語言')}">${VC.lang === 'yue' ? '廣東話' : 'English'}</button>
+    <button class="vend" id="vend">${VL('End', '結束')}</button></div>`;
+}
+const voiceOn = (where, key) => VC.where === where && (key === undefined || VC.key === key);
+function voiceNoticeHTML(where) { return VC.notice && VC.notice.where === where ? `<p class="hint" style="margin:0;color:var(--text-2)" data-raw>${esc(VC.notice.text)}</p>` : ''; }
+function paintVoice() {
+  const b = document.getElementById('vbar'); if (!b) return;
+  b.className = `vbar ${VC.state}`;
+  document.getElementById('vstate').textContent = VSTATE();
+  document.getElementById('vheard').textContent = VC.heard;
+  document.getElementById('vlang').textContent = VC.lang === 'yue' ? '廣東話' : 'English';
+}
+function bindVoiceBar() {
+  const e = document.getElementById('vend'); if (e) e.onclick = () => VC.ctrl && VC.ctrl.stop();
+  const l = document.getElementById('vlang'); if (l) l.onclick = () => VC.ctrl && VC.ctrl.setLang(VC.lang === 'yue' ? 'en' : 'yue');
+}
+// where: 'coach' | 'tutor'; send(text, voiceLang) -> reply text; redraw() redraws that chat.
+function startVoiceChat({ where, key, lang, send, alive, redraw }) {
+  if (VC.ctrl) VC.ctrl.stop();
+  VC.notice = null;
+  if (!voiceSupported()) { VC.notice = { where, text: VL('Voice chat works in Chrome, Edge or Safari. This browser can’t listen yet, so please type instead.', '語音對話要用 Chrome、Edge 或 Safari。呢個瀏覽器聽唔到聲，請打字。') }; return redraw(); }
+  Object.assign(VC, { where, key, state: 'listening', heard: '', lang });
+  VC.ctrl = startVoice({
+    lang, alive,
+    send: (text) => send(text, VC.lang),
+    onUpdate: (u) => {
+      const ended = u.state === 'off' && VC.where === where;
+      Object.assign(VC, { state: u.state, heard: u.heard, lang: u.lang });
+      if (!ended) return paintVoice();
+      VC.where = null; VC.key = null; VC.ctrl = null;
+      if (u.error) VC.notice = { where, text: u.error === 'idle' ? VL('Voice chat stopped after 2 minutes of quiet. Tap Talk to start again.', '靜咗兩分鐘，語音對話停咗。撳「傾偈」再開始。') : u.error };
+      redraw();
+    },
+  });
+  redraw();
+}
+
 /* ---------- study coach (Today screen) ---------- */
 // A text snapshot of the student's progress, made on the device and sent with each question.
 async function coachSnapshot() {
@@ -457,36 +505,43 @@ const coach = { busy: false, error: null };
 function coachHTML() {
   const msgs = local.coach || [];
   return `<div class="coach-head"><span class="coach-ic" aria-hidden="true">${ICON.chat}</span><div><b>Your study coach</b><span>Sees your scores, mistakes and reviews</span></div>
-      ${msgs.length && !coach.busy ? '<button class="btn-sm quiet" id="coachClear" style="margin-left:auto">Clear</button>' : ''}</div>
+      <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
+      ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk</button>`}</span></div>
     <div class="coach-msgs" id="coachMsgs">
       <div class="tmsg ai">Hi${local.name ? ` ${esc(local.name)}` : ''}! Ask me how you’re doing, what to focus on, or for a study plan.</div>
       ${msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
       ${coach.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
       ${coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : ''}
+      ${voiceNoticeHTML('coach')}
     </div>
-    ${coach.busy ? '' : `<div class="tchips">${COACH_CHIPS.filter((t) => !msgs.some((m) => m.chip === t)).map((t) => `<button class="tchip" data-coach="${esc(t)}">${t}</button>`).join('')}</div>`}
-    <form class="tform" id="coachForm"><input id="coachQ" class="tinput" placeholder="Ask about your progress…" autocomplete="off" ${coach.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${coach.busy ? 'disabled' : ''}>${ICON.send}</button></form>`;
+    ${voiceOn('coach') ? voiceBarHTML() : coach.busy ? '' : `<div class="tchips">${COACH_CHIPS.filter((t) => !msgs.some((m) => m.chip === t)).map((t) => `<button class="tchip" data-coach="${esc(t)}">${t}</button>`).join('')}</div>`}
+    ${voiceOn('coach') ? '' : `<form class="tform" id="coachForm"><input id="coachQ" class="tinput" placeholder="Ask about your progress…" autocomplete="off" ${coach.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${coach.busy ? 'disabled' : ''}>${ICON.send}</button></form>`}`;
 }
 function bindCoach() {
   const box = document.getElementById('coach'); if (!box) return;
   const redraw = () => { const b = document.getElementById('coach'); if (!b) return; b.innerHTML = coachHTML(); bindCoach(); const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight; };
-  const ask = async (text, chip) => {
+  const ask = async (text, chip, voice) => {
     text = String(text || '').trim(); if (!text || coach.busy) return;
+    let reply = '';
     const msgs = local.coach || (local.coach = []);
     const history = msgs.slice(-10).map((m) => ({ role: m.role, text: m.text }));
     msgs.push({ role: 'user', text, chip }); coach.busy = true; coach.error = null; redraw();
     try {
-      const r = await api('coach', { snapshot: await coachSnapshot(), ask: text, history, lang: LANG });
-      msgs.push({ role: 'assistant', text: r.reply });
+      const r = await api('coach', { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh' : 'en') : LANG, voice });
+      msgs.push({ role: 'assistant', text: r.reply, voice: !!voice }); reply = r.reply;
     } catch (e) {
       msgs.pop();
       coach.error = e.status === 0 ? 'You seem to be offline.' : (e.message && e.status !== 500 ? e.message : 'The coach is not available right now. Try again in a moment.');
     }
     local.coach = msgs.slice(-20); saveLocal(); coach.busy = false; redraw();
+    return reply;
   };
   box.querySelectorAll('[data-coach]').forEach((b) => (b.onclick = () => ask(b.textContent, b.dataset.coach)));
   const f = document.getElementById('coachForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); ask(document.getElementById('coachQ').value); };
   const c = document.getElementById('coachClear'); if (c) c.onclick = () => { local.coach = []; coach.error = null; saveLocal(); redraw(); };
+  const tk = document.getElementById('coachTalk');
+  if (tk) tk.onclick = () => startVoiceChat({ where: 'coach', lang: LANG === 'zh' ? 'yue' : 'en', send: (t, l) => ask(t, undefined, l), alive: () => !!document.getElementById('coach'), redraw });
+  bindVoiceBar();
   const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight;
 }
 
@@ -2237,7 +2292,8 @@ function wrongAnswer(q) {
 }
 function tutorHTML(q) {
   const c = chatOf();
-  if (!c.open) return `<button class="btn ghost tutor-open" id="tutorOpen">${ICON.chat} I don’t get it</button>`;
+  const vkey = `${q.id}#${S.i}`, von = voiceOn('tutor', vkey);
+  if (!c.open) return `<div class="tutor-row"><button class="btn ghost tutor-open" id="tutorOpen">${ICON.chat} I don’t get it</button><button class="btn ghost tutor-open" id="tutorTalk">${ICON.mic} Talk it through</button></div>${voiceNoticeHTML('tutor')}`;
   const chips = [
     ...(wrongAnswer(q) ? [['why', 'Why is my answer wrong?']] : []),
     ['simple', 'Explain it more simply'],
@@ -2245,12 +2301,13 @@ function tutorHTML(q) {
     ['example', 'Give me another example'],
   ];
   return `<div class="tchat">
-    <div class="thead"><b>${ICON.chat} Ask about this question</b><button class="btn-sm quiet" id="tutorClose" >Close</button></div>
+    <div class="thead"><b>${ICON.chat} Ask about this question</b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}<button class="btn-sm quiet" id="tutorClose" >Close</button></span></div>
     ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
     ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
     ${c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : ''}
-    ${c.busy ? '' : `<div class="tchips">${chips.filter(([k]) => !c.msgs.some((m) => m.chip === k)).map(([k, l]) => `<button class="tchip" data-chip="${k}">${l}</button>`).join('')}</div>`}
-    <form class="tform" id="tform"><input id="tq" class="tinput" placeholder="Type your question…" autocomplete="off" ${c.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${c.busy ? 'disabled' : ''}>${ICON.send}</button></form>
+    ${voiceNoticeHTML('tutor')}
+    ${von ? voiceBarHTML() : c.busy ? '' : `<div class="tchips">${chips.filter(([k]) => !c.msgs.some((m) => m.chip === k)).map(([k, l]) => `<button class="tchip" data-chip="${k}">${l}</button>`).join('')}</div>`}
+    ${von ? '' : `<form class="tform" id="tform"><input id="tq" class="tinput" placeholder="Type your question…" autocomplete="off" ${c.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${c.busy ? 'disabled' : ''}>${ICON.send}</button></form>`}
   </div>`;
 }
 function studentAnswerText(q) {
@@ -2262,8 +2319,9 @@ function bindTutor(q) {
   const box = document.getElementById('tutor'); if (!box) return;
   const c = chatOf(), idx = S.i, sess = S;
   const redraw = () => { if (S !== sess || S.i !== idx) return; const b = document.getElementById('tutor'); if (!b) return; b.innerHTML = tutorHTML(q); bindTutor(q); };
-  const ask = async (text, chip) => {
+  const ask = async (text, chip, voice) => {
     text = String(text || '').trim(); if (!text || c.busy) return;
+    let reply = '';
     const history = c.msgs.map((m) => ({ role: m.role, text: m.text }));
     c.msgs.push({ role: 'user', text, chip }); c.busy = true; c.error = null; redraw();
     document.getElementById('tutor').scrollIntoView({ block: 'end', behavior: 'smooth' });
@@ -2271,8 +2329,8 @@ function bindTutor(q) {
       const [bookId, unitId] = qUnit(q.id);
       const chapter = await store.get(`text:${bookId}:${unitId}`, '');
       if (!chapter) throw new Error('This chapter’s text is missing on this device.');
-      const r = await api('explain', { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: studentAnswerText(q), ask: text, history, lang: langOf(chapter) });
-      c.msgs.push({ role: 'assistant', text: r.reply });
+      const r = await api('explain', { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: studentAnswerText(q), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh-HK' : 'en') : langOf(chapter), voice });
+      c.msgs.push({ role: 'assistant', text: r.reply }); reply = r.reply;
       const mk = local.mistakes[q.id];
       if (mk) { mk.chat = c.msgs.slice(-12).map((x) => ({ role: x.role, text: x.text.slice(0, 2500) })); saveLocal(); }
     } catch (e) {
@@ -2281,10 +2339,20 @@ function bindTutor(q) {
     }
     c.busy = false; redraw();
     const t = document.getElementById('tutor'); if (t) t.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    return reply;
   };
   const open = document.getElementById('tutorOpen');
   if (open) open.onclick = () => { c.open = true; redraw(); const i = document.getElementById('tq'); if (i && matchMedia('(hover: hover)').matches) i.focus(); };
-  const close = document.getElementById('tutorClose'); if (close) close.onclick = () => { c.open = false; redraw(); };
+  const close = document.getElementById('tutorClose'); if (close) close.onclick = () => { if (voiceOn('tutor')) VC.ctrl.stop(); c.open = false; redraw(); };
+  const talk = document.getElementById('tutorTalk');
+  if (talk) talk.onclick = async () => {
+    c.open = true;
+    const [bookId, unitId] = qUnit(q.id);
+    const chapter = await store.get(`text:${bookId}:${unitId}`, '');
+    const lang = (LANG === 'zh' || langOf(chapter) === 'zh-HK') ? 'yue' : 'en';
+    startVoiceChat({ where: 'tutor', key: `${q.id}#${idx}`, lang, send: (t, l) => ask(t, undefined, l), alive: () => S === sess && S.i === idx && c.open && !!document.getElementById('tutor'), redraw });
+  };
+  bindVoiceBar();
   box.querySelectorAll('[data-chip]').forEach((b) => (b.onclick = () => ask(b.textContent, b.dataset.chip)));
   const f = document.getElementById('tform');
   if (f) f.onsubmit = (e) => { e.preventDefault(); const i = document.getElementById('tq'); ask(i.value); };
