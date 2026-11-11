@@ -29,6 +29,13 @@ const SUBJ = {
 };
 const OTHER_COLOURS = ['#26357A', '#18966A', '#C2452D', '#6B4FB0', '#0E7C8C', '#A3661A', '#B0346A', '#3E6B2F'];
 const OTHER = (c) => `<rect x="4" y="4" width="4.5" height="16" rx="1.2" fill="${c}" fill-opacity=".2" stroke="${c}" stroke-width="2"/><rect x="10.5" y="4" width="4.5" height="16" rx="1.2" stroke="${c}" stroke-width="2"/><path d="M17 5.6l2.6-.7 2.4 14.3-2.6.7z" stroke="${c}" stroke-width="2"/>`;
+const SUBJ_ZH = { biology: '生物', chemistry: '化學', physics: '物理', maths: '數學', economics: '經濟', english: '英文', chinese: '中文', history: '歷史', geography: '地理', finance: '理財' };
+// The subject's name to show: in Chinese when the app is in Chinese and the subject is one we know.
+export function subjectName(subject, lang) {
+  if (lang !== 'zh' || !subject) return subject || '';
+  const k = subjectKey(subject);
+  return (k && SUBJ_ZH[k]) || subject;
+}
 export function subjectKey(subject) {
   const s = String(subject || '').toLowerCase();
   if (!s) return null;

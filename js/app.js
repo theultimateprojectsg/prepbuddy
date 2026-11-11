@@ -4,7 +4,8 @@ import { buildReport, encodeReport, headline, skillsHTML, REPORT_CSS } from './r
 import { initLang, setLang, watch, LANG } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
 import { logoSVG, buddySVG, buddyFace } from './buddy.js';
-import { menuIcon, subjectIcon, subjectTile, subjectColour, actionIcon, actionTile } from './icons.js';
+import { menuIcon, subjectIcon, subjectTile, subjectColour, actionIcon, actionTile, subjectName } from './icons.js';
+const subj = (s) => subjectName(s, LANG);
 
 /* ---------- settings ---------- */
 const SESSION_SIZE = 10;
@@ -296,6 +297,24 @@ async function bookMastery(book) {
   return { pct, chapters, areas };
 }
 const cleanUnitTitle = (t) => String(t).replace(/\s*\*+\s*$/, '');
+// The next-step text mixes our words with a chapter title; translate just our words.
+function trStep(t) {
+  if (LANG !== 'zh') return t;
+  const R = [
+    [/^Practise (\d+) more questions? in (.+)$/, (m, n, c) => `在「${c}」再練習 ${n} 條題目`],
+    [/^Get more questions right in (.+)$/, (m, c) => `在「${c}」答對更多題目`],
+    [/^Practise the parts of (.+) you haven’t covered yet$/, (m, c) => `練習「${c}」中未做過的部分`],
+    [/^Get an (analyse|apply) question right in (.+)$/, (m, k, c) => `在「${c}」答對一條${k === 'analyse' ? '分析' : '應用'}題`],
+    [/^Get full marks on (\d+) written questions? in (.+)$/, (m, n, c) => `在「${c}」的 ${n} 條文字題取得滿分`],
+    [/^Fix (\d+) mistakes? in (.+)$/, (m, n, c) => `改正「${c}」的 ${n} 條錯題`],
+    [/^Review (\d+) questions? in (.+)$/, (m, n, c) => `溫習「${c}」的 ${n} 條題目`],
+    [/^Come back for reviews over the next few days to prove you remember (.+)$/, (m, c) => `未來幾日回來溫習，證明你記得「${c}」`],
+    [/^Pass a chapter test on (.+) \(80% or more\)$/, (m, c) => `通過「${c}」的章節測驗（80% 或以上）`],
+    [/^Pass another chapter test on (.+) on a different day$/, (m, c) => `在另一日再通過「${c}」的章節測驗`],
+  ];
+  for (const [re, f] of R) if (re.test(t)) return t.replace(re, f);
+  return t;
+}
 function masteryLabel(p) {
   return p >= 100 ? 'Mastered' : p >= 85 ? 'Exam ready' : p >= 70 ? 'Well versed' : p >= 50 ? 'Getting there' : p >= 25 ? 'Building up' : p > 0 ? 'Just started' : 'Not started';
 }
@@ -343,7 +362,7 @@ function masteryCard(m) {
       <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. Each tap below works on your weakest spot.` : 'Practise a chapter to see how ready you are.'}</span></div></div>
     <details class="areas"><summary>How this is worked out</summary>${AREAS.map(([k, label, w]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}<small>${w}%</small></span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
       <p class="hint" style="margin:6px 0 0">A chapter can’t go above 70% until you pass a timed test on it, or reach 100% until you’ve passed two on different days.</p></details>
-    ${p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `Next: ${steps[0].text}` : `Begins with ${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
+    ${p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
   </section>`;
 }
 // "Get me closer to 100%": works on the weakest chapter's weakest area.
@@ -842,7 +861,7 @@ function subjectChips(groups, picked, total) {
 }
 const textMatch = (words, hay) => words.every((w) => hay.includes(w));
 // Subject names come from the books (not translated); the app's own group names are.
-const subjLabel = (k) => (LANG === 'zh' ? { all: '全部', Other: '其他', 'My uploads': '我上載的' }[k] : { all: 'All' }[k]) || k;
+const subjLabel = (k) => (LANG === 'zh' ? { all: '全部', Other: '其他', 'My uploads': '我上載的' }[k] : { all: 'All' }[k]) || subj(k);
 let booksPick = 'all';
 
 async function renderBooks() {
@@ -868,9 +887,9 @@ async function renderBooks() {
     : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No textbooks yet. Tap Add a textbook to find yours in the library.</p></div>`}
   </main>`;
   // Each book as a cover, in its subject's colour, with its icon and how much is mastered.
-  const cover = ({ b, n, sc }) => `<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}, ${sc}% mastered">
+  const cover = ({ b, n, sc }) => `<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}, ${sc}%">
       <span class="c-ic">${subjectIcon(b.subject, 22, '#FFFFFF', b.title)}</span>
-      <span class="c-sub" data-raw>${esc(b.subject || (b.library ? '' : 'My upload'))}</span>
+      <span class="c-sub" data-raw>${esc(b.subject ? subj(b.subject) : (b.library ? '' : (LANG === 'zh' ? '我上載的' : 'My upload')))}</span>
       <span class="c-title" data-raw>${esc(b.title)}</span>
       <span class="c-foot"><span class="c-ch">${b.units.length} chapter${b.units.length === 1 ? '' : 's'}</span><b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span></span>
     </button>`;
@@ -882,7 +901,7 @@ async function renderBooks() {
       textMatch(words, `${it.b.title} ${it.b.subject || ''} ${it.b.code || ''} ${it.b.level || ''}`.toLowerCase()));
     const groups = groupBySubject(hits, (it) => subjectOf(it.b));
     shelf.innerHTML = groups.length
-      ? groups.map(([k, xs], gi) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="covergrid">${xs.map(cover).join('')}</div></section>`).join('')
+      ? groups.map(([k, xs], gi) => `<section class="stack g10 bgroup" aria-label="${esc(subjLabel(k))}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="covergrid">${xs.map(cover).join('')}</div></section>`).join('')
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">None of your textbooks match.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Try another word, or tap Add a textbook to search the library.</p></div>`;
     shelf.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   };
@@ -997,7 +1016,7 @@ async function renderLibrary(query) {
           <div class="cover" aria-hidden="true" style="background:${subjectColour(b.subject, b.title)}1F">${subjectIcon(b.subject, 30, null, b.title)}</div>
           <div class="stack g6" style="flex:1;min-width:0">
             <b style="font-size:15px;line-height:1.35" data-raw>${esc(b.title)}</b>
-            <span class="muted" style="font-size:13px">${esc([b.subject, b.level, b.publisher].filter(Boolean).join(' · '))}</span>
+            <span class="muted" style="font-size:13px" data-raw>${esc([subj(b.subject), b.level, b.publisher].filter(Boolean).join(' · '))}</span>
             <span class="muted" style="font-size:12px">${b.units.length} chapter${b.units.length === 1 ? '' : 's'} · ${b.questionCount ? b.questionCount + ' questions ready · ' : ''}code <span style="white-space:nowrap">${esc(b.code)}</span></span>
             ${added
               ? `<button class="btn ghost small" data-open="${esc(b.id)}">${ICON.check} Added · open</button>`
@@ -1015,7 +1034,7 @@ async function renderLibrary(query) {
     const codeHit = code.length >= 4 && hits.find((b) => normCode(b.code) === code);
     const grouped = groupBySubject(hits, subjectOf);
     document.getElementById('results').innerHTML = (codeHit ? '<p class="hint" style="margin:0;font-weight:600;color:var(--good)">Book code matched</p>' : '') + (hits.length
-      ? (grouped.length > 1 ? grouped.map(([k, xs]) => `<section class="stack g10 bgroup" aria-label="${esc(k)}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2>${xs.map(card).join('')}</section>`).join('') : hits.map(card).join(''))
+      ? (grouped.length > 1 ? grouped.map(([k, xs]) => `<section class="stack g10 bgroup" aria-label="${esc(subjLabel(k))}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2>${xs.map(card).join('')}</section>`).join('') : hits.map(card).join(''))
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">No textbook matches “${esc(raw)}”.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Check the spelling or the book code and try again.</p></div>`);
     document.querySelectorAll('[data-add]').forEach((btn) => (btn.onclick = () => addFromLibrary(list.find((b) => b.id === btn.dataset.add), btn)));
     document.querySelectorAll('[data-open]').forEach((btn) => (btn.onclick = () => go({ name: 'book', bookId: 'lib-' + btn.dataset.open })));
@@ -1300,7 +1319,7 @@ async function renderBook(bookId) {
       <div class="bk-cover" style="background:${coverColour(book)}" aria-hidden="true">${subjectIcon(book.subject, 30, '#FFFFFF', book.title)}</div>
       <div class="bk-info">
         <h1 data-raw>${esc(book.title)}</h1>
-        <p data-raw>${esc([book.subject, book.level, book.library ? '' : 'Uploaded by you'].filter(Boolean).join(' · ') || ' ')}</p>
+        <p data-raw>${esc([subj(book.subject), book.level, book.library ? '' : (LANG === 'zh' ? '自行上載' : 'Uploaded by you')].filter(Boolean).join(' · ') || ' ')}</p>
         <div class="bk-stats">${stat(book.units.length, book.units.length === 1 ? 'chapter' : 'chapters')}${stat(qReady, qReady === 1 ? 'question ready' : 'questions ready')}${stat(answered, 'answered')}</div>
       </div>
     </section>`;
@@ -1554,7 +1573,7 @@ async function readyRowsHTML(limit = Infinity) {
   const books = await getBooks(), rows = [];
   for (const b of books) {
     const m = await bookMastery(b);
-    rows.push({ b, pct: m.pct, html: `<button class="mrowb" data-book="${esc(b.id)}">${subjectTile(b.subject, 36, b.title)}<span class="mt"><b data-raw>${esc(b.subject || b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : ''}">${m.pct}%</span></button>` });
+    rows.push({ b, pct: m.pct, html: `<button class="mrowb" data-book="${esc(b.id)}">${subjectTile(b.subject, 36, b.title)}<span class="mt"><b data-raw>${esc(b.subject ? subj(b.subject) : b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : ''}">${m.pct}%</span></button>` });
   }
   // On Today, the books you've made most progress in come first.
   if (limit < Infinity) rows.sort((x, y) => y.pct - x.pct);
@@ -1622,7 +1641,7 @@ function renderUsage() {
   const rows = steps.map(([k, name]) => { const r = u[k] || {}; return `<tr><th scope="row">${name}</th><td>${fmt(r.calls)}</td><td>${fmt(r.input)}</td><td>${fmt(r.cache_write)}</td><td>${fmt(r.cache_read)}</td><td>${fmt(r.output)}</td><td><b>${usd(r.usd)}</b></td></tr>`; }).join('');
   const made = u.made || 0;
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px">AI usage on this device</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Settings</span></button><span style="font-weight:600;font-size:15px">AI usage on this device</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p style="margin:0;line-height:1.5;color:var(--text-2)">Tokens used since you last reset. Reading PDFs happens on your device and uses no tokens.</p>
     <div style="overflow-x:auto"><table class="data usage">
@@ -1630,12 +1649,12 @@ function renderUsage() {
       ${rows}
       <tr><th scope="row">Total</th><td>${fmt(tot.calls)}</td><td>${fmt(tot.input)}</td><td>${fmt(tot.cache_write)}</td><td>${fmt(tot.cache_read)}</td><td>${fmt(tot.output)}</td><td><b>${usd(tot.usd)}</b></td></tr>
     </table></div>
-    <p style="margin:0;font-size:15px;line-height:1.5">Estimated cost: <b>${usd(tot.usd)}</b>${made ? ` · about ${usd((tot.usd - ['mark', 'explain', 'notes'].reduce((x, k) => x + ((u[k] || {}).usd || 0), 0)) / made)} per question made` : ''}${(u.mark || {}).requests ? ` · ${usd(u.mark.usd / u.mark.requests)} per answer marked` : ''}</p>
-    <p class="muted" style="margin:0;font-size:13px;line-height:1.5">Questions that passed checking: <b>${fmt(made)}</b>${made ? `<br>Per question: ${fmt(Math.round((tot.input + tot.cache_write) / made))} input · ${fmt(Math.round(tot.cache_read / made))} cache read · ${fmt(Math.round(tot.output / made))} output` : ''}.<br>
-    Costs are estimates from Claude's published prices; your bill on console.anthropic.com is the exact figure. Older entries made before this update have no cost recorded.</p>
+    <p style="margin:0;font-size:15px;line-height:1.5">Estimated cost: <b>${usd(tot.usd)}</b>${made ? (LANG === 'zh' ? ` · 每條題目約 ${usd((tot.usd - ['mark', 'explain', 'notes'].reduce((x, k) => x + ((u[k] || {}).usd || 0), 0)) / made)}` : ` · about ${usd((tot.usd - ['mark', 'explain', 'notes'].reduce((x, k) => x + ((u[k] || {}).usd || 0), 0)) / made)} per question made`) : ''}${(u.mark || {}).requests ? ` · ${usd(u.mark.usd / u.mark.requests)} per answer marked` : ''}</p>
+    <p class="muted" style="margin:0;font-size:13px;line-height:1.5">Questions that passed checking: <b>${fmt(made)}</b>${made ? `<br>${LANG === 'zh' ? `每條題目：輸入 ${fmt(Math.round((tot.input + tot.cache_write) / made))} · 快取讀取 ${fmt(Math.round(tot.cache_read / made))} · 輸出 ${fmt(Math.round(tot.output / made))}` : `Per question: ${fmt(Math.round((tot.input + tot.cache_write) / made))} input · ${fmt(Math.round(tot.cache_read / made))} cache read · ${fmt(Math.round(tot.output / made))} output`}` : ''}.<br>
+    <span>Costs are estimates from Claude's published prices; your bill on console.anthropic.com is the exact figure. Older entries made before this update have no cost recorded.</span></p>
     <button class="btn ghost" id="reset">Reset the counter</button>
   </main>`;
-  document.getElementById('back').onclick = () => go({ name: 'home' });
+  document.getElementById('back').onclick = () => go({ name: 'settings' });
   document.getElementById('reset').onclick = () => { local.usage = {}; saveLocal(); renderUsage(); };
 }
 
