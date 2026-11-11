@@ -2290,8 +2290,14 @@ function qSide(q) {
   const [t, d] = isExam() ? ['Exam conditions', 'Answers and marks come at the end, like the real paper.']
     : mcq ? ['Pick an answer', 'You’ll see straight away if it’s right, with the explanation here.']
     : ['Write your answer', 'When you press Mark my answer, your marks and feedback show here.'];
-  return `<aside class="qside" aria-hidden="true"><b>${t}</b><span>${d}</span>${mcq ? '<span class="qkeys"><kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> to choose · <kbd>Enter</kbd> for next</span>' : ''}</aside>`;
+  return `<aside class="qside"><b>${t}</b><span>${d}</span>${mcq ? '<span class="qkeys" aria-hidden="true"><kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> to choose · <kbd>Enter</kbd> for next</span>' : ''}${preTutorInSide(q) ? preTutorHTML(q) : ''}</aside>`;
 }
+
+// Before answering, the tutor can explain what the question means (never the answer). Not in timed tests.
+const preTutorOK = (q) => S.phase !== 'revealed' && !isExam();
+// Laptops show it in the right-hand panel next to a multiple-choice question; otherwise it sits under the question.
+const preTutorInSide = (q) => preTutorOK(q) && choiceType(q) && matchMedia('(min-width:1024px)').matches;
+const preTutorHTML = (q) => `<div class="tutor pre" id="tutor">${tutorHTML(q)}</div>`;
 
 function renderQuestion() {
   S.waiting = false;
@@ -2301,6 +2307,7 @@ function renderQuestion() {
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
     <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}</div>
     ${body.main}
+    ${preTutorOK(q) && !preTutorInSide(q) ? preTutorHTML(q) : ''}
   </main>
   ${body.footer}${/class="sheet/.test(body.footer) ? '' : qSide(q)}`;
   bindCommon(q);
@@ -2433,8 +2440,13 @@ function wrongAnswer(q) {
 function tutorHTML(q) {
   const c = chatOf();
   const vkey = `${q.id}#${S.i}`, von = voiceOn('tutor', vkey);
-  if (!c.open) return `<div class="tutor-row"><button class="btn ghost tutor-open" id="tutorOpen">${ICON.chat} I don’t get it</button><button class="btn ghost tutor-open" id="tutorTalk">${ICON.mic} Talk it through</button></div>${voiceNoticeHTML('tutor')}`;
-  const chips = [
+  const before = S.phase !== 'revealed';
+  if (!c.open) return `<div class="tutor-row"><button class="btn ghost tutor-open" id="tutorOpen">${ICON.chat} ${before ? 'Ask about it' : 'I don’t get it'}</button><button class="btn ghost tutor-open" id="tutorTalk">${ICON.mic} Talk it through</button></div>${voiceNoticeHTML('tutor')}`;
+  const chips = before ? [
+    ['mean', 'What is this question asking?'],
+    ['words', 'Explain the key words'],
+    ['hint', 'Give me a hint'],
+  ] : [
     ...(wrongAnswer(q) ? [['why', 'Why is my answer wrong?']] : []),
     ['simple', 'Explain it more simply'],
     ['steps', 'Go through it step by step'],
@@ -2470,7 +2482,8 @@ function bindTutor(q) {
       const [bookId, unitId] = qUnit(q.id);
       const chapter = await store.get(`text:${bookId}:${unitId}`, '');
       if (!chapter) throw new Error('This chapter’s text is missing on this device.');
-      const req = { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: studentAnswerText(q), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh-HK' : 'en') : langOf(chapter), voice };
+      const before = S.phase !== 'revealed';
+      const req = { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: before ? '' : studentAnswerText(q), before, ask: text, history, lang: voice ? (voice === 'yue' ? 'zh-HK' : 'en') : langOf(chapter), voice };
       const r = onChunk ? await apiStream('explain', req, onChunk) : await api('explain', req);
       c.msgs.push({ role: 'assistant', text: r.reply }); reply = r.reply;
       const mk = local.mistakes[q.id];
