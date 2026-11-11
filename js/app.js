@@ -898,7 +898,7 @@ async function renderBooks() {
     const shelf = document.getElementById('shelf'); if (!shelf) return;
     const words = (q ? q.value : '').toLowerCase().split(/\s+/).filter(Boolean);
     const hits = items.filter((it) => (booksPick === 'all' || subjectOf(it.b) === booksPick) &&
-      textMatch(words, `${it.b.title} ${it.b.subject || ''} ${it.b.code || ''} ${it.b.level || ''}`.toLowerCase()));
+      textMatch(words, `${it.b.title} ${it.b.subject || ''} ${subjectName(it.b.subject, 'zh')} ${it.b.code || ''} ${it.b.level || ''}`.toLowerCase()));
     const groups = groupBySubject(hits, (it) => subjectOf(it.b));
     shelf.innerHTML = groups.length
       ? groups.map(([k, xs], gi) => `<section class="stack g10 bgroup" aria-label="${esc(subjLabel(k))}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="covergrid">${xs.map(cover).join('')}</div></section>`).join('')
@@ -1028,7 +1028,7 @@ async function renderLibrary(query) {
     const hits = list.filter((b) => {
       if (code && normCode(b.code) === code) return true;
       if (pickSubj !== 'all' && subjectOf(b) !== pickSubj) return false;
-      const hay = `${b.title} ${b.subject} ${b.level} ${b.publisher} ${b.code}`.toLowerCase();
+      const hay = `${b.title} ${b.subject} ${subjectName(b.subject, 'zh')} ${b.level} ${b.publisher} ${b.code}`.toLowerCase();
       return words.every((w) => hay.includes(w));
     });
     const codeHit = code.length >= 4 && hits.find((b) => normCode(b.code) === code);
@@ -1551,8 +1551,8 @@ function cardsDone() {
 async function currentReport() {
   const books = await getBooks();
   const practised = new Set(local.log.filter((e) => e.t >= Date.now() - 7 * DAY).map((e) => e.q.split(':')[0]));
-  const names = books.filter((b) => practised.has(b.id)).map((b) => b.subject || b.title);
-  const ms = []; for (const b of books) { const m = await bookMastery(b); if (m.chapters.some((c) => c.done)) ms.push([b.subject || b.title, m.pct]); }
+  const names = books.filter((b) => practised.has(b.id)).map((b) => (b.subject ? subj(b.subject) : b.title));
+  const ms = []; for (const b of books) { const m = await bookMastery(b); if (m.chapters.some((c) => c.done)) ms.push([b.subject ? subj(b.subject) : b.title, m.pct]); }
   return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms });
 }
 
@@ -1931,7 +1931,7 @@ async function renderWorksheets() {
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px">Printed worksheets</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Pick the worksheet you did. Check the code at the bottom of the page. Enter what you wrote on paper, and PrepBuddy marks it.</p>
-    ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:13px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:13px"><span data-raw>${esc(b.subject || b.title)}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
+    ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:13px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:13px"><span data-raw>${esc((b.subject ? subj(b.subject) : b.title))}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
       <div style="display:flex;gap:14px;margin-top:8px"><button class="btn-sm" data-ws="${ws.code}">${ws.score ? 'Mark again' : 'Enter answers'}</button><button class="btn-sm quiet" data-reprint="${ws.code}">Print again</button></div></div>`; }).join('')}</div>`
       : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.</p></div>'}
   </main>`;
@@ -2135,7 +2135,7 @@ async function renderMistakes(tab) {
   const inBook = ([id]) => only === 'all' || id.startsWith(only + ':');
   const groups = (await mistakeItems(tab === 'done')).filter((g) => only === 'all' || g.book.id === only);
   const todo = entries.filter((e) => inBook(e) && !e[1].done).length, done = entries.filter((e) => inBook(e) && e[1].done).length;
-  const chips = bookIds.length >= 2 ? `<div class="bookchips" role="tablist" aria-label="Textbook">${[['all', LANG === 'zh' ? '全部' : 'All'], ...bookIds.map((id) => { const b = books.find((x) => x.id === id); const same = bookIds.filter((x) => { const o = books.find((y) => y.id === x); return (o.subject || o.title) === (b.subject || b.title); }).length > 1; return [id, same ? b.title : (b.subject || b.title)]; })]
+  const chips = bookIds.length >= 2 ? `<div class="bookchips" role="tablist" aria-label="Textbook">${[['all', LANG === 'zh' ? '全部' : 'All'], ...bookIds.map((id) => { const b = books.find((x) => x.id === id); const same = bookIds.filter((x) => { const o = books.find((y) => y.id === x); return (o.subject || o.title) === (b.subject || b.title); }).length > 1; return [id, same ? b.title : (b.subject ? subj(b.subject) : b.title)]; })]
     .map(([id, name]) => { const n = entries.filter(([q, m]) => !m.done && (id === 'all' || q.startsWith(id + ':'))).length; return `<button role="tab" class="${only === id ? 'on' : ''}" data-mkbook="${esc(id)}"><span ${id === 'all' ? '' : 'data-raw'}>${esc(name)}</span>${n ? ` <b>${n}</b>` : ''}</button>`; }).join('')}</div>` : '';
   const all = groups.flatMap((g) => g.items.map((x) => x.q));
   $app.innerHTML = `
@@ -2144,7 +2144,7 @@ async function renderMistakes(tab) {
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Every question you didn’t get fully right is kept here. Get it right again and it moves to Mastered.</p>
     ${chips}
     <div class="seg" style="grid-template-columns:1fr 1fr" role="tablist"><button role="tab" class="${tab === 'todo' ? 'on' : ''}" data-tab="todo">To get right (${todo})</button><button role="tab" class="${tab === 'done' ? 'on' : ''}" data-tab="done">Mastered (${done})</button></div>
-    ${groups.length ? groups.map((g, gi) => `<section class="stack g10"><div class="mhead"><span><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><br><span class="muted" style="font-size:12.5px" data-raw>${esc(g.book.subject || g.book.title)}</span></span>${tab === 'todo' ? `<button class="btn-sm" data-redo="${gi}" style="white-space:nowrap">Redo these ${g.items.length}</button>` : ''}</div>
+    ${groups.length ? groups.map((g, gi) => `<section class="stack g10"><div class="mhead"><span><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><br><span class="muted" style="font-size:12.5px" data-raw>${esc(g.book.subject ? subj(g.book.subject) : g.book.title)}</span></span>${tab === 'todo' ? `<button class="btn-sm" data-redo="${gi}" style="white-space:nowrap">Redo these ${g.items.length}</button>` : ''}</div>
       ${g.items.map((x) => mistakeCard(x.q, x.m)).join('')}</section>`).join('')
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">${tab === 'todo' ? 'Nothing here. Questions you get wrong will appear here automatically.' : 'Questions you get right after missing them will appear here.'}</p></div>`}
   </main>
@@ -2153,7 +2153,7 @@ async function renderMistakes(tab) {
   $app.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab: b.dataset.tab })));
   $app.querySelectorAll('[data-mkbook]').forEach((b) => (b.onclick = () => { local.mkBook = b.dataset.mkbook; saveLocal(); renderMistakes(tab); }));
   const start = (qs, title) => { S = newSession({ mode: 'mistakes', title, qs: shuffle(qs).slice(0, 30).map(shuffleOptions), target: Math.min(qs.length, 30) }); renderQuestion(); };
-  const bookName = only === 'all' ? '' : ` · ${(books.find((b) => b.id === only) || {}).subject || ''}`;
+  const bookName = only === 'all' ? '' : ` · ${subj((books.find((b) => b.id === only) || {}).subject || '')}`;
   const ra = document.getElementById('redoall'); if (ra) ra.onclick = () => start(all, (LANG === 'zh' ? '錯題簿' : 'Mistake book') + bookName);
   $app.querySelectorAll('[data-redo]').forEach((b) => (b.onclick = () => { const g = groups[+b.dataset.redo]; start(g.items.map((x) => x.q), g.unit ? g.unit.title : 'Mistake book'); }));
   $app.querySelectorAll('[data-dismiss]').forEach((b) => (b.onclick = () => { const m = local.mistakes[b.dataset.dismiss]; if (m) { m.done = true; m.doneAt = Date.now(); m.manual = true; saveLocal(); } const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }));
@@ -2220,7 +2220,7 @@ async function startReview(mode, bookId = null) {
     if (tried.length < 3) return toast('Answer a few questions first, so PrepBuddy knows your weak spots.');
     pick = shuffle(tried).sort((a, b) => local.stats[a.q.id].last - local.stats[b.q.id].last).slice(0, SESSION_SIZE).map((x) => shuffleOptions(x.q));
     const book = bookId && items[0] && items[0].book;
-    S = newSession({ mode: 'weak', title: book ? `Weak topics · ${book.subject || book.title}` : 'Weak topics', qs: pick, target: pick.length });
+    S = newSession({ mode: 'weak', title: book ? `${LANG === 'zh' ? '弱項' : 'Weak topics'} · ${book.subject ? subj(book.subject) : book.title}` : (LANG === 'zh' ? '弱項' : 'Weak topics'), qs: pick, target: pick.length });
   } else {
     pick = shuffle(items).slice(0, 12).map((x) => x.q).sort((a, b) => a.level - b.level);
     S = newSession({ mode: 'mock', title: 'Mini mock', qs: pick, target: pick.length, deadline: Date.now() + 20 * 60 * 1000 });
