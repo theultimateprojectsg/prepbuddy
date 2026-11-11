@@ -285,13 +285,23 @@ async function bookMastery(book) {
   const areas = Object.fromEntries(AREAS.map(([k]) => [k, chapters.reduce((t, c) => t + c.score[k] * c.weight, 0) / w]));
   return { pct, chapters, areas };
 }
+const cleanUnitTitle = (t) => String(t).replace(/\s*\*+\s*$/, '');
 function masteryLabel(p) {
   return p >= 100 ? 'Mastered' : p >= 85 ? 'Exam ready' : p >= 70 ? 'Well versed' : p >= 50 ? 'Getting there' : p >= 25 ? 'Building up' : p > 0 ? 'Just started' : 'Not started';
+}
+// Summaries, key terms, glossaries and end-of-chapter question lists aren't worth suggesting as practice.
+const NOT_TEACHING = /^\s*(chapter\s+\d*\s*)?(chapter summary|summary|key terms|key concepts and summary|glossary|review questions|critical thinking questions|visual connection questions|test prep( for ap® courses)?|science practice challenge questions|index|references|answer key|answers|further reading|bibliography)\s*[*:.]*\s*$|^\s*(總結|詞彙|詞彙表|練習|答案|重點)\s*$/i;
+// The chapter "Get me closer to 100%" works on: the weakest one that's worth practising.
+function weakestChapter(m) {
+  const left = m.chapters.filter((c) => c.pct < 100);
+  const real = left.filter((c) => !NOT_TEACHING.test(String(c.unit.title)));
+  return (real.length ? real : left).sort((a, b) => a.pct - b.pct)[0] || null;
 }
 // The next things to do, from the weakest areas of the weakest chapters.
 function masterySteps(m) {
   const steps = [];
-  const weak = m.chapters.filter((c) => c.pct < 100).sort((a, b) => a.pct - b.pct);
+  const left = m.chapters.filter((c) => c.pct < 100), real = left.filter((c) => !NOT_TEACHING.test(String(c.unit.title)));
+  const weak = (real.length ? real : left).sort((a, b) => a.pct - b.pct);
   for (const c of weak) {
     if (steps.length >= 3) break;
     const t = c.unit.title;
@@ -314,21 +324,22 @@ function masterySteps(m) {
   return steps;
 }
 function masteryCard(m) {
-  const steps = masterySteps(m);
+  // Only the next step: it's what the button does, so it's written on the button.
+  const w = weakestChapter(m);
+  const steps = w ? masterySteps({ ...m, chapters: [w] }) : [];
   const p = m.pct;
   return `<section class="mastery" aria-label="Mastery">
     <div class="m-top"><div class="ring ${p >= 85 ? 'good' : p >= 50 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% mastered"><span>${p}%</span></div>
-      <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. Here’s what will get you there:` : 'Practise a chapter to see how ready you are.'}</span></div></div>
+      <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. Each tap below works on your weakest spot.` : 'Practise a chapter to see how ready you are.'}</span></div></div>
     <details class="areas"><summary>How this is worked out</summary>${AREAS.map(([k, label, w]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}<small>${w}%</small></span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
       <p class="hint" style="margin:6px 0 0">A chapter can’t go above 70% until you pass a timed test on it, or reach 100% until you’ve passed two on different days.</p></details>
-    ${steps.length ? `<ul class="m-steps">${steps.map((x) => `<li><button class="mstep" data-step-unit="${esc(x.unit.id)}" data-step-kind="${x.kind}">${esc(x.text)}</button></li>`).join('')}</ul>` : ''}
-    ${p < 100 ? `<button class="btn" id="boost">${ICON.target} Get me closer to 100%</button>` : ''}
+    ${p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `Next: ${steps[0].text}` : `Begins with ${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
   </section>`;
 }
 // "Get me closer to 100%": works on the weakest chapter's weakest area.
 async function boostSession(book) {
   const m = await bookMastery(book);
-  const c = m.chapters.filter((x) => x.pct < 100).sort((a, b) => a.pct - b.pct)[0];
+  const c = weakestChapter(m);
   if (!c) return toast('Every chapter is at 100%. Keep up your reviews!');
   const step = masterySteps({ ...m, chapters: [c] })[0];
   if (step && step.kind === 'test') return startChapterTest(book, [c.unit]);
