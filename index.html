@@ -243,6 +243,26 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .bookcover{position:relative}.bookcover .c-ic{position:absolute;top:10px;right:10px;display:flex;opacity:.95}
 .bookcover .c-sub{padding-right:24px}
 .fchip svg{flex:none;margin-left:-4px}
+.bk-head{display:flex;gap:18px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px}
+.bk-cover{flex:none;width:72px;height:94px;border-radius:6px 12px 12px 6px;display:flex;align-items:flex-start;justify-content:flex-end;padding:10px;box-sizing:border-box;box-shadow:inset 6px 0 0 rgba(0,0,0,.14)}
+.bk-info{min-width:0;display:flex;flex-direction:column;gap:2px}
+.bk-info h1{margin:0;font-size:22px;line-height:1.25}
+.bk-info p{margin:0;font-size:14px;color:var(--text-2)}
+.bk-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.bk-stats span{background:#F4F6FA;border-radius:999px;padding:5px 12px;font-size:13px;color:var(--text-2)}.bk-stats b{color:var(--ink)}
+.gbody.flat.few{display:flex;flex-direction:column}
+.crow.rich{padding:14px 16px;min-height:76px;align-items:center}
+.crow.rich .cbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.crow.rich .ct{font-size:16px;font-weight:600}
+.crow.rich .cmeta{font-size:12.5px;color:var(--muted)}
+.crow.rich .cbar{display:block;height:6px;max-width:360px;background:#EEF1F6;border-radius:999px;overflow:hidden;margin-top:6px}
+.crow.rich .cbar i{display:block;height:100%;border-radius:999px}
+.crow.rich .cp{display:flex;flex-direction:column;align-items:flex-end;font-size:18px}.crow.rich .cp small{font-size:11px;font-weight:500;color:var(--muted)}
+@media (min-width:1024px){.gbody.flat.few{display:flex}.gbody.flat.few .crow{border-right:none}}
+.gbody .crow:only-child{grid-column:1/-1;border-right:none}
+.bk-head-m{order:-2}.bk-head-d{display:none}
+@media (min-width:1024px){.bk-head-m{display:none}.bk-head-d{display:block}}
+@media (max-width:600px){.bk-head{padding:14px;gap:14px}.bk-cover{width:52px;height:68px;padding:7px}.bk-cover svg{width:22px;height:22px}.bk-info h1{font-size:18px}.bk-stats{gap:6px;margin-top:8px}.bk-stats span{padding:4px 10px;font-size:12px}}
 /* voice chat: the orb panel inside the coach / tutor chat box */
 .vtalk{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;line-height:1;padding:8px 14px;min-height:36px;cursor:pointer}.vtalk svg{width:16px;height:16px}
 .tutor-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tutor-row .btn{display:flex;align-items:center;justify-content:center}

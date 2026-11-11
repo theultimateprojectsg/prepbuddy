@@ -1172,7 +1172,7 @@ let pick = { bookId: null, ids: new Set() }; // chapters ticked on the book scre
 async function renderBook(bookId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   if (!book) return go({ name: 'home' });
-  if (pick.bookId !== bookId) pick = { bookId, ids: new Set(), open: new Set() };
+  if (pick.bookId !== bookId) pick = { bookId, ids: new Set(book.units.length === 1 ? [book.units[0].id] : []), open: new Set() };
   if (!book.kind) {
     const books = await store.get('books', []); const b = books.find((x) => x.id === bookId);
     const sample = book.units[0] ? await store.get(`text:${bookId}:${book.units[0].id}`, '') : '';
@@ -1198,7 +1198,22 @@ async function renderBook(bookId) {
   }
   const cleanTitle = (t) => String(t).replace(/\s*\*+\s*$/, '');
   const pctColour = (sc) => (sc < 60 ? 'var(--miss)' : sc < 80 ? 'var(--accent)' : 'var(--good)');
+  // A book with only a few chapters gets bigger chapter cards, one per line, with progress.
+  const few = book.units.length <= 8;
+  const richRow = (u) => {
+    const c = bmByUnit[u.id] || { pct: 0, done: 0 };
+    const on = pick.ids.has(u.id);
+    const pages = u.startPage ? (u.endPage && u.endPage !== u.startPage ? `pp. ${u.startPage}–${u.endPage}` : `p. ${u.startPage}`) : '';
+    return `<button class="crow rich ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}" data-name="${esc(String(u.title).toLowerCase())}">
+      <span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span>
+      <span class="cbody"><span class="ct" data-raw>${esc(cleanTitle(u.title))}</span>
+        <span class="cmeta">${[pages, c.done ? `${c.done} question${c.done === 1 ? '' : 's'} answered` : 'Not started yet'].filter(Boolean).join(' · ')}</span>
+        <span class="cbar" aria-hidden="true"><i style="width:${c.pct}%;background:${pctColour(c.pct)}"></i></span></span>
+      <span class="cp" style="color:${c.done ? pctColour(c.pct) : 'var(--muted-2)'}">${c.pct}%<small>mastery</small></span>
+    </button>`;
+  };
   const row = (u) => {
+    if (few) return richRow(u);
     const c = bmByUnit[u.id] || { pct: 0, done: 0 };
     const on = pick.ids.has(u.id);
     const sh = levelShift(book.id, u.id);
@@ -1219,20 +1234,33 @@ async function renderBook(bookId) {
       return `<section class="cgroup ${open ? 'open' : ''}" data-g="${esc(g.name)}">
         <div class="ghead">
           <button class="gpick box ${nOn === ids.length ? 'on' : ''}" data-gpick="${esc(g.name)}" aria-label="Tick all of ${esc(g.name)}">${nOn === ids.length ? ICON.check : nOn ? '<i class="partial"></i>' : ''}</button>
-          <button class="gtoggle" data-gtoggle="${esc(g.name)}" aria-expanded="${open}"><b data-raw>${esc(g.name)}</b><span class="gmeta">${g.units.length} sections${nOn ? ` · ${nOn} ticked` : ''}</span>${done ? `<span class="cp" style="color:${pctColour(gp)}">${gp}%</span>` : ''}<span class="chev" aria-hidden="true">${ICON.back}</span></button>
+          <button class="gtoggle" data-gtoggle="${esc(g.name)}" aria-expanded="${open}"><b data-raw>${esc(g.name)}</b><span class="gmeta">${g.units.length} section${g.units.length === 1 ? '' : 's'}${nOn ? ` · ${nOn} ticked` : ''}</span>${done ? `<span class="cp" style="color:${pctColour(gp)}">${gp}%</span>` : ''}<span class="chev" aria-hidden="true">${ICON.back}</span></button>
         </div>
         ${open ? `<div class="gbody">${g.units.map(row).join('')}</div>` : ''}
       </section>`;
     }).join('')
-    : `<div class="gbody flat">${book.units.map(row).join('')}</div>`;
+    : `<div class="gbody flat ${few ? 'few' : ''}">${book.units.map(row).join('')}</div>`;
   const n = pick.ids.size;
   const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
+  const { n: qReady } = await bookSummary(book);
+  const answered = bm.chapters.reduce((x, c) => x + (c.done || 0), 0);
+  const stat = (v, label) => `<span><b>${v}</b> ${label}</span>`;
+  const head = `<section class="bk-head">
+      <div class="bk-cover" style="background:${coverColour(book)}" aria-hidden="true">${subjectIcon(book.subject, 30, '#FFFFFF', book.title)}</div>
+      <div class="bk-info">
+        <h1 data-raw>${esc(book.title)}</h1>
+        <p data-raw>${esc([book.subject, book.level, book.library ? '' : 'Uploaded by you'].filter(Boolean).join(' · ') || ' ')}</p>
+        <div class="bk-stats">${stat(book.units.length, book.units.length === 1 ? 'chapter' : 'chapters')}${stat(qReady, qReady === 1 ? 'question ready' : 'questions ready')}${stat(answered, 'answered')}</div>
+      </div>
+    </section>`;
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-raw>${esc(book.title)}</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button></div>
   <div class="bookpage">
+  <div class="bk-head-m">${head}</div>
   <main class="bk-main stack g14">
+    <div class="bk-head-d">${head}</div>
     <div class="chtools">
-      <p style="margin:0;font-size:15px;font-weight:600">1. Choose chapters <span class="muted" style="font-weight:500">(${book.units.length})</span></p>
+      <p style="margin:0;font-size:15px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
       ${book.units.length > 1 ? `<button class="btn-sm" id="all" >${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
       ${book.units.length > 12 ? `<label class="chsearch"><span aria-hidden="true">${ICON.search}</span><input id="chsearch" type="search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>` : ''}
     </div>
