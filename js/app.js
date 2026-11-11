@@ -801,12 +801,10 @@ async function renderHome() {
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
-    <section class="card stack g14 today-week" aria-label="Your week">
-      <div class="sect-head"><h2>Your week</h2><button class="btn-sm" id="progress">See progress</button></div>
-      <span class="display" style="font-size:22px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span>
-      ${weekHTML(r)}
-      ${ready.n ? `<div class="stack g6 tw-ready"><b style="font-size:15px">How ready you are</b>${ready.html}${ready.more ? `<button class="btn-sm quiet" id="moreready" style="align-self:flex-start">See all ${ready.n} books</button>` : ''}</div>` : ''}
-    </section>
+    ${ready.n ? `<section class="card stack g6 today-week" aria-label="How ready you are">
+      <div class="sect-head"><h2>How ready you are</h2><button class="btn-sm" id="progress">See progress</button></div>
+      ${ready.html}${ready.more ? `<button class="btn-sm quiet" id="moreready" style="align-self:flex-start;margin-top:4px">See all ${ready.n} books</button>` : ''}
+    </section>` : ''}
   </main>
   <aside class="coach" id="coach" aria-label="Study coach">${coachHTML()}</aside>${footerHTML()}`;
   bindHomeCommon();
