@@ -546,26 +546,54 @@ function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
 
 /* ---------- study coach (Today screen) ---------- */
 // A text snapshot of the student's progress, made on the device and sent with each question.
+// Codes like B1 / B1.C3 let the coach say which book or chapter to open; coachIndex turns them back into ids.
+let coachIndex = {};
 async function coachSnapshot() {
   const books = await getBooks(); const r = await currentReport();
+  coachIndex = {};
   const pc = (x) => Math.round(100 * x);
   const lines = [`Today: ${new Date().toDateString()}. Student name: ${local.name || '(not given)'}.`,
     `Last 7 days: practised on ${r.dp} of 7 days, ${r.q} questions answered, ${r.a === null ? 'no score yet' : r.a + '% of marks'}${r.pa !== null && r.a !== null ? ` (previous week ${r.pa}%)` : ''}.`,
     `Thinking skills, last 30 days (% of marks, answers): ${['Recall', 'Understand', 'Apply', 'Analyse/evaluate'].map((n, i) => `${n} ${r.sk[i][1] ? r.sk[i][0] + '%' : '-'} (${r.sk[i][1]})`).join(', ')}.`,
     `Mistake book: ${mistakeCount()} questions still to get right. Reviews due now: ${(await dueItems()).length}.`];
-  for (const b of books) {
+  for (const [bi, b] of books.entries()) {
     const m = await bookMastery(b);
-    lines.push('', `BOOK: ${b.title}${b.subject ? ` (${b.subject})` : ''} — mastery ${m.pct}% (${masteryLabel(m.pct)}). Areas: ${AREAS.map(([k, label]) => `${label} ${pc(m.areas[k])}%`).join(', ')}.`);
+    const bc = `B${bi + 1}`; coachIndex[bc] = { bookId: b.id };
+    const code = (u) => { const cc = `${bc}.C${b.units.indexOf(u) + 1}`; coachIndex[cc] = { bookId: b.id, unitId: u.id }; return cc; };
+    lines.push('', `BOOK [${bc}]: ${b.title}${b.subject ? ` (${b.subject})` : ''} — mastery ${m.pct}% (${masteryLabel(m.pct)}). Areas: ${AREAS.map(([k, label]) => `${label} ${pc(m.areas[k])}%`).join(', ')}.`);
     const started = m.chapters.filter((c) => c.done || c.tests);
     for (const c of started.slice(0, 40)) {
       const acc = c.done ? pc(c.score.accurate / Math.max(0.01, Math.min(1, c.done / c.target))) : 0;
-      lines.push(`- ${c.unit.title}: mastery ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}.`);
+      lines.push(`- [${code(c.unit)}] ${c.unit.title}: mastery ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}.`);
     }
-    const fresh = m.chapters.filter((c) => !c.done && !c.tests).map((c) => c.unit.title);
-    if (fresh.length) lines.push(`- Not started yet (${fresh.length}): ${fresh.slice(0, 25).join('; ')}${fresh.length > 25 ? '; …' : ''}`);
+    const fresh = m.chapters.filter((c) => !c.done && !c.tests).map((c) => `[${code(c.unit)}] ${c.unit.title}`);
+    if (fresh.length) lines.push(`- Not started yet (${fresh.length}): ${fresh.slice(0, 40).join('; ')}${fresh.length > 40 ? '; …' : ''}`);
   }
   if (!books.length) lines.push('', 'No textbooks added yet.');
   return lines.join('\n');
+}
+// Carry out what the coach decided to open (it only does this after the student agrees, or asks).
+async function runCoachAction(a) {
+  if (!a || !a.action) return;
+  const books = await getBooks();
+  const chs = (Array.isArray(a.chapters) ? a.chapters : []).map((c) => coachIndex[String(c).trim()]).filter((x) => x && x.unitId);
+  const bookId = (chs[0] && chs[0].bookId) || (coachIndex[String(a.book || '').trim()] || {}).bookId || (books.length === 1 ? books[0].id : null);
+  const book = books.find((b) => b.id === bookId);
+  const units = book ? book.units.filter((u) => chs.some((c) => c.bookId === book.id && c.unitId === u.id)) : [];
+  if (book && units.length) pick = { bookId: book.id, ids: new Set(units.map((u) => u.id)) };
+  switch (a.action) {
+    case 'practise': if (book && units.length) return startUnits(book, units, Math.min(30, Math.max(5, Number(a.count) || SESSION_SIZE))); break;
+    case 'chapter_test': if (book && units.length) return startChapterTest(book, units); break;
+    case 'review': return startReview('spaced');
+    case 'mistakes': return go({ name: 'mistakes' });
+    case 'weak_topics': return book ? startReview('weak', book.id) : go({ name: 'pick', mode: 'weak' });
+    case 'mock_paper': return book ? go({ name: 'paper', bookId: book.id, from: 'home' }) : go({ name: 'pick', mode: 'mock' });
+    case 'notes': if (book) return go({ name: 'notes', bookId: book.id }); break;
+    case 'flashcards': if (book) return go({ name: 'cards', bookId: book.id }); break;
+    case 'book': if (book) return go({ name: 'book', bookId: book.id }); break;
+    case 'progress': return go({ name: 'progress' });
+  }
+  if (book) return go({ name: 'book', bookId: book.id }); // couldn't tell exactly what: open the book's chapter page
 }
 const COACH_CHIPS = ['How am I doing?', 'What should I work on this week?', 'Which chapter is my weakest?', 'Make me a plan for today'];
 const coach = { busy: false, error: null };
@@ -596,6 +624,11 @@ function bindCoach() {
     try {
       const r = await api('coach', { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh' : 'en') : LANG, voice });
       msgs.push({ role: 'assistant', text: r.reply, voice: !!voice }); reply = r.reply;
+      if (r.action) {
+        // Spoken: open it once the coach has finished saying so. Typed: open it after a moment to read the line.
+        if (voice) reply = { text: r.reply, after: () => runCoachAction(r.action) };
+        else setTimeout(() => { if (document.getElementById('coach')) runCoachAction(r.action); }, 900);
+      }
     } catch (e) {
       msgs.pop();
       coach.error = e.status === 0 ? 'You seem to be offline.' : (e.message && e.status !== 500 ? e.message : 'The coach is not available right now. Try again in a moment.');

@@ -44,7 +44,7 @@ function looksLikeEcho(heard, speaking) {
 //   alive() -> false when the screen it belongs to has gone (then it stops itself)
 export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () => true }) {
   const v = { state: 'listening', heard: '', saying: '', error: '', lang, on: true };
-  let netErrors = 0, rec = null, recLangIdx = 0, finalText = '', interim = '', timer = null, speakingText = '', queue = [], lastActivity = Date.now(), turn = 0;
+  let afterSpeak = null, netErrors = 0, rec = null, recLangIdx = 0, finalText = '', interim = '', timer = null, speakingText = '', queue = [], lastActivity = Date.now(), turn = 0;
   const update = () => onUpdate({ state: v.state, heard: v.heard, saying: v.saying, error: v.error, lang: v.lang });
 
   // Loudness of the student's voice (0-1), so the orb can react to it. Skipped on iPhone/iPad, where a second
@@ -125,8 +125,11 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
     try { reply = await send(text); } catch (e) { reply = ''; }
     if (!v.on || my !== turn) return;
     v.heard = '';
-    if (!reply) { v.state = 'listening'; update(); return; }
-    speak(reply);
+    // a reply can carry something to do once it has been said, e.g. { text, after: open a practice session }
+    const say = reply && typeof reply === 'object' ? reply.text : reply;
+    afterSpeak = reply && typeof reply === 'object' && typeof reply.after === 'function' ? reply.after : null;
+    if (!say) { v.state = 'listening'; update(); if (afterSpeak) { const f = afterSpeak; afterSpeak = null; f(); } return; }
+    speak(say);
   }
 
   function speak(text) {
@@ -137,7 +140,9 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
     const next = () => {
       if (!v.on || v.state !== 'speaking') return;
       const s = queue.shift();
-      if (!s) { v.state = 'listening'; v.heard = ''; v.saying = ''; lastActivity = Date.now(); update(); return; }
+      if (!s) {
+        if (afterSpeak) { const f = afterSpeak; afterSpeak = null; setTimeout(f, 250); }
+        v.state = 'listening'; v.heard = ''; v.saying = ''; lastActivity = Date.now(); update(); return; }
       const u = new SpeechSynthesisUtterance(s);
       v.saying = s; wordAt = performance.now(); update();
       u.onboundary = () => { wordAt = performance.now(); };
@@ -149,7 +154,7 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
     speechSynthesis.cancel();
     next();
   }
-  function stopSpeaking() { queue = []; speakingText = ''; v.saying = ''; try { speechSynthesis.cancel(); } catch (e) {} }
+  function stopSpeaking() { queue = []; speakingText = ''; v.saying = ''; afterSpeak = null; try { speechSynthesis.cancel(); } catch (e) {} }
 
   function fail(msg) { v.error = msg; stop(); }
   function stop() {
