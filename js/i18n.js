@@ -596,7 +596,7 @@ export function tr(text) {
 
 const ATTRS = ['placeholder', 'aria-label', 'title'];
 // Book content and questions: never translate.
-const RAW = '[data-raw], .point > span:last-child, .marker, .fml, .terms, .stem, p.q, .pstem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
+const RAW = '.stemblock, [data-raw], .point > span:last-child, .marker, .fml, .terms, .stem, p.q, .pstem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
 const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(RAW)); };
 export function translateTree(root) {
   if (LANG !== 'zh' || !root) return;

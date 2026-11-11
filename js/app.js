@@ -170,8 +170,71 @@ function saveOpenAnswer() {
 const inSession = () => document.getElementById('quit');
 function toast(msg) { document.querySelectorAll('.toast').forEach((x) => x.remove()); const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
 
+// Long questions are laid out so they're easy to read: the scenario in short paragraphs, lists of given
+// figures as bullet points, the numbers picked out, and the actual question set apart at the end.
+const ASKS = /[?？]\s*$|^(what|which|how|why|when|who|calculate|find|explain|state|describe|determine|show|work out|estimate|suggest|compare|evaluate|name|identify|give|outline|discuss|deduce|predict)\b|^(計算|求|解釋|說明|試|列出|指出|比較|描述|分析|評估|為甚麼|為什麼|哪)/i;
+const CONDITION = /^(assume|assuming|ignore|given that|suppose|you may assume|假設|忽略)/i;
+const NUM = /((?:HKD|HK\$|US\$|USD|RMB|\$|£|€)\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?(?:%|kg|g|mg|km|cm|mm|m|s|ms|min|h|N|J|kJ|W|kW|V|A|Ω|K|°C|mol|dm³|cm³|L|ml|mL|years?|months?|days?|shares?)(?![A-Za-z]))/g;
+const nums = (h) => h.replace(NUM, '<b class="num">$1</b>');
+function splitSentences(t) {
+  let s = t.split(/(?<=[.!?])\s+(?=[A-Z"“(\d])/);
+  if (s.length < 3 && /[。！？]/.test(t)) s = t.split(/(?<=[。！？])/);
+  return s.map((x) => x.trim()).filter(Boolean);
+}
+// "the closing prices are: Stock B HKD 35, Stock C HKD 45 and Stock D HKD 42." -> an intro and a list
+function asList(sent) {
+  const m = sent.match(/^(.{6,}?):\s*(.+?)[.。]?$/);
+  if (!m) return null;
+  const items = m[2].split(/;\s*|,\s*(?:and\s+)?|\s+and\s+|、|；/).map((x) => x.trim()).filter(Boolean);
+  // Only real data lists (values or short phrases), not "stocks: B, C and D".
+  const avg = items.reduce((t, x) => t + x.length, 0) / (items.length || 1);
+  return items.length >= 3 && items.every((x) => x.length <= 60) && (items.some((x) => /\d/.test(x)) || avg >= 8) ? { intro: m[1] + ':', items } : null;
+}
+function stemBlocks(text) {
+  // Written with line breaks already: blank lines split paragraphs, "- " lines make a list.
+  if (text.includes('\n')) {
+    const blocks = [];
+    for (const para of text.split(/\n\s*\n/)) {
+      const lines = para.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (!lines.length) continue;
+      if (lines.every((l) => /^[-•*]\s+/.test(l))) blocks.push({ list: lines.map((l) => l.replace(/^[-•*]\s+/, '')) });
+      else if (lines.length > 1 && lines.slice(1).every((l) => /^[-•*]\s+/.test(l))) blocks.push({ intro: lines[0], list: lines.slice(1).map((l) => l.replace(/^[-•*]\s+/, '')) });
+      else blocks.push({ p: lines.join('\n') });
+    }
+    const last = blocks[blocks.length - 1];
+    if (blocks.length > 1 && last && last.p && ASKS.test(last.p.split('\n').pop())) last.ask = true;
+    return blocks.length > 1 ? blocks : null;
+  }
+  if (text.length + (text.match(/[\u3400-\u9fff]/g) || []).length < 200) return null; // Chinese packs more into each character
+  const sents = splitSentences(text);
+  if (sents.length < 3) return null;
+  let qi = sents.length - 1;
+  while (qi > 0 && !ASKS.test(sents[qi])) qi--;
+  if (!ASKS.test(sents[qi])) qi = sents.length - 1;
+  let qs = qi; while (qs > 1 && CONDITION.test(sents[qs - 1])) qs--;
+  const blocks = []; let para = [];
+  const flush = () => { if (para.length) blocks.push({ p: para.join(' ') }); para = []; };
+  for (const sent of sents.slice(0, qs)) {
+    const l = asList(sent);
+    if (l) { flush(); blocks.push({ intro: l.intro, list: l.items }); continue; }
+    para.push(sent); if (para.length === 2) flush();
+  }
+  flush();
+  blocks.push({ p: sents.slice(qs).join(' '), ask: true });
+  return blocks;
+}
 function renderStem(stem, cls = 'stem') {
   if (!stem) return '';
+  // Tables (pipe rows) keep the old handling.
+  if (!/\|.*\|/.test(stem)) {
+    const blocks = stemBlocks(String(stem).trim());
+    if (blocks) {
+      const ctx = cls === 'q' ? 'q-ctx' : cls;
+      return `<div class="stemblock ${cls === 'q' ? 'big' : ''}">${blocks.map((b) => b.list
+        ? `${b.intro ? `<p class="${ctx}">${nums(esc(b.intro))}</p>` : ''}<ul class="givens">${b.list.map((x) => `<li>${nums(esc(x))}</li>`).join('')}</ul>`
+        : `<p class="${b.ask ? `${cls} ask` : ctx}">${nums(esc(b.p))}</p>`).join('')}</div>`;
+    }
+  }
   const lines = stem.split('\n'); let html = ''; let buf = []; let tbl = [];
   const flushText = () => { if (buf.join('').trim()) html += `<p class="${cls}">${esc(buf.join('\n').trim())}</p>`; buf = []; };
   const flushTbl = () => { if (tbl.length) html += '<div style="overflow-x:auto"><table class="data">' + tbl.map((r, i) => '<tr>' + r.map((c) => (i === 0 ? `<th>${esc(c)}</th>` : `<td>${esc(c)}</td>`)).join('') + '</tr>').join('') + '</table></div>'; tbl = []; };
