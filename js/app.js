@@ -232,7 +232,7 @@ function partOf(q, ntext, parts) {
 function testsFor(key) {
   return (local.tests || []).map((t) => ({ t: t.t, r: t.per && t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
 }
-function chapterMastery(book, u, qs, text) {
+function chapterMastery(book, u, qs, text, ntextPre) {
   const T = chapterTarget(u), now = Date.now();
   const key = `${book.id}:${u.id}`;
   const st = (q) => local.stats[q.id];
@@ -241,7 +241,7 @@ function chapterMastery(book, u, qs, text) {
   // covered: every part of the chapter has a question answered well
   const pages = u.startPage && u.endPage ? u.endPage - u.startPage + 1 : 8;
   const parts = Math.max(3, Math.min(6, Math.round(pages / 2)));
-  const ntext = text ? normQ(text) : '';
+  const ntext = ntextPre !== undefined ? ntextPre : (text ? normQ(text) : '');
   const hit = new Set(done.filter(good).map((q) => partOf(q, ntext, parts)).filter((x) => x >= 0));
   const covered = ntext ? hit.size / parts : Math.min(1, done.filter(good).length / T);
   // accurate: latest scores, over at least T questions
@@ -274,12 +274,22 @@ function chapterMastery(book, u, qs, text) {
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
   };
 }
+// Chapter texts, normalised once and kept: matching questions to parts of a chapter needs them.
+const ntextMemo = new Map();
+function ntextOf(key, text) {
+  const m = ntextMemo.get(key);
+  if (m && m.len === text.length && m.head === text.slice(0, 200)) return m.n;
+  const n = text ? normQ(text) : '';
+  ntextMemo.set(key, { len: text.length, head: text.slice(0, 200), n });
+  return n;
+}
 async function bookMastery(book) {
-  const chapters = [];
-  for (const u of book.units) {
-    const text = await store.get(`text:${book.id}:${u.id}`, '');
-    chapters.push({ unit: u, ...chapterMastery(book, u, await getQs(book.id, u.id), text) });
-  }
+  // Everything for every chapter in one read (big textbooks have hundreds of chapters).
+  const [texts, lists] = await Promise.all([
+    store.getMany(book.units.map((u) => `text:${book.id}:${u.id}`), ''),
+    store.getMany(book.units.map((u) => `qs:${book.id}:${u.id}`), []),
+  ]);
+  const chapters = book.units.map((u, i) => ({ unit: u, ...chapterMastery(book, u, (lists[i] || []).filter((q) => !blocked(q)), texts[i] || '', ntextOf(`${book.id}:${u.id}`, texts[i] || '')) }));
   const w = chapters.reduce((t, c) => t + c.weight, 0) || 1;
   const pct = Math.round(chapters.reduce((t, c) => t + c.pct * c.weight, 0) / w);
   const areas = Object.fromEntries(AREAS.map(([k]) => [k, chapters.reduce((t, c) => t + c.score[k] * c.weight, 0) / w]));
@@ -502,7 +512,7 @@ async function go(v) {
 // Book covers: one colour per subject, so the shelf is easy to scan.
 function coverColour(b) { return subjectColour(b.subject, b.title); }
 async function bookSummary(b) {
-  const qs = []; for (const u of b.units) qs.push(...await getQs(b.id, u.id));
+  const qs = (await store.getMany(b.units.map((u) => `qs:${b.id}:${u.id}`), [])).flat().filter((q) => q && !blocked(q));
   return { n: qs.length, sc: scoreOf(qs) };
 }
 function lastChapter(books) {
