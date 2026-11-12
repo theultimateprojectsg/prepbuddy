@@ -15,9 +15,23 @@ Below is a snapshot of this student's progress, made just now from their practic
 - If the snapshot shows little or no practice, say so kindly and tell them how to start.
 - Whenever you suggest something the student could start right now (a practice set, a test, reviews, the Mistake book…), ALSO call open_in_app with go_now false and 1-3 buttons, so they can start with one tap. The first button is your main suggestion, labelled like "OK, let's go!" or with what it starts ("Start: Cell Structure, 10 questions"); add other steps of the plan as further buttons. Write button labels in the language of your reply, at most about 6 words.
 - You can open things in PrepBuddy for the student with the open_in_app tool (go_now true). Use it as soon as the student agrees to a step you suggested ("ok", "sounds good", "let's do it", "yes") or asks you to start or open something. When there are several steps in a plan, open the first one. Use the [codes] from the snapshot. When you use it, your reply is one short, natural line saying what you're opening (e.g. "Great, let's start with Cell Structure: 10 questions."), because the app goes there straight away. Don't use it while you are still asking questions or making the plan.
-- You only coach on studying. If they ask about something else, answer in one line at most and bring them back to their studies. You cannot see the questions' content, only the scores.`;
+- You also help with using PrepBuddy itself (see the app guide below), e.g. "I can't find my book", "how do I…". Answer in 1-3 short steps and offer a button to the right screen.
+- You only coach on studying and on using PrepBuddy. If they ask about something else, answer in one line at most and bring them back to their studies. You cannot see the questions' content, only the scores.
+
+<app_guide>
+Menu: Today (plan, coach, practice), Books, Mistakes, Progress, Settings. On phones the menu is at the bottom; on laptops on the left.
+- Adding a textbook: Books → "Add a textbook" opens the textbook library. Search by title, subject or the book code (e.g. on the back cover or from the teacher), then tap "Add to my textbooks". Subject chips filter the list. If a book isn't in the library, the student should ask their teacher or whoever gave them PrepBuddy to add it; students can't upload books themselves yet.
+- Their books are on the Books tab, grouped by subject (tap a subject chip or search the box at the top to filter). Tap a cover to open its chapters.
+- Practising: open a book, tick one or more chapters, choose question types (MCQ / written / mix) and how many, press Start. Other options on the book page: chapter test (timed, 80% to pass), DSE-style mock paper, revision notes, flashcards, "Get me closer to 100%".
+- During a question: the chat beside it explains the question or gives hints without giving the answer away; "I don't know this one. Show me the answer" puts it in the Mistake book.
+- Mistakes tab: every question not fully right, grouped by chapter; Redo all, Quick 5, or redo one chapter. Get one right again and it moves to Mastered.
+- Progress tab: weekly goal and exam countdown (Edit to set), what to do next, chapter scores, readiness rings, tests and mock papers, and "Preview & send" for the weekly parent report (sent as a link, e.g. on WhatsApp).
+- Stars (for younger students; switch in Settings): stars for practising, badges, and the Star shop where rewards set by parents are approved with a parent PIN. The star counter is at the top of Today and in the laptop menu.
+- Settings: language (English / 中文), name, stars on/off, AI usage. Progress is saved on this device only (no accounts yet), so the same browser/device should be used.
+- Voice: the Talk button lets them speak to you; works best in Chrome, Edge or Safari.
+</app_guide>`;
 const STEP = {
-  action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress'] },
+  action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today'] },
   chapters: { type: 'array', items: { type: 'string' }, description: 'Chapter codes from the snapshot, e.g. ["B1.C3"].' },
   book: { type: 'string', description: 'Book code, e.g. "B1".' },
   count: { type: 'integer', minimum: 5, maximum: 30 },
@@ -31,8 +45,8 @@ const OPEN_TOOL = {
       go_now: { type: 'boolean', description: 'true: open it now (the student agreed or asked). false: only show buttons under your reply.' },
       buttons: { type: 'array', maxItems: 3, description: 'For go_now false: 1-3 buttons, main suggestion first.',
         items: { type: 'object', properties: { label: { type: 'string', description: 'Short button text, in the language of your reply.' }, ...STEP }, required: ['label', 'action'] } },
-      action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress'],
-        description: 'practise = practice questions on chapters; chapter_test = timed chapter test; review = the reviews due today; mistakes = the Mistake book; weak_topics = questions they found hard; mock_paper = DSE-style mock paper for a book; notes / flashcards = revision notes or flashcards for chapters; book = the book\'s chapter page; progress = their progress page.' },
+      action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today'],
+        description: 'practise = practice questions on chapters; chapter_test = timed chapter test; review = the reviews due today; mistakes = the Mistake book; weak_topics = questions they found hard; mock_paper = DSE-style mock paper for a book; notes / flashcards = revision notes or flashcards for chapters; book = the book\'s chapter page; progress = their progress page; library = the textbook library (to add a book); books = their Books tab; settings; star_shop; today = the Today screen.' },
       chapters: { type: 'array', items: { type: 'string' }, description: 'Chapter codes from the snapshot, e.g. ["B1.C3"]. Needed for practise and chapter_test; optional for notes, flashcards and book.' },
       book: { type: 'string', description: 'Book code, e.g. "B1", for mock_paper, weak_topics, notes, flashcards or book when no chapter is given.' },
       count: { type: 'integer', minimum: 5, maximum: 30, description: 'How many practice questions (practise only). Default 10.' },
@@ -56,7 +70,7 @@ module.exports = async (req, res) => {
     while (history.length && history[0].role !== 'user') history.shift();
     const list = [...history, { role: 'user', content: ask }];
     for (let i = 1; i < list.length; i++) if (list[i].role === list[i - 1].role) throw httpError(400, 'Bad conversation.');
-    const system = [{ type: 'text', text: `${COACH}${body.lang === 'zh' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>` }];
+    const system = [{ type: 'text', text: `${COACH}${body.lang === 'zh' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>${body.screen ? `\n\nThe student is on this screen right now: ${String(body.screen).slice(0, 60)}.` : ''}` }];
     const usage = newUsage();
     const fallback = (out) => out.text || (out.action ? (body.lang === 'zh' ? '好，而家幫你打開。' : 'Okay, opening it now.') : '') || 'Sorry, I could not answer that. Please try asking another way.';
     if (body.stream) {

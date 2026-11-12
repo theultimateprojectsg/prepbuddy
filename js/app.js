@@ -780,6 +780,7 @@ async function coachSnapshot() {
 // Carry out what the coach decided to open (it only does this after the student agrees, or asks).
 async function runCoachAction(a) {
   if (!a || !a.action) return;
+  helperClose();
   const books = await getBooks();
   const chs = (Array.isArray(a.chapters) ? a.chapters : []).map((c) => coachIndex[String(c).trim()]).filter((x) => x && x.unitId);
   const bookId = (chs[0] && chs[0].bookId) || (coachIndex[String(a.book || '').trim()] || {}).bookId || (books.length === 1 ? books[0].id : null);
@@ -797,6 +798,11 @@ async function runCoachAction(a) {
     case 'flashcards': if (book) return go({ name: 'cards', bookId: book.id }); break;
     case 'book': if (book) return go({ name: 'book', bookId: book.id }); break;
     case 'progress': return go({ name: 'progress' });
+    case 'library': return go({ name: 'library' });
+    case 'books': return go({ name: 'books' });
+    case 'settings': return go({ name: 'settings' });
+    case 'star_shop': return go({ name: 'stars' });
+    case 'today': return go({ name: 'home' });
   }
   if (book) return go({ name: 'book', bookId: book.id }); // couldn't tell exactly what: open the book's chapter page
 }
@@ -804,18 +810,18 @@ const COACH_CHIPS = ['How am I doing?', 'What should I work on this week?', 'Whi
 const coach = { busy: false, error: null };
 function coachHTML() {
   const msgs = local.coach || [];
-  return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div><b>Your study coach</b><span>Sees your scores, mistakes and reviews</span></div>
+  return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div>${helper.open ? '<b>Ask Buddy</b><span>About the app or your studies</span>' : '<b>Your study coach</b><span>Sees your scores, mistakes and reviews</span>'}</div>
       <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
       ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk</button>`}</span></div>
     ${voiceOn('coach') ? voicePanelHTML() + (coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : '') : `<div class="coach-msgs" id="coachMsgs">
-      <div class="tmsg ai">Hi${local.name ? ` ${esc(local.name)}` : ''}! Ask me how you’re doing, what to focus on, or for a study plan.</div>
+      <div class="tmsg ai">${helper.open ? `Need help? Ask me anything about PrepBuddy or your studies.` : `Hi${local.name ? ` ${esc(local.name)}` : ''}! Ask me how you’re doing, what to focus on, or for a study plan.`}</div>
       ${msgs.map((m, k) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>${m.picked ? `<div class="coach-picked" data-raw>✓ ${esc(m.picked)}</div>` : ''}${m.btns && k === msgs.length - 1 && !coach.busy ? `<div class="coach-acts">${m.btns.map((b, j) => `<button class="${j ? 'btn-sm' : 'btn-sm primary'}" data-cact="${j}" data-raw>${j ? '' : '▶ '}${esc(b.label)}</button>`).join('')}</div>` : ''}`).join('')}
       ${coach.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
       ${coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : ''}
       ${voiceNoticeHTML('coach')}
     </div>
-    ${coach.busy ? '' : `<div class="tchips">${COACH_CHIPS.filter((t) => !msgs.some((m) => m.chip === t)).map((t) => `<button class="tchip" data-coach="${esc(t)}">${t}</button>`).join('')}</div>`}
-    <form class="tform" id="coachForm"><input id="coachQ" class="tinput" placeholder="Ask about your progress…" autocomplete="off" ${coach.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${coach.busy ? 'disabled' : ''}>${ICON.send}</button></form>`}`;
+    ${coach.busy ? '' : `<div class="tchips">${(helper.open ? helperChips() : COACH_CHIPS).filter((t) => !msgs.some((m) => m.chip === t)).map((t) => `<button class="tchip" data-coach="${esc(t)}">${t}</button>`).join('')}</div>`}
+    <form class="tform" id="coachForm"><input id="coachQ" class="tinput" placeholder="${helper.open ? 'Ask me anything…' : 'Ask about your progress…'}" autocomplete="off" ${coach.busy ? 'disabled' : ''}><button class="tsend" aria-label="Send" ${coach.busy ? 'disabled' : ''}>${ICON.send}</button></form>`}`;
 }
 function bindCoach() {
   const box = document.getElementById('coach'); if (!box) return;
@@ -827,7 +833,7 @@ function bindCoach() {
     const history = msgs.slice(-10).map((m) => ({ role: m.role, text: m.text }));
     msgs.push({ role: 'user', text, chip }); coach.busy = true; coach.error = null; redraw();
     try {
-      const req = { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh' : 'en') : LANG, voice };
+      const req = { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh' : 'en') : LANG, voice, screen: SCREEN_NAME[view && view.name] || (view && view.name) || 'Today' };
       const r = onChunk ? await apiStream('coach', req, onChunk) : await api('coach', req);
       // Buttons under the reply: the coach's suggested next steps, one tap to start.
       const btns = r.action && r.action.go_now === false && Array.isArray(r.action.buttons)
@@ -859,6 +865,61 @@ function bindCoach() {
   bindVoiceBar();
   const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight;
 }
+
+/* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
+const helper = { open: false };
+const SCREEN_NAME = { home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+function helperChips() {
+  const v = view && view.name;
+  const by = {
+    books: ['I can’t find my book', 'How do I add a textbook?'], library: ['I can’t find my book', 'What is a book code?'],
+    book: ['How do I start practising?', 'What is a chapter test?'], mistakes: ['How do I fix my mistakes?', 'Which mistakes first?'],
+    progress: ['What do these numbers mean?', 'How do I send the report to my parents?'], settings: ['How do I change the language?', 'What are stars?'],
+    stars: ['How do I earn more stars?', 'How do rewards work?'],
+  }[v] || [];
+  return [...by, 'What should I do next?'];
+}
+// Show the Buddy button only where there's no other chat (not Today, not beside a question) and not in timed papers.
+function helperWanted() {
+  if ($app.querySelector('#coach')) return false; // Today has the full coach
+  if (document.getElementById('tutor') || $app.querySelector('#quit') || timedPaper()) return false;
+  return !!$app.querySelector('main[data-view]');
+}
+function helperSync() {
+  let fab = document.getElementById('helperFab');
+  const want = helperWanted();
+  if (!want) { if (helper.open) helperClose(); if (fab) fab.remove(); return; }
+  if (!fab) {
+    fab = document.createElement('button');
+    fab.id = 'helperFab'; fab.className = 'helper-fab';
+    fab.setAttribute('aria-label', LANG === 'zh' ? '問 PrepBuddy' : 'Ask PrepBuddy');
+    fab.innerHTML = `${buddySVG('happy', 40)}<span>${LANG === 'zh' ? '問我' : 'Ask me'}</span>`;
+    fab.onclick = () => (helper.open ? helperClose() : helperOpen());
+    document.body.appendChild(fab);
+  }
+  fab.classList.toggle('on', helper.open);
+}
+function helperOpen() {
+  if ($app.querySelector('#coach') || document.getElementById('helperPanel')) return;
+  helper.open = true;
+  const panel = document.createElement('div');
+  panel.id = 'helperPanel'; panel.className = 'helper-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'PrepBuddy helper');
+  panel.innerHTML = `<button class="helper-x" id="helperX" aria-label="Close">✕</button><section class="coach" id="coach">${coachHTML()}</section>`;
+  document.body.appendChild(panel);
+  document.getElementById('helperX').onclick = helperClose;
+  bindCoach();
+  helperSync();
+  const q = document.getElementById('coachQ'); if (q && matchMedia('(min-width:700px)').matches) q.focus();
+}
+function helperClose() {
+  if (!helper.open) return;
+  helper.open = false;
+  if (voiceOn('coach') && VC.ctrl) VC.ctrl.stop();
+  const p = document.getElementById('helperPanel'); if (p) p.remove();
+  const fab = document.getElementById('helperFab'); if (fab) fab.classList.remove('on');
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && helper.open) helperClose(); });
+new MutationObserver(() => helperSync()).observe($app, { childList: true });
 
 async function renderHome() {
   S = null;
