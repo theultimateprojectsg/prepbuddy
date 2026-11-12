@@ -1,6 +1,6 @@
 // PrepBuddy app: books, chapters, on-demand questions, practice sessions.
 import * as store from './store.js';
-import { buildReport, encodeReport, headline, weekTone, minutesOf, skillsHTML, REPORT_CSS } from './report.js';
+import { buildReport, encodeReport, headline, weekTone, minutesOf, skillsHTML, REPORT_CSS, reportHTML } from './report.js';
 import { initLang, setLang, watch, LANG } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
 import { logoSVG, buddySVG, buddyFace } from './buddy.js';
@@ -4267,37 +4267,23 @@ async function renderParent() {
   (local.hw || []).forEach((h) => feed.push({ t: h.t, ic: 'check', tx: PD(`Homework help: ${h.title || 'homework'}`, `功課輔導：${h.title || '功課'}`) }));
   schoolTests().filter((x) => typeof x.score === 'number').forEach((x) => feed.push({ t: testDay(x), ic: 'target', tx: PD(`School test result: ${x.name} ${x.score}%`, `學校測驗成績：${x.name} ${x.score}%`) }));
   feed.sort((a, b) => b.t - a.t);
-  const tone = (p) => (p >= 75 ? 'good' : p >= 50 ? 'mid' : 'low');
+  const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
+  // The dashboard is the weekly report, live, plus what only a live view can show: today, tests coming up, activity.
+  const todayCard = `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('clock', 18)} ${PD('Today', '今日')}</h2><span>${last ? PD(`Last practised ${agoWords(last)}`, `上次練習：${agoWords(last)}`) : PD('No practice yet', '仍未練習')}</span></div>
+    <div class="rp-today"><div class="${todayMin ? '' : 'warn'}"><b>${todayMin}</b><span>${PD('minutes', '分鐘')}</span></div><div><b>${today.length}</b><span>${PD('questions', '題目')}</span></div><div><b>${tm ? Math.round(100 * tg / tm) + '%' : '–'}</b><span>${PD('marks scored', '得分率')}</span></div></div>
+    ${!today.length ? `<p style="font-size:14px;color:#B4531A">${PD('No practice yet today.', '今日仍未練習。')}</p>` : ''}</section>`;
+  const testsCard = tests.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('target', 18)} ${PD('School tests coming up', '即將來臨的學校測驗')}</h2><span>${PD('and today’s plan for each', '及每個測驗的今日計劃')}</span></div>
+    <div class="rp-up">${tests.map((p) => `<div><span class="rp-cal ${p.left <= 1 ? 'soon' : ''}"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span><span class="rp-ut"><b>${esc(p.x.name)}</b><small>${leftText(p.left)} · ${esc(p.step.t)}</small></span><b class="${tone(p.ready)}">${p.ready}%</b></div>`).join('')}</div></section>` : '';
+  const feedCard = `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('bars', 18)} ${PD('Recent activity', '最近活動')}</h2><span>${PD('newest first', '最新在前')}</span></div>
+    ${feed.length ? `<ol class="rp-feed">${feed.slice(0, 12).map((f) => `<li><span class="rp-fi">${pIcon(f.ic, 14)}</span><span>${esc(f.tx)}<small>${agoWords(f.t)}</small></span></li>`).join('')}</ol>` : `<p style="font-size:14px;color:var(--muted)">${PD('Activity will show here as your child studies.', '孩子溫習時，活動會在這裏顯示。')}</p>`}</section>`;
+  const fixCard = mk || due ? `<section class="rp-call weak"><h3>${PD('To do', '待處理')}</h3><p>${[mk ? PD(`${mk} mistake${mk > 1 ? 's' : ''} to fix`, `${mk} 題錯題待改正`) : '', due ? PD(`${due} review${due > 1 ? 's' : ''} due`, `${due} 題待溫習`) : ''].filter(Boolean).join(' · ')}</p></section>` : '';
   $app.innerHTML = `
   ${backTop({name:'progress'}, 'Progress')}
   <main class="pad stack g14 parentpage" data-view="parent" data-raw style="flex:1">
-    <div class="pd-head"><div><h1 class="pagetitle">${PD(`${esc(name)}’s dashboard`, `${esc(name)}的學習主頁`)}</h1>
-      <p class="muted">${last ? PD(`Last practised ${agoWords(last)}`, `上次練習：${agoWords(last)}`) : PD('No practice yet', '仍未開始練習')} · <span class="pd-live">● ${PD('Live on this device', '此裝置即時資料')}</span></p></div>
-      <div class="pd-acts"><button class="btn-sm" id="pdReport">${pIcon('send', 16)} ${PD('Send weekly report', '傳送每週報告')}</button><button class="btn-sm quiet" id="pdLock">🔒 ${PD('Lock', '鎖上')}</button></div></div>
-    <section class="pd-kpis">
-      <div class="pd-k ${todayMin ? '' : 'none'}"><small>${PD('Today', '今日')}</small><b>${todayMin} ${PD('min', '分鐘')}</b><span>${today.length ? PD(`${today.length} questions · ${tm ? Math.round(100 * tg / tm) : 0}%`, `${today.length} 題 · ${tm ? Math.round(100 * tg / tm) : 0}%`) : PD('Not yet today', '今日未練習')}</span></div>
-      <div class="pd-k"><small>${PD('This week', '本週')}</small><b>${weekMin} ${PD('min', '分鐘')}</b><span>${PD(`${r.dp} of 7 days · ${r.q} questions`, `7 日中 ${r.dp} 日 · ${r.q} 題`)}</span></div>
-      <div class="pd-k"><small>${PD('Marks this week', '本週得分率')}</small><b class="${r.a === null ? '' : tone(r.a)}">${r.a === null ? '–' : r.a + '%'}</b><span>${r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<em class="wr-up">▲ ${PD(`from ${r.pa}%`, `上週 ${r.pa}%`)}</em>` : `<em class="wr-down">▼ ${PD(`from ${r.pa}%`, `上週 ${r.pa}%`)}</em>`) : PD('vs last week', '對比上週')}</span></div>
-      <div class="pd-k"><small>${PD('Streak', '連續練習')}</small><b>${r.st || 0}</b><span>${PD('days in a row', '日')}</span></div>
-    </section>
-    <div class="pd-grid">
-      <div class="stack g14">
-        <section class="pgcard"><h2 class="pd-h">${pIcon('bars')} ${PD('Minutes each day', '每日練習分鐘')}</h2>
-          <div class="pd-bars">${r.days.map((m, i) => `<div><small>${m || ''}</small><i style="height:${m ? Math.max(6, Math.round(90 * m / maxMin)) : 3}px" class="${m ? '' : 'none'} ${i === 6 ? 'today' : ''}"></i><span>${dayNames[i]}</span></div>`).join('')}</div></section>
-        ${tests.length ? `<section class="pgcard"><h2 class="pd-h">${pIcon('target')} ${PD('School tests coming up', '即將來臨的學校測驗')}</h2>
-          ${tests.map((p) => `<div class="pd-row"><span class="stx-cal"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span><span class="pd-rt"><b>${esc(p.x.name)}</b><small>${leftText(p.left)} · ${PD('today’s plan:', '今日計劃：')} ${esc(p.step.t)}</small></span><b class="pd-pct ${tone(p.ready)}">${p.ready}%<small>${PD('ready', '準備度')}</small></b></div>`).join('')}</section>` : ''}
-        <section class="pgcard"><h2 class="pd-h">${pIcon('ring')} ${PD('How ready for each subject', '各科準備程度')}</h2>
-          ${subj.length ? subj.map(({ b, m }) => `<div class="pd-row"><span class="pd-rt"><b>${esc(b.subject ? subj_(b.subject) : b.title)}</b><small>${esc(b.title)}</small></span><span class="pd-bar"><i class="${tone(m.pct)}" style="width:${m.pct}%"></i></span><b class="pd-pct ${tone(m.pct)}">${m.pct}%</b></div>`).join('') : `<p class="muted">${PD('No textbooks yet.', '仍未加入課本。')}</p>`}</section>
-      </div>
-      <div class="stack g14">
-        <section class="pgcard pd-attn"><h2 class="pd-h">${pIcon('alert')} ${PD('Needs attention', '需要留意')}</h2>
-          ${weakest.length ? weakest.map(({ b, c }) => `<div class="pd-row"><span class="pd-rt"><b>${esc(cleanUnitTitle(c.unit.title))}</b><small>${esc(b.title)} · ${c.done} ${PD('answered', '題已答')}</small></span><b class="pd-pct ${tone(c.pct)}">${c.pct}%</b></div>`).join('') : `<p class="muted" style="margin:0">${PD('Nothing yet: chapters show here once practised.', '暫時沒有：練習過的章節會在這裏顯示。')}</p>`}
-          <div class="pd-chips"><span class="${mk ? 'warn' : ''}">${mk} ${PD('mistakes to fix', '題錯題待改正')}</span><span class="${due > 10 ? 'warn' : ''}">${due} ${PD('reviews due', '題待溫習')}</span>${today.length ? '' : `<span class="warn">${PD('No practice today yet', '今日仍未練習')}</span>`}</div></section>
-        <section class="pgcard"><h2 class="pd-h">${pIcon('clock')} ${PD('Recent activity', '最近活動')}</h2>
-          ${feed.length ? `<ol class="pd-feed">${feed.slice(0, 12).map((f) => `<li><span class="pd-fi">${pIcon(f.ic, 16)}</span><span>${esc(f.tx)}<small>${agoWords(f.t)}</small></span></li>`).join('')}</ol>` : `<p class="muted" style="margin:0">${PD('Activity will show here as your child studies.', '孩子溫習時，活動會在這裏顯示。')}</p>`}</section>
-      </div>
-    </div>
-    <p class="hint" style="margin:0;text-align:center">${PD('This dashboard reads the progress saved on this device. With PrepBuddy accounts (coming soon) it will open on your own phone and update live.', '這個主頁讀取此裝置儲存的進度。推出 PrepBuddy 帳戶後，可在你自己的手機即時查看。')}</p>
+    <div class="pd-top"><span class="muted" style="font-size:13.5px">${PD('Updates as your child practises', '孩子練習時會即時更新')}</span>
+      <div class="pd-acts"><button class="btn-sm" id="pdReport">${pIcon('send', 16)} ${PD('Send as weekly report', '傳送每週報告')}</button><button class="btn-sm quiet" id="pdLock">🔒 ${PD('Lock', '鎖上')}</button></div></div>
+    <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: feedCard })}</div>
+    <p class="hint" style="margin:0;text-align:center">${PD('Same as the weekly report, kept up to date. With PrepBuddy accounts (coming soon) it will open on your own phone.', '與每週報告相同，但會即時更新。推出 PrepBuddy 帳戶後，可在你自己的手機查看。')}</p>
   </main>`;
   document.getElementById('pdReport').onclick = () => reportDialog();
   document.getElementById('pdLock').onclick = () => { parentUntil = 0; go({ name: 'progress' }); };

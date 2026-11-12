@@ -135,6 +135,7 @@ export function weekTone(r) {
 export function headline(r) {
   ZH = r.u === 'zh';
   const who = r.n || T('Your child', '你的子女');
+  const whoMid = r.n || T('your child', '你的子女'); // inside a sentence
   const k = weekTone(r);
   if (k === 'none') return T(`${who} didn't practise this week`, `${who}本週沒有練習`);
   if (k === 'strong') return T(`${who} had a strong week`, `${who}本週表現出色`);
@@ -169,7 +170,8 @@ const RI = {
 };
 const ri = (k, size = 18) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${RI[k]}</svg>`;
 
-export function reportHTML(r) {
+// opts.live: the same report shown live in the app's parent dashboard, with extra cards (opts.top / opts.side).
+export function reportHTML(r, opts = {}) {
   ZH = r.u === 'zh';
   const who = r.n || T('Your child', '你的子女');
   const range = `${fmtDate(r.from, { day: 'numeric', month: 'short' })} – ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short', year: 'numeric' })}`;
@@ -183,15 +185,15 @@ export function reportHTML(r) {
   const label = (p) => (p >= 80 ? T('Strong', '強') : p >= 60 ? T('Getting there', '漸入佳境') : T('Needs work', '需加強'));
   // the chapter that needs most work (same rule as the "needs more practice" note)
   const low = (r.ch || []).filter((x) => x[2] >= 3 && x[1] < 70).sort((a, b) => a[1] - b[1])[0];
-  const help = !r.q ? T(`A short routine helps most: suggest 15 minutes at the same time each day, and ask ${who} to show you the app.`, `建立習慣最有用：建議每天固定時間練習 15 分鐘，並請${who}示範一下這個應用程式。`)
-    : low ? T(`Ask ${who} to explain one idea from “${low[0]}” to you in their own words. Teaching it back is one of the best ways to learn it.`, `請${who}用自己的話，向你解釋「${low[0]}」中的一個概念。把內容教給別人，是最有效的學習方法之一。`)
-    : T(`Ask ${who} which question was hardest this week, and praise the effort as well as the score.`, `問問${who}本週哪一題最難，並稱讚他們付出的努力，而不只是分數。`);
+  const help = !r.q ? T(`A short routine helps most: suggest 15 minutes at the same time each day, and ask ${whoMid} to show you the app.`, `建立習慣最有用：建議每天固定時間練習 15 分鐘，並請${whoMid}示範一下這個應用程式。`)
+    : low ? T(`Ask ${whoMid} to explain one idea from “${low[0]}” to you in their own words. Teaching it back is one of the best ways to learn it.`, `請${whoMid}用自己的話，向你解釋「${low[0]}」中的一個概念。把內容教給別人，是最有效的學習方法之一。`)
+    : T(`Ask ${whoMid} which question was hardest this week, and praise the effort as well as the score.`, `問問${whoMid}本週哪一題最難，並稱讚他們付出的努力，而不只是分數。`);
   const stat = (ic, v, label, extra) => `<div><span class="rp-sic">${ri(ic, 16)}</span><b>${v}</b><span>${label}</span>${extra}</div>`;
   const chg = (now, was, unit) => { const d = now - was; if (!was && !now) return ''; return d === 0 ? `<em>${T('same as last week', '與上週相同')}</em>` : `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d)}${unit} ${T('vs last week', '對比上週')}</em>`; };
   const ring = (p, size = 64) => `<span class="rp-ring ${tone(p)}" style="--p:${p};width:${size}px;height:${size}px"><b>${p}%</b></span>`;
   return `<div class="rp">
   <header class="rp-head">
-    <div class="rp-brand"><span class="rp-logo"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><circle cx="57" cy="44" r="26" fill="#FFFFFF"/><path d="M31 44 H44 V77 L31 90 Z" fill="#FFFFFF"/><circle cx="57" cy="44" r="11" fill="#FFE066"/></svg>PrepBuddy</span><span>${T('Weekly report', '每週報告')} · ${range}</span></div>
+    <div class="rp-brand"><span class="rp-logo"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><circle cx="57" cy="44" r="26" fill="#FFFFFF"/><path d="M31 44 H44 V77 L31 90 Z" fill="#FFFFFF"/><circle cx="57" cy="44" r="11" fill="#FFE066"/></svg>PrepBuddy</span><span>${opts.live ? `<i class="rp-live">●</i> ${T('Live dashboard', '即時主頁')} · ${T(`last 7 days to ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })}`, `截至 ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })} 的 7 日`)}` : `${T('Weekly report', '每週報告')} · ${range}`}</span></div>
     <div class="rp-hero">
       <div class="rp-title">
         <h1>${esc(headline(r))}</h1>
@@ -209,6 +211,7 @@ export function reportHTML(r) {
   </header>
   <div class="rp-grid">
     <aside class="rp-side">
+      ${opts.sideTop || ''}
       <h2 class="rp-side-h">${T('At a glance', '重點')}</h2>
       ${r.up ? `<section class="rp-call good"><span class="rp-cic">${ri('up')}</span><div><h3>${T('Getting better', '有進步')}</h3><p>${esc(r.up)}</p></div></section>` : ''}
       ${r.weak ? `<section class="rp-call weak"><span class="rp-cic">${ri('alert')}</span><div><h3>${T('Needs more practice', '需要多加練習')}</h3><p>${esc(r.weak)}</p></div></section>` : ''}
@@ -216,6 +219,7 @@ export function reportHTML(r) {
       <section class="rp-call help"><span class="rp-cic">${ri('heart')}</span><div><h3>${T('How you can help', '家長可以怎樣幫忙')}</h3><p>${esc(help)}</p></div></section>
     </aside>
     <main class="rp-main">
+      ${opts.top || ''}
       <section class="rp-card">
         <div class="rp-card-head"><h2>${ri('bars')} ${T('Practice this week', '本週練習')}</h2><span>${r.q ? T(`Longest: ${fmtDate(r.from + longest * DAY, { weekday: 'long' })}, ${r.days[longest]} min`, `最長：${fmtDate(r.from + longest * DAY, { weekday: 'long' })}，${r.days[longest]} 分鐘`) : T('No practice in these 7 days', '這 7 日沒有練習')}</span></div>
         <div class="rp-bars" role="img" aria-label="${T('Minutes practised each day', '每日練習分鐘')}: ${r.days.map((m, i) => `${dayNames[i]} ${m}`).join(', ')}">
@@ -248,13 +252,14 @@ export function reportHTML(r) {
           ${r.lt === undefined ? `<p>${esc(r.rev)}</p>` : ''}
         </section>
       </div>
+      ${opts.bottom || ''}
     </main>
   </div>
-  <footer class="rp-foot">
+  ${opts.live ? '' : `<footer class="rp-foot">
     <p>${T(`Sent by ${esc(who)} on ${fmtDate(r.at, { weekday: 'short', day: 'numeric', month: 'short' })}. Questions come from ${esc(who)}’s own textbook; written answers are marked by AI.`,
       `由${esc(who)}於 ${fmtDate(r.at, { month: 'long', day: 'numeric', weekday: 'short' })} 傳送。題目來自${esc(who)}自己的課本；文字題由 AI 批改。`)}</p>
     <button class="rp-print" onclick="window.print()">${T('Print or save as PDF', '列印或儲存為 PDF')}</button>
-  </footer>
+  </footer>`}
   </div>`;
 }
 
@@ -287,6 +292,11 @@ export const REPORT_CSS = `
 .rep-bar{height:8px;border-radius:4px;background:#EEF1F6;overflow:hidden}.rep-bar i{display:block;height:100%;background:#18966A}.rep-bar.warn i{background:#E07A2E}
 /* the weekly report page */
 .rp{--ink:#1E2A5A;--accent:#26357A;--muted:#5A6380;--line:#DCE2EE;--good:#18966A;--mid:#26357A;--low:#E07A2E;color:var(--ink);font-family:'Lexend',system-ui,-apple-system,'PingFang HK','PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif}
+.rp-live{font-style:normal;color:#7FE0B5;margin-right:2px}
+.rp-today{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.rp-today div{background:#F7F8FB;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}.rp-today b{font-size:20px}.rp-today span{font-size:12px;color:var(--muted)}.rp-today .warn b{color:#B4531A}
+.rp-up{display:flex;flex-direction:column;gap:10px}.rp-up>div{display:flex;align-items:center;gap:12px}.rp-cal{flex:none;width:46px;height:50px;border-radius:12px;border:1.5px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center}.rp-cal b{font-size:18px;line-height:1}.rp-cal small{font-size:10.5px;color:var(--muted);text-transform:uppercase}.rp-cal.soon{border-color:#E0A12F;background:#FFF6E0}
+.rp-ut{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:14px}.rp-ut small{font-size:12.5px;color:var(--muted)}.rp-up b.good{color:#0E6E4D}.rp-up b.mid{color:var(--accent)}.rp-up b.low{color:#B4531A}
+.rp-feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}.rp-feed li{display:flex;gap:10px;font-size:14px;line-height:1.4}.rp-feed li small{display:block;font-size:12px;color:var(--muted)}.rp-fi{flex:none;width:26px;height:26px;border-radius:8px;background:#EEF1FB;color:var(--accent);display:grid;place-items:center}
 .rp-head{background:var(--ink);color:#fff;padding:20px 20px 24px;display:flex;flex-direction:column;gap:18px}
 .rp-brand{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:13px;color:#C9D0EA}
 .rp-logo{font-weight:700;font-size:16px;color:#fff;display:inline-flex;align-items:center;gap:6px}
