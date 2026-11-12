@@ -1275,7 +1275,7 @@ function awardSession(qs, pct) {
 }
 
 function starSVG(size = 18) { return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="#FFC531" stroke="#E0A100" stroke-width="1.2" stroke-linejoin="round"/></svg>`; }
-function starChip() { return starsOn() ? `<button class="starchip" data-stargo aria-label="${ST(`${starState().bal} stars. Open the Star shop`, `${starState().bal} 粒星。打開星星商店`)}">${starSVG(18)}<b>${starState().bal}</b></button>` : ''; }
+function starChip() { return starsOn() ? `<button class="starchip" data-stargo aria-label="${ST(`${starState().bal} stars. Open the Star shop`, `${starState().bal} 粒星。打開星星商店`)}">${starSVG(18)}<b>${starState().bal}</b><span class="sc-lbl">${ST('Star shop', '星星商店')}</span></button>` : ''; }
 // One click handler for every star counter on any screen (menu, Today, Progress), so none can be left unwired.
 function bindStarChips() {}
 document.addEventListener('click', async (e) => {
@@ -1440,7 +1440,7 @@ function renderTabs(active = tabNow) {
   if (!active) { delete document.body.dataset.tab; return; }
   document.body.dataset.tab = active;
   const mk = mistakeCount();
-  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span>${starsOn() ? `<button class="side-stars ${active === 'stars' ? 'on' : ''}" data-stargo>${starSVG(20)}<b>${starState().bal}</b><span>${LANG === 'zh' ? '星星商店' : 'Star shop'}</span></button>` : ''}<div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
+  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
   bindStarChips(nav);
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = async () => {
     const q = inSession();

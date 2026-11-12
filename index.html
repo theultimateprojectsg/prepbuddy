@@ -795,12 +795,14 @@ button.pg-act{cursor:pointer}button.pg-act:hover{background:#F7F8FB}.pg-act>svg{
 /* stars and rewards */
 .starchip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 9px;border-radius:999px;border:1.5px solid #F4D27A;background:#FFF8E1;color:#7A5200;font:700 15px 'Lexend',sans-serif;cursor:pointer;flex:none}
 .starchip:hover{background:#FFF1C4}
+.starchip .sc-lbl{display:none;font:600 13px var(--ui);color:#8A6A20;margin-left:2px}
+@media (min-width:1024px){.starchip .sc-lbl{display:inline}}
 .tabs button.side-stars{display:none}
 @media (min-width:1024px){
   .tabs button.side-stars{display:flex;flex-direction:row;align-items:center;gap:8px;margin:0 0 10px;padding:8px 12px;min-height:0;border-radius:12px;border:1.5px solid #F4D27A;background:#FFF8E1;color:#7A5200;font:600 14px var(--ui);justify-content:flex-start}
   .tabs button.side-stars b{font:700 16px 'Lexend',sans-serif}.tabs button.side-stars span{margin-left:auto;font-size:12.5px;color:#8A6A20}
   .tabs button.side-stars:hover,.tabs button.side-stars.on{background:#FFF1C4}
-  .greet .starchip{display:none}
+  .starchip{padding:8px 16px 8px 12px;font-size:16px}
 }
 .switch{width:50px;height:30px;border-radius:999px;border:none;background:#D3D9E6;position:relative;cursor:pointer;flex:none;transition:background .15s}
 .switch i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .15s}
