@@ -2294,25 +2294,65 @@ async function pilotGate() {
   await new Promise((resolve) => {
     const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
     const done = () => { if (nav) nav.style.display = ''; resolve(); };
-    const draw = (msg) => {
-      document.body.dataset.tab = '';
-      $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
-        <div class="pg-box">${logoSVG(56)}<h1>${PLT('Welcome to PrepBuddy', '歡迎使用 PrepBuddy')}</h1>
-        <p>${PLT('PrepBuddy is in a private pilot. Enter the family code we sent you.', 'PrepBuddy 正在進行小規模試用。請輸入我們給你的家庭代碼。')}</p>
+    document.body.dataset.tab = '';
+    const SAY = [PLT('Yay, you made it!', '好開心見到你！'), PLT('So excited you’re here!', '你來了，太好了！'), PLT('Ready to learn together?', '一齊學習吧！')];
+    const sparkles = Array.from({ length: 14 }, (_, i) => `<i style="left:${(i * 37 + 7) % 100}%;top:${(i * 53 + 11) % 100}%;animation-delay:${(i % 7) * 0.45}s;font-size:${10 + (i % 4) * 5}px">${['✦', '★', '•', '✧'][i % 4]}</i>`).join('');
+    $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
+      <div class="pg-sky" aria-hidden="true">${sparkles}</div>
+      <div class="pg-box" id="pgbox">
+        <div class="pg-buddy" aria-hidden="true"><div class="pg-say" id="pgsay">${SAY[0]}</div><div class="pg-bob" id="pgbob">${buddySVG('happy', 96)}</div><div class="pg-shadow"></div></div>
+        <span class="pg-tag">${PLT('Private pilot · you’re one of the first!', '小規模試用 · 你是首批家庭之一！')}</span>
+        <h1>${PLT('Welcome to PrepBuddy!', '歡迎來到 PrepBuddy！')}</h1>
+        <p>${PLT('We’re so happy your family is joining us. Pop in the family code we sent you and let’s get started.', '很高興你的家庭加入我們！輸入我們給你的家庭代碼，就可以開始了。')}</p>
         <form id="pgf"><input id="pgc" class="input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${PLT('e.g. CHAN27-K4QF9X', '例如 CHAN27-K4QF9X')}" value="${esc(local.code || '')}" aria-label="${PLT('Family code', '家庭代碼')}">
-        ${msg ? `<p class="hw-err" role="alert">${esc(msg)}</p>` : ''}
-        <button class="btn" id="pgok">${PLT('Continue', '繼續')}</button></form>
-        <p class="hint">${PLT('No code? Ask the person who invited you.', '沒有代碼？請聯絡邀請你的人。')}</p></div></main>`;
-      document.getElementById('pgf').onsubmit = async (e) => {
-        e.preventDefault();
-        const c = document.getElementById('pgc').value.trim().toUpperCase();
-        if (!c) return;
-        document.getElementById('pgok').disabled = true;
-        try { const r = await pilotPost({ step: 'check', code: c }); if (r.ok || !r.pilot) { local.code = c; saveLocal(); done(); return; } draw(PLT('That code isn’t right. Check it and try again.', '代碼不正確，請檢查後再試。')); }
-        catch (err) { draw(PLT('Couldn’t check the code. Are you online?', '未能檢查代碼，你有連接網絡嗎？')); }
-      };
+        <p class="hw-err" id="pgerr" role="alert" hidden></p>
+        <button class="btn" id="pgok">${PLT('Let’s go!', '開始吧！')}</button></form>
+        <p class="hint">${PLT('No code? Ask the person who invited you.', '沒有代碼？請聯絡邀請你的人。')}</p>
+      </div></main>`;
+    const box = document.getElementById('pgbox'), say = document.getElementById('pgsay'), bob = document.getElementById('pgbob'), inp = document.getElementById('pgc'), err = document.getElementById('pgerr'), ok = document.getElementById('pgok');
+    let si = 0, typing = 0;
+    const face = (k) => { bob.innerHTML = buddySVG(k, 96); };
+    const speak = (t) => { say.classList.remove('pop'); void say.offsetWidth; say.textContent = t; say.classList.add('pop'); };
+    const talk = setInterval(() => { if (!typing && !box.classList.contains('bad')) speak(SAY[(si = (si + 1) % SAY.length)]); }, 3200);
+    inp.oninput = () => {
+      clearTimeout(typing); face('listen'); err.hidden = true; box.classList.remove('bad');
+      typing = setTimeout(() => { typing = 0; face('happy'); }, 900);
+      if (inp.value.length === 1) speak(PLT('Ooh, typing…', '輸入中…'));
     };
-    draw();
+    const fail = (m) => {
+      ok.disabled = false; ok.textContent = PLT('Let’s go!', '開始吧！');
+      err.textContent = m; err.hidden = false; face('think');
+      speak(PLT('Hmm, let’s try that again', '嗯…再試一次吧'));
+      box.classList.remove('bad'); void box.offsetWidth; box.classList.add('bad'); inp.focus(); inp.select();
+    };
+    const celebrate = (c) => {
+      clearInterval(talk);
+      const fam = (c.match(/^([A-Z]+)\d/) || [])[1];
+      const who = fam && fam !== 'FAMILY' && fam.length > 1 ? fam[0] + fam.slice(1).toLowerCase() : '';
+      const conf = Array.from({ length: 36 }, (_, i) => `<i style="left:${(i * 29) % 100}%;background:${['#FFC531', '#5A8DF5', '#FF8F8F', '#18966A', '#B38CF5'][i % 5]};animation-delay:${(i % 9) * 0.06}s;animation-duration:${1.4 + (i % 5) * 0.2}s;transform:rotate(${i * 23}deg)"></i>`).join('');
+      const burst = Array.from({ length: 10 }, (_, i) => `<i style="--a:${i * 36}deg">★</i>`).join('');
+      box.classList.add('yay');
+      box.innerHTML = `<div class="pg-buddy big" aria-hidden="true"><div class="pg-burst">${burst}</div><div class="pg-bob">${buddySVG('done', 120)}</div><div class="pg-shadow"></div></div>
+        <h1 class="pg-in">${who ? PLT(`Welcome, ${who} family!`, `歡迎 ${who} 家庭！`) : PLT('You’re in!', '成功加入！')}</h1>
+        <p class="pg-in d2">${PLT('Buddy can’t wait to start learning with you.', 'Buddy 已經急不及待和你一齊學習！')}</p>
+        <div class="pg-load pg-in d3"><i></i></div><span class="hint pg-in d3">${PLT('Getting your desk ready…', '正在準備你的書桌…')}</span>`;
+      const cf = document.createElement('div'); cf.className = 'confetti pg-conf'; cf.setAttribute('aria-hidden', 'true'); cf.innerHTML = conf; document.body.appendChild(cf);
+      let left = false;
+      const go2 = () => { if (left) return; left = true; cf.remove(); done(); };
+      setTimeout(go2, 2800);
+      box.onclick = go2;
+    };
+    document.getElementById('pgf').onsubmit = async (e) => {
+      e.preventDefault();
+      const c = inp.value.trim().toUpperCase();
+      if (!c) return inp.focus();
+      ok.disabled = true; ok.textContent = PLT('Checking…', '檢查中…'); face('think'); speak(PLT('Let me check…', '讓我看看…'));
+      try {
+        const r = await pilotPost({ step: 'check', code: c });
+        if (r.ok || !r.pilot) { local.code = c; saveLocal(); return celebrate(c); }
+        fail(PLT('That code isn’t right. Check it and try again.', '代碼不正確，請檢查後再試。'));
+      } catch (er) { fail(PLT('Couldn’t check the code. Are you online?', '未能檢查代碼，你有連接網絡嗎？')); }
+    };
   });
 }
 // A short summary of how PrepBuddy is used on this device (sent to the pilot admin page).
