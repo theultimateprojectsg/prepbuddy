@@ -2971,7 +2971,7 @@ function bindTutor(q) {
     let reply = '';
     const history = c.msgs.map((m) => ({ role: m.role, text: m.text }));
     c.msgs.push({ role: 'user', text, chip }); c.busy = true; c.error = null; redraw();
-    document.getElementById('tutor').scrollIntoView({ block: 'end', behavior: 'smooth' });
+    document.getElementById('tutor').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     try {
       const [bookId, unitId] = qUnit(q.id);
       const chapter = await store.get(`text:${bookId}:${unitId}`, '');
@@ -2987,7 +2987,7 @@ function bindTutor(q) {
       c.error = e.status === 0 ? 'You seem to be offline.' : (e.message && e.status !== 500 ? e.message : 'The tutor is not available right now. Try again in a moment.');
     }
     c.busy = false; redraw();
-    const t = document.getElementById('tutor'); if (t) t.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    const t = document.getElementById('tutor'); if (t) t.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     return reply;
   };
   const talk = document.getElementById('tutorTalk');

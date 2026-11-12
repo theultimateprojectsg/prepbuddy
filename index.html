@@ -662,9 +662,25 @@ body[data-tab] .app{padding-bottom:76px}
   .qside.chatside .tnote{margin-top:10px;font-size:13px;padding-top:12px;border-top:1px dashed var(--line)}
   .qside.chatside .tchip{font-size:14px}
   .qside.chatside .qkeys{padding:0 18px 14px;margin:0}
-  /* after answering, the feedback panel's chat gets more room too */
-  .app:has(> main.qpaper)>.sheet .tchat{background:#fff}
-  .app:has(> main.qpaper)>.sheet .tlog{max-height:46vh;overflow-y:auto}
+  /* after answering, the panel keeps the same size: verdict and explanation on top, the chat fills the rest
+     and scrolls inside itself; suggestions sit in one swipeable row so the chat keeps its room on smaller laptops */
+  .app:has(> main.qpaper)>.sheet:has(> #tutor){height:calc(100vh - 110px);height:calc(100dvh - 110px);max-height:none;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+  .sheet:has(> #tutor)>*{flex:none}
+  .sheet:has(> #tutor)>.expl{max-height:24vh;overflow-y:auto}
+  .sheet:has(> #tutor)>#tutor{flex:1 1 0;min-height:240px;display:flex}
+  .sheet:has(> #tutor)>#tutor .tchat{flex:1;min-height:0;background:#fff}
+  .sheet:has(> #tutor) .tchat>*{flex:none}
+  .sheet:has(> #tutor) .thead{padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .sheet:has(> #tutor) .tchat>.tlog{flex:1 1 0;min-height:0;overflow-y:auto;display:flex;padding:2px}
+  .sheet:has(> #tutor) .tmsg{font-size:15.5px;max-width:88%}
+  .sheet:has(> #tutor) .tempty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;margin:auto;max-width:320px;color:var(--muted);font-size:14px;line-height:1.5}
+  .sheet:has(> #tutor) .tempty svg{width:48px;height:48px}
+  .sheet:has(> #tutor) .tempty b{font-size:16px;color:var(--ink)}
+  .sheet:has(> #tutor) .tchips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .sheet:has(> #tutor) .tchips::-webkit-scrollbar{display:none}
+  .sheet:has(> #tutor) .tchip{font-size:13.5px;padding:6px 11px;white-space:nowrap;flex:none}
+  .sheet:has(> #tutor)>.rbox{margin-top:-4px}
+  @media (max-height:860px){.sheet:has(> #tutor) .tempty svg{display:none}}
 }
 
 /* ---------- progress on laptops: two columns, send button inside the report card ---------- */
