@@ -1168,6 +1168,22 @@ footer .btn-sm{min-height:28px;padding:2px 10px;font-size:12px;vertical-align:mi
 .mstep::after{content:'›';font-size:20px;line-height:1;color:var(--accent);flex:none}
 .mstep:hover{background:var(--accent-soft)}
 .m-steps{gap:8px}.m-steps li::before{display:none}
+
+/* ---------- phone fixes (mobile sweep, 12 Nov) ---------- */
+@media (max-width:1023px){
+  /* the Ask Buddy button: a small round button, and room under every page so it never hides the last thing */
+  .helper-fab{padding:4px;gap:0;right:12px;bottom:78px}.helper-fab>span{display:none}.helper-fab .buddy{width:40px;height:40px}
+  body:has(#helperFab) main[data-view]{padding-bottom:84px}
+  .pg-parent{flex-wrap:wrap}.pg-parent>div{min-width:150px}.pg-parent .pg-pbtns{width:100%}.pg-parent .pg-pbtns .btn-sm{flex:1;justify-content:center}
+}
+.hw-hero>.buddy,.hw-hero svg.buddy{flex:none}
+@media (max-width:600px){
+  .wr-gen{flex-direction:column;align-items:stretch;flex-basis:100%}.wr-gen .tinput{width:100%;min-width:0}.wr-gen .btn,.wr-row>.btn{width:100%;white-space:normal}
+  .sp-stats{grid-template-columns:repeat(2,1fr);row-gap:12px}
+  .pp-head{flex-direction:column;align-items:stretch}.pp-bill{align-self:stretch}.pp-bill button{flex:1}
+  .sp-q{display:grid;grid-template-columns:26px 1fr;column-gap:12px;row-gap:8px}.sp-q .btn-sm{grid-column:2;justify-self:start}
+  .pd-acts{width:100%}.pd-acts .btn-sm{flex:1;justify-content:center}
+}
 </style>
 </head>
 <body>
