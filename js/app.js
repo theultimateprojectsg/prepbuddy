@@ -2493,7 +2493,7 @@ async function renderBook(bookId) {
   const lkey = (u) => learned[`${book.id}:${u.id}`];
   const lstat = (u) => (lkey(u) ? `✓ Learned ${new Date(lkey(u)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })}` : 'Not learned yet · about 5 min');
   const nextU = book.units.find((u) => pick.ids.has(u.id) && !lkey(u)) || book.units.find((u) => !lkey(u)) || book.units[0];
-  const lrow = (u, cls = '') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}"><span class="lc-t"><b data-raw>${esc(cleanTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
+  const lrow = (u, cls = '') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}">${cls === 'next' ? '<span class="lc-up">Up next</span>' : ''}<span class="lc-t"><b data-raw>${esc(cleanTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
   const nLearned = book.units.filter(lkey).length;
   const learnHTML = `<section class="learn-card" aria-label="Learn">
       <div class="lc-head"><span class="lc-ic">${actionIcon('practise', 24)}</span><div><h2>Learn${book.units.length > 1 ? ` <small>${nLearned} of ${book.units.length} learned</small>` : ''}</h2><p>New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.</p></div></div>

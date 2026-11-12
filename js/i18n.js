@@ -3,6 +3,31 @@
 // Book content and questions are never translated here (they are already in the book's language).
 
 const EXACT = {
+  'Up next': '下一章',
+  'Learn': '學習',
+  'New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.': '第一次讀這一章？Buddy 會一步一步教你，每步都有小測。學完再在下面練習。',
+  'Not learned yet · about 5 min': '未學 · 約 5 分鐘',
+  'Start lesson': '開始上課',
+  'Learn again': '再學一次',
+  'Or choose a chapter': '或選擇章節',
+  'Choose…': '選擇…',
+  'More ways to study': '更多溫習方法',
+  'Chapter test': '章節測驗',
+  'Timed, like a school test': '限時，好似學校測驗',
+  'Key points to revise': '溫習重點',
+  'Quick-fire recall': '快速記憶',
+  'DSE-style or worksheet': 'DSE 模式或工作紙',
+  '· tick a chapter first': '· 請先剔選章節',
+  '1. Choose chapters to practise': '1. 選擇要練習的章節',
+  'Writing · 寫作': '寫作 · Writing',
+  'DSE-style feedback, then redraft': 'DSE 式評語，再修改',
+  'Reading your textbook…': '正在閱讀你的課本…',
+  'Picking an important idea…': '正在挑選重要概念…',
+  'Writing a question…': '正在出題…',
+  'Checking the answer is right…': '正在檢查答案是否正確…',
+  'Making sure it’s clear…': '正在確保題目清楚…',
+  'Almost there…': '差不多好了…',
+  'Ready when you are!': '準備好就開始！',
   // home
   'Exam practice from your textbooks': '用你的課本溫習應試',
   'Add a textbook': '加入課本',
@@ -500,6 +525,8 @@ const EXACT = {
 
 // Text with numbers or names in it.
 const PATTERNS = [
+  [/^✓ Learned (.+)$/, '✓ 已於 $1 學完'],
+  [/^(\d+) of (\d+) learned$/, '已學 $1／$2 章'],
   [/^Suggested: (\d+) min\.?$/, '建議：$1 分鐘'],
   [/^(\d+) min$/, '$1 分鐘'],
   [/^Start mock paper · (\d+) min$/, '開始模擬試卷 · $1 分鐘'],
