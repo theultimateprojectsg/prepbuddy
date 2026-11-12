@@ -53,6 +53,7 @@ async function renderLibrary(note) {
   const cat = await catalog();
   app.innerHTML = `<header><h1>Library</h1><span class="badge">Admin</span></header>
   ${note ? `<div class="ok">${esc(note)}</div>` : ''}
+  <div class="card pl-entry"><div><h2>Pilot families</h2><span class="hint">Family codes, who is practising, what they use, and their feedback.</span></div><button class="btn" id="pilot">Open</button></div>
   <div class="card" id="reports"><h2>Reported questions</h2><p class="muted" style="margin:0">Loading…</p></div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2>Books in the library (${cat.length})</h2><button class="btn" id="add">Add a textbook</button></div>
@@ -63,6 +64,7 @@ async function renderLibrary(note) {
   <button class="btn ghost small" id="out" style="align-self:flex-start">Sign out</button>`;
   loadReports();
   $('add').onclick = () => renderUpload();
+  $('pilot').onclick = () => renderPilot();
   $('out').onclick = () => { sessionStorage.removeItem(PW_KEY); pw = ''; renderLogin(); };
   app.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => renderDetails(cat.find((x) => x.id === b.dataset.edit), cat)));
   app.querySelectorAll('[data-starter]').forEach((b) => (b.onclick = async () => {
@@ -77,6 +79,119 @@ async function renderLibrary(note) {
     try { await adminApi({ action: 'remove', id: book.id }); renderLibrary(`Removed “${book.title}”. The library updates in about 1–2 minutes.`); }
     catch (err) { alert(err.message); b.disabled = false; b.textContent = 'Remove'; }
   }));
+}
+
+
+/* ---------- pilot families ----------
+   Codes for the families testing PrepBuddy, and what each family's devices report: how often they practise,
+   what they use, what goes wrong, and what they tell us. Data lives in the private pilot repo (PILOT_REPO). */
+const FEATURE_NAMES = {
+  practice: 'Practice sets', level_check: 'Level check', chapter_test: 'Chapter tests', mock_paper: 'Mock papers', worksheet: 'Printed worksheets', parent_report: 'Parent report',
+  'ai:learn:lesson': 'Learn mode lessons', 'ai:learn': 'Learn mode: Buddy chat', 'ai:explain': 'Buddy on questions', 'ai:coach': 'Study coach / Ask Buddy', 'ai:mark': 'Written answers marked',
+  'ai:homework:read': 'Homework help: photos read', 'ai:homework:chat': 'Homework help: chat', 'ai:homework:list': '默書: list from photo', 'ai:writing:mark': 'Writing marked', 'ai:writing:prompt': 'Writing: task written',
+  'ai:writing:read': 'Writing: handwriting read', 'ai:speaking:mark': 'Speaking answers marked', 'ai:speaking:task': 'Speaking: topics', 'ai:notes': 'Revision notes', 'ai:report': 'Parent report link',
+};
+const fname = (k) => FEATURE_NAMES[k] || (k.startsWith('upsell:') ? `Hit plan limit: ${k.slice(7)}` : k.startsWith('screen:') ? `Screen: ${k.slice(7)}` : k);
+const ago = (t) => { if (!t) return 'never'; const m = Math.round((Date.now() - t) / 60000); if (m < 2) return 'just now'; if (m < 60) return `${m} min ago`; const h = Math.round(m / 60); if (h < 24) return `${h} h ago`; const d = Math.round(h / 24); return d === 1 ? 'yesterday' : `${d} days ago`; };
+const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+// one family = every device that used its code
+function mergeFamily(snaps) {
+  const days = {}, fx = {}, books = new Map(); let last = 0, first = null, errs = [], counts = {}, names = new Set(), plans = new Set(), devices = [];
+  for (const s of snaps) {
+    devices.push({ device: s.device, ua: s.ua, synced: s.synced, last: s.last });
+    if (s.name) names.add(s.name); if (s.plan) plans.add(s.plan);
+    last = Math.max(last, s.last || 0); if (s.first) first = first ? Math.min(first, s.first) : s.first;
+    for (const d of s.days || []) { const x = days[d.d] || (days[d.d] = { q: 0, g: 0, m: 0, min: 0 }); x.q += d.q; x.g += d.g; x.m += d.m; x.min += d.min; }
+    for (const [k, v] of Object.entries(s.fx || {})) { const x = fx[k] || (fx[k] = { n: 0, last: 0 }); x.n += v.n; x.last = Math.max(x.last, v.last || 0); }
+    for (const b of s.books || []) books.set(b.title, b);
+    errs = errs.concat((s.errs || []).map((e) => ({ ...e, device: s.device })));
+    for (const [k, v] of Object.entries(s.counts || {})) if (typeof v === 'number') counts[k] = (counts[k] || 0) + v;
+  }
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const sum = (n) => { let q = 0, g = 0, m = 0, min = 0, act = 0; for (let i = 0; i < n; i++) { const x = days[dayKey(t0.getTime() - i * 864e5)]; if (x) { q += x.q; g += x.g; m += x.m; min += x.min; act++; } } return { q, acc: m ? Math.round(100 * g / m) : null, min, act }; };
+  return { days, fx, books: [...books.values()], last, first, errs: errs.sort((a, b) => b.t - a.t).slice(0, 12), counts, names: [...names], plans: [...plans], devices, w: sum(7), w2: sum(14) };
+}
+async function renderPilot(note) {
+  app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Back to library</button></header><div class="card"><p class="muted" style="margin:0">Loading…</p></div>`;
+  $('back').onclick = () => renderLibrary();
+  let P;
+  try { P = await adminApi({ action: 'pilot' }); } catch (e) { app.querySelector('.card').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+  if (!P.on) {
+    app.querySelector('.card').innerHTML = `<h2>Set up the pilot</h2><ol class="hint" style="font-size:14px;margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">
+      <li>On GitHub, create a new <b>private</b> repository, e.g. <code>prepbuddy-pilot</code>, with a README so it isn’t empty. Children’s activity is kept there, never in the public code repo.</li>
+      <li>Edit the GitHub token used by Vercel (<code>GITHUB_TOKEN</code>) so it can also read and write that repo’s contents.</li>
+      <li>In Vercel → Settings → Environment Variables, add <code>PILOT_REPO</code> = <code>your-account/prepbuddy-pilot</code>, then redeploy.</li>
+      <li>Come back here and add your first family.</li></ol>`;
+    return;
+  }
+  const fams = P.families || [];
+  const known = new Set(fams.map((f) => f.code));
+  Object.keys(P.activity || {}).forEach((c) => { if (!known.has(c)) fams.push({ code: c, name: '(not on the list)', created: 0 }); });
+  const rows = fams.map((f) => ({ f, a: mergeFamily(P.activity[f.code] || []) })).sort((x, y) => (y.a.last || 0) - (x.a.last || 0));
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const activeToday = rows.filter((r) => r.a.last >= t0.getTime()).length, active7 = rows.filter((r) => r.a.w.act > 0).length;
+  const q7 = rows.reduce((x, r) => x + r.a.w.q, 0), min7 = rows.reduce((x, r) => x + r.a.w.min, 0);
+  // features across families: how many families used each, and how often
+  const feat = {};
+  rows.forEach((r) => Object.entries(r.a.fx).forEach(([k, v]) => { if (k.startsWith('screen:')) return; const x = feat[k] || (feat[k] = { fam: 0, n: 0 }); x.fam++; x.n += v.n; }));
+  const featList = Object.entries(feat).sort((a, b) => b[1].fam - a[1].fam || b[1].n - a[1].n);
+  const unused = Object.keys(FEATURE_NAMES).filter((k) => !feat[k]);
+  const maxF = Math.max(1, ...featList.map(([, v]) => v.fam));
+  const fb = P.feedback || [];
+  const famName = (code) => (fams.find((f) => f.code === code) || {}).name || code;
+  app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Back to library</button></header>
+  ${note ? `<div class="ok">${note}</div>` : ''}
+  <div class="pl-tiles">
+    <div><b>${fams.length}</b><span>families</span></div><div><b>${activeToday}</b><span>active today</span></div><div><b>${active7}</b><span>active this week</span></div>
+    <div><b>${q7}</b><span>questions this week</span></div><div><b>${min7}</b><span>minutes this week</span></div><div><b>${fb.length}</b><span>feedback messages</span></div>
+  </div>
+  <div class="card"><h2>Add a family</h2>
+    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
+    <button class="btn" style="grid-column:1/-1" id="addgo">Make a family code</button></form><div id="newcode"></div></div>
+  <div class="card"><h2>Families</h2>
+    ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Books</th><th>Problems</th></tr></thead>
+    <tbody>${rows.map((r, i) => `<tr class="pl-row ${r.a.last ? (Date.now() - r.a.last > 4 * 864e5 ? 'cold' : '') : 'never'}" data-fam="${i}"><td><b>${esc(r.f.name)}</b><small>${esc(r.f.code)}${r.a.names.length ? ' · ' + esc(r.a.names.join(', ')) : ''}${r.a.devices.length ? ` · ${r.a.devices.length} device${r.a.devices.length > 1 ? 's' : ''}` : ''}</small></td>
+      <td>${r.a.last ? ago(r.a.last) : '<span class="tag">not started</span>'}</td><td>${r.a.w2.act}</td><td>${r.a.w.q}</td><td>${r.a.w.min}</td><td>${r.a.w.acc === null ? '–' : r.a.w.acc + '%'}</td><td>${r.a.books.length}</td><td>${r.a.errs.length ? `<span class="tag red">${r.a.errs.length}</span>` : '–'}</td></tr>
+      <tr class="pl-detail" id="fd${i}" hidden><td colspan="8">${famDetail(r, fb.filter((x) => x.code === r.f.code))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No families yet. Add one above.</p>'}
+    <p class="hint" style="margin:0">Devices send a summary when the app opens, after each practice set and every 10 minutes while it’s open. Families idle for 4+ days are greyed.</p></div>
+  <div class="card"><h2>What’s being used</h2>
+    ${featList.length ? `<div class="pl-feats">${featList.map(([k, v]) => `<div><span>${esc(fname(k))}</span><i style="width:${Math.round(100 * v.fam / maxF)}%"></i><b>${v.fam} famil${v.fam === 1 ? 'y' : 'ies'} · ${v.n}×</b></div>`).join('')}</div>` : '<p class="muted" style="margin:0">Nothing yet.</p>'}
+    ${unused.length && rows.some((r) => r.a.last) ? `<p class="hint" style="margin:0"><b>Not used by anyone yet:</b> ${unused.map(fname).join(' · ')}</p>` : ''}</div>
+  <div class="card"><h2>Feedback (${fb.length})</h2>
+    ${fb.length ? fb.map((x) => `<div class="pl-fb"><div><b>${esc(famName(x.code))}</b>${x.name ? ` · ${esc(x.name)}` : ''} <small>${ago(x.at)}</small></div><p>${esc(x.text)}</p></div>`).join('') : '<p class="muted" style="margin:0">No feedback yet. Families send it from Settings in the app.</p>'}</div>`;
+  $('back').onclick = () => renderLibrary();
+  app.querySelectorAll('[data-fam]').forEach((tr) => (tr.onclick = () => { const d = $('fd' + tr.dataset.fam); d.hidden = !d.hidden; tr.classList.toggle('open', !d.hidden); }));
+  $('addf').onsubmit = async (e) => {
+    e.preventDefault(); const btn = $('addgo'); btn.disabled = true;
+    try {
+      const r = await adminApi({ action: 'pilot_add', name: $('fname').value, note: $('fnote').value });
+      const msg = `Hi! Thanks for trying PrepBuddy. Open ${location.origin} on your child’s phone or computer and enter this family code: ${r.family.code}\nAny feedback is welcome: there’s a box for it in Settings.`;
+      $('newcode').innerHTML = `<div class="ok">Code for ${esc(r.family.name)}: <b style="font-size:18px;letter-spacing:.05em">${esc(r.family.code)}</b></div>
+        <label>Message to send them<textarea id="invite" rows="3">${esc(msg)}</textarea></label><div class="acts"><button class="link" id="copyinv">Copy message</button><button class="link" id="refresh">Done: refresh the list</button></div>`;
+      $('copyinv').onclick = () => { navigator.clipboard.writeText($('invite').value); $('copyinv').textContent = 'Copied'; };
+      $('refresh').onclick = () => renderPilot();
+      $('fname').value = ''; $('fnote').value = '';
+    } catch (err) { $('newcode').innerHTML = `<div class="err">${esc(err.message)}</div>`; }
+    btn.disabled = false;
+  };
+}
+function famDetail(r, fb) {
+  const a = r.a, t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const days = Array.from({ length: 21 }, (_, i) => { const t = t0.getTime() - (20 - i) * 864e5; return { t, x: a.days[dayKey(t)] }; });
+  const max = Math.max(10, ...days.map((d) => (d.x ? d.x.min : 0)));
+  const fx = Object.entries(a.fx).filter(([k]) => !k.startsWith('screen:')).sort((x, y) => y[1].n - x[1].n);
+  const scr = Object.entries(a.fx).filter(([k]) => k.startsWith('screen:')).sort((x, y) => y[1].n - x[1].n).slice(0, 10);
+  return `<div class="fd">
+    <div><h3>Minutes each day (last 3 weeks)</h3><div class="fd-bars">${days.map((d) => `<span title="${dayKey(d.t)}: ${d.x ? `${d.x.min} min, ${d.x.q} questions` : 'none'}"><i style="height:${d.x ? Math.max(4, Math.round(70 * d.x.min / max)) : 2}px" class="${d.x ? '' : 'none'}"></i></span>`).join('')}</div>
+      <p class="hint" style="margin:6px 0 0">${a.first ? `Started ${new Date(a.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. ` : ''}Plan seen: ${esc(a.plans.join(', ') || '–')}. Devices: ${a.devices.map((d) => `${esc(d.ua || 'device')} (synced ${ago(d.synced)})`).join(', ') || '–'}.</p>
+      ${r.f.note ? `<p class="hint" style="margin:6px 0 0"><b>Notes:</b> ${esc(r.f.note)}</p>` : ''}</div>
+    <div><h3>Books</h3>${a.books.length ? a.books.map((b) => `<div class="fd-row"><span>${esc(b.title)} <small>${esc(b.subject)} ${esc(b.level)}</small></span><b>${b.pct === null ? '–' : b.pct + '%'}</b></div>`).join('') : '<p class="muted">None added yet.</p>'}
+      <h3 style="margin-top:12px">Totals</h3><p class="hint" style="margin:0">Mistakes open ${a.counts.mistakes || 0} · lessons ${a.counts.learned || 0} · tests ${a.counts.tests || 0} · school tests ${a.counts.schoolTests || 0} · homework ${a.counts.homework || 0} · essays marked ${a.counts.writing || 0} · speaking ${a.counts.speaking || 0}</p></div>
+    <div><h3>Features used</h3>${fx.length ? fx.map(([k, v]) => `<div class="fd-row"><span>${esc(fname(k))}</span><b>${v.n}× <small>${ago(v.last)}</small></b></div>`).join('') : '<p class="muted">Nothing yet.</p>'}</div>
+    <div><h3>Screens visited</h3>${scr.map(([k, v]) => `<div class="fd-row"><span>${esc(k.slice(7))}</span><b>${v.n}</b></div>`).join('') || '<p class="muted">–</p>'}
+      ${a.errs.length ? `<h3 style="margin-top:12px">Problems seen</h3>${a.errs.map((e) => `<div class="fd-err">${esc(e.m)} <small>${esc(e.v || '')} · ${ago(e.t)}</small></div>`).join('')}` : ''}
+      ${fb.length ? `<h3 style="margin-top:12px">Their feedback</h3>${fb.map((x) => `<p class="fd-fb">“${esc(x.text)}” <small>${ago(x.at)}</small></p>`).join('')}` : ''}</div>
+  </div>`;
 }
 
 /* ---------- questions students reported ---------- */

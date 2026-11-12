@@ -30,6 +30,10 @@
       "destination": "/api/study?fn=bookinfo"
     },
     {
+      "source": "/api/pilot",
+      "destination": "/api/study?fn=pilot"
+    },
+    {
       "source": "/admin",
       "destination": "/admin.html"
     }

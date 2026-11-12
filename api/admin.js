@@ -96,6 +96,20 @@ module.exports = async (req, res) => {
       const commit = await commitWith({ files: [{ path: `library/${body.id}/questions.json`, sha: body.sha }], message: `Library: ${n} starter questions for ${body.id}`,
         change: (cat) => cat.map((x) => (x.id === body.id ? { ...x, questionCount: n } : x)) });
       out = { ok: true, commit };
+    } else if (body.action === 'pilot') {
+      const P = require('../lib/pilot');
+      out = P.pilotOn() ? { on: true, ...(await P.overview()) } : { on: false };
+    } else if (body.action === 'pilot_add') {
+      const P = require('../lib/pilot');
+      if (!P.pilotOn()) throw err(400, 'Set PILOT_REPO in Vercel first.');
+      const name = String(body.name || '').trim().slice(0, 60); if (!name) throw err(400, 'Give the family a name.');
+      const fam = { code: P.makeCode(name), name, note: String(body.note || '').trim().slice(0, 300), created: Date.now() };
+      await P.writeFile('families.json', (cur) => [...(cur || []), fam], `Pilot: add ${fam.code}`);
+      out = { ok: true, family: fam };
+    } else if (body.action === 'pilot_note') {
+      const P = require('../lib/pilot');
+      await P.writeFile('families.json', (cur) => (cur || []).map((f) => (f.code === body.code ? { ...f, note: String(body.note || '').slice(0, 300), off: !!body.off } : f)), `Pilot: update ${body.code}`);
+      out = { ok: true };
     } else if (body.action === 'remove') {
       if (!safeId(body.id)) throw err(400, 'Bad book id.');
       const commit = await commitWith({ message: `Library: remove ${body.id}`, deletePrefix: `library/${body.id}/`, change: (cat) => cat.filter((x) => x.id !== body.id) });

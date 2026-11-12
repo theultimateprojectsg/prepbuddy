@@ -506,6 +506,7 @@ function askTime(title, detail, suggested) {
 
 async function startChapterTest(book, units) {
   if (!allow('test')) return;
+  track('chapter_test');
   const nA = Math.min(16, 6 + 2 * units.length), nB = Math.min(4, 1 + units.length);
   const mins = await askTime(LANG === 'zh' ? '章節測驗' : 'Chapter test', `${nA} multiple-choice and ${nB} written questions. Pass mark 80%.`, paperMinutes(nA, nB));
   if (mins === null) return;
@@ -536,14 +537,17 @@ const MAX_INFLIGHT = 12;
 let inflight = 0; const waiting = [];
 async function slot() { if (inflight < MAX_INFLIGHT) { inflight++; return; } await new Promise((r) => waiting.push(r)); inflight++; }
 function release() { inflight--; const n = waiting.shift(); if (n) n(); }
+const AI_TRACK = (path, body) => (['generate', 'verify', 'warm', 'snippets', 'chapters'].includes(path) ? null : `ai:${path}${body && body.step ? ':' + body.step : ''}${path === 'learn' && body && body.ask === undefined ? ':lesson' : ''}`);
 async function api(path, body) {
   const f = gateApi(path, body);
+  track(AI_TRACK(path, body));
   await slot();
   try { const r = await apiOnce(path, body); if (f) meter(f); return r; } finally { release(); }
 }
 // Like api(), but the reply streams in: onChunk(words) is called as they are written. Returns the final result.
 async function apiStream(path, body, onChunk) {
   const f = gateApi(path, body);
+  track(AI_TRACK(path, body));
   const out = await apiStreamOnce(path, body, onChunk);
   if (f) meter(f);
   return out;
@@ -556,7 +560,7 @@ async function apiStreamOnce(path, body, onChunk) {
   if (!r.ok || !/ndjson/.test(r.headers.get('content-type') || '') || !r.body) {
     let data = {}; try { data = await r.json(); } catch (e) {}
     if (data.usage) recordUsage(path, data.usage);
-    if (!r.ok) { const e = new Error(data.error || `Server error ${r.status}`); e.status = r.status; throw e; }
+    if (!r.ok) { const e = new Error(data.error || `Server error ${r.status}`); e.status = r.status; if (r.status !== 401 && r.status !== 402) noteError(`${path}: ${e.message}`); throw e; }
     return data;
   }
   const reader = r.body.getReader(), dec = new TextDecoder();
@@ -690,6 +694,7 @@ async function go(v) {
   if (!navPopping && navStack.length >= 2 && navKey(navStack[navStack.length - 2]) === navKey(v) && !(history.state && history.state.session)) { try { history.back(); return; } catch (e) {} }
   navPush(v);
   view = v;
+  track('screen:' + v.name);
   getBooks().then((bs) => { bs.forEach((b) => { bookKinds.set(b.id, kindOfBook(b)); aliases.set(b.id, b.alias || {}); }); const pr = bs.some(looksPrimary); if (pr !== primaryCache) { primaryCache = pr; renderTabs(); } });
   document.querySelectorAll('.toast').forEach((x) => x.remove());
   stopTimer();
@@ -2174,6 +2179,13 @@ function renderSettings() {
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:13.5px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
     </section>
+    ${local.pilot ? `<section class="card stack g10 fbcard" style="padding:16px">
+      <b style="font-size:15px">${PLT('Tell us what you think', '告訴我們你的意見')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('You’re in the PrepBuddy pilot. What do you like? What’s confusing or broken? Parents and students both welcome.', '你正參與 PrepBuddy 試用。你喜歡甚麼？有甚麼令你困惑或出錯？家長和學生都歡迎留言。')}</span>
+      <textarea id="sfb" class="wr-ta small" rows="4" placeholder="${PLT('Type here…', '在這裏輸入…')}"></textarea>
+      <button class="btn-sm primary" id="sfbgo" style="align-self:flex-start">${PLT('Send', '傳送')}</button>
+      <span class="hint" style="margin:0">${PLT(`Family code ${esc(local.code || '')}`, `家庭代碼 ${esc(local.code || '')}`)}</span>
+    </section>` : ''}
     <section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">${BK('Back up your progress', '備份你的進度')}</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
@@ -2190,6 +2202,7 @@ function renderSettings() {
   const nm = document.getElementById('sname');
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   document.getElementById('susage').onclick = () => go({ name: 'usage' });
+  { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
   document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
   document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   document.getElementById('splans').onclick = () => go({ name: 'plans' });
@@ -2198,6 +2211,98 @@ function renderSettings() {
   window.scrollTo(0, 0);
 }
 
+
+
+/* ---------- pilot: family codes, activity and feedback ----------
+   During the pilot each family gets its own code. The app asks for it once, then uses it for the AI. Each device
+   sends a short summary of how PrepBuddy is being used (days, questions, scores, which features, errors) so the
+   admin page can see what's working; nothing is sent when the pilot is off. */
+const PLT = (en, zh) => (LANG === 'zh' ? zh : en);
+local.device = local.device || uid();
+function track(name) {
+  if (!name) return;
+  local.fx = local.fx || {};
+  const x = local.fx[name] || { n: 0 }; x.n++; x.last = Date.now(); local.fx[name] = x;
+  saveLocal();
+}
+function noteError(msg) {
+  local.errs = [...(local.errs || []), { t: Date.now(), m: String(msg || '').slice(0, 200), v: view && view.name }].slice(-15);
+  saveLocal();
+}
+window.addEventListener('error', (e) => noteError(e.message));
+window.addEventListener('unhandledrejection', (e) => noteError(e.reason && (e.reason.message || e.reason)));
+async function pilotPost(body) {
+  const r = await fetch('/api/pilot', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), keepalive: true });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(d.error || `Server error ${r.status}`); e.status = r.status; throw e; }
+  return d;
+}
+// Before anything else: is the pilot on, and does this device have a good family code?
+async function pilotGate() {
+  let res;
+  try { res = await pilotPost({ step: 'check', code: local.code || '' }); } catch (e) { return; } // offline or no server: carry on
+  local.pilot = !!res.pilot; saveLocal();
+  if (!res.pilot || res.ok) return;
+  await new Promise((resolve) => {
+    const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
+    const done = () => { if (nav) nav.style.display = ''; resolve(); };
+    const draw = (msg) => {
+      document.body.dataset.tab = '';
+      $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
+        <div class="pg-box">${logoSVG(56)}<h1>${PLT('Welcome to PrepBuddy', '歡迎使用 PrepBuddy')}</h1>
+        <p>${PLT('PrepBuddy is in a private pilot. Enter the family code we sent you.', 'PrepBuddy 正在進行小規模試用。請輸入我們給你的家庭代碼。')}</p>
+        <form id="pgf"><input id="pgc" class="input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${PLT('e.g. CHAN27-K4QF9X', '例如 CHAN27-K4QF9X')}" value="${esc(local.code || '')}" aria-label="${PLT('Family code', '家庭代碼')}">
+        ${msg ? `<p class="hw-err" role="alert">${esc(msg)}</p>` : ''}
+        <button class="btn" id="pgok">${PLT('Continue', '繼續')}</button></form>
+        <p class="hint">${PLT('No code? Ask the person who invited you.', '沒有代碼？請聯絡邀請你的人。')}</p></div></main>`;
+      document.getElementById('pgf').onsubmit = async (e) => {
+        e.preventDefault();
+        const c = document.getElementById('pgc').value.trim().toUpperCase();
+        if (!c) return;
+        document.getElementById('pgok').disabled = true;
+        try { const r = await pilotPost({ step: 'check', code: c }); if (r.ok || !r.pilot) { local.code = c; saveLocal(); done(); return; } draw(PLT('That code isn’t right. Check it and try again.', '代碼不正確，請檢查後再試。')); }
+        catch (err) { draw(PLT('Couldn’t check the code. Are you online?', '未能檢查代碼，你有連接網絡嗎？')); }
+      };
+    };
+    draw();
+  });
+}
+// A short summary of how PrepBuddy is used on this device (sent to the pilot admin page).
+async function pilotSnap() {
+  const books = await getBooks();
+  const t0 = dayStart(), log = local.log || [];
+  const days = [];
+  for (let i = 20; i >= 0; i--) {
+    const a = t0 - i * DAY, es = log.filter((e) => e.t >= a && e.t < a + DAY);
+    if (!es.length) continue;
+    days.push({ d: ymd(a), q: es.length, g: es.reduce((x, e) => x + (e.g || 0), 0), m: es.reduce((x, e) => x + (e.m || 0), 0), min: minutesOf(es) });
+  }
+  const bk = [];
+  for (const b of books.slice(0, 12)) { let pct = null; try { pct = (await bookMastery(b)).pct; } catch (e) {} bk.push({ title: b.title, subject: b.subject || '', level: b.level || '', chapters: b.units.length, pct }); }
+  const g = log.reduce((x, e) => x + (e.g || 0), 0), m = log.reduce((x, e) => x + (e.m || 0), 0);
+  return {
+    v: 1, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache,
+    ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',
+    first: log.length ? log[0].t : null, last: log.length ? log[log.length - 1].t : null,
+    total: { q: log.length, acc: m ? Math.round(100 * g / m) : null, min: minutesOf(log) },
+    days, books: bk, fx: local.fx || {},
+    counts: { mistakes: mistakeCount(), learned: Object.keys(local.learned || {}).length, tests: (local.tests || []).length, schoolTests: (local.sched || []).length, homework: (local.hw || []).length,
+      writing: (local.wr || []).reduce((x, w) => x + w.drafts.length, 0), speaking: (local.sp || []).reduce((x, w) => x + w.tries.length, 0), placement: Object.keys(local.placement || {}).length,
+      stars: starsOn() ? { bal: starState().bal, total: starState().total, redeemed: (starState().redeemed || []).length } : null },
+    errs: (local.errs || []).slice(-10),
+  };
+}
+let syncing = false;
+async function pilotSync(force) {
+  if (!local.pilot || !local.code || syncing) return;
+  if (!force && local.syncAt && Date.now() - local.syncAt < 4 * 60000) return;
+  syncing = true;
+  try { const snap = await pilotSnap(); await pilotPost({ step: 'sync', code: local.code, device: local.device, snap }); local.syncAt = Date.now(); saveLocal(); }
+  catch (e) { if (e.status === 401) { local.pilot = true; } }
+  finally { syncing = false; }
+}
+setInterval(() => pilotSync(), 10 * 60000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') pilotSync(); });
 
 /* ---------- back up and restore (until accounts) ----------
    Everything PrepBuddy keeps on this device in one file: progress, settings, textbooks, questions, notes,
@@ -3479,6 +3584,7 @@ function goalDialog() {
 
 // The parent report: name, preview, send. A small dialog instead of a block of text on the page.
 function reportDialog() {
+  track('parent_report');
   const box = document.createElement('div');
   box.className = 'cdlg-wrap';
   box.innerHTML = `<div class="cdlg rdlg" role="dialog" aria-modal="true" aria-labelledby="rd-t" data-raw>
@@ -3645,7 +3751,7 @@ async function renderPaper(bookId, from) {
     try {
       const paper = await preparePaper(book, units, a, b, purpose);
       if (!paper) return;
-      meter('mock');
+      meter('mock'); track(purpose === 'print' ? 'worksheet' : 'mock_paper');
       if (purpose === 'print') renderPrint(book, units, paper, mins); else startDse(book, paper, mins);
     } catch (e) {
       if (e.status === 401) return renderAccess(() => renderPaper(bookId), 'That access code didn’t work.');
@@ -3914,6 +4020,7 @@ function newSession(props) {
 const SPARE = 3;
 const MAKE_PAR = 4;
 async function startUnits(book, units, count = SESSION_SIZE, opts = {}) {
+  track(opts.placement ? 'level_check' : 'practice');
   if (!opts.placement) { if (!allow('q')) return; if (limitOf('q') !== UNL) count = Math.max(1, Math.min(count, leftOf('q'))); }
   const k = units.length, quota = Math.ceil(count / k);
   let types = opts.types || local.types || 'mix'; const diff = opts.diff || curDiff();
@@ -4009,6 +4116,7 @@ function allow(f) {
 const nextPlanFor = (f) => PLAN_ORDER.slice(PLAN_ORDER.indexOf(planId()) + 1).find((p) => TIERS[p].lim[f] > (curPlan().lim[f] || 0)) || 'pro';
 const limText = (f, v) => { const F = FEAT[f]; if (v === UNL) return PL('Unlimited', '無限'); if (F.per === 'flag') return v ? '✓' : '—'; if (!v) return '—'; return `${v} ${PL(v === 1 || !F.en[2] ? F.en[1] : F.en[2], F.zh[1])}`.trim(); };
 function upsell(f, why) {
+  track('upsell:' + f);
   document.querySelectorAll('.up-wrap').forEach((x) => x.remove());
   const F = FEAT[f], np = nextPlanFor(f), P = TIERS[np];
   const name = PL(F.en[0], F.zh[0]);
@@ -5582,6 +5690,7 @@ function advance() {
 }
 
 function renderSummary() {
+  setTimeout(() => pilotSync(), 3000);
   if (S && S.placement) return renderPlacementResult();
   stopTimer();
   const qs = S.qs.slice(0, Math.max(S.i + 1, 0));
@@ -5775,4 +5884,4 @@ async function refreshOldQuestions() {
 }
 getBooks().then(pruneMistakes).catch(() => {});
 flushReports().catch(() => {});
-refreshOldQuestions().catch(() => {}).finally(() => go({ name: 'home' }));
+pilotGate().then(() => refreshOldQuestions().catch(() => {})).finally(() => { go({ name: 'home' }); setTimeout(() => pilotSync(true), 8000); });
