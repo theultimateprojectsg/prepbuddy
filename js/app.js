@@ -1675,55 +1675,211 @@ async function readyRowsHTML(limit = Infinity) {
   if (limit < Infinity) rows.sort((x, y) => y.pct - x.pct);
   return { html: rows.slice(0, limit).map((x) => x.html).join(''), more: Math.max(0, rows.length - limit), n: rows.length };
 }
-async function renderProgress() {
+// Small line icons for the progress page.
+const PI = {
+  flame: '<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5.5 1-8.5z"/>',
+  check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/>',
+  up: '<path d="M4 16l5-5 4 4 7-7"/><path d="M15 8h5v5"/>',
+  alert: '<path d="M12 4l9 16H3z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".6" fill="currentColor"/>',
+  repeat: '<path d="M4 12a8 8 0 0 1 14-5.3L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L4 15"/><path d="M4 20v-5h5"/>',
+  bars: '<path d="M5 20V11M12 20V5M19 20v-6"/>',
+  book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5"/>',
+  ring: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 9 9"/>',
+  line: '<path d="M3 17l5-6 4 3 5-7 4 4"/>',
+  brain: '<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/>',
+  pencil: '<path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/>',
+  memory: '<path d="M12 21a9 9 0 1 1 9-9"/><path d="M12 7v5l3 2"/><path d="M17 17l2 2 3-3"/>',
+  send: '<path d="M21 3L10 14"/><path d="M21 3l-7 18-4-7-7-4z"/>',
+  next: '<path d="M9 6l6 6-6 6"/>',
+};
+const pIcon = (k, size = 20) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PI[k]}</svg>`;
+const PT = (en, zh) => (LANG === 'zh' ? zh : en);
+const SKILL_PLAIN = () => (LANG === 'zh' ? ['記憶事實', '理解', '應用', '深入思考'] : ['Remembering facts', 'Understanding', 'Using it', 'Thinking it through']);
+
+// Everything the progress page shows, worked out from the activity log, scores and textbooks on this device.
+async function progressData() {
   const r = await currentReport();
-  const ready = await readyRowsHTML();
-  const mastHTML = ready.n ? `<section class="card stack g10" style="padding:14px 16px"><b style="font-size:15px">How ready you are</b>${ready.html}<span class="hint">Mastery counts how much of each book you’ve practised, how well, and whether you’ve kept it fresh with reviews.</span></section>` : '';
+  const books = await getBooks();
+  const log = local.log, d0 = new Date(); d0.setHours(0, 0, 0, 0); const today = d0.getTime();
+  const dayOf = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+  const accOf = (es) => { const m = es.reduce((x, e) => x + e.m, 0); return m ? Math.round(100 * es.reduce((x, e) => x + e.g, 0) / m) : null; };
+  // streak: days in a row with practice, up to today (or yesterday, if today hasn't started yet)
+  const days = new Set(log.map((e) => dayOf(e.t)));
+  let streak = 0; for (let d = days.has(today) ? today : today - DAY; days.has(d); d -= DAY) streak++;
+  // weekly score for the last 6 weeks (each week ends today)
+  const weeks = Array.from({ length: 6 }, (_, i) => {
+    const end = today + DAY - (5 - i) * 7 * DAY, start = end - 7 * DAY;
+    const es = log.filter((e) => e.t >= start && e.t < end);
+    return { start, a: accOf(es), n: es.length };
+  });
+  // chapters this week, compared with last week
+  const from = r.from, prevFrom = from - 7 * DAY, by = new Map();
+  for (const e of log) {
+    if (e.t < prevFrom) continue;
+    const [b, u] = e.q.split(':'), k = `${b}:${u}`;
+    if (!by.has(k)) by.set(k, { b, u, now: [], prev: [] });
+    (e.t >= from ? by.get(k).now : by.get(k).prev).push(e);
+  }
+  const chapters = [...by.values()].filter((c) => c.now.length).map((c) => {
+    const book = books.find((x) => x.id === c.b), unit = book && book.units.find((x) => x.id === c.u);
+    return book && unit ? { book, unit, a: accOf(c.now), was: c.prev.length >= 3 ? accOf(c.prev) : null, n: c.now.length, wrong: c.now.filter((e) => e.g < e.m).length } : null;
+  }).filter(Boolean).sort((x, y) => y.n - x.n);
+  const weak = chapters.filter((c) => c.n >= 3 && c.a < 70).sort((x, y) => x.a - y.a)[0] || null;
+  let up = chapters.filter((c) => c !== weak && c.was !== null && c.a > c.was).sort((x, y) => (y.a - y.was) - (x.a - x.was))[0] || null;
+  if (!up) up = chapters.filter((c) => c !== weak && c.n >= 3 && c.a >= 70).sort((x, y) => y.a - x.a)[0] || null;
+  // readiness per textbook: mastery, or how much has been covered while mastery is still at 0
+  const subjects = [];
+  for (const b of books) { const m = await bookMastery(b); subjects.push({ book: b, pct: m.pct, covered: Math.round(100 * (m.areas.covered || 0)) }); }
+  const stats = Object.values(local.stats);
+  const weekAgo = Date.now() - 7 * DAY;
+  return {
+    r, streak, weeks, chapters, weak, up, subjects,
+    due: (await dueItems()).length,
+    mistakes: mistakeCount(),
+    fixed: Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > weekAgo).length,
+    longTerm: stats.filter((st) => (st.box || 0) >= 3).length,
+    total: stats.reduce((x, st) => x + (st.seen || 0), 0),
+  };
+}
+
+function ringHTML(p, tone, label, size = 76) {
+  const R = 30, C = 2 * Math.PI * R, off = C * (1 - Math.max(0, Math.min(100, p)) / 100);
+  return `<span class="pg-ring ${tone}" style="width:${size}px;height:${size}px"><svg viewBox="0 0 76 76" aria-hidden="true"><circle cx="38" cy="38" r="${R}" class="trk"/><circle cx="38" cy="38" r="${R}" class="val" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><b>${label}</b></span>`;
+}
+function trendSVG(weeks) {
+  const pts = weeks.map((w, i) => ({ i, a: w.a })).filter((p) => p.a !== null);
+  if (pts.length < 2) return `<p class="pg-empty">${PT('Practise for two weeks to see your score over time.', '練習兩星期後，就會看到分數的走勢。')}</p>`;
+  const narrow = !matchMedia('(min-width:700px)').matches;
+  const W = narrow ? 340 : 520, H = narrow ? 130 : 150, px = (i) => (narrow ? 44 : 56) + i * (W - (narrow ? 70 : 100)) / 5, py = (a) => 22 + (100 - a) * (H - 40) / 100;
+  const path = pts.map((p, k) => `${k ? 'L' : 'M'}${px(p.i).toFixed(1)} ${py(p.a).toFixed(1)}`).join(' ');
+  const lab = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
+  return `<svg class="pg-trend" viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="${PT('Weekly score', '每週分數')}: ${weeks.map((w) => (w.a === null ? '–' : w.a + '%')).join(', ')}">
+    ${[50, 80].map((g) => `<line x1="34" x2="${W - 12}" y1="${py(g)}" y2="${py(g)}" class="grid"/><text x="0" y="${py(g) + 4}" class="gl">${g}%</text>`).join('')}
+    <path d="${path}" class="ln"/>
+    ${pts.map((p) => `<circle cx="${px(p.i)}" cy="${py(p.a)}" r="4.5" class="dot"/><text x="${px(p.i)}" y="${py(p.a) - 10}" text-anchor="middle" class="vl">${p.a}%</text>`).join('')}
+    ${weeks.map((w, i) => `<text x="${px(i)}" y="${H + 14}" text-anchor="middle" class="xl">${i === 5 ? PT('This week', '本週') : lab(w.start)}</text>`).join('')}
+  </svg>`;
+}
+
+async function renderProgress() {
+  const D = await progressData(), r = D.r;
+  const zh = LANG === 'zh';
+  const mins = r.days.reduce((a, m) => a + m, 0);
+  const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : PT(`${mins} min`, `${mins} 分鐘`);
+  const verdict = !r.q ? PT('No practice yet this week', '本週還未練習')
+    : r.dp >= 5 || (r.a !== null && r.pa !== null && r.a - r.pa >= 5) ? PT('You had a strong week', '你本週表現出色')
+    : r.dp >= 3 ? PT('You had a steady week', '你本週表現穩定') : PT('Good start this week', '本週好的開始');
+  const sub = !r.q ? PT('A short session today gets your week going.', '今天練習一會兒，為這星期開個好頭。')
+    : PT(`Practised ${r.dp} of the last 7 days`, `過去 7 日中有 ${r.dp} 日練習`);
+  const diff = r.a !== null && r.pa !== null ? r.a - r.pa : null;
+  const stat = (icon, tone, value, label, extra = '') => `<div class="pg-stat"><span class="pg-ic ${tone}">${pIcon(icon, 20)}</span><div><b>${value}</b><span>${label}</span>${extra}</div></div>`;
+  const dayName = (i, f) => new Date(r.from + i * DAY).toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { weekday: f });
+  const maxMin = Math.max(20, ...r.days);
+  const longest = r.days.indexOf(Math.max(...r.days));
+  const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
+  const chLabel = (p) => (p >= 80 ? PT('Strong', '強') : p >= 60 ? PT('Getting there', '漸入佳境') : PT('Needs work', '需加強'));
+  const chName = (c) => cleanUnitTitle(c.unit.title);
+
+  // what to do next: each one is something to tap
+  const acts = [];
+  if (D.weak) acts.push(`<button class="pg-act weak" data-unit="${esc(D.weak.book.id)}:${esc(D.weak.unit.id)}"><span class="pg-ic low">${pIcon('alert')}</span><span class="pg-at"><small>${PT('Needs work', '需要加強')}</small><b>${esc(chName(D.weak))}</b><span>${PT(`${D.weak.wrong} of ${D.weak.n} not fully right · practise it`, `${D.weak.n} 題中有 ${D.weak.wrong} 題未完全答對 · 去練習`)}</span></span>${pIcon('next', 18)}</button>`);
+  if (D.due) acts.push(`<button class="pg-act" id="act-review"><span class="pg-ic blue">${pIcon('repeat')}</span><span class="pg-at"><small>${PT('Due today', '今日要溫習')}</small><b>${PT(`${D.due} review${D.due === 1 ? '' : 's'}`, `${D.due} 條溫習題`)}</b><span>${PT('Quick reviews help you remember for the exam', '快速溫習，考試時記得更牢')}</span></span>${pIcon('next', 18)}</button>`);
+  if (D.mistakes) acts.push(`<button class="pg-act" id="act-mistakes"><span class="pg-ic red">${pIcon('pencil')}</span><span class="pg-at"><small>${PT('Mistake book', '錯題簿')}</small><b>${PT(`${D.mistakes} to get right`, `${D.mistakes} 題要改正`)}</b><span>${D.fixed ? PT(`${D.fixed} fixed this week`, `本週改正了 ${D.fixed} 題`) : PT('Get them right to move them to Mastered', '答對後會移到已掌握')}</span></span>${pIcon('next', 18)}</button>`);
+  if (D.up) acts.push(`<div class="pg-act good"><span class="pg-ic green">${pIcon('up')}</span><span class="pg-at"><small>${PT('Getting better', '有進步')}</small><b>${esc(chName(D.up))}</b><span>${D.up.was !== null ? PT(`Up from ${D.up.was}% to ${D.up.a}% since last week`, `由上週 ${D.up.was}% 進步至 ${D.up.a}%`) : PT(`${D.up.a}% this week`, `本週 ${D.up.a}%`)}</span></span></div>`);
+  if (!acts.length) acts.push(`<button class="pg-act" id="act-books"><span class="pg-ic blue">${pIcon('book')}</span><span class="pg-at"><small>${PT('Start here', '由這裡開始')}</small><b>${PT('Practise a chapter', '練習一個章節')}</b><span>${PT('Your insights appear after a few questions', '做幾題後，就會看到你的分析')}</span></span>${pIcon('next', 18)}</button>`);
+
+  const names = SKILL_PLAIN();
+  const rated = r.sk.map(([a, n], i) => ({ a, n, i })).filter((x) => x.n >= 3 && x.a !== null);
+  const best = rated.slice().sort((x, y) => y.a - x.a)[0], worst = rated.slice().sort((x, y) => x.a - y.a)[0];
+  const skillNote = best && worst && best.i !== worst.i && best.a - worst.a >= 15
+    ? PT(`Best at ${names[best.i].toLowerCase()}. ${names[worst.i]} needs the most work.`, `最擅長「${names[best.i]}」；「${names[worst.i]}」最需要加強。`)
+    : rated.length ? PT('Fairly even across question types.', '各類題型表現大致平均。') : '';
+
   $app.innerHTML = `
-  <main class="pad stack g18" data-view="progress" style="flex:1">
-    <h1 class="pagetitle">Progress</h1>
-    <div class="pg-cols"><div class="pg-col stack g18">
-    <section class="pg-week stack g18"><div class="stack g6"><span class="muted" style="font-size:13px">Last 7 days</span><span class="display" style="font-size:26px;font-weight:700;line-height:1.2">${r.dp} of 7 days practised</span></div>
-    ${weekHTML(r)}
-    </section>
-    ${mastHTML}
-    </div><div class="pg-col stack g18">
-    <div class="skills-wrap" data-raw>${skillsHTML(r, LANG === 'zh')}</div>
-    <div class="card stack g10 pg-report" style="padding:14px 16px">
-      <b style="font-size:15px">Your report for parents</b>
-      <span style="font-size:14px;line-height:1.5;color:var(--text-2)">A one-page summary of this week: practice, scores by chapter, what is improving and what needs work.</span>
-      <label for="name" style="font-size:13px;font-weight:600;color:var(--muted)">Your name on the report</label>
-      <input id="name" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name)}">
-      <button class="btn-sm" id="preview" style="align-self:flex-start">Preview the report</button>
-      <div class="pg-send stack g8"><button class="btn" data-send style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
-      <span class="hint" style="text-align:center">Opens WhatsApp or another app with a link. Your parent doesn't need to sign in.</span></div>
+  <main class="pad pgpage" data-view="progress" data-raw style="flex:1">
+    <h1 class="pagetitle">${PT('Progress', '進度')}</h1>
+    <section class="pg-hero">${buddySVG(r.q ? 'happy' : 'think', 60)}<div><b>${verdict}</b><span>${sub}</span></div></section>
+    <div class="pg-stats">
+      ${stat('flame', 'orange', D.streak, PT(D.streak === 1 ? 'day in a row' : 'days in a row', '連續練習日數'))}
+      ${stat('check', 'blue', r.q, PT('questions this week', '本週題數'), `<small>${PT(`${D.total} in total`, `累計 ${D.total} 題`)}</small>`)}
+      ${stat('clock', 'purple', hm, PT('practising this week', '本週練習時間'))}
+      ${stat('target', 'green', r.a === null ? '–' : r.a + '%', PT('score this week', '本週得分率'), diff === null ? '' : `<small class="${diff >= 0 ? 'upc' : 'downc'}">${diff >= 0 ? '↑' : '↓'} ${Math.abs(diff)} ${PT('from last week', '比上週')}</small>`)}
     </div>
-    <div id="fallback"></div>
-    </div></div>
-  </main>
-  <div class="sheet sticky pg-sheet">
-    <button class="btn" id="send" data-send style="display:flex;gap:10px;align-items:center;justify-content:center">${ICON.upload} Send report to parent</button>
-    <span class="hint" style="text-align:center">Opens WhatsApp or another app with a link. Your parent doesn't need to sign in.</span>
+    <div class="pg-grid">
+      <div class="pg-c">
+        <section class="pgcard"><h2>${pIcon('bars', 18)} ${PT('This week', '本週')}<span>${r.q ? PT(`Longest: ${dayName(longest, 'long')}, ${r.days[longest]} min`, `最長：${dayName(longest, 'long')}，${r.days[longest]} 分鐘`) : ''}</span></h2>
+          <div class="pg-bars">${r.days.map((m, i) => `<div title="${dayName(i, 'long')}: ${m} min"><small>${m ? m + PT('m', '分') : ''}</small><i class="${m ? '' : 'none'} ${i === 6 ? 'today' : ''}" style="height:${m ? Math.max(8, Math.round(96 * m / maxMin)) : 4}px"></i><span>${dayName(i, 'short')}</span></div>`).join('')}</div>
+        </section>
+        <section class="pgcard"><h2>${pIcon('target', 18)} ${PT('What to do next', '下一步')}</h2><div class="pg-acts">${acts.join('')}</div></section>
+        ${D.chapters.length ? `<section class="pgcard"><h2>${pIcon('book', 18)} ${PT('Chapters this week', '本週練習的章節')}</h2>
+          <div class="pg-chs">${D.chapters.slice(0, 8).map((c) => `<div class="pg-ch"><div class="pg-ch-top"><span>${esc(chName(c))}</span><b class="${tone(c.a)}">${c.a}%</b></div><div class="pg-bar ${tone(c.a)}"><i style="width:${c.a}%"></i></div><small>${chLabel(c.a)} · ${PT(`${c.n} answered`, `${c.n} 題`)}${c.was === null ? '' : c.a === c.was ? ` · ${PT('same as last week', '與上週相同')}` : ` · ${c.a > c.was ? '↑' : '↓'} ${PT(`from ${c.was}%`, `上週 ${c.was}%`)}`}</small></div>`).join('')}</div></section>` : ''}
+      </div>
+      <div class="pg-c">
+        ${D.subjects.length ? `<section class="pgcard"><h2>${pIcon('ring', 18)} ${PT('How ready you are', '準備程度')}</h2>
+          <div class="pg-rings">${D.subjects.map((x) => {
+            const started = x.pct > 0;
+            const ring = started ? ringHTML(x.pct, tone(x.pct), x.pct + '%') : ringHTML(x.covered, 'cov', x.covered ? x.covered + '%' : '–');
+            const lab = started ? (zh ? ({ Mastered: '已掌握', 'Exam ready': '準備應考', 'Well versed': '熟練', 'Getting there': '漸入佳境', 'Building up': '逐步建立', 'Just started': '剛開始' }[masteryLabel(x.pct)] || '') : masteryLabel(x.pct)) : x.covered ? PT(`Started · ${x.covered}% covered`, `已開始 · 涵蓋 ${x.covered}%`) : PT('Not started', '未開始');
+            return `<button class="pg-rg" data-book="${esc(x.book.id)}">${ring}<b>${esc(x.book.subject ? subj(x.book.subject) : x.book.title)}</b><small>${lab}</small></button>`;
+          }).join('')}</div></section>` : ''}
+        <section class="pgcard"><h2>${pIcon('line', 18)} ${PT('Score over time', '分數走勢')}</h2>${trendSVG(D.weeks)}</section>
+        ${rated.length ? `<section class="pgcard"><h2>${pIcon('brain', 18)} ${PT('Question types', '題型表現')}<span>${PT('last 30 days', '過去 30 日')}</span></h2>
+          <div class="pg-chs">${r.sk.map(([a, n], i) => n ? `<div class="pg-ch"><div class="pg-ch-top"><span>${names[i]}</span><b class="${tone(a)}">${a}%</b></div><div class="pg-bar ${tone(a)}"><i style="width:${a}%"></i></div></div>` : '').join('')}</div>
+          ${skillNote ? `<p class="pg-note">${skillNote}</p>` : ''}</section>` : ''}
+        <section class="pg-two">
+          <button class="pgcard pg-mini" id="mini-mistakes"><span class="pg-ic red">${pIcon('pencil')}</span><b>${D.mistakes}</b><span>${PT('mistakes to fix', '題要改正')}</span>${D.fixed ? `<small class="upc">${PT(`${D.fixed} fixed this week`, `本週改正 ${D.fixed} 題`)}</small>` : ''}</button>
+          <div class="pgcard pg-mini"><span class="pg-ic green">${pIcon('memory')}</span><b>${D.longTerm}</b><span>${PT('remembered a week or more', '題記得一星期或以上')}</span></div>
+        </section>
+        <section class="pgcard pg-parent"><span class="pg-ic blue">${pIcon('send')}</span><div><b>${PT('Weekly report for parents', '家長每週報告')}</b><span>${PT('One page, sent as a link', '一頁報告，以連結傳送')}</span></div><button class="btn-sm" id="report">${PT('Preview & send', '預覽及傳送')}</button></section>
+      </div>
+    </div>
+  </main>`;
+  $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
+  $app.querySelectorAll('.pg-act[data-unit]').forEach((b) => (b.onclick = async () => {
+    const [bid, uid2] = b.dataset.unit.split(':'); const book = (await getBooks()).find((x) => x.id === bid);
+    const u = book && book.units.find((x) => x.id === uid2); if (u) startUnits(book, [u], local.count || SESSION_SIZE);
+  }));
+  const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
+  on('act-review', () => startReview('spaced'));
+  on('act-mistakes', () => go({ name: 'mistakes' }));
+  on('mini-mistakes', () => go({ name: 'mistakes' }));
+  on('act-books', () => go({ name: 'books' }));
+  on('report', () => reportDialog());
+}
+
+// The parent report: name, preview, send. A small dialog instead of a block of text on the page.
+function reportDialog() {
+  const box = document.createElement('div');
+  box.className = 'cdlg-wrap';
+  box.innerHTML = `<div class="cdlg rdlg" role="dialog" aria-modal="true" aria-labelledby="rd-t" data-raw>
+    <b id="rd-t">${PT('Weekly report for parents', '家長每週報告')}</b>
+    <span>${PT('This week’s practice, scores by chapter, what’s improving and what needs work. Your parent opens it as a link, no sign-in needed.', '本週的練習、各章分數、進步和需要加強的地方。家長只需打開連結，不用登入。')}</span>
+    <label for="rd-name">${PT('Your name on the report', '報告上的名字')}</label>
+    <input id="rd-name" class="input" autocomplete="given-name" placeholder="${PT('e.g. Ka Yan', '例如：嘉欣')}" value="${esc(local.name)}">
+    <div class="rd-row"><button class="btn ghost" id="rd-prev">${PT('Preview', '預覽')}</button><button class="btn" id="rd-send">${pIcon('send', 18)} ${PT('Send', '傳送')}</button></div>
+    <div id="rd-fallback"></div>
+    <button class="btn-sm quiet" id="rd-close" style="align-self:center">${PT('Close', '關閉')}</button>
   </div>`;
-  $app.querySelectorAll('.mrowb[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
-  const nameEl = document.getElementById('name');
+  document.body.appendChild(box);
+  const close = () => box.remove();
+  box.onclick = (e) => { if (e.target === box) close(); };
+  document.getElementById('rd-close').onclick = close;
+  const nameEl = document.getElementById('rd-name');
   nameEl.oninput = () => { local.name = nameEl.value.trim().slice(0, 30); saveLocal(); };
   const link = async () => { const rep = await currentReport(); return { rep, url: `${location.origin}${location.pathname.replace(/[^/]*$/, '')}report.html#d=${encodeReport(rep)}` }; };
-  document.getElementById('preview').onclick = async (e) => { e.preventDefault(); const { url } = await link(); window.open(url, '_blank', 'noopener'); };
-  const send = async () => {
+  document.getElementById('rd-prev').onclick = async () => { const { url } = await link(); window.open(url, '_blank', 'noopener'); };
+  document.getElementById('rd-send').onclick = async () => {
     const { rep, url } = await link();
-    const text = LANG === 'zh' ? `${headline(rep)}。這是${rep.n || '我'}本週的 PrepBuddy 報告：` : `${headline(rep)}. Here is ${rep.n ? rep.n + '\u2019s' : 'my'} PrepBuddy report for this week:`;
+    const text = LANG === 'zh' ? `${headline(rep)}。這是${rep.n || '我'}本週的 PrepBuddy 報告：` : `${headline(rep)}. Here is ${rep.n ? rep.n + '’s' : 'my'} PrepBuddy report for this week:`;
     if (navigator.share) {
       try { await navigator.share({ title: LANG === 'zh' ? 'PrepBuddy 每週報告' : 'PrepBuddy weekly report', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
     }
-    document.getElementById('fallback').innerHTML = `<div class="card stack g10" style="padding:14px 16px">
-      <b style="font-size:15px">Send the report</b>
-      <a class="btn" href="https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}" target="_blank" rel="noopener">Send on WhatsApp</a>
-      <button class="btn ghost" id="copy">Copy the link</button></div>`;
-    document.getElementById('copy').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch (e) { prompt('Copy this link:', url); } };
-    document.getElementById('fallback').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('rd-fallback').innerHTML = `<div class="rd-row"><a class="btn" href="https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}" target="_blank" rel="noopener">WhatsApp</a><button class="btn ghost" id="rd-copy">${PT('Copy link', '複製連結')}</button></div>`;
+    document.getElementById('rd-copy').onclick = async () => { try { await navigator.clipboard.writeText(url); toast(PT('Link copied', '已複製連結')); } catch (e) { prompt('Copy this link:', url); } };
   };
-  $app.querySelectorAll('[data-send]').forEach((b) => (b.onclick = send));
+  nameEl.focus();
 }
 
 /* ---------- AI usage on this device ---------- */

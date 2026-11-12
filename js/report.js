@@ -85,11 +85,12 @@ export function buildReport({ log, stats, name, books, lang, ms }) {
   // Thinking skills over the last 30 days: % of marks by question level (1 recall … 4 analyse/evaluate).
   const month = log.filter((e) => e.t >= today - 29 * DAY);
   const sk = [1, 2, 3, 4].map((l) => { const es = month.filter((e) => (e.l || 2) === l); return [acc(es), es.length]; });
+  const tr = Array.from({ length: 6 }, (_, i) => { const end = today + DAY - (5 - i) * 7 * DAY; return acc(log.filter((e) => e.t >= end - 7 * DAY && e.t < end)); });
   const daysPractised = days.filter((m) => m > 0).length;
   const a = acc(week), pa = acc(prev);
   return {
     v: 1, u: zh ? 'zh' : 'en', n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
-    days, q: week.length, a, pa, dp: daysPractised, ch: chapters, up, weak, rev, next, sk, ms: (ms || []).slice(0, 6).map(([n, p]) => [String(n).slice(0, 40), p]),
+    days, q: week.length, a, pa, dp: daysPractised, tr, ch: chapters, up, weak, rev, next, sk, ms: (ms || []).slice(0, 6).map(([n, p]) => [String(n).slice(0, 40), p]),
   };
 }
 
@@ -118,6 +119,19 @@ export function headline(r) {
   if (r.dp >= 5 || (r.a !== null && r.pa !== null && r.a - r.pa >= 5)) return T(`${who} had a strong week`, `${who}本週表現出色`);
   if (r.dp >= 3) return T(`${who} had a steady week`, `${who}本週表現穩定`);
   return T(`${who} made a start this week`, `${who}本週已經起步`);
+}
+
+function trendLine(r) {
+  const W = 520, H = 120, px = (i) => 20 + i * (W - 40) / 5, py = (a) => 14 + (100 - a) * (H - 30) / 100;
+  const pts = r.tr.map((a, i) => ({ a, i })).filter((p) => p.a !== null);
+  const d = pts.map((p, k) => `${k ? 'L' : 'M'}${px(p.i).toFixed(1)} ${py(p.a).toFixed(1)}`).join(' ');
+  const lab = (i) => (i === 5 ? T('This week', '本週') : fmtDate(r.from - (5 - i) * 7 * DAY, { day: 'numeric', month: 'short' }));
+  return `<svg viewBox="0 0 ${W} ${H + 18}" style="width:100%;height:auto" role="img" aria-label="${r.tr.map((a) => (a === null ? '–' : a + '%')).join(', ')}">
+    ${[50, 80].map((g) => `<line x1="14" x2="${W - 14}" y1="${py(g)}" y2="${py(g)}" stroke="#E6E9F0" stroke-dasharray="3 4"/><text x="${W - 12}" y="${py(g) - 3}" text-anchor="end" font-size="10" fill="#9AA2B8">${g}%</text>`).join('')}
+    <path d="${d}" fill="none" stroke="#26357A" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p) => `<circle cx="${px(p.i)}" cy="${py(p.a)}" r="4.5" fill="#fff" stroke="#26357A" stroke-width="2.5"/><text x="${px(p.i)}" y="${py(p.a) - 10}" text-anchor="middle" font-size="11" font-weight="700" fill="#1E2A5A">${p.a}%</text>`).join('')}
+    ${r.tr.map((_, i) => `<text x="${px(i)}" y="${H + 14}" text-anchor="middle" font-size="10.5" fill="#7A829C">${lab(i)}</text>`).join('')}
+  </svg>`;
 }
 
 export function reportHTML(r) {
@@ -174,6 +188,7 @@ export function reportHTML(r) {
       ${r.ms && r.ms.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${T('How ready for each subject', '各科準備程度')}</h2></div>
         <div class="rp-mast">${r.ms.map(([n, p]) => `<div>${ring(p)}<span>${esc(n)}</span></div>`).join('')}</div>
         <p class="rep-note">${T('Mastery looks at how much of the textbook has been practised, how well, whether it is remembered in reviews, and whether timed chapter tests were passed.', '掌握程度會考慮練習了課本多少內容、表現如何、溫習時是否記得，以及有否通過限時章節測驗。')}</p></section>` : ''}
+      ${(r.tr || []).filter((x) => x !== null).length >= 2 ? `<section class="rp-card"><div class="rp-card-head"><h2>${T('Score over the last 6 weeks', '過去 6 星期的分數')}</h2><span>${T('% of marks each week', '每週得分率')}</span></div>${trendLine(r)}</section>` : ''}
       <div class="rp-two">
         ${skillsHTML(r)}
         <section class="rep-card"><h2>${T('Remembering what was learned', '記住所學')}</h2><p>${esc(r.rev)}</p></section>
@@ -189,7 +204,7 @@ export function reportHTML(r) {
 }
 
 // Shared by the report and the in-app progress screen.
-export const SKILL_NAMES = { en: ['Recall', 'Understand', 'Apply', 'Analyse / evaluate'], zh: ['記憶', '理解', '應用', '分析／評鑑'] };
+export const SKILL_NAMES = { en: ['Remembering facts', 'Understanding', 'Using it', 'Thinking it through'], zh: ['記憶事實', '理解', '應用', '深入思考'] };
 export function skillsHTML(r, zhOverride) {
   if (zhOverride !== undefined) ZH = zhOverride;
   const sk = r.sk || [];
@@ -198,10 +213,10 @@ export function skillsHTML(r, zhOverride) {
   const rated = sk.map(([a, n], i) => ({ a, n, i })).filter((x) => x.n >= 3 && x.a !== null);
   const best = rated.slice().sort((x, y) => y.a - x.a)[0], worst = rated.slice().sort((x, y) => x.a - y.a)[0];
   const insight = best && worst && best.i !== worst.i && best.a - worst.a >= 15
-    ? T(`Strongest at ${names[best.i].toLowerCase()} questions (${best.a}%). ${names[worst.i]} questions need the most work (${worst.a}%).`,
-        `最擅長${names[best.i]}題（${best.a}%）；${names[worst.i]}題最需要加強（${worst.a}%）。`)
+    ? T(`Best at ${names[best.i].toLowerCase()} (${best.a}%). ${names[worst.i]} needs the most work (${worst.a}%).`,
+        `最擅長「${names[best.i]}」（${best.a}%）；「${names[worst.i]}」最需要加強（${worst.a}%）。`)
     : T('Skills are fairly even across question types.', '各類題型的表現大致平均。');
-  return `<section class="rep-card"><h2>${T('Thinking skills (last 30 days)', '思考能力（過去 30 日）')}</h2>
+  return `<section class="rep-card"><h2>${T('Question types (last 30 days)', '題型表現（過去 30 日）')}</h2>
     ${sk.map(([a, n], i) => n ? `<div class="rep-ch"><div><span>${names[i]}</span><b class="${a >= 70 ? 'ok' : 'warn'}">${a}%</b></div><div class="rep-bar ${a >= 70 ? 'ok' : 'warn'}"><i style="width:${a}%"></i></div><small>${T(`${n} answer${n === 1 ? '' : 's'}`, `${n} 個作答`)}</small></div>` : '').join('')}
     <p class="rep-note">${insight}</p></section>`;
 }
