@@ -19,6 +19,11 @@ const PLANS = {
 };
 const choiceType = (q) => q.type === 'mcq' || q.type === 'graph';
 const matchType = (q, types) => !types || types === 'mix' || (types === 'mcq' ? choiceType(q) : !choiceType(q));
+// Difficulty the student picks. Auto adapts to how they're doing; the others keep questions to these levels
+// (1 Recall, 2 Understand, 3 Apply, 4 Analyse / evaluate).
+const DIFFS = [['auto', 'Auto'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard'], ['master', 'Master']];
+const DIFF_RANGE = { easy: [1, 2], medium: [2, 3], hard: [3, 4], master: [4, 4] };
+const diffOK = (q, diff) => { const r = DIFF_RANGE[diff]; if (!r) return true; const l = q.level || 2; return l >= r[0] && l <= r[1]; };
 const PLAN = [[2, 'mcq'], [1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
               [4, 'structured'], [1, 'mcq'], [2, 'short'], [3, 'mcq'], [3, 'structured'], [2, 'mcq']];
 
@@ -464,16 +469,44 @@ async function boostSession(book) {
   }
 }
 // A chapter test: about 10 new questions, timed, no help until the end. Counts towards "Passed timed tests".
+// Lets the student (or a parent) change the suggested time, or take the test with no time limit.
+// Resolves to minutes (0 = no limit), or null if cancelled.
+function askTime(title, detail, suggested) {
+  return new Promise((resolve) => {
+    let mins = suggested, none = false;
+    const box = document.createElement('div');
+    box.className = 'cdlg-wrap';
+    const draw = () => {
+      box.innerHTML = `<div class="cdlg rdlg" role="dialog" aria-modal="true" aria-labelledby="tm-t">
+        <b id="tm-t">${esc(title)}</b><span>${esc(detail)}</span>
+        <div class="setup-row" style="margin-top:6px"><span id="tm-l">Time allowed</span>
+          <div class="stepper" role="group" aria-labelledby="tm-l"><button id="tm-m" aria-label="Less time" ${none || mins <= 5 ? 'disabled' : ''}>−</button><output>${none ? '—' : mins + ' min'}</output><button id="tm-p" aria-label="More time" ${none || mins >= 180 ? 'disabled' : ''}>+</button></div></div>
+        <span class="hint">${none ? 'No timer. Good for learning, but it won’t feel like the real exam.' : mins === suggested ? 'Suggested time, at about exam pace.' : `Suggested: ${suggested} min.`}</span>
+        <label class="tm-none"><input type="checkbox" id="tm-n" ${none ? 'checked' : ''}> No time limit</label>
+        <div class="rd-row"><button class="btn ghost" id="tm-c">Cancel</button><button class="btn" id="tm-s">Start</button></div></div>`;
+      box.querySelector('#tm-m').onclick = () => { mins = Math.max(5, mins - 5); draw(); };
+      box.querySelector('#tm-p').onclick = () => { mins = Math.min(180, mins + 5); draw(); };
+      box.querySelector('#tm-n').onchange = (e) => { none = e.target.checked; draw(); };
+      box.querySelector('#tm-c').onclick = () => { box.remove(); resolve(null); };
+      box.querySelector('#tm-s').onclick = () => { box.remove(); resolve(none ? 0 : mins); };
+      box.querySelector('#tm-s').focus();
+    };
+    box.onclick = (e) => { if (e.target === box) { box.remove(); resolve(null); } };
+    draw(); document.body.appendChild(box);
+  });
+}
+
 async function startChapterTest(book, units) {
   const nA = Math.min(16, 6 + 2 * units.length), nB = Math.min(4, 1 + units.length);
-  const mins = paperMinutes(nA, nB);
+  const mins = await askTime(LANG === 'zh' ? '章節測驗' : 'Chapter test', `${nA} multiple-choice and ${nB} written questions. Pass mark 80%.`, paperMinutes(nA, nB));
+  if (mins === null) return;
   try {
     const paper = await preparePaper(book, units, nA, nB, 'sit');
     if (!paper) return;
     startDse(book, paper, mins);
     S.title = units.length === 1 ? `${LANG === 'zh' ? '章節測驗' : 'Chapter test'} · ${units[0].title}` : (LANG === 'zh' ? '章節測驗' : 'Chapter test');
     S.test = true;
-    toast(`${mins} min · pass mark 80%`);
+    toast(mins ? `${mins} min · pass mark 80%` : 'No time limit · pass mark 80%');
   } catch (e) {
     toast(e.status === 0 ? 'You seem to be offline.' : (e.message || 'Could not prepare the test.'));
     go({ name: 'book', bookId: book.id });
@@ -1835,6 +1868,12 @@ async function renderBook(bookId) {
         ${TYPE_CHOICES.map(([k, l]) => `<button role="radio" aria-checked="${t === k}" data-types="${k}" class="${t === k ? 'on' : ''}">${l}</button>`).join('')}
       </div>
     </div>
+    <div class="setup-row diffrow">
+      <span id="diff-label">Difficulty</span>
+      <div class="seg diffseg" role="radiogroup" aria-labelledby="diff-label">
+        ${DIFFS.map(([k, l]) => `<button role="radio" aria-checked="${(local.diff || 'auto') === k}" data-diff="${k}" class="${(local.diff || 'auto') === k ? 'on' : ''}" title="${{ auto: 'Adjusts to how you are doing', easy: 'Remember and understand', medium: 'Understand and apply', hard: 'Apply and analyse', master: 'Analyse and evaluate: the hardest questions' }[k]}">${l}</button>`).join('')}
+      </div>
+    </div>
     <div class="setup-row">
       <span id="count-label">How many</span>
       <div class="stepper" role="group" aria-labelledby="count-label">
@@ -1874,6 +1913,7 @@ async function renderBook(bookId) {
   bindRows();
   prefetch(book, book.units.filter((u) => pick.ids.has(u.id)));
   $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; saveLocal(); keep(); }));
+  $app.querySelectorAll('[data-diff]').forEach((b) => (b.onclick = () => { local.diff = b.dataset.diff; saveLocal(); keep(); }));
   const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || SESSION_SIZE) + d)); saveLocal(); keep(); };
   document.getElementById('minus').onclick = () => step((local.count || SESSION_SIZE) > 20 ? -10 : -5);
   document.getElementById('plus').onclick = () => step((local.count || SESSION_SIZE) >= 20 ? 10 : 5);
@@ -1901,10 +1941,11 @@ async function prefetch(book, units) {
   const types = local.types || 'mix', count = local.count || SESSION_SIZE;
   for (const u of units) {
     getSnippets(book, u).catch(() => {});
-    if (jobs.has(`${book.id}:${u.id}:${types}`)) continue;
-    const fresh = (await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types)).length;
+    const diff = local.diff || 'auto';
+    if (jobs.has(`${book.id}:${u.id}:${types}${diff === 'auto' ? '' : ':' + diff}`)) continue;
+    const fresh = (await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types) && diffOK(q, diff)).length;
     const want = Math.ceil(count / units.length);
-    if (fresh < want) ensureFill(book, u, Math.min(BATCH, want - fresh), types, 1, true);
+    if (fresh < want) ensureFill(book, u, Math.min(BATCH, want - fresh), types, 1, true, diff);
   }
 }
 
@@ -2333,7 +2374,7 @@ function testsCardHTML(D) {
   const KIND = { paper: [PT('Mock paper', '模擬試卷'), 'blue'], test: [PT('Chapter test', '章節測驗'), 'purple'], mini: [PT('Mini mock', '小型模擬'), 'orange'] };
   const fmt = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
   const row = (x) => { const p = x.m ? Math.round(100 * x.g / x.m) : 0, k = KIND[x.kind] || KIND.paper, pass = x.kind === 'test' ? p >= 80 : null;
-    return `<div class="pg-test"><span class="pg-ic ${k[1]}">${pIcon(x.kind === 'test' ? 'check' : 'pencil', 18)}</span><div class="pg-tt"><small>${k[0]} · ${fmt(x.t)}</small><b data-raw>${esc(String(x.title || '').replace(/^(Chapter test|章節測驗) · /, ''))}</b><span>${x.g} / ${x.m} ${PT('marks', '分')} · ${x.min} ${PT('min', '分鐘')}</span></div><b class="pg-tp ${p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low'}">${p}%${pass === null ? '' : `<small>${pass ? PT('Passed', '合格') : PT('Not yet', '未合格')}</small>`}</b></div>`; };
+    return `<div class="pg-test"><span class="pg-ic ${k[1]}">${pIcon(x.kind === 'test' ? 'check' : 'pencil', 18)}</span><div class="pg-tt"><small>${k[0]} · ${fmt(x.t)}</small><b data-raw>${esc(String(x.title || '').replace(/^(Chapter test|章節測驗) · /, ''))}</b><span>${x.g} / ${x.m} ${PT('marks', '分')} · ${x.min} ${PT('min', '分鐘')}${x.nt ? PT(' · no time limit', ' · 不限時') : x.x ? PT(` · +${x.x} min extra`, ` · 加時 ${x.x} 分鐘`) : ''}</span></div><b class="pg-tp ${p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low'}">${p}%${pass === null ? '' : `<small>${pass ? PT('Passed', '合格') : PT('Not yet', '未合格')}</small>`}</b></div>`; };
   return `<section class="pgcard"><h2>${pIcon('pencil', 18)} ${PT('Tests and mock papers', '測驗及模擬試卷')}</h2>
     ${list.length ? `<div class="pg-tests">${list.slice(0, 4).map(row).join('')}${list.length > 4 ? `<div hidden>${list.slice(4, 20).map(row).join('')}</div><button class="btn-sm quiet" data-tests-more>${PT(`Show ${Math.min(16, list.length - 4)} more`, `顯示多 ${Math.min(16, list.length - 4)} 個`)}</button>` : ''}</div>`
       : `<p class="pg-empty">${PT('Chapter tests and mock papers you finish show up here, with your score and time.', '完成的章節測驗和模擬試卷會在這裡顯示分數和用時。')}</p>`}
@@ -2497,7 +2538,8 @@ async function renderPaper(bookId, from) {
   if (!book) return go({ name: 'home' });
   const units = paperUnits(book);
   const { a, b } = paperSet;
-  const mins = paperMinutes(a, b);
+  const suggested = paperMinutes(a, b);
+  const mins = paperSet.t === 0 ? 0 : (paperSet.t || suggested);
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${from === 'pick' ? 'Mock paper' : from === 'home' ? 'Home' : 'Chapters'}</span></button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
@@ -2514,16 +2556,21 @@ async function renderPaper(bookId, from) {
     <div class="card stack g14" style="padding:14px 16px">
       <div class="setup-row"><span>Section A · MCQ</span><div class="stepper"><button data-step="a:-2" aria-label="Fewer MCQs" ${a <= 0 ? 'disabled' : ''}>−</button><output>${a}</output><button data-step="a:2" aria-label="More MCQs" ${a >= 40 ? 'disabled' : ''}>+</button></div></div>
       <div class="setup-row"><span>Section B · Written</span><div class="stepper"><button data-step="b:-1" aria-label="Fewer written questions" ${b <= 0 ? 'disabled' : ''}>−</button><output>${b}</output><button data-step="b:1" aria-label="More written questions" ${b >= 10 ? 'disabled' : ''}>+</button></div></div>
-      <span class="muted" style="font-size:14px">Time allowed: <b style="color:var(--ink)">${mins} min</b></span>
+      <div class="setup-row"><span>Time allowed</span><div class="stepper"><button data-time="-5" aria-label="Less time" ${!mins || mins <= 5 ? 'disabled' : ''}>−</button><output>${mins ? mins + ' min' : 'No limit'}</output><button data-time="5" aria-label="More time" ${!mins || mins >= 180 ? 'disabled' : ''}>+</button></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><label class="tm-none"><input type="checkbox" id="notime" ${mins ? '' : 'checked'}> No time limit</label>
+      <span class="muted" style="font-size:13px">${mins && mins !== suggested ? `Suggested: ${suggested} min · <button class="linkbtn" id="tsug">use it</button>` : mins ? 'Suggested time, at about exam pace' : ''}</span></div>
     </div>
   </main>
   <div class="sheet sticky">
-    <button class="btn" id="sit" ${a + b ? '' : 'disabled'}>Start mock paper · ${mins} min</button>
+    <button class="btn" id="sit" ${a + b ? '' : 'disabled'}>Start mock paper · ${mins ? mins + ' min' : 'no time limit'}</button>
     <button class="btn ghost" id="print" ${a + b ? '' : 'disabled'}>Print as a worksheet</button>
   </div>`;
   document.getElementById('back').onclick = () => go(from === 'pick' ? { name: 'pick', mode: 'mock' } : from === 'home' ? { name: 'home' } : { name: 'book', bookId });
   document.getElementById('change').onclick = () => go({ name: 'book', bookId });
-  $app.querySelectorAll('[data-preset]').forEach((el) => (el.onclick = () => { const p = PAPER_PRESETS.find((x) => x[0] === el.dataset.preset); paperSet = { a: p[2], b: p[3] }; renderPaper(bookId); }));
+  $app.querySelectorAll('[data-preset]').forEach((el) => (el.onclick = () => { const p = PAPER_PRESETS.find((x) => x[0] === el.dataset.preset); paperSet = { a: p[2], b: p[3], t: paperSet.t === 0 ? 0 : undefined }; renderPaper(bookId, from); }));
+  $app.querySelectorAll('[data-time]').forEach((el) => (el.onclick = () => { paperSet = { ...paperSet, t: Math.min(180, Math.max(5, (mins || suggested) + Number(el.dataset.time))) }; renderPaper(bookId, from); }));
+  document.getElementById('notime').onchange = (e) => { paperSet = { ...paperSet, t: e.target.checked ? 0 : undefined }; renderPaper(bookId, from); };
+  const ts = document.getElementById('tsug'); if (ts) ts.onclick = () => { paperSet = { ...paperSet, t: undefined }; renderPaper(bookId, from); };
   $app.querySelectorAll('[data-step]').forEach((el) => (el.onclick = () => {
     const [k, d] = el.dataset.step.split(':'); const max = k === 'a' ? 40 : 10;
     paperSet = { ...paperSet, [k]: Math.min(max, Math.max(0, paperSet[k] + Number(d))) }; renderPaper(bookId);
@@ -2621,14 +2668,15 @@ async function preparePaper(book, units, nA, nB, purpose) {
 const PAPER_PAR = 5;   // batches written side by side per chapter when making a paper
 
 function startDse(book, paper, mins) {
+  const dl = mins ? Date.now() + mins * 60 * 1000 : null; // 0 = no time limit
   if (!paper.live) {
     const qs = [...paper.A, ...paper.B];
-    S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs, target: qs.length, sectionA: paper.A.length, deadline: Date.now() + mins * 60 * 1000 });
+    S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs, target: qs.length, sectionA: paper.A.length, deadline: dl });
   } else {
     // Section A fills up first; written questions wait in bQueue until Section A is complete.
     const full = paper.A.length >= paper.nA;
     S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs: full ? [...paper.A, ...paper.B] : [...paper.A], bQueue: full ? [] : [...paper.B],
-      target: paper.nA + paper.nB, sectionA: paper.nA, deadline: Date.now() + mins * 60 * 1000,
+      target: paper.nA + paper.nB, sectionA: paper.nA, deadline: dl,
       fill: { units: paper.units, nA: paper.nA, nB: paper.nB, rounds: 0 } });
     pumpPaper(S);
   }
@@ -2800,11 +2848,11 @@ const SPARE = 3;
 const MAKE_PAR = 4;
 async function startUnits(book, units, count = SESSION_SIZE) {
   const k = units.length, quota = Math.ceil(count / k);
-  const types = local.types || 'mix';
+  const types = local.types || 'mix', diff = local.diff || 'auto';
   const pools = [];
   for (const u of units) {
     const want = 2 + levelShift(book.id, u.id);
-    const pool = shuffle((await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types)));
+    const pool = shuffle((await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types) && diffOK(q, diff)));
     // closest to the student's level first, with some variety
     pools.push(pool.map((q) => [q, Math.abs((q.level || 2) - want) + Math.random() * 1.5]).sort((a, b) => a[1] - b[1]).map((x) => x[0]));
   }
@@ -2813,7 +2861,7 @@ async function startUnits(book, units, count = SESSION_SIZE) {
   if (qs.length < count) pools.forEach((p) => qs.push(...p.slice(quota)));   // top up from chapters that have more
   qs = shuffle(qs.slice(0, count));
   const title = k === 1 ? units[0].title : `${k} chapters`;
-  S = newSession({ mode: 'unit', title, book, units, qs, target: count, pending: 0, types, count });
+  S = newSession({ mode: 'unit', title, book, units, qs, target: count, pending: 0, types, count, diff });
   topUp(S);
   if (S.qs.length) renderQuestion(); else renderWaiting();
 }
@@ -2838,9 +2886,9 @@ function topUp(sess) {
     const want = Math.min(per, left); left -= want;
     if (want + spare <= 0) continue;
     // a job already making questions for this session keeps what it still owes, plus the new ones
-    const j = jobs.get(`${sess.book.id}:${u.id}:${sess.types}`);
+    const j = jobs.get(`${sess.book.id}:${u.id}:${sess.types}${sess.diff && sess.diff !== 'auto' ? ':' + sess.diff : ''}`);
     const owed = j && sess.jobs && sess.jobs.has(j) ? Math.max(0, j.want - j.made) : 0;
-    followFill(sess, ensureFill(sess.book, u, owed + want + spare, sess.types, MAKE_PAR, true));
+    followFill(sess, ensureFill(sess.book, u, owed + want + spare, sess.types, MAKE_PAR, true, sess.diff));
   }
 }
 
@@ -3030,7 +3078,9 @@ async function startReview(mode, bookId = null) {
     S = newSession({ mode: 'weak', title: book ? `${LANG === 'zh' ? '弱項' : 'Weak topics'} · ${book.subject ? subj(book.subject) : book.title}` : (LANG === 'zh' ? '弱項' : 'Weak topics'), qs: pick, target: pick.length });
   } else {
     pick = shuffle(items).slice(0, 12).map((x) => x.q).sort((a, b) => a.level - b.level);
-    S = newSession({ mode: 'mock', title: 'Mini mock', qs: pick, target: pick.length, deadline: Date.now() + 20 * 60 * 1000 });
+    const mm = await askTime('Mini mock', `${pick.length} questions from your textbooks.`, 20);
+    if (mm === null) return;
+    S = newSession({ mode: 'mock', title: 'Mini mock', qs: pick, target: pick.length, deadline: mm ? Date.now() + mm * 60 * 1000 : null });
   }
   renderQuestion();
 }
@@ -3042,11 +3092,12 @@ const jobs = new Map();
 const warmed = new Map(); // chapter -> when its text was last put in the AI's cache
 const PARALLEL = 3;
 
-function ensureFill(book, unit, want, types = 'mix', par = PARALLEL, adapt = false) {
-  const key = `${book.id}:${unit.id}:${types}`;
+function ensureFill(book, unit, want, types = 'mix', par = PARALLEL, adapt = false, diff = 'auto') {
+  if (!DIFF_RANGE[diff]) diff = 'auto';
+  const key = `${book.id}:${unit.id}:${types}${diff === 'auto' ? '' : ':' + diff}`;
   if (jobs.has(key)) { const j = jobs.get(key); j.want = Math.max(j.want, j.made + want); j.par = Math.max(j.par, par); if (j.spawn) j.spawn(); return j; }
   const kp = KIND_PLANS[kindOfBook(book)];
-  const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: (kp && kp[types]) || PLANS[types] || PLAN, par, adapt };
+  const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: (kp && kp[types]) || PLANS[types] || PLAN, par, adapt, diff };
   jobs.set(key, job);
   job.promise = doFill(book, unit, job)
     .catch((e) => { job.error = e; if (e.status === 401) { local.code = ''; saveLocal(); } })
@@ -3070,7 +3121,8 @@ async function doFill(book, unit, job) {
       const existing = await getQs(book.id, unit.id);
       const slot = started; started += BATCH;
       const d = job.adapt ? levelShift(book.id, unit.id) : 0;
-      const items = Array.from({ length: BATCH }, (_, k) => job.plan[(slot + k) % job.plan.length]).map(([level, type]) => ({ level: type === 'essay' ? level : shiftLevel(level, d), type }));
+      const R = DIFF_RANGE[job.diff];
+      const items = Array.from({ length: BATCH }, (_, k) => job.plan[(slot + k) % job.plan.length]).map(([level, type]) => ({ level: R ? Math.max(R[0], Math.min(R[1], level)) : type === 'essay' ? level : shiftLevel(level, d), type }));
       const avoid = existing.map((q) => (q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200));
       const batchNo = Math.floor(slot / BATCH);
       const focus = { part: (batchNo % job.par) + 1, of: job.par };
@@ -3485,7 +3537,7 @@ function header() {
   return `<div class="topbar">
     <button class="backbtn" id="quit" data-kind="${isExam() && !S.review ? 'exam' : 'practice'}">${ICON.back}<span>Back</span></button>
     <div class="progress" role="progressbar" aria-valuenow="${S.i}" aria-valuemin="0" aria-valuemax="${n}"><i style="width:${pct}%"></i></div>
-    <span class="count">${S.deadline && !S.review ? '<span class="timer" id="timer"></span>' : `<span id="count">${S.i + 1} / ${n}</span>`}</span>
+    <span class="count">${S.deadline && !S.review ? '<span class="timer" id="timer"></span><button class="btn-sm quiet addtime" id="addtime" title="Add 5 minutes">+5 min</button>' : `<span id="count">${S.i + 1} / ${n}</span>`}</span>
   </div>`;
 }
 
@@ -4065,7 +4117,7 @@ function renderSummary() {
     S.recorded = true;
     const per = {};
     if (S.mode === 'dse') qs.forEach((q, k) => { const key = qUnit(q.id).join(':'); const r = per[key] || (per[key] = [0, 0]); r[0] += S.got[k] || 0; r[1] += marksOf(q); });
-    local.tests = [...(local.tests || []), { t: Date.now(), per, kind: S.mode === 'mock' ? 'mini' : S.test ? 'test' : 'paper', title: S.title, b: S.book ? S.book.id : '', g: got, m: total, min: Math.max(1, Math.round(((S.examEnd || Date.now()) - S.at) / 60000)) }].slice(-300); saveLocal();
+    local.tests = [...(local.tests || []), { t: Date.now(), per, kind: S.mode === 'mock' ? 'mini' : S.test ? 'test' : 'paper', title: S.title, b: S.book ? S.book.id : '', g: got, m: total, nt: S.deadline ? 0 : 1, x: S.extra || 0, min: Math.max(1, Math.round(((S.examEnd || Date.now()) - S.at) / 60000)) }].slice(-300); saveLocal();
   }
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
   const won = awardSession(qs, pct);
@@ -4152,6 +4204,12 @@ function startTimer() {
   tick(); timerId = setInterval(tick, 1000);
 }
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+// Extra time during a test (counted, so the results can say so).
+document.addEventListener('click', (e) => {
+  if (!e.target.closest || !e.target.closest('#addtime') || !S || !S.deadline || S.review) return;
+  S.deadline += 5 * 60 * 1000; S.extra = (S.extra || 0) + 5; toast('5 minutes added');
+  const el = document.getElementById('timer'); if (el) el.classList.remove('low');
+});
 
 // Keyboard on laptops: A–D or 1–4 picks an answer, Enter goes on.
 document.addEventListener('keydown', (e) => {

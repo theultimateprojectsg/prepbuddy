@@ -311,6 +311,9 @@ const EXACT = {
   'While you wait, a quick look at this chapter': '等候期間，快速重溫這一章',
   'A quick look while it’s checked': '檢查期間，快速重溫一下',
   'Start practising': '開始練習',
+  'Difficulty': '難度', 'Auto': '自動', 'Easy': '容易', 'Medium': '中等', 'Hard': '困難', 'Master': '大師',
+  'Time allowed': '作答時間', 'No time limit': '不限時', 'Suggested time, at about exam pace.': '建議時間，大約是考試的速度。', 'Suggested time, at about exam pace': '建議時間，大約是考試的速度',
+  'No timer. Good for learning, but it won’t feel like the real exam.': '不計時，適合學習，但不像真正考試。', 'use it': '使用', 'Start': '開始', '5 minutes added': '已加 5 分鐘', 'Mini mock': '小型模擬',
   'Ask Buddy': '問 Buddy', 'I can explain what the question means or give you a hint, without giving away the answer. You can also ask me about anything else, like how to use the app.': '我可以解釋題目的意思或給你提示，但不會直接告訴你答案。其他問題，例如怎樣使用這個程式，也可以問我。', 'Your study coach: sees your scores, mistakes and reviews': '你的溫習教練：看得到你的分數、錯題和溫習', 'About this question, or anything else': '關於這題，或其他問題都可以問', 'About the app or your studies': '程式使用或溫習問題都可以問', 'Ask me anything…': '有甚麼都可以問我…',
   'Need help? Ask me anything about PrepBuddy or your studies.': '需要幫忙？PrepBuddy 或溫習上的問題都可以問我。',
   'I can’t find my book': '我找不到我的課本', 'How do I add a textbook?': '怎樣加入課本？', 'What is a book code?': '甚麼是課本編號？',
@@ -496,6 +499,10 @@ const EXACT = {
 
 // Text with numbers or names in it.
 const PATTERNS = [
+  [/^Suggested: (\d+) min\.?$/, '建議：$1 分鐘'],
+  [/^(\d+) min$/, '$1 分鐘'],
+  [/^Start mock paper · (\d+) min$/, '開始模擬試卷 · $1 分鐘'],
+  [/^Start mock paper · no time limit$/, '開始模擬試卷 · 不限時'],
   [/^(\d+) questions? to get right$/, '$1 題要改正'],
   [/^(\d+) fixed this week$/, '本星期改正了 $1 題'],
   [/^Redo all (\d+)$/, '全部重做（$1 題）'],
