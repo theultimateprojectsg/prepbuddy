@@ -638,6 +638,7 @@ async function go(v) {
   if (v.name === 'stars') return renderStars();
   if (v.name === 'homework') return renderHomework(v.id);
   if (v.name === 'dictation') return renderDictation(v.id, v.sub);
+  if (v.name === 'learn') return renderLearn(v.bookId, v.unitId);
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
   if (v.name === 'worksheets') return renderWorksheets();
@@ -842,6 +843,7 @@ async function runCoachAction(a) {
     case 'today': return go({ name: 'home' });
     case 'homework': return go({ name: 'homework' });
     case 'dictation': return go({ name: 'dictation' });
+    case 'learn': if (book && units.length) return go({ name: 'learn', bookId: book.id, unitId: units[0].id }); break;
   }
   if (book) return go({ name: 'book', bookId: book.id }); // couldn't tell exactly what: open the book's chapter page
 }
@@ -1206,9 +1208,96 @@ function runDictation(L) {
   setTimeout(() => sayItem(L.items[R.order[0]], L.lang, false), 500);
 }
 
+/* ---------- Learn mode: a guided lesson before practising ----------
+   Explain → example → quick check, one idea at a time, then a summary and straight into practice.
+   Each lesson is written once per chapter and kept on this device. */
+const lessonJobs = new Map();
+function getLesson(book, unit, fresh) {
+  const key = `lesson:${book.id}:${unit.id}`;
+  if (!fresh && lessonJobs.has(key)) return lessonJobs.get(key);
+  const p = (async () => {
+    if (!fresh) { const have = await store.get(key, null); if (have) return have; }
+    const text = await store.get(`text:${book.id}:${unit.id}`, '');
+    if (!text) throw new Error('This chapter’s text is missing on this device.');
+    const l = await api('learn', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
+    delete l.usage; l.at = Date.now();
+    await store.set(key, l);
+    return l;
+  })();
+  lessonJobs.set(key, p);
+  p.catch(() => lessonJobs.delete(key));
+  return p;
+}
+async function renderLearn(bookId, unitId) {
+  const book = (await getBooks()).find((b) => b.id === bookId);
+  const unit = book && book.units.find((u) => u.id === unitId);
+  if (!unit) return go({ name: 'home' });
+  const myView = view, zh = LANG === 'zh';
+  const T = (en, z) => (zh ? z : en);
+  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${T('Chapter', '章節')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(cleanUnitTitle(unit.title))}</span></div>
+    <main class="pad stack g18 learnpage" data-view="learn" style="flex:1;align-items:center;justify-content:center;text-align:center">
+      ${buddySVG('think', 64)}<b style="font-size:18px">${T('Getting your lesson ready…', '正在準備你的課堂…')}</b><span class="muted">${T('Buddy is reading the chapter and planning how to teach it. This takes about half a minute the first time.', 'Buddy 正在閱讀這一章並準備教學，第一次大約需要半分鐘。')}</span><div class="spinner" aria-hidden="true"></div></main>`;
+  document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+  let L;
+  try { L = await getLesson(book, unit); } catch (e) {
+    if (view !== myView) return;
+    $app.querySelector('main').innerHTML = `<b>${T('Couldn’t make the lesson', '未能準備課堂')}</b><span class="muted">${esc(e.status === 0 ? T('You seem to be offline.', '你好像離線了。') : (e.message || ''))}</span><button class="btn" id="retry">${T('Try again', '再試')}</button>`;
+    document.getElementById('retry').onclick = () => renderLearn(bookId, unitId);
+    return;
+  }
+  if (view !== myView) return;
+  const R = { k: -1, picked: {}, right: 0 };
+  const n = L.steps.length;
+  const draw = () => {
+    const dots = `<div class="ln-dots">${L.steps.map((_, i) => `<i class="${i < R.k ? 'done' : i === R.k ? 'on' : ''}"></i>`).join('')}</div>`;
+    let body;
+    if (R.k < 0) {
+      body = `<section class="ln-card ln-start">${buddySVG('happy', 64)}<h1>${esc(cleanUnitTitle(unit.title))}</h1>${L.intro ? `<div class="ln-x">${tutorMd(L.intro)}</div>` : ''}
+        <span class="muted">${T(`${n} short steps, each with an example and a quick check. About ${Math.max(5, n * 2)} minutes.`, `共 ${n} 個小步驟，每步都有例子和小測，大約 ${Math.max(5, n * 2)} 分鐘。`)}</span>
+        <button class="btn" id="go1">${T('Start the lesson', '開始上課')} →</button></section>`;
+    } else if (R.k >= n) {
+      body = `<section class="ln-card ln-end">${buddySVG('done', 64)}<h1>${T('Lesson done!', '完成課堂！')}</h1>
+        <span class="muted">${T(`Quick checks: ${R.right} of ${L.steps.filter((s) => s.check).length} right first time`, `小測：第一次答對 ${R.right}／${L.steps.filter((s) => s.check).length} 題`)}</span>
+        ${L.summary.length ? `<div class="ln-sum"><b>${T('Remember', '記住')}</b><ul>${L.summary.map((s) => `<li>${tutorMd(s).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ul></div>` : ''}
+        <button class="btn" id="practise">${T('Practise this chapter now', '現在練習這一章')} →</button>
+        <div class="rd-row"><button class="btn ghost" id="again">${T('Go through it again', '再上一次')}</button><button class="btn ghost" id="done">${T('Back to the chapter', '返回章節')}</button></div></section>`;
+    } else {
+      const s = L.steps[R.k], c = s.check, p = R.picked[R.k];
+      body = `<section class="ln-card">
+        <small class="ln-step">${T(`Step ${R.k + 1} of ${n}`, `第 ${R.k + 1}／${n} 步`)}</small>
+        <h2>${esc(s.heading)}</h2>
+        <div class="ln-x">${tutorMd(s.explain)}</div>
+        ${s.example ? `<div class="ln-ex"><b>${T('Example', '例子')}</b>${tutorMd(s.example)}</div>` : ''}
+        ${c ? `<div class="ln-check"><b>${T('Quick check', '小測')}</b><div class="ln-q">${tutorMd(c.question)}</div>
+          <div class="ln-opts">${c.options.map((o, i) => `<button class="ln-opt ${p !== undefined ? (i === c.answer ? 'ok' : i === p ? 'no' : '') : ''}" data-opt="${i}" ${p !== undefined ? 'disabled' : ''}><span>${'ABCD'[i]}</span>${tutorMd(o).replace(/^<p>|<\/p>$/g, '')}</button>`).join('')}</div>
+          ${p !== undefined ? `<p class="ln-why ${p === c.answer ? 'ok' : 'no'}"><b>${p === c.answer ? T('Yes! ', '答對了！') : T('Not quite. ', '差一點。')}</b>${esc(c.why)}</p>` : ''}</div>` : ''}
+        <div class="rd-row"><button class="btn ghost" id="prev">${T('Back', '上一步')}</button><button class="btn" id="next" ${c && p === undefined ? 'disabled' : ''}>${R.k === n - 1 ? T('Finish', '完成') : T('Next', '下一步')} →</button></div>
+        ${c && p === undefined ? `<span class="hint" style="text-align:center">${T('Answer the quick check to go on. Stuck? Ask Buddy.', '先回答小測再繼續。不明白？問 Buddy。')}</span>` : ''}
+      </section>`;
+    }
+    $app.querySelector('main').outerHTML = `<main class="pad stack g18 learnpage" data-view="learn" data-raw style="flex:1">${R.k >= 0 && R.k < n ? dots : ''}${body}</main>`;
+    renderMath($app);
+    window.scrollTo(0, 0);
+    const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
+    on('go1', () => { R.k = 0; draw(); });
+    on('prev', () => { R.k--; draw(); });
+    on('next', () => { R.k++; if (R.k >= n) finish(); draw(); });
+    on('again', () => { R.k = 0; R.picked = {}; R.right = 0; draw(); });
+    on('done', () => go({ name: 'book', bookId }));
+    on('practise', () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], local.count || SESSION_SIZE); });
+    $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => { const s = L.steps[R.k]; R.picked[R.k] = +b.dataset.opt; if (+b.dataset.opt === s.check.answer) R.right++; draw(); }));
+  };
+  const finish = () => {
+    local.learned = local.learned || {}; const first = !local.learned[`${bookId}:${unitId}`];
+    local.learned[`${bookId}:${unitId}`] = Date.now(); saveLocal();
+    if (first && starsOn()) { const g = addStars(1, 'lesson'); if (g) setTimeout(() => celebrate({ n: g, lines: [[LANG === 'zh' ? '完成一課' : 'Finished a lesson', g]], badges: checkBadges({}), capped: false }), 400); }
+  };
+  draw();
+}
+
 /* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
 const helper = { open: false };
-const SCREEN_NAME = { dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+const SCREEN_NAME = { learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
 function helperChips() {
   const v = view && view.name;
   const by = {
@@ -1797,7 +1886,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { learn: 'books', dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
@@ -2195,6 +2284,7 @@ async function renderBook(bookId) {
     </div>
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter'}</button>
     <button class="btn ghost" id="ctest" ${n ? '' : 'disabled'}>${actionIcon('mock', 22)} Take a chapter test</button>
+    <button class="btn learnbtn" id="learn" ${n ? '' : 'disabled'}>${actionIcon('practise', 22)} Learn this chapter first${n > 1 ? ' (the first ticked)' : ''}</button>
     <div class="revise-row"><button class="btn ghost" id="notes" ${n ? '' : 'disabled'}>${actionIcon('notes', 22)} Notes</button><button class="btn ghost" id="cards" ${n ? '' : 'disabled'}>${actionIcon('flashcards', 22)} Flashcards</button></div>
     <button class="btn ghost" id="paper">Or make a DSE-style mock paper / worksheet</button>
   </div>
@@ -2241,6 +2331,7 @@ async function renderBook(bookId) {
   document.getElementById('ctest').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); if (units.length) startChapterTest(book, units); };
   document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
   document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
+  { const lb = document.getElementById('learn'); if (lb) lb.onclick = () => { const u = book.units.find((x) => pick.ids.has(x.id)); if (u) go({ name: 'learn', bookId, unitId: u.id }); }; }
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
   window.scrollTo(0, 0);
 }

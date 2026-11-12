@@ -311,7 +311,7 @@ const EXACT = {
   'While you wait, a quick look at this chapter': '等候期間，快速重溫這一章',
   'A quick look while it’s checked': '檢查期間，快速重溫一下',
   'Start practising': '開始練習',
-  'Homework help': '功課輔導', '默書 · Dictation': '默書', 'I read, you write': '我讀，你寫', 'Snap a photo, get hints': '拍照，取得提示',
+  'Homework help': '功課輔導', 'Learn this chapter first': '先上一課', 'Learn this chapter first (the first ticked)': '先上一課（第一個已選章節）', '默書 · Dictation': '默書', 'I read, you write': '我讀，你寫', 'Snap a photo, get hints': '拍照，取得提示',
   'Difficulty': '難度', 'Auto': '自動', 'Easy': '容易', 'Medium': '中等', 'Hard': '困難', 'Master': '大師',
   'Time allowed': '作答時間', 'No time limit': '不限時', 'Suggested time, at about exam pace.': '建議時間，大約是考試的速度。', 'Suggested time, at about exam pace': '建議時間，大約是考試的速度',
   'No timer. Good for learning, but it won’t feel like the real exam.': '不計時，適合學習，但不像真正考試。', 'use it': '使用', 'Start': '開始', '5 minutes added': '已加 5 分鐘', 'Mini mock': '小型模擬',
