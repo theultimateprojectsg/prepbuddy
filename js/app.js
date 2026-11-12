@@ -3447,7 +3447,7 @@ function getNotes(book, unit, fresh) {
   const key = `notes:${book.id}:${unit.id}`;
   if (!fresh && notesJobs.has(key)) return notesJobs.get(key);
   const p = (async () => {
-    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length) return have; }
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.sections)) return have; }
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     if (!text) throw new Error('This chapter’s text is missing on this device.');
     const n = await api('notes', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
