@@ -11,6 +11,12 @@ Transcribe every question exactly as printed, in its original language (Chinese 
 - Use LaTeX between $ signs only for real maths (fractions, powers, roots); plain sums stay as plain text.
 - If a part of a page can't be read (blurry, cut off), say so in note.`;
 
+const LIST = `This is a photo of a Hong Kong primary-school dictation list (默書 / spelling list): words, phrases or sentences the child must learn to write.
+- List every item to be dictated, in order, exactly as printed (Traditional Chinese characters as printed, or English spelling). Keep punctuation inside sentences.
+- Leave out headings, numbering, instructions, dates, page numbers and handwriting that is not part of the list.
+- title: a short name, e.g. "中文默書 第五課" or "Spelling Unit 3".
+- lang: 'yue' for Chinese read in Cantonese (the usual case in Hong Kong), 'cmn' if it says 普通話 / Putonghua, 'en' for English.`;
+
 const TUTOR = `You are Buddy, a patient private tutor helping a Hong Kong student with their own school homework, shown below. A good tutor helps the student do it themselves:
 - Don't give the final answers for them to copy. First make sure they understand what the question asks, teach the idea (with a similar example that uses different numbers or words), and give a hint. Ask them to try.
 - When they give an answer, check it: say clearly if it's right. If it's wrong, point to where it goes wrong and give a hint; don't give the correct answer straight away.
@@ -43,6 +49,17 @@ module.exports = async (req, res) => {
       if (!qs.length) throw httpError(422, body.lang === 'zh' ? '看不清楚相片中的題目，請再拍清楚一點。' : 'I couldn’t read any questions in these photos. Try again with brighter, sharper photos.');
       res.statusCode = 200;
       return res.end(JSON.stringify({ title: String(out.title || '').slice(0, 80), subject: String(out.subject || '').slice(0, 40), level: String(out.level || '').slice(0, 20), questions: qs, note: String(out.note || '').slice(0, 300), usage }));
+    }
+    if (body.step === 'list') {
+      // A 默書 / spelling list from a photo: just the words or sentences to be dictated, in order.
+      const images = (Array.isArray(body.images) ? body.images : []).filter((x) => typeof x === 'string' && x.length > 1000).slice(0, 3)
+        .map((d) => d.replace(/^data:image\/\w+;base64,/, ''));
+      if (!images.length) throw httpError(400, 'No photos sent.');
+      const out = await callTool({ system: LIST, sectionBlock: 'A dictation list photo.', instruction: 'Read the dictation list.', toolName: 'save_dictation', maxTokens: 3000, usage, step: 'tutor', images });
+      const items = (Array.isArray(out.items) ? out.items : []).map((x) => String(x || '').trim()).filter(Boolean).slice(0, 60).map((x) => x.slice(0, 200));
+      if (!items.length) throw httpError(422, body.lang === 'zh' ? '看不清楚相片中的默書內容，請再拍清楚一點。' : 'I couldn’t find a word list in this photo. Try a clearer photo.');
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ title: String(out.title || '').slice(0, 60), lang: ['yue', 'cmn', 'en'].includes(out.lang) ? out.lang : 'yue', items, usage }));
     }
     const ask = String(body.ask || '').trim().slice(0, 1500);
     if (!ask) throw httpError(400, 'No question asked.');

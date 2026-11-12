@@ -159,6 +159,8 @@ function leaveText(kind, viaMenu) {
     : { title: 'Leave this paper?', body: 'The timer stops and this paper won’t be marked.', stay: 'Keep going', leave: 'Leave' };
   if (kind === 'cards') return zh ? { title: '停止溫習字卡？', body: '你可以隨時再溫。', stay: '繼續', leave: '離開' }
     : { title: 'Stop these flashcards?', body: 'You can come back to them any time.', stay: 'Keep going', leave: 'Leave' };
+  if (kind === 'dict') return zh ? { title: '停止這次默書？', body: '已核對的詞語會保存。', stay: '繼續', leave: '停止' }
+    : { title: 'Stop this dictation?', body: 'Words you’ve marked so far are saved.', stay: 'Keep going', leave: 'Stop' };
   if (kind === 'wait') return zh ? { title: '停止呢次練習？', body: '題目仲做緊，離開就會停止。', stay: '繼續等', leave: '離開' }
     : { title: 'Stop this practice?', body: 'Your questions are still being made. Leaving stops them.', stay: 'Keep waiting', leave: 'Leave' };
   return zh ? { title: '離開呢次練習？', body: viaMenu ? '你答過嘅題目已經儲存。' : '你答過嘅題目已經儲存，跟住會見到你嘅成績。', stay: '繼續練習', leave: '離開' }
@@ -635,6 +637,7 @@ async function go(v) {
   if (v.name === 'progress') return renderProgress();
   if (v.name === 'stars') return renderStars();
   if (v.name === 'homework') return renderHomework(v.id);
+  if (v.name === 'dictation') return renderDictation(v.id, v.sub);
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
   if (v.name === 'worksheets') return renderWorksheets();
@@ -838,6 +841,7 @@ async function runCoachAction(a) {
     case 'star_shop': return go({ name: 'stars' });
     case 'today': return go({ name: 'home' });
     case 'homework': return go({ name: 'homework' });
+    case 'dictation': return go({ name: 'dictation' });
   }
   if (book) return go({ name: 'book', bookId: book.id }); // couldn't tell exactly what: open the book's chapter page
 }
@@ -1035,9 +1039,176 @@ function zoomPhoto(src) {
   document.body.appendChild(box);
 }
 
+/* ---------- 默書 / spelling dictation (P1–P6) ----------
+   A list is typed in or read from a photo. PrepBuddy reads each item aloud (Cantonese, Putonghua or English);
+   the child writes it on paper and checks it against the answer, or types it and the app checks. Items they
+   miss come back first next time. Lists and results are kept on this device. */
+const DL = { yue: ['粵語', 'Cantonese', 'zh-HK'], cmn: ['普通話', 'Putonghua', 'zh-CN'], en: ['English', 'English', 'en-GB'] };
+const DT = (en, zh) => (LANG === 'zh' ? zh : en);
+function dictVoice(lang) {
+  const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
+  const want = lang === 'yue' ? (v) => /^(zh-HK|yue)/i.test(v.lang) || /Cantonese|粵|粤/i.test(v.name)
+    : lang === 'cmn' ? (v) => /^zh[-_](CN|TW|Hans)/i.test(v.lang) || /Mandarin|普通話|普通话/i.test(v.name)
+    : (v) => /^en[-_]/i.test(v.lang);
+  const ok = vs.filter(want);
+  const score = (v) => (/Natural|Online|Neural|Premium|Enhanced/i.test(v.name) ? 4 : 0) + (/Google/i.test(v.name) ? 2 : 0) + (lang === 'en' && /en[-_]GB/i.test(v.lang) ? 1 : 0);
+  return ok.sort((a, b) => score(b) - score(a))[0] || null;
+}
+function sayItem(text, lang, slow) {
+  if (!window.speechSynthesis) { toast(DT('This browser can’t read aloud. Try Chrome, Edge or Safari.', '這個瀏覽器不能朗讀，請用 Chrome、Edge 或 Safari。')); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = dictVoice(lang);
+  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = DL[lang][2];
+  u.rate = slow ? 0.55 : 0.8;
+  speechSynthesis.speak(u);
+  return !!v;
+}
+try { speechSynthesis.getVoices(); } catch (e) {}
+const normDict = (s) => String(s || '').normalize('NFKC').toLowerCase().replace(/[\s，,。.、！!？?；;：:「」『』“”"'‘’()（）]/g, '');
+
+async function renderDictation(id, sub) {
+  const lists = local.dict || (local.dict = []);
+  const L = id && lists.find((x) => x.id === id);
+  if (L && sub === 'run') return runDictation(L);
+  if (L && sub === 'edit') return editDictation(L);
+  if (id === 'new') return editDictation(null);
+  const missed = (x) => x.items.filter((_, i) => (x.res || {})[i] && x.res[i].due).length;
+  $app.innerHTML = `
+  <main class="pad stack g18 dictpage" data-view="dictation" data-raw style="flex:1">
+    <h1 class="pagetitle">${DT('默書 · Dictation', '默書')}</h1>
+    <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${DT('I read the words, you write them.', '我讀，你寫。')}</b>
+      <span>${DT('Add this week’s 默書 or spelling list. I read each one aloud in Cantonese, Putonghua or English. Write it down, then check. Words you miss come back next time.', '加入今個星期的默書或串字。我會用粵語、普通話或英文逐個讀出來，你寫低再對答案。寫錯的會在下次再出現。')}</span></div></section>
+    <button class="btn" id="dnew">+ ${DT('Add a dictation list', '加入默書')}</button>
+    ${lists.length ? `<div class="hw-list">${lists.slice().reverse().map((x) => { const m = missed(x), last = (x.runs || []).slice(-1)[0];
+      return `<div class="dl-item"><button class="dl-main" data-run="${x.id}"><span class="hw-ic">✏️</span><span class="hw-it"><b>${esc(x.title)}</b><small>${DL[x.lang][LANG === 'zh' ? 0 : 1]} · ${x.items.length} ${DT('items', '項')}${last ? ` · ${DT('last', '上次')} ${last.g}/${last.n}` : ''}${m ? ` · <span class="dl-miss">${DT(`${m} to practise`, `${m} 個要再練`)}</span>` : ''}</small></span><span class="dl-go">▶</span></button>
+        <button class="btn-sm quiet" data-edit="${x.id}">${DT('Edit', '修改')}</button></div>`; }).join('')}</div>`
+      : `<p class="muted" style="margin:0">${DT('No lists yet.', '還沒有默書。')}</p>`}
+  </main>`;
+  document.getElementById('dnew').onclick = () => go({ name: 'dictation', id: 'new' });
+  $app.querySelectorAll('[data-run]').forEach((b) => (b.onclick = () => go({ name: 'dictation', id: b.dataset.run, sub: 'run' })));
+  $app.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => go({ name: 'dictation', id: b.dataset.edit, sub: 'edit' })));
+}
+
+function editDictation(L) {
+  const st = { title: L ? L.title : '', lang: L ? L.lang : (LANG === 'zh' ? 'yue' : 'en'), text: L ? L.items.join('\n') : '', busy: false, err: '' };
+  const draw = () => {
+    $app.innerHTML = `
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button><span style="font-weight:600;font-size:15px">${L ? DT('Edit list', '修改默書') : DT('New list', '新默書')}</span></div>
+    <main class="pad stack g14 dictpage" data-view="dictation" data-raw style="flex:1">
+      <label class="dl-lab" for="dtitle">${DT('Name', '名稱')}</label>
+      <input id="dtitle" class="input" maxlength="60" placeholder="${DT('e.g. 中文默書 第五課 or Spelling Unit 3', '例如：中文默書 第五課')}" value="${esc(st.title)}">
+      <span class="dl-lab">${DT('Read aloud in', '朗讀語言')}</span>
+      <div class="seg" role="radiogroup">${Object.entries(DL).map(([k, v]) => `<button role="radio" aria-checked="${st.lang === k}" class="${st.lang === k ? 'on' : ''}" data-lang="${k}">${LANG === 'zh' ? v[0] : v[1]}</button>`).join('')}</div>
+      <div class="dl-row"><label class="dl-lab" for="ditems">${DT('Words or sentences, one per line', '詞語或句子，每行一個')}</label>
+        <label class="btn-sm" style="cursor:pointer">📷 ${DT('Read from a photo', '從相片讀取')}<input type="file" accept="image/*" id="dphoto" hidden></label></div>
+      <textarea id="ditems" class="input dl-ta" rows="10" placeholder="${DT('膝蓋\n醫治\n康復\n…', '膝蓋\n醫治\n康復\n…')}">${esc(st.text)}</textarea>
+      ${st.busy ? `<p class="muted" style="margin:0">${DT('Reading the list…', '正在讀取…')}</p>` : ''}${st.err ? `<p class="hw-err">${esc(st.err)}</p>` : ''}
+      <div class="rd-row">${L ? `<button class="btn ghost" id="ddel">${DT('Delete', '刪除')}</button>` : `<span></span>`}<button class="btn" id="dsave">${DT('Save', '儲存')}</button></div>
+    </main>`;
+    const keep = () => { st.title = document.getElementById('dtitle').value; st.text = document.getElementById('ditems').value; };
+    document.getElementById('back').onclick = () => go({ name: 'dictation' });
+    $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { keep(); st.lang = b.dataset.lang; draw(); }));
+    document.getElementById('dphoto').onchange = async (e) => {
+      keep(); const f = e.target.files[0]; if (!f) return;
+      st.busy = true; st.err = ''; draw();
+      try {
+        const img = await shrinkPhoto(f, 1800);
+        const r = await api('homework', { step: 'list', images: [img], lang: LANG });
+        st.text = (st.text.trim() ? st.text.trim() + '\n' : '') + r.items.join('\n');
+        if (!st.title) st.title = r.title; st.lang = r.lang;
+      } catch (err) { st.err = err.status === 0 ? DT('You seem to be offline.', '你好像離線了。') : (err.message || DT('Couldn’t read the photo.', '讀取相片失敗。')); }
+      st.busy = false; draw();
+    };
+    document.getElementById('dsave').onclick = () => {
+      keep();
+      const items = st.text.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 60);
+      if (!items.length) { st.err = DT('Add at least one word.', '請最少加入一個詞語。'); return draw(); }
+      const title = st.title.trim() || DT('Dictation', '默書');
+      if (L) {
+        // results stay with items that didn't change
+        const old = new Map(L.items.map((t, i) => [t, (L.res || {})[i]]));
+        L.res = Object.fromEntries(items.map((t, i) => [i, old.get(t)]).filter((x) => x[1]));
+        Object.assign(L, { title, lang: st.lang, items });
+      } else (local.dict = local.dict || []).push({ id: uid(), t: Date.now(), title, lang: st.lang, items, res: {}, runs: [] });
+      saveLocal(); go({ name: 'dictation' });
+    };
+    const d = document.getElementById('ddel');
+    if (d) d.onclick = async () => { if (await confirmLeave({ title: DT('Delete this list?', '刪除這個默書？'), body: L.title, leave: DT('Delete', '刪除'), stay: DT('Keep it', '保留') })) { local.dict = local.dict.filter((x) => x !== L); saveLocal(); go({ name: 'dictation' }); } };
+  };
+  draw();
+}
+
+function runDictation(L) {
+  L.res = L.res || {};
+  // missed items first (they're "due"), then the rest in the list's order, like a real 默書
+  const order = L.items.map((_, i) => i);
+  const due = order.filter((i) => L.res[i] && L.res[i].due);
+  const R = { mode: local.dictMode || 'paper', order: [...due, ...order.filter((i) => !due.includes(i))], k: 0, shown: false, typed: '', marks: {}, onlyMissed: false };
+  const finish = () => {
+    const n = Object.keys(R.marks).length, g = Object.values(R.marks).filter(Boolean).length;
+    L.runs = [...(L.runs || []), { t: Date.now(), n, g }].slice(-20); saveLocal();
+    const won = n ? (() => { const a = addStars(1, 'dictation'); const b = g === n && n >= 3 ? addStars(1, 'dictation-perfect') : 0; return a + b ? { n: a + b, lines: [[DT('Finished a dictation', '完成默書'), a], ...(b ? [[DT('Every word right!', '全部正確！'), b]] : [])].filter((x) => x[1]), badges: checkBadges({}), capped: false } : null; })() : null;
+    const miss = Object.entries(R.marks).filter(([, ok]) => !ok).map(([i]) => L.items[i]);
+    $app.innerHTML = `
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button></div>
+    <main class="pad stack g18 dictpage" data-view="dictation" data-raw style="flex:1;align-items:stretch">
+      <section class="dl-done">${buddySVG(g === n ? 'happy' : 'think', 72)}<b class="dl-score">${g} / ${n}</b><span>${g === n ? DT('Every word right. Brilliant!', '全部正確，好叻！') : DT('Good effort! Practise the ones you missed.', '做得好！再練習寫錯的詞語。')}</span></section>
+      ${miss.length ? `<section class="card stack g10" style="padding:16px"><b>${DT('To practise again', '要再練習')}</b><div class="dl-miss-list">${miss.map((t) => `<span>${esc(t)}</span>`).join('')}</div>
+        <button class="btn" id="again">${DT(`Practise these ${miss.length} again`, `再練習這 ${miss.length} 個`)}</button></section>` : ''}
+      <button class="btn ghost" id="fin">${DT('Done', '完成')}</button>
+    </main>`;
+    document.getElementById('back').onclick = document.getElementById('fin').onclick = () => go({ name: 'dictation' });
+    const a = document.getElementById('again'); if (a) a.onclick = () => { R.order = Object.entries(R.marks).filter(([, ok]) => !ok).map(([i]) => +i); R.k = 0; R.marks = {}; R.shown = false; R.typed = ''; draw(); };
+    if (won && starsOn()) setTimeout(() => celebrate(won), 400);
+  };
+  const mark = (ok) => {
+    const i = R.order[R.k], r = L.res[i] || (L.res[i] = { n: 0, wrong: 0 });
+    r.n++; if (!ok) r.wrong++; r.due = !ok; r.last = Date.now();
+    R.marks[i] = ok; saveLocal();
+    R.k++; R.shown = false; R.typed = '';
+    if (R.k >= R.order.length) return finish();
+    draw(); setTimeout(() => sayItem(L.items[R.order[R.k]], L.lang, false), 350);
+  };
+  const draw = () => {
+    const i = R.order[R.k], text = L.items[i], n = R.order.length;
+    const okTyped = R.mode === 'type' && R.shown ? normDict(R.typed) === normDict(text) : null;
+    $app.innerHTML = `
+    <div class="topbar"><button class="backbtn" id="quit" data-kind="dict">${ICON.back}<span>${DT('Stop', '停止')}</span></button><div class="progress"><i style="width:${Math.round(100 * R.k / n)}%"></i></div><span class="count">${R.k + 1} / ${n}</span></div>
+    <main class="pad stack g18 dictrun" data-view="dictation" data-raw style="flex:1">
+      <div class="seg dl-mode" role="radiogroup" aria-label="${DT('How to answer', '作答方式')}"><button role="radio" class="${R.mode === 'paper' ? 'on' : ''}" data-mode="paper">${DT('Write on paper', '寫在紙上')}</button><button role="radio" class="${R.mode === 'type' ? 'on' : ''}" data-mode="type">${DT('Type it', '打字')}</button></div>
+      <section class="dl-play">
+        <button class="dl-big" id="play" aria-label="${DT('Read it aloud', '朗讀')}">🔊</button>
+        <div class="dl-ctrls"><button class="btn-sm" id="again1">${DT('Again', '再聽一次')}</button><button class="btn-sm" id="slow">🐢 ${DT('Slowly', '慢一點')}</button></div>
+        ${L.res[i] && L.res[i].due ? `<span class="dl-tag">${DT('You missed this last time', '上次寫錯了')}</span>` : ''}
+        <p class="hint" id="novoice" hidden>${DT('No voice for this language on this device. A parent can read it out instead:', '這部機沒有這種語言的聲音，請家長讀出來：')} <b>${esc(text)}</b></p>
+      </section>
+      ${R.mode === 'type' ? `<input id="dtyped" class="input dl-type" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${DT('Type what you hear', '輸入你聽到的')}" value="${esc(R.typed)}" ${R.shown ? 'disabled' : ''}>` : ''}
+      ${R.shown ? `<section class="dl-ans ${okTyped === null ? '' : okTyped ? 'ok' : 'no'}"><small>${DT('Answer', '答案')}</small><b>${esc(text)}</b>${okTyped === false ? `<small>${DT('You wrote', '你寫了')}: ${esc(R.typed || '—')}</small>` : ''}</section>
+        ${R.mode === 'paper' ? `<p class="dl-q">${DT('Did you write it exactly right?', '你寫對了嗎？')}</p><div class="rd-row"><button class="btn ghost" id="no">✗ ${DT('Not quite', '寫錯了')}</button><button class="btn" id="yes">✓ ${DT('Right', '寫對了')}</button></div>`
+          : `<button class="btn" id="next">${DT('Next', '下一個')}</button>`}`
+        : `<button class="btn" id="show">${R.mode === 'type' ? DT('Check', '檢查') : DT('I’ve written it: show the answer', '寫好了，看答案')}</button>`}
+    </main>`;
+    const say = (slow) => { if (sayItem(text, L.lang, slow) === false) document.getElementById('novoice').hidden = false; };
+    document.getElementById('play').onclick = () => say(false);
+    document.getElementById('again1').onclick = () => say(false);
+    document.getElementById('slow').onclick = () => say(true);
+    if (!dictVoice(L.lang) && speechSynthesis.getVoices().length) document.getElementById('novoice').hidden = false;
+    $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => { R.mode = local.dictMode = b.dataset.mode; saveLocal(); R.shown = false; draw(); }));
+    document.getElementById('quit').onclick = async () => { speechSynthesis.cancel(); if (!R.k || await confirmLeave({ title: DT('Stop this dictation?', '停止這次默書？'), body: DT('Words you’ve marked so far are saved.', '已核對的詞語會保存。'), leave: DT('Stop', '停止'), stay: DT('Keep going', '繼續') })) go({ name: 'dictation' }); };
+    const sh = document.getElementById('show'); if (sh) sh.onclick = () => { const t = document.getElementById('dtyped'); if (t) R.typed = t.value; R.shown = true; draw(); };
+    const ty = document.getElementById('dtyped'); if (ty && !R.shown) { ty.focus(); ty.onkeydown = (e) => { if (e.key === 'Enter') sh.click(); }; }
+    const y = document.getElementById('yes'); if (y) y.onclick = () => mark(true);
+    const no = document.getElementById('no'); if (no) no.onclick = () => mark(false);
+    const nx = document.getElementById('next'); if (nx) { nx.onclick = () => mark(okTyped); nx.focus(); }
+  };
+  draw();
+  setTimeout(() => sayItem(L.items[R.order[0]], L.lang, false), 500);
+}
+
 /* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
 const helper = { open: false };
-const SCREEN_NAME = { homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+const SCREEN_NAME = { dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
 function helperChips() {
   const v = view && view.name;
   const by = {
@@ -1206,6 +1377,7 @@ async function renderHome() {
         <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="qtile" data-mode="mock">${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
         <button class="qtile hwtile" id="hwgo">${actionTile('notes', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
+        <button class="qtile hwtile" id="dictgo">${actionTile('flashcards', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -1226,6 +1398,7 @@ async function renderHome() {
   if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   { const hg = document.getElementById('hwgo'); if (hg) hg.onclick = () => go({ name: 'homework' }); }
+  { const dg = document.getElementById('dictgo'); if (dg) dg.onclick = () => go({ name: 'dictation' }); }
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   window.scrollTo(0, 0);
 }
@@ -1624,7 +1797,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
