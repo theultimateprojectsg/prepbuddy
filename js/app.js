@@ -590,7 +590,7 @@ let S = null; // current practice session
 
 async function go(v) {
   view = v;
-  getBooks().then((bs) => bs.forEach((b) => { bookKinds.set(b.id, kindOfBook(b)); aliases.set(b.id, b.alias || {}); }));
+  getBooks().then((bs) => { bs.forEach((b) => { bookKinds.set(b.id, kindOfBook(b)); aliases.set(b.id, b.alias || {}); }); const pr = bs.some(looksPrimary); if (pr !== primaryCache) { primaryCache = pr; renderTabs(); } });
   document.querySelectorAll('.toast').forEach((x) => x.remove());
   stopTimer();
   if (v.name === 'home') return renderHome();
@@ -600,6 +600,7 @@ async function go(v) {
   if (v.name === 'usage') return renderUsage();
   if (v.name === 'settings') return renderSettings();
   if (v.name === 'progress') return renderProgress();
+  if (v.name === 'stars') return renderStars();
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
   if (v.name === 'worksheets') return renderWorksheets();
@@ -858,7 +859,7 @@ async function renderHome() {
   const name = (local.name || '').trim();
   const dateText = new Date().toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div></div>`;
+      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div>${starChip()}</div>`;
   if (!books.length) {
     $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
     <section class="empty-start" aria-label="Add a textbook">
@@ -1015,6 +1016,11 @@ function renderSettings() {
       <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
     </section>
     <section class="card stack g10" style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">Stars and rewards</b>
+        <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
+    </section>
+    <section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">AI usage</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
       <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
@@ -1025,7 +1031,258 @@ function renderSettings() {
   const nm = document.getElementById('sname');
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   document.getElementById('susage').onclick = () => go({ name: 'usage' });
+  document.getElementById('sstars').onclick = () => { local.starsOn = !starsOn(); saveLocal(); renderSettings(); renderTabs(); };
   window.scrollTo(0, 0);
+}
+
+/* ---------- stars and rewards (for younger students; parents set the rewards) ----------
+   Stars reward effort and learning, never speed: finishing a set, a good score, fixing mistakes, daily reviews,
+   the weekly goal, chapter tests and badges. Everyday stars are capped per day; stars are never taken away for
+   wrong answers. The child spends them in the Star shop on rewards a parent set up, and a parent approves each
+   one on the spot with a 4-digit PIN. Everything is kept on this device. */
+const ST = (en, zh) => (LANG === 'zh' ? zh : en);
+const DAY_CAP = 10;
+const looksPrimary = (b) => /\bP\.?\s?[1-6]\b|primary|小[一二三四五六]|小學|初小|高小/i.test(`${b.title || ''} ${b.level || ''}`);
+let primaryCache = null;
+function starsOn() {
+  if (local.starsOn === true || local.starsOn === false) return local.starsOn;
+  return !!primaryCache;
+}
+function starState() {
+  local.stars = local.stars || { bal: 0, total: 0, log: [], badges: {}, rewards: null, saving: null, redeemed: [], day: null };
+  const s = local.stars;
+  if (!s.rewards) s.rewards = defaultRewards();
+  return s;
+}
+function defaultRewards() {
+  const zh = LANG === 'zh';
+  return [
+    ['📱', zh ? '30 分鐘 iPad 時間' : '30 min iPad time', 20],
+    ['🍦', zh ? '雪糕一杯' : 'Ice cream treat', 30],
+    ['🍕', zh ? '選星期五晚餐' : 'Pick Friday dinner', 40],
+    ['🎬', zh ? '家庭電影夜' : 'Family movie night', 60],
+    ['🧸', zh ? '去玩具店' : 'Trip to the toy shop', 100],
+  ].map(([icon, name, cost]) => ({ id: uid(), icon, name, cost }));
+}
+const dayStart = (t = Date.now()) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+// Adds stars; everyday stars respect the daily cap. Returns how many were added.
+function addStars(n, why, capped = true) {
+  if (!starsOn() || n <= 0) return 0;
+  const s = starState(), today = dayStart();
+  if (!s.day || s.day.d !== today) s.day = { d: today, n: 0, once: {} };
+  if (capped) n = Math.max(0, Math.min(n, DAY_CAP - s.day.n));
+  if (!n) return 0;
+  if (capped) s.day.n += n;
+  s.bal += n; s.total += n;
+  s.log.push({ t: Date.now(), n, why });
+  if (s.log.length > 400) s.log = s.log.slice(-400);
+  saveLocal();
+  return n;
+}
+const onceToday = (key) => { const s = starState(), today = dayStart(); if (!s.day || s.day.d !== today) s.day = { d: today, n: 0, once: {} }; s.day.once = s.day.once || {}; if (s.day.once[key]) return false; s.day.once[key] = 1; return true; };
+
+const BADGES = [
+  { id: 'first', icon: '🌱', en: 'First steps', zh: '踏出第一步', den: 'Finish your first practice set', dzh: '完成第一組練習', stars: 5, test: (c) => c.sets >= 1 },
+  { id: 'q100', icon: '💯', en: '100 questions', zh: '100 題', den: 'Answer 100 questions', dzh: '答 100 題', stars: 5, test: (c) => c.answered >= 100 },
+  { id: 'streak3', icon: '🔥', en: '3 days in a row', zh: '連續 3 日', den: 'Practise 3 days in a row', dzh: '連續練習 3 日', stars: 5, test: (c) => c.streak >= 3 },
+  { id: 'streak7', icon: '🏅', en: '7-day streak', zh: '連續 7 日', den: 'Practise 7 days in a row', dzh: '連續練習 7 日', stars: 10, test: (c) => c.streak >= 7 },
+  { id: 'fix10', icon: '🛠️', en: 'Mistake fixer', zh: '改錯高手', den: 'Fix 10 mistakes', dzh: '改正 10 題錯題', stars: 5, test: (c) => c.fixed >= 10 },
+  { id: 'perfect', icon: '🌟', en: 'Perfect set', zh: '全對', den: 'Get every question right in a set of 5 or more', dzh: '一組 5 題或以上全部答對', stars: 5, test: (c) => c.perfect },
+  { id: 'test', icon: '🎓', en: 'Test passed', zh: '測驗合格', den: 'Pass a chapter test', dzh: '通過章節測驗', stars: 10, test: (c) => c.testsPassed >= 1 },
+  { id: 'goal', icon: '🎯', en: 'Goal getter', zh: '目標達成', den: 'Reach your weekly goal', dzh: '達成每週目標', stars: 5, test: (c) => c.goalWeeks >= 1 },
+  { id: 'q500', icon: '🚀', en: '500 questions', zh: '500 題', den: 'Answer 500 questions', dzh: '答 500 題', stars: 15, test: (c) => c.answered >= 500 },
+];
+function badgeCounts(extra = {}) {
+  const s = starState();
+  const days = new Set(local.log.map((e) => dayStart(e.t)));
+  let streak = 0; for (let d = days.has(dayStart()) ? dayStart() : dayStart() - DAY; days.has(d); d -= DAY) streak++;
+  return {
+    sets: (s.sets || 0), answered: Object.values(local.stats).reduce((a, x) => a + (x.seen || 0), 0), streak,
+    fixed: Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual).length,
+    perfect: !!extra.perfect, testsPassed: (local.tests || []).filter((t) => t.kind === 'test' && t.m && t.g / t.m >= 0.8).length,
+    goalWeeks: Object.keys(s.goalWeeks || {}).length,
+  };
+}
+// New badges earned now (each also gives its stars, outside the daily cap).
+function checkBadges(extra) {
+  if (!starsOn()) return [];
+  const s = starState(), c = badgeCounts(extra), won = [];
+  for (const b of BADGES) if (!s.badges[b.id] && b.test(c)) { s.badges[b.id] = Date.now(); addStars(b.stars, 'badge:' + b.id, false); won.push(b); }
+  if (won.length) saveLocal();
+  return won;
+}
+
+// Stars for a finished set (called once, from the results screen).
+function awardSession(qs, pct) {
+  if (!starsOn() || !S || S.starred || S.endedEarly || !qs.length) return null;
+  S.starred = true;
+  const s = starState(), lines = [];
+  let n = 0;
+  const add = (k, why, label) => { const got = addStars(k, why); if (got) { n += got; lines.push([label, got]); } };
+  if (qs.length >= 3) { s.sets = (s.sets || 0) + 1; add(1, 'set', ST('Finished a set', '完成一組練習')); }
+  if (qs.length >= 5 && pct >= 80) add(1, 'score', ST('Scored 80% or more', '得分 80% 或以上'));
+  if (S.fixedNow) add(S.fixedNow, 'fix', ST(`Fixed ${S.fixedNow} mistake${S.fixedNow > 1 ? 's' : ''}`, `改正了 ${S.fixedNow} 題錯題`));
+  if (S.mode === 'spaced' && onceToday('reviews')) add(1, 'reviews', ST('Did today’s reviews', '完成今日溫習'));
+  if (S.test && pct >= 80) { const g = addStars(3, 'test', false); if (g) { n += g; lines.push([ST('Passed the chapter test', '通過章節測驗'), g]); } }
+  // weekly goal reached (once per week)
+  const G = typeof goalWeek === 'function' ? goalWeek() : null;
+  if (G && G.reached) {
+    s.goalWeeks = s.goalWeeks || {};
+    const wk = String(G.week[0].t);
+    if (!s.goalWeeks[wk]) { s.goalWeeks[wk] = 1; const g = addStars(5, 'goal', false); if (g) { n += g; lines.push([ST('Reached your weekly goal!', '達成每週目標！'), g]); } }
+  }
+  const capped = s.day && s.day.n >= DAY_CAP;
+  const badges = checkBadges({ perfect: qs.length >= 5 && pct === 100 });
+  saveLocal();
+  return n || badges.length ? { n: n + badges.reduce((a, b) => a + b.stars, 0), lines, badges, capped } : (capped ? { n: 0, lines: [], badges: [], capped } : null);
+}
+
+function starSVG(size = 18) { return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="#FFC531" stroke="#E0A100" stroke-width="1.2" stroke-linejoin="round"/></svg>`; }
+function starChip() { return starsOn() ? `<button class="starchip" data-stargo aria-label="${ST(`${starState().bal} stars. Open the Star shop`, `${starState().bal} 粒星。打開星星商店`)}">${starSVG(18)}<b>${starState().bal}</b></button>` : ''; }
+function bindStarChips(root = document) { root.querySelectorAll('[data-stargo]').forEach((b) => (b.onclick = async () => { const q = inSession(); if (q && !(await confirmLeave(leaveText(q.dataset.kind, true)))) return; go({ name: 'stars' }); })); }
+
+// Celebration: stars fly in, Buddy cheers, new badges shown.
+function celebrate(won) {
+  if (!won) return;
+  const box = document.createElement('div');
+  box.className = 'cdlg-wrap star-cel';
+  const conf = Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 37) % 100}%;animation-delay:${(i % 9) * 0.07}s;background:${['#FFC531', '#FF7A59', '#4CC38A', '#5B8DEF', '#B57AF0'][i % 5]}"></i>`).join('');
+  box.innerHTML = `<div class="confetti" aria-hidden="true">${conf}</div><div class="cdlg sc-card" role="dialog" aria-modal="true" aria-labelledby="sc-t" data-raw>
+    <div class="sc-buddy">${buddySVG('happy', 84)}</div>
+    ${won.n ? `<b id="sc-t" class="sc-big">+${won.n} ${starSVG(30)}</b>` : `<b id="sc-t" class="sc-big">${ST('Great work!', '做得好！')}</b>`}
+    ${won.lines.length ? `<div class="sc-lines">${won.lines.map(([l, k]) => `<div><span>${esc(l)}</span><b>+${k} ★</b></div>`).join('')}</div>` : ''}
+    ${won.badges.map((b) => `<div class="sc-badge"><span>${b.icon}</span><div><small>${ST('New badge!', '新徽章！')}</small><b>${esc(ST(b.en, b.zh))}</b><span>${esc(ST(b.den, b.dzh))} · +${b.stars} ★</span></div></div>`).join('')}
+    ${won.capped ? `<p class="sc-cap">${ST('That’s all the stars for today. Come back tomorrow for more!', '今日的星星已經全部拿到，明天再來吧！')}</p>` : ''}
+    <div class="sc-bal">${ST('You have', '你現在有')} <b>${starState().bal}</b> ${starSVG(18)}</div>
+    <div class="rd-row"><button class="btn ghost" id="sc-shop">${ST('Star shop', '星星商店')}</button><button class="btn" id="sc-ok">${ST('Yay!', '好呀！')}</button></div>
+  </div>`;
+  document.body.appendChild(box);
+  const close = () => box.remove();
+  box.querySelector('#sc-ok').onclick = close;
+  box.querySelector('#sc-shop').onclick = () => { close(); go({ name: 'stars' }); };
+  box.onclick = (e) => { if (e.target === box) close(); };
+  box.querySelector('#sc-ok').focus();
+}
+
+// Parent PIN: set the first time a parent opens the parent area or approves a reward.
+function askPin(purpose) {
+  return new Promise((resolve) => {
+    const has = !!local.pin;
+    const box = document.createElement('div');
+    box.className = 'cdlg-wrap';
+    box.innerHTML = `<div class="cdlg rdlg pin-dlg" role="dialog" aria-modal="true" aria-labelledby="pn-t" data-raw>
+      <b id="pn-t">${has ? ST('Parent PIN', '家長密碼') : ST('Set a parent PIN', '設定家長密碼')}</b>
+      <span>${esc(purpose)}</span>
+      <input id="pn-in" class="input pin-in" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9]*" placeholder="••••" aria-label="${ST('4-digit PIN', '4 位數密碼')}">
+      ${has ? '' : `<input id="pn-in2" class="input pin-in" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9]*" placeholder="${ST('Again', '再輸入一次')}" aria-label="${ST('Repeat the PIN', '再輸入密碼')}"><span class="hint">${ST('Only parents should know this. It’s needed to approve rewards and change them.', '只有家長應該知道這個密碼，批准和修改獎勵時需要用到。')}</span>`}
+      <p class="pin-err" id="pn-err" role="alert"></p>
+      <div class="rd-row"><button class="btn ghost" id="pn-no">${ST('Cancel', '取消')}</button><button class="btn" id="pn-ok">${ST('OK', '確定')}</button></div>
+    </div>`;
+    document.body.appendChild(box);
+    const inp = box.querySelector('#pn-in'), err = box.querySelector('#pn-err');
+    const done = (v) => { box.remove(); resolve(v); };
+    box.querySelector('#pn-no').onclick = () => done(false);
+    const ok = () => {
+      const v = inp.value.trim();
+      if (!/^\d{4}$/.test(v)) { err.textContent = ST('Enter 4 digits.', '請輸入 4 位數字。'); return; }
+      if (has) { if (v === local.pin) return done(true); err.textContent = ST('That PIN isn’t right.', '密碼不正確。'); inp.value = ''; return; }
+      if (v !== box.querySelector('#pn-in2').value.trim()) { err.textContent = ST('The two PINs don’t match.', '兩次輸入的密碼不一樣。'); return; }
+      local.pin = v; saveLocal(); done(true);
+    };
+    box.querySelector('#pn-ok').onclick = ok;
+    box.querySelectorAll('.pin-in').forEach((x) => (x.onkeydown = (e) => { if (e.key === 'Enter') ok(); }));
+    inp.focus();
+  });
+}
+
+function renderStars(parent = false) {
+  const s = starState(), zh = LANG === 'zh';
+  const saving = s.rewards.find((r) => r.id === s.saving) || null;
+  const weekAgo = Date.now() - 7 * DAY;
+  const thisWeek = s.log.filter((x) => x.t > weekAgo).reduce((a, x) => a + x.n, 0);
+  const fmt = (t) => new Date(t).toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
+  const rewardCard = (r) => {
+    const can = s.bal >= r.cost, pct = Math.min(100, Math.round(100 * s.bal / r.cost));
+    return `<div class="rw ${can ? 'can' : ''} ${s.saving === r.id ? 'saving' : ''}">
+      <span class="rw-ic" aria-hidden="true">${esc(r.icon)}</span>
+      <b class="rw-n">${esc(r.name)}</b>
+      <span class="rw-c">${starSVG(16)} ${r.cost}</span>
+      ${can ? `<button class="btn rw-go" data-get="${r.id}">${ST('Get it!', '換領！')}</button>`
+        : `<div class="pg-bar mid"><i style="width:${pct}%"></i></div><span class="rw-left">${ST(`${r.cost - s.bal} more`, `還差 ${r.cost - s.bal} 粒`)}</span>
+           <button class="btn-sm ${s.saving === r.id ? '' : 'quiet'}" data-save="${r.id}">${s.saving === r.id ? ST('Saving for this ✓', '正在儲 ✓') : ST('Save for this', '儲星換這個')}</button>`}
+    </div>`;
+  };
+  $app.innerHTML = `
+  <main class="pad stack g18 starpage" data-view="progress" data-raw style="flex:1">
+    <h1 class="pagetitle">${ST('Star shop', '星星商店')}</h1>
+    ${!starsOn() ? `<div class="card" style="padding:16px;line-height:1.5">${ST('Stars are switched off. Turn them on in Settings.', '星星功能已關閉，可在設定中開啟。')}</div>` : ''}
+    <section class="st-hero">
+      <div class="st-bal">${starSVG(46)}<div><b>${s.bal}</b><span>${ST('stars to spend', '粒星星可以用')}</span></div></div>
+      <div class="st-meta"><span>${ST(`${thisWeek} earned this week`, `本週賺了 ${thisWeek} 粒`)}</span><span>${ST(`${s.total} earned in total`, `累計 ${s.total} 粒`)}</span></div>
+      ${saving ? `<div class="st-save"><span>${ST('Saving for', '正在儲')}: <b>${esc(saving.icon)} ${esc(saving.name)}</b></span><div class="pg-bar good"><i style="width:${Math.min(100, Math.round(100 * s.bal / saving.cost))}%"></i></div><small>${s.bal >= saving.cost ? ST('You have enough! Ask Mum or Dad.', '星星夠了！去問爸爸媽媽吧。') : ST(`${saving.cost - s.bal} more stars to go!`, `還差 ${saving.cost - s.bal} 粒星！`)}</small></div>` : ''}
+    </section>
+    <section class="stack g10"><h2 class="st-h">${ST('Rewards', '獎勵')}</h2>
+      <div class="rw-grid">${s.rewards.slice().sort((a, b) => a.cost - b.cost).map(rewardCard).join('') || `<p class="muted">${ST('No rewards yet. Ask a parent to add some.', '還沒有獎勵，請家長加入。')}</p>`}</div>
+    </section>
+    <section class="stack g10"><h2 class="st-h">${ST('How to earn stars', '怎樣賺星星')}</h2>
+      <div class="st-earn">${[
+        ['📘', ST('Finish a practice set', '完成一組練習'), 1], ['🎯', ST('Score 80% or more', '得分 80% 或以上'), '+1'], ['🛠️', ST('Fix a mistake', '改正一題錯題'), 1],
+        ['🔁', ST('Do today’s reviews', '完成今日溫習'), 1], ['🏆', ST('Reach your weekly goal', '達成每週目標'), 5], ['🎓', ST('Pass a chapter test', '通過章節測驗'), 3]]
+        .map(([i, t, n]) => `<div><span>${i}</span><span>${t}</span><b>${n} ★</b></div>`).join('')}</div>
+      <p class="hint">${ST(`Up to ${DAY_CAP} stars a day from practice. Badges and goals give extra.`, `練習每日最多可賺 ${DAY_CAP} 粒星，徽章和目標另有獎勵。`)}</p>
+    </section>
+    <section class="stack g10"><h2 class="st-h">${ST('Badges', '徽章')}</h2>${badgeShelf()}</section>
+    ${s.redeemed.length ? `<section class="stack g10"><h2 class="st-h">${ST('Rewards you got', '已換領的獎勵')}</h2><div class="st-hist">${s.redeemed.slice().reverse().slice(0, 8).map((x) => `<div><span>${esc(x.icon || '🎁')}</span><span>${esc(x.name)}</span><small>${fmt(x.t)} · ${x.cost} ★</small></div>`).join('')}</div></section>` : ''}
+    <button class="btn-sm quiet" id="st-parent" style="align-self:center">🔒 ${ST('For parents: change rewards', '家長專區：修改獎勵')}</button>
+  </main>`;
+  $app.querySelectorAll('[data-save]').forEach((b) => (b.onclick = () => { s.saving = s.saving === b.dataset.save ? null : b.dataset.save; saveLocal(); renderStars(); }));
+  $app.querySelectorAll('[data-get]').forEach((b) => (b.onclick = async () => {
+    const r = s.rewards.find((x) => x.id === b.dataset.get); if (!r || s.bal < r.cost) return;
+    if (!(await askPin(ST(`Ask Mum or Dad! ${r.icon} ${r.name} costs ${r.cost} stars. A parent enters the PIN to say yes.`, `去問爸爸媽媽！${r.icon} ${r.name}需要 ${r.cost} 粒星。家長輸入密碼即表示批准。`)))) return;
+    s.bal -= r.cost; s.redeemed.push({ t: Date.now(), id: r.id, name: r.name, icon: r.icon, cost: r.cost });
+    if (s.saving === r.id) s.saving = null;
+    saveLocal(); renderStars();
+    celebrate({ n: 0, lines: [], badges: [], capped: false });
+    const t = document.querySelector('.star-cel #sc-t'); if (t) t.textContent = ST(`Enjoy: ${r.icon} ${r.name}!`, `好好享受：${r.icon} ${r.name}！`);
+  }));
+  document.getElementById('st-parent').onclick = async () => { if (await askPin(ST('Enter the parent PIN to change rewards.', '輸入家長密碼以修改獎勵。'))) rewardEditor(); };
+  bindStarChips();
+  window.scrollTo(0, 0);
+}
+function badgeShelf() {
+  const s = starState();
+  return `<div class="badges">${BADGES.map((b) => { const got = s.badges[b.id]; return `<div class="bdg ${got ? 'got' : ''}" title="${esc(ST(b.den, b.dzh))}"><span>${b.icon}</span><b>${esc(ST(b.en, b.zh))}</b><small>${got ? new Date(got).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' }) : esc(ST(b.den, b.dzh))}</small></div>`; }).join('')}</div>`;
+}
+function rewardEditor() {
+  const s = starState();
+  const ICONS = ['📱', '🎮', '🍦', '🍕', '🎬', '🧸', '📚', '🏊', '🎨', '🛝', '🍰', '🎁'];
+  const row = (r) => `<div class="re-row" data-id="${r.id}">
+    <select class="input re-ic" aria-label="${ST('Icon', '圖示')}">${ICONS.map((i) => `<option ${i === r.icon ? 'selected' : ''}>${i}</option>`).join('')}</select>
+    <input class="input re-n" value="${esc(r.name)}" maxlength="40" aria-label="${ST('Reward', '獎勵')}">
+    <input class="input re-c" type="number" min="1" max="999" value="${r.cost}" aria-label="${ST('Stars', '星星')}">
+    <button class="btn-sm quiet re-del" aria-label="${ST('Remove', '刪除')}">✕</button></div>`;
+  const box = document.createElement('div');
+  box.className = 'cdlg-wrap';
+  box.innerHTML = `<div class="cdlg rdlg re-dlg" role="dialog" aria-modal="true" aria-labelledby="re-t" data-raw>
+    <b id="re-t">${ST('Rewards (for parents)', '獎勵（家長專用）')}</b>
+    <span>${ST('Choose rewards your child can save stars for, and how many stars each costs. About 8–10 stars is a good day of practice.', '選擇孩子可以儲星換領的獎勵和所需星星數目。一日認真練習大約可賺 8 至 10 粒星。')}</span>
+    <div class="re-list">${s.rewards.map(row).join('')}</div>
+    <button class="btn-sm" id="re-add" style="align-self:flex-start">+ ${ST('Add a reward', '加入獎勵')}</button>
+    <div class="re-more"><button class="btn-sm quiet" id="re-pin">${ST('Change PIN', '更改密碼')}</button><span class="hint">${ST(`Balance ${s.bal} ★ · ${s.redeemed.length} rewards given`, `餘額 ${s.bal} 粒 · 已換領 ${s.redeemed.length} 次`)}</span></div>
+    <div class="rd-row"><button class="btn ghost" id="re-no">${ST('Cancel', '取消')}</button><button class="btn" id="re-ok">${ST('Save', '儲存')}</button></div>
+  </div>`;
+  document.body.appendChild(box);
+  const list = box.querySelector('.re-list');
+  const bindDel = () => list.querySelectorAll('.re-del').forEach((b) => (b.onclick = () => b.closest('.re-row').remove()));
+  bindDel();
+  box.querySelector('#re-add').onclick = () => { list.insertAdjacentHTML('beforeend', row({ id: uid(), icon: '🎁', name: '', cost: 20 })); bindDel(); list.lastElementChild.querySelector('.re-n').focus(); };
+  box.querySelector('#re-no').onclick = () => box.remove();
+  box.querySelector('#re-pin').onclick = async () => { const old = local.pin; local.pin = ''; const ok = await askPin(ST('Choose a new 4-digit PIN.', '設定新的 4 位數密碼。')); if (!ok) { local.pin = old; } saveLocal(); };
+  box.querySelector('#re-ok').onclick = () => {
+    s.rewards = [...list.querySelectorAll('.re-row')].map((x) => ({ id: x.dataset.id, icon: x.querySelector('.re-ic').value, name: x.querySelector('.re-n').value.trim().slice(0, 40), cost: Math.max(1, Math.min(999, parseInt(x.querySelector('.re-c').value, 10) || 0)) })).filter((r) => r.name);
+    if (s.saving && !s.rewards.some((r) => r.id === s.saving)) s.saving = null;
+    saveLocal(); box.remove(); renderStars();
+  };
 }
 
 /* ---------- tab bar ---------- */
@@ -1037,7 +1294,8 @@ function renderTabs(active = tabNow) {
   if (!active) { delete document.body.dataset.tab; return; }
   document.body.dataset.tab = active;
   const mk = mistakeCount();
-  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
+  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span>${starChip()}</span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
+  bindStarChips(nav);
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = async () => {
     const q = inSession();
     if (q) {
@@ -1049,7 +1307,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
@@ -1657,7 +1915,11 @@ async function currentReport() {
   const fx = Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > weekAgo).length;
   const ts = (local.tests || []).filter((t) => t.kind && t.t > monthAgo).slice(-6).reverse().map((t) => [t.kind, String(t.title || '').slice(0, 60), t.t, t.m ? Math.round(100 * t.g / t.m) : 0, t.min || 0]);
   return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms, mk: mistakeCount(), fx,
-    goal: local.goal || null, exam: E && E.left !== null ? { left: E.left, date: E.date } : null, ts });
+    goal: local.goal || null, exam: E && E.left !== null ? { left: E.left, date: E.date } : null, ts,
+    sr: starsOn() ? (() => { const st = starState(), wk = Date.now() - 7 * DAY;
+      return { w: st.log.filter((x) => x.t > wk).reduce((a, x) => a + x.n, 0), bal: st.bal,
+        b: BADGES.filter((b) => (st.badges[b.id] || 0) > wk).map((b) => `${b.icon} ${LANG === 'zh' ? b.zh : b.en}`),
+        r: st.redeemed.filter((x) => x.t > wk).map((x) => `${x.icon || '🎁'} ${x.name}`) }; })() : null });
 }
 
 // The week (days practised + three numbers) and "How ready you are", shared by Today and Progress.
@@ -1880,6 +2142,9 @@ async function renderProgress() {
           <button class="pgcard pg-mini" id="mini-mistakes"><span class="pg-ic red">${pIcon('pencil')}</span><b>${D.mistakes}</b><span>${PT('mistakes to fix', '題要改正')}</span>${D.fixed ? `<small class="upc">${PT(`${D.fixed} fixed this week`, `本週改正 ${D.fixed} 題`)}</small>` : ''}</button>
           <div class="pgcard pg-mini"><span class="pg-ic green">${pIcon('memory')}</span><b>${D.longTerm}</b><span>${PT('remembered a week or more', '題記得一星期或以上')}</span></div>
         </section>
+        ${starsOn() ? `<section class="pgcard"><h2>${starSVG(18)} ${PT('Stars and badges', '星星與徽章')}<button class="btn-sm quiet" data-stargo>${PT('Star shop', '星星商店')}</button></h2>
+          <div class="pg-starrow"><b>${starState().bal}</b><span>${PT('stars to spend', '粒星星可以用')}</span><small>${PT(`${starState().log.filter((x) => x.t > Date.now() - 7 * DAY).reduce((a, x) => a + x.n, 0)} earned this week`, `本週賺了 ${starState().log.filter((x) => x.t > Date.now() - 7 * DAY).reduce((a, x) => a + x.n, 0)} 粒`)}</small></div>
+          ${badgeShelf()}</section>` : ''}
         <section class="pgcard pg-parent"><span class="pg-ic blue">${pIcon('send')}</span><div><b>${PT('Weekly report for parents', '家長每週報告')}</b><span>${PT('One page, sent as a link', '一頁報告，以連結傳送')}</span></div><button class="btn-sm" id="report">${PT('Preview & send', '預覽及傳送')}</button></section>
       </div>
     </div>
@@ -1895,6 +2160,7 @@ async function renderProgress() {
   on('mini-mistakes', () => go({ name: 'mistakes' }));
   on('act-books', () => go({ name: 'books' }));
   on('report', () => reportDialog());
+  bindStarChips($app);
   on('goal-edit', () => goalDialog());
   on('goal-set', () => goalDialog());
   $app.querySelectorAll('[data-tests-more]').forEach((b) => (b.onclick = () => { b.previousElementSibling.hidden = false; b.remove(); }));
@@ -3577,7 +3843,7 @@ function record(q, got) {
     // MCQ options are shuffled per session, so keep the text of the chosen option, not just its letter.
     const ansText = choiceType(q) && ans ? (q.options || [])['ABCD'.indexOf(ans)] || '' : null;
     local.mistakes[q.id] = { t: Date.now(), n: ((mk && mk.n) || 0) + 1, got, ans: Array.isArray(ans) ? ans.map((a) => String(a || '').slice(0, 1500)) : null, ansText, chat: (mk && mk.chat) || null, done: false };
-  } else if (mk && !mk.done) { mk.done = true; mk.doneAt = Date.now(); }
+  } else if (mk && !mk.done) { mk.done = true; mk.doneAt = Date.now(); if (S) S.fixedNow = (S.fixedNow || 0) + 1; }
   const ids = Object.keys(local.mistakes);
   if (ids.length > 600) ids.sort((a, b) => local.mistakes[a].t - local.mistakes[b].t).slice(0, ids.length - 600).forEach((id) => delete local.mistakes[id]);
   if (local.log.length > 5000) local.log = local.log.slice(-5000);
@@ -3656,6 +3922,8 @@ function renderSummary() {
     local.tests = [...(local.tests || []), { t: Date.now(), per, kind: S.mode === 'mock' ? 'mini' : S.test ? 'test' : 'paper', title: S.title, b: S.book ? S.book.id : '', g: got, m: total, min: Math.max(1, Math.round(((S.examEnd || Date.now()) - S.at) / 60000)) }].slice(-300); saveLocal();
   }
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
+  const won = awardSession(qs, pct);
+  if (won) setTimeout(() => { if (document.querySelector('main.results')) celebrate(won); }, 500);
   const nRight = qs.filter((q, k) => (S.got[k] || 0) === marksOf(q)).length;
   const nMiss = qs.filter((q, k) => !(S.got[k] || 0) && marksOf(q)).length;
   const nPart = qs.length - nRight - nMiss;

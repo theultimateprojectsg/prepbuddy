@@ -311,6 +311,8 @@ const EXACT = {
   'While you wait, a quick look at this chapter': '等候期間，快速重溫這一章',
   'A quick look while it’s checked': '檢查期間，快速重溫一下',
   'Start practising': '開始練習',
+  'Stars and rewards': '星星與獎勵',
+  'Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.': '練習可以賺星星，再用星星換領爸爸媽媽設定的獎勵。小學課本會自動開啟。',
   'Get one right again and it moves to Mastered.': '再答對一次，就會移到「已掌握」。',
   'Quick 5': '快速 5 題', 'Redo': '重做',
   'Nothing to fix right now': '暫時沒有要改正的題目',

@@ -22,7 +22,7 @@ function acc(entries) {
 const shortTitle = (c) => c.replace(/\s*\(part \d+ of \d+\)$/i, '');
 
 // Build the report from the log. `stats` gives the spaced-review box per question.
-export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, exam, ts }) {
+export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, exam, ts, sr }) {
   const zh = lang === 'zh'; const T = (en, c) => (zh ? c : en);
   const today = dayStart(Date.now());
   const from = today - 6 * DAY, prevFrom = from - 7 * DAY;
@@ -95,7 +95,7 @@ export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, e
   return {
     v: 1, u: zh ? 'zh' : 'en', n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
     days, q: week.length, a, pa, dp: daysPractised, tr, st, pq: prev.length, pm: minutesOf(prev), mk: mk ?? null, fx: fx ?? null, lt, rd, ch: chapters, up, weak, rev, next, sk, ms: (ms || []).slice(0, 6).map(([n, p, by]) => (by === undefined ? [String(n).slice(0, 40), p] : [String(n).slice(0, 40), p, by])),
-    g: goal ? { d: goal.days, m: goal.mins, met: days.filter((x) => x >= goal.mins).length } : null, ex: exam || null, ts: ts || [],
+    g: goal ? { d: goal.days, m: goal.mins, met: days.filter((x) => x >= goal.mins).length } : null, ex: exam || null, ts: ts || [], sr: sr || null,
   };
 }
 
@@ -231,6 +231,11 @@ export function reportHTML(r) {
       ${(r.tr || []).filter((x) => x !== null).length >= 2 ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('line')} ${T('Score over 6 weeks', '過去 6 星期的分數')}</h2><span>${T('% of marks each week', '每週得分率')}</span></div>${trendBars(r)}</section>` : ''}
       ${r.ts && r.ts.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('pencil')} ${T('Tests and mock papers', '測驗及模擬試卷')}</h2><span>${T('last 30 days', '過去 30 日')}</span></div>
         <div class="rp-tests">${r.ts.map(([k, title, t, p, min]) => `<div><span class="rp-tk ${k}">${k === 'test' ? T('Chapter test', '章節測驗') : k === 'mini' ? T('Mini mock', '小型模擬') : T('Mock paper', '模擬試卷')}</span><span class="rp-tn">${esc(String(title).replace(/^(Chapter test|章節測驗) · /, ''))}<small>${fmtDate(t, { day: 'numeric', month: 'short' })} · ${min} ${T('min', '分鐘')}</small></span><b class="${tone(p)}">${p}%${k === 'test' ? `<small>${p >= 80 ? T('Passed', '合格') : T('Not yet', '未合格')}</small>` : ''}</b></div>`).join('')}</div></section>` : ''}
+      ${r.sr ? `<section class="rp-card rp-stars"><div class="rp-card-head"><h2>⭐ ${T('Stars and rewards', '星星與獎勵')}</h2><span>${T('earned for practising', '練習賺取')}</span></div>
+        <div class="rp-tiles"><div><b>${r.sr.w}</b><span>${T('stars earned this week', '本週賺取的星星')}</span></div><div><b>${r.sr.bal}</b><span>${T('stars saved up', '已儲起的星星')}</span></div></div>
+        ${r.sr.b.length ? `<p><b>${T('New badges', '新徽章')}:</b> ${r.sr.b.map(esc).join(' · ')}</p>` : ''}
+        ${r.sr.r.length ? `<p><b>${T('Rewards given', '已換領獎勵')}:</b> ${r.sr.r.map(esc).join(' · ')}</p>` : ''}
+        <p class="rep-note">${T('Your child spends stars on rewards you set in PrepBuddy (Star shop → For parents). Each one needs your PIN.', '孩子可用星星換領你在 PrepBuddy 設定的獎勵（星星商店 → 家長專區），每次都需要你的密碼。')}</p></section>` : ''}
       <div class="rp-two">
         ${skillsHTML(r)}
         <section class="rep-card"><h2>${ri('memory')} ${T('Remembering and fixing', '記憶與改正')}</h2>
