@@ -638,6 +638,7 @@ async function go(v) {
   if (v.name === 'stars') return renderStars();
   if (v.name === 'homework') return renderHomework(v.id);
   if (v.name === 'dictation') return renderDictation(v.id, v.sub);
+  if (v.name === 'writing') return renderWriting(v.id, v.sub);
   if (v.name === 'learn') return renderLearn(v.bookId, v.unitId);
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
@@ -843,6 +844,7 @@ async function runCoachAction(a) {
     case 'today': return go({ name: 'home' });
     case 'homework': return go({ name: 'homework' });
     case 'dictation': return go({ name: 'dictation' });
+    case 'writing': return go({ name: 'writing' });
     case 'learn': if (book && units.length) return go({ name: 'learn', bookId: book.id, unitId: units[0].id }); break;
   }
   if (book) return go({ name: 'book', bookId: book.id }); // couldn't tell exactly what: open the book's chapter page
@@ -1039,6 +1041,201 @@ function zoomPhoto(src) {
   box.innerHTML = `<img src="${src}" alt=""><button class="helper-x" aria-label="Close">✕</button>`;
   box.onclick = () => box.remove();
   document.body.appendChild(box);
+}
+
+/* ---------- writing practice (DSE English Paper 2 / 中文卷二) ----------
+   The student picks the paper, uses their school task (typed or a photo), or asks for a DSE-style one, then types
+   or photographs their essay. Buddy marks it by the DSE criteria (estimated bands, never an official mark), lists
+   strengths, the 3 fixes that matter most and language corrections, and the student redrafts. Each draft is kept so
+   they can see what improved. Everything stays on this device. */
+const WT = (en, zh) => (LANG === 'zh' ? zh : en);
+const WR_KINDS = {
+  en_a: { lang: 'en', en: 'English · Part A', zh: '英文 · Part A', sub: ['Short guided task, ~200 words', '短篇引導寫作，約 200 字'], words: 200, crit: ['Content', 'Language', 'Organisation'], w: [1, 1, 1] },
+  en_b: { lang: 'en', en: 'English · Part B', zh: '英文 · Part B', sub: ['Longer task, ~400 words', '長篇寫作，約 400 字'], words: 400, crit: ['Content', 'Language', 'Organisation'], w: [1, 1, 1] },
+  zh_essay: { lang: 'zh', en: '中文 · 命題寫作', zh: '中文 · 命題寫作', sub: ['卷二乙部，約 650 字以上', '卷二乙部，約 650 字以上'], words: 650, crit: ['內容', '表達', '結構', '標點字體'], w: [4, 3, 2, 1] },
+  zh_practical: { lang: 'zh', en: '中文 · 實用寫作', zh: '中文 · 實用寫作', sub: ['卷二甲部，按字數上限', '卷二甲部，按字數上限'], words: 550, crit: ['內容', '行文組織'], w: [3, 2] },
+};
+const wrState = { kind: null, prompt: '', topic: '', busy: '', error: null, open: {} };
+const wrCount = (text, lang) => (lang === 'zh' ? String(text || '').replace(/[\s\p{P}]/gu, '').length : (String(text || '').match(/[A-Za-z’'-]+/g) || []).length);
+// A rough overall DSE level from the criterion bands (weighted mean of 1-7 bands). An estimate only.
+function wrLevel(fb, kind) {
+  const k = WR_KINDS[kind]; if (!fb || !fb.criteria) return null;
+  let s = 0, w = 0;
+  fb.criteria.forEach((c, i) => { const wt = k.w[i] || 1; s += c.band * wt; w += wt; });
+  const m = s / (w || 1);
+  return m >= 6.6 ? '5**' : m >= 6 ? '5*' : m >= 5.2 ? '5' : m >= 4.3 ? '4' : m >= 3.4 ? '3' : m >= 2.5 ? '2' : '1';
+}
+function wrSave() { local.wr = (local.wr || []).slice(-15); saveLocal(); }
+const wrErr = (e) => (e.status === 0 ? WT('You seem to be offline.', '你好像離線了。') : e.status === 401 ? WT('Access code needed.', '需要存取碼。') : (e.message || WT('Something went wrong. Try again.', '出了點問題，請再試。')));
+async function wrPhotos(multi) {
+  return new Promise((resolve) => {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; if (multi) inp.multiple = true;
+    inp.onchange = async () => { const out = []; for (const f of [...inp.files].slice(0, 5)) { try { out.push(await shrinkPhoto(f, 2000)); } catch (e) {} } resolve(out); };
+    inp.click();
+  });
+}
+
+async function renderWriting(id, sub) {
+  const list = local.wr || [];
+  const it = id && list.find((x) => x.id === id);
+  if (it) return sub === 'fb' && it.drafts.length ? renderWritingFeedback(it) : renderWritingEditor(it);
+  const s = wrState, k = s.kind && WR_KINDS[s.kind];
+  $app.innerHTML = `
+  <main class="pad stack g18 wrpage" data-view="writing" data-raw style="flex:1">
+    <h1 class="pagetitle">${WT('Writing practice', '寫作練習')}</h1>
+    <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${WT('Write, get DSE-style feedback, then make it better.', '寫作、取得 DSE 式評語，再改得更好。')}</b>
+      <span>${WT('Buddy marks by the DSE criteria, shows what to fix first, and checks your redraft. Bands are estimates, not official marks.', 'Buddy 按 DSE 評分準則批改，指出最先要改的地方，再檢查你的修改稿。等級只是估計，並非正式分數。')}</span></div></section>
+    <section class="card wr-step"><h2 class="st-h">1 · ${WT('Which paper?', '哪一份卷？')}</h2>
+      <div class="wr-kinds">${Object.entries(WR_KINDS).map(([key, x]) => `<button class="wr-kind ${s.kind === key ? 'on' : ''}" data-kind="${key}" aria-pressed="${s.kind === key}"><b>${LANG === 'zh' ? x.zh : x.en}</b><span>${WT(...x.sub)}</span></button>`).join('')}</div>
+    </section>
+    ${k ? `<section class="card wr-step"><h2 class="st-h">2 · ${WT('The task (question)', '題目')}</h2>
+      <textarea id="wrPrompt" class="wr-ta small" rows="6" placeholder="${WT('Paste or type your school’s writing task here, take a photo of it, or let Buddy write a DSE-style one.', '在這裏貼上或輸入學校的寫作題目，或拍下題目，或讓 Buddy 出一條 DSE 式題目。')}">${esc(s.prompt)}</textarea>
+      <div class="wr-row">
+        <button class="btn ghost" id="wrTaskPhoto" ${s.busy ? 'disabled' : ''}>📷 ${WT('Photo of the task', '拍下題目')}</button>
+        <div class="wr-gen"><input id="wrTopic" class="tinput" placeholder="${WT('Topic (optional), e.g. social media', '題材（可留空），例如：社交媒體')}" value="${esc(s.topic)}"><button class="btn ghost" id="wrGen" ${s.busy ? 'disabled' : ''}>✨ ${WT('Write me a task', '幫我出題')}</button></div>
+      </div>
+      ${s.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(s.busy)}</p>` : ''}
+      ${s.error ? `<p class="hw-err" role="alert">${esc(s.error)}</p>` : ''}
+      <button class="btn" id="wrStart" ${s.busy ? 'disabled' : ''}>${WT('Start writing', '開始寫作')} →</button>
+      <p class="hint" style="margin:0">${WT('No task? You can still start: Buddy will judge it as a general piece of this type.', '沒有題目？也可以開始，Buddy 會按這類文章的一般要求批改。')}</p>
+    </section>` : ''}
+    ${list.length ? `<section class="stack g10"><h2 class="st-h">${WT('Your writing', '你的文章')}</h2>
+      <div class="hw-list">${list.slice().reverse().map((x) => { const d = x.drafts[x.drafts.length - 1], lv = d && wrLevel(d.fb, x.kind); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">✍️</span><span class="hw-it"><b>${esc(x.title)}</b><small>${LANG === 'zh' ? WR_KINDS[x.kind].zh : WR_KINDS[x.kind].en} · ${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.drafts.length ? WT(`${x.drafts.length} draft${x.drafts.length > 1 ? 's' : ''} marked`, `已批改 ${x.drafts.length} 稿`) : WT('Not marked yet', '未批改')}</small></span>${lv ? `<span class="wr-lv sm" title="${WT('Estimated level', '估計等級')}">≈${lv}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
+  </main>`;
+  $app.querySelectorAll('[data-kind]').forEach((b) => (b.onclick = () => { s.kind = b.dataset.kind; s.error = null; renderWriting(); }));
+  $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => { const x = list.find((y) => y.id === b.dataset.open); go({ name: 'writing', id: b.dataset.open, sub: x && x.drafts.length && !x.work ? 'fb' : undefined }); }));
+  if (!k) return;
+  const pr = document.getElementById('wrPrompt'), tp = document.getElementById('wrTopic');
+  pr.oninput = () => (s.prompt = pr.value); tp.oninput = () => (s.topic = tp.value);
+  const run = async (label, fn) => {
+    s.busy = label; s.error = null; renderWriting();
+    try { await fn(); } catch (e) { s.error = wrErr(e); }
+    s.busy = ''; if (view.name === 'writing' && !view.id) renderWriting();
+  };
+  document.getElementById('wrTaskPhoto').onclick = async () => {
+    const ph = await wrPhotos(true); if (!ph.length) return;
+    run(WT('Reading the task…', '正在讀取題目…'), async () => { const r = await api('writing', { step: 'read', what: 'task', images: ph }); s.prompt = r.text; });
+  };
+  document.getElementById('wrGen').onclick = () => run(WT('Writing a DSE-style task…', '正在出題…'), async () => { const r = await api('writing', { step: 'prompt', kind: s.kind, topic: s.topic }); s.prompt = r.prompt; });
+  document.getElementById('wrStart').onclick = () => {
+    const prompt = s.prompt.trim();
+    const first = prompt.split('\n').map((l) => l.trim()).find((l) => l.length > 3) || '';
+    const title = first ? first.replace(/^[#*\s]+/, '').slice(0, 60) + (first.length > 60 ? '…' : '') : WT('Free writing', '自由寫作');
+    const item = { id: uid(), t: Date.now(), kind: s.kind, title, prompt, work: '', drafts: [] };
+    local.wr = [...(local.wr || []), item]; wrSave();
+    s.prompt = ''; s.topic = '';
+    go({ name: 'writing', id: item.id });
+  };
+}
+
+function renderWritingEditor(it) {
+  const k = WR_KINDS[it.kind], st = wrState;
+  const n = it.drafts.length;
+  const draw = () => {
+    const c = wrCount(it.work, k.lang);
+    $app.innerHTML = `
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${WT('Writing', '寫作')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${n ? WT(`Draft ${n + 1}`, `第 ${n + 1} 稿`) : WT('Draft 1', '第 1 稿')}</span></div>
+    <main class="pad stack g14 wrpage" data-view="writing" data-raw style="flex:1">
+      <details class="card wr-task" ${it.prompt && !n ? 'open' : ''}><summary><b>${WT('Task', '題目')}</b> · ${LANG === 'zh' ? k.zh : k.en}</summary><div class="wr-ptext">${it.prompt ? esc(it.prompt).replace(/\n/g, '<br>') : `<span class="muted">${WT('No task given.', '沒有題目。')}</span>`}</div></details>
+      ${n ? `<div class="wr-tip">💡 ${WT('Redraft: work on the 3 fixes first.', '修改稿：先處理三個要改的地方。')} <button class="btn-sm quiet" id="seeFb">${WT('See feedback', '看評語')}</button>
+        <ol>${it.drafts[n - 1].fb.fixes.map((f) => `<li>${esc(f.issue)}</li>`).join('')}</ol></div>` : ''}
+      <section class="card wr-ed">
+        <textarea id="wrText" class="wr-ta" lang="${k.lang === 'zh' ? 'zh-HK' : 'en'}" spellcheck="false" placeholder="${k.lang === 'zh' ? '在這裏寫你的文章…' : 'Write your essay here…'}">${esc(it.work)}</textarea>
+        <div class="wr-bar"><span class="wr-count ${c >= k.words * 0.9 ? 'ok' : ''}" id="wrCount">${c} / ~${k.words} ${k.lang === 'zh' ? '字' : WT('words', '字')}</span>
+          <button class="btn-sm" id="wrPhoto" ${st.busy ? 'disabled' : ''}>📷 ${WT('Photo of handwritten pages', '拍下手寫稿')}</button></div>
+        ${st.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(st.busy)}</p>` : ''}
+        ${st.error ? `<p class="hw-err" role="alert">${esc(st.error)}</p>` : ''}
+        <p class="hint" style="margin:0">${WT('Writing on paper? Photograph the pages: Buddy types it out exactly as you wrote it (mistakes too). Check the reading before you ask for feedback.', '在紙上寫？拍下每一頁，Buddy 會照你寫的打出來（錯字也會保留）。取得評語前請先核對。')}</p>
+        <button class="btn" id="wrMark" ${st.busy || c < 30 ? 'disabled' : ''}>${n ? WT('Mark my redraft', '批改修改稿') : WT('Get feedback', '取得評語')}</button>
+      </section>
+    </main>`;
+    document.getElementById('back').onclick = () => go({ name: 'writing' });
+    const sf = document.getElementById('seeFb'); if (sf) sf.onclick = () => go({ name: 'writing', id: it.id, sub: 'fb' });
+    const ta = document.getElementById('wrText');
+    let tmr;
+    ta.oninput = () => {
+      it.work = ta.value; const cc = wrCount(ta.value, k.lang);
+      const ce = document.getElementById('wrCount'); ce.textContent = `${cc} / ~${k.words} ${k.lang === 'zh' ? '字' : WT('words', '字')}`; ce.classList.toggle('ok', cc >= k.words * 0.9);
+      document.getElementById('wrMark').disabled = !!st.busy || cc < 30;
+      clearTimeout(tmr); tmr = setTimeout(saveLocal, 600);
+    };
+    document.getElementById('wrPhoto').onclick = async () => {
+      const ph = await wrPhotos(true); if (!ph.length) return;
+      st.busy = WT('Reading your handwriting…', '正在讀取你的手寫稿…'); st.error = null; draw();
+      try { const r = await api('writing', { step: 'read', what: 'essay', images: ph }); it.work = (it.work.trim() ? it.work.trim() + '\n\n' : '') + r.text; wrSave(); }
+      catch (e) { st.error = wrErr(e); }
+      st.busy = ''; if (view.id === it.id) draw();
+    };
+    document.getElementById('wrMark').onclick = async () => {
+      st.busy = WT('Buddy is marking your writing… (about 20–40 seconds)', 'Buddy 正在批改…（約 20 至 40 秒）'); st.error = null; draw();
+      const prev = it.drafts[it.drafts.length - 1];
+      try {
+        const fb = await api('writing', { step: 'mark', kind: it.kind, prompt: it.prompt, text: it.work, prev: prev ? { text: prev.text, fb: { criteria: prev.fb.criteria, fixes: prev.fb.fixes } } : null });
+        delete fb.usage;
+        it.drafts.push({ t: Date.now(), text: it.work, fb }); it.work = ''; it.t = Date.now();
+        wrSave(); addStars(it.drafts.length > 1 ? 3 : 2, 'writing');
+        st.busy = '';
+        if (view.id === it.id) go({ name: 'writing', id: it.id, sub: 'fb' });
+      } catch (e) { st.busy = ''; st.error = wrErr(e); if (view.id === it.id) draw(); }
+    };
+  };
+  st.error = null; draw();
+}
+
+// The essay with each correction's quote highlighted (first match, no overlaps).
+function wrMarked(text, corr) {
+  const spans = [];
+  (corr || []).forEach((c, i) => {
+    const q = String(c.quote || ''); if (!q) return;
+    let at = text.indexOf(q);
+    while (at >= 0 && spans.some((s) => at < s.b && at + q.length > s.a)) at = text.indexOf(q, at + 1);
+    if (at >= 0) spans.push({ a: at, b: at + q.length, i });
+  });
+  spans.sort((x, y) => x.a - y.a);
+  let out = '', p = 0;
+  spans.forEach((s) => { out += esc(text.slice(p, s.a)) + `<mark class="wr-mk" data-c="${s.i}">${esc(text.slice(s.a, s.b))}<sup>${s.i + 1}</sup></mark>`; p = s.b; });
+  return (out + esc(text.slice(p))).replace(/\n/g, '<br>');
+}
+
+function renderWritingFeedback(it, at) {
+  const k = WR_KINDS[it.kind], o = wrState.open;
+  const i = at === undefined ? (o[it.id + ':d'] ?? it.drafts.length - 1) : at;
+  const d = it.drafts[i], fb = d.fb, prev = it.drafts[i - 1];
+  const lv = wrLevel(fb, it.kind), plv = prev && wrLevel(prev.fb, it.kind);
+  const showEssay = !!o[it.id + ':essay'];
+  const zh = k.lang === 'zh';
+  const L = (en, zht) => (zh ? zht : en); // feedback language follows the essay, not the app
+  $app.innerHTML = `
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${WT('Writing', '寫作')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(it.title)}</span></div>
+  <main class="pad stack g14 wrpage" data-view="writing" data-raw style="flex:1">
+    ${it.drafts.length > 1 ? `<div class="wr-drafts" role="tablist">${it.drafts.map((x, j) => `<button role="tab" class="${j === i ? 'on' : ''}" aria-selected="${j === i}" data-d="${j}">${WT(`Draft ${j + 1}`, `第 ${j + 1} 稿`)}${wrLevel(x.fb, it.kind) ? ` · ≈${wrLevel(x.fb, it.kind)}` : ''}</button>`).join('')}</div>` : ''}
+    <section class="card wr-score">
+      <div class="wr-lvbox"><span class="wr-lv">≈${lv}</span><small>${WT('Estimated level', '估計等級')}${plv && plv !== lv ? `<br><b class="${lv > plv ? 'wr-up' : 'wr-down'}">${WT('was', '之前')} ${plv}</b>` : ''}</small></div>
+      <div class="wr-crits">${fb.criteria.map((c, j) => { const pc = prev && prev.fb.criteria[j], dlt = pc ? c.band - pc.band : 0; return `<div class="wr-crit"><div class="wr-ch"><b>${esc(c.name)}</b><span>${c.band}<small>/7</small>${dlt ? `<em class="${dlt > 0 ? 'wr-up' : 'wr-down'}">${dlt > 0 ? '▲' : '▼'}${Math.abs(dlt)}</em>` : ''}</span></div><div class="wr-bandbar"><i style="width:${(c.band / 7) * 100}%"></i></div><p>${esc(c.why)}</p></div>`; }).join('')}</div>
+      <p class="wr-sum">${esc(fb.summary)}</p>
+      <p class="wr-note">${WT('Estimate from AI marking against the HKDSE criteria. Not an official HKEAA mark: use it to see what to improve.', '按 HKDSE 評分準則的 AI 估計，並非考評局正式分數，用來找出要改進的地方。')} · ${fb.count} ${zh ? '字' : WT('words', '字')}</p>
+    </section>
+    ${prev && (fb.improved.length || fb.still_to_do.length) ? `<section class="card wr-box better"><h2>${L('What got better', '進步了的地方')}</h2>${fb.improved.length ? `<ul>${fb.improved.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}${fb.still_to_do.length ? `<h3>${L('Still to work on', '仍要改進')}</h3><ul>${fb.still_to_do.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</section>` : ''}
+    <section class="card wr-box good"><h2>👍 ${L('What you did well', '做得好的地方')}</h2><ul>${fb.strengths.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+    <section class="card wr-box fix"><h2>🎯 ${L('Fix these first', '最先要改的三點')}</h2><ol class="wr-fixes">${fb.fixes.map((f) => `<li><b>${esc(f.issue)}</b>${f.quote ? `<q>${esc(f.quote)}</q>` : ''}<span>${esc(f.how)}</span></li>`).join('')}</ol></section>
+    ${fb.corrections.length ? `<section class="card wr-box"><button class="wr-tog" id="togCorr" aria-expanded="${!!o[it.id + ':corr']}"><h2>✏️ ${L(`Language corrections (${fb.corrections.length})`, `語文修正（${fb.corrections.length} 處）`)}</h2><span>${o[it.id + ':corr'] ? WT('Hide', '隱藏') : WT('Show', '顯示')}</span></button>
+      ${o[it.id + ':corr'] ? `<ol class="wr-corr">${fb.corrections.map((c) => `<li><s>${esc(c.quote)}</s> → <b>${esc(c.fix)}</b>${c.why ? `<small>${esc(c.why)}</small>` : ''}</li>`).join('')}</ol>` : ''}</section>` : ''}
+    ${fb.next_step ? `<div class="wr-tip">➡️ ${esc(fb.next_step)}</div>` : ''}
+    <section class="card wr-box"><button class="wr-tog" id="togEssay" aria-expanded="${showEssay}"><h2>📄 ${WT(`Your draft ${i + 1}`, `你的第 ${i + 1} 稿`)}</h2><span>${showEssay ? WT('Hide', '隱藏') : WT('Show', '顯示')}</span></button>
+      ${showEssay ? `<div class="wr-essay">${wrMarked(d.text, fb.corrections)}</div>` : ''}</section>
+    <div class="wr-acts">
+      <button class="btn" id="redraft">${it.work ? WT('Continue my redraft', '繼續修改稿') : WT(`Redraft it (draft ${it.drafts.length + 1})`, `修改（第 ${it.drafts.length + 1} 稿）`)}</button>
+      <button class="btn ghost" id="newWr">${WT('New piece of writing', '寫新的文章')}</button>
+    </div>
+  </main>`;
+  document.getElementById('back').onclick = () => go({ name: 'writing' });
+  $app.querySelectorAll('[data-d]').forEach((b) => (b.onclick = () => { o[it.id + ':d'] = +b.dataset.d; renderWritingFeedback(it); }));
+  const tg = (key) => () => { o[it.id + key] = !o[it.id + key]; renderWritingFeedback(it); };
+  const tc = document.getElementById('togCorr'); if (tc) tc.onclick = tg(':corr');
+  document.getElementById('togEssay').onclick = tg(':essay');
+  $app.querySelectorAll('.wr-mk').forEach((m) => (m.onclick = () => { const c = fb.corrections[+m.dataset.c]; toast(`${c.quote} → ${c.fix}${c.why ? ' · ' + c.why : ''}`); }));
+  document.getElementById('redraft').onclick = () => { if (!it.work) it.work = it.drafts[it.drafts.length - 1].text; delete o[it.id + ':d']; wrSave(); go({ name: 'writing', id: it.id }); };
+  document.getElementById('newWr').onclick = () => { wrState.kind = it.kind; go({ name: 'writing' }); };
 }
 
 /* ---------- 默書 / spelling dictation (P1–P6) ----------
@@ -1297,7 +1494,7 @@ async function renderLearn(bookId, unitId) {
 
 /* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
 const helper = { open: false };
-const SCREEN_NAME = { learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+const SCREEN_NAME = { writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
 function helperChips() {
   const v = view && view.name;
   const by = {
@@ -1467,6 +1664,7 @@ async function renderHome() {
         <button class="qtile" data-mode="mock">${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
         <button class="qtile hwtile" id="hwgo">${actionTile('notes', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('flashcards', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
+        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${actionTile('notes', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button>`}
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -1488,6 +1686,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   { const hg = document.getElementById('hwgo'); if (hg) hg.onclick = () => go({ name: 'homework' }); }
   { const dg = document.getElementById('dictgo'); if (dg) dg.onclick = () => go({ name: 'dictation' }); }
+  { const wg = document.getElementById('wrgo'); if (wg) wg.onclick = () => go({ name: 'writing' }); }
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   window.scrollTo(0, 0);
 }
@@ -1886,7 +2085,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { learn: 'books', dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { writing: 'home', learn: 'books', dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
