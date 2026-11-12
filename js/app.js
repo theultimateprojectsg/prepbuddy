@@ -647,7 +647,23 @@ let S = null; // current practice session
    came from (a real step back), so the two never disagree. */
 let navStack = [], navPopping = false, navCur = null;
 const navKey = (v) => JSON.stringify(v || {});
-function navSet(state, push) { navCur = state; try { history[push ? 'pushState' : 'replaceState'](state, ''); } catch (e) {} }
+// Each screen has its own address (#/book?bookId=…), so a refresh, a bookmark or a shared link opens the same screen.
+const URL_OK = ['home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
+function viewUrl(v) {
+  if (!v || !URL_OK.includes(v.name)) return '#/' + (v && v.name === 'parent' ? 'progress' : 'home');
+  const q = new URLSearchParams();
+  Object.entries(v).forEach(([k, x]) => { if (k !== 'name' && x !== undefined && x !== null && x !== '' && typeof x !== 'object') q.set(k, String(x)); });
+  const qs = q.toString();
+  return `#/${v.name}${qs ? '?' + qs : ''}`;
+}
+function urlView() {
+  const m = location.hash.match(/^#\/([a-z]+)(?:\?(.*))?$/);
+  if (!m || !URL_OK.includes(m[1])) return null;
+  const v = { name: m[1] };
+  new URLSearchParams(m[2] || '').forEach((x, k) => { v[k] = /^(qi|only)$/.test(k) && /^\d+$/.test(x) ? +x : x; });
+  return v;
+}
+function navSet(state, push) { navCur = state; try { history[push ? 'pushState' : 'replaceState'](state, '', state.session ? location.hash || '#/' : viewUrl(state.v)); } catch (e) {} }
 function navPush(v) {
   if (navPopping) return;
   const st = history.state;
@@ -680,7 +696,7 @@ window.addEventListener('popstate', (e) => {
   if (helper.open) { if (was) navSet(was, true); helperClose(); return; }
   const q = inSession();
   if (q && !(e.state && e.state.session)) { if (was) navSet(was, true); q.click(); return; }
-  const st = e.state && e.state.v ? e.state : { v: { name: 'home' }, d: 0 };
+  const st = e.state && e.state.v ? e.state : { v: urlView() || { name: 'home' }, d: navStack.length }; // typed or pasted address: open it
   navCur = st;
   navStack = navStack.slice(0, st.d || 0); navStack[st.d || 0] = st.v;
   navPopping = true;
@@ -5884,4 +5900,11 @@ async function refreshOldQuestions() {
 }
 getBooks().then(pruneMistakes).catch(() => {});
 flushReports().catch(() => {});
-pilotGate().then(() => refreshOldQuestions().catch(() => {})).finally(() => { go({ name: 'home' }); setTimeout(() => pilotSync(true), 8000); });
+pilotGate().then(() => refreshOldQuestions().catch(() => {})).finally(async () => {
+  let v = urlView() || { name: 'home' };
+  // a screen whose book or item is gone (another device, cleared data) falls back to Today
+  if (v.bookId && !(await getBooks()).some((b) => b.id === v.bookId)) v = { name: 'home' };
+  if (v.name !== 'home') { navStack = [{ name: 'home' }]; navSet({ v: { name: 'home' }, d: 0 }, false); }
+  go(v);
+  setTimeout(() => pilotSync(true), 8000);
+});
