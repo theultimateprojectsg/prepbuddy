@@ -2524,6 +2524,39 @@ async function startTour(replay) {
   await removeDemo();
   go({ name: 'home' });
 }
+
+/* ---------- don't lose a set to an accidental refresh ----------
+   On phones, pulling the page down reloads it. While a set or test is open we (1) switch off pull-to-refresh,
+   (2) ask the browser to warn before leaving (laptops and Android), and (3) keep a copy of the set in this tab,
+   so after a reload anyway (iPhone ignores the warning) the student can carry on where they were. */
+const RESUME_KEY = 'prepbuddy.resume';
+function saveResume() {
+  try {
+    if (S && S.qs && S.qs.length && !TOURING && !(S.book && S.book.demo) && inSession()) sessionStorage.setItem(RESUME_KEY, JSON.stringify({ at: Date.now(), S: { ...S, waiting: false, generating: false, error: null, pending: 0 } }, (k, v) => (v instanceof Set ? { __set: [...v] } : v instanceof Map ? { __map: [...v] } : v)));
+    else if (!inSession()) sessionStorage.removeItem(RESUME_KEY);
+  } catch (e) {}
+}
+setInterval(() => { saveResume(); document.documentElement.classList.toggle('insession', !!inSession() && !TOURING); }, 1500);
+window.addEventListener('pagehide', saveResume);
+window.addEventListener('beforeunload', (e) => {
+  saveResume();
+  if (inSession() && !TOURING) { e.preventDefault(); e.returnValue = ''; return ''; }
+});
+async function offerResume() {
+  let r = null;
+  try { r = JSON.parse(sessionStorage.getItem(RESUME_KEY) || 'null', (k, v) => (v && v.__set ? new Set(v.__set) : v && v.__map ? new Map(v.__map) : v)); } catch (e) {}
+  sessionStorage.removeItem(RESUME_KEY);
+  if (!r || !r.S || Date.now() - r.at > 2 * 3600e3 || inSession()) return;
+  const left = r.S.qs.length - (r.S.i || 0);
+  if (left <= 0) return;
+  const C = (en, zh) => (LANG === 'zh' ? zh : en);
+  // confirmLeave: true = the right-hand button
+  const ok = await confirmLeave({ title: C('Carry on where you left off?', '繼續剛才的練習？'), body: C(`The page reloaded in the middle of “${r.S.title || 'your set'}”. You were on question ${(r.S.i || 0) + 1} of ${r.S.qs.length}.`, `頁面在「${r.S.title || '練習'}」途中重新載入。你做到第 ${(r.S.i || 0) + 1} 題（共 ${r.S.qs.length} 題）。`), stay: C('Start fresh', '重新開始'), leave: C('Carry on', '繼續') });
+  if (!ok) return;
+  S = r.S; S.times = S.times || [];
+  if (S.target && S.qs.length < S.target) topUp(S);
+  renderQuestion();
+}
 // A short summary of how PrepBuddy is used on this device (sent to the pilot admin page).
 async function pilotSnap() {
   const books = await getBooks();
@@ -6247,4 +6280,5 @@ pilotGate().then(async () => { if ((await getBooks()).some((b) => b.demo)) await
   if (v.name !== 'home') { navStack = [{ name: 'home' }]; navSet({ v: { name: 'home' }, d: 0 }, false); }
   go(v);
   setTimeout(() => pilotSync(true), 8000);
+  setTimeout(offerResume, 400);
 });
