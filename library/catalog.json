@@ -295,5 +295,29 @@
     "endPage": 13
    }
   ]
+ },
+ {
+  "id": "book-wqy3",
+  "code": "BK-FZCN",
+  "title": "二十一世紀現代中國語文 小三上 第一冊",
+  "subject": "中國語文",
+  "level": "P3",
+  "kind": "language",
+  "publisher": "現代教育研究社",
+  "licence": "Licensed from the publisher",
+  "credit": "二十一世紀現代中國語文 小三上 第一冊 (現代教育研究社), 單元三 書信寄真情. Licensed from the publisher.",
+  "lang": "zh-HK",
+  "pageCount": 9,
+  "addedAt": "2026-11-12",
+  "questionCount": 0,
+  "units": [
+   {
+    "id": "u0",
+    "title": "單元三 書信寄真情",
+    "chapter": null,
+    "startPage": 2,
+    "endPage": 9
+   }
+  ]
  }
 ]
