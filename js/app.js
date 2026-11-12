@@ -2227,7 +2227,12 @@ function renderSettings() {
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:13.5px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
     </section>
-    ${local.pilot ? `<section class="card stack g10 fbcard" style="padding:16px">
+    ${local.pilot ? `<section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">${PLT('Take the tour again', '再看一次導覽')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('A quick look at what PrepBuddy can do.', '快速看看 PrepBuddy 可以做甚麼。')}</span>
+      <button class="btn-sm" id="stour" style="align-self:flex-start">${PLT('Start the tour', '開始導覽')}</button>
+    </section>
+    <section class="card stack g10 fbcard" style="padding:16px">
       <b style="font-size:15px">${PLT('Tell us what you think', '告訴我們你的意見')}</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('You’re in the PrepBuddy pilot. What do you like? What’s confusing or broken? Parents and students both welcome.', '你正參與 PrepBuddy 試用。你喜歡甚麼？有甚麼令你困惑或出錯？家長和學生都歡迎留言。')}</span>
       <textarea id="sfb" class="wr-ta small" rows="4" placeholder="${PLT('Type here…', '在這裏輸入…')}"></textarea>
@@ -2250,6 +2255,7 @@ function renderSettings() {
   const nm = document.getElementById('sname');
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
+  { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
   document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
   document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
@@ -2355,6 +2361,91 @@ async function pilotGate() {
     };
   });
 }
+
+/* ---------- pilot welcome: parent consent, then a short tour ----------
+   Right after a family code is accepted, a parent reads what PrepBuddy collects and agrees (nothing is sent to us
+   before that). Then a six-card tour of what PrepBuddy does, which can be skipped and replayed from Settings. */
+const CONSENT_V = 1;
+async function pilotWelcome() {
+  if (local.pilot && local.code && !(local.consent && local.consent.v >= CONSENT_V)) await consentScreen();
+  if (!local.toured) await startTour();
+}
+function consentScreen() {
+  return new Promise((resolve) => {
+    const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
+    document.body.dataset.tab = '';
+    const C = (en, zh) => (LANG === 'zh' ? zh : en);
+    const items = [
+      ['📱', C('Stays on this device', '保存在這部裝置'), C('Your child’s answers, textbooks, essays, recordings and progress are saved in this browser.', '子女的答案、課本、文章、錄音和進度都保存在這個瀏覽器內。')],
+      ['📊', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('First name (if entered), questions answered and how many were right, minutes, features used, book titles, and app errors. Only the PrepBuddy team can see it.', '名字（如有輸入）、答題數目和答對數目、練習分鐘、使用過的功能、課本名稱，以及程式錯誤。只有 PrepBuddy 團隊可以看到。')],
+      ['🤖', C('The AI reads what it needs', 'AI 只會讀取需要的內容'), C('To write questions and mark answers, textbook text and your child’s answers, photos and essays are sent to our AI provider, Anthropic. It isn’t used to train their AI.', '為了出題和批改，課文以及子女的答案、相片和文章會傳送給我們的 AI 服務供應商 Anthropic，不會用來訓練他們的 AI。')],
+      ['🚫', C('What we never ask for', '我們不會收集'), C('Full name, school, address, ID or payment details. Please remind your child not to type personal details into answers or chats.', '全名、學校、地址、身份證或付款資料。請提醒子女不要在答案或對話中輸入個人資料。')],
+      ['✋', C('You’re in control', '由你決定'), C('Ask to see or delete your family’s data, or leave the pilot, any time. Pilot data is deleted within 3 months after the pilot ends.', '你可隨時要求查閱或刪除你家庭的資料，或退出試用。試用結束後 3 個月內會刪除試用資料。')],
+    ];
+    $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
+      <div class="pg-box cs-box">
+        <div class="cs-head">${buddySVG('listen', 64)}<div><span class="pg-tag">${C('Step 1 of 2 · for parents', '第 1 步，共 2 步 · 家長專用')}</span><h1>${C('Before we start', '開始之前')}</h1></div></div>
+        <p>${C('Please ask a parent or guardian to read this and agree. It takes a minute.', '請家長或監護人閱讀並同意以下內容，只需一分鐘。')}</p>
+        <div class="cs-list">${items.map(([i, h, t]) => `<div class="cs-item"><span>${i}</span><div><b>${h}</b><p>${t}</p></div></div>`).join('')}</div>
+        <label class="cs-agree"><input type="checkbox" id="cs-ok"><span>${C('I’m this child’s parent or guardian. I’ve read this and agree to my child taking part in the PrepBuddy pilot.', '我是這名子女的家長或監護人，已閱讀以上內容，並同意子女參加 PrepBuddy 試用計劃。')}</span></label>
+        <button class="btn" id="cs-go" disabled>${C('Agree and continue', '同意並繼續')}</button>
+        <p class="hint">${C('Questions? Ask the person who invited you. You can also send us a message any time from Settings.', '有疑問？請聯絡邀請你的人，或隨時在「設定」中發送訊息給我們。')}</p>
+      </div></main>`;
+    const ok = document.getElementById('cs-ok'), go2 = document.getElementById('cs-go');
+    ok.onchange = () => { go2.disabled = !ok.checked; };
+    go2.onclick = () => {
+      local.consent = { at: Date.now(), v: CONSENT_V, lang: LANG }; saveLocal(); track('consent');
+      if (nav) nav.style.display = '';
+      $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
+      resolve();
+    };
+  });
+}
+// The tour: what PrepBuddy does, card by card. Features the family's plan doesn't include carry a small plan tag.
+function startTour(replay) {
+  return new Promise((resolve) => {
+    const C = (en, zh) => (LANG === 'zh' ? zh : en);
+    const tag = (f) => (f && locked(f) ? ` <span class="tr-lock">🔒 ${TIERS[nextPlanFor(f)].name}</span>` : '');
+    const S2 = [
+      { ic: buddySVG('happy', 96), t: C('Meet Buddy, your study buddy', '認識你的學習夥伴 Buddy'), d: C('PrepBuddy turns your own textbooks into practice, lessons and marking, at your level. Here’s a quick look around.', 'PrepBuddy 會把你自己的課本變成練習、課堂和批改，配合你的程度。我們帶你快速看看。') },
+      { ic: actionTile('practise', 84), t: C('Practice from your textbook', '用你的課本練習'), d: C('Questions written from each chapter, from easy to DSE level. Stuck? Tap “I don’t get it” and Buddy explains step by step.', '每一章都有由淺入深、直至 DSE 程度的題目。不明白？按「我不明白」，Buddy 會一步一步解釋。') },
+      { ic: actionTile('learn', 84), t: C('Learn mode', '學習模式'), d: C('New chapter? Buddy teaches it in short steps with quick checks, and you can ask questions any time.', '新的章節？Buddy 會用簡短步驟教你，並有小測驗，你也可以隨時發問。') },
+      { ic: actionTile('mistakes', 84), t: C('Your Mistake book', '你的錯題簿'), d: C('Every wrong answer is saved. Get it right a day later and it’s really learned. Today’s plan reminds you.', '每一題答錯的都會記下。隔天再答對，才是真正學會。今日計劃會提醒你。') },
+      { ic: actionTile('test', 84), t: C('Tests and school planning', '測驗與學校考試計劃') + tag('test'), d: C('Timed chapter tests marked like the real exam. Add your school test dates and Today’s plan counts down to them.', '計時章節測驗，按真實考試方式批改。加入學校測驗日期，今日計劃會為你倒數。') },
+      { ic: actionTile('writing', 84), t: C('Writing and speaking', '寫作與說話') + tag('writing'), d: C('DSE English and Chinese writing marked against the real criteria, with redrafts. Speaking practice with feedback on your answer.', '按 DSE 準則批改中英文寫作，可以修改重交；說話練習並附回饋。') },
+      { ic: actionTile('homework', 84), t: C('Homework help', '功課幫手') + tag('homework'), d: C('Snap a homework question and Buddy guides you to the answer, without just giving it away.', '拍下功課題目，Buddy 會引導你找出答案，而不是直接給你答案。') },
+      { ic: `<span class="tr-emoji">👨‍👩‍👧</span>`, t: C('For parents', '給家長') + tag('parent'), d: C('A PIN-protected parent dashboard, a one-page weekly report, and stars your child earns for real effort, swapped for rewards you choose.', '有密碼保護的家長主頁、一頁的每週報告，以及子女憑真正努力賺取的星星，可換取你設定的獎勵。') },
+      { ic: buddySVG('done', 96), t: C('Let’s add your textbook!', '加入你的課本吧！'), d: C('Search for your textbook, then tap “Find your level” so Buddy starts at the right difficulty. 15 minutes a day is all it takes.', '搜尋你的課本，然後按「找出你的程度」，讓 Buddy 由合適的難度開始。每天 15 分鐘就足夠。') },
+    ];
+    let k = 0;
+    const box = document.createElement('div');
+    box.className = 'tr-wrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', C('PrepBuddy tour', 'PrepBuddy 導覽'));
+    document.body.appendChild(box);
+    const end = () => { local.toured = Date.now(); saveLocal(); track(replay ? 'tour_replay' : (k >= S2.length - 1 ? 'tour_done' : 'tour_skip:' + k)); box.remove(); document.removeEventListener('keydown', key); resolve(); };
+    const draw = (dir = 0) => {
+      const x = S2[k], last = k === S2.length - 1;
+      box.innerHTML = `<div class="tr-card ${dir > 0 ? 'in-r' : dir < 0 ? 'in-l' : ''}">
+        <button class="tr-skip" id="tr-skip">${last ? '' : C('Skip', '略過')}</button>
+        <div class="tr-ic">${x.ic}</div>
+        ${k === 0 && !replay ? `<span class="pg-tag">${C('Step 2 of 2 · a quick tour', '第 2 步，共 2 步 · 快速導覽')}</span>` : ''}
+        <h2>${x.t}</h2><p>${x.d}</p>
+        <div class="tr-dots" aria-hidden="true">${S2.map((_, i) => `<i class="${i === k ? 'on' : ''}"></i>`).join('')}</div>
+        <div class="tr-btns">${k ? `<button class="btn ghost" id="tr-back">${C('Back', '上一步')}</button>` : ''}<button class="btn" id="tr-next">${last ? C('Let’s go!', '開始吧！') : C('Next', '下一步')}</button></div>
+        <span class="tr-count">${k + 1} / ${S2.length}</span>
+      </div>`;
+      box.querySelector('#tr-next').onclick = () => (last ? end() : (k++, draw(1)));
+      const b = box.querySelector('#tr-back'); if (b) b.onclick = () => { k--; draw(-1); };
+      const sk = box.querySelector('#tr-skip'); if (sk && !last) sk.onclick = end; else if (sk) sk.style.visibility = 'hidden';
+      box.querySelector('#tr-next').focus();
+    };
+    const key = (e) => { if (e.key === 'ArrowRight') { if (k < S2.length - 1) { k++; draw(1); } } else if (e.key === 'ArrowLeft') { if (k) { k--; draw(-1); } } else if (e.key === 'Escape') end(); };
+    document.addEventListener('keydown', key);
+    let x0 = null;
+    box.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    box.addEventListener('touchend', (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (dx < -50 && k < S2.length - 1) { k++; draw(1); } else if (dx > 50 && k) { k--; draw(-1); } });
+    draw();
+  });
+}
 // A short summary of how PrepBuddy is used on this device (sent to the pilot admin page).
 async function pilotSnap() {
   const books = await getBooks();
@@ -2399,7 +2490,7 @@ async function pilotSnap() {
     sess: (local.sess || []).filter((x) => x.t >= since).slice(-150),
     goal: local.goal || null, usage,
     stars: st ? { on: starsOn(), bal: st.bal, total: st.total, why, redeemed: (st.redeemed || []).length, rewards: (st.rewards || []).length, rushedQ: st.rushedQ || 0, capDays: st.capDays || 0, badges: Object.keys(st.badges || {}).length } : null,
-    parent: { pin: !!local.pin, pinAt: local.pinAt || null },
+    parent: { pin: !!local.pin, pinAt: local.pinAt || null }, consent: local.consent || null, toured: local.toured || null,
     counts: { mistakes: mistakeCount(), fixed: mk.filter((x) => x.done).length, learned: Object.keys(local.learned || {}).length, tests: (local.tests || []).length, schoolTests: (local.sched || []).length, homework: (local.hw || []).length,
       writing: (local.wr || []).reduce((x, w) => x + w.drafts.length, 0), speaking: (local.sp || []).reduce((x, w) => x + w.tries.length, 0), placement: Object.keys(local.placement || {}).length,
       dictation: (local.dict || []).reduce((x, d) => x + ((d.runs || []).length), 0) },
@@ -2408,7 +2499,7 @@ async function pilotSnap() {
 }
 let syncing = false;
 async function pilotSync(force) {
-  if (!local.pilot || !local.code || syncing) return;
+  if (!local.pilot || !local.code || !local.consent || syncing) return; // nothing is sent before a parent agrees
   if (!force && local.syncAt && Date.now() - local.syncAt < 4 * 60000) return;
   syncing = true;
   try {
@@ -6060,7 +6151,7 @@ async function refreshOldQuestions() {
 }
 getBooks().then(pruneMistakes).catch(() => {});
 flushReports().catch(() => {});
-pilotGate().then(() => refreshOldQuestions().catch(() => {})).finally(async () => {
+pilotGate().then(() => pilotWelcome()).then(() => refreshOldQuestions().catch(() => {})).finally(async () => {
   let v = urlView() || { name: 'home' };
   // a screen whose book or item is gone (another device, cleared data) falls back to Today
   if (v.bookId && !(await getBooks()).some((b) => b.id === v.bookId)) v = { name: 'home' };

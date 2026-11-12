@@ -111,7 +111,7 @@ const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${Stri
 function mergeFamily(snaps) {
   const days = {}, fx = {}, books = new Map(); let last = 0, first = null, errs = [], counts = {}, names = new Set(), plans = new Set(), devices = [];
   const hours = Array(24).fill(0), wdays = Array(7).fill(0), modes = {}, usage = { usd: 0, calls: 0, by: {} }, why = {}, langs = new Set();
-  let sess = [], streak = 0, best = 0, stars = null, pin = false, goal = null;
+  let sess = [], streak = 0, best = 0, stars = null, pin = false, goal = null, consent = null, toured = null;
   for (const s of snaps) {
     devices.push({ device: s.device, ua: s.ua, synced: s.synced, last: s.last, inst: s.inst, keep: s.keep, ios: s.ios });
     if (s.name) names.add(s.name); if (s.plan) plans.add(s.plan); if (s.lang) langs.add(s.lang);
@@ -128,6 +128,7 @@ function mergeFamily(snaps) {
     streak = Math.max(streak, s.streak || 0); best = Math.max(best, s.best || 0);
     if (s.stars) { stars = stars || { on: false, bal: 0, total: 0, redeemed: 0, rewards: 0, rushedQ: 0, capDays: 0, badges: 0 }; for (const k of ['bal', 'total', 'redeemed', 'rushedQ', 'capDays', 'badges']) stars[k] += s.stars[k] || 0; stars.rewards = Math.max(stars.rewards, s.stars.rewards || 0); stars.on = stars.on || !!s.stars.on; for (const [k, v] of Object.entries(s.stars.why || {})) why[k] = (why[k] || 0) + v; }
     if (s.parent && s.parent.pin) pin = true;
+    if (s.consent && (!consent || s.consent.at < consent.at)) consent = s.consent; if (s.toured) toured = Math.max(toured || 0, s.toured);
     if (s.goal) goal = s.goal;
   }
   sess.sort((a, b) => a.t - b.t);
@@ -141,7 +142,7 @@ function mergeFamily(snaps) {
   const wk2 = f0 === null ? null : (Date.now() - f0 < 7 * 864e5 ? null : Object.keys(days).some((k) => { const t = new Date(k + 'T00:00:00').getTime(); return t >= f0 + 7 * 864e5 && t < f0 + 14 * 864e5; }));
   if (stars) stars.why = why;
   return { days, fx, books: [...books.values()], last, first, errs: errs.sort((a, b) => b.t - a.t).slice(0, 12), counts, names: [...names], plans: [...plans], devices, w: sum(7), w2: sum(14), pw: sum(7, 7),
-    hours, wdays, modes, usage, sess, streak, best, stars, pin, goal, langs: [...langs], actDays, tot: { ...tot, acc: tot.m ? Math.round(100 * tot.g / tot.m) : null }, wk2,
+    hours, wdays, modes, usage, sess, streak, best, stars, pin, goal, consent, toured, langs: [...langs], actDays, tot: { ...tot, acc: tot.m ? Math.round(100 * tot.g / tot.m) : null }, wk2,
     parentUse: (fx.parent_dashboard ? fx.parent_dashboard.n : 0) + (fx.parent_report ? fx.parent_report.n : 0) + (fx['ai:report'] ? fx['ai:report'].n : 0) };
 }
 const MODE_NAMES = { practice: 'Practice', '': 'Practice', spaced: 'Daily reviews', drill: 'Weak-spot drills', mistakes: 'Mistake book redo', dse: 'Chapter tests & DSE papers', mock: 'Mini mock tests', placement: 'Level check', units: 'Practice', unit: 'Practice', book: 'Practice' };
@@ -343,6 +344,7 @@ function pilotInsights(rows, fams) {
   const pct = (a, b) => (b ? Math.round(100 * a / b) : 0);
   const tone = (v, good, ok) => (v === null ? 'grey' : v >= good ? 'green' : v >= ok ? 'amber' : 'red');
   const F = [];
+  const noConsent = rows.filter((r) => r.a.devices.length && !r.a.consent);
   if (!started.length) {
     F.push(['grey', 'Waiting for the first family', 'Nothing to read yet. Findings appear here once families start practising.', 'Make sure every family has their code and has added PrepBuddy to their Home Screen.']);
   } else {
@@ -362,6 +364,7 @@ function pilotInsights(rows, fams) {
     if (onLow) F.push([Object.keys(ups).length ? 'blue' : 'grey', Object.keys(ups).length ? `Families on Free/Plus reached for: ${Object.entries(ups).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${UPSELL_NAMES[k] || k} (${v} famil${v === 1 ? 'y' : 'ies'})`).join(', ')}` : 'No upgrade signals yet', 'Taps on locked features show what people would pay for.', 'Make the most-tapped feature the headline of the paid plan.']);
     else F.push(['grey', 'No upgrade data yet', 'Every family is on Pro, so nobody ever hits a locked feature.', 'Put 2–3 families on Free and 2–3 on Plus from the table.']);
     if (sess.length >= 10) F.push([tone(100 - pct(rushed, sess.length), 90, 80), `${pct(rushed, sess.length)}% of sets were rushed`, 'Rushed = answering multiple choice in under 4 seconds a question, usually to farm stars.', pct(rushed, sess.length) > 10 ? 'Talk to those families about stars; consider turning stars off for them.' : 'Students are taking the questions seriously.']);
+    if (noConsent.length) F.push(['amber', `${noConsent.length} famil${noConsent.length === 1 ? 'y hasn’t' : 'ies haven’t'} agreed to the privacy note yet`, `Families who opened an older version get the consent screen next time they open the app. Until a parent agrees, nothing new is sent. ${noConsent.map((r) => esc(r.f.name)).join(', ')}.`, 'If they’re active, ask a parent to open the app and tap “Agree and continue”.']);
     if (errs) F.push(['red', `${errs} app error${errs === 1 ? '' : 's'} recorded`, 'Errors can stop a family using a feature. Check “Problems” in the family cards.', 'Send the error text to Claude to fix.']);
   }
   // CCMF-ready paragraph
@@ -377,11 +380,11 @@ function pilotInsights(rows, fams) {
 }
 
 function pilotCSV(rows) {
-  const cols = ['Family', 'Code', 'Plan', 'Child', 'Started', 'Last active', 'Active days', 'Came back week 2', 'Questions', 'Accuracy %', 'Minutes', 'Questions 7d', 'Minutes 7d', 'Streak', 'Best streak', 'Sets', 'Rushed sets', 'Books', 'Subjects', 'Lessons', 'Essays', 'Speaking', 'Dictations', 'Mistakes open', 'Mistakes fixed', 'Stars earned', 'Rewards redeemed', 'Parent PIN', 'Parent views', 'AI requests', 'AI cost USD', 'Errors', 'Devices', 'Notes'];
+  const cols = ['Family', 'Code', 'Plan', 'Child', 'Started', 'Last active', 'Active days', 'Came back week 2', 'Questions', 'Accuracy %', 'Minutes', 'Questions 7d', 'Minutes 7d', 'Streak', 'Best streak', 'Sets', 'Rushed sets', 'Books', 'Subjects', 'Lessons', 'Essays', 'Speaking', 'Dictations', 'Mistakes open', 'Mistakes fixed', 'Stars earned', 'Rewards redeemed', 'Consent', 'Tour', 'Parent PIN', 'Parent views', 'AI requests', 'AI cost USD', 'Errors', 'Devices', 'Notes'];
   const d = (t) => (t ? new Date(t).toISOString().slice(0, 10) : '');
   const lines = rows.map(({ f, a }) => [f.name, f.code, f.plan || 'pro', a.names.join(' / '), d(a.first), d(a.last), a.actDays, a.wk2 === null ? '' : a.wk2 ? 'yes' : 'no', a.tot.q, a.tot.acc ?? '', a.tot.min, a.w.q, a.w.min, a.streak, a.best,
     a.sess.filter((x) => !x.e).length, a.sess.filter((x) => x.r).length, a.books.length, [...new Set(a.books.map((b) => b.subject))].join(' / '), a.counts.learned || 0, a.counts.writing || 0, a.counts.speaking || 0, a.counts.dictation || 0,
-    a.counts.mistakes || 0, a.counts.fixed || 0, a.stars ? a.stars.total : '', a.stars ? a.stars.redeemed : '', a.pin ? 'yes' : 'no', a.parentUse, a.usage.calls, a.usage.usd.toFixed(3), a.errs.length, a.devices.map((x) => x.ua).join(' / '), f.note || '']);
+    a.counts.mistakes || 0, a.counts.fixed || 0, a.stars ? a.stars.total : '', a.stars ? a.stars.redeemed : '', a.consent ? d(a.consent.at) : 'no', a.toured ? 'yes' : 'no', a.pin ? 'yes' : 'no', a.parentUse, a.usage.calls, a.usage.usd.toFixed(3), a.errs.length, a.devices.map((x) => x.ua).join(' / '), f.note || '']);
   const q = (v) => { const x = String(v ?? ''); return /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x; };
   return [cols, ...lines].map((r) => r.map(q).join(',')).join('\n');
 }
@@ -494,6 +497,7 @@ function famDetail(r, fb) {
         [a.tot.acc === null ? '–' : a.tot.acc + '%', 'right overall', a.w.acc === null ? '' : `${a.w.acc}% this week`],
         [a.streak, `day streak`, `best ${a.best}`],
         [a.goal ? `${a.goal.days}×${a.goal.mins}` : '–', 'weekly goal', a.goal ? 'days × minutes' : 'not set'],
+        [a.consent ? '✓' : '✗', 'parent consent', a.consent ? new Date(a.consent.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'not yet', a.consent ? 'up' : 'down'],
         [a.pin ? '✓' : '✗', 'parent PIN', `${a.parentUse} parent view${a.parentUse === 1 ? '' : 's'}`, a.pin ? 'up' : 'down'],
         ...(a.stars ? [[a.stars.total, 'stars earned', `${a.stars.bal} unspent · ${a.stars.redeemed} redeemed`], [a.stars.rushedQ, 'rushed questions', `hit daily cap ${a.stars.capDays}×`, a.stars.rushedQ ? 'down' : '']] : []),
         [money(a.usage.usd), 'AI cost', `${a.usage.calls} requests`],
