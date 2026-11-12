@@ -1179,6 +1179,25 @@ async function wrPhotos(multi) {
   });
 }
 
+// Writing stars need a real piece (80+ words, or 150+ Chinese characters), a redraft that really changed
+// (at least 10% new wording), and only one star award per piece per day.
+function changedShare(a, b) {
+  const tok = (t) => { const x = String(t || ''); const cjk = x.match(/[㐀-鿿]/g); return cjk && cjk.length > 20 ? cjk : x.toLowerCase().split(/\s+/).filter(Boolean); };
+  const old = {}; tok(a).forEach((w) => (old[w] = (old[w] || 0) + 1));
+  const nw = tok(b); let fresh = 0;
+  nw.forEach((w) => { if (old[w]) old[w]--; else fresh++; });
+  const left = Object.values(old).reduce((x, y) => x + y, 0);
+  return nw.length ? (fresh + left) / Math.max(nw.length, 1) : 0;
+}
+function writingStarOK(it) {
+  const d = it.drafts, last = d[d.length - 1], text = (last && last.text) || '';
+  const zh = (text.match(/[㐀-鿿]/g) || []).length > 20;
+  if (zh ? wordCount(text) < 150 : wordCount(text) < 80) return false;
+  if (d.length > 1 && changedShare(d[d.length - 2].text, text) < 0.1) return false;
+  if (it.starDay === dayStart()) return false;
+  it.starDay = dayStart(); wrSave();
+  return true;
+}
 async function renderWriting(id, sub) {
   const list = local.wr || [];
   const it = id && list.find((x) => x.id === id);
@@ -1278,7 +1297,7 @@ function renderWritingEditor(it) {
         const fb = await api('writing', { step: 'mark', kind: it.kind, prompt: it.prompt, text: it.work, prev: prev ? { text: prev.text, fb: { criteria: prev.fb.criteria, fixes: prev.fb.fixes } } : null });
         delete fb.usage;
         it.drafts.push({ t: Date.now(), text: it.work, fb }); it.work = ''; it.t = Date.now();
-        wrSave(); addStars(it.drafts.length > 1 ? 3 : 2, 'writing');
+        wrSave(); if (writingStarOK(it)) addStars(it.drafts.length > 1 ? 3 : 2, 'writing');
         st.busy = '';
         if (view.id === it.id) go({ name: 'writing', id: it.id, sub: 'fb' });
       } catch (e) { st.busy = ''; st.error = wrErr(e); if (view.id === it.id) draw(); }
@@ -1516,7 +1535,7 @@ function renderSpeakingRec(it, qi) {
       it.tries.push({ t: Date.now(), qi, tr, secs: Math.round(secs), words, fillers, pause: Math.round(R.pause), fb, aud: blob ? 1 : 0 });
       if (it.tries.length > 30) it.tries = it.tries.slice(-30);
       if (blob) await store.set(`spaud:${it.id}:${n}`, blob);
-      spSave(); addStars(2, 'speaking');
+      spSave(); if (secs >= 30 && words >= 30 && it.starDay !== dayStart()) { it.starDay = dayStart(); spSave(); addStars(2, 'speaking'); }
       if (view === myView) go({ name: 'speaking', id: it.id, sub: 'fb', qi });
     } catch (e) {
       R.state = 'ready'; R.err = wrErr(e); R.chunks = []; R.final = tr; R.pause = 0;
@@ -1679,7 +1698,7 @@ function runDictation(L) {
   const finish = () => {
     const n = Object.keys(R.marks).length, g = Object.values(R.marks).filter(Boolean).length;
     L.runs = [...(L.runs || []), { t: Date.now(), n, g }].slice(-20); saveLocal();
-    const won = n ? (() => { const a = addStars(1, 'dictation'); const b = g === n && n >= 3 ? addStars(1, 'dictation-perfect') : 0; return a + b ? { n: a + b, lines: [[DT('Finished a dictation', '完成默書'), a], ...(b ? [[DT('Every word right!', '全部正確！'), b]] : [])].filter((x) => x[1]), badges: checkBadges({}), capped: false } : null; })() : null;
+    const won = n && g / n >= STAR_PASS / 100 ? (() => { const a = addStars(1, 'dictation'); const b = g === n && n >= 3 && R.mode !== 'paper' ? addStars(1, 'dictation-perfect') : 0; return a + b ? { n: a + b, lines: [[DT('Finished a dictation', '完成默書'), a], ...(b ? [[DT('Every word right!', '全部正確！'), b]] : [])].filter((x) => x[1]), badges: checkBadges({}), capped: false } : null; })() : null;
     const miss = Object.entries(R.marks).filter(([, ok]) => !ok).map(([i]) => L.items[i]);
     $app.innerHTML = `
     <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button></div>
@@ -2417,8 +2436,8 @@ function badgeCounts(extra = {}) {
   const days = new Set(local.log.map((e) => dayStart(e.t)));
   let streak = 0; for (let d = days.has(dayStart()) ? dayStart() : dayStart() - DAY; days.has(d); d -= DAY) streak++;
   return {
-    sets: (s.sets || 0), answered: Object.values(local.stats).reduce((a, x) => a + (x.seen || 0), 0), streak,
-    fixed: Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual).length,
+    sets: (s.sets || 0), answered: Math.max(0, Object.values(local.stats).reduce((a, x) => a + (x.seen || 0), 0) - (s.rushedQ || 0)), streak,
+    fixed: Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && m.earned !== 0 && (m.earned || !m.doneAt || m.doneAt < STAR_RULES_AT)).length,
     perfect: !!extra.perfect, testsPassed: (local.tests || []).filter((t) => t.kind === 'test' && t.m && t.g / t.m >= 0.8).length,
     goalWeeks: Object.keys(s.goalWeeks || {}).length,
   };
@@ -2433,7 +2452,19 @@ function checkBadges(extra) {
 }
 
 // Stars for a finished set (called once, from the results screen).
-const STAR_PASS = 50, RUSH_SECS = 4;
+const STAR_PASS = 50, RUSH_SECS = 4, STAR_RULES_AT = Date.UTC(2026, 10, 12, 12);
+// The score used for stars only counts marks the child can't give themselves: choice questions and AI-marked
+// written answers (using the AI's own marks, not ticks changed afterwards). Self-ticked answers still show in results.
+function starScore(qs) {
+  let g = 0, m = 0;
+  qs.forEach((q, k) => {
+    if (choiceType(q)) { g += S.got[k] || 0; m += marksOf(q); return; }
+    const mk = S.marks && S.marks[k];
+    if (mk && mk.essay && q.type === 'essay') { g += mk.total || 0; m += marksOf(q); return; }
+    if (mk && mk.parts) { g += (q.parts || []).reduce((a, p, j) => a + Math.min(p.marks, ((mk.parts[j] || {}).awarded || []).length), 0); m += marksOf(q); }
+  });
+  return m ? Math.round(100 * g / m) : null;
+}
 // A set counts as rushed when most of it is choice questions and the typical (median) time per answer is under RUSH_SECS.
 function rushedSet(qs) {
   if (!S || !S.times || !qs.length) return false;
@@ -2453,15 +2484,23 @@ function awardSession(qs, pct) {
   const add = (k, why, label) => { const got = addStars(k, why); if (got) { n += got; lines.push([label, got]); } };
   // Stars are for real effort: a set that was rushed (tapping through choice questions in a few seconds each)
   // or scored under half earns no set star. Fixing mistakes and passing tests still need right answers.
-  const rushed = rushedSet(qs), passed = pct >= STAR_PASS;
+  const rushed = rushedSet(qs), sp = starScore(qs), trusted = sp !== null;
+  pct = trusted ? sp : 0;
+  const passed = !trusted || pct >= STAR_PASS; // a set of only self-marked answers still earns the effort star
+  if (rushed) s.rushedQ = (s.rushedQ || 0) + qs.length;
   if (qs.length >= 3 && passed && !rushed) { s.sets = (s.sets || 0) + 1; add(1, 'set', ST('Finished a set', '完成一組練習')); }
-  if (qs.length >= 5 && pct >= 80 && !rushed) add(1, 'score', ST('Scored 80% or more', '得分 80% 或以上'));
+  if (qs.length >= 5 && trusted && pct >= 80 && !rushed) add(1, 'score', ST('Scored 80% or more', '得分 80% 或以上'));
   S.starNote = qs.length < 3 ? '' : rushed
     ? ST('No stars for this set: the answers came too fast. Take your time to read each question and stars come back.', '這組沒有星星：答得太快了。慢慢讀清楚每一題，就可以再賺星星。')
     : !passed ? ST(`Score ${STAR_PASS}% or more to earn a star for a set. Fix the ones you missed and try again!`, `得分 ${STAR_PASS}% 或以上才可以賺到星星。改正錯題再試一次吧！`) : '';
   if (S.fixedNow) add(S.fixedNow, 'fix', ST(`Fixed ${S.fixedNow} mistake${S.fixedNow > 1 ? 's' : ''}`, `改正了 ${S.fixedNow} 題錯題`));
   if (S.mode === 'spaced' && !rushed && onceToday('reviews')) add(1, 'reviews', ST('Did today’s reviews', '完成今日溫習'));
-  if (S.test && pct >= 80) { const g = addStars(3, 'test', false); if (g) { n += g; lines.push([ST('Passed the chapter test', '通過章節測驗'), g]); } }
+  if (S.test && trusted && pct >= 80) {
+    // Test stars: once per chapter per day, so retaking the same test doesn't keep paying out.
+    const key = `${S.book ? S.book.id : ''}:${S.title || ''}`;
+    s.testDays = s.testDays || {};
+    if (s.testDays[key] !== dayStart()) { s.testDays[key] = dayStart(); const g = addStars(3, 'test', false); if (g) { n += g; lines.push([ST('Passed the chapter test', '通過章節測驗'), g]); } }
+  }
   // weekly goal reached (once per week)
   const G = typeof goalWeek === 'function' ? goalWeek() : null;
   if (G && G.reached) {
@@ -2470,7 +2509,7 @@ function awardSession(qs, pct) {
     if (!s.goalWeeks[wk]) { s.goalWeeks[wk] = 1; const g = addStars(5, 'goal', false); if (g) { n += g; lines.push([ST('Reached your weekly goal!', '達成每週目標！'), g]); } }
   }
   const capped = s.day && s.day.n >= DAY_CAP;
-  const badges = checkBadges({ perfect: qs.length >= 5 && pct === 100 });
+  const badges = checkBadges({ perfect: qs.length >= 5 && trusted && pct === 100 && !rushed });
   saveLocal();
   return n || badges.length ? { n: n + badges.reduce((a, b) => a + b.stars, 0), lines, badges, capped } : (capped ? { n: 0, lines: [], badges: [], capped } : null);
 }
@@ -2532,9 +2571,15 @@ function askPin(purpose) {
     const ok = () => {
       const v = inp.value.trim();
       if (!/^\d{4}$/.test(v)) { err.textContent = ST('Enter 4 digits.', '請輸入 4 位數字。'); return; }
-      if (has) { if (v === local.pin) return done(true); err.textContent = ST('That PIN isn’t right.', '密碼不正確。'); inp.value = ''; return; }
+      if (has) {
+        const L = local.pinLock || (local.pinLock = { n: 0, until: 0 });
+        if (L.until > Date.now()) { err.textContent = ST(`Too many tries. Wait ${Math.ceil((L.until - Date.now()) / 60000)} min.`, `試太多次了，請等 ${Math.ceil((L.until - Date.now()) / 60000)} 分鐘。`); inp.value = ''; return; }
+        if (v === local.pin) { L.n = 0; saveLocal(); return done(true); }
+        L.n++; if (L.n >= 5) { L.n = 0; L.until = Date.now() + 10 * 60000; } saveLocal();
+        err.textContent = ST('That PIN isn’t right.', '密碼不正確。'); inp.value = ''; return;
+      }
       if (v !== box.querySelector('#pn-in2').value.trim()) { err.textContent = ST('The two PINs don’t match.', '兩次輸入的密碼不一樣。'); return; }
-      local.pin = v; saveLocal(); done(true);
+      local.pin = v; local.pinAt = Date.now(); saveLocal(); done(true);
     };
     box.querySelector('#pn-ok').onclick = ok;
     box.querySelectorAll('.pin-in').forEach((x) => (x.onkeydown = (e) => { if (e.key === 'Enter') ok(); }));
@@ -2574,8 +2619,8 @@ function renderStars(parent = false) {
     </section>
     <section class="stack g10"><h2 class="st-h">${ST('How to earn stars', '怎樣賺星星')}</h2>
       <div class="st-earn">${[
-        ['📘', ST(`Finish a practice set with ${STAR_PASS}% or more`, `完成一組練習並得 ${STAR_PASS}% 或以上`), 1], ['🎯', ST('Score 80% or more', '得分 80% 或以上'), '+1'], ['🛠️', ST('Fix a mistake', '改正一題錯題'), 1],
-        ['🔁', ST('Do today’s reviews', '完成今日溫習'), 1], ['🏆', ST('Reach your weekly goal', '達成每週目標'), 5], ['🎓', ST('Pass a chapter test', '通過章節測驗'), 3]]
+        ['📘', ST(`Finish a practice set with ${STAR_PASS}% or more`, `完成一組練習並得 ${STAR_PASS}% 或以上`), 1], ['🎯', ST('Score 80% or more', '得分 80% 或以上'), '+1'], ['🛠️', ST('Fix a mistake from an earlier day', '改正之前的錯題'), 1],
+        ['🔁', ST('Do today’s reviews', '完成今日溫習'), 1], ['🏆', ST('Reach your weekly goal', '達成每週目標'), 5], ['🎓', ST('Pass a chapter test (once a day per chapter)', '通過章節測驗（每章每日一次）'), 3], ['✍️', ST('Get writing marked (80+ words)', '寫作批改（80 字以上）'), '2–3'], ['🎤', ST('Speak for 30 seconds or more', '說話 30 秒或以上'), 2], ['📝', ST('Dictation with half or more right', '默書答對一半或以上'), 1]]
         .map(([i, t, n]) => `<div><span>${i}</span><span>${t}</span><b>${n} ★</b></div>`).join('')}</div>
       <p class="hint">${ST(`Up to ${DAY_CAP} stars a day from practice. Badges and goals give extra. Rushing through answers earns no stars.`, `練習每日最多可賺 ${DAY_CAP} 粒星，徽章和目標另有獎勵。亂答一通不會賺到星星。`)}</p>
     </section>
@@ -2586,6 +2631,7 @@ function renderStars(parent = false) {
   $app.querySelectorAll('[data-save]').forEach((b) => (b.onclick = () => { s.saving = s.saving === b.dataset.save ? null : b.dataset.save; saveLocal(); renderStars(); }));
   $app.querySelectorAll('[data-get]').forEach((b) => (b.onclick = async () => {
     const r = s.rewards.find((x) => x.id === b.dataset.get); if (!r || s.bal < r.cost) return;
+    if (!local.pin) { toast(ST('A parent needs to set a PIN first, in the Parent dashboard.', '家長要先在家長主頁設定密碼。')); return; }
     if (!(await askPin(ST(`Ask Mum or Dad! ${r.icon} ${r.name} costs ${r.cost} stars. A parent enters the PIN to say yes.`, `去問爸爸媽媽！${r.icon} ${r.name}需要 ${r.cost} 粒星。家長輸入密碼即表示批准。`)))) return;
     s.bal -= r.cost; s.redeemed.push({ t: Date.now(), id: r.id, name: r.name, icon: r.icon, cost: r.cost });
     if (s.saving === r.id) s.saving = null;
@@ -5672,7 +5718,7 @@ function record(q, got) {
     // MCQ options are shuffled per session, so keep the text of the chosen option, not just its letter.
     const ansText = choiceType(q) && ans ? (q.options || [])['ABCD'.indexOf(ans)] || '' : null;
     local.mistakes[q.id] = { t: Date.now(), n: ((mk && mk.n) || 0) + 1, got, ans: Array.isArray(ans) ? ans.map((a) => String(a || '').slice(0, 1500)) : null, ansText, chat: (mk && mk.chat) || null, done: false };
-  } else if (mk && !mk.done) { mk.done = true; mk.doneAt = Date.now(); if (S) S.fixedNow = (S.fixedNow || 0) + 1; }
+  } else if (mk && !mk.done) { mk.done = true; mk.doneAt = Date.now(); if (mk.t < dayStart()) { mk.earned = 1; if (S) S.fixedNow = (S.fixedNow || 0) + 1; } }
   const ids = Object.keys(local.mistakes);
   if (ids.length > 600) ids.sort((a, b) => local.mistakes[a].t - local.mistakes[b].t).slice(0, ids.length - 600).forEach((id) => delete local.mistakes[id]);
   if (local.log.length > 5000) local.log = local.log.slice(-5000);
