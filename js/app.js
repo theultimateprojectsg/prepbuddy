@@ -1328,7 +1328,8 @@ function wrMarked(text, corr) {
 function renderWritingFeedback(it, at) {
   const k = WR_KINDS[it.kind], o = wrState.open;
   const i = at === undefined ? (o[it.id + ':d'] ?? it.drafts.length - 1) : at;
-  const d = it.drafts[i], fb = d.fb, prev = it.drafts[i - 1];
+  const d = it.drafts[i], prev = it.drafts[i - 1];
+  const fb = Object.assign({ criteria: [], strengths: [], fixes: [], corrections: [], improved: [], still_to_do: [], summary: '' }, d.fb); // older drafts may lack newer fields
   const lv = wrLevel(fb, it.kind), plv = prev && wrLevel(prev.fb, it.kind);
   const showEssay = !!o[it.id + ':essay'];
   const zh = k.lang === 'zh';
@@ -1662,7 +1663,7 @@ function editDictation(L) {
     </main>`;
     const keep = () => { st.title = document.getElementById('dtitle').value; st.text = document.getElementById('ditems').value; };
     document.getElementById('back').onclick = () => go({ name: 'dictation' });
-    $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { keep(); st.lang = b.dataset.lang; draw(); }));
+    $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { keep(); st.lang = b.dataset.lang; st.picked = true; draw(); }));
     document.getElementById('dphoto').onchange = async (e) => {
       keep(); const f = e.target.files[0]; if (!f) return;
       st.busy = true; st.err = ''; draw();
@@ -1675,6 +1676,7 @@ function editDictation(L) {
       st.busy = false; draw();
     };
     document.getElementById('dsave').onclick = () => {
+      { const ta = document.getElementById('ditems'); const tx = ta ? ta.value : st.text; if (!st.picked && !L && /[\u3400-\u9fff]/.test(tx) && st.lang === 'en') st.lang = 'yue'; } // Chinese words left on English: read them in Cantonese
       keep();
       const items = st.text.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 60);
       if (!items.length) { st.err = DT('Add at least one word.', '請最少加入一個詞語。'); return draw(); }
@@ -2450,7 +2452,7 @@ function coachTour(steps, done) {
       if (x.run || x.go) { hole.style.display = 'none'; dim.style.display = 'block'; }
       if (x.run) await x.run();
       else if (x.go) { const v = typeof x.go === 'string' ? { name: x.go } : x.go; if (view.name !== v.name || (v.bookId && view.bookId !== v.bookId) || x.fresh) await go(v); }
-      el = x.sel ? await waitFor(x.sel, x.skipIfMissing ? 1200 : 2500) : null;
+      el = x.sel ? await waitFor(x.sel, x.skipIfMissing ? 700 : 2500) : null;
       if (!alive || my !== gen) return;
       if (!el && x.skipIfMissing) { k += dir; if (k < 0) k = 0; if (k >= steps.length) return finish('done'); return show(dir); }
       if (el) { const r = el.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 90) el.scrollIntoView({ block: 'center' }); }
@@ -2495,11 +2497,11 @@ async function startTour(replay) {
     { go: book, sel: '#go', skipIfMissing: true, t: C('Start a practice set', '開始練習'), d: C('About 10 questions at a time, about 10 minutes. Let’s try one.', '每次約 10 題、約 10 分鐘。我們試試看。') },
     { run: async () => { const b = await demo(); if (b) await startUnits(b, b.units, 5, { types: 'mcq', diff: 'auto' }); }, sel: '#opts, .opt', t: C('Answer the question', '回答問題'), d: C('Tap an answer to see if it’s right, with an explanation from the textbook. Written answers are marked by AI.', '按一個答案，就會知道對不對，並附課本的解釋。文字題由 AI 批改。') },
     { sel: '#tutor', skipIfMissing: true, t: C('Stuck? Ask Buddy', '卡住了？問 Buddy'), d: C('Ask what the question means, get a hint, or have key words explained, without Buddy giving the answer away. You can type or talk.', '可以問題目的意思、要提示，或請 Buddy 解釋關鍵詞，Buddy 不會直接給你答案。可以打字或說話。') },
-    { go: book, sel: '#notes', skipIfMissing: true, t: C('Notes and flashcards', '筆記與閃卡'), d: C('Revision notes and flashcards for the chapters you picked. Let’s see the notes.', '為你選的章節製作溫習筆記和閃卡。我們看看筆記。') },
+    { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#notes', skipIfMissing: true, t: C('Notes and flashcards', '筆記與閃卡'), d: C('Revision notes and flashcards for the chapters you picked. Let’s see the notes.', '為你選的章節製作溫習筆記和閃卡。我們看看筆記。') },
     { go: { name: 'notes', bookId: DEMO_ID }, sel: '.ncard', t: C('Revision notes', '溫習筆記'), d: C('Key points, key terms and formulas for each chapter. You can print them too.', '每一章的重點、關鍵詞和公式，也可以列印。') },
     { go: { name: 'cards', bookId: DEMO_ID }, sel: '#flip, .fcard', t: C('Flashcards', '閃卡'), d: C('Quick-fire recall: read the question, think, then flip. Mark what you knew.', '快速記憶：看問題、想一想，再翻轉。記下你懂不懂。') },
-    { go: book, sel: '#ctest', skipIfMissing: true, t: C('Chapter tests', '章節測驗') + lt('test'), d: C('Timed tests marked like a school test, with a pass mark of 80%.', '計時測驗，按學校測驗方式批改，合格分數為 80%。') },
-    { go: book, sel: '#paper', skipIfMissing: true, t: C('Mock papers', '模擬試卷') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
+    { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#ctest', skipIfMissing: true, t: C('Chapter tests', '章節測驗') + lt('test'), d: C('Timed tests marked like a school test, with a pass mark of 80%.', '計時測驗，按學校測驗方式批改，合格分數為 80%。') },
+    { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#paper', skipIfMissing: true, t: C('Mock papers', '模擬試卷') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
     { go: 'home', sel: 'section[aria-label="School tests"]', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates. Today’s plan counts down and focuses on what’s coming up.', '加入測驗日期，今日計劃會倒數，並集中溫習要考的內容。') },
     { go: 'homework', sel: '.hw-cap, .hw-hero', t: C('Homework help', '功課幫手') + lt('homework'), d: C('Snap a photo of your homework. Buddy reads it and guides you through each question.', '拍下功課，Buddy 會讀取題目，並引導你逐題完成。') },
     { go: 'dictation', sel: '#dnew', skipIfMissing: true, t: C('默書 · Dictation', '默書'), d: C('Snap your dictation list. Buddy reads the words aloud, you write them, then check.', '拍下默書範圍，Buddy 讀出詞語，你寫下來，然後核對。') },
@@ -2603,7 +2605,7 @@ async function backupFile() {
   local.backupAt = Date.now(); saveLocal();
   const data = { app: 'prepbuddy', v: 1, at: new Date().toISOString(), ui: (() => { try { return localStorage.getItem('prepbuddy.ui'); } catch (e) { return null; } })(), local, db };
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-  const name = `PrepBuddy backup ${(local.name || '').trim() ? local.name.trim() + ' ' : ''}${new Date().toISOString().slice(0, 10)}.json`;
+  const name = `PrepBuddy backup ${(local.name || '').trim() ? local.name.trim() + ' ' : ''}${ymd(Date.now())}.json`;
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   return blob.size;
