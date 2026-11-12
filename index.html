@@ -901,8 +901,9 @@ body.resizing{cursor:col-resize;user-select:none}body.resizing-nw{cursor:nwse-re
 .tm-none{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}.tm-none input{width:18px;height:18px;accent-color:var(--ink)}
 .linkbtn{border:none;background:none;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
 .addtime{margin-left:8px;padding:4px 10px;font-size:12.5px}
-.quick .hwtile{grid-column:span 2}
-@media (min-width:700px){.quick:has(.hwtile){grid-template-columns:repeat(3,1fr)}.quick .hwtile{grid-column:auto}}
+/* every Practice tile the same size: 2 a row on phones, 3 on wider screens */
+.quick{grid-auto-rows:1fr}.quick .qtile{min-width:0}
+@media (min-width:700px){.quick{grid-template-columns:repeat(3,1fr)}}
 .hwpage{max-width:880px}
 .hw-hero{display:flex;gap:14px;align-items:center;background:#EEF4FF;border:1px solid #C9D8FB;border-radius:20px;padding:16px 18px}.hw-hero div{display:flex;flex-direction:column;gap:4px}.hw-hero b{font-size:16px;line-height:1.35}.hw-hero span{font-size:14px;color:var(--text-2);line-height:1.45}
 .hw-cap{padding:16px;display:flex;flex-direction:column;gap:12px}

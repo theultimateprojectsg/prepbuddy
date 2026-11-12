@@ -2065,7 +2065,7 @@ async function renderHome() {
         <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
         <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('notes', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('flashcards', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('notes', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('review', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
+        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('mistakes', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('practise', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
