@@ -425,6 +425,19 @@ textarea.essay{min-height:280px}
 .mk-big{font-size:20px;color:var(--ink);line-height:1.25}
 .mk-win{color:var(--good);font-weight:700;white-space:nowrap}
 .mk-hero-r{display:grid;grid-template-columns:1fr;gap:8px}.mk-hero-r:has(#quick5){grid-template-columns:2fr 1fr}
+.mk-subs{display:grid;grid-template-columns:1fr;gap:12px}@media (min-width:700px){.mk-subs{grid-template-columns:1fr 1fr}}
+.mk-sub{display:flex;flex-direction:column;align-items:stretch;gap:10px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;font-family:inherit;color:var(--ink)}.mk-sub:hover{border-color:#C9D2E8;background:#FAFBFD}
+.mk-sub-top{display:flex;gap:12px;align-items:center}.mk-sub-n{display:flex;align-items:baseline;gap:8px}.mk-sub-n b{font-size:30px;line-height:1;color:var(--miss-dark)}.mk-sub-n b.ok{color:var(--good)}.mk-sub-n span{font-size:13.5px;color:var(--text-2)}
+.mk-sub-often{align-self:flex-start;font-size:12px;font-weight:600;background:var(--miss-soft);color:var(--miss-dark);border-radius:999px;padding:3px 10px}
+.mk-sub-most{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mk-sub-go{font-size:13.5px;font-weight:600;color:var(--accent)}
+.mk-backsub{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:none;border:none;padding:4px 0;font:600 14px var(--ui);color:var(--accent);cursor:pointer}.mk-backsub svg{width:16px;height:16px}
+.mk-sub-open{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.mk-sub-open>.mk-ghead{border-bottom:1px solid var(--line)}
+.mk-tip{margin:0;padding:10px 16px 0;font-size:13px}
+.mk-chs{display:flex;flex-direction:column;padding:6px 0}
+.mk-ch{border-bottom:1px solid #EEF1F6}.mk-ch:last-child{border-bottom:none}
+.mk-ch>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer}.mk-ch>summary::-webkit-details-marker{display:none}.mk-ch>summary:hover{background:#F7F8FB}
+.mk-ch[open]>summary .mq-chev{transform:rotate(90deg)}.mk-ch .mk-list{border-top:1px solid #EEF1F6;background:#FAFBFD}
+.mk-ch .btn-sm.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
 .mk-groups{display:flex;flex-direction:column;gap:14px}
 .mk-group{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .mk-ghead{display:flex;align-items:center;gap:12px;padding:14px 16px}

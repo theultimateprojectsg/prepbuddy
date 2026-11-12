@@ -734,7 +734,7 @@ async function go(v) {
   if (v.name === 'worksheets') return renderWorksheets();
   if (v.name === 'notes') return renderNotes(v.bookId);
   if (v.name === 'edit') return renderEdit(v.bookId);
-  if (v.name === 'mistakes') return renderMistakes(v.tab || 'todo');
+  if (v.name === 'mistakes') return renderMistakes(v.tab || 'todo', v.book);
   if (v.name === 'cards') return renderCards(v.bookId, v.only);
 }
 
@@ -4518,14 +4518,13 @@ function mistakeCard(q, m) {
     <div class="mfoot"><span class="hint">${m.n > 1 ? `${LANG === 'zh' ? `錯了 ${m.n} 次` : `Missed ${m.n} times`}` : ''}</span>${m.done ? '' : `<button class="btn-sm quiet" data-dismiss="${esc(q.id)}" >${LANG === 'zh' ? '我已明白，移除' : 'I understand it now'}</button>`}</div>
   </div>`;
 }
-async function renderMistakes(tab) {
+async function renderMistakes(tab, openBook) {
   // Filter by textbook (remembered). Only shown when mistakes come from more than one book.
   const books = await getBooks();
   await pruneMistakes(books);
   const entries = Object.entries(local.mistakes || {});
   const bookIds = [...new Set(entries.map(([id]) => id.split(':')[0]))].filter((id) => books.some((b) => b.id === id));
-  let only = local.mkBook && bookIds.includes(local.mkBook) ? local.mkBook : 'all';
-  if (bookIds.length < 2) only = 'all';
+  const only = 'all'; // subjects are now cards on the page itself
   const inBook = ([id]) => only === 'all' || id.startsWith(only + ':');
   const groups = (await mistakeItems(tab === 'done')).filter((g) => only === 'all' || g.book.id === only);
   const todo = entries.filter((e) => inBook(e) && !e[1].done).length, done = entries.filter((e) => inBook(e) && e[1].done).length;
@@ -4546,6 +4545,31 @@ async function renderMistakes(tab) {
         <span class="mq-chev" aria-hidden="true">›</span></summary>
       <div class="mq-body">${mistakeCard(q, m)}</div></details>`;
   };
+  // Subjects first (one card each, no question text), then a subject's chapters, then a chapter's questions:
+  // the page stays short however many books there are.
+  const subjects = [];
+  groups.forEach((g, gi) => { let s = subjects.find((x) => x.book.id === g.book.id); if (!s) subjects.push(s = { book: g.book, chs: [] }); s.chs.push({ g, gi }); });
+  subjects.forEach((x) => { x.n = x.chs.reduce((t, c) => t + c.g.items.length, 0); x.often = x.chs.reduce((t, c) => t + c.g.items.filter((i) => i.m.n > 1).length, 0); x.chs.sort((p, q) => q.g.items.length - p.g.items.length); });
+  subjects.sort((p, q) => q.n - p.n);
+  const open = subjects.length === 1 ? subjects[0] : subjects.find((x) => x.book.id === openBook);
+  const sname = (bk) => (bk.subject ? subj(bk.subject) : bk.title);
+  const chRow = ({ g, gi }) => { const often = g.items.filter((i) => i.m.n > 1).length; return `<details class="mk-ch"><summary>
+      <span class="mk-count ${tab === 'done' ? 'ok' : ''}">${g.items.length}</span>
+      <span class="mk-gt"><b data-raw>${esc(g.unit ? cleanUnitTitle(g.unit.title) : '')}</b><span class="muted">${often ? `${often} ${zh ? '題錯了多次' : 'missed more than once'} · ` : ''}${zh ? '最近' : 'latest'} ${esc(agoText(Math.max(...g.items.map((i) => (tab === 'done' ? i.m.doneAt || i.m.t : i.m.t)))))}</span></span>
+      ${tab === 'todo' ? `<button class="btn-sm primary" data-redo="${gi}">${zh ? '重做' : 'Redo'}</button>` : ''}<span class="mq-chev" aria-hidden="true">›</span></summary>
+      <div class="mk-list">${g.items.map(line).join('')}</div></details>`; };
+  const mkBody = open
+    ? `${subjects.length > 1 ? `<button class="mk-backsub" data-mkopen="">${ICON.back} ${zh ? '所有科目' : 'All subjects'}</button>` : ''}
+      <section class="mk-sub-open"><div class="mk-ghead">${subjectTile(open.book.subject, 44, open.book.title)}<div class="mk-gt"><b data-raw>${esc(sname(open.book))}</b>${sname(open.book) !== open.book.title ? `<span class="muted" data-raw>${esc(open.book.title)}</span>` : ''}</div>
+        ${tab === 'todo' ? `<button class="btn-sm" data-redobook="${esc(open.book.id)}">${zh ? `全部重做（${Math.min(open.n, 30)}）` : `Redo all ${Math.min(open.n, 30)}`}</button>` : ''}</div>
+      <p class="mk-tip muted">${zh ? '按章節查看題目、你的答案和解釋。' : 'Tap a chapter to see the questions, your answer and the explanation.'}</p>
+      <div class="mk-chs">${open.chs.map(chRow).join('')}</div></section>`
+    : `<div class="mk-subs">${subjects.map((x) => `<button class="mk-sub" data-mkopen="${esc(x.book.id)}">
+        <span class="mk-sub-top">${subjectTile(x.book.subject, 40, x.book.title)}<span class="mk-gt"><b data-raw>${esc(sname(x.book))}</b>${sname(x.book) !== x.book.title ? `<span class="muted" data-raw>${esc(x.book.title)}</span>` : ''}</span></span>
+        <span class="mk-sub-n"><b class="${tab === 'done' ? 'ok' : ''}">${x.n}</b><span>${tab === 'done' ? (zh ? '已掌握' : 'mastered') : (zh ? '題待改正' : 'to get right')} · ${zh ? `${x.chs.length} 個章節` : `${x.chs.length} chapter${x.chs.length > 1 ? 's' : ''}`}</span></span>
+        ${x.often && tab === 'todo' ? `<span class="mk-sub-often">${zh ? `${x.often} 題錯了多次` : `${x.often} missed more than once`}</span>` : ''}
+        <span class="mk-sub-most muted" data-raw>${zh ? '最多：' : 'Most in: '}${esc(cleanUnitTitle((x.chs[0].g.unit || {}).title || ''))}</span>
+        <span class="mk-sub-go">${zh ? '查看' : 'Open'} ›</span></button>`).join('')}</div>`;
   const SHOW = 4;
   $app.innerHTML = `
   <main class="pad stack g18 mkpage" data-view="mistakes" style="flex:1">
@@ -4555,19 +4579,11 @@ async function renderMistakes(tab) {
         <span class="muted">Get one right again and it moves to Mastered.${fixedWeek ? ` <b class="mk-win">${fixedWeek} fixed this week</b>` : ''}</span></div></div>
       <div class="mk-hero-r"><button class="btn" id="redoall">Redo all ${Math.min(all.length, 30)}</button>${all.length > 5 ? '<button class="btn ghost" id="quick5">Quick 5</button>' : ''}</div>
     </section>` : ''}
-    ${chips}
     <div class="seg" style="grid-template-columns:1fr 1fr" role="tablist"><button role="tab" class="${tab === 'todo' ? 'on' : ''}" data-tab="todo">To get right (${todo})</button><button role="tab" class="${tab === 'done' ? 'on' : ''}" data-tab="done">Mastered (${done})</button></div>
-    ${groups.length ? `<div class="mk-groups">${groups.map((g, gi) => `<section class="mk-group">
-        <div class="mk-ghead">${subjectTile(g.book.subject, 40, g.book.title)}
-          <div class="mk-gt"><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><span class="muted" data-raw>${esc(g.book.subject ? subj(g.book.subject) : g.book.title)}</span></div>
-          <span class="mk-count ${tab === 'done' ? 'ok' : ''}">${g.items.length}</span>
-          ${tab === 'todo' ? `<button class="btn-sm" data-redo="${gi}">Redo</button>` : ''}</div>
-        <div class="mk-list">${g.items.slice(0, SHOW).map(line).join('')}${g.items.length > SHOW ? `<div class="mk-more" hidden>${g.items.slice(SHOW).map(line).join('')}</div><button class="btn-sm quiet mk-morebtn" data-more="${gi}">Show ${g.items.length - SHOW} more</button>` : ''}</div>
-      </section>`).join('')}</div>`
-      : `<div class="card mk-empty">${buddySVG(tab === 'todo' ? 'done' : 'think', 72)}<div class="stack g6"><b>${tab === 'todo' ? 'Nothing to fix right now' : 'Nothing mastered yet'}</b><span class="muted">${tab === 'todo' ? 'Questions you get wrong are saved here automatically, so you can come back and get them right.' : 'When you get a question right after missing it, it moves here.'}</span></div></div>`}
+    ${groups.length ? mkBody : `<div class="card mk-empty">${buddySVG(tab === 'todo' ? 'done' : 'think', 72)}<div class="stack g6"><b>${tab === 'todo' ? 'Nothing to fix right now' : 'Nothing mastered yet'}</b><span class="muted">${tab === 'todo' ? 'Questions you get wrong are saved here automatically, so you can come back and get them right.' : 'Get a mistake right again and it moves here.'}</span></div></div>`}
   </main>`;
 
-  $app.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab: b.dataset.tab })));
+  $app.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab: b.dataset.tab, book: openBook })));
   $app.querySelectorAll('[data-mkbook]').forEach((b) => (b.onclick = () => { local.mkBook = b.dataset.mkbook; saveLocal(); renderMistakes(tab); }));
   const start = (qs, title) => { S = newSession({ mode: 'mistakes', title, qs: shuffle(qs).slice(0, 30).map(shuffleOptions), target: Math.min(qs.length, 30) }); renderQuestion(); };
   const bookName = only === 'all' ? '' : ` · ${subj((books.find((b) => b.id === only) || {}).subject || '')}`;
@@ -4577,7 +4593,9 @@ async function renderMistakes(tab) {
     const ranked = groups.flatMap((g) => g.items).sort((a, b) => (b.m.n - a.m.n) || (a.m.t - b.m.t)).slice(0, 5).map((x) => x.q);
     S = newSession({ mode: 'mistakes', title: (zh ? '錯題簿 · 快速 5 題' : 'Mistake book · Quick 5') + bookName, qs: ranked.map(shuffleOptions), target: ranked.length }); renderQuestion();
   };
-  $app.querySelectorAll('[data-redo]').forEach((b) => (b.onclick = () => { const g = groups[+b.dataset.redo]; start(g.items.map((x) => x.q), g.unit ? g.unit.title : 'Mistake book'); }));
+  $app.querySelectorAll('[data-redo]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); const g = groups[+b.dataset.redo]; start(g.items.map((x) => x.q), g.unit ? g.unit.title : 'Mistake book'); }));
+  $app.querySelectorAll('[data-mkopen]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab, book: b.dataset.mkopen || undefined })));
+  $app.querySelectorAll('[data-redobook]').forEach((b) => (b.onclick = () => { const x = subjects.find((y) => y.book.id === b.dataset.redobook); start(x.chs.flatMap((c) => c.g.items.map((i) => i.q)), (zh ? '錯題簿 · ' : 'Mistake book · ') + sname(x.book)); }));
   $app.querySelectorAll('[data-more]').forEach((b) => (b.onclick = () => { const box = b.previousElementSibling; box.hidden = false; b.remove(); }));
   $app.querySelectorAll('[data-dismiss]').forEach((b) => (b.onclick = () => { const m = local.mistakes[b.dataset.dismiss]; if (m) { m.done = true; m.doneAt = Date.now(); m.manual = true; saveLocal(); } const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }));
 }
