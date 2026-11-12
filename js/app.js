@@ -1764,10 +1764,11 @@ function getLesson(book, unit, fresh) {
   const key = `lesson:${book.id}:${unit.id}`;
   if (!fresh && lessonJobs.has(key)) return lessonJobs.get(key);
   const p = (async () => {
-    if (!fresh) { const have = await store.get(key, null); if (have) return have; }
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length) return have; }
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     if (!text) throw new Error('This chapter’s text is missing on this device.');
     const l = await api('learn', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
+    if (!l || !Array.isArray(l.steps) || !l.steps.length) throw new Error('Buddy couldn’t put this lesson together. Please try again.');
     delete l.usage; l.at = Date.now();
     await store.set(key, l);
     return l;
@@ -2029,6 +2030,17 @@ function helperClose() {
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && helper.open) helperClose(); });
 new MutationObserver(() => helperSync()).observe($app, { childList: true });
 
+// iPhone/iPad Safari can wipe a website's saved data after about a week without a visit. Apps added to the
+// Home Screen are kept, so we suggest it until it's done (or dismissed). Elsewhere we ask the browser to keep data.
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isInstalled = () => { try { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } };
+let persisted = null;
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then((p) => (p ? true : navigator.storage.persist())).then((p) => (persisted = !!p)).catch(() => {}); } catch (e) {}
+function installTip() {
+  if (!isIOS || isInstalled() || local.installTipOff) return '';
+  setTimeout(() => { const x = document.getElementById('itip-x'); if (x) x.onclick = () => { local.installTipOff = Date.now(); saveLocal(); x.closest('.itip').remove(); }; }, 0);
+  return `<section class="itip" role="note"><span class="itip-i">📲</span><div><b>${LANG === 'zh' ? '把 PrepBuddy 加到主畫面' : 'Add PrepBuddy to your Home Screen'}</b><span>${LANG === 'zh' ? 'iPhone 可能會在一星期沒有使用後刪除網站的進度。在 Safari 按「分享」→「加至主畫面」，之後從主畫面圖示打開 PrepBuddy。請盡早做：主畫面的 App 會重新開始，已有的進度可用「設定 → 儲存備份檔案」轉移。' : 'iPhones can delete a website’s saved progress after a week without a visit. In Safari tap Share → Add to Home Screen, then use PrepBuddy from that icon. Do it early: the Home Screen app starts fresh, so move anything you’ve done with Settings → Save a backup file.'}</span></div><button class="itip-x" id="itip-x" aria-label="${LANG === 'zh' ? '關閉' : 'Dismiss'}">×</button></section>`;
+}
 async function renderHome() {
   S = null;
   const books = await getBooks();
@@ -2075,6 +2087,7 @@ async function renderHome() {
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head}
+    ${installTip()}
     <section class="stack g10" aria-label="Today's plan"><div class="sect-head"><h2>Today’s plan</h2></div><div class="plan">${items.join('')}</div></section>
     ${tests.html}
     <section class="stack g10" aria-label="Practice">
@@ -2114,9 +2127,9 @@ async function renderHome() {
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   window.scrollTo(0, 0);
 }
-const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. <button class="btn-sm quiet" id="usage" >AI usage</button></footer>`;
+const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. ${local.pilot ? '' : '<button class="btn-sm quiet" id="usage" >AI usage</button>'}</footer>`;
 function bindHomeCommon() {
-  document.getElementById('usage').onclick = () => go({ name: 'usage' });
+  { const u = document.getElementById('usage'); if (u) u.onclick = () => go({ name: 'usage' }); }
 }
 
 /* ---------- Books: my textbooks, the library and uploads ---------- */
@@ -2226,17 +2239,17 @@ function renderSettings() {
       <span class="muted" style="font-size:13.5px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm primary" id="sbackup">${BK('Save a backup file', '儲存備份檔案')}</button><label class="btn-sm" style="cursor:pointer">${BK('Restore from a file', '從檔案還原')}<input type="file" id="srestore" accept="application/json,.json" hidden></label></div>
     </section>
-    <section class="card stack g10" style="padding:16px">
+    ${local.pilot ? '' : `<section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">AI usage</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
       <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
-    </section>
+    </section>`}
     <p class="hint" style="margin:0;line-height:1.5">Prototype. Your textbooks, questions and progress are saved on this device only.</p>
   </main>`;
   $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { if (b.dataset.lang === LANG) return; setLang(b.dataset.lang); go({ name: 'settings' }); }));
   const nm = document.getElementById('sname');
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
-  document.getElementById('susage').onclick = () => go({ name: 'usage' });
+  { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
   document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
   document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
@@ -2338,6 +2351,7 @@ async function pilotSnap() {
   const mk = Object.values(local.mistakes || {});
   return {
     v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache,
+    inst: isInstalled(), keep: persisted, ios: isIOS,
     ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',
     first: log.length ? log[0].t : null, last: log.length ? log[log.length - 1].t : null,
     total: { q: log.length, acc: m ? Math.round(100 * g / m) : null, min: minutesOf(log) },
@@ -3109,7 +3123,7 @@ async function renderBook(bookId) {
       </div>
     </section>`;
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button></div>
   <div class="bookpage">
   <div class="bk-head-m">${head}</div>
   <main class="bk-main stack g14">
@@ -3181,7 +3195,7 @@ async function renderBook(bookId) {
     bindRows();
   };
   const keep = async () => { const y = window.scrollY; await renderBook(bookId); window.scrollTo(0, y); };
-  document.getElementById('back').onclick = () => { pick = { bookId: null, ids: new Set() }; go({ name: 'home' }); };
+  document.getElementById('back').onclick = () => { pick = { bookId: null, ids: new Set() }; goBack({ name: 'books' }); };
   const a = document.getElementById('all');
   if (a) a.onclick = () => { if (pick.ids.size === book.units.length) pick.ids.clear(); else book.units.forEach((u) => pick.ids.add(u.id)); keep(); };
   function bindRows() { $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => { const id = b.dataset.unit; pick.ids.has(id) ? pick.ids.delete(id) : pick.ids.add(id); keep(); })); }
@@ -3234,7 +3248,7 @@ function getNotes(book, unit, fresh) {
   const key = `notes:${book.id}:${unit.id}`;
   if (!fresh && notesJobs.has(key)) return notesJobs.get(key);
   const p = (async () => {
-    if (!fresh) { const have = await store.get(key, null); if (have) return have; }
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length) return have; }
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     if (!text) throw new Error('This chapter’s text is missing on this device.');
     const n = await api('notes', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
@@ -4033,14 +4047,14 @@ async function renderWorksheets() {
   for (const c of local.worksheets || []) { const ws = await store.get('ws:' + c, null); if (ws && books.some((b) => b.id === ws.bookId)) list.push(ws); }
   const when = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button><span style="font-weight:600;font-size:15px">Printed worksheets</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button><span style="font-weight:600;font-size:15px">Printed worksheets</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Pick the worksheet you did. Check the code at the bottom of the page. Enter what you wrote on paper, and PrepBuddy marks it.</p>
     ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:13px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:13px"><span data-raw>${esc((b.subject ? subj(b.subject) : b.title))}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
       <div style="display:flex;gap:14px;margin-top:8px"><button class="btn-sm" data-ws="${ws.code}">${ws.score ? 'Mark again' : 'Enter answers'}</button><button class="btn-sm quiet" data-reprint="${ws.code}">Print again</button></div></div>`; }).join('')}</div>`
       : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.</p></div>'}
   </main>`;
-  document.getElementById('back').onclick = () => go({ name: 'home' });
+  document.getElementById('back').onclick = () => goBack({ name: 'home' });
   const open = async (code) => { const ws = await store.get('ws:' + code, null); return [ws, ws && books.find((b) => b.id === ws.bookId)]; };
   $app.querySelectorAll('[data-ws]').forEach((el) => (el.onclick = async () => {
     const [ws, book] = await open(el.dataset.ws); if (!ws || !book) return;
@@ -4734,7 +4748,7 @@ async function renderPick(mode) {
     ? `The questions you didn’t get fully right, mixed together so you can fix them.${anyReady ? ' Choose a textbook.' : ''}`
     : 'A DSE-style paper: Section A multiple choice, then Section B written questions, timed. Choose a textbook, then the chapters and length.';
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Home</span></button></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button></div>
   <main class="pad stack g18 pickpage" style="flex:1">
     <div class="pick-head">${actionTile(weakMode ? 'weak' : 'mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${title}</h1><p class="muted" style="margin:0;line-height:1.5;font-size:15px">${intro}</p></div></div>
     ${anyReady ? `<div class="card stack">${rows.join('')}</div>` : `<div class="card pick-empty">
@@ -4742,7 +4756,7 @@ async function renderPick(mode) {
       <div class="stack g6"><b style="font-size:17px">No weak topics yet</b><span class="muted" style="line-height:1.5">As you practise, the questions you find hard collect here so you can come back and fix them.</span></div>
       <button class="btn" id="practise" style="width:auto;padding:12px 22px">Practise a chapter</button></div>`}
   </main>`;
-  document.getElementById('back').onclick = () => go({ name: 'home' });
+  document.getElementById('back').onclick = () => goBack({ name: 'home' });
   const pr = document.getElementById('practise'); if (pr) pr.onclick = () => go({ name: 'books' });
   $app.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = () => (weakMode
     ? startReview('weak', b.dataset.pick || null)

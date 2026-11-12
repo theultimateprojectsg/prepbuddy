@@ -100,7 +100,7 @@ function mergeFamily(snaps) {
   const hours = Array(24).fill(0), wdays = Array(7).fill(0), modes = {}, usage = { usd: 0, calls: 0, by: {} }, why = {}, langs = new Set();
   let sess = [], streak = 0, best = 0, stars = null, pin = false, goal = null;
   for (const s of snaps) {
-    devices.push({ device: s.device, ua: s.ua, synced: s.synced, last: s.last });
+    devices.push({ device: s.device, ua: s.ua, synced: s.synced, last: s.last, inst: s.inst, keep: s.keep, ios: s.ios });
     if (s.name) names.add(s.name); if (s.plan) plans.add(s.plan); if (s.lang) langs.add(s.lang);
     last = Math.max(last, s.last || 0); if (s.first) first = first ? Math.min(first, s.first) : s.first;
     for (const d of s.days || []) { const x = days[d.d] || (days[d.d] = { q: 0, g: 0, m: 0, min: 0 }); x.q += d.q; x.g += d.g; x.m += d.m; x.min += d.min; }
@@ -194,6 +194,7 @@ function pilotOverview(rows, fams) {
   const ups = {}; rows.forEach((r) => Object.entries(r.a.fx).forEach(([k, v]) => { if (!k.startsWith('upsell:')) return; const x = ups[k.slice(7)] || (ups[k.slice(7)] = { fam: 0, n: 0 }); x.fam++; x.n += v.n; }));
   const plansSet = {}; rows.forEach((r) => { const p = r.f.plan || 'pro (default)'; plansSet[p] = (plansSet[p] || 0) + 1; });
   const dev = {}; rows.forEach((r) => r.a.devices.forEach((d) => (dev[d.ua || 'unknown'] = (dev[d.ua || 'unknown'] || 0) + 1)));
+  const atRisk = rows.flatMap((r) => r.a.devices.filter((d) => d.ios && !d.inst).map(() => r.f.name));
   const lang = {}; rows.forEach((r) => r.a.langs.forEach((l) => (lang[l === 'zh' ? 'Chinese' : 'English'] = (lang[l === 'zh' ? 'Chinese' : 'English'] || 0) + 1)));
   const wkNow = weeks[weeks.length - 1], wkPrev = weeks[weeks.length - 2];
   const delta = (a, b) => (b ? `<small class="${a >= b ? 'up' : 'down'}">${a >= b ? '▲' : '▼'} ${Math.abs(pctOf(a - b, b))}% vs last week</small>` : '');
@@ -252,7 +253,7 @@ function pilotOverview(rows, fams) {
   </div>
   <div class="pl-grid">
     ${card('Upgrade signals', `${kv(Object.entries(plansSet).map(([k, v]) => [`Families on ${esc(k)}`, v]))}<h3 class="pl-h3">Plan limits hit</h3>${barList(Object.entries(ups).sort((a, b) => b[1].fam - a[1].fam).map(([k, v]) => [k, v.fam, `famil${v.fam === 1 ? 'y' : 'ies'} · ${v.n}×`]))}`, 'Put some families on Free or Plus (in the table below) to see which locked features they reach for.')}
-    ${card('Devices and language', kv([...Object.entries(dev).map(([k, v]) => [`On a ${esc(k)}`, `${v} device${v === 1 ? '' : 's'}`]), ...Object.entries(lang).map(([k, v]) => [`Using ${k}`, `${v} famil${v === 1 ? 'y' : 'ies'}`])]))}
+    ${card('Devices and language', (atRisk.length ? `<div class="err" style="margin:0 0 8px">${atRisk.length} iPhone/iPad device${atRisk.length > 1 ? 's' : ''} not on the Home Screen, so Safari may wipe their progress after a week away: ${esc([...new Set(atRisk)].join(', '))}</div>` : '') + kv([...Object.entries(dev).map(([k, v]) => [`On a ${esc(k)}`, `${v} device${v === 1 ? '' : 's'}`]), ...Object.entries(lang).map(([k, v]) => [`Using ${k}`, `${v} famil${v === 1 ? 'y' : 'ies'}`])]))}
   </div>`;
 }
 
@@ -334,7 +335,7 @@ function famDetail(r, fb) {
   const scr = Object.entries(a.fx).filter(([k]) => k.startsWith('screen:')).sort((x, y) => y[1].n - x[1].n).slice(0, 10);
   return `<div class="fd">
     <div><h3>Minutes each day (last 3 weeks)</h3><div class="fd-bars">${days.map((d) => `<span title="${dayKey(d.t)}: ${d.x ? `${d.x.min} min, ${d.x.q} questions` : 'none'}"><i style="height:${d.x ? Math.max(4, Math.round(70 * d.x.min / max)) : 2}px" class="${d.x ? '' : 'none'}"></i></span>`).join('')}</div>
-      <p class="hint" style="margin:6px 0 0">${a.first ? `Started ${new Date(a.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. ` : ''}Plan seen: ${esc(a.plans.join(', ') || '–')}. Devices: ${a.devices.map((d) => `${esc(d.ua || 'device')} (synced ${ago(d.synced)})`).join(', ') || '–'}.</p>
+      <p class="hint" style="margin:6px 0 0">${a.first ? `Started ${new Date(a.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. ` : ''}Plan seen: ${esc(a.plans.join(', ') || '–')}. Devices: ${a.devices.map((d) => `${esc(d.ua || 'device')}${d.ios ? ' (iOS)' : ''}${d.inst ? ' · on Home Screen' : d.ios ? ' · <b style="color:#B22A1E">not on Home Screen: data at risk</b>' : ''} (synced ${ago(d.synced)})`).join(', ') || '–'}.</p>
       ${r.f.note ? `<p class="hint" style="margin:6px 0 0"><b>Notes:</b> ${esc(r.f.note)}</p>` : ''}</div>
     <div><h3>Books</h3>${a.books.length ? a.books.map((b) => `<div class="fd-row"><span>${esc(b.title)} <small>${esc(b.subject)} ${esc(b.level)}</small></span><b>${b.pct === null ? '–' : b.pct + '%'}</b></div>`).join('') : '<p class="muted">None added yet.</p>'}
       <h3 style="margin-top:12px">Totals</h3><p class="hint" style="margin:0">Mistakes open ${a.counts.mistakes || 0} · lessons ${a.counts.learned || 0} · tests ${a.counts.tests || 0} · school tests ${a.counts.schoolTests || 0} · homework ${a.counts.homework || 0} · essays marked ${a.counts.writing || 0} · speaking ${a.counts.speaking || 0}</p></div>
