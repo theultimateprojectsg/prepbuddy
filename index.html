@@ -256,6 +256,8 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 .tmsg.me{align-self:flex-end;background:var(--accent);color:#fff;white-space:pre-wrap}
 .tmsg.ai{align-self:flex-start;background:#fff;border:1px solid var(--line);color:var(--ink)}
 .tchips{display:flex;flex-wrap:wrap;gap:6px}
+.tlog{display:flex;flex-direction:column;gap:10px}.tlog:empty{display:none}
+.tempty{display:none}
 .tchip{border:1px solid var(--accent-tint);background:#fff;color:var(--accent-dark);border-radius:999px;padding:8px 12px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;min-height:36px}
 .tform{display:flex;gap:8px}.tinput{flex:1;min-width:0;border:2px solid #C9CED4;border-radius:12px;padding:10px 12px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink)}
 .tinput:focus{outline:none;border-color:var(--accent)}
@@ -643,6 +645,26 @@ body[data-tab] .app{padding-bottom:76px}
   .qside b{font-size:16px;color:var(--ink)}
   .qkeys{margin-top:6px;font-size:13px}.qkeys kbd{display:inline-block;min-width:22px;text-align:center;font-family:inherit;font-size:12px;font-weight:600;padding:1px 6px;margin-right:2px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:#fff;color:var(--ink)}
   .app:has(> main.qpaper)>.sheet .verdict.ok,.app:has(> main.qpaper)>.sheet .verdict.no{font-size:25px}
+  /* full width beside the menu, same margin both sides; the right column grows with the screen */
+  .app:has(> main.qpaper){max-width:none;margin:0 auto!important;grid-template-columns:minmax(0,1fr) clamp(400px,36%,600px);column-gap:32px;padding:0 40px 32px}
+  body[data-tab] .app:has(> main.qpaper){margin:0 0 0 220px!important}
+  /* before answering, the right column is a proper chat window that fills the screen height */
+  .app:has(> main.qpaper)>.qside.chatside{border-style:solid;background:#fff;padding:0;height:calc(100vh - 110px);height:calc(100dvh - 110px);max-height:none;overflow:hidden;gap:0}
+  .qside.chatside>#tutor{flex:1;min-height:0;display:flex}
+  .qside.chatside .tchat{flex:1;min-height:0;border:none;border-radius:18px;background:#fff;padding:16px 18px 18px;gap:12px}
+  .qside.chatside .thead{padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .qside.chatside .thead b{font-size:16px}
+  .qside.chatside .tlog{flex:1;min-height:0;overflow-y:auto;display:flex;padding:4px 2px}
+  .qside.chatside .tlog:empty{display:flex}
+  .qside.chatside .tmsg{font-size:15.5px;max-width:88%}
+  .qside.chatside .tempty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;margin:auto;max-width:330px;color:var(--muted);font-size:14.5px;line-height:1.5}
+  .qside.chatside .tempty b{font-size:18px;color:var(--ink)}
+  .qside.chatside .tnote{margin-top:10px;font-size:13px;padding-top:12px;border-top:1px dashed var(--line)}
+  .qside.chatside .tchip{font-size:14px}
+  .qside.chatside .qkeys{padding:0 18px 14px;margin:0}
+  /* after answering, the feedback panel's chat gets more room too */
+  .app:has(> main.qpaper)>.sheet .tchat{background:#fff}
+  .app:has(> main.qpaper)>.sheet .tlog{max-height:46vh;overflow-y:auto}
 }
 
 /* ---------- progress on laptops: two columns, send button inside the report card ---------- */

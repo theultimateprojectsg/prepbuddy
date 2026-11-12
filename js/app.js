@@ -2781,7 +2781,9 @@ function qSide(q) {
   const [t, d] = isExam() ? ['Exam conditions', 'Answers and marks come at the end, like the real paper.']
     : mcq ? ['Pick an answer', 'You’ll see straight away if it’s right, with the explanation here.']
     : ['Write your answer', 'When you press Mark my answer, your marks and feedback show here.'];
-  return `<aside class="qside"><b>${t}</b><span>${d}</span>${mcq ? '<span class="qkeys" aria-hidden="true"><kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> to choose · <kbd>Enter</kbd> for next</span>' : ''}${preTutorInSide(q) ? preTutorHTML(q) : ''}</aside>`;
+  const keys = mcq ? '<span class="qkeys" aria-hidden="true"><kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> to choose · <kbd>Enter</kbd> for next</span>' : '';
+  if (preTutorInSide(q)) return `<aside class="qside chatside">${preTutorHTML(q)}${keys}</aside>`;
+  return `<aside class="qside"><b>${t}</b><span>${d}</span>${keys}</aside>`;
 }
 
 // Before answering, the tutor can explain what the question means (never the answer). Not in timed tests.
@@ -2946,8 +2948,9 @@ function tutorHTML(q) {
   return `<div class="tchat">
     <div class="thead"><b>${buddySVG('happy', 28)} Ask about this question</b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}</span></div>
     ${von ? voicePanelHTML() + (c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : '') : `
+    <div class="tlog" id="tlog">${!c.msgs.length && !c.busy ? `<div class="tempty">${buddySVG('happy', 64)}<b>${before ? 'Stuck? Ask me.' : 'Want to understand it better?'}</b><span>${before ? 'I can explain what the question means or give you a hint. I won’t give away the answer.' : 'Ask why the answer is right, or have it explained another way.'}</span>${before ? `<span class="tnote">${choiceType(q) ? 'Pick an answer to see if it’s right, with the explanation.' : 'Your marks and feedback appear here when you press Mark my answer.'}</span>` : ''}</div>` : ''}
     ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
-    ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
+    ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}</div>
     ${c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : ''}
     ${voiceNoticeHTML('tutor')}
     ${c.busy ? '' : `<div class="tchips">${chips.filter(([k]) => !c.msgs.some((m) => m.chip === k)).map(([k, l]) => `<button class="tchip" data-chip="${k}">${l}</button>`).join('')}</div>`}
@@ -2962,7 +2965,7 @@ function studentAnswerText(q) {
 function bindTutor(q) {
   const box = document.getElementById('tutor'); if (!box) return;
   const c = chatOf(), idx = S.i, sess = S;
-  const redraw = () => { if (S !== sess || S.i !== idx) return; const b = document.getElementById('tutor'); if (!b) return; b.innerHTML = tutorHTML(q); bindTutor(q); };
+  const redraw = () => { if (S !== sess || S.i !== idx) return; const b = document.getElementById('tutor'); if (!b) return; b.innerHTML = tutorHTML(q); bindTutor(q); const l = document.getElementById('tlog'); if (l) l.scrollTop = l.scrollHeight; };
   const ask = async (text, chip, voice, onChunk) => {
     text = String(text || '').trim(); if (!text || c.busy) return;
     let reply = '';
