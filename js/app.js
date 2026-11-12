@@ -453,10 +453,10 @@ function masteryCard(m) {
   const p = m.pct;
   return `<section class="mastery" aria-label="Mastery">
     <div class="m-top"><div class="ring ${p >= 85 ? 'good' : p >= 50 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% mastered"><span>${p}%</span></div>
-      <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. Each tap below works on your weakest spot.` : 'Practise a chapter to see how ready you are.'}</span></div></div>
+      <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. The button below works on your weakest spot.` : 'Practise a chapter to see how ready you are.'}</span></div></div>
     <details class="areas"><summary>How this is worked out</summary>${AREAS.map(([k, label, w]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}<small>${w}%</small></span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
       <p class="hint" style="margin:6px 0 0">A chapter can’t go above 70% until you pass a timed test on it, or reach 100% until you’ve passed two on different days.</p></details>
-    ${p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
+    ${p > 0 && p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
   </section>`;
 }
 // "Get me closer to 100%": works on the weakest chapter's weakest area.
