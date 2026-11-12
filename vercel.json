@@ -22,6 +22,10 @@
       "destination": "/api/study?fn=snippets"
     },
     {
+      "source": "/api/speaking",
+      "destination": "/api/study?fn=speaking"
+    },
+    {
       "source": "/admin",
       "destination": "/admin.html"
     }

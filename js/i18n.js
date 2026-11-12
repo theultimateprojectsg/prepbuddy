@@ -3,6 +3,8 @@
 // Book content and questions are never translated here (they are already in the book's language).
 
 const EXACT = {
+  'Speaking': '說話 · Speaking',
+  'DSE Paper 4, one-minute answers': 'DSE 卷四，一分鐘回應',
   'New to this book? Find your level first': '第一次用這本書？先找出你的程度',
   'Start level check': '開始程度評估',
   'Not now': '稍後再說',

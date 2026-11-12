@@ -644,6 +644,7 @@ async function go(v) {
   if (v.name === 'homework') return renderHomework(v.id);
   if (v.name === 'dictation') return renderDictation(v.id, v.sub);
   if (v.name === 'writing') return renderWriting(v.id, v.sub);
+  if (v.name === 'speaking') return renderSpeaking(v.id, v.sub, v.qi);
   if (v.name === 'learn') return renderLearn(v.bookId, v.unitId);
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
@@ -858,6 +859,7 @@ async function runCoachAction(a) {
     case 'homework': return go({ name: 'homework' });
     case 'dictation': return go({ name: 'dictation' });
     case 'writing': return go({ name: 'writing' });
+    case 'speaking': return go({ name: 'speaking' });
     case 'learn': if (book && units.length) return go({ name: 'learn', bookId: book.id, unitId: units[0].id }); break;
   }
   if (book) return go({ name: 'book', bookId: book.id }); // couldn't tell exactly what: open the book's chapter page
@@ -1251,6 +1253,231 @@ function renderWritingFeedback(it, at) {
   document.getElementById('newWr').onclick = () => { wrState.kind = it.kind; go({ name: 'writing' }); };
 }
 
+/* ---------- speaking practice (HKDSE English Paper 4, individual response) ----------
+   A DSE-style topic to read and prepare (10-minute timer, notes, as in the exam), then the examiner's
+   question is read aloud and the student answers out loud for one minute. The browser turns speech into
+   text (and records it for playback); Buddy marks the transcript by the four speaking domains. Pronunciation
+   itself can't be judged from text, which the feedback says. Kept on this device. */
+const SPK = (en, zh) => (LANG === 'zh' ? zh : en);
+const SREC = window.SpeechRecognition || window.webkitSpeechRecognition;
+const spx = { busy: '', error: null, topic: '', rec: null };
+const SP_CRIT = ['Pronunciation & Delivery', 'Communication Strategies', 'Vocabulary & Language Patterns', 'Ideas & Organisation'];
+const spLevel = (fb) => (fb && fb.criteria ? wrLevel({ criteria: fb.criteria }, 'en_a') : null);
+const fmtSecs = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+function spSave() { local.sp = (local.sp || []).slice(-15); saveLocal(); }
+function sayQuestion(text) {
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); const v = dictVoice('en');
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
+    u.rate = 0.95; speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+async function renderSpeaking(id, sub, qi) {
+  const list = local.sp || [];
+  const it = id && list.find((x) => x.id === id);
+  if (it && sub === 'rec') return renderSpeakingRec(it, +qi);
+  if (it && sub === 'fb') return renderSpeakingFb(it, +qi);
+  if (it) return renderSpeakingTask(it);
+  $app.innerHTML = `
+  <main class="pad stack g18 wrpage" data-view="speaking" data-raw style="flex:1">
+    <h1 class="pagetitle">${SPK('Speaking practice', '說話練習')}</h1>
+    <section class="hw-hero">${buddySVG('listen', 56)}<div><b>${SPK('DSE English Paper 4: the one-minute individual response.', 'DSE 英文卷四：一分鐘個人回應。')}</b>
+      <span>${SPK('Read a topic, prepare like the exam, then answer the examiner’s question out loud. Buddy marks it by the four speaking domains and shows you how to do better.', '閱讀題目、像考試一樣準備，然後大聲回答考官的問題。Buddy 會按四個說話範疇評分，並教你怎樣做得更好。')}</span></div></section>
+    ${SREC ? '' : `<p class="hw-err" role="alert">${SPK('This browser can’t turn speech into text. Please use Chrome, Edge or Safari.', '這個瀏覽器不能把說話轉成文字，請使用 Chrome、Edge 或 Safari。')}</p>`}
+    <section class="card wr-step"><h2 class="st-h">${SPK('New topic', '新題目')}</h2>
+      <div class="wr-gen"><input id="spTopic" class="tinput" placeholder="${SPK('Topic (optional), e.g. online learning', '題材（可留空），例如：網上學習')}" value="${esc(spx.topic)}"><button class="btn" id="spNew" ${spx.busy ? 'disabled' : ''}>✨ ${SPK('Give me a DSE-style topic', '給我一條 DSE 式題目')}</button></div>
+      ${spx.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(spx.busy)}</p>` : ''}
+      ${spx.error ? `<p class="hw-err" role="alert">${esc(spx.error)}</p>` : ''}
+    </section>
+    ${list.length ? `<section class="stack g10"><h2 class="st-h">${SPK('Your topics', '你的題目')}</h2>
+      <div class="hw-list">${list.slice().reverse().map((x) => { const best = x.tries.reduce((b, t) => { const l = spLevel(t.fb); return l && (!b || l > b) ? l : b; }, null); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">🎤</span><span class="hw-it"><b>${esc(x.task.title)}</b><small>${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.tries.length ? SPK(`${x.tries.length} answer${x.tries.length > 1 ? 's' : ''}`, `已回答 ${x.tries.length} 次`) : SPK('Not answered yet', '未回答')}</small></span>${best ? `<span class="wr-lv sm">≈${best}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
+  </main>`;
+  const tp = document.getElementById('spTopic'); tp.oninput = () => (spx.topic = tp.value);
+  $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => go({ name: 'speaking', id: b.dataset.open })));
+  document.getElementById('spNew').onclick = async () => {
+    spx.busy = SPK('Writing a DSE-style topic…', '正在出題…'); spx.error = null; renderSpeaking();
+    try {
+      const r = await api('speaking', { step: 'task', topic: spx.topic }); delete r.usage;
+      const item = { id: uid(), t: Date.now(), task: r, notes: '', tries: [] };
+      local.sp = [...(local.sp || []), item]; spSave(); spx.busy = ''; spx.topic = '';
+      go({ name: 'speaking', id: item.id });
+    } catch (e) { spx.busy = ''; spx.error = wrErr(e); if (view.name === 'speaking' && !view.id) renderSpeaking(); }
+  };
+}
+
+function renderSpeakingTask(it) {
+  const T = it.task;
+  const prepLeft = () => Math.max(0, Math.round(((it.prepEnd || 0) - Date.now()) / 1000));
+  $app.innerHTML = `
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Speaking', '說話')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(T.title)}</span></div>
+  <main class="pad sppage" data-view="speaking" data-raw style="flex:1">
+    <div class="sp-col stack g14">
+      <section class="card sp-text"><small class="ln-step">${SPK('Read this', '閱讀')}</small><h2>${esc(T.title)}</h2><div>${esc(T.text).replace(/\n/g, '<br>')}</div></section>
+      ${T.discussion ? `<details class="card wr-task"><summary><b>${SPK('Group discussion task', '小組討論題目')}</b></summary><div class="wr-ptext">${esc(T.discussion).replace(/\n/g, '<br>')}</div></details>` : ''}
+    </div>
+    <div class="sp-col stack g14">
+      <section class="card sp-prep">
+        <div class="sp-prep-h"><b>${SPK('Prepare', '準備')}</b><span class="sp-clock" id="spClock">${it.prepEnd && prepLeft() ? fmtSecs(prepLeft()) : '10:00'}</span>
+          ${it.prepEnd && prepLeft() ? `<button class="btn-sm" id="spPrepStop">${SPK('I’m ready', '我準備好了')}</button>` : `<button class="btn-sm primary" id="spPrep">${SPK('Start 10-minute timer', '開始 10 分鐘計時')}</button>`}</div>
+        <textarea id="spNotes" class="wr-ta small" rows="5" placeholder="${SPK('Notes: key words and ideas only, like your exam note card.', '筆記：只寫關鍵字和要點，像考試的筆記卡。')}">${esc(it.notes || '')}</textarea>
+      </section>
+      <section class="card sp-qs"><h2>${SPK('Individual response', '個人回應')}</h2><p class="hint" style="margin:0">${SPK('The examiner asks you one question. You answer for one minute.', '考官會問你一條問題，你要回答一分鐘。')}</p>
+        ${T.questions.map((q, i) => { const ts = it.tries.filter((t) => t.qi === i), last = ts[ts.length - 1], lv = last && spLevel(last.fb); return `<div class="sp-q"><span class="sp-qn">${i + 1}</span><span class="sp-qt">${esc(q)}${last ? `<small>${SPK(`Answered ${ts.length}×`, `已答 ${ts.length} 次`)}${lv ? ` · ≈${lv}` : ''} · <button class="linkbtn" data-fb="${i}">${SPK('See feedback', '看評語')}</button></small>` : ''}</span><button class="btn-sm ${last ? '' : 'primary'}" data-ans="${i}">🎤 ${last ? SPK('Again', '再答') : SPK('Answer', '回答')}</button></div>`; }).join('')}
+      </section>
+    </div>
+  </main>`;
+  document.getElementById('back').onclick = () => go({ name: 'speaking' });
+  const nt = document.getElementById('spNotes'); let tm; nt.oninput = () => { it.notes = nt.value; clearTimeout(tm); tm = setTimeout(saveLocal, 500); };
+  const ps = document.getElementById('spPrep'); if (ps) ps.onclick = () => { it.prepEnd = Date.now() + 600000; saveLocal(); renderSpeakingTask(it); };
+  const pe = document.getElementById('spPrepStop'); if (pe) pe.onclick = () => { it.prepEnd = 0; saveLocal(); renderSpeakingTask(it); };
+  $app.querySelectorAll('[data-ans]').forEach((b) => (b.onclick = () => go({ name: 'speaking', id: it.id, sub: 'rec', qi: b.dataset.ans })));
+  $app.querySelectorAll('[data-fb]').forEach((b) => (b.onclick = () => go({ name: 'speaking', id: it.id, sub: 'fb', qi: b.dataset.fb })));
+  if (it.prepEnd && prepLeft()) {
+    const myView = view;
+    const t = setInterval(() => {
+      const c = document.getElementById('spClock');
+      if (view !== myView || !c) return clearInterval(t);
+      const l = prepLeft(); c.textContent = fmtSecs(l);
+      if (!l) { clearInterval(t); it.prepEnd = 0; saveLocal(); toast(SPK('Time’s up! Answer a question.', '時間到！開始回答問題。')); renderSpeakingTask(it); }
+    }, 1000);
+  }
+}
+
+// One minute, out loud: speech-to-text for the transcript, a recording to listen back to.
+function renderSpeakingRec(it, qi) {
+  const q = it.task.questions[qi]; if (!q) return go({ name: 'speaking', id: it.id });
+  const R = { state: 'ready', final: '', interim: '', start: 0, lastHeard: 0, pause: 0, chunks: [], err: null };
+  const myView = view;
+  const draw = () => {
+    const left = R.state === 'rec' ? Math.max(0, 60 - (Date.now() - R.start) / 1000) : 60;
+    $app.innerHTML = `
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Topic', '題目')}</span></button><span style="font-weight:600;font-size:15px">${SPK('Individual response', '個人回應')}</span></div>
+    <main class="pad stack g18 sprec" data-view="speaking" data-raw style="flex:1">
+      <section class="sp-exq"><span class="sp-ex">${buddySVG(R.state === 'rec' ? 'listen' : 'happy', 52)}<small>${SPK('Examiner', '考官')}</small></span><div><p>${esc(q)}</p><button class="btn-sm quiet" id="spSay">🔊 ${SPK('Hear it again', '再聽一次')}</button></div></section>
+      <section class="sp-ring ${R.state}"><svg viewBox="0 0 120 120" width="170" height="170" aria-hidden="true"><circle cx="60" cy="60" r="52" class="rbg"/><circle cx="60" cy="60" r="52" class="rfg" id="spArc" style="stroke-dashoffset:${326.7 * (1 - left / 60)}"/></svg>
+        <div class="sp-time"><b id="spLeft">${fmtSecs(Math.ceil(left))}</b><small>${R.state === 'rec' ? SPK('speaking…', '說話中…') : SPK('one minute', '一分鐘')}</small></div>${R.state === 'rec' ? '<span class="sp-dot" aria-hidden="true"></span>' : ''}</section>
+      ${R.state === 'ready' ? `<button class="btn sp-go" id="spGo">🎤 ${SPK('Start my minute', '開始我的一分鐘')}</button><p class="hint" style="margin:0;text-align:center">${SPK('Tip: answer the question first, give two reasons with an example, then round off.', '提示：先直接回答，再給兩個理由和例子，最後作總結。')}</p>`
+        : R.state === 'rec' ? `<button class="btn ghost sp-go" id="spStop">■ ${SPK('I’ve finished', '我說完了')}</button>`
+        : `<p class="muted wr-busy" style="justify-content:center"><span class="spinner sm" aria-hidden="true"></span>${SPK('Buddy is listening back and marking…', 'Buddy 正在重聽和評分…')}</p>`}
+      <section class="card sp-live"><small class="ln-step">${SPK('What I heard', '我聽到的')}</small><p id="spTr">${esc(R.final)}<i>${esc(R.interim)}</i>${!R.final && !R.interim ? `<span class="muted">${SPK('Your words will appear here as you speak.', '你說話時，文字會在這裏出現。')}</span>` : ''}</p></section>
+      ${R.err ? `<p class="hw-err" role="alert">${esc(R.err)}</p>` : ''}
+    </main>`;
+    document.getElementById('back').onclick = () => { stopAll(); go({ name: 'speaking', id: it.id }); };
+    document.getElementById('spSay').onclick = () => sayQuestion(q);
+    const g = document.getElementById('spGo'); if (g) g.onclick = start;
+    const s = document.getElementById('spStop'); if (s) s.onclick = finish;
+  };
+  const paintTr = () => { const el = document.getElementById('spTr'); if (el) el.innerHTML = `${esc(R.final)}<i>${esc(R.interim)}</i>`; };
+  let rec = null, media = null, stream = null, tick = null;
+  const stopAll = () => {
+    clearInterval(tick);
+    if (rec) { rec.onend = null; try { rec.stop(); } catch (e) {} }
+    if (media && media.state !== 'inactive') try { media.stop(); } catch (e) {}
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    try { speechSynthesis.cancel(); } catch (e) {}
+  };
+  const start = async () => {
+    if (!SREC) { R.err = SPK('This browser can’t turn speech into text. Please use Chrome, Edge or Safari.', '這個瀏覽器不能把說話轉成文字，請使用 Chrome、Edge 或 Safari。'); return draw(); }
+    try { speechSynthesis.cancel(); } catch (e) {}
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { R.err = SPK('I need the microphone. Allow it in the browser and try again.', '需要使用咪高峰，請在瀏覽器允許後再試。'); return draw(); }
+    try { media = new MediaRecorder(stream); media.ondataavailable = (e) => e.data.size && R.chunks.push(e.data); media.start(); } catch (e) { media = null; }
+    const listen = () => {
+      rec = new SREC(); rec.lang = 'en-GB'; rec.continuous = true; rec.interimResults = true;
+      rec.onresult = (e) => {
+        const now = Date.now(); if (R.lastHeard) R.pause = Math.max(R.pause, (now - R.lastHeard) / 1000); R.lastHeard = now;
+        let interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) { const r = e.results[i]; if (r.isFinal) R.final += (R.final ? ' ' : '') + r[0].transcript.trim(); else interim += r[0].transcript; }
+        R.interim = interim; paintTr();
+      };
+      rec.onerror = (e) => { if (e.error === 'not-allowed') { R.err = SPK('Speech recognition was blocked. Allow the microphone and try again.', '語音辨識被封鎖，請允許咪高峰後再試。'); } };
+      rec.onend = () => { if (R.state === 'rec') { try { listen(); } catch (e) {} } };
+      try { rec.start(); } catch (e) {}
+    };
+    R.state = 'rec'; R.start = Date.now(); R.lastHeard = Date.now(); listen(); draw();
+    tick = setInterval(() => {
+      if (view !== myView) { stopAll(); return; }
+      const left = Math.max(0, 60 - (Date.now() - R.start) / 1000);
+      const a = document.getElementById('spArc'); if (a) a.style.strokeDashoffset = 326.7 * (1 - left / 60);
+      const l = document.getElementById('spLeft'); if (l) l.textContent = fmtSecs(Math.ceil(left));
+      if (left <= 0) finish();
+    }, 250);
+  };
+  const finish = async () => {
+    if (R.state !== 'rec') return;
+    R.state = 'mark'; const secs = Math.min(60, (Date.now() - R.start) / 1000);
+    clearInterval(tick);
+    await new Promise((r) => setTimeout(r, 700)); // let the last words come in
+    if (rec) { rec.onend = null; try { rec.stop(); } catch (e) {} }
+    const blob = await new Promise((res) => { if (!media || media.state === 'inactive') return res(null); media.onstop = () => res(new Blob(R.chunks, { type: media.mimeType || 'audio/webm' })); try { media.stop(); } catch (e) { res(null); } });
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    const tr = (R.final + ' ' + R.interim).trim();
+    const words = (tr.match(/[A-Za-z’'-]+/g) || []).length;
+    const fillers = (tr.match(/\b(um+|uh+|erm*|ah+|hmm+|you know|i mean)\b/gi) || []).length;
+    R.final = tr; R.interim = '';
+    if (view !== myView) return;
+    draw();
+    try {
+      const fb = await api('speaking', { step: 'mark', task: { title: it.task.title, text: it.task.text }, question: q, transcript: tr, secs, words, fillers, pause: R.pause });
+      delete fb.usage;
+      const n = it.tries.length;
+      it.tries.push({ t: Date.now(), qi, tr, secs: Math.round(secs), words, fillers, pause: Math.round(R.pause), fb, aud: blob ? 1 : 0 });
+      if (it.tries.length > 30) it.tries = it.tries.slice(-30);
+      if (blob) await store.set(`spaud:${it.id}:${n}`, blob);
+      spSave(); addStars(2, 'speaking');
+      if (view === myView) go({ name: 'speaking', id: it.id, sub: 'fb', qi });
+    } catch (e) {
+      R.state = 'ready'; R.err = wrErr(e); R.chunks = []; R.final = tr; R.pause = 0;
+      if (view === myView) draw();
+    }
+  };
+  draw();
+  setTimeout(() => { if (view === myView && R.state === 'ready') sayQuestion(q); }, 400);
+}
+
+async function renderSpeakingFb(it, qi) {
+  const idx = it.tries.map((t, k) => (t.qi === qi ? k : -1)).filter((k) => k >= 0);
+  if (!idx.length) return go({ name: 'speaking', id: it.id });
+  const k = idx[idx.length - 1], t = it.tries[k], fb = t.fb, prev = idx.length > 1 ? it.tries[idx[idx.length - 2]] : null;
+  const blob = t.aud ? await store.get(`spaud:${it.id}:${k}`, null) : null;
+  const url = blob ? URL.createObjectURL(blob) : '';
+  const lv = spLevel(fb), plv = prev && spLevel(prev.fb);
+  const wpm = Math.round(t.words / Math.max(1, t.secs) * 60);
+  const pace = wpm < 90 ? ['slow', 'A bit slow: aim for 110–150 words a minute'] : wpm > 170 ? ['fast', 'Quite fast: slow down a little so every word is clear'] : ['ok', 'Good pace'];
+  const markFill = (s) => esc(s).replace(/\b(um+|uh+|erm*|ah+|hmm+|you know|i mean)\b/gi, '<mark class="sp-fill">$1</mark>');
+  $app.innerHTML = `
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Topic', '題目')}</span></button><span style="font-weight:600;font-size:15px">${SPK('Feedback', '評語')}</span></div>
+  <main class="pad stack g14 wrpage" data-view="speaking" data-raw style="flex:1">
+    <section class="card sp-exq small"><span class="sp-ex">${buddySVG('happy', 40)}</span><div><p>${esc(it.task.questions[qi])}</p></div></section>
+    <section class="card wr-score">
+      <div class="wr-lvbox"><span class="wr-lv">≈${lv}</span><small>Estimated level${plv && plv !== lv ? `<br><b class="${lv > plv ? 'wr-up' : 'wr-down'}">was ${plv}</b>` : ''}</small></div>
+      <div class="wr-crits">${fb.criteria.map((c, j) => { const pc = prev && prev.fb.criteria[j], d = pc ? c.band - pc.band : 0; return `<div class="wr-crit"><div class="wr-ch"><b>${esc(c.name)}</b><span>${c.band}<small>/7</small>${d ? `<em class="${d > 0 ? 'wr-up' : 'wr-down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</em>` : ''}</span></div><div class="wr-bandbar"><i style="width:${(c.band / 7) * 100}%"></i></div><p>${esc(c.why)}</p></div>`; }).join('')}</div>
+      <p class="wr-sum">${esc(fb.summary)}</p>
+      <p class="wr-note">Estimate from AI marking of a speech-to-text transcript against the HKDSE speaking domains. Pronunciation can’t be judged from text: listen back to check it yourself.</p>
+    </section>
+    <section class="card sp-stats">
+      <div><b>${t.secs}s</b><small>of 60 spoken</small></div><div class="${pace[0]}"><b>${wpm}</b><small>words / min</small></div><div><b>${t.fillers}</b><small>fillers (um, er…)</small></div><div><b>${t.pause}s</b><small>longest pause</small></div>
+      <p>${pace[1]}${t.secs < 45 ? ' · Try to use most of the minute.' : ''}${t.pause >= 4 ? ' · Long pauses: a short phrase like “Let me think…” keeps you going.' : ''}</p>
+      ${url ? `<audio controls src="${url}" class="sp-audio"></audio>` : ''}
+    </section>
+    <section class="card wr-box"><h2>📝 What I heard</h2><p class="sp-trx">${markFill(t.tr)}</p></section>
+    <section class="card wr-box good"><h2>👍 What you did well</h2><ul>${fb.strengths.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+    <section class="card wr-box fix"><h2>🎯 Fix these first</h2><ol class="wr-fixes">${fb.fixes.map((f) => `<li><b>${esc(f.issue)}</b>${f.quote ? `<q>${esc(f.quote)}</q>` : ''}<span>${esc(f.how)}</span></li>`).join('')}</ol></section>
+    ${fb.phrases.length ? `<section class="card wr-box"><h2>💬 Useful phrases for next time</h2><div class="sp-phr">${fb.phrases.map((p) => `<button class="sp-ph" data-say="${esc(p)}">🔊 ${esc(p)}</button>`).join('')}</div></section>` : ''}
+    ${fb.sample ? `<section class="card wr-box"><button class="wr-tog" id="togSample" aria-expanded="false"><h2>🌟 One way to answer</h2><span>Show</span></button><div class="sp-sample" hidden><p>${esc(fb.sample)}</p><button class="btn-sm" id="saySample">🔊 Listen</button></div></section>` : ''}
+    ${fb.next_step ? `<div class="wr-tip">➡️ ${esc(fb.next_step)}</div>` : ''}
+    <div class="wr-acts"><button class="btn" id="again">🎤 Try this question again</button><button class="btn ghost" id="nextq">${qi + 1 < it.task.questions.length ? 'Next question' : 'Back to the topic'}</button></div>
+  </main>`;
+  document.getElementById('back').onclick = () => go({ name: 'speaking', id: it.id });
+  $app.querySelectorAll('[data-say]').forEach((b) => (b.onclick = () => sayQuestion(b.dataset.say)));
+  const ts = document.getElementById('togSample');
+  if (ts) ts.onclick = () => { const d = $app.querySelector('.sp-sample'); d.hidden = !d.hidden; ts.setAttribute('aria-expanded', String(!d.hidden)); ts.querySelector('span').textContent = d.hidden ? 'Show' : 'Hide'; };
+  const ss = document.getElementById('saySample'); if (ss) ss.onclick = () => sayQuestion(fb.sample);
+  document.getElementById('again').onclick = () => go({ name: 'speaking', id: it.id, sub: 'rec', qi });
+  document.getElementById('nextq').onclick = () => (qi + 1 < it.task.questions.length ? go({ name: 'speaking', id: it.id, sub: 'rec', qi: qi + 1 }) : go({ name: 'speaking', id: it.id }));
+}
+
 /* ---------- 默書 / spelling dictation (P1–P6) ----------
    A list is typed in or read from a photo. PrepBuddy reads each item aloud (Cantonese, Putonghua or English);
    the child writes it on paper and checks it against the answer, or types it and the app checks. Items they
@@ -1564,7 +1791,7 @@ async function renderLearn(bookId, unitId) {
 
 /* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
 const helper = { open: false };
-const SCREEN_NAME = { writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+const SCREEN_NAME = { speaking: 'Speaking practice (DSE English Paper 4 one-minute individual response)', writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
 function helperChips() {
   const v = view && view.name;
   const by = {
@@ -1739,7 +1966,7 @@ async function renderHome() {
         <button class="qtile" data-mode="mock">${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
         <button class="qtile hwtile" id="hwgo">${actionTile('notes', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('flashcards', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${actionTile('notes', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button>`}
+        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${actionTile('notes', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${actionTile('review', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -1765,6 +1992,7 @@ async function renderHome() {
   { const hg = document.getElementById('hwgo'); if (hg) hg.onclick = () => go({ name: 'homework' }); }
   { const dg = document.getElementById('dictgo'); if (dg) dg.onclick = () => go({ name: 'dictation' }); }
   { const wg = document.getElementById('wrgo'); if (wg) wg.onclick = () => go({ name: 'writing' }); }
+  { const sg = document.getElementById('spgo'); if (sg) sg.onclick = () => go({ name: 'speaking' }); }
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   window.scrollTo(0, 0);
 }
@@ -2163,7 +2391,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { writing: 'home', learn: 'books', dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { speaking: 'home', writing: 'home', learn: 'books', dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
