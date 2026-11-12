@@ -406,7 +406,7 @@ async function renderPilot(note) {
     ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Streak</th><th>AI cost</th><th>Books</th><th>Problems</th><th>Plan</th></tr></thead>
     <tbody>${rows.map((r, i) => `<tr class="pl-row ${r.a.last ? (Date.now() - r.a.last > 4 * 864e5 ? 'cold' : '') : 'never'}" data-fam="${i}"><td class="c-name"><b>${esc(r.f.name)}</b> ${(() => { const x = famStatus(r.a, r.f); return `<span class="stag ${x.tone}" title="${esc(x.why)}">${x.label}</span>`; })()}<small>${esc(r.f.code)}${r.a.names.length ? ' · ' + esc(r.a.names.join(', ')) : ''}${r.a.devices.length ? ` · ${r.a.devices.length} device${r.a.devices.length > 1 ? 's' : ''}` : ''}</small></td>
       <td class="c-last" data-l="Last active">${r.a.last ? ago(r.a.last) : '<span class="tag">not started</span>'}</td><td data-l="Days active (14)">${r.a.w2.act}</td><td data-l="Questions (7d)">${r.a.w.q}</td><td data-l="Minutes (7d)">${r.a.w.min}</td><td data-l="Score (7d)">${r.a.w.acc === null ? '–' : r.a.w.acc + '%'}</td><td data-l="Streak">${r.a.streak ? r.a.streak + ' d' : '–'}</td><td data-l="AI cost">${r.a.usage.usd ? money(r.a.usage.usd) : '–'}</td><td data-l="Books">${r.a.books.length}</td><td data-l="Problems">${r.a.errs.length ? `<span class="tag red">${r.a.errs.length}</span>` : '–'}</td><td class="c-plan" data-l="Plan"><select class="pl-plan" data-code="${esc(r.f.code)}" aria-label="Plan for ${esc(r.f.name)}">${['', 'free', 'plus', 'pro'].map((p) => `<option value="${p}" ${(r.f.plan || '') === p ? 'selected' : ''}>${p ? p[0].toUpperCase() + p.slice(1) : 'Pro (default)'}</option>`).join('')}</select></td></tr>
-      <tr class="pl-detail" id="fd${i}" hidden><td colspan="11"><button class="link pl-close" data-close="${i}">Close ✕</button>${famDetail(r, fb.filter((x) => x.code === r.f.code))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No families yet. Add one below.</p>'}
+      <tr class="pl-detail" id="fd${i}" hidden><td colspan="11"><button class="link pl-close" data-close="${i}">Close ✕</button><div class="fd-tools"><button class="btn ghost small danger" data-remove="${esc(r.f.code)}" data-name="${esc(r.f.name)}">Remove this family</button></div>${famDetail(r, fb.filter((x) => x.code === r.f.code))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No families yet. Add one below.</p>'}
     <p class="hint" style="margin:0">Devices send a summary when the app opens, after each practice set and every 10 minutes while it’s open. Families idle for 4+ days are greyed.</p></div>
   <details class="card pl-add" ${fams.length ? '' : 'open'}><summary><h2>＋ Add a family</h2></summary>
     <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
@@ -426,6 +426,13 @@ async function renderPilot(note) {
     catch (err) { alert('Couldn’t change the plan: ' + err.message); }
     sel.disabled = false;
   }; });
+  app.querySelectorAll('[data-remove]').forEach((b) => (b.onclick = async (e) => {
+    e.stopPropagation();
+    if (!confirm(`Remove ${b.dataset.name}?\n\nTheir code (${b.dataset.remove}) stops working, and their activity and feedback are deleted from the pilot. Progress on their own device isn't touched. This can't be undone.`)) return;
+    b.disabled = true; b.textContent = 'Removing…';
+    try { await adminApi({ action: 'pilot_remove', code: b.dataset.remove }); renderPilot(`Removed ${esc(b.dataset.name)}. Their code no longer works.`); }
+    catch (err) { b.disabled = false; b.textContent = 'Remove this family'; alert('Couldn’t remove: ' + err.message); }
+  }));
   app.querySelectorAll('[data-close]').forEach((x) => (x.onclick = () => { const tr = app.querySelector(`[data-fam="${x.dataset.close}"]`); if (tr) { tr.click(); tr.scrollIntoView({ block: 'nearest' }); } }));
   app.querySelectorAll('[data-fam]').forEach((tr) => (tr.onclick = () => { const d = $('fd' + tr.dataset.fam); d.hidden = !d.hidden; tr.classList.toggle('open', !d.hidden); }));
   $('addf').onsubmit = async (e) => {

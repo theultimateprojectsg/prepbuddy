@@ -106,6 +106,11 @@ module.exports = async (req, res) => {
       const fam = { code: P.makeCode(name), name, note: String(body.note || '').trim().slice(0, 300), created: Date.now() };
       await P.writeFile('families.json', (cur) => [...(cur || []), fam], `Pilot: add ${fam.code}`);
       out = { ok: true, family: fam };
+    } else if (body.action === 'pilot_remove') {
+      const P = require('../lib/pilot');
+      if (!P.validCode(body.code) && !/^[A-Z]{1,6}\d{2}-[A-Z0-9]{6}$/.test(String(body.code || ''))) throw err(400, 'Bad family code.');
+      await P.removeFamily(body.code);
+      out = { ok: true };
     } else if (body.action === 'pilot_note') {
       const P = require('../lib/pilot');
       await P.writeFile('families.json', (cur) => (cur || []).map((f) => (f.code === body.code ? { ...f, ...(body.note !== undefined ? { note: String(body.note || '').slice(0, 300) } : {}), ...(body.off !== undefined ? { off: !!body.off } : {}), ...(body.plan !== undefined ? { plan: ['free', 'plus', 'pro'].includes(body.plan) ? body.plan : null } : {}) } : f)), `Pilot: update ${body.code}`);
