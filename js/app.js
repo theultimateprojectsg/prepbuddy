@@ -2457,7 +2457,7 @@ function coachTour(steps, done) {
       if (!el && x.skipIfMissing) { k += dir; if (k < 0) k = 0; if (k >= steps.length) return finish('done'); return show(dir); }
       if (el) { const r = el.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 90) el.scrollIntoView({ block: 'center' }); }
       const last = k === steps.length - 1;
-      tip.innerHTML = `<div class="cmk-head">${buddySVG(x.face || 'happy', 34)}<b>${x.t}</b></div><p>${x.d}</p>
+      tip.innerHTML = `<div class="cmk-head"><span class="cmk-bud hop">${buddySVG(x.face || 'happy', 38)}</span><b>${x.t}</b></div><p>${x.d}</p>
         <div class="cmk-foot"><span class="cmk-n">${k + 1} / ${steps.length}</span>${last ? '' : `<button class="cmk-skip" id="cmk-skip">${C('Skip tour', '略過導覽')}</button>`}
         ${k ? `<button class="btn-sm" id="cmk-back">${C('Back', '上一步')}</button>` : ''}<button class="btn-sm primary" id="cmk-next">${x.cta || (last ? C('Done', '完成') : C('Next', '下一步'))}</button></div>`;
       tip.querySelector('#cmk-next').onclick = () => { if (last) return finish('done'); k++; show(1); };
@@ -2470,7 +2470,8 @@ function coachTour(steps, done) {
     };
     const key = (e) => { if (e.key === 'Escape') finish('skip'); else if (e.key === 'ArrowRight') tip.querySelector('#cmk-next')?.click(); else if (e.key === 'ArrowLeft') tip.querySelector('#cmk-back')?.click(); };
     window.addEventListener('resize', later); window.addEventListener('scroll', later, { capture: true, passive: true }); document.addEventListener('keydown', key);
-    ov.addEventListener('click', (e) => { if (!tip.contains(e.target)) { tip.classList.remove('nudge'); void tip.offsetWidth; tip.classList.add('nudge'); } });
+    // A tap outside the box: Buddy waves to point you back to Next (the box itself stays still).
+    ov.addEventListener('click', (e) => { if (!tip.contains(e.target)) { const bd = tip.querySelector('.cmk-bud'); if (bd) { bd.classList.remove('wave', 'hop'); void bd.offsetWidth; bd.classList.add('wave'); } } });
     TOURING = true;
     show(1);
   });
