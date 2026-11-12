@@ -135,7 +135,7 @@ function mergeFamily(snaps) {
     hours, wdays, modes, usage, sess, streak, best, stars, pin, goal, langs: [...langs], actDays, tot: { ...tot, acc: tot.m ? Math.round(100 * tot.g / tot.m) : null }, wk2,
     parentUse: (fx.parent_dashboard ? fx.parent_dashboard.n : 0) + (fx.parent_report ? fx.parent_report.n : 0) + (fx['ai:report'] ? fx['ai:report'].n : 0) };
 }
-const MODE_NAMES = { practice: 'Practice sets', '': 'Practice sets', spaced: 'Daily reviews', drill: 'Weak-spot drills', mistakes: 'Mistake book redo', dse: 'Chapter tests & DSE papers', mock: 'Mini mock tests', placement: 'Level check', units: 'Practice sets', unit: 'Practice sets', book: 'Practice sets' };
+const MODE_NAMES = { practice: 'Practice', '': 'Practice', spaced: 'Daily reviews', drill: 'Weak-spot drills', mistakes: 'Mistake book redo', dse: 'Chapter tests & DSE papers', mock: 'Mini mock tests', placement: 'Level check', units: 'Practice', unit: 'Practice', book: 'Practice' };
 const money = (x) => (x >= 10 ? '$' + x.toFixed(0) : '$' + (x || 0).toFixed(2));
 const pctOf = (a, b) => (b ? Math.round(100 * a / b) : 0);
 // small horizontal bar list: [[label, value, note]]
@@ -341,7 +341,7 @@ function famDetail(r, fb) {
   const scr = Object.entries(a.fx).filter(([k]) => k.startsWith('screen:')).sort((x, y) => y[1].n - x[1].n).slice(0, 10);
   return `<div class="fd">
     <div><h3>Minutes each day (last 3 weeks)</h3><div class="fd-bars">${days.map((d) => `<span title="${dayKey(d.t)}: ${d.x ? `${d.x.min} min, ${d.x.q} questions` : 'none'}"><i style="height:${d.x ? Math.max(4, Math.round(70 * d.x.min / max)) : 2}px" class="${d.x ? '' : 'none'}"></i></span>`).join('')}</div>
-      <p class="hint" style="margin:6px 0 0">${a.first ? `Started ${new Date(a.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. ` : ''}Plan seen: ${esc(a.plans.join(', ') || '–')}. Devices: ${a.devices.map((d) => `${esc(d.ua || 'device')}${d.ios ? ' (iOS)' : ''}${d.inst ? ' · on Home Screen' : d.ios ? ' · <b style="color:#B22A1E">not on Home Screen: data at risk</b>' : ''} (synced ${ago(d.synced)})`).join(', ') || '–'}.</p>
+      <div style="margin-top:8px">${a.first ? `<div class="fd-row"><span>Started</span><b>${new Date(a.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</b></div>` : ''}<div class="fd-row"><span>Plan on device</span><b>${esc(a.plans.join(', ') || '–')}</b></div>${a.devices.map((d) => `<div class="fd-row"><span>${esc(d.ua ? d.ua[0].toUpperCase() + d.ua.slice(1) : 'Device')}${d.ios ? ' (iOS)' : ''}${d.inst ? ' · on Home Screen' : d.ios ? ' · <b style="color:#B22A1E">not on Home Screen</b>' : ''}</span><b>synced ${ago(d.synced)}</b></div>`).join('')}</div>
       ${r.f.note ? `<p class="hint" style="margin:6px 0 0"><b>Notes:</b> ${esc(r.f.note)}</p>` : ''}</div>
     <div><h3>Books</h3>${a.books.length ? a.books.map((b) => `<div class="fd-row"><span>${esc(b.title)} <small>${esc(b.subject)} ${esc(b.level)}</small></span><b>${b.pct === null ? '–' : b.pct + '%'}</b></div>`).join('') : '<p class="muted">None added yet.</p>'}
       <h3 style="margin-top:12px">Totals</h3>${[['Mistakes open', a.counts.mistakes], ['Mistakes fixed', a.counts.fixed], ['Lessons finished', a.counts.learned], ['Tests taken', a.counts.tests], ['School tests planned', a.counts.schoolTests], ['Homework sessions', a.counts.homework], ['Essays marked', a.counts.writing], ['Speaking answers', a.counts.speaking], ['Dictations', a.counts.dictation]].map(([k, v]) => `<div class="fd-row"><span>${k}</span><b>${v || 0}</b></div>`).join('')}</div>
@@ -350,16 +350,18 @@ function famDetail(r, fb) {
       ${a.errs.length ? `<h3 style="margin-top:12px">Problems seen</h3>${a.errs.map((e) => `<div class="fd-err">${esc(e.m)} <small>${esc(e.v || '')} · ${ago(e.t)}</small></div>`).join('')}` : ''}
       ${fb.length ? `<h3 style="margin-top:12px">Their feedback</h3>${fb.map((x) => `<p class="fd-fb">“${esc(x.text)}” <small>${ago(x.at)}</small></p>`).join('')}` : ''}</div>
     <div><h3>Summary</h3>
-      <div class="fd-row"><span>Active days</span><b>${a.actDays}${a.wk2 === null ? '' : a.wk2 ? ' · came back in week 2' : ' · didn’t come back in week 2'}</b></div>
-      <div class="fd-row"><span>All time</span><b>${a.tot.q} questions · ${a.tot.min} min · ${a.tot.acc === null ? '–' : a.tot.acc + '%'}</b></div>
-      <div class="fd-row"><span>This week vs last</span><b>${a.w.q} vs ${a.pw.q} questions · ${a.w.min} vs ${a.pw.min} min</b></div>
-      <div class="fd-row"><span>Streak</span><b>${a.streak} days now · best ${a.best}</b></div>
-      <div class="fd-row"><span>Weekly goal</span><b>${a.goal ? `${a.goal.days} days × ${a.goal.mins} min` : 'not set'}</b></div>
-      <div class="fd-row"><span>Parent</span><b>${a.pin ? 'PIN set' : 'no PIN yet'} · ${a.parentUse} dashboard/report views</b></div>
-      ${a.stars ? `<div class="fd-row"><span>Stars</span><b>${a.stars.total} earned · ${a.stars.bal} unspent · ${a.stars.redeemed} rewards redeemed</b></div>
-      <div class="fd-row"><span>Star warnings</span><b>${a.stars.rushedQ} questions in rushed sets · hit the daily cap ${a.stars.capDays}×</b></div>` : ''}
-      <div class="fd-row"><span>AI use</span><b>${a.usage.calls} requests · ${money(a.usage.usd)}</b></div>
-      ${Object.keys(a.modes).length ? `<h3 style="margin-top:12px">How they practise</h3>${Object.entries(a.modes).sort((x, y) => y[1].q - x[1].q).map(([k, v]) => `<div class="fd-row"><span>${esc(MODE_NAMES[k] || k)}</span><b>${v.q} <small>${v.m ? pctOf(v.g, v.m) + '% right' : ''}</small></b></div>`).join('')}` : ''}</div>
+      <div class="fd-tiles">${[
+        [a.actDays, `active day${a.actDays === 1 ? '' : 's'}`, a.wk2 === null ? '' : a.wk2 ? 'came back in week 2' : 'didn’t come back in week 2', a.wk2 === false ? 'down' : a.wk2 ? 'up' : ''],
+        [a.tot.q, 'questions', `${a.w.q} this week · ${a.pw.q} last week`],
+        [a.tot.min, 'minutes', `${a.w.min} this week · ${a.pw.min} last week`],
+        [a.tot.acc === null ? '–' : a.tot.acc + '%', 'right overall', a.w.acc === null ? '' : `${a.w.acc}% this week`],
+        [a.streak, `day streak`, `best ${a.best}`],
+        [a.goal ? `${a.goal.days}×${a.goal.mins}` : '–', 'weekly goal', a.goal ? 'days × minutes' : 'not set'],
+        [a.pin ? '✓' : '✗', 'parent PIN', `${a.parentUse} parent view${a.parentUse === 1 ? '' : 's'}`, a.pin ? 'up' : 'down'],
+        ...(a.stars ? [[a.stars.total, 'stars earned', `${a.stars.bal} unspent · ${a.stars.redeemed} redeemed`], [a.stars.rushedQ, 'rushed questions', `hit daily cap ${a.stars.capDays}×`, a.stars.rushedQ ? 'down' : '']] : []),
+        [money(a.usage.usd), 'AI cost', `${a.usage.calls} requests`],
+      ].map(([v, l, sub, tone]) => `<div><b>${v}</b><span>${l}</span>${sub ? `<small class="${tone || ''}">${sub}</small>` : ''}</div>`).join('')}</div>
+      ${Object.keys(a.modes).length ? `<h3 style="margin-top:12px">How they practise</h3>${Object.entries(a.modes).sort((x, y) => y[1].q - x[1].q).map(([k, v]) => `<div class="fd-row"><span>${esc(MODE_NAMES[k] || k)}</span><b>${v.q} q <small>· ${v.m ? pctOf(v.g, v.m) + '% right' : ''}</small></b></div>`).join('')}` : ''}</div>
     <div><h3>When they study</h3>${colBars(a.hours, a.hours.map((_, i) => (i % 3 === 0 ? String(i) : '')), (i, v) => `${i}:00: ${v} questions`)}
       <h3 style="margin-top:12px">Recent sets</h3>${a.sess.length ? a.sess.slice(-8).reverse().map((x) => `<div class="fd-row"><span>${esc(MODE_NAMES[x.k] || x.k || 'Practice')} <small>${new Date(x.t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · ${x.n} q · ${x.min} min${x.r ? ' · <span class="tag red">rushed</span>' : ''}${x.e ? ' · left early' : ''}</small></span><b>${x.p}%</b></div>`).join('') : '<p class="muted">None yet.</p>'}</div>
   </div>`;
