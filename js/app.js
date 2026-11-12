@@ -2431,6 +2431,19 @@ async function renderBook(bookId) {
   const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
   const { n: qReady } = await bookSummary(book);
   const answered = bm.chapters.reduce((x, c) => x + (c.done || 0), 0);
+  // Learn: a guided lesson per chapter, shown as its own section above the practice list.
+  const learned = local.learned || {};
+  const lkey = (u) => learned[`${book.id}:${u.id}`];
+  const lstat = (u) => (lkey(u) ? `✓ Learned ${new Date(lkey(u)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })}` : 'Not learned yet · about 5 min');
+  const nextU = book.units.find((u) => pick.ids.has(u.id) && !lkey(u)) || book.units.find((u) => !lkey(u)) || book.units[0];
+  const lrow = (u, cls = '') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}"><span class="lc-t"><b data-raw>${esc(cleanTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
+  const nLearned = book.units.filter(lkey).length;
+  const learnHTML = `<section class="learn-card" aria-label="Learn">
+      <div class="lc-head"><span class="lc-ic">${actionIcon('practise', 24)}</span><div><h2>Learn${book.units.length > 1 ? ` <small>${nLearned} of ${book.units.length} learned</small>` : ''}</h2><p>New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.</p></div></div>
+      ${book.units.length <= 4 ? `<div class="lc-list">${book.units.map((u) => lrow(u)).join('')}</div>`
+        : `<div class="lc-list">${lrow(nextU, 'next')}</div>
+        <label class="lc-pick"><span>Or choose a chapter</span><select id="learnpick"><option value="">Choose…</option>${book.units.map((u) => `<option value="${esc(u.id)}">${lkey(u) ? '✓ ' : ''}${esc(cleanTitle(u.title))}</option>`).join('')}</select></label>`}
+    </section>`;
   const stat = (v, label) => `<span><b>${v}</b> ${label}</span>`;
   const head = `<section class="bk-head">
       <div class="bk-cover" style="background:${coverColour(book)}" aria-hidden="true">${subjectIcon(book.subject, 30, '#FFFFFF', book.title)}</div>
@@ -2446,8 +2459,10 @@ async function renderBook(bookId) {
   <div class="bk-head-m">${head}</div>
   <main class="bk-main stack g14">
     <div class="bk-head-d">${head}</div>
+    ${learnHTML}
+    <h2 class="bk-sec"><span class="bk-sec-ic">${actionIcon('weak', 22)}</span>Practise</h2>
     <div class="chtools">
-      <p style="margin:0;font-size:15px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
+      <p style="margin:0;font-size:15px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters to practise <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
       ${book.units.length > 1 ? `<button class="btn-sm" id="all" >${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
       ${book.units.length > 12 ? `<label class="chsearch"><span aria-hidden="true">${ICON.search}</span><input id="chsearch" type="search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>` : ''}
     </div>
@@ -2482,10 +2497,14 @@ async function renderBook(bookId) {
       </div>
     </div>
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter'}</button>
-    <button class="btn ghost" id="ctest" ${n ? '' : 'disabled'}>${actionIcon('mock', 22)} Take a chapter test</button>
-    <button class="btn learnbtn" id="learn" ${n ? '' : 'disabled'}>${actionIcon('practise', 22)} Learn this chapter first${n > 1 ? ' (the first ticked)' : ''}</button>
-    <div class="revise-row"><button class="btn ghost" id="notes" ${n ? '' : 'disabled'}>${actionIcon('notes', 22)} Notes</button><button class="btn ghost" id="cards" ${n ? '' : 'disabled'}>${actionIcon('flashcards', 22)} Flashcards</button></div>
-    <button class="btn ghost" id="paper">Or make a DSE-style mock paper / worksheet</button>
+    <div class="more-ways"><p class="mw-h">More ways to study${n ? '' : ' <span class="muted">· tick a chapter first</span>'}</p>
+      <div class="mw-grid">
+        <button class="mw" id="ctest" ${n ? '' : 'disabled'}>${actionIcon('mock', 24)}<b>Chapter test</b><span>Timed, like a school test</span></button>
+        <button class="mw" id="notes" ${n ? '' : 'disabled'}>${actionIcon('notes', 24)}<b>Notes</b><span>Key points to revise</span></button>
+        <button class="mw" id="cards" ${n ? '' : 'disabled'}>${actionIcon('flashcards', 24)}<b>Flashcards</b><span>Quick-fire recall</span></button>
+        <button class="mw" id="paper">${actionIcon('mistakes', 24)}<b>Mock paper</b><span>DSE-style or worksheet</span></button>
+      </div>
+    </div>
   </div>
   </aside>
   </div>`;
@@ -2530,7 +2549,8 @@ async function renderBook(bookId) {
   document.getElementById('ctest').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); if (units.length) startChapterTest(book, units); };
   document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
   document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
-  { const lb = document.getElementById('learn'); if (lb) lb.onclick = () => { const u = book.units.find((x) => pick.ids.has(x.id)); if (u) go({ name: 'learn', bookId, unitId: u.id }); }; }
+  $app.querySelectorAll('[data-learn]').forEach((b) => (b.onclick = () => go({ name: 'learn', bookId, unitId: b.dataset.learn })));
+  { const lp = document.getElementById('learnpick'); if (lp) lp.onchange = () => { if (lp.value) go({ name: 'learn', bookId, unitId: lp.value }); }; }
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
   window.scrollTo(0, 0);
 }
