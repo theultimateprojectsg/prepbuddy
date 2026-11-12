@@ -1359,7 +1359,7 @@ function renderStars(parent = false) {
     </div>`;
   };
   $app.innerHTML = `
-  <main class="pad stack g18 starpage" data-view="progress" data-raw style="flex:1">
+  <main class="pad stack g18 starpage" data-view="stars" data-raw style="flex:1">
     <h1 class="pagetitle">${ST('Star shop', '星星商店')}</h1>
     ${!starsOn() ? `<div class="card" style="padding:16px;line-height:1.5">${ST('Stars are switched off. Turn them on in Settings.', '星星功能已關閉，可在設定中開啟。')}</div>` : ''}
     <section class="st-hero">
@@ -1440,7 +1440,7 @@ function renderTabs(active = tabNow) {
   if (!active) { delete document.body.dataset.tab; return; }
   document.body.dataset.tab = active;
   const mk = mistakeCount();
-  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span>${starChip()}</span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
+  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span>${starsOn() ? `<button class="side-stars ${active === 'stars' ? 'on' : ''}" data-stargo>${starSVG(20)}<b>${starState().bal}</b><span>${LANG === 'zh' ? '星星商店' : 'Star shop'}</span></button>` : ''}<div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>`;
   bindStarChips(nav);
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = async () => {
     const q = inSession();
