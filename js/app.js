@@ -809,7 +809,7 @@ function coachHTML() {
       ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk</button>`}</span></div>
     ${voiceOn('coach') ? voicePanelHTML() + (coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : '') : `<div class="coach-msgs" id="coachMsgs">
       <div class="tmsg ai">Hi${local.name ? ` ${esc(local.name)}` : ''}! Ask me how you’re doing, what to focus on, or for a study plan.</div>
-      ${msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
+      ${msgs.map((m, k) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>${m.picked ? `<div class="coach-picked" data-raw>✓ ${esc(m.picked)}</div>` : ''}${m.btns && k === msgs.length - 1 && !coach.busy ? `<div class="coach-acts">${m.btns.map((b, j) => `<button class="${j ? 'btn-sm' : 'btn-sm primary'}" data-cact="${j}" data-raw>${j ? '' : '▶ '}${esc(b.label)}</button>`).join('')}</div>` : ''}`).join('')}
       ${coach.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
       ${coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : ''}
       ${voiceNoticeHTML('coach')}
@@ -829,8 +829,11 @@ function bindCoach() {
     try {
       const req = { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh' : 'en') : LANG, voice };
       const r = onChunk ? await apiStream('coach', req, onChunk) : await api('coach', req);
-      msgs.push({ role: 'assistant', text: r.reply, voice: !!voice }); reply = r.reply;
-      if (r.action) {
+      // Buttons under the reply: the coach's suggested next steps, one tap to start.
+      const btns = r.action && r.action.go_now === false && Array.isArray(r.action.buttons)
+        ? r.action.buttons.filter((b) => b && b.action && b.label).slice(0, 3).map((b) => ({ label: String(b.label).slice(0, 60), action: b.action, chapters: b.chapters, book: b.book, count: b.count })) : null;
+      msgs.push({ role: 'assistant', text: r.reply, voice: !!voice, btns: btns && btns.length ? btns : undefined }); reply = r.reply;
+      if (r.action && r.action.go_now !== false && r.action.action) {
         // Spoken: open it once the coach has finished saying so. Typed: open it after a moment to read the line.
         if (voice) reply = { text: r.reply, after: () => runCoachAction(r.action) };
         else setTimeout(() => { if (document.getElementById('coach')) runCoachAction(r.action); }, 900);
@@ -843,6 +846,12 @@ function bindCoach() {
     return reply;
   };
   box.querySelectorAll('[data-coach]').forEach((b) => (b.onclick = () => ask(b.textContent, b.dataset.coach)));
+  box.querySelectorAll('[data-cact]').forEach((b) => (b.onclick = () => {
+    const msgs = local.coach || [], last = msgs[msgs.length - 1];
+    const step = last && last.btns && last.btns[+b.dataset.cact]; if (!step) return;
+    last.btns = undefined; last.picked = step.label; local.coach = msgs.slice(-20); saveLocal(); // (no extra message: the chat must keep alternating)
+    runCoachAction(step);
+  }));
   const f = document.getElementById('coachForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); ask(document.getElementById('coachQ').value); };
   const c = document.getElementById('coachClear'); if (c) c.onclick = () => { local.coach = []; coach.error = null; saveLocal(); redraw(); };
   const tk = document.getElementById('coachTalk');
