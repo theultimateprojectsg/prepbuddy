@@ -49,27 +49,36 @@ function renderLogin(msg) {
 }
 
 /* ---------- the library ---------- */
-// Landing page: the pilot dashboard (bookmark admin.html#pilot), or the library with #library.
-function home() { return location.hash === '#library' ? renderLibrary() : renderPilot(); }
-const setHash = (h) => { try { history.replaceState(null, '', h); } catch (e) {} };
+// Admin sections, each with its own address (admin.html#families etc.), so Back and bookmarks work.
+const NAV = [['overview', 'Overview'], ['families', 'Families'], ['numbers', 'Numbers'], ['feedback', 'Feedback'], ['library', 'Library'], ['reports', 'Reports']];
+const route = () => { const h = (location.hash || '').slice(1); return h === 'pilot' ? 'overview' : NAV.some(([k]) => k === h) ? h : 'overview'; };
+function home() { const r = route(); if (r === 'library') return renderLibrary(); if (r === 'reports') return renderReports(); return renderPilot(null, r); }
+const setHash = (h) => { if (location.hash !== h) { try { history.pushState(null, '', h); } catch (e) {} } };
+window.addEventListener('popstate', () => { if (pw) home(); });
+let navBadge = {};
+// The top bar every section shares: brand, the sections, sign out.
+function shell(active, body) {
+  app.innerHTML = `<div class="adm-top"><a class="adm-brand" href="#overview" data-nav="overview"><img src="/icons/logo.svg" width="28" height="28" alt="">PrepBuddy <span>admin</span></a>
+    <nav class="adm-nav" aria-label="Admin sections">${NAV.map(([k, l]) => `<a href="#${k}" data-nav="${k}" class="${k === active ? 'on' : ''}" ${k === active ? 'aria-current="page"' : ''}>${l}${navBadge[k] ? `<i>${navBadge[k]}</i>` : ''}</a>`).join('')}</nav>
+    <button class="link adm-out" id="out">Sign out</button></div>
+  <div class="adm-body">${body}</div>`;
+  app.querySelectorAll('[data-nav]').forEach((a) => (a.onclick = (e) => { e.preventDefault(); const k = a.dataset.nav; setHash('#' + k); if (k === 'library') renderLibrary(); else if (k === 'reports') renderReports(); else renderPilot(null, k); }));
+  $('out').onclick = () => { sessionStorage.removeItem(PW_KEY); pw = ''; PILOT = null; renderLogin(); };
+  const cur = app.querySelector('.adm-nav .on'); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  window.scrollTo(0, 0);
+}
 async function renderLibrary(note) {
   setHash('#library');
   const cat = await catalog();
-  app.innerHTML = `<header><h1>Library</h1><span class="badge">Admin</span></header>
+  shell('library', `<header><h1>Library</h1></header>
   ${note ? `<div class="ok">${esc(note)}</div>` : ''}
-  <div class="card pl-entry"><div><h2>Pilot families</h2><span class="hint">Family codes, who is practising, what they use, and their feedback.</span></div><button class="btn" id="pilot">Open</button></div>
-  <div class="card" id="reports"><h2>Reported questions</h2><p class="muted" style="margin:0">Loading…</p></div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2>Books in the library (${cat.length})</h2><button class="btn" id="add">Add a textbook</button></div>
     <div>${cat.map((b) => `<div class="row" data-id="${esc(b.id)}"><div class="meta"><b>${esc(b.title)}</b><span>${esc(b.subject || '')}${b.level ? ' · ' + esc(b.level) : ''} · ${b.units.length} chapters · code ${esc(b.code)}</span></div>
       <div class="acts">${b.questionCount ? `<span class="hint" style="align-self:center">${b.questionCount} questions</span>` : ''}<button class="link" data-starter="${esc(b.id)}">${b.questionCount ? 'Add more questions' : 'Add starter questions'}</button><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
   </div>
-  <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy.</p>
-  <button class="btn ghost small" id="out" style="align-self:flex-start">Sign out</button>`;
-  loadReports();
+  <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy.</p>`);
   $('add').onclick = () => renderUpload();
-  $('pilot').onclick = () => renderPilot();
-  $('out').onclick = () => { sessionStorage.removeItem(PW_KEY); pw = ''; renderLogin(); };
   app.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => renderDetails(cat.find((x) => x.id === b.dataset.edit), cat)));
   app.querySelectorAll('[data-starter]').forEach((b) => (b.onclick = async () => {
     const book = cat.find((x) => x.id === b.dataset.starter);
@@ -376,48 +385,60 @@ function pilotCSV(rows) {
   const q = (v) => { const x = String(v ?? ''); return /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x; };
   return [cols, ...lines].map((r) => r.map(q).join(',')).join('\n');
 }
-async function renderPilot(note) {
-  setHash('#pilot');
-  app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Library →</button></header><div class="card"><p class="muted" style="margin:0">Loading…</p></div>`;
-  $('back').onclick = () => renderLibrary();
-  let P;
-  try { P = await adminApi({ action: 'pilot' }); } catch (e) { app.querySelector('.card').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+let PILOT = null; // the pilot data, loaded once and reused across sections until Refresh
+async function renderPilot(note, tab = route()) {
+  if (!['overview', 'families', 'numbers', 'feedback'].includes(tab)) tab = 'overview';
+  setHash('#' + tab);
+  const TITLE = { overview: 'Pilot overview', families: 'Families', numbers: 'All the numbers', feedback: 'Feedback' }[tab];
+  if (!PILOT || note === 'reload') {
+    shell(tab, `<header><h1>${TITLE}</h1></header><div class="card" id="pl-load"><p class="muted" style="margin:0">Loading the pilot…</p></div>`);
+    try { PILOT = await adminApi({ action: 'pilot' }); PILOT.at = Date.now(); } catch (e) { $('pl-load').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+    if (note === 'reload') note = null;
+  }
+  const P = PILOT;
   if (!P.on) {
-    app.querySelector('.card').innerHTML = `<h2>Set up the pilot</h2><ol class="hint" style="font-size:14px;margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">
+    shell(tab, `<header><h1>Pilot</h1></header><div class="card"></div>`);
+    app.querySelector('.adm-body .card').innerHTML = `<h2>Set up the pilot</h2><ol class="hint" style="font-size:14px;margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">
       <li>On GitHub, create a new <b>private</b> repository, e.g. <code>prepbuddy-pilot</code>, with a README so it isn’t empty. Children’s activity is kept there, never in the public code repo.</li>
       <li>Edit the GitHub token used by Vercel (<code>GITHUB_TOKEN</code>) so it can also read and write that repo’s contents.</li>
       <li>In Vercel → Settings → Environment Variables, add <code>PILOT_REPO</code> = <code>your-account/prepbuddy-pilot</code>, then redeploy.</li>
       <li>Come back here and add your first family.</li></ol>`;
     return;
   }
-  const fams = P.families || [];
+  const fams = (P.families || []).slice();
   const known = new Set(fams.map((f) => f.code));
   Object.keys(P.activity || {}).forEach((c) => { if (!known.has(c)) fams.push({ code: c, name: '(not on the list)', created: 0 }); });
   const rows = fams.map((f) => ({ f, a: mergeFamily(P.activity[f.code] || []) })).sort((x, y) => (y.a.last || 0) - (x.a.last || 0));
-  const ov = pilotOverview(rows, fams).split('\u0001');
   const fb = P.feedback || [];
   const famName = (code) => (fams.find((f) => f.code === code) || {}).name || code;
-  app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Library →</button></header>
-  ${note ? `<div class="ok">${note}</div>` : ''}
-  <div class="pl-acts"><button class="btn ghost small" id="csv">Download all stats (CSV)</button><button class="btn ghost small" id="reload">Refresh</button><span class="hint">Updated ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>
-  ${ov[0]}
-  ${pilotInsights(rows, fams)}
+  navBadge = { feedback: fb.length || 0, families: fams.length || 0 };
+  const acts = `<div class="pl-acts"><button class="btn ghost small" id="reload">↻ Refresh</button><button class="btn ghost small" id="csv">Download all stats (CSV)</button><span class="hint">Updated ${new Date(P.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>`;
+  const head = `<header><h1>${TITLE}</h1></header>${note ? `<div class="ok">${note}</div>` : ''}${acts}`;
+  let body = '';
+  if (tab === 'overview') {
+    const ov = pilotOverview(rows, fams).split('\u0001');
+    body = `${ov[0]}${pilotInsights(rows, fams)}`;
+  } else if (tab === 'families') {
+    body = `<div class="pl-famtop"><button class="btn" id="addopen">＋ Add a family</button></div>
+  <div class="card pl-add" id="addcard" ${fams.length ? 'hidden' : ''}><h2>Add a family</h2>
+    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
+    <button class="btn" style="grid-column:1/-1" id="addgo">Make a family code</button></form><div id="newcode"></div></div>
   <div class="card"><h2>Families</h2>
     ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Streak</th><th>AI cost</th><th>Books</th><th>Problems</th><th>Plan</th></tr></thead>
     <tbody>${rows.map((r, i) => `<tr class="pl-row ${r.a.last ? (Date.now() - r.a.last > 4 * 864e5 ? 'cold' : '') : 'never'}" data-fam="${i}"><td class="c-name"><b>${esc(r.f.name)}</b> ${(() => { const x = famStatus(r.a, r.f); return `<span class="stag ${x.tone}" title="${esc(x.why)}">${x.label}</span>`; })()}<small>${esc(r.f.code)}${r.a.names.length ? ' · ' + esc(r.a.names.join(', ')) : ''}${r.a.devices.length ? ` · ${r.a.devices.length} device${r.a.devices.length > 1 ? 's' : ''}` : ''}</small></td>
       <td class="c-last" data-l="Last active">${r.a.last ? ago(r.a.last) : '<span class="tag">not started</span>'}</td><td data-l="Days active (14)">${r.a.w2.act}</td><td data-l="Questions (7d)">${r.a.w.q}</td><td data-l="Minutes (7d)">${r.a.w.min}</td><td data-l="Score (7d)">${r.a.w.acc === null ? '–' : r.a.w.acc + '%'}</td><td data-l="Streak">${r.a.streak ? r.a.streak + ' d' : '–'}</td><td data-l="AI cost">${r.a.usage.usd ? money(r.a.usage.usd) : '–'}</td><td data-l="Books">${r.a.books.length}</td><td data-l="Problems">${r.a.errs.length ? `<span class="tag red">${r.a.errs.length}</span>` : '–'}</td><td class="c-plan" data-l="Plan"><select class="pl-plan" data-code="${esc(r.f.code)}" aria-label="Plan for ${esc(r.f.name)}">${['', 'free', 'plus', 'pro'].map((p) => `<option value="${p}" ${(r.f.plan || '') === p ? 'selected' : ''}>${p ? p[0].toUpperCase() + p.slice(1) : 'Pro (default)'}</option>`).join('')}</select></td></tr>
       <tr class="pl-detail" id="fd${i}" hidden><td colspan="11"><button class="link pl-close" data-close="${i}">Close ✕</button><div class="fd-tools"><button class="btn ghost small danger" data-remove="${esc(r.f.code)}" data-name="${esc(r.f.name)}">Remove this family</button></div>${famDetail(r, fb.filter((x) => x.code === r.f.code))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No families yet. Add one below.</p>'}
     <p class="hint" style="margin:0">Devices send a summary when the app opens, after each practice set and every 10 minutes while it’s open. Families idle for 4+ days are greyed.</p></div>
-  <details class="card pl-add" ${fams.length ? '' : 'open'}><summary><h2>＋ Add a family</h2></summary>
-    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
-    <button class="btn" style="grid-column:1/-1" id="addgo">Make a family code</button></form><div id="newcode"></div></details>
-  <details class="pl-all"><summary><h2 class="pl-sec">All the numbers</h2><span class="hint">Funnel, weekly trend, study times, subjects, stars, AI cost…</span></summary>
-  ${ov[1]}
-  </details>
-  <div class="card"><h2>Feedback (${fb.length})</h2>
+`;
+  } else if (tab === 'numbers') {
+    body = pilotOverview(rows, fams).split('\u0001')[1];
+  } else {
+    body = `<div class="card"><h2>Feedback (${fb.length})</h2>
     ${fb.length ? fb.map((x) => `<div class="pl-fb"><div><b>${esc(famName(x.code))}</b>${x.name ? ` · ${esc(x.name)}` : ''} <small>${ago(x.at)}</small></div><p>${esc(x.text)}</p></div>`).join('') : '<p class="muted" style="margin:0">No feedback yet. Families send it from Settings in the app.</p>'}</div>`;
-  $('back').onclick = () => renderLibrary();
-  $('reload').onclick = () => renderPilot();
+  }
+  shell(tab, head + body);
+  { const ao = $('addopen'); if (ao) ao.onclick = () => { const c = $('addcard'); c.hidden = !c.hidden; if (!c.hidden) $('fname').focus(); }; }
+  $('reload').onclick = () => renderPilot('reload', tab);
   { const c = $('ccmfcopy'); if (c) c.onclick = () => { navigator.clipboard.writeText($('ccmftext').textContent); c.textContent = 'Copied'; }; }
   $('csv').onclick = () => { const blob = new Blob([pilotCSV(rows)], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `prepbuddy-pilot-${dayKey(Date.now())}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
   app.querySelectorAll('.pl-plan').forEach((sel) => { sel.onclick = (e) => e.stopPropagation(); sel.onchange = async () => {
@@ -430,12 +451,12 @@ async function renderPilot(note) {
     e.stopPropagation();
     if (!confirm(`Remove ${b.dataset.name}?\n\nTheir code (${b.dataset.remove}) stops working, and their activity and feedback are deleted from the pilot. Progress on their own device isn't touched. This can't be undone.`)) return;
     b.disabled = true; b.textContent = 'Removing…';
-    try { await adminApi({ action: 'pilot_remove', code: b.dataset.remove }); renderPilot(`Removed ${esc(b.dataset.name)}. Their code no longer works.`); }
+    try { await adminApi({ action: 'pilot_remove', code: b.dataset.remove }); (PILOT = null, renderPilot(`Removed ${esc(b.dataset.name)}. Their code no longer works.`, 'families')); }
     catch (err) { b.disabled = false; b.textContent = 'Remove this family'; alert('Couldn’t remove: ' + err.message); }
   }));
   app.querySelectorAll('[data-close]').forEach((x) => (x.onclick = () => { const tr = app.querySelector(`[data-fam="${x.dataset.close}"]`); if (tr) { tr.click(); tr.scrollIntoView({ block: 'nearest' }); } }));
   app.querySelectorAll('[data-fam]').forEach((tr) => (tr.onclick = () => { const d = $('fd' + tr.dataset.fam); d.hidden = !d.hidden; tr.classList.toggle('open', !d.hidden); }));
-  $('addf').onsubmit = async (e) => {
+  { const af = $('addf'); if (af) af.onsubmit = async (e) => {
     e.preventDefault(); const btn = $('addgo'); btn.disabled = true;
     try {
       const r = await adminApi({ action: 'pilot_add', name: $('fname').value, note: $('fnote').value });
@@ -443,11 +464,11 @@ async function renderPilot(note) {
       $('newcode').innerHTML = `<div class="ok">Code for ${esc(r.family.name)}: <b style="font-size:18px;letter-spacing:.05em">${esc(r.family.code)}</b></div>
         <label>Message to send them<textarea id="invite" rows="3">${esc(msg)}</textarea></label><div class="acts"><button class="link" id="copyinv">Copy message</button><button class="link" id="refresh">Done: refresh the list</button></div>`;
       $('copyinv').onclick = () => { navigator.clipboard.writeText($('invite').value); $('copyinv').textContent = 'Copied'; };
-      $('refresh').onclick = () => renderPilot();
+      $('refresh').onclick = () => renderPilot('reload', 'families');
       $('fname').value = ''; $('fnote').value = '';
     } catch (err) { $('newcode').innerHTML = `<div class="err">${esc(err.message)}</div>`; }
     btn.disabled = false;
-  };
+  }; }
 }
 function famDetail(r, fb) {
   const a = r.a, t0 = new Date(); t0.setHours(0, 0, 0, 0);
@@ -484,6 +505,11 @@ function famDetail(r, fb) {
 }
 
 /* ---------- questions students reported ---------- */
+function renderReports() {
+  setHash('#reports');
+  shell('reports', `<header><h1>Reported questions</h1></header><div class="card" id="reports"><h2>Reported questions</h2><p class="muted" style="margin:0">Loading…</p></div>`);
+  loadReports();
+}
 const REASON = { wrong_answer: 'The answer is wrong', unclear: 'The question doesn’t make sense', missing_figure: 'Needs a diagram or table they can’t see', off_topic: 'Not from the textbook', typo: 'Spelling or formatting mistake', other: 'Something else' };
 async function loadReports() {
   const box = $('reports'); if (!box) return;
