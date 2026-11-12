@@ -2231,25 +2231,62 @@ async function renderMistakes(tab) {
   const chips = bookIds.length >= 2 ? `<div class="bookchips" role="tablist" aria-label="Textbook">${[['all', LANG === 'zh' ? '全部' : 'All'], ...bookIds.map((id) => { const b = books.find((x) => x.id === id); const same = bookIds.filter((x) => { const o = books.find((y) => y.id === x); return (o.subject || o.title) === (b.subject || b.title); }).length > 1; return [id, same ? b.title : (b.subject ? subj(b.subject) : b.title)]; })]
     .map(([id, name]) => { const n = entries.filter(([q, m]) => !m.done && (id === 'all' || q.startsWith(id + ':'))).length; return `<button role="tab" class="${only === id ? 'on' : ''}" data-mkbook="${esc(id)}"><span ${id === 'all' ? '' : 'data-raw'}>${esc(name)}</span>${n ? ` <b>${n}</b>` : ''}</button>`; }).join('')}</div>` : '';
   const all = groups.flatMap((g) => g.items.map((x) => x.q));
+  const zh = LANG === 'zh';
+  const weekAgo = Date.now() - 7 * 864e5;
+  const fixedWeek = entries.filter((e) => inBook(e) && e[1].done && (e[1].doneAt || 0) > weekAgo && !e[1].manual).length;
+  // A question is listed as one short line; tap it to see your answer, the right answer and the explanation.
+  const line = (x) => {
+    const q = x.q, m = x.m;
+    const ask = choiceType(q) ? q.stem : [writtenStem(q), ...(q.parts || []).map((p) => p.prompt)].filter(Boolean).join(' ');
+    return `<details class="mq ${m.n > 1 ? 'often' : ''}"><summary>
+        <span class="mq-dot" aria-hidden="true"></span>
+        <span class="mq-text" data-raw>${esc(String(ask || '').replace(/\s*\n+\s*/g, ' '))}</span>
+        <span class="mq-meta">${m.n > 1 ? `<b>${zh ? `錯了 ${m.n} 次` : `Missed ${m.n}×`}</b>` : ''}<span>${esc(agoText(m.done ? m.doneAt || m.t : m.t))}</span></span>
+        <span class="mq-chev" aria-hidden="true">›</span></summary>
+      <div class="mq-body">${mistakeCard(q, m)}</div></details>`;
+  };
+  const SHOW = 4;
   $app.innerHTML = `
-  <main class="pad stack g14" data-view="mistakes" style="flex:1">
+  <main class="pad stack g18 mkpage" data-view="mistakes" style="flex:1">
     <h1 class="pagetitle">Mistake book</h1>
-    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Every question you didn’t get fully right is kept here. Get it right again and it moves to Mastered.</p>
+    ${tab === 'todo' && todo ? `<section class="mk-hero">
+      <div class="mk-hero-l">${buddySVG('happy', 64)}<div class="stack g6"><b class="mk-big">${todo} ${todo === 1 ? 'question' : 'questions'} to get right</b>
+        <span class="muted">Get one right again and it moves to Mastered.${fixedWeek ? ` <b class="mk-win">${fixedWeek} fixed this week</b>` : ''}</span></div></div>
+      <div class="mk-hero-r"><button class="btn" id="redoall">Redo all ${Math.min(all.length, 30)}</button>${all.length > 5 ? '<button class="btn ghost" id="quick5">Quick 5</button>' : ''}</div>
+    </section>` : ''}
     ${chips}
     <div class="seg" style="grid-template-columns:1fr 1fr" role="tablist"><button role="tab" class="${tab === 'todo' ? 'on' : ''}" data-tab="todo">To get right (${todo})</button><button role="tab" class="${tab === 'done' ? 'on' : ''}" data-tab="done">Mastered (${done})</button></div>
-    ${groups.length ? groups.map((g, gi) => `<section class="stack g10"><div class="mhead"><span><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><br><span class="muted" style="font-size:12.5px" data-raw>${esc(g.book.subject ? subj(g.book.subject) : g.book.title)}</span></span>${tab === 'todo' ? `<button class="btn-sm" data-redo="${gi}" style="white-space:nowrap">Redo these ${g.items.length}</button>` : ''}</div>
-      ${g.items.map((x) => mistakeCard(x.q, x.m)).join('')}</section>`).join('')
-      : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">${tab === 'todo' ? 'Nothing here. Questions you get wrong will appear here automatically.' : 'Questions you get right after missing them will appear here.'}</p></div>`}
-  </main>
-  ${tab === 'todo' && all.length ? `<div class="sheet sticky"><button class="btn" id="redoall">Redo all ${all.length}</button><span class="hint" style="text-align:center">The answer options are shuffled, so you can’t just remember the letter.</span></div>` : ''}`;
-  
+    ${groups.length ? `<div class="mk-groups">${groups.map((g, gi) => `<section class="mk-group">
+        <div class="mk-ghead">${subjectTile(g.book.subject, 40, g.book.title)}
+          <div class="mk-gt"><b data-raw>${esc(g.unit ? g.unit.title : '')}</b><span class="muted" data-raw>${esc(g.book.subject ? subj(g.book.subject) : g.book.title)}</span></div>
+          <span class="mk-count ${tab === 'done' ? 'ok' : ''}">${g.items.length}</span>
+          ${tab === 'todo' ? `<button class="btn-sm" data-redo="${gi}">Redo</button>` : ''}</div>
+        <div class="mk-list">${g.items.slice(0, SHOW).map(line).join('')}${g.items.length > SHOW ? `<div class="mk-more" hidden>${g.items.slice(SHOW).map(line).join('')}</div><button class="btn-sm quiet mk-morebtn" data-more="${gi}">Show ${g.items.length - SHOW} more</button>` : ''}</div>
+      </section>`).join('')}</div>`
+      : `<div class="card mk-empty">${buddySVG(tab === 'todo' ? 'done' : 'think', 72)}<div class="stack g6"><b>${tab === 'todo' ? 'Nothing to fix right now' : 'Nothing mastered yet'}</b><span class="muted">${tab === 'todo' ? 'Questions you get wrong are saved here automatically, so you can come back and get them right.' : 'When you get a question right after missing it, it moves here.'}</span></div></div>`}
+  </main>`;
+
   $app.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab: b.dataset.tab })));
   $app.querySelectorAll('[data-mkbook]').forEach((b) => (b.onclick = () => { local.mkBook = b.dataset.mkbook; saveLocal(); renderMistakes(tab); }));
   const start = (qs, title) => { S = newSession({ mode: 'mistakes', title, qs: shuffle(qs).slice(0, 30).map(shuffleOptions), target: Math.min(qs.length, 30) }); renderQuestion(); };
   const bookName = only === 'all' ? '' : ` · ${subj((books.find((b) => b.id === only) || {}).subject || '')}`;
-  const ra = document.getElementById('redoall'); if (ra) ra.onclick = () => start(all, (LANG === 'zh' ? '錯題簿' : 'Mistake book') + bookName);
+  const ra = document.getElementById('redoall'); if (ra) ra.onclick = () => start(all, (zh ? '錯題簿' : 'Mistake book') + bookName);
+  // Quick 5: the ones missed most often, then the oldest
+  const q5 = document.getElementById('quick5'); if (q5) q5.onclick = () => {
+    const ranked = groups.flatMap((g) => g.items).sort((a, b) => (b.m.n - a.m.n) || (a.m.t - b.m.t)).slice(0, 5).map((x) => x.q);
+    S = newSession({ mode: 'mistakes', title: (zh ? '錯題簿 · 快速 5 題' : 'Mistake book · Quick 5') + bookName, qs: ranked.map(shuffleOptions), target: ranked.length }); renderQuestion();
+  };
   $app.querySelectorAll('[data-redo]').forEach((b) => (b.onclick = () => { const g = groups[+b.dataset.redo]; start(g.items.map((x) => x.q), g.unit ? g.unit.title : 'Mistake book'); }));
+  $app.querySelectorAll('[data-more]').forEach((b) => (b.onclick = () => { const box = b.previousElementSibling; box.hidden = false; b.remove(); }));
   $app.querySelectorAll('[data-dismiss]').forEach((b) => (b.onclick = () => { const m = local.mistakes[b.dataset.dismiss]; if (m) { m.done = true; m.doneAt = Date.now(); m.manual = true; saveLocal(); } const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }));
+}
+function agoText(t) {
+  const d = Math.floor((Date.now() - (t || 0)) / 864e5), zh = LANG === 'zh';
+  if (d <= 0) return zh ? '今天' : 'Today';
+  if (d === 1) return zh ? '昨天' : 'Yesterday';
+  if (d < 7) return zh ? `${d} 天前` : `${d} days ago`;
+  if (d < 30) { const w = Math.floor(d / 7); return zh ? `${w} 星期前` : `${w} week${w > 1 ? 's' : ''} ago`; }
+  const mo = Math.floor(d / 30); return zh ? `${mo} 個月前` : `${mo} month${mo > 1 ? 's' : ''} ago`;
 }
 
 /* ---------- choose a textbook for weak topics / mock paper ---------- */

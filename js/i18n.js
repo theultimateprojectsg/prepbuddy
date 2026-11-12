@@ -311,6 +311,12 @@ const EXACT = {
   'While you wait, a quick look at this chapter': '等候期間，快速重溫這一章',
   'A quick look while it’s checked': '檢查期間，快速重溫一下',
   'Start practising': '開始練習',
+  'Get one right again and it moves to Mastered.': '再答對一次，就會移到「已掌握」。',
+  'Quick 5': '快速 5 題', 'Redo': '重做',
+  'Nothing to fix right now': '暫時沒有要改正的題目',
+  'Nothing mastered yet': '暫時未有已掌握的題目',
+  'Questions you get wrong are saved here automatically, so you can come back and get them right.': '答錯的題目會自動存在這裡，方便你回來改正。',
+  'When you get a question right after missing it, it moves here.': '答錯過的題目再答對後，會移到這裡。',
   'Stuck? Ask me.': '卡住了？問我吧。',
   'Want to understand it better?': '想理解得更透徹？',
   'I can explain what the question means or give you a hint. I won’t give away the answer.': '我可以解釋題目的意思，或給你提示，但不會直接告訴你答案。',
@@ -481,6 +487,10 @@ const EXACT = {
 
 // Text with numbers or names in it.
 const PATTERNS = [
+  [/^(\d+) questions? to get right$/, '$1 題要改正'],
+  [/^(\d+) fixed this week$/, '本星期改正了 $1 題'],
+  [/^Redo all (\d+)$/, '全部重做（$1 題）'],
+  [/^Show (\d+) more$/, '顯示多 $1 題'],
   [/^Starting in (\d)…\s*$/, '$1 秒後開始…'],
   [/^(\d+) of (\d+) ready$/, '已準備 $1 / $2 題'],
   [/^(\d+) chapters?$/, '$1 個章節'],
