@@ -3,6 +3,12 @@
 // Book content and questions are never translated here (they are already in the book's language).
 
 const EXACT = {
+  'New to this book? Find your level first': '第一次用這本書？先找出你的程度',
+  'Start level check': '開始程度評估',
+  'Not now': '稍後再說',
+  'Take it again': '再做一次',
+  'Find your level': '找出你的程度',
+  'Level check': '程度評估',
   'Up next': '下一章',
   'Learn': '學習',
   'New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.': '第一次讀這一章？Buddy 會一步一步教你，每步都有小測。學完再在下面練習。',
@@ -525,6 +531,9 @@ const EXACT = {
 
 // Text with numbers or names in it.
 const PATTERNS = [
+  [/^About (\d+) quick questions, about 5 minutes\. Then every chapter starts at the right level for you\.$/, '約 $1 條快速題目，大約 5 分鐘。之後每一章都會由適合你的程度開始。'],
+  [/^✓ Level check done (.+) ·$/, '✓ 已於 $1 完成程度評估 ·'],
+  [/^· about 5 min$/, '· 約 5 分鐘'],
   [/^✓ Learned (.+)$/, '✓ 已於 $1 學完'],
   [/^(\d+) of (\d+) learned$/, '已學 $1／$2 章'],
   [/^Suggested: (\d+) min\.?$/, '建議：$1 分鐘'],

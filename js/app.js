@@ -60,7 +60,12 @@ function levelShift(bookId, unitId) {
   const pre = `${bookId}:${unitId}:`;
   const recent = [];
   for (let i = local.log.length - 1; i >= 0 && recent.length < 15; i--) { const e = local.log[i]; if (e.q && e.q.startsWith(pre) && e.k !== 'mistakes') recent.push(e); }
-  if (recent.length < 5) return 0;
+  if (recent.length < 5) {   // not enough practice yet: start from the level check, if there was one
+    const pl = ((local.placement || {})[bookId] || {}).u || {}, r = pl[unitId];
+    if (!r || !r[1]) return 0;
+    const a = r[0] / r[1];
+    return a >= 0.99 ? 1 : a < 0.4 ? -1 : 0;
+  }
   const m = recent.reduce((t, e) => t + e.m, 0), g = recent.reduce((t, e) => t + e.g, 0);
   const acc = m ? g / m : 0, avgL = recent.reduce((t, e) => t + (e.l || 2), 0) / recent.length;
   const target = avgL + (acc >= 0.8 ? 1 : acc < 0.5 ? -1 : 0);
@@ -1701,6 +1706,8 @@ async function renderHome() {
   const items = [];
   if (due.length) items.push(`<button class="plan-item" data-mode="spaced"><span class="pi-icon pi-review">${actionIcon('review', 24)}</span><span class="pi-text"><b>Review ${due.length} question${due.length > 1 ? 's' : ''}</b><span class="sub">About ${Math.max(1, Math.round(Math.min(due.length, 15) * 0.6))} min · keeps what you learned fresh</span></span><span class="go">Start</span></button>`);
   if (mk) items.push(`<button class="plan-item" id="mistakes"><span class="pi-icon pi-mistake">${actionIcon('mistakes', 24)}</span><span class="pi-text"><b>Fix ${mk} mistake${mk > 1 ? 's' : ''}</b><span class="sub">Questions you didn’t get fully right</span></span><span class="go">Open</span></button>`);
+  { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
+    if (nb) items.push(`<button class="plan-item" data-lv="${esc(nb.id)}"><span class="pi-icon pi-continue">${actionIcon('weak', 24)}</span><span class="pi-text"><b>Find your level</b><span class="sub"><span data-raw>${esc(nb.title)}</span> · about 5 min</span></span><span class="go">Start</span></button>`); }
   if (last) {
     const qs = await getQs(last.book.id, last.unit.id); const sc = scoreOf(qs);
     items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b data-raw>${esc(last.unit.title)}</b><span class="sub">Keep going${sc !== null ? ` · ${sc}% so far` : ''}</span></span><span class="go">Practise</span></button>`);
@@ -1741,6 +1748,7 @@ async function renderHome() {
   const ct = document.getElementById('continue');
   if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
+  $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
   { const hg = document.getElementById('hwgo'); if (hg) hg.onclick = () => go({ name: 'homework' }); }
   { const dg = document.getElementById('dictgo'); if (dg) dg.onclick = () => go({ name: 'dictation' }); }
   { const wg = document.getElementById('wrgo'); if (wg) wg.onclick = () => go({ name: 'writing' }); }
@@ -2488,11 +2496,17 @@ async function renderBook(bookId) {
   const mins = Math.max(1, Math.round(count * (t === 'mcq' ? 0.5 : t === 'written' ? 1.5 : 0.8)));
   const { n: qReady } = await bookSummary(book);
   const answered = bm.chapters.reduce((x, c) => x + (c.done || 0), 0);
+  const pl = (local.placement || {})[book.id];
+  const plHTML = !pl && !answered && !(local.plHide || {})[book.id]
+    ? `<section class="pl-card"><span class="pl-ic">${buddySVG('happy', 44)}</span><div class="pl-ct"><b>New to this book? Find your level first</b><span>About ${Math.max(6, Math.min(12, levelUnits(book).length * 2))} quick questions, about 5 minutes. Then every chapter starts at the right level for you.</span></div>
+        <div class="pl-acts"><button class="btn" id="plGo">Start level check</button><button class="btn-sm quiet" id="plSkip">Not now</button></div></section>`
+    : pl ? `<p class="pl-done">✓ Level check done ${new Date(pl.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · <button class="linkbtn" id="plGo">Take it again</button></p>` : '';
   // Learn: a guided lesson per chapter, shown as its own section above the practice list.
   const learned = local.learned || {};
   const lkey = (u) => learned[`${book.id}:${u.id}`];
   const lstat = (u) => (lkey(u) ? `✓ Learned ${new Date(lkey(u)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })}` : 'Not learned yet · about 5 min');
-  const nextU = book.units.find((u) => pick.ids.has(u.id) && !lkey(u)) || book.units.find((u) => !lkey(u)) || book.units[0];
+  const plWeak = (u) => { const r = ((pl || {}).u || {})[u.id]; return r && r[1] && r[0] / r[1] < 0.4; };
+  const nextU = book.units.find((u) => pick.ids.has(u.id) && !lkey(u)) || book.units.find((u) => plWeak(u) && !lkey(u)) || book.units.find((u) => !lkey(u)) || book.units[0];
   const lrow = (u, cls = '') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}">${cls === 'next' ? '<span class="lc-up">Up next</span>' : ''}<span class="lc-t"><b data-raw>${esc(cleanTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
   const nLearned = book.units.filter(lkey).length;
   const learnHTML = `<section class="learn-card" aria-label="Learn">
@@ -2516,6 +2530,7 @@ async function renderBook(bookId) {
   <div class="bk-head-m">${head}</div>
   <main class="bk-main stack g14">
     <div class="bk-head-d">${head}</div>
+    ${plHTML}
     ${learnHTML}
     <h2 class="bk-sec"><span class="bk-sec-ic">${actionIcon('weak', 22)}</span>Practise</h2>
     <div class="chtools">
@@ -2607,6 +2622,8 @@ async function renderBook(bookId) {
   document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
   document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
   $app.querySelectorAll('[data-learn]').forEach((b) => (b.onclick = () => go({ name: 'learn', bookId, unitId: b.dataset.learn })));
+  { const pg = document.getElementById('plGo'); if (pg) pg.onclick = () => startPlacement(book); }
+  { const ps = document.getElementById('plSkip'); if (ps) ps.onclick = () => { local.plHide = { ...(local.plHide || {}), [book.id]: 1 }; saveLocal(); keep(); }; }
   { const lp = document.getElementById('learnpick'); if (lp) lp.onchange = () => { if (lp.value) go({ name: 'learn', bookId, unitId: lp.value }); }; }
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
   window.scrollTo(0, 0);
@@ -3524,9 +3541,9 @@ function newSession(props) {
 // fast student rarely catches up with the AI. Spare questions stay in the bank and are used first next session.
 const SPARE = 3;
 const MAKE_PAR = 4;
-async function startUnits(book, units, count = SESSION_SIZE) {
+async function startUnits(book, units, count = SESSION_SIZE, opts = {}) {
   const k = units.length, quota = Math.ceil(count / k);
-  const types = local.types || 'mix', diff = local.diff || 'auto';
+  const types = opts.types || local.types || 'mix', diff = opts.diff || local.diff || 'auto';
   const pools = [];
   for (const u of units) {
     const want = 2 + levelShift(book.id, u.id);
@@ -3539,9 +3556,63 @@ async function startUnits(book, units, count = SESSION_SIZE) {
   if (qs.length < count) pools.forEach((p) => qs.push(...p.slice(quota)));   // top up from chapters that have more
   qs = shuffle(qs.slice(0, count));
   const title = k === 1 ? units[0].title : `${k} chapters`;
-  S = newSession({ mode: 'unit', title, book, units, qs, target: count, pending: 0, types, count, diff });
+  S = newSession({ mode: 'unit', title: opts.title || title, book, units, qs, target: count, pending: 0, types, count, diff, placement: !!opts.placement });
   topUp(S);
   if (S.qs.length) renderQuestion(); else renderWaiting();
+}
+
+/* ---------- level check: a short quiz across the book when it's new ----------
+   About 2 multiple-choice questions from each of up to 6 chapters spread through the book. The result sets
+   where each chapter's questions start (see levelShift) and suggests where to begin. */
+const LV = (en, zh) => (LANG === 'zh' ? zh : en);
+const bookAnswered = (bookId) => local.log.some((e) => e.q && e.q.startsWith(bookId + ':'));
+function levelUnits(book) {
+  const us = book.units;
+  if (us.length <= 6) return us.slice();
+  return [...new Set([0, 1, 2, 3, 4, 5].map((i) => Math.round(i * (us.length - 1) / 5)))].map((i) => us[i]);
+}
+async function startPlacement(book) {
+  const units = levelUnits(book);
+  const count = Math.max(6, Math.min(12, units.length * 2));
+  await startUnits(book, units, count, { types: 'mcq', diff: 'auto', placement: true, title: LV('Level check', '程度評估') });
+}
+function renderPlacementResult() {
+  stopTimer();
+  const qs = S.qs.slice(0, Math.max(S.i + 1, 0)), book = S.book;
+  const per = {};
+  qs.forEach((q, k) => { const u = qUnit(q.id)[1]; const r = per[u] || (per[u] = [0, 0]); r[0] += S.got[k] || 0; r[1] += marksOf(q); });
+  if (!S.recorded) {
+    S.recorded = true;
+    local.placement = { ...(local.placement || {}), [book.id]: { t: Date.now(), u: per } }; saveLocal();
+    if (starsOn()) addStars(2, 'level check');
+  }
+  const g = qs.reduce((a, q, k) => a + (S.got[k] || 0), 0), m = qs.reduce((a, q) => a + marksOf(q), 0);
+  const rows = S.units.filter((u) => per[u.id]).map((u) => {
+    const [gu, mu] = per[u.id], a = mu ? gu / mu : 0;
+    const st = a >= 0.99 ? ['strong', LV('Strong', '掌握得好'), LV('Harder questions from the start', '一開始就出較難的題目')]
+      : a >= 0.4 ? ['ok', LV('Some gaps', '有些地方未掌握'), LV('Practice will fill the gaps', '多練習就能補上')]
+      : ['weak', LV('Start here', '從這裏開始'), LV('A lesson first, then the basics', '先上一課，再由基礎題開始')];
+    return { u, a, st, gu, mu };
+  });
+  const weak = rows.filter((r) => r.st[0] === 'weak');
+  const first = (weak[0] || rows.slice().sort((x, y) => x.a - y.a)[0] || {}).u;
+  $app.innerHTML = `
+  <div class="topbar"><span style="font-weight:600;font-size:15px;padding-left:4px">${LV('Level check', '程度評估')}</span></div>
+  <main class="pad stack g18 plres" data-view="placement" style="flex:1">
+    <section class="pl-hero">${buddySVG('done', 72)}<div><h1>${LV('Here’s your starting point', '這是你的起點')}</h1>
+      <p>${LV(`You got ${g} of ${m}. From now on, each chapter’s questions start at the right level for you.`, `你答對了 ${g}／${m} 題。之後每一章的題目都會由適合你的程度開始。`)}</p></div></section>
+    <section class="card pl-list">${rows.map((r) => `<div class="pl-row ${r.st[0]}"><span class="pl-dot" aria-hidden="true"></span><span class="pl-t"><b data-raw>${esc(cleanUnitTitle(r.u.title))}</b><small>${r.st[2]}</small></span><span class="pl-chip">${r.st[1]}</span><span class="pl-s">${r.gu}/${r.mu}</span></div>`).join('')}</section>
+    ${first ? `<section class="card pl-next"><h2>${LV('Where to begin', '建議由這裏開始')}</h2><p data-raw><b>${esc(cleanUnitTitle(first.title))}</b></p>
+      <div class="rd-row"><button class="btn" id="plLearn">${LV('Learn it first', '先上一課')}</button><button class="btn ghost" id="plPrac">${LV('Practise it', '直接練習')}</button></div></section>` : ''}
+    <button class="btn ghost" id="plBook">${LV('Back to the book', '返回課本')}</button>
+    <p class="hint" style="margin:0;text-align:center">${LV('Only a few questions per chapter, so it’s a rough guide. It gets more accurate as you practise.', '每章只有幾題，所以只是大概的參考，練習越多會越準確。')}</p>
+  </main>`;
+  const bk = book;
+  const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
+  on('plLearn', () => go({ name: 'learn', bookId: bk.id, unitId: first.id }));
+  on('plPrac', () => { pick = { bookId: bk.id, ids: new Set([first.id]) }; startUnits(bk, [first], local.count || SESSION_SIZE); });
+  on('plBook', () => go({ name: 'book', bookId: bk.id }));
+  window.scrollTo(0, 0);
 }
 
 // Order every question the session still needs, minus what's already being made for it.
@@ -4791,6 +4862,7 @@ function advance() {
 }
 
 function renderSummary() {
+  if (S && S.placement) return renderPlacementResult();
   stopTimer();
   const qs = S.qs.slice(0, Math.max(S.i + 1, 0));
   const total = qs.reduce((s, q) => s + marksOf(q), 0), got = qs.reduce((s, q, k) => s + (S.got[k] || 0), 0);
