@@ -1649,7 +1649,9 @@ async function currentReport() {
   const practised = new Set(local.log.filter((e) => e.t >= Date.now() - 7 * DAY).map((e) => e.q.split(':')[0]));
   const names = books.filter((b) => practised.has(b.id)).map((b) => (b.subject ? subj(b.subject) : b.title));
   const ms = []; for (const b of books) { const m = await bookMastery(b); if (m.chapters.some((c) => c.done)) ms.push([b.subject ? subj(b.subject) : b.title, m.pct]); }
-  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms });
+  const weekAgo = Date.now() - 7 * DAY;
+  const fx = Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > weekAgo).length;
+  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms, mk: mistakeCount(), fx });
 }
 
 // The week (days practised + three numbers) and "How ready you are", shared by Today and Progress.
