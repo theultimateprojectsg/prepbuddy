@@ -2341,15 +2341,14 @@ async function pilotGate() {
       speak(PLT('Hmm, let’s try that again', '嗯…再試一次吧'));
       box.classList.remove('bad'); void box.offsetWidth; box.classList.add('bad'); inp.focus(); inp.select();
     };
-    const celebrate = (c) => {
+    const celebrate = (c, name) => {
       clearInterval(talk);
-      const fam = (c.match(/^([A-Z]+)\d/) || [])[1];
-      const who = fam && fam !== 'FAMILY' && fam.length > 1 ? fam[0] + fam.slice(1).toLowerCase() : '';
+      const who = String(name || '').trim();
       const conf = Array.from({ length: 36 }, (_, i) => `<i style="left:${(i * 29) % 100}%;background:${['#FFC531', '#5A8DF5', '#FF8F8F', '#18966A', '#B38CF5'][i % 5]};animation-delay:${(i % 9) * 0.06}s;animation-duration:${1.4 + (i % 5) * 0.2}s;transform:rotate(${i * 23}deg)"></i>`).join('');
       const burst = Array.from({ length: 10 }, (_, i) => `<i style="--a:${i * 36}deg">★</i>`).join('');
       box.classList.add('yay');
       box.innerHTML = `<div class="pg-buddy big" aria-hidden="true"><div class="pg-burst">${burst}</div><div class="pg-bob">${buddySVG('done', 120)}</div><div class="pg-shadow"></div></div>
-        <h1 class="pg-in">${who ? PLT(`Welcome, ${who} family!`, `歡迎 ${who} 家庭！`) : PLT('You’re in!', '成功加入！')}</h1>
+        <h1 class="pg-in">${who ? PLT(`Welcome, ${esc(who)}!`, `歡迎，${esc(who)}！`) : PLT('You’re in!', '成功加入！')}</h1>
         <p class="pg-in d2">${PLT('Buddy can’t wait to start learning with you.', 'Buddy 已經急不及待和你一齊學習！')}</p>
         <div class="pg-load pg-in d3"><i></i></div><span class="hint pg-in d3">${PLT('Getting your desk ready…', '正在準備你的書桌…')}</span>`;
       const cf = document.createElement('div'); cf.className = 'confetti pg-conf'; cf.setAttribute('aria-hidden', 'true'); cf.innerHTML = conf; document.body.appendChild(cf);
@@ -2364,8 +2363,8 @@ async function pilotGate() {
       if (!c) return inp.focus();
       ok.disabled = true; ok.textContent = PLT('Checking…', '檢查中…'); face('think'); speak(PLT('Let me check…', '讓我看看…'));
       try {
-        const r = await pilotPost({ step: 'check', code: c });
-        if (r.ok || !r.pilot) { local.code = c; saveLocal(); return celebrate(c); }
+        const r = await pilotPost({ step: 'check', code: c, welcome: 1 });
+        if (r.ok || !r.pilot) { local.code = c; saveLocal(); return celebrate(c, r.name); }
         fail(PLT('That code isn’t right. Check it and try again.', '代碼不正確，請檢查後再試。'));
       } catch (er) { fail(PLT('Couldn’t check the code. Are you online?', '未能檢查代碼，你有連接網絡嗎？')); }
     };
