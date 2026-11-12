@@ -7,7 +7,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 function dayStart(t) { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); }
 
 // Minutes spent: time between answers in the same sitting (gaps over 5 min don't count), plus 1 min per sitting.
-function minutesOf(entries) {
+export function minutesOf(entries) {
   const ts = entries.map((e) => e.t).sort((a, b) => a - b);
   let ms = 0;
   ts.forEach((t, i) => { const gap = i ? t - ts[i - 1] : Infinity; ms += gap <= 5 * 60e3 ? gap : 60e3; });
@@ -22,7 +22,7 @@ function acc(entries) {
 const shortTitle = (c) => c.replace(/\s*\(part \d+ of \d+\)$/i, '');
 
 // Build the report from the log. `stats` gives the spaced-review box per question.
-export function buildReport({ log, stats, name, books, lang, ms, mk, fx }) {
+export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, exam, ts }) {
   const zh = lang === 'zh'; const T = (en, c) => (zh ? c : en);
   const today = dayStart(Date.now());
   const from = today - 6 * DAY, prevFrom = from - 7 * DAY;
@@ -94,7 +94,8 @@ export function buildReport({ log, stats, name, books, lang, ms, mk, fx }) {
   const a = acc(week), pa = acc(prev);
   return {
     v: 1, u: zh ? 'zh' : 'en', n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
-    days, q: week.length, a, pa, dp: daysPractised, tr, st, pq: prev.length, pm: minutesOf(prev), mk: mk ?? null, fx: fx ?? null, lt, rd, ch: chapters, up, weak, rev, next, sk, ms: (ms || []).slice(0, 6).map(([n, p]) => [String(n).slice(0, 40), p]),
+    days, q: week.length, a, pa, dp: daysPractised, tr, st, pq: prev.length, pm: minutesOf(prev), mk: mk ?? null, fx: fx ?? null, lt, rd, ch: chapters, up, weak, rev, next, sk, ms: (ms || []).slice(0, 6).map(([n, p, by]) => (by === undefined ? [String(n).slice(0, 40), p] : [String(n).slice(0, 40), p, by])),
+    g: goal ? { d: goal.days, m: goal.mins, met: days.filter((x) => x >= goal.mins).length } : null, ex: exam || null, ts: ts || [],
   };
 }
 
@@ -124,7 +125,8 @@ export function weekTone(r) {
   const mins = (r.days || []).reduce((x, m) => x + m, 0);
   const less = r.pm !== undefined && r.pm >= 20 && mins < r.pm * 0.7;
   const better = r.a !== null && r.pa !== null && r.a - r.pa >= 5;
-  if (!less && (r.dp >= 5 || (better && r.dp >= 3))) return 'strong';
+  const goalMissed = r.g && r.g.met < r.g.d; // with a weekly goal set, 'strong' also needs the goal met
+  if (!less && !goalMissed && (r.dp >= 5 || (better && r.dp >= 3))) return 'strong';
   if (less) return 'lighter';
   if (r.dp >= 3) return 'steady';
   return 'start';
@@ -194,7 +196,8 @@ export function reportHTML(r) {
       <div class="rp-title">
         <h1>${esc(headline(r))}</h1>
         <p>${esc(r.b && r.b.length ? r.b.join(' · ') : T('PrepBuddy practice', 'PrepBuddy 練習'))}</p>
-        <div class="rp-week" aria-label="${T(`Practised ${r.dp} of 7 days`, `7 日中有 ${r.dp} 日練習`)}">${r.days.map((m, i) => `<span class="${m ? 'on' : ''}" title="${dayNames[i]}: ${m} min">${ZH ? fmtDate(r.from + i * DAY, { weekday: 'narrow' }) : dayNames[i].slice(0, 2)}</span>`).join('')}<small>${T(`${r.dp} of 7 days`, `${r.dp}/7 日`)}</small></div>
+        ${r.g || (r.ex && r.ex.left !== null) ? `<div class="rp-chips">${r.g ? `<span class="${r.g.met >= r.g.d ? 'ok' : ''}">${ri('target', 14)} ${T(`Goal ${r.g.d} days × ${r.g.m} min: met on ${r.g.met} day${r.g.met === 1 ? '' : 's'}`, `目標每星期 ${r.g.d} 日 × ${r.g.m} 分鐘：達成 ${r.g.met} 日`)}</span>` : ''}${r.ex ? `<span>${ri('flag', 14)} ${T(`${r.ex.left} days to the exam`, `距離考試 ${r.ex.left} 日`)}</span>` : ''}</div>` : ''}
+        <div class="rp-week" aria-label=""${T(`Practised ${r.dp} of 7 days`, `7 日中有 ${r.dp} 日練習`)}">${r.days.map((m, i) => `<span class="${m ? 'on' : ''}" title="${dayNames[i]}: ${m} min">${ZH ? fmtDate(r.from + i * DAY, { weekday: 'narrow' }) : dayNames[i].slice(0, 2)}</span>`).join('')}<small>${T(`${r.dp} of 7 days`, `${r.dp}/7 日`)}</small></div>
       </div>
       <div class="rp-stats">
         ${stat('check', r.q, T('questions answered', '已答題目'), r.pq !== undefined ? chg(r.q, r.pq, '') : '')}
@@ -223,9 +226,11 @@ export function reportHTML(r) {
         <div class="rp-chs">${r.ch.map(([c, p, n, was]) => `<div class="rp-ch"><div class="rp-ch-top"><span>${esc(c)}</span><b class="${tone(p)}">${p}%</b></div><div class="rp-bar ${tone(p)}"><i style="width:${p}%"></i></div><small>${label(p)} · ${T(`${n} answered`, `${n} 題`)}${was === null || was === undefined ? '' : p === was ? ` · ${T('same as last week', '與上週相同')}` : ` · <span class="${p > was ? 'cu' : 'cd'}">${p > was ? '▲' : '▼'} ${T(`from ${was}%`, `上週 ${was}%`)}</span>`}</small></div>`).join('')}</div>
       </section>` : ''}
       ${r.ms && r.ms.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('ring')} ${T('How ready for each subject', '各科準備程度')}</h2></div>
-        <div class="rp-mast">${r.ms.map(([n, p]) => `<div>${ring(p)}<span>${esc(n)}</span></div>`).join('')}</div>
+        <div class="rp-mast">${r.ms.map(([n, p, by]) => `<div>${ring(p)}<span>${esc(n)}${by !== undefined && r.ex ? `<small class="${tone(by)}">${by >= 85 ? T(`On track: ~${by}% by the exam`, `進度理想：考試時約 ${by}%`) : T(`At this pace: ~${by}% by the exam`, `按現時進度：考試時約 ${by}%`)}</small>` : ''}</span></div>`).join('')}</div>
         <p class="rep-note">${T('Based on how much of the book is covered, scores, reviews and chapter tests.', '根據課本涵蓋範圍、分數、溫習及章節測驗計算。')}</p></section>` : ''}
       ${(r.tr || []).filter((x) => x !== null).length >= 2 ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('line')} ${T('Score over 6 weeks', '過去 6 星期的分數')}</h2><span>${T('% of marks each week', '每週得分率')}</span></div>${trendBars(r)}</section>` : ''}
+      ${r.ts && r.ts.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('pencil')} ${T('Tests and mock papers', '測驗及模擬試卷')}</h2><span>${T('last 30 days', '過去 30 日')}</span></div>
+        <div class="rp-tests">${r.ts.map(([k, title, t, p, min]) => `<div><span class="rp-tk ${k}">${k === 'test' ? T('Chapter test', '章節測驗') : k === 'mini' ? T('Mini mock', '小型模擬') : T('Mock paper', '模擬試卷')}</span><span class="rp-tn">${esc(String(title).replace(/^(Chapter test|章節測驗) · /, ''))}<small>${fmtDate(t, { day: 'numeric', month: 'short' })} · ${min} ${T('min', '分鐘')}</small></span><b class="${tone(p)}">${p}%${k === 'test' ? `<small>${p >= 80 ? T('Passed', '合格') : T('Not yet', '未合格')}</small>` : ''}</b></div>`).join('')}</div></section>` : ''}
       <div class="rp-two">
         ${skillsHTML(r)}
         <section class="rep-card"><h2>${ri('memory')} ${T('Remembering and fixing', '記憶與改正')}</h2>
@@ -338,6 +343,12 @@ export const REPORT_CSS = `
 .rp-tiles>div{border:1px solid #E6E9F0;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:3px}
 .rp-tiles b{font-size:24px;line-height:1.1}.rp-tiles span{font-size:12.5px;color:var(--muted);line-height:1.35}.rp-tiles em{font-style:normal;font-size:12px;font-weight:600;color:#0E6E4D}
 .rp-tic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;margin-bottom:4px}.rp-tic.g{background:#E3F4EC;color:#0E6E4D}.rp-tic.b{background:#E8EDFB;color:#26357A}.rp-tic.r{background:#FDECEA;color:#C23B2C}
+.rp-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}.rp-chips span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.1);color:#E6E9F7}.rp-chips span.ok{background:#FFE066;color:#1E2A5A}
+.rp-mast span{display:flex;flex-direction:column;gap:2px}.rp-mast small{font-size:12px;font-weight:600}.rp-mast small.good{color:#0E6E4D}.rp-mast small.mid{color:#26357A}.rp-mast small.low{color:#B4531A}
+.rp-tests{display:flex;flex-direction:column}.rp-tests>div{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #EEF1F6}.rp-tests>div:first-child{border-top:none;padding-top:0}
+.rp-tk{flex:none;font-size:11px;font-weight:700;padding:4px 8px;border-radius:8px;background:#E8EDFB;color:#26357A}.rp-tk.test{background:#F1E9FB;color:#7A3FC4}.rp-tk.mini{background:#FFF0E0;color:#B05A0E}
+.rp-tn{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:14px}.rp-tn small{font-size:12px;color:var(--muted)}
+.rp-tests b{font-size:16px;display:flex;flex-direction:column;align-items:flex-end}.rp-tests b small{font-size:11px;font-weight:600}.rp-tests b.good{color:#0E6E4D}.rp-tests b.mid{color:#26357A}.rp-tests b.low{color:#B4531A}
 .rp-foot{padding:0 16px 24px;display:flex;flex-direction:column;gap:12px}
 .rp-foot p{margin:0;font-size:12px;line-height:1.55;color:var(--muted)}
 .rp-print{align-self:flex-start;border:1.5px solid var(--line);background:#fff;color:var(--ink);font:600 14px 'Lexend',system-ui,sans-serif;border-radius:12px;padding:10px 16px;cursor:pointer;white-space:nowrap;flex:none}

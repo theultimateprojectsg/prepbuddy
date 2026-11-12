@@ -1,6 +1,6 @@
 // PrepBuddy app: books, chapters, on-demand questions, practice sessions.
 import * as store from './store.js';
-import { buildReport, encodeReport, headline, weekTone, skillsHTML, REPORT_CSS } from './report.js';
+import { buildReport, encodeReport, headline, weekTone, minutesOf, skillsHTML, REPORT_CSS } from './report.js';
 import { initLang, setLang, watch, LANG } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
 import { logoSVG, buddySVG, buddyFace } from './buddy.js';
@@ -1648,10 +1648,16 @@ async function currentReport() {
   const books = await getBooks();
   const practised = new Set(local.log.filter((e) => e.t >= Date.now() - 7 * DAY).map((e) => e.q.split(':')[0]));
   const names = books.filter((b) => practised.has(b.id)).map((b) => (b.subject ? subj(b.subject) : b.title));
-  const ms = []; for (const b of books) { const m = await bookMastery(b); if (m.chapters.some((c) => c.done)) ms.push([b.subject ? subj(b.subject) : b.title, m.pct]); }
-  const weekAgo = Date.now() - 7 * DAY;
+  const ms = [], subjects = [];
+  for (const b of books) { const m = await bookMastery(b); subjects.push({ book: b, pct: m.pct }); if (m.chapters.some((c) => c.done)) ms.push([b.subject ? subj(b.subject) : b.title, m.pct, b.id]); }
+  // the exam forecast travels with the report: [name, % by the exam] for books with a pace
+  const E = examInfo(subjects);
+  ms.forEach((x) => { const f = E && E.fc.find((y) => y.x.book.id === x[2]); x.length = 2; if (f && !f.wait) x.push(f.by); });
+  const weekAgo = Date.now() - 7 * DAY, monthAgo = Date.now() - 30 * DAY;
   const fx = Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > weekAgo).length;
-  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms, mk: mistakeCount(), fx });
+  const ts = (local.tests || []).filter((t) => t.kind && t.t > monthAgo).slice(-6).reverse().map((t) => [t.kind, String(t.title || '').slice(0, 60), t.t, t.m ? Math.round(100 * t.g / t.m) : 0, t.min || 0]);
+  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms, mk: mistakeCount(), fx,
+    goal: local.goal || null, exam: E && E.left !== null ? { left: E.left, date: E.date } : null, ts });
 }
 
 // The week (days practised + three numbers) and "How ready you are", shared by Today and Progress.
@@ -1700,6 +1706,42 @@ const pIcon = (k, size = 20) => `<svg width="${size}" height="${size}" viewBox="
 const PT = (en, zh) => (LANG === 'zh' ? zh : en);
 const SKILL_PLAIN = () => (LANG === 'zh' ? ['記憶事實', '理解', '應用', '深入思考'] : ['Remembering facts', 'Understanding', 'Using it', 'Thinking it through']);
 
+// Weekly goal (days × minutes), counted Monday to Sunday.
+function goalWeek() {
+  const g = local.goal; if (!g) return null;
+  const d0 = new Date(); d0.setHours(0, 0, 0, 0);
+  const mon = d0.getTime() - ((d0.getDay() + 6) % 7) * DAY;
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const t = mon + i * DAY, m = minutesOf(local.log.filter((e) => e.t >= t && e.t < t + DAY));
+    return { t, m, met: m >= g.mins, future: t > d0.getTime(), today: t === d0.getTime() };
+  });
+  const met = week.filter((x) => x.met).length;
+  const left = week.filter((x) => x.future || (x.today && !x.met)).length;
+  return { ...g, week, met, left, reached: met >= g.days, possible: met + left >= g.days };
+}
+// Exam countdown, and a forecast per textbook from how fast its readiness has been rising (last 4 weeks).
+function examInfo(subjects) {
+  const today = new Date(); today.setHours(0, 0, 0, 0); const t0 = today.getTime();
+  // keep one readiness reading per book per day, so a pace can be worked out
+  local.mhist = local.mhist || {};
+  for (const x of subjects) {
+    const h = (local.mhist[x.book.id] || []).filter((p) => p[0] !== t0);
+    h.push([t0, x.pct]); local.mhist[x.book.id] = h.slice(-120);
+  }
+  saveLocal();
+  if (!local.exam) return null;
+  const ex = new Date(local.exam + 'T00:00:00').getTime();
+  const left = Math.round((ex - t0) / DAY);
+  if (!(left >= 0)) return { date: ex, left: null, fc: [] };
+  const fc = subjects.map((x) => {
+    const h = (local.mhist[x.book.id] || []).filter((p) => p[0] >= t0 - 28 * DAY);
+    if (!h.length || t0 - h[0][0] < 7 * DAY) return { x, wait: true };
+    const rate = (x.pct - h[0][1]) / ((t0 - h[0][0]) / DAY);
+    return { x, rate, by: Math.min(100, Math.round(x.pct + Math.max(0, rate) * left)) };
+  });
+  return { date: ex, left, fc };
+}
+
 // Everything the progress page shows, worked out from the activity log, scores and textbooks on this device.
 async function progressData() {
   const r = await currentReport();
@@ -1737,7 +1779,8 @@ async function progressData() {
   const stats = Object.values(local.stats);
   const weekAgo = Date.now() - 7 * DAY;
   return {
-    r, streak, weeks, chapters, weak, up, subjects,
+    r, streak, weeks, chapters, weak, up, subjects, goal: goalWeek(), exam: examInfo(subjects),
+    tests: (local.tests || []).filter((t) => t.kind).sort((a, b) => b.t - a.t),
     due: (await dueItems()).length,
     mistakes: mistakeCount(),
     fixed: Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > weekAgo).length,
@@ -1812,6 +1855,7 @@ async function renderProgress() {
     </div>
     <div class="pg-grid">
       <div class="pg-c">
+        ${goalCardHTML(D)}
         <section class="pgcard"><h2>${pIcon('bars', 18)} ${PT('This week', '本週')}<span>${r.q ? PT(`Longest: ${dayName(longest, 'long')}, ${r.days[longest]} min`, `最長：${dayName(longest, 'long')}，${r.days[longest]} 分鐘`) : ''}</span></h2>
           <div class="pg-bars">${r.days.map((m, i) => `<div title="${dayName(i, 'long')}: ${m} min"><small>${m ? m + PT('m', '分') : ''}</small><i class="${m ? '' : 'none'} ${i === 6 ? 'today' : ''}" style="height:${m ? Math.max(8, Math.round(96 * m / maxMin)) : 4}px"></i><span>${dayName(i, 'short')}</span></div>`).join('')}</div>
         </section>
@@ -1828,6 +1872,7 @@ async function renderProgress() {
             return `<button class="pg-rg" data-book="${esc(x.book.id)}">${ring}<b>${esc(x.book.subject ? subj(x.book.subject) : x.book.title)}</b><small>${lab}</small></button>`;
           }).join('')}</div></section>` : ''}
         <section class="pgcard"><h2>${pIcon('line', 18)} ${PT('Score over time', '分數走勢')}</h2>${trendSVG(D.weeks)}</section>
+        ${testsCardHTML(D)}
         ${rated.length ? `<section class="pgcard"><h2>${pIcon('brain', 18)} ${PT('Question types', '題型表現')}<span>${PT('last 30 days', '過去 30 日')}</span></h2>
           <div class="pg-chs">${r.sk.map(([a, n], i) => n ? `<div class="pg-ch"><div class="pg-ch-top"><span>${names[i]}</span><b class="${tone(a)}">${a}%</b></div><div class="pg-bar ${tone(a)}"><i style="width:${a}%"></i></div></div>` : '').join('')}</div>
           ${skillNote ? `<p class="pg-note">${skillNote}</p>` : ''}</section>` : ''}
@@ -1850,6 +1895,67 @@ async function renderProgress() {
   on('mini-mistakes', () => go({ name: 'mistakes' }));
   on('act-books', () => go({ name: 'books' }));
   on('report', () => reportDialog());
+  on('goal-edit', () => goalDialog());
+  on('goal-set', () => goalDialog());
+  $app.querySelectorAll('[data-tests-more]').forEach((b) => (b.onclick = () => { b.previousElementSibling.hidden = false; b.remove(); }));
+}
+
+function goalCardHTML(D) {
+  const G = D.goal, E = D.exam;
+  const fmt = (t, o) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', o);
+  if (!G && !E) return `<section class="pgcard pg-goal0"><span class="pg-ic orange">${pIcon('target')}</span><div><b>${PT('Set a weekly goal', '設定每週目標')}</b><span>${PT('Pick how often to practise and your exam date. We’ll track it here and in your parent report.', '選擇練習次數和考試日期，進度會在這裡和家長報告中顯示。')}</span></div><button class="btn-sm" id="goal-set">${PT('Set goal', '設定')}</button></section>`;
+  const tone = (p) => (p >= 85 ? 'good' : p >= 60 ? 'mid' : 'low');
+  const goalPart = G ? `<div class="pg-gl">
+      <div class="pg-gdays">${G.week.map((d) => `<span class="${d.met ? 'met' : d.m ? 'some' : ''} ${d.future ? 'fut' : ''} ${d.today ? 'tod' : ''}" title="${fmt(d.t, { weekday: 'long' })}: ${d.m} min">${d.met ? pIcon('check', 14) : fmt(d.t, { weekday: 'narrow' })}</span>`).join('')}</div>
+      <b class="pg-gmsg ${G.reached ? 'ok' : ''}">${G.reached ? PT('Goal reached this week!', '本週目標已達成！') : PT(`${G.met} of ${G.days} days done · ${G.days - G.met} to go`, `已完成 ${G.met}／${G.days} 日 · 尚餘 ${G.days - G.met} 日`)}</b>
+      <span class="pg-gsub">${PT(`Goal: ${G.days} days a week, ${G.mins} min each`, `目標：每星期 ${G.days} 日，每次 ${G.mins} 分鐘`)}${!G.reached && !G.possible ? PT(' · try again next week', ' · 下星期再努力') : ''}</span></div>` : '';
+  const examPart = E && E.left !== null ? `<div class="pg-ex"><div class="pg-exn"><b>${E.left}</b><span>${PT(E.left === 1 ? 'day to your exam' : 'days to your exam', '日後考試')}</span><small>${fmt(E.date, { day: 'numeric', month: 'short', year: 'numeric' })}</small></div>
+      <div class="pg-fc">${E.fc.length ? E.fc.map((f) => `<div><span data-raw>${esc(f.x.book.subject ? subj(f.x.book.subject) : f.x.book.title)}</span>${f.wait ? `<small>${PT('Forecast after a week of practice', '練習一星期後會有預測')}</small>` : `<b class="${tone(f.by)}">${f.by >= 85 ? PT(`On track: ~${f.by}% by the exam`, `進度理想：考試時約 ${f.by}%`) : f.rate > 0 ? PT(`At this pace: ~${f.by}% by the exam`, `按現時進度：考試時約 ${f.by}%`) : PT('Not moving yet: practise to start climbing', '暫未進步：多練習就會上升')}</b>`}</div>`).join('') : ''}</div></div>`
+    : E ? `<div class="pg-ex"><span class="pg-gsub">${PT('Your exam date has passed. Set the next one.', '考試日期已過，請設定下一個。')}</span></div>` : '';
+  return `<section class="pgcard"><h2>${pIcon('target', 18)} ${PT('Your goal', '你的目標')}<button class="btn-sm quiet" id="goal-edit">${PT('Edit', '修改')}</button></h2>
+    ${goalPart || `<button class="btn-sm" id="goal-set" style="align-self:flex-start">${PT('Set a weekly goal', '設定每週目標')}</button>`}${examPart}</section>`;
+}
+
+function testsCardHTML(D) {
+  const list = D.tests;
+  const KIND = { paper: [PT('Mock paper', '模擬試卷'), 'blue'], test: [PT('Chapter test', '章節測驗'), 'purple'], mini: [PT('Mini mock', '小型模擬'), 'orange'] };
+  const fmt = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
+  const row = (x) => { const p = x.m ? Math.round(100 * x.g / x.m) : 0, k = KIND[x.kind] || KIND.paper, pass = x.kind === 'test' ? p >= 80 : null;
+    return `<div class="pg-test"><span class="pg-ic ${k[1]}">${pIcon(x.kind === 'test' ? 'check' : 'pencil', 18)}</span><div class="pg-tt"><small>${k[0]} · ${fmt(x.t)}</small><b data-raw>${esc(String(x.title || '').replace(/^(Chapter test|章節測驗) · /, ''))}</b><span>${x.g} / ${x.m} ${PT('marks', '分')} · ${x.min} ${PT('min', '分鐘')}</span></div><b class="pg-tp ${p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low'}">${p}%${pass === null ? '' : `<small>${pass ? PT('Passed', '合格') : PT('Not yet', '未合格')}</small>`}</b></div>`; };
+  return `<section class="pgcard"><h2>${pIcon('pencil', 18)} ${PT('Tests and mock papers', '測驗及模擬試卷')}</h2>
+    ${list.length ? `<div class="pg-tests">${list.slice(0, 4).map(row).join('')}${list.length > 4 ? `<div hidden>${list.slice(4, 20).map(row).join('')}</div><button class="btn-sm quiet" data-tests-more>${PT(`Show ${Math.min(16, list.length - 4)} more`, `顯示多 ${Math.min(16, list.length - 4)} 個`)}</button>` : ''}</div>`
+      : `<p class="pg-empty">${PT('Chapter tests and mock papers you finish show up here, with your score and time.', '完成的章節測驗和模擬試卷會在這裡顯示分數和用時。')}</p>`}
+  </section>`;
+}
+
+function goalDialog() {
+  const g = local.goal || { days: 5, mins: 20 };
+  let days = g.days, mins = g.mins;
+  const box = document.createElement('div');
+  box.className = 'cdlg-wrap';
+  const draw = () => {
+    box.innerHTML = `<div class="cdlg rdlg gdlg" role="dialog" aria-modal="true" aria-labelledby="gd-t" data-raw>
+      <b id="gd-t">${PT('Your weekly goal', '你的每週目標')}</b>
+      <label>${PT('Days a week', '每星期日數')}</label>
+      <div class="gd-seg">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<button class="${n === days ? 'on' : ''}" data-d="${n}">${n}</button>`).join('')}</div>
+      <label>${PT('Minutes each day', '每次分鐘')}</label>
+      <div class="gd-seg">${[10, 15, 20, 30, 45, 60].map((n) => `<button class="${n === mins ? 'on' : ''}" data-m="${n}">${n}</button>`).join('')}</div>
+      <label for="gd-exam">${PT('Exam date (optional)', '考試日期（可選）')}</label>
+      <input id="gd-exam" class="input" type="date" value="${esc(local.exam || '')}">
+      <span class="hint">${PT('For the DSE, use the date of your first paper for this subject.', '如果是 DSE，請用該科第一份試卷的日期。')}</span>
+      <div class="rd-row"><button class="btn ghost" id="gd-cancel">${PT('Cancel', '取消')}</button><button class="btn" id="gd-save">${PT('Save', '儲存')}</button></div>
+      ${local.goal ? `<button class="btn-sm quiet" id="gd-clear" style="align-self:center">${PT('Remove goal', '刪除目標')}</button>` : ''}
+    </div>`;
+    box.querySelectorAll('[data-d]').forEach((b) => (b.onclick = () => { days = +b.dataset.d; keep(); }));
+    box.querySelectorAll('[data-m]').forEach((b) => (b.onclick = () => { mins = +b.dataset.m; keep(); }));
+    box.querySelector('#gd-cancel').onclick = () => box.remove();
+    box.querySelector('#gd-save').onclick = () => { local.goal = { days, mins }; local.exam = box.querySelector('#gd-exam').value || ''; saveLocal(); box.remove(); renderProgress(); };
+    const c = box.querySelector('#gd-clear'); if (c) c.onclick = () => { local.goal = null; local.exam = ''; saveLocal(); box.remove(); renderProgress(); };
+  };
+  const keep = () => { const ex = box.querySelector('#gd-exam').value; draw(); box.querySelector('#gd-exam').value = ex; };
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+  draw();
+  document.body.appendChild(box);
 }
 
 // The parent report: name, preview, send. A small dialog instead of a block of text on the page.
@@ -2272,7 +2378,7 @@ async function pumpPaper(sess) {
 const isExam = () => !!S && (S.mode === 'mock' || S.mode === 'dse');
 
 function newSession(props) {
-  return Object.assign({ i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
+  return Object.assign({ at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
 }
 
 // A session over one or more chapters. Ready questions are used first; everything still missing is ordered
@@ -3519,7 +3625,7 @@ function advance() {
   }
   if (isExam() && !S.review) {
     S.qs.forEach((q, k) => { if (isMcqLike(q)) { S.got[k] = S.answers[k] === q.correct_option ? 1 : 0; record(q, S.got[k]); } });
-    S.review = true; S.i = 0; S.phase = 'revealed'; stopTimer();
+    S.review = true; S.i = 0; S.phase = 'revealed'; stopTimer(); S.examEnd = Date.now();
     toast('Time to review. Tick the points you made in written answers.');
     return renderQuestion();
   }
@@ -3542,11 +3648,12 @@ function renderSummary() {
   const drillable = missedIdx.filter((k) => canDrill(qs[k])).slice(0, 10); // drill up to 10 missed ideas
   const unitRef = S.units ? { book: S.book, units: S.units } : null;
   // Timed tests and mock papers count towards mastery (per chapter, only when finished).
-  if (S.mode === 'dse' && !S.ws && !S.endedEarly && !S.recorded) {
+  // Every finished test is also kept for the Progress page and the parent report (kind, title, score, time used).
+  if (((S.mode === 'dse' && !S.ws) || S.mode === 'mock') && !S.endedEarly && !S.recorded) {
     S.recorded = true;
     const per = {};
-    qs.forEach((q, k) => { const key = qUnit(q.id).join(':'); const r = per[key] || (per[key] = [0, 0]); r[0] += S.got[k] || 0; r[1] += marksOf(q); });
-    local.tests = [...(local.tests || []), { t: Date.now(), per }].slice(-300); saveLocal();
+    if (S.mode === 'dse') qs.forEach((q, k) => { const key = qUnit(q.id).join(':'); const r = per[key] || (per[key] = [0, 0]); r[0] += S.got[k] || 0; r[1] += marksOf(q); });
+    local.tests = [...(local.tests || []), { t: Date.now(), per, kind: S.mode === 'mock' ? 'mini' : S.test ? 'test' : 'paper', title: S.title, b: S.book ? S.book.id : '', g: got, m: total, min: Math.max(1, Math.round(((S.examEnd || Date.now()) - S.at) / 60000)) }].slice(-300); saveLocal();
   }
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
   const nRight = qs.filter((q, k) => (S.got[k] || 0) === marksOf(q)).length;
