@@ -6100,7 +6100,7 @@ function renderSummary() {
       ${(() => {
         // Primary: drill if there are weak spots, otherwise more questions. The rest sit in one tidy list.
         const sv = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-        const I = { more: sv('<path d="M12 5v14M5 12h14"/>'), retry: sv('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'), redo: sv('<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>') };
+        const I = { more: sv('<path d="M12 5v14M5 12h14"/>'), retry: sv('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'), redo: sv('<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>'), book: sv('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/>'), home: sv('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>') };
         const row = (id, icon, tone, t, sub) => `<button class="ropt" id="${id}"><span class="ropt-i ${tone}">${icon}</span><span class="ropt-t"><b>${t}</b><small>${sub}</small></span><span class="ropt-go" aria-hidden="true">›</span></button>`;
         const n = S.count || SESSION_SIZE, many = unitRef && unitRef.units.length > 1, Z = (en, zh) => (LANG === 'zh' ? zh : en);
         const prim = !drillable.length && unitRef ? `<button class="btn" id="more">${I.more} ${n} more on ${many ? 'these chapters' : 'this chapter'}</button>` : '';
@@ -6108,10 +6108,10 @@ function renderSummary() {
           drillable.length && unitRef ? row('more', I.more, 'blue', Z(`${n} more questions`, `再做 ${n} 題`), many ? Z('New questions on these chapters', '這些章節的新題目') : Z('New questions on this chapter', '這一章的新題目')) : '',
           missed.length ? row('retry', I.retry, 'red', Z(`Retry the ${missed.length} I missed`, `重做答錯的 ${missed.length} 題`), Z('Same questions, until they stick', '同樣的題目，直到記熟為止')) : '',
           qs.length ? row('redo', I.redo, 'violet', Z('Redo this set', '重做這一組'), Z('The same questions, shuffled', '同樣的題目，次序打亂')) : '',
+          row('home', S.book ? I.book : I.home, 'grey', S.book ? Z('Back to chapters', '返回章節') : Z('Back to home', '返回主頁'), S.book ? Z('Pick another chapter or activity', '選擇其他章節或活動') : Z('See today’s plan', '查看今日計劃')),
         ].filter(Boolean).join('');
         return `${prim}${rows ? `<div class="ropts card">${rows}</div>` : ''}`;
       })()}
-      <button class="rback" id="home">${ICON.back ? ICON.back.replace(/width="\d+" height="\d+"/, 'width="18" height="18"') : '←'} ${S.book ? (LANG === 'zh' ? '返回章節' : 'Back to chapters') : (LANG === 'zh' ? '返回主頁' : 'Back to home')}</button>
     </div>
     </div>
     <section class="rlist"><h2>Your answers</h2>
