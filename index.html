@@ -961,6 +961,11 @@ body.resizing{cursor:col-resize;user-select:none}body.resizing-nw{cursor:nwse-re
 .mw:hover:not(:disabled){background:#F7F8FC;border-color:#C9D2E8}.mw:disabled{opacity:.45;cursor:default}
 .learnbtn{display:flex;align-items:center;justify-content:center;gap:8px;background:#E9F7F0!important;color:#0E6E4D!important;border:1.5px solid #9CD9BC!important}
 .learnpage{max-width:720px;margin:0 auto;width:100%}
+.learnpage.withchat{max-width:1240px;display:flex;flex-direction:column;gap:18px}
+.ln-chat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-height:380px}
+.ln-chat .tlog{flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:55vh}
+@media (min-width:1024px){.app:has(.learnpage.withchat){max-width:1400px;padding:0 32px}.learnpage.withchat{display:grid;padding-left:0;padding-right:0;grid-template-columns:minmax(0,1fr) 400px;gap:24px;align-items:start}
+  .ln-chat{position:sticky;top:20px;height:calc(100vh - 110px);height:calc(100dvh - 110px)}.ln-chat .tlog{max-height:none}}
 .ln-dots{display:flex;gap:6px;justify-content:center}.ln-dots i{width:28px;height:6px;border-radius:3px;background:#E3E8F1}.ln-dots i.done{background:#9CD9BC}.ln-dots i.on{background:var(--ink)}
 .ln-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px}
 .ln-start,.ln-end{align-items:center;text-align:center}.ln-card h1{margin:0;font-size:24px}.ln-card h2{margin:0;font-size:21px}

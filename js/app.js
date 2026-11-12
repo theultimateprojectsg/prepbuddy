@@ -1443,8 +1443,62 @@ async function renderLearn(bookId, unitId) {
     return;
   }
   if (view !== myView) return;
-  const R = { k: -1, picked: {}, right: 0 };
+  const R = { k: -1, picked: {}, right: 0, msgs: [], busy: false, err: null };
   const n = L.steps.length;
+  const chText = await store.get(`text:${book.id}:${unit.id}`, '');
+  if (view !== myView) return;
+  $app.querySelector('main').outerHTML = `<main class="pad learnpage withchat" data-view="learn" data-raw style="flex:1"><div class="ln-main stack g18" id="lnMain"></div>
+    <section class="tchat ln-chat" id="lnchat" aria-label="${T('Ask Buddy', '問 Buddy')}"></section></main>`;
+  const chips = () => {
+    if (R.k < 0) return [T('What will I learn?', '我會學到甚麼？'), T('Why does this matter?', '學這個有甚麼用？')];
+    if (R.k >= n) return [T('What should I remember most?', '最重要要記住甚麼？'), T('Ask me a question to test me', '問我一條問題考考我')];
+    const c = L.steps[R.k].check, done = R.picked[R.k] !== undefined;
+    return [T('Explain this another way', '用另一個方法解釋'), T('Give me another example', '再給我一個例子'),
+      ...(c ? [done ? T('Why is that the answer?', '為甚麼是這個答案？') : T('Help me with the quick check', '小測給我一點提示')] : [])];
+  };
+  const drawChat = () => {
+    const box = document.getElementById('lnchat'); if (!box) return;
+    const where = R.k < 0 ? '' : R.k >= n ? '' : T(`On step ${R.k + 1}: ${L.steps[R.k].heading}`, `第 ${R.k + 1} 步：${L.steps[R.k].heading}`);
+    box.innerHTML = `<div class="thead"><b class="thead-t">${buddySVG('happy', 28)}<span>${T('Ask Buddy', '問 Buddy')}<small>${esc(where || T('Your tutor for this lesson', '這一課的導師'))}</small></span></b></div>
+      <div class="tlog" id="lnlog">
+        ${!R.msgs.length ? `<div class="tmsg ai">${T('I’m right here while you learn. If something doesn’t make sense, ask me: I can explain it another way, give you a new example, or help with the quick check.', '你上課時我都在這裏。有不明白的地方就問我：我可以換個方法解釋、再給你例子，或者幫你想小測。')}</div>` : ''}
+        ${R.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath">${esc(m.text)}</div>` : `<div class="tmsg ai">${tutorMd(m.text)}</div>`).join('')}
+        ${R.busy && !(R.msgs[R.msgs.length - 1] || {}).live ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
+        ${R.err ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(R.err)}</p>` : ''}
+      </div>
+      ${R.busy ? '' : `<div class="tchips">${chips().map((t) => `<button class="tchip" data-say="${esc(t)}">${esc(t)}</button>`).join('')}</div>`}
+      <form class="tform" id="lnform"><input id="lnq" class="tinput" placeholder="${T('Ask Buddy anything about this…', '有甚麼問題都可以問 Buddy…')}" autocomplete="off" ${R.busy ? 'disabled' : ''}><button class="tsend" aria-label="${T('Send', '傳送')}" ${R.busy ? 'disabled' : ''}>${ICON.send}</button></form>`;
+    renderMath(box);
+    const log = document.getElementById('lnlog'); if (log) log.scrollTop = log.scrollHeight;
+    box.querySelectorAll('[data-say]').forEach((x) => (x.onclick = () => askBuddy(x.dataset.say)));
+    document.getElementById('lnform').onsubmit = (e) => { e.preventDefault(); askBuddy(document.getElementById('lnq').value); };
+  };
+  const askBuddy = async (t) => {
+    t = String(t || '').trim(); if (!t || R.busy) return;
+    const history = R.msgs.slice(-10).map((m) => ({ role: m.role, text: m.text }));
+    R.msgs.push({ role: 'user', text: t }); R.busy = true; R.err = null; drawChat();
+    if (!desk()) { const c = document.getElementById('lnchat'); if (c) c.scrollIntoView({ block: 'end', behavior: 'smooth' }); }
+    const inStep = R.k >= 0 && R.k < n;
+    const req = { title: unit.title, text: chText, lang: langOf(chText), ask: t, history, where: R.k < 0 ? 'start' : R.k >= n ? 'end' : 'step',
+      step: inStep ? L.steps[R.k] : null, picked: inStep && R.picked[R.k] !== undefined ? R.picked[R.k] : null };
+    if (inStep && R.picked[R.k] === undefined && req.step.check) req.step = { ...req.step, check: { question: req.step.check.question, options: req.step.check.options } };
+    let live = null;
+    try {
+      const r = await apiStream('learn', req, (d) => {
+        if (!live) { live = { role: 'assistant', text: '', live: true }; R.msgs.push(live); drawChat(); }
+        live.text += d;
+        const els = document.querySelectorAll('#lnlog .tmsg.ai'); const el = els[els.length - 1];
+        if (el) { el.innerHTML = tutorMd(live.text); const log = document.getElementById('lnlog'); if (log) log.scrollTop = log.scrollHeight; }
+      });
+      if (live) { live.text = r.reply || live.text; delete live.live; } else R.msgs.push({ role: 'assistant', text: r.reply });
+    } catch (e) {
+      if (live) R.msgs.pop();
+      R.msgs.pop();
+      R.err = e.status === 0 ? T('You seem to be offline.', '你好像離線了。') : (e.message || T('Buddy is not available right now.', 'Buddy 暫時未能回答。'));
+    }
+    R.msgs = R.msgs.slice(-40); R.busy = false;
+    if (view === myView) drawChat();
+  };
   const draw = () => {
     const dots = `<div class="ln-dots">${L.steps.map((_, i) => `<i class="${i < R.k ? 'done' : i === R.k ? 'on' : ''}"></i>`).join('')}</div>`;
     let body;
@@ -1469,13 +1523,16 @@ async function renderLearn(bookId, unitId) {
           <div class="ln-opts">${c.options.map((o, i) => `<button class="ln-opt ${p !== undefined ? (i === c.answer ? 'ok' : i === p ? 'no' : '') : ''}" data-opt="${i}" ${p !== undefined ? 'disabled' : ''}><span>${'ABCD'[i]}</span>${tutorMd(o).replace(/^<p>|<\/p>$/g, '')}</button>`).join('')}</div>
           ${p !== undefined ? `<p class="ln-why ${p === c.answer ? 'ok' : 'no'}"><b>${p === c.answer ? T('Yes! ', '答對了！') : T('Not quite. ', '差一點。')}</b>${esc(c.why)}</p>` : ''}</div>` : ''}
         <div class="rd-row"><button class="btn ghost" id="prev">${T('Back', '上一步')}</button><button class="btn" id="next" ${c && p === undefined ? 'disabled' : ''}>${R.k === n - 1 ? T('Finish', '完成') : T('Next', '下一步')} →</button></div>
-        ${c && p === undefined ? `<span class="hint" style="text-align:center">${T('Answer the quick check to go on. Stuck? Ask Buddy.', '先回答小測再繼續。不明白？問 Buddy。')}</span>` : ''}
+        ${c && p === undefined ? `<span class="hint" style="text-align:center">${T('Answer the quick check to go on.', '先回答小測再繼續。')} <button class="linkbtn" id="askb">${T('Stuck? Ask Buddy for a hint', '不明白？問 Buddy 拿提示')}</button></span>` : ''}
       </section>`;
     }
-    $app.querySelector('main').outerHTML = `<main class="pad stack g18 learnpage" data-view="learn" data-raw style="flex:1">${R.k >= 0 && R.k < n ? dots : ''}${body}</main>`;
-    renderMath($app);
-    window.scrollTo(0, 0);
     const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
+    const lm = document.getElementById('lnMain'); if (!lm) return;
+    lm.innerHTML = `${R.k >= 0 && R.k < n ? dots : ''}${body}`;
+    renderMath(lm);
+    window.scrollTo(0, 0);
+    if (!R.busy) drawChat();
+    on('askb', () => { const c = document.getElementById('lnchat'); if (c && !desk()) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); askBuddy(T('Help me with the quick check', '小測給我一點提示')); });
     on('go1', () => { R.k = 0; draw(); });
     on('prev', () => { R.k--; draw(); });
     on('next', () => { R.k++; if (R.k >= n) finish(); draw(); });
@@ -1508,7 +1565,7 @@ function helperChips() {
 // Show the Buddy button only where there's no other chat (not Today, not beside a question) and not in timed papers.
 function helperWanted() {
   if ($app.querySelector('#coach')) return false; // Today has the full coach
-  if (document.getElementById('tutor') || $app.querySelector('#quit, #hwchat') || timedPaper()) return false;
+  if (document.getElementById('tutor') || $app.querySelector('#quit, #hwchat, #lnchat') || timedPaper()) return false;
   return !!$app.querySelector('main[data-view]');
 }
 function helperSync() {
