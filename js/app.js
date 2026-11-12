@@ -634,6 +634,7 @@ async function go(v) {
   if (v.name === 'settings') return renderSettings();
   if (v.name === 'progress') return renderProgress();
   if (v.name === 'stars') return renderStars();
+  if (v.name === 'homework') return renderHomework(v.id);
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
   if (v.name === 'worksheets') return renderWorksheets();
@@ -836,6 +837,7 @@ async function runCoachAction(a) {
     case 'settings': return go({ name: 'settings' });
     case 'star_shop': return go({ name: 'stars' });
     case 'today': return go({ name: 'home' });
+    case 'homework': return go({ name: 'homework' });
   }
   if (book) return go({ name: 'book', bookId: book.id }); // couldn't tell exactly what: open the book's chapter page
 }
@@ -899,9 +901,143 @@ function bindCoach() {
   const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight;
 }
 
+/* ---------- homework help from photos ----------
+   The student photographs tonight's homework; Buddy reads the questions and then helps them do it themselves
+   (hints, a similar example, checking their answers), never just handing over answers to copy.
+   Recent homework is kept on this device: the questions and chat in local, the photos in IndexedDB. */
+const HW = (en, zh) => (LANG === 'zh' ? zh : en);
+const hwState = { photos: [], busy: false, error: null };
+function shrinkPhoto(file, max = 1600) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(HW('That file isn’t a photo I can read.', '這個檔案不是可讀取的相片。'))); };
+    img.src = url;
+  });
+}
+async function renderHomework(id) {
+  const list = local.hw || [];
+  const hw = id && list.find((x) => x.id === id);
+  if (hw) return renderHomeworkChat(hw);
+  const ph = hwState.photos;
+  $app.innerHTML = `
+  <main class="pad stack g18 hwpage" data-view="homework" data-raw style="flex:1">
+    <h1 class="pagetitle">${HW('Homework help', '功課輔導')}</h1>
+    <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${HW('Snap your homework, then work through it with Buddy.', '拍下你的功課，再和 Buddy 一起完成。')}</b>
+      <span>${HW('Buddy explains, gives hints and checks your answers, so you learn how to do it yourself.', 'Buddy 會解釋、給提示和檢查你的答案，讓你學會自己做。')}</span></div></section>
+    <section class="card hw-cap">
+      ${ph.length ? `<div class="hw-thumbs">${ph.map((p, i) => `<div class="hw-th"><img src="${p}" alt="${HW(`Photo ${i + 1}`, `相片 ${i + 1}`)}"><button class="hw-del" data-del="${i}" aria-label="${HW('Remove photo', '刪除相片')}">✕</button></div>`).join('')}</div>` : `<p class="muted" style="margin:0">${HW('Take a clear photo of each page, flat and in good light. Up to 6 pages.', '每頁拍一張清晰的相片，平放並光線充足。最多 6 頁。')}</p>`}
+      <div class="hw-btns">
+        <label class="btn ${ph.length ? 'ghost' : ''}">${HW(ph.length ? 'Add another page' : 'Take a photo', ph.length ? '再加一頁' : '拍照')}<input type="file" accept="image/*" capture="environment" id="hwCam" hidden></label>
+        <label class="btn ghost">${HW('Choose photos', '選擇相片')}<input type="file" accept="image/*" multiple id="hwPick" hidden></label>
+      </div>
+      ${ph.length ? `<button class="btn" id="hwRead" ${hwState.busy ? 'disabled' : ''}>${hwState.busy ? HW('Reading your homework…', '正在讀取你的功課…') : HW(`Read my homework (${ph.length} page${ph.length > 1 ? 's' : ''})`, `讀取我的功課（${ph.length} 頁）`)}</button>` : ''}
+      ${hwState.busy ? `<div class="spinner" aria-hidden="true" style="align-self:center"></div>` : ''}
+      ${hwState.error ? `<p class="hw-err" role="alert">${esc(hwState.error)}</p>` : ''}
+    </section>
+    ${list.length ? `<section class="stack g10"><h2 class="st-h">${HW('Recent homework', '最近的功課')}</h2>
+      <div class="hw-list">${list.slice().reverse().map((x) => `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">📝</span><span class="hw-it"><b>${esc(x.title || HW('Homework', '功課'))}</b><small>${esc([x.subject, x.level].filter(Boolean).join(' · '))}${x.subject || x.level ? ' · ' : ''}${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.questions.length} ${HW('questions', '題')}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div></section>` : ''}
+  </main>`;
+  const add = async (files) => {
+    hwState.error = null;
+    for (const f of [...files].slice(0, 6 - hwState.photos.length)) {
+      try { hwState.photos.push(await shrinkPhoto(f)); } catch (e) { hwState.error = e.message; }
+    }
+    renderHomework();
+  };
+  document.getElementById('hwCam').onchange = (e) => add(e.target.files);
+  document.getElementById('hwPick').onchange = (e) => add(e.target.files);
+  $app.querySelectorAll('[data-del]').forEach((b) => (b.onclick = () => { hwState.photos.splice(+b.dataset.del, 1); renderHomework(); }));
+  $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => go({ name: 'homework', id: b.dataset.open })));
+  const rd = document.getElementById('hwRead');
+  if (rd) rd.onclick = async () => {
+    hwState.busy = true; hwState.error = null; renderHomework();
+    try {
+      const r = await api('homework', { step: 'read', images: hwState.photos, lang: LANG });
+      const item = { id: uid(), t: Date.now(), title: r.title, subject: r.subject, level: r.level, questions: r.questions, note: r.note, msgs: [] };
+      await store.set(`hwimg:${item.id}`, hwState.photos.slice());
+      local.hw = [...(local.hw || []), item].slice(-10); saveLocal();
+      // keep photos only for the last 10
+      hwState.photos = []; hwState.busy = false;
+      go({ name: 'homework', id: item.id });
+    } catch (e) {
+      hwState.busy = false;
+      hwState.error = e.status === 0 ? HW('You seem to be offline.', '你好像離線了。') : e.status === 401 ? HW('Access code needed.', '需要存取碼。') : (e.message || HW('Couldn’t read the photos. Try again.', '讀取相片失敗，請再試。'));
+      renderHomework();
+    }
+  };
+}
+
+const hwChat = { busy: false, error: null };
+async function renderHomeworkChat(hw) {
+  const photos = await store.get(`hwimg:${hw.id}`, []);
+  const draw = () => {
+    const msgs = hw.msgs;
+    $app.innerHTML = `
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${HW('Homework', '功課')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(hw.title || '')}</span></div>
+    <main class="hwchat" data-view="homework" data-raw style="flex:1">
+      <section class="hw-qs">
+        ${photos.length ? `<div class="hw-thumbs small">${photos.map((p, i) => `<button class="hw-th" data-zoom="${i}" aria-label="${HW(`Open photo ${i + 1}`, `打開相片 ${i + 1}`)}"><img src="${p}" alt=""></button>`).join('')}</div>` : ''}
+        ${hw.note ? `<p class="hint" style="margin:0">⚠️ ${esc(hw.note)}</p>` : ''}
+        <div class="hw-qlist">${hw.questions.map((q, i) => `<div class="hw-q ${hw.cur === i ? 'on' : ''}"><div class="hw-qt"><b>${esc(q.label || String(i + 1))}</b><div class="hw-qx">${tutorMd(q.text)}</div>${q.student_answer ? `<small>${HW('Your answer', '你的答案')}: ${esc(q.student_answer)}</small>` : ''}</div>
+          <button class="btn-sm ${hw.cur === i ? 'primary' : ''}" data-help="${i}">${HW('Help me', '幫我')}</button></div>`).join('')}</div>
+      </section>
+      <section class="tchat hw-tchat" id="hwchat">
+        <div class="thead"><b class="thead-t">${buddySVG('happy', 28)}<span>${HW('Ask Buddy', '問 Buddy')}<small>${HW('Hints and checking, not answers to copy', '提示和檢查，不是直接給答案')}</small></span></b></div>
+        <div class="tlog" id="hwlog">
+          ${!msgs.length ? `<div class="tmsg ai">${HW(`I’ve read your homework: ${hw.questions.length} question${hw.questions.length === 1 ? '' : 's'}. Tap <b>Help me</b> on one, or tell me which one you’re stuck on. Try it first, then show me your answer and I’ll check it!`, `我已經讀了你的功課，共 ${hw.questions.length} 題。按題目旁的<b>幫我</b>，或告訴我你哪一題不會。先自己試試，再把答案告訴我，我幫你檢查！`)}</div>` : ''}
+          ${msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath">${esc(m.text)}</div>` : `<div class="tmsg ai">${tutorMd(m.text)}</div>`).join('')}
+          ${hwChat.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
+          ${hwChat.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(hwChat.error)}</p>` : ''}
+        </div>
+        ${hwChat.busy ? '' : `<div class="tchips">${(hw.cur !== undefined ? [HW('Give me a hint', '給我提示'), HW('Explain it with an example', '用例子解釋'), HW('Check my answer', '檢查我的答案')] : [HW('Which one should I start with?', '我應該先做哪一題？')]).map((t) => `<button class="tchip" data-say="${esc(t)}">${t}</button>`).join('')}</div>`}
+        <form class="tform" id="hwform"><input id="hwq" class="tinput" placeholder="${HW('Type your answer or question…', '輸入你的答案或問題…')}" autocomplete="off" ${hwChat.busy ? 'disabled' : ''}><button class="tsend" aria-label="${HW('Send', '傳送')}" ${hwChat.busy ? 'disabled' : ''}>${ICON.send}</button></form>
+      </section>
+    </main>`;
+    renderMath($app);
+    const log = document.getElementById('hwlog'); if (log) log.scrollTop = log.scrollHeight;
+    document.getElementById('back').onclick = () => go({ name: 'homework' });
+    $app.querySelectorAll('[data-help]').forEach((b) => (b.onclick = () => { const i = +b.dataset.help; hw.cur = i; const q = hw.questions[i]; ask(HW(`Help me with ${q.label || 'question ' + (i + 1)}.`, `請幫我做 ${q.label || '第 ' + (i + 1) + ' 題'}。`)); }));
+    $app.querySelectorAll('[data-say]').forEach((b) => (b.onclick = () => ask(b.dataset.say)));
+    $app.querySelectorAll('[data-zoom]').forEach((b) => (b.onclick = () => zoomPhoto(photos[+b.dataset.zoom])));
+    document.getElementById('hwform').onsubmit = (e) => { e.preventDefault(); ask(document.getElementById('hwq').value); };
+  };
+  const text = () => hw.questions.map((q) => `${q.label} ${q.text}${q.student_answer ? `\n(Student's written answer: ${q.student_answer})` : ''}`).join('\n\n');
+  const ask = async (t) => {
+    t = String(t || '').trim(); if (!t || hwChat.busy) return;
+    const history = hw.msgs.slice(-12).map((m) => ({ role: m.role, text: m.text }));
+    const focus = hw.cur !== undefined ? `\n\n(The student is working on ${hw.questions[hw.cur].label || 'question ' + (hw.cur + 1)}.)` : '';
+    hw.msgs.push({ role: 'user', text: t }); hwChat.busy = true; hwChat.error = null; draw();
+    if (!desk()) { const c = document.getElementById('hwchat'); if (c) c.scrollIntoView({ block: 'end', behavior: 'smooth' }); }
+    try {
+      const r = await api('homework', { step: 'chat', homework: text() + focus, ask: t, history, lang: LANG });
+      hw.msgs.push({ role: 'assistant', text: r.reply });
+    } catch (e) {
+      hw.msgs.pop();
+      hwChat.error = e.status === 0 ? HW('You seem to be offline.', '你好像離線了。') : (e.message || HW('Buddy is not available right now.', 'Buddy 暫時未能回答。'));
+    }
+    hw.msgs = hw.msgs.slice(-40); hwChat.busy = false; saveLocal(); draw();
+    if (!desk()) { const c = document.getElementById('hwchat'); if (c) c.scrollIntoView({ block: 'end', behavior: 'smooth' }); }
+  };
+  draw();
+}
+function zoomPhoto(src) {
+  if (!src) return;
+  const box = document.createElement('div');
+  box.className = 'cdlg-wrap hw-zoom';
+  box.innerHTML = `<img src="${src}" alt=""><button class="helper-x" aria-label="Close">✕</button>`;
+  box.onclick = () => box.remove();
+  document.body.appendChild(box);
+}
+
 /* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
 const helper = { open: false };
-const SCREEN_NAME = { home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+const SCREEN_NAME = { homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
 function helperChips() {
   const v = view && view.name;
   const by = {
@@ -915,7 +1051,7 @@ function helperChips() {
 // Show the Buddy button only where there's no other chat (not Today, not beside a question) and not in timed papers.
 function helperWanted() {
   if ($app.querySelector('#coach')) return false; // Today has the full coach
-  if (document.getElementById('tutor') || $app.querySelector('#quit') || timedPaper()) return false;
+  if (document.getElementById('tutor') || $app.querySelector('#quit, #hwchat') || timedPaper()) return false;
   return !!$app.querySelector('main[data-view]');
 }
 function helperSync() {
@@ -1069,6 +1205,7 @@ async function renderHome() {
       <div class="quick">
         <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="qtile" data-mode="mock">${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
+        <button class="qtile hwtile" id="hwgo">${actionTile('notes', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -1088,6 +1225,7 @@ async function renderHome() {
   const ct = document.getElementById('continue');
   if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
+  { const hg = document.getElementById('hwgo'); if (hg) hg.onclick = () => go({ name: 'homework' }); }
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   window.scrollTo(0, 0);
 }
@@ -1486,7 +1624,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
