@@ -6096,13 +6096,22 @@ function renderSummary() {
       ${starsOn() && S.starNote ? `<p class="starnote">${starSVG(16)} ${esc(S.starNote)}</p>` : ''}
     </section>
     <div class="ractions">
-      ${drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} Drill my weak spots · ${drillable.length * PER_IDEA} new questions</button>` : ''}
-      ${unitRef ? `<button class="btn ${drillable.length ? 'ghost' : ''}" id="more">${S.count || SESSION_SIZE} more on ${unitRef.units.length > 1 ? 'these chapters' : 'this chapter'}</button>` : ''}
-      <div class="rgrid">
-      ${missed.length ? `<button class="btn ghost" id="retry">Retry the ${missed.length} I missed</button>` : ''}
-      ${qs.length ? '<button class="btn ghost" id="redo">Redo this set (shuffled)</button>' : ''}
-      </div>
-      <button class="btn ghost" id="home">${S.book ? 'Back to chapters' : 'Back to home'}</button>
+      ${drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} <span class="rprim">${LANG === 'zh' ? '針對弱項練習' : 'Drill my weak spots'}<small>${LANG === 'zh' ? `${drillable.length * PER_IDEA} 條針對答錯內容的新題目` : `${drillable.length * PER_IDEA} new questions on what you missed`}</small></span></button>` : ''}
+      ${(() => {
+        // Primary: drill if there are weak spots, otherwise more questions. The rest sit in one tidy list.
+        const sv = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+        const I = { more: sv('<path d="M12 5v14M5 12h14"/>'), retry: sv('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'), redo: sv('<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>') };
+        const row = (id, icon, tone, t, sub) => `<button class="ropt" id="${id}"><span class="ropt-i ${tone}">${icon}</span><span class="ropt-t"><b>${t}</b><small>${sub}</small></span><span class="ropt-go" aria-hidden="true">›</span></button>`;
+        const n = S.count || SESSION_SIZE, many = unitRef && unitRef.units.length > 1, Z = (en, zh) => (LANG === 'zh' ? zh : en);
+        const prim = !drillable.length && unitRef ? `<button class="btn" id="more">${I.more} ${n} more on ${many ? 'these chapters' : 'this chapter'}</button>` : '';
+        const rows = [
+          drillable.length && unitRef ? row('more', I.more, 'blue', Z(`${n} more questions`, `再做 ${n} 題`), many ? Z('New questions on these chapters', '這些章節的新題目') : Z('New questions on this chapter', '這一章的新題目')) : '',
+          missed.length ? row('retry', I.retry, 'red', Z(`Retry the ${missed.length} I missed`, `重做答錯的 ${missed.length} 題`), Z('Same questions, until they stick', '同樣的題目，直到記熟為止')) : '',
+          qs.length ? row('redo', I.redo, 'violet', Z('Redo this set', '重做這一組'), Z('The same questions, shuffled', '同樣的題目，次序打亂')) : '',
+        ].filter(Boolean).join('');
+        return `${prim}${rows ? `<div class="ropts card">${rows}</div>` : ''}`;
+      })()}
+      <button class="rback" id="home">${ICON.back ? ICON.back.replace(/width="\d+" height="\d+"/, 'width="18" height="18"') : '←'} ${S.book ? (LANG === 'zh' ? '返回章節' : 'Back to chapters') : (LANG === 'zh' ? '返回主頁' : 'Back to home')}</button>
     </div>
     </div>
     <section class="rlist"><h2>Your answers</h2>
