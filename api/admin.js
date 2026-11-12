@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
     if (req.method !== 'POST') throw err(405, 'Use POST.');
     const pw = process.env.ADMIN_PASSWORD;
     if (!pw) throw err(500, 'ADMIN_PASSWORD is not set in Vercel.');
-    if ((req.headers['x-admin-password'] || '') !== pw) throw err(401, 'Wrong admin password.');
+    if ((req.headers['x-admin-password'] || '') !== pw) { await new Promise((r) => setTimeout(r, 1200)); throw err(401, 'Wrong admin password.'); } // slows down guessing
     let body = req.body;
     if (!body || typeof body !== 'object') { const chunks = []; for await (const c of req) chunks.push(c); body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); }
     let out;

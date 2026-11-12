@@ -116,7 +116,7 @@ function mergeFamily(snaps) {
     devices.push({ device: s.device, ua: s.ua, synced: s.synced, last: s.last, inst: s.inst, keep: s.keep, ios: s.ios });
     if (s.name) names.add(s.name); if (s.plan) plans.add(s.plan); if (s.lang) langs.add(s.lang);
     last = Math.max(last, s.last || 0); if (s.first) first = first ? Math.min(first, s.first) : s.first;
-    for (const d of s.days || []) { const x = days[d.d] || (days[d.d] = { q: 0, g: 0, m: 0, min: 0 }); x.q += d.q; x.g += d.g; x.m += d.m; x.min += d.min; }
+    for (const d of s.days || []) { if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d.d))) continue; const x = days[d.d] || (days[d.d] = { q: 0, g: 0, m: 0, min: 0 }); x.q += +d.q || 0; x.g += +d.g || 0; x.m += +d.m || 0; x.min += +d.min || 0; }
     for (const [k, v] of Object.entries(s.fx || {})) { const x = fx[k] || (fx[k] = { n: 0, last: 0 }); x.n += v.n; x.last = Math.max(x.last, v.last || 0); }
     for (const b of s.books || []) { const o = books.get(b.title); books.set(b.title, o ? { ...b, q: (o.q || 0) + (b.q || 0), pct: Math.max(o.pct || 0, b.pct || 0) } : b); }
     errs = errs.concat((s.errs || []).map((e) => ({ ...e, device: s.device })));
@@ -322,7 +322,7 @@ function pilotInsights(rows, fams) {
   // features: share of started families using each
   const fx = {}; started.forEach((r) => Object.entries(r.a.fx).forEach(([k, v]) => { if (k.startsWith('screen:') || k.startsWith('upsell:') || !v.n) return; (fx[k] = fx[k] || { fam: 0, n: 0 }); fx[k].fam++; fx[k].n += v.n; }));
   const topF = Object.entries(fx).sort((a, b) => b[1].fam - a[1].fam || b[1].n - a[1].n);
-  const loved = topF.filter(([, v]) => v.n / Math.max(1, v.fam) >= 3).slice(0, 3).map(([k]) => fname(k));
+  const loved = topF.filter(([, v]) => v.n / Math.max(1, v.fam) >= 3).slice(0, 3).map(([k]) => esc(fname(k)));
   const unused = Object.keys(FEATURE_NAMES).filter((k) => !fx[k]).map(fname);
   // when
   const hours = Array(24).fill(0); rows.forEach((r) => r.a.hours.forEach((n, i) => (hours[i] += n)));
@@ -358,10 +358,10 @@ function pilotInsights(rows, fams) {
     else F.push(['grey', 'Too early to measure learning gains', 'Needs students with at least 4 active days to compare their early and recent accuracy.', 'Check again after the first week or two.']);
     if (fixed + open) F.push([tone(pct(fixed, fixed + open), 40, 20), `${fixed} mistakes fixed, ${open} still open (${pct(fixed, fixed + open)}% fixed)`, 'Students coming back to get wrong answers right is the core learning loop.', pct(fixed, fixed + open) >= 40 ? 'Good. Mention the mistake book in your pitch.' : 'Students aren’t revisiting mistakes much. Make the Mistake book more visible in Today’s plan.']);
     F.push([tone(pct(parents, started.length), 50, 25), `Parents involved in ${parents} of ${started.length} families`, 'Counts families where a parent set the PIN or opened the dashboard or weekly report. Parents are your buyers; their engagement predicts who will pay.', pct(parents, started.length) >= 50 ? 'Ask these parents what they’d pay and which plan they’d choose.' : 'Show parents the dashboard on day one; it’s your strongest selling point.']);
-    if (topF.length) F.push(['blue', `Most used: ${topF.slice(0, 3).map(([k]) => fname(k)).join(', ')}`, `${loved.length ? `Used again and again: ${loved.join(', ')}. ` : ''}${unused.length ? `Nobody has tried: ${unused.slice(0, 5).join(', ')}${unused.length > 5 ? ` and ${unused.length - 5} more` : ''}.` : 'Every feature has been tried.'}`, 'Features nobody touches either need to be easier to find or can wait.']);
+    if (topF.length) F.push(['blue', `Most used: ${topF.slice(0, 3).map(([k]) => esc(fname(k))).join(', ')}`, `${loved.length ? `Used again and again: ${loved.join(', ')}. ` : ''}${unused.length ? `Nobody has tried: ${unused.slice(0, 5).join(', ')}${unused.length > 5 ? ` and ${unused.length - 5} more` : ''}.` : 'Every feature has been tried.'}`, 'Features nobody touches either need to be easier to find or can wait.']);
     if (peak !== null) F.push(['blue', `Peak study time is ${peak}:00–${peak + 1}:00`, `${evening}% of questions are answered between 6 and 11pm${late >= 10 ? `, and ${late}% late at night (11pm–5am)` : ''}. This is after school and homework time, when a tutor isn’t available.`, late >= 10 ? 'Late-night use may worry parents; consider a bedtime reminder.' : 'Send reminders around 7pm.']);
     if (costMo !== null) { const m = Math.round(100 * (1 - costMo / PLUS_HKD)); F.push([costMo <= PLUS_HKD * 0.3 ? 'green' : costMo <= PLUS_HKD * 0.6 ? 'amber' : 'red', `AI costs about HK$${costMo.toFixed(costMo < 10 ? 1 : 0)} per family a month`, `Against the Plus price of HK$${PLUS_HKD}, that leaves about ${m}% gross margin (Pro at HK$${PRO_HKD}: ${Math.round(100 * (1 - costMo / PRO_HKD))}%). The heaviest family costs HK$${costMax.toFixed(0)}/month. Early use includes one-off costs (writing questions for a new book), so this should fall.`, costMo <= PLUS_HKD * 0.3 ? 'Healthy unit economics: quote this in the business-model section.' : 'Watch the heaviest families and consider tighter fair-use limits.']); }
-    if (onLow) F.push([Object.keys(ups).length ? 'blue' : 'grey', Object.keys(ups).length ? `Families on Free/Plus reached for: ${Object.entries(ups).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${UPSELL_NAMES[k] || k} (${v} famil${v === 1 ? 'y' : 'ies'})`).join(', ')}` : 'No upgrade signals yet', 'Taps on locked features show what people would pay for.', 'Make the most-tapped feature the headline of the paid plan.']);
+    if (onLow) F.push([Object.keys(ups).length ? 'blue' : 'grey', Object.keys(ups).length ? `Families on Free/Plus reached for: ${Object.entries(ups).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${esc(UPSELL_NAMES[k] || k)} (${v} famil${v === 1 ? 'y' : 'ies'})`).join(', ')}` : 'No upgrade signals yet', 'Taps on locked features show what people would pay for.', 'Make the most-tapped feature the headline of the paid plan.']);
     else F.push(['grey', 'No upgrade data yet', 'Every family is on Pro, so nobody ever hits a locked feature.', 'Put 2–3 families on Free and 2–3 on Plus from the table.']);
     if (sess.length >= 10) F.push([tone(100 - pct(rushed, sess.length), 90, 80), `${pct(rushed, sess.length)}% of sets were rushed`, 'Rushed = answering multiple choice in under 4 seconds a question, usually to farm stars.', pct(rushed, sess.length) > 10 ? 'Talk to those families about stars; consider turning stars off for them.' : 'Students are taking the questions seriously.']);
     if (noConsent.length) F.push(['amber', `${noConsent.length} famil${noConsent.length === 1 ? 'y hasn’t' : 'ies haven’t'} agreed to the privacy note yet`, `Families who opened an older version get the consent screen next time they open the app. Until a parent agrees, nothing new is sent. ${noConsent.map((r) => esc(r.f.name)).join(', ')}.`, 'If they’re active, ask a parent to open the app and tap “Agree and continue”.']);
@@ -385,7 +385,7 @@ function pilotCSV(rows) {
   const lines = rows.map(({ f, a }) => [f.name, f.code, f.plan || 'pro', a.names.join(' / '), d(a.first), d(a.last), a.actDays, a.wk2 === null ? '' : a.wk2 ? 'yes' : 'no', a.tot.q, a.tot.acc ?? '', a.tot.min, a.w.q, a.w.min, a.streak, a.best,
     a.sess.filter((x) => !x.e).length, a.sess.filter((x) => x.r).length, a.books.length, [...new Set(a.books.map((b) => b.subject))].join(' / '), a.counts.learned || 0, a.counts.writing || 0, a.counts.speaking || 0, a.counts.dictation || 0,
     a.counts.mistakes || 0, a.counts.fixed || 0, a.stars ? a.stars.total : '', a.stars ? a.stars.redeemed : '', a.consent ? d(a.consent.at) : 'no', a.toured ? 'yes' : 'no', a.pin ? 'yes' : 'no', a.parentUse, a.usage.calls, a.usage.usd.toFixed(3), a.errs.length, a.devices.map((x) => x.ua).join(' / '), f.note || '']);
-  const q = (v) => { const x = String(v ?? ''); return /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x; };
+  const q = (v) => { let x = String(v ?? ''); if (/^[=+\-@\t\r]/.test(x) && typeof v !== 'number') x = "'" + x; return /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x; }; // a leading = + - @ would run as a formula in Excel
   return [cols, ...lines].map((r) => r.map(q).join(',')).join('\n');
 }
 let PILOT = null; // the pilot data, loaded once and reused across sections until Refresh
@@ -496,7 +496,7 @@ function famDetail(r, fb) {
         [a.tot.min, 'minutes', `${a.w.min} this week · ${a.pw.min} last week`],
         [a.tot.acc === null ? '–' : a.tot.acc + '%', 'right overall', a.w.acc === null ? '' : `${a.w.acc}% this week`],
         [a.streak, `day streak`, `best ${a.best}`],
-        [a.goal ? `${a.goal.days}×${a.goal.mins}` : '–', 'weekly goal', a.goal ? 'days × minutes' : 'not set'],
+        [a.goal ? `${Number(a.goal.days) || 0}×${Number(a.goal.mins) || 0}` : '–', 'weekly goal', a.goal ? 'days × minutes' : 'not set'],
         [a.consent ? '✓' : '✗', 'parent consent', a.consent ? new Date(a.consent.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'not yet', a.consent ? 'up' : 'down'],
         [a.pin ? '✓' : '✗', 'parent PIN', `${a.parentUse} parent view${a.parentUse === 1 ? '' : 's'}`, a.pin ? 'up' : 'down'],
         ...(a.stars ? [[a.stars.total, 'stars earned', `${a.stars.bal} unspent · ${a.stars.redeemed} redeemed`], [a.stars.rushedQ, 'rushed questions', `hit daily cap ${a.stars.capDays}×`, a.stars.rushedQ ? 'down' : '']] : []),

@@ -693,6 +693,7 @@ document.addEventListener('click', (e) => {
 }, true);
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-goback]'); if (b) { e.preventDefault(); goBack(JSON.parse(b.dataset.goback)); } });
 window.addEventListener('popstate', (e) => {
+  if (document.querySelector('main.pilotgate')) { try { history.pushState(history.state, '', location.href); } catch (er) {} return; } // the code and consent screens can't be skipped with Back
   const was = navCur;
   const dlg = [...document.querySelectorAll('.cdlg-wrap')].pop();
   if (dlg) { if (was) navSet(was, true); dlg.dispatchEvent(new MouseEvent('click', { bubbles: true })); return; }
@@ -708,7 +709,7 @@ window.addEventListener('popstate', (e) => {
 
 async function go(v) {
   if ((v.name === 'paper' || (v.name === 'pick' && v.mode === 'mock')) && !allow('mock')) return; // plan checks before leaving the screen
-  { const f = { homework: 'homework', writing: 'writing', speaking: 'speaking', stars: 'stars' }[v.name]; if (f && locked(f)) return upsell(f, 'locked'); }
+  { const f = { homework: 'homework', writing: 'writing', speaking: 'speaking', stars: 'stars' }[v.name]; if (f && locked(f) && !TOURING) return upsell(f, 'locked'); }
   // a screen's back button pointing at the screen we came from = a real step back
   if (!navPopping && navStack.length >= 2 && navKey(navStack[navStack.length - 2]) === navKey(v) && !(history.state && history.state.session)) { try { history.back(); return; } catch (e) {} }
   navPush(v);
@@ -4429,6 +4430,7 @@ function usedOf(f) {
   return u.p === (per === 'day' ? dayStart() : weekStart()) ? u.n : 0;
 }
 function meter(f, n = 1) {
+  if (TOURING) return; // the tour's sample book never uses up the family's allowance
   const per = FEAT[f].per; if (per !== 'day' && per !== 'week') return;
   const p = per === 'day' ? dayStart() : weekStart();
   local.meter = local.meter || {};
@@ -4439,6 +4441,7 @@ const leftOf = (f) => Math.max(0, limitOf(f) - usedOf(f));
 const locked = (f) => !limitOf(f);
 // Can they use it now? If not, the upgrade sheet explains and this returns false.
 function allow(f) {
+  if (TOURING) return true; // the tour may show any screen; the overlay stops anything being used
   if (limitOf(f) === UNL || (FEAT[f].per === 'flag' && limitOf(f))) return true;
   if (locked(f)) { upsell(f, 'locked'); return false; }
   if (leftOf(f) <= 0) { upsell(f, 'limit'); return false; }
