@@ -82,7 +82,8 @@ h1,.display{font-family:'Lexend','PingFang HK','PingFang TC','Microsoft JhengHei
 .wait-prog .progress.busy{position:relative;overflow:hidden}.wait-prog .progress.busy::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:translateX(-100%);animation:wshim 1.4s linear infinite}
 .wait-prog .progress.busy{background:repeating-linear-gradient(-45deg,#E3E8F1 0 8px,#EDF1F8 8px 16px);background-size:22px 22px;animation:wstripe .8s linear infinite}
 @keyframes wshim{to{transform:translateX(100%)}}@keyframes wstripe{to{background-position:22px 0}}
-@media (prefers-reduced-motion:reduce){.wbud *,.wsp,.wait-prog .progress.busy,.wait-prog .progress.busy::after{animation:none!important}.wbud-paper .wl{stroke-dashoffset:0}}
+/* 'Reduce motion' on: keep Buddy moving (so the page never looks frozen), just calmer */
+@media (prefers-reduced-motion:reduce){.wbud-b{animation-duration:2.6s!important}.wbud-shadow{animation-duration:2.6s!important}.wsp{display:none}.wbud-paper{animation:none}}
 @media (min-width:1024px){.wbud{height:160px}.wbud .wbud-b .buddy{width:112px;height:112px}.wstat{font-size:16px}}
 .wait-head{display:flex;flex-direction:column;align-items:center;gap:6px}
 .wait-head h1{margin:0;font-size:22px}
