@@ -271,5 +271,29 @@
     "figs": true
    }
   ]
+ },
+ {
+  "id": "longman-english-leap-2a--a532",
+  "code": "ENG-SR53",
+  "title": "Longman English Leap 2A - Chapter 5 About me",
+  "subject": "English",
+  "level": "S4–S6 (HKDSE)",
+  "kind": "language",
+  "publisher": "",
+  "licence": "CC BY 4.0",
+  "credit": "",
+  "lang": "en",
+  "pageCount": 13,
+  "addedAt": "2026-11-12",
+  "questionCount": 0,
+  "units": [
+   {
+    "id": "u0",
+    "title": "Chapter 1",
+    "chapter": null,
+    "startPage": 2,
+    "endPage": 13
+   }
+  ]
  }
 ]
