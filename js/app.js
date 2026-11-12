@@ -1139,7 +1139,16 @@ function awardSession(qs, pct) {
 
 function starSVG(size = 18) { return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.8l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="#FFC531" stroke="#E0A100" stroke-width="1.2" stroke-linejoin="round"/></svg>`; }
 function starChip() { return starsOn() ? `<button class="starchip" data-stargo aria-label="${ST(`${starState().bal} stars. Open the Star shop`, `${starState().bal} 粒星。打開星星商店`)}">${starSVG(18)}<b>${starState().bal}</b></button>` : ''; }
-function bindStarChips(root = document) { root.querySelectorAll('[data-stargo]').forEach((b) => (b.onclick = async () => { const q = inSession(); if (q && !(await confirmLeave(leaveText(q.dataset.kind, true)))) return; go({ name: 'stars' }); })); }
+// One click handler for every star counter on any screen (menu, Today, Progress), so none can be left unwired.
+function bindStarChips() {}
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest && e.target.closest('[data-stargo]');
+  if (!b) return;
+  e.preventDefault();
+  const q = inSession();
+  if (q && !(await confirmLeave(leaveText(q.dataset.kind, true)))) return;
+  go({ name: 'stars' });
+});
 
 // Celebration: stars fly in, Buddy cheers, new badges shown.
 function celebrate(won) {
