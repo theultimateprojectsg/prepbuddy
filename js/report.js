@@ -174,6 +174,7 @@ const ri = (k, size = 18) => `<svg width="${size}" height="${size}" viewBox="0 0
 export function reportHTML(r, opts = {}) {
   ZH = r.u === 'zh';
   const who = r.n || T('Your child', '你的子女');
+  const whoMid = r.n || T('your child', '你的子女'); // inside a sentence
   const range = `${fmtDate(r.from, { day: 'numeric', month: 'short' })} – ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short', year: 'numeric' })}`;
   const maxMin = Math.max(30, ...r.days);
   const dayNames = Array.from({ length: 7 }, (_, i) => fmtDate(r.from + i * DAY, { weekday: 'short' }));
