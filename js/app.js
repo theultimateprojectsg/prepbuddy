@@ -2043,7 +2043,7 @@ async function renderHome() {
   const tests = await schoolTestsHTML();
   tests.steps.filter((p) => p.left <= 14).slice(0, 2).forEach((p, k) => items.push(`<button class="plan-item" data-tstep="${k}"><span class="pi-icon pi-test">${actionIcon(p.step.icon, 24)}</span><span class="pi-text"><b data-raw>${esc(p.step.t)}</b><span class="sub"><span data-raw>${esc(p.x.name)}</span> ${leftText(p.left)} · ${p.step.s}</span></span><span class="go">${p.step.go}</span></button>`));
   { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
-    if (nb) items.push(`<button class="plan-item" data-lv="${esc(nb.id)}"><span class="pi-icon pi-continue">${actionIcon('weak', 24)}</span><span class="pi-text"><b>Find your level</b><span class="sub"><span data-raw>${esc(nb.title)}</span> · about 5 min</span></span><span class="go">Start</span></button>`); }
+    if (nb) items.push(`<button class="plan-item" data-lv="${esc(nb.id)}"><span class="pi-icon pi-continue">${actionIcon('level', 24)}</span><span class="pi-text"><b>Find your level</b><span class="sub"><span data-raw>${esc(nb.title)}</span> · about 5 min</span></span><span class="go">Start</span></button>`); }
   if (last) {
     const qs = await getQs(last.book.id, last.unit.id); const sc = scoreOf(qs);
     items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b data-raw>${esc(last.unit.title)}</b><span class="sub">Keep going${sc !== null ? ` · ${sc}% so far` : ''}</span></span><span class="go">Practise</span></button>`);
@@ -2063,9 +2063,9 @@ async function renderHome() {
       <div class="quick">
         <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
-        <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('notes', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
-        <button class="qtile hwtile" id="dictgo">${actionTile('flashcards', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('mistakes', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('practise', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
+        <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
+        <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
+        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -2999,7 +2999,7 @@ async function renderBook(bookId) {
   const lrow = (u, cls = '') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}">${cls === 'next' ? '<span class="lc-up">Up next</span>' : ''}<span class="lc-t"><b data-raw>${esc(cleanTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
   const nLearned = book.units.filter(lkey).length;
   const learnHTML = `<section class="learn-card" aria-label="Learn">
-      <div class="lc-head"><span class="lc-ic">${actionIcon('practise', 24)}</span><div><h2>Learn${book.units.length > 1 ? ` <small>${nLearned} of ${book.units.length} learned</small>` : ''}</h2><p>New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.</p></div></div>
+      <div class="lc-head"><span class="lc-ic">${actionIcon('learn', 24)}</span><div><h2>Learn${book.units.length > 1 ? ` <small>${nLearned} of ${book.units.length} learned</small>` : ''}</h2><p>New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.</p></div></div>
       ${book.units.length <= 4 ? `<div class="lc-list">${book.units.map((u) => lrow(u)).join('')}</div>`
         : `<div class="lc-list">${lrow(nextU, 'next')}</div>
         <label class="lc-pick"><span>Or choose a chapter</span><select id="learnpick"><option value="">Choose…</option>${book.units.map((u) => `<option value="${esc(u.id)}">${lkey(u) ? '✓ ' : ''}${esc(cleanTitle(u.title))}</option>`).join('')}</select></label>`}
@@ -3021,7 +3021,7 @@ async function renderBook(bookId) {
     <div class="bk-head-d">${head}</div>
     ${plHTML}
     ${learnHTML}
-    <h2 class="bk-sec"><span class="bk-sec-ic">${actionIcon('weak', 22)}</span>Practise</h2>
+    <h2 class="bk-sec"><span class="bk-sec-ic">${actionIcon('practise', 22)}</span>Practise</h2>
     <div class="chtools">
       <p style="margin:0;font-size:15px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters to practise <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
       ${book.units.length > 1 ? `<button class="btn-sm" id="all" >${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
@@ -3060,10 +3060,10 @@ async function renderBook(bookId) {
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter'}</button>
     <div class="more-ways"><p class="mw-h">More ways to study${n ? '' : ' <span class="muted">· tick a chapter first</span>'}</p>
       <div class="mw-grid">
-        <button class="mw" id="ctest" ${n ? '' : 'disabled'}>${lockTag('test')}${actionIcon('mock', 24)}<b>Chapter test</b><span>Timed, like a school test</span></button>
-        <button class="mw" id="notes" ${n ? '' : 'disabled'}>${actionIcon('notes', 24)}<b>Notes</b><span>Key points to revise</span></button>
-        <button class="mw" id="cards" ${n ? '' : 'disabled'}>${actionIcon('flashcards', 24)}<b>Flashcards</b><span>Quick-fire recall</span></button>
-        <button class="mw" id="paper">${lockTag('mock')}${actionIcon('mistakes', 24)}<b>Mock paper</b><span>DSE-style or worksheet</span></button>
+        <button class="mw" id="ctest" ${n ? '' : 'disabled'}>${lockTag('test')}${actionTile('test', 40)}<b>Chapter test</b><span>Timed, like a school test</span></button>
+        <button class="mw" id="notes" ${n ? '' : 'disabled'}>${actionTile('notes', 40)}<b>Notes</b><span>Key points to revise</span></button>
+        <button class="mw" id="cards" ${n ? '' : 'disabled'}>${actionTile('flashcards', 40)}<b>Flashcards</b><span>Quick-fire recall</span></button>
+        <button class="mw" id="paper">${lockTag('mock')}${actionTile('mock', 40)}<b>Mock paper</b><span>DSE-style or worksheet</span></button>
       </div>
     </div>
   </div>
@@ -4316,10 +4316,10 @@ async function testStep(x) {
   const name = (u) => cleanUnitTitle(u.title);
   let step;
   if (left === 0) step = { icon: 'weak', t: SCH('Test today: a 5-question warm-up', '今天考試：5 題熱身'), s: SCH('Wake your brain up, then good luck!', '熱熱身，祝你考試順利！'), go: SCH('Warm up', '熱身'), run: () => startUnits(book, units, 5) };
-  else if (left === 1) step = { icon: 'mock', t: SCH('Practice test for tomorrow', '為明天做一次模擬測驗'), s: SCH('Timed, on all the test chapters', '限時，包括所有考試章節'), go: SCH('Start', '開始'), run: () => startChapterTest(book, units) };
+  else if (left === 1) step = { icon: 'test', t: SCH('Practice test for tomorrow', '為明天做一次模擬測驗'), s: SCH('Timed, on all the test chapters', '限時，包括所有考試章節'), go: SCH('Start', '開始'), run: () => startChapterTest(book, units) };
   else {
     const fresh = chs.find((c) => !c.done && !learned(c.unit));
-    if (fresh) step = { icon: 'practise', t: SCH(`Learn: ${name(fresh.unit)}`, `學習：${name(fresh.unit)}`), s: SCH('Not started yet: a guided lesson first', '未開始：先上一課'), go: SCH('Learn', '學習'), run: () => go({ name: 'learn', bookId: book.id, unitId: fresh.unit.id }) };
+    if (fresh) step = { icon: 'learn', t: SCH(`Learn: ${name(fresh.unit)}`, `學習：${name(fresh.unit)}`), s: SCH('Not started yet: a guided lesson first', '未開始：先上一課'), go: SCH('Learn', '學習'), run: () => go({ name: 'learn', bookId: book.id, unitId: fresh.unit.id }) };
     else if (weakest.pct < 75) step = { icon: 'practise', t: SCH(`Practise: ${name(weakest.unit)}`, `練習：${name(weakest.unit)}`), s: SCH(`Your weakest test chapter, ${weakest.pct}% so far`, `最弱的考試章節，目前 ${weakest.pct}%`), go: SCH('Practise', '練習'), run: () => { pick = { bookId: book.id, ids: new Set([weakest.unit.id]) }; startUnits(book, [weakest.unit], 10); } };
     else step = { icon: 'review', t: SCH('Mixed practice on all test chapters', '所有考試章節混合練習'), s: SCH('You’re in good shape: keep it fresh', '準備得不錯，保持手感'), go: SCH('Practise', '練習'), run: () => startUnits(book, units, 10) };
   }
