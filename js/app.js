@@ -637,9 +637,58 @@ function whenText(t) {
 let view = { name: 'home' };
 let S = null; // current practice session
 
+/* ---------- navigation: the phone's Back gesture and the browser's Back button work everywhere ----------
+   Every screen change is a history entry. Back closes an open dialog or the Buddy panel first; during practice
+   it asks before leaving, like the Back button on screen. A screen's own back button goes to the screen you
+   came from (a real step back), so the two never disagree. */
+let navStack = [], navPopping = false, navCur = null;
+const navKey = (v) => JSON.stringify(v || {});
+function navSet(state, push) { navCur = state; try { history[push ? 'pushState' : 'replaceState'](state, ''); } catch (e) {} }
+function navPush(v) {
+  if (navPopping) return;
+  const st = history.state;
+  if (!navStack.length) { navStack = [v]; return navSet({ v, d: 0 }, false); }
+  if (st && st.session) { navStack[navStack.length - 1] = v; return navSet({ v, d: navStack.length - 1 }, false); } // leaving practice: replace it
+  if (navKey(navStack[navStack.length - 1]) === navKey(v)) return navSet({ v, d: navStack.length - 1 }, false);
+  navStack.push(v); navSet({ v, d: navStack.length - 1 }, true);
+}
+// Practice screens (questions, the waiting page) get their own entry, so Back asks before leaving them.
+function navSession() { if (!(history.state && history.state.session)) navSet({ session: 1, v: view, d: navStack.length - 1 }, true); }
+function goBack(fallback) {
+  if (navStack.length > 1) { try { history.back(); return; } catch (e) {} }
+  go(fallback || { name: 'home' });
+}
+const backTop = (fb, label) => `<div class="topbar pagetop"><button class="backbtn" data-goback='${esc(JSON.stringify(fb))}'>${ICON.back}<span>${esc(label === 'Back' ? (LANG === 'zh' ? '返回' : 'Back') : label)}</span></button></div>`;
+document.addEventListener('input', (e) => { const w = e.target.closest && e.target.closest('.cdlg-wrap'); if (w) w.dataset.dirty = '1'; }, true);
+document.addEventListener('click', (e) => {
+  const w = e.target;
+  if (w && w.classList && w.classList.contains('cdlg-wrap') && w.dataset.dirty) {
+    e.stopPropagation(); e.preventDefault();
+    const d = w.firstElementChild; if (d) { d.classList.remove('nudge'); void d.offsetWidth; d.classList.add('nudge'); }
+    toast(LANG === 'zh' ? '你已輸入資料：請按「取消」或「儲存」。' : 'You’ve typed something here: tap Cancel or Save to close.');
+  }
+}, true);
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-goback]'); if (b) { e.preventDefault(); goBack(JSON.parse(b.dataset.goback)); } });
+window.addEventListener('popstate', (e) => {
+  const was = navCur;
+  const dlg = [...document.querySelectorAll('.cdlg-wrap')].pop();
+  if (dlg) { if (was) navSet(was, true); dlg.dispatchEvent(new MouseEvent('click', { bubbles: true })); return; }
+  if (helper.open) { if (was) navSet(was, true); helperClose(); return; }
+  const q = inSession();
+  if (q && !(e.state && e.state.session)) { if (was) navSet(was, true); q.click(); return; }
+  const st = e.state && e.state.v ? e.state : { v: { name: 'home' }, d: 0 };
+  navCur = st;
+  navStack = navStack.slice(0, st.d || 0); navStack[st.d || 0] = st.v;
+  navPopping = true;
+  try { go(st.v); } finally { navPopping = false; }
+});
+
 async function go(v) {
   if ((v.name === 'paper' || (v.name === 'pick' && v.mode === 'mock')) && !allow('mock')) return; // plan checks before leaving the screen
   { const f = { homework: 'homework', writing: 'writing', speaking: 'speaking', stars: 'stars' }[v.name]; if (f && locked(f)) return upsell(f, 'locked'); }
+  // a screen's back button pointing at the screen we came from = a real step back
+  if (!navPopping && navStack.length >= 2 && navKey(navStack[navStack.length - 2]) === navKey(v) && !(history.state && history.state.session)) { try { history.back(); return; } catch (e) {} }
+  navPush(v);
   view = v;
   getBooks().then((bs) => { bs.forEach((b) => { bookKinds.set(b.id, kindOfBook(b)); aliases.set(b.id, b.alias || {}); }); const pr = bs.some(looksPrimary); if (pr !== primaryCache) { primaryCache = pr; renderTabs(); } });
   document.querySelectorAll('.toast').forEach((x) => x.remove());
@@ -967,6 +1016,7 @@ async function renderHomework(id) {
   if (hw) return renderHomeworkChat(hw);
   const ph = hwState.photos;
   $app.innerHTML = `
+  ${backTop({name:'home'}, 'Today')}
   <main class="pad stack g18 hwpage" data-view="homework" data-raw style="flex:1">
     <h1 class="pagetitle">${HW('Homework help', '功課輔導')}</h1>
     <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${HW('Snap your homework, then work through it with Buddy.', '拍下你的功課，再和 Buddy 一起完成。')}</b>
@@ -1114,6 +1164,7 @@ async function renderWriting(id, sub) {
   if (it) return sub === 'fb' && it.drafts.length ? renderWritingFeedback(it) : renderWritingEditor(it);
   const s = wrState, k = s.kind && WR_KINDS[s.kind];
   $app.innerHTML = `
+  ${backTop({name:'home'}, 'Today')}
   <main class="pad stack g18 wrpage" data-view="writing" data-raw style="flex:1">
     <h1 class="pagetitle">${WT('Writing practice', '寫作練習')}</h1>
     <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${WT('Write, get DSE-style feedback, then make it better.', '寫作、取得 DSE 式評語，再改得更好。')}</b>
@@ -1299,6 +1350,7 @@ async function renderSpeaking(id, sub, qi) {
   if (it && sub === 'fb') return renderSpeakingFb(it, +qi);
   if (it) return renderSpeakingTask(it);
   $app.innerHTML = `
+  ${backTop({name:'home'}, 'Today')}
   <main class="pad stack g18 wrpage" data-view="speaking" data-raw style="flex:1">
     <h1 class="pagetitle">${SPK('Speaking practice', '說話練習')}</h1>
     <section class="hw-hero">${buddySVG('listen', 56)}<div><b>${SPK('DSE English Paper 4: the one-minute individual response.', 'DSE 英文卷四：一分鐘個人回應。')}</b>
@@ -1532,6 +1584,7 @@ async function renderDictation(id, sub) {
   if (id === 'new') return editDictation(null);
   const missed = (x) => x.items.filter((_, i) => (x.res || {})[i] && x.res[i].due).length;
   $app.innerHTML = `
+  ${backTop({name:'home'}, 'Today')}
   <main class="pad stack g18 dictpage" data-view="dictation" data-raw style="flex:1">
     <h1 class="pagetitle">${DT('默書 · Dictation', '默書')}</h1>
     <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${DT('I read the words, you write them.', '我讀，你寫。')}</b>
@@ -1703,7 +1756,11 @@ async function renderLearn(bookId, unitId) {
     return;
   }
   if (view !== myView) return;
+  const lsKey = `${bookId}:${unitId}`;
+  const saved = (local.lessonAt || {})[lsKey];
   const R = { k: -1, picked: {}, right: 0, msgs: [], busy: false, err: null };
+  if (saved && Date.now() - saved.t < 7 * DAY && saved.k < L.steps.length) { Object.assign(R, { k: saved.k, picked: saved.picked || {}, right: saved.right || 0, msgs: saved.msgs || [] }); setTimeout(() => toast(T(`Picking up where you left off: step ${saved.k + 1}`, `由上次的第 ${saved.k + 1} 步繼續`)), 300); }
+  const keepPlace = () => { local.lessonAt = local.lessonAt || {}; if (R.k >= 0 && R.k < L.steps.length) local.lessonAt[lsKey] = { t: Date.now(), k: R.k, picked: R.picked, right: R.right, msgs: R.msgs.filter((m) => !m.live).slice(-20) }; else delete local.lessonAt[lsKey]; saveLocal(); };
   const n = L.steps.length;
   const chText = await store.get(`text:${book.id}:${unit.id}`, '');
   if (view !== myView) return;
@@ -1756,7 +1813,7 @@ async function renderLearn(bookId, unitId) {
       R.msgs.pop();
       R.err = e.status === 0 ? T('You seem to be offline.', '你好像離線了。') : (e.message || T('Buddy is not available right now.', 'Buddy 暫時未能回答。'));
     }
-    R.msgs = R.msgs.slice(-40); R.busy = false;
+    R.msgs = R.msgs.slice(-40); R.busy = false; keepPlace();
     if (view === myView) drawChat();
   };
   const draw = () => {
@@ -1787,6 +1844,7 @@ async function renderLearn(bookId, unitId) {
       </section>`;
     }
     const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
+    keepPlace();
     const lm = document.getElementById('lnMain'); if (!lm) return;
     lm.innerHTML = `${R.k >= 0 && R.k < n ? dots : ''}${body}`;
     renderMath(lm);
@@ -2321,6 +2379,7 @@ function renderStars(parent = false) {
     </div>`;
   };
   $app.innerHTML = `
+  ${backTop({name:'progress'}, 'Back')}
   <main class="pad stack g18 starpage" data-view="stars" data-raw style="flex:1">
     <h1 class="pagetitle">${ST('Star shop', '星星商店')}</h1>
     ${!starsOn() ? `<div class="card" style="padding:16px;line-height:1.5">${ST('Stars are switched off. Turn them on in Settings.', '星星功能已關閉，可在設定中開啟。')}</div>` : ''}
@@ -3947,6 +4006,7 @@ function renderPlans(hi) {
   const yearly = !!local.planYearly, cur = planId();
   const cell = (p, f) => { const v = TIERS[p].lim[f]; return `<td class="${v === UNL || (FEAT[f].per === 'flag' && v) ? 'pt-yes' : !v ? 'pt-no' : ''}">${limText(f, v)}</td>`; };
   $app.innerHTML = `
+  ${backTop({name:'settings'}, 'Back')}
   <main class="pad stack g18 planpage" data-view="plans" data-raw style="flex:1">
     <div class="pp-head"><h1 class="pagetitle">${PL('Choose your plan', '選擇你的計劃')}</h1>
       <div class="seg pp-bill" role="radiogroup" aria-label="${PL('Billing', '付款方式')}"><button role="radio" aria-checked="${!yearly}" class="${!yearly ? 'on' : ''}" data-bill="m">${PL('Monthly', '按月')}</button><button role="radio" aria-checked="${yearly}" class="${yearly ? 'on' : ''}" data-bill="y">${PL('Yearly · 2 months free', '按年 · 免費兩個月')}</button></div></div>
@@ -4043,6 +4103,7 @@ async function renderParent() {
   feed.sort((a, b) => b.t - a.t);
   const tone = (p) => (p >= 75 ? 'good' : p >= 50 ? 'mid' : 'low');
   $app.innerHTML = `
+  ${backTop({name:'progress'}, 'Progress')}
   <main class="pad stack g14 parentpage" data-view="parent" data-raw style="flex:1">
     <div class="pd-head"><div><h1 class="pagetitle">${PD(`${esc(name)}’s dashboard`, `${esc(name)}的學習主頁`)}</h1>
       <p class="muted">${last ? PD(`Last practised ${agoWords(last)}`, `上次練習：${agoWords(last)}`) : PD('No practice yet', '仍未開始練習')} · <span class="pd-live">● ${PD('Live on this device', '此裝置即時資料')}</span></p></div>
@@ -4736,6 +4797,7 @@ function startFromWait() {
 
 function renderWaiting() {
   S.waiting = true;
+  navSession();
   tryRecap();
   const e = S.error;
   if (e && e.status === 401) return renderAccess(() => { refill(S); renderWaiting(); }, 'That access code didn’t work. Please check it and try again.');
@@ -4939,6 +5001,7 @@ const preTutorHTML = (q) => `<div class="tutor pre" id="tutor">${tutorHTML(q)}</
 
 function renderQuestion() {
   S.waiting = false;
+  navSession();
   const q = S.qs[S.i];
   if (S.mode === 'unit' && !S.placement && !S.review && !q.recap) { S.metered = S.metered || new Set(); if (!S.metered.has(q.id)) { S.metered.add(q.id); meter('q'); if (!choiceType(q)) meter('written'); } }
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
