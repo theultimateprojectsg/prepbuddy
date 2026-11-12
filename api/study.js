@@ -1,6 +1,6 @@
 // One serverless function for the newer study tools, to stay within Vercel's function limit.
 // /api/homework, /api/learn, /api/writing and /api/snippets and /api/speaking are rewritten here (vercel.json) with ?fn=<name>.
-const FNS = { homework: require('../lib/fns/homework'), learn: require('../lib/fns/learn'), writing: require('../lib/fns/writing'), snippets: require('../lib/fns/snippets'), speaking: require('../lib/fns/speaking') };
+const FNS = { homework: require('../lib/fns/homework'), learn: require('../lib/fns/learn'), writing: require('../lib/fns/writing'), snippets: require('../lib/fns/snippets'), speaking: require('../lib/fns/speaking'), bookinfo: require('../lib/fns/bookinfo') };
 module.exports = (req, res) => {
   let fn = req.query && req.query.fn;
   if (!fn) { const m = String(req.url || '').match(/\/api\/(\w+)/); fn = m && m[1]; }

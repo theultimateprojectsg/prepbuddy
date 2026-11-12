@@ -8,6 +8,7 @@
 //   { action: 'blob', content (base64) }                 -> { sha }      one file at a time (keeps requests small)
 //   { action: 'publish', entry, files: [{ path, sha }] } -> { ok, commit } adds/replaces the book in library/catalog.json
 //   { action: 'update', id, changes }                    -> { ok, commit } edits a book's details in the catalog
+//   { action: 'bank', id, sha, count }                  -> { ok, commit } publishes a book's starter question bank (questions.json)
 //   { action: 'remove', id }                             -> { ok, commit } takes a book out of the library (and deletes its files)
 //   { action: 'reports' }                                -> { reports, stats } questions students flagged (newest first) + totals of checked ones
 //   { action: 'resolve', path, sha, verdict }            -> { ok }        'right' (question was bad) or 'fine'; moves it to reports/done/
@@ -87,6 +88,13 @@ module.exports = async (req, res) => {
         message: `Library: update details of ${body.id}`,
         change: (cat) => cat.map((x) => { if (x.id !== body.id) return x; const y = { ...x }; for (const k of allowed) if (body.changes && k in body.changes) y[k] = body.changes[k]; return y; }),
       });
+      out = { ok: true, commit };
+    } else if (body.action === 'bank') {
+      // a book's starter question bank: commit library/<id>/questions.json and record the count in the catalog
+      if (!safeId(body.id) || typeof body.sha !== 'string') throw err(400, 'Bad question bank.');
+      const n = Math.max(0, Math.round(Number(body.count) || 0));
+      const commit = await commitWith({ files: [{ path: `library/${body.id}/questions.json`, sha: body.sha }], message: `Library: ${n} starter questions for ${body.id}`,
+        change: (cat) => cat.map((x) => (x.id === body.id ? { ...x, questionCount: n } : x)) });
       out = { ok: true, commit };
     } else if (body.action === 'remove') {
       if (!safeId(body.id)) throw err(400, 'Bad book id.');

@@ -57,7 +57,7 @@ async function renderLibrary(note) {
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2>Books in the library (${cat.length})</h2><button class="btn" id="add">Add a textbook</button></div>
     <div>${cat.map((b) => `<div class="row" data-id="${esc(b.id)}"><div class="meta"><b>${esc(b.title)}</b><span>${esc(b.subject || '')}${b.level ? ' · ' + esc(b.level) : ''} · ${b.units.length} chapters · code ${esc(b.code)}</span></div>
-      <div class="acts"><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
+      <div class="acts">${b.questionCount ? `<span class="hint" style="align-self:center">${b.questionCount} questions</span>` : ''}<button class="link" data-starter="${esc(b.id)}">${b.questionCount ? 'Add more questions' : 'Add starter questions'}</button><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
   </div>
   <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy.</p>
   <button class="btn ghost small" id="out" style="align-self:flex-start">Sign out</button>`;
@@ -65,6 +65,11 @@ async function renderLibrary(note) {
   $('add').onclick = () => renderUpload();
   $('out').onclick = () => { sessionStorage.removeItem(PW_KEY); pw = ''; renderLogin(); };
   app.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => renderDetails(cat.find((x) => x.id === b.dataset.edit), cat)));
+  app.querySelectorAll('[data-starter]').forEach((b) => (b.onclick = async () => {
+    const book = cat.find((x) => x.id === b.dataset.starter);
+    try { const n = await starterFor(book); renderLibrary(`Added ${n} starter questions to “${book.title}”. Students get them in about 1–2 minutes.`); }
+    catch (e) { renderLibrary(); alert(`Starter questions didn’t finish: ${e.message}`); }
+  }));
   app.querySelectorAll('[data-remove]').forEach((b) => (b.onclick = async () => {
     const book = cat.find((x) => x.id === b.dataset.remove);
     if (!confirm(`Remove “${book.title}” from the library? Students who already added it keep their copy; nobody new can add it.`)) return;
@@ -141,6 +146,8 @@ function renderUpload(msg) {
       const sample = units.slice(0, 3).map((u) => u.text).join(' ').slice(0, 20000);
       const cjk = (sample.match(/[㐀-鿿]/g) || []).length, words = (sample.match(/[A-Za-z]{2,}/g) || []).length;
       draft = { fileName: file.name, title: book.title, pageCount: book.pageCount, pageTexts: book.pageTexts, units, hidden: [], lang: cjk > words ? 'zh-HK' : 'en', method };
+      // the book's details (title, subject, level, licence…) are read from its first pages while chapters are checked
+      draft.infoP = aiApi('bookinfo', { fileName: file.name, pdfTitle: book.title, text: book.pageTexts.slice(0, 8).join('\n\n').slice(0, 12000) }).catch(() => null);
       renderChapters();
     } catch (err) { renderUpload(err.message || 'That PDF could not be read.'); }
   };
@@ -195,10 +202,17 @@ function guessKind(t) {
 }
 async function renderDetails(existing, cat) {
   const d = draft;
-  const b = existing || {};
+  let b = existing || {};
+  let ai = null;
+  if (!existing && d && d.infoP) {
+    app.innerHTML = `<header><h1>Book details</h1></header>${steps(2)}<div class="card"><p class="hint" style="margin:0">Reading the title and copyright pages…</p><div class="progress"><i style="width:60%"></i></div></div>`;
+    ai = await d.infoP;
+    if (ai) b = { title: ai.title, subject: ai.subject, level: ai.level, kind: ai.kind, publisher: ai.publisher, licence: ai.licence, credit: ai.credit };
+  }
   const defTitle = b.title || (d && (d.title && d.title.length > 3 && !/^untitled|microsoft word/i.test(d.title) ? d.title : d.fileName.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ')));
   app.innerHTML = `<header><h1>${existing ? 'Edit book details' : 'Book details'}</h1><button class="btn ghost small" id="back">${existing ? 'Back to library' : 'Back to chapters'}</button></header>${existing ? '' : steps(2)}
   <form class="card" id="f">
+    ${ai ? `<div class="aifill">✨ Filled in from the book’s first pages${ai.confidence === 'low' ? ' (not sure: check carefully)' : ''}. Please check before publishing, especially the licence.</div>` : ''}
     <label>Title<input id="title" required value="${esc(defTitle)}"></label>
     <div class="grid2">
       <label>Subject<input id="subject" required placeholder="e.g. Biology, 中國語文" value="${esc(b.subject || '')}"></label>
@@ -214,6 +228,7 @@ async function renderDetails(existing, cat) {
       <label>Book code<input id="code" value="${esc(b.code || '')}" ${existing ? 'disabled' : ''} placeholder="made automatically"></label>
     </div>
     <label>Credit line (shown to students)<input id="credit" placeholder="e.g. OpenStax Biology 2e, CC BY-NC-SA 4.0. Access for free at openstax.org." value="${esc(b.credit || '')}"></label>
+    ${existing ? '' : `<label class="check"><input type="checkbox" id="starter" ${d && d.units.length <= 60 ? 'checked' : ''}> Make starter questions now: 4 checked questions per chapter, so students can start straight away (about ${Math.max(1, Math.round((d ? d.units.length : 0) * 25 / 3 / 60))} min for ${d ? d.units.length : 0} chapters).</label>`}
     ${existing ? '' : `<label class="check"><input type="checkbox" id="rights" required> I have the right to share this book with every PrepBuddy student.</label>`}
     <div id="msg"></div>
     <button class="btn" id="go">${existing ? 'Save changes' : 'Publish to the library'}</button>
@@ -232,7 +247,13 @@ async function renderDetails(existing, cat) {
         await adminApi({ action: 'update', id: existing.id, changes: details });
         return renderLibrary(`Saved “${details.title}”. The library updates in about 1–2 minutes.`);
       }
-      await publish(details, val('code'));
+      const wantStarter = !!($('starter') && $('starter').checked);
+      const pub = await publish(details, val('code'));
+      if (wantStarter) {
+        try { const n = await makeBank(pub.entry, pub.units); return renderLibrary(`Published “${details.title}” with book code ${pub.code} and ${n} starter questions. It will appear in the library in about 1–2 minutes.`); }
+        catch (e2) { return renderLibrary(`Published “${details.title}” (code ${pub.code}), but the starter questions didn’t finish: ${e2.message}. Use “Add starter questions” to try again.`); }
+      }
+      renderLibrary(`Published “${details.title}” with book code ${pub.code}. It will appear in the library in about 1–2 minutes, while Vercel updates the site.`);
     } catch (err) { $('msg').innerHTML = `<div class="err">${esc(err.message)}</div>`; btn.disabled = false; btn.textContent = existing ? 'Save changes' : 'Publish to the library'; }
   };
 }
@@ -282,8 +303,52 @@ async function publish(details, codeIn) {
     units: d.units.map((u, i) => ({ id: `u${i}`, title: u.title.trim(), chapter: null, startPage: u.startPage, endPage: u.endPage, ...((u.figures || []).length ? { figs: true } : {}) })),
   };
   await adminApi({ action: 'publish', entry, files: out });
+  const units = d.units.map((u, i) => ({ id: `u${i}`, title: u.title.trim(), text: u.text }));
   draft = null;
-  renderLibrary(`Published “${details.title}” with book code ${code}. It will appear in the library in about 1–2 minutes, while Vercel updates the site.`);
+  return { entry, code, units };
+}
+
+/* ---------- starter questions ----------
+   4 questions per chapter (3 multiple choice at rising levels + 1 short written), each checked by the second AI
+   exactly as in the app, published as the book's question bank. Students who add the book get them at once. */
+const STARTER = [{ level: 1, type: 'mcq' }, { level: 2, type: 'mcq' }, { level: 3, type: 'mcq' }, { level: 2, type: 'short' }];
+const okQ = (q) => q && (q.type === 'mcq' ? Array.isArray(q.options) && q.options.length === 4 && 'ABCD'.includes(q.correct_option || '?')
+  : Array.isArray(q.parts) && q.parts.length > 0 && q.parts.every((p) => p && p.prompt && Array.isArray(p.mark_scheme) && p.marks > 0));
+async function makeBank(entry, units, existing = {}) {
+  app.innerHTML = `<header><h1>Starter questions</h1></header>
+    <div class="card"><h2>${esc(entry.title)}</h2><div class="progress"><i id="bar" style="width:0%"></i></div><p class="hint" id="pmsg">Writing and checking questions…</p>
+    <p class="hint" style="margin:0">Keep this page open. The book is already published; this adds questions to it.</p></div>`;
+  const bank = JSON.parse(JSON.stringify(existing || {})); let done = 0, made = 0, next = 0;
+  const tag = Date.now().toString(36).slice(-4);
+  const lang = entry.lang || 'en';
+  const one = async (u) => {
+    if (!u.text || u.text.length < 300) return;
+    let gen = null;
+    for (let t = 1; t <= 2 && !gen; t++) { try { gen = await aiApi('generate', { title: u.title, text: u.text, items: STARTER, kind: entry.kind, lang }); } catch (e) { if (t === 2) return; } }
+    const qs = (gen && gen.questions) || [];
+    const passed = [];
+    await Promise.all(qs.map(async (q, k) => {
+      if (q.figure || !okQ(q)) return;
+      try { const v = await aiApi('verify', { title: u.title, text: u.text, question: q }); if (v.passed) passed.push({ ...q, id: `s${tag}${k}` }); } catch (e) {}
+    }));
+    if (passed.length) { bank[u.id] = [...(bank[u.id] || []), ...passed]; made += passed.length; }
+  };
+  const worker = async () => { while (next < units.length) { const u = units[next++]; await one(u); done++; $('bar').style.width = `${Math.round(95 * done / units.length)}%`; $('pmsg').textContent = `Chapter ${done} of ${units.length} · ${made} questions ready`; } };
+  await Promise.all(Array.from({ length: Math.min(3, units.length) }, worker));
+  if (!made) throw new Error('no questions passed the check');
+  $('pmsg').textContent = 'Publishing the questions…';
+  const { sha } = await adminApi({ action: 'blob', content: b64(JSON.stringify(bank)) });
+  const total = Object.values(bank).reduce((a, l) => a + l.length, 0);
+  await adminApi({ action: 'bank', id: entry.id, sha, count: total });
+  return made;
+}
+// For a book already in the library: fetch its chapters and make the bank.
+async function starterFor(book) {
+  app.innerHTML = `<header><h1>Starter questions</h1></header><div class="card"><p class="hint">Downloading the chapters…</p></div>`;
+  const units = await Promise.all(book.units.map(async (u) => { const r = await fetch(`library/${book.id}/${u.id}.txt`); return { id: u.id, title: u.title, text: r.ok ? await r.text() : '' }; }));
+  const qr = await fetch(`library/${book.id}/questions.json?t=${Date.now()}`, { cache: 'no-store' });
+  const existing = qr.ok ? await qr.json().catch(() => ({})) : {};
+  return makeBank(book, units, existing);
 }
 
 if (pw) adminApi({ action: 'check' }).then(() => renderLibrary()).catch(() => { pw = ''; renderLogin(); });
