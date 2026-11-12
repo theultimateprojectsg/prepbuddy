@@ -6,6 +6,22 @@
   },
   "rewrites": [
     {
+      "source": "/api/homework",
+      "destination": "/api/study?fn=homework"
+    },
+    {
+      "source": "/api/learn",
+      "destination": "/api/study?fn=learn"
+    },
+    {
+      "source": "/api/writing",
+      "destination": "/api/study?fn=writing"
+    },
+    {
+      "source": "/api/snippets",
+      "destination": "/api/study?fn=snippets"
+    },
+    {
       "source": "/admin",
       "destination": "/admin.html"
     }
