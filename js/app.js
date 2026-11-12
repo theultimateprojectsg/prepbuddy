@@ -819,6 +819,14 @@ async function coachSnapshot() {
     if (fresh.length) lines.push(`- Not started yet (${fresh.length}): ${fresh.slice(0, 40).join('; ')}${fresh.length > 40 ? '; …' : ''}`);
   }
   if (!books.length) lines.push('', 'No textbooks added yet.');
+  const up = upcomingTests();
+  if (up.length) {
+    lines.push('', 'SCHOOL TESTS coming up (plan around these first):');
+    for (const x of up) { const b = books.find((y) => y.id === x.b); const bi = books.indexOf(b); if (!b) continue;
+      lines.push(`- ${x.name} on ${x.date} (${testLeft(x)} day(s) away): ${b.title}, chapters ${x.u.map((id) => { const u = b.units.find((v) => v.id === id); return u ? `[B${bi + 1}.C${b.units.indexOf(u) + 1}] ${u.title}` : ''; }).filter(Boolean).join('; ')}.`); }
+  }
+  const done = schoolTests().filter((x) => typeof x.score === 'number').slice(-5);
+  if (done.length) lines.push('', `Recent school test results: ${done.map((x) => `${x.name} (${x.date}) ${x.score}%`).join('; ')}.`);
   return lines.join('\n');
 }
 // Carry out what the coach decided to open (it only does this after the student agrees, or asks).
@@ -1706,6 +1714,8 @@ async function renderHome() {
   const items = [];
   if (due.length) items.push(`<button class="plan-item" data-mode="spaced"><span class="pi-icon pi-review">${actionIcon('review', 24)}</span><span class="pi-text"><b>Review ${due.length} question${due.length > 1 ? 's' : ''}</b><span class="sub">About ${Math.max(1, Math.round(Math.min(due.length, 15) * 0.6))} min · keeps what you learned fresh</span></span><span class="go">Start</span></button>`);
   if (mk) items.push(`<button class="plan-item" id="mistakes"><span class="pi-icon pi-mistake">${actionIcon('mistakes', 24)}</span><span class="pi-text"><b>Fix ${mk} mistake${mk > 1 ? 's' : ''}</b><span class="sub">Questions you didn’t get fully right</span></span><span class="go">Open</span></button>`);
+  const tests = await schoolTestsHTML();
+  tests.steps.filter((p) => p.left <= 14).slice(0, 2).forEach((p, k) => items.push(`<button class="plan-item" data-tstep="${k}"><span class="pi-icon pi-test">${actionIcon(p.step.icon, 24)}</span><span class="pi-text"><b data-raw>${esc(p.step.t)}</b><span class="sub"><span data-raw>${esc(p.x.name)}</span> ${leftText(p.left)} · ${p.step.s}</span></span><span class="go">${p.step.go}</span></button>`));
   { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
     if (nb) items.push(`<button class="plan-item" data-lv="${esc(nb.id)}"><span class="pi-icon pi-continue">${actionIcon('weak', 24)}</span><span class="pi-text"><b>Find your level</b><span class="sub"><span data-raw>${esc(nb.title)}</span> · about 5 min</span></span><span class="go">Start</span></button>`); }
   if (last) {
@@ -1721,6 +1731,7 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head}
     <section class="stack g10" aria-label="Today's plan"><div class="sect-head"><h2>Today’s plan</h2></div><div class="plan">${items.join('')}</div></section>
+    ${tests.html}
     <section class="stack g10" aria-label="Practice">
       <div class="sect-head"><h2>Practice</h2></div>
       <div class="quick">
@@ -1748,6 +1759,8 @@ async function renderHome() {
   const ct = document.getElementById('continue');
   if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
+  bindSchoolTests();
+  $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
   { const hg = document.getElementById('hwgo'); if (hg) hg.onclick = () => go({ name: 'homework' }); }
   { const dg = document.getElementById('dictgo'); if (dg) dg.onclick = () => go({ name: 'dictation' }); }
@@ -3559,6 +3572,103 @@ async function startUnits(book, units, count = SESSION_SIZE, opts = {}) {
   S = newSession({ mode: 'unit', title: opts.title || title, book, units, qs, target: count, pending: 0, types, count, diff, placement: !!opts.placement });
   topUp(S);
   if (S.qs.length) renderQuestion(); else renderWaiting();
+}
+
+
+/* ---------- school tests: plan the days before a test ----------
+   The student adds a school test (name, date, book, chapters). Today's plan then counts down to it:
+   learn chapters not met yet, practise the weakest, a timed practice test the day before, a short warm-up
+   on the day. Afterwards they can note how it went. Kept on this device. */
+const SCH = (en, zh) => (LANG === 'zh' ? zh : en);
+const ymd = (t) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const testDay = (x) => new Date(x.date + 'T00:00:00').getTime();
+const testLeft = (x) => Math.round((testDay(x) - dayStart()) / DAY);
+function schoolTests() { return (local.sched || []).slice().sort((a, b) => testDay(a) - testDay(b)); }
+const upcomingTests = () => schoolTests().filter((x) => testLeft(x) >= 0);
+const leftText = (n) => (n === 0 ? SCH('today', '今天') : n === 1 ? SCH('tomorrow', '明天') : SCH(`in ${n} days`, `${n} 天後`));
+// What to do today for one test: the step, plus a function that starts it.
+async function testStep(x) {
+  const book = (await getBooks()).find((b) => b.id === x.b);
+  if (!book) return null;
+  const units = book.units.filter((u) => x.u.includes(u.id));
+  if (!units.length) return null;
+  const left = testLeft(x);
+  const m = await bookMastery(book);
+  const chs = m.chapters.filter((c) => x.u.includes(c.unit.id));
+  const ready = Math.round(chs.reduce((t, c) => t + c.pct, 0) / chs.length);
+  const learned = (u) => !!(local.learned || {})[`${book.id}:${u.id}`];
+  const weakest = chs.slice().sort((a, b) => a.pct - b.pct)[0];
+  const name = (u) => cleanUnitTitle(u.title);
+  let step;
+  if (left === 0) step = { icon: 'weak', t: SCH('Test today: a 5-question warm-up', '今天考試：5 題熱身'), s: SCH('Wake your brain up, then good luck!', '熱熱身，祝你考試順利！'), go: SCH('Warm up', '熱身'), run: () => startUnits(book, units, 5) };
+  else if (left === 1) step = { icon: 'mock', t: SCH('Practice test for tomorrow', '為明天做一次模擬測驗'), s: SCH('Timed, on all the test chapters', '限時，包括所有考試章節'), go: SCH('Start', '開始'), run: () => startChapterTest(book, units) };
+  else {
+    const fresh = chs.find((c) => !c.done && !learned(c.unit));
+    if (fresh) step = { icon: 'practise', t: SCH(`Learn: ${name(fresh.unit)}`, `學習：${name(fresh.unit)}`), s: SCH('Not started yet: a guided lesson first', '未開始：先上一課'), go: SCH('Learn', '學習'), run: () => go({ name: 'learn', bookId: book.id, unitId: fresh.unit.id }) };
+    else if (weakest.pct < 75) step = { icon: 'practise', t: SCH(`Practise: ${name(weakest.unit)}`, `練習：${name(weakest.unit)}`), s: SCH(`Your weakest test chapter, ${weakest.pct}% so far`, `最弱的考試章節，目前 ${weakest.pct}%`), go: SCH('Practise', '練習'), run: () => { pick = { bookId: book.id, ids: new Set([weakest.unit.id]) }; startUnits(book, [weakest.unit], 10); } };
+    else step = { icon: 'review', t: SCH('Mixed practice on all test chapters', '所有考試章節混合練習'), s: SCH('You’re in good shape: keep it fresh', '準備得不錯，保持手感'), go: SCH('Practise', '練習'), run: () => startUnits(book, units, 10) };
+  }
+  return { x, book, units, left, ready, step };
+}
+function testDialog(edit) {
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  const st = { id: edit ? edit.id : uid(), name: edit ? edit.name : '', date: edit ? edit.date : ymd(Date.now() + 7 * DAY), b: edit ? edit.b : null, u: new Set(edit ? edit.u : []) };
+  const draw = async () => {
+    const books = await getBooks();
+    if (!st.b && books.length) st.b = books[0].id;
+    const book = books.find((b) => b.id === st.b);
+    box.innerHTML = `<div class="cdlg rdlg tdlg" role="dialog" aria-modal="true" aria-labelledby="td-t" data-raw>
+      <b id="td-t">${edit ? SCH('Edit school test', '修改學校測驗') : SCH('Add a school test', '加入學校測驗')}</b>
+      <label for="td-n">${SCH('What test?', '甚麼測驗？')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, 中文默書, Maths quiz', '例如：科學測驗、中文默書、數學小測')}" value="${esc(st.name)}">
+      <label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}">
+      <label for="td-b">${SCH('Textbook', '課本')}</label><select id="td-b" class="input">${books.map((b) => `<option value="${esc(b.id)}" ${b.id === st.b ? 'selected' : ''}>${esc(b.title)}</option>`).join('')}</select>
+      <label>${SCH('Chapters in the test', '測驗範圍')}</label>
+      <div class="td-chs">${book ? book.units.map((u) => `<label class="td-ch"><input type="checkbox" data-u="${esc(u.id)}" ${st.u.has(u.id) ? 'checked' : ''}><span>${esc(cleanUnitTitle(u.title))}</span></label>`).join('') : ''}</div>
+      <p class="hw-err" id="td-err" role="alert" hidden></p>
+      <div class="rd-row"><button class="btn ghost" id="td-cancel">${SCH('Cancel', '取消')}</button><button class="btn" id="td-save">${SCH('Save', '儲存')}</button></div>
+      ${edit ? `<button class="btn-sm quiet" id="td-del" style="align-self:center">${SCH('Delete this test', '刪除這個測驗')}</button>` : ''}
+    </div>`;
+    const n = box.querySelector('#td-n'), d = box.querySelector('#td-d');
+    n.oninput = () => (st.name = n.value); d.oninput = () => (st.date = d.value);
+    box.querySelector('#td-b').onchange = (e) => { st.b = e.target.value; st.u = new Set(); draw(); };
+    box.querySelectorAll('[data-u]').forEach((c) => (c.onchange = () => (c.checked ? st.u.add(c.dataset.u) : st.u.delete(c.dataset.u))));
+    box.querySelector('#td-cancel').onclick = () => box.remove();
+    box.querySelector('#td-save').onclick = () => {
+      const err = box.querySelector('#td-err');
+      const bad = !st.name.trim() ? SCH('Give the test a name.', '請輸入測驗名稱。') : !st.date || testLeft(st) < 0 ? SCH('Pick a date from today on.', '請選擇今天或之後的日期。') : !st.u.size ? SCH('Tick at least one chapter.', '請剔選最少一個章節。') : '';
+      if (bad) { err.textContent = bad; err.hidden = false; return; }
+      const rec = { id: st.id, name: st.name.trim().slice(0, 60), date: st.date, b: st.b, u: [...st.u] };
+      local.sched = [...(local.sched || []).filter((x) => x.id !== st.id), rec].slice(-30); saveLocal();
+      box.remove(); if (view.name === 'home') renderHome();
+      toast(SCH(`Added. Today’s plan now counts down to ${rec.name}.`, `已加入。今日計劃會為「${rec.name}」倒數。`));
+    };
+    const del = box.querySelector('#td-del'); if (del) del.onclick = () => { local.sched = (local.sched || []).filter((x) => x.id !== st.id); saveLocal(); box.remove(); if (view.name === 'home') renderHome(); };
+  };
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+  draw(); document.body.appendChild(box);
+}
+// Today: a "School tests" section, and how-did-it-go for tests just passed.
+async function schoolTestsHTML() {
+  const up = upcomingTests().slice(0, 4);
+  const steps = (await Promise.all(up.map(testStep))).filter(Boolean);
+  const past = schoolTests().filter((x) => testLeft(x) < 0 && testLeft(x) >= -4 && x.score === undefined);
+  const rows = steps.map((p) => `<div class="stx ${p.left <= 1 ? 'soon' : ''}"><button class="stx-main" data-tedit="${esc(p.x.id)}" aria-label="${SCH('Edit', '修改')} ${esc(p.x.name)}">
+      <span class="stx-cal"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span>
+      <span class="stx-t"><b data-raw>${esc(p.x.name)}</b><small>${leftText(p.left)} · <span data-raw>${esc(p.units.length === 1 ? cleanUnitTitle(p.units[0].title) : SCH(`${p.units.length} chapters`, `${p.units.length} 個章節`))}</span></small></span>
+      <span class="stx-r"><b>${p.ready}%</b><small>${SCH('ready', '準備度')}</small></span></button></div>`).join('');
+  return { steps, html: `<section class="stack g10" aria-label="${SCH('School tests', '學校測驗')}">
+      <div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}</button></div>
+      ${past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><span class="stx-sc"><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm primary" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('')}
+      ${rows ? `<div class="card stx-list">${rows}</div>` : `<button class="weekstrip" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s plan will count down to it, day by day.', '加入後，今日計劃會每天幫你倒數準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button>`}
+    </section>` };
+}
+function bindSchoolTests() {
+  const add = () => testDialog();
+  ['addTest', 'addTest2'].forEach((id) => { const b = document.getElementById(id); if (b) b.onclick = add; });
+  $app.querySelectorAll('[data-tedit]').forEach((b) => (b.onclick = () => testDialog((local.sched || []).find((x) => x.id === b.dataset.tedit))));
+  const setScore = (id, v) => { local.sched = (local.sched || []).map((x) => (x.id === id ? { ...x, score: v } : x)); saveLocal(); renderHome(); };
+  $app.querySelectorAll('[data-savescore]').forEach((b) => (b.onclick = () => { const i = $app.querySelector(`[data-score="${b.dataset.savescore}"]`); const v = Math.max(0, Math.min(100, Math.round(Number(i.value)))); if (i.value === '' || !Number.isFinite(v)) return i.focus(); setScore(b.dataset.savescore, v); toast(SCH('Saved. Well done for getting it done!', '已儲存。辛苦了！')); }));
+  $app.querySelectorAll('[data-skipscore]').forEach((b) => (b.onclick = () => setScore(b.dataset.skipscore, null)));
 }
 
 /* ---------- level check: a short quiz across the book when it's new ----------
