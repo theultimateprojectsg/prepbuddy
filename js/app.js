@@ -2175,6 +2175,11 @@ function renderSettings() {
       <span class="muted" style="font-size:13.5px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
     </section>
     <section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">${BK('Back up your progress', '備份你的進度')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm primary" id="sbackup">${BK('Save a backup file', '儲存備份檔案')}</button><label class="btn-sm" style="cursor:pointer">${BK('Restore from a file', '從檔案還原')}<input type="file" id="srestore" accept="application/json,.json" hidden></label></div>
+    </section>
+    <section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">AI usage</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
       <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
@@ -2185,10 +2190,47 @@ function renderSettings() {
   const nm = document.getElementById('sname');
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   document.getElementById('susage').onclick = () => go({ name: 'usage' });
+  document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
+  document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   document.getElementById('splans').onclick = () => go({ name: 'plans' });
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(); renderTabs(); }));
   document.getElementById('sstars').onclick = () => { if (locked('stars')) return upsell('stars', 'locked'); local.starsOn = !starsOn(); saveLocal(); renderSettings(); renderTabs(); };
   window.scrollTo(0, 0);
+}
+
+
+/* ---------- back up and restore (until accounts) ----------
+   Everything PrepBuddy keeps on this device in one file: progress, settings, textbooks, questions, notes,
+   essays, homework. Restore replaces what is on the device with the file's contents. Speaking recordings stay
+   behind (too big); their marks and feedback are included. */
+const BK = (en, zh) => (LANG === 'zh' ? zh : en);
+async function backupFile() {
+  const ks = (await store.keys('')).filter((k) => !String(k).startsWith('spaud:'));
+  const vals = await store.getMany(ks, null);
+  const db = {};
+  ks.forEach((k, i) => { const v = vals[i]; if (v !== null && v !== undefined && !(typeof Blob !== 'undefined' && v instanceof Blob)) db[k] = v; });
+  local.backupAt = Date.now(); saveLocal();
+  const data = { app: 'prepbuddy', v: 1, at: new Date().toISOString(), ui: (() => { try { return localStorage.getItem('prepbuddy.ui'); } catch (e) { return null; } })(), local, db };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const name = `PrepBuddy backup ${(local.name || '').trim() ? local.name.trim() + ' ' : ''}${new Date().toISOString().slice(0, 10)}.json`;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  return blob.size;
+}
+async function restoreFile(file) {
+  let data;
+  try { data = JSON.parse(await file.text()); } catch (e) { throw new Error(BK('That file isn’t a PrepBuddy backup.', '這個檔案不是 PrepBuddy 備份。')); }
+  if (!data || data.app !== 'prepbuddy' || !data.local || !data.db) throw new Error(BK('That file isn’t a PrepBuddy backup.', '這個檔案不是 PrepBuddy 備份。'));
+  const ok = await confirmLeave({ title: BK('Replace everything on this device?', '取代這部裝置上的所有資料？'),
+    body: BK(`This backup is from ${new Date(data.at).toLocaleString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}${data.local.name ? ` (${data.local.name})` : ''}. Progress on this device now will be replaced by it.`, `這個備份建立於 ${new Date(data.at).toLocaleString('zh-HK')}${data.local.name ? `（${data.local.name}）` : ''}。這部裝置現有的進度會被取代。`),
+    stay: BK('Cancel', '取消'), leave: BK('Restore', '還原') });
+  if (!ok) return false;
+  for (const k of await store.keys('')) await store.del(k);
+  for (const [k, v] of Object.entries(data.db)) await store.set(k, v);
+  try { localStorage.setItem('prepbuddy.v2', JSON.stringify(data.local)); if (data.ui) localStorage.setItem('prepbuddy.ui', data.ui); } catch (e) {}
+  await store.persist();
+  location.reload();
+  return true;
 }
 
 /* ---------- stars and rewards (for younger students; parents set the rewards) ----------
