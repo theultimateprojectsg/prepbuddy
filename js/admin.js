@@ -43,13 +43,17 @@ function renderLogin(msg) {
       const r = await adminApi({ action: 'check' });
       sessionStorage.setItem(PW_KEY, pw);
       if (!r.github) return renderLogin('Signed in, but GITHUB_TOKEN is not set in Vercel yet, so books can’t be published.');
-      renderLibrary();
+      home();
     } catch (err) { pw = ''; renderLogin(err.status === 401 ? 'That password is not right.' : err.message); }
   };
 }
 
 /* ---------- the library ---------- */
+// Landing page: the pilot dashboard (bookmark admin.html#pilot), or the library with #library.
+function home() { return location.hash === '#library' ? renderLibrary() : renderPilot(); }
+const setHash = (h) => { try { history.replaceState(null, '', h); } catch (e) {} };
 async function renderLibrary(note) {
+  setHash('#library');
   const cat = await catalog();
   app.innerHTML = `<header><h1>Library</h1><span class="badge">Admin</span></header>
   ${note ? `<div class="ok">${esc(note)}</div>` : ''}
@@ -267,7 +271,8 @@ function pilotCSV(rows) {
   return [cols, ...lines].map((r) => r.map(q).join(',')).join('\n');
 }
 async function renderPilot(note) {
-  app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Back to library</button></header><div class="card"><p class="muted" style="margin:0">Loading…</p></div>`;
+  setHash('#pilot');
+  app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Library →</button></header><div class="card"><p class="muted" style="margin:0">Loading…</p></div>`;
   $('back').onclick = () => renderLibrary();
   let P;
   try { P = await adminApi({ action: 'pilot' }); } catch (e) { app.querySelector('.card').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
@@ -286,7 +291,7 @@ async function renderPilot(note) {
   const ov = pilotOverview(rows, fams).split('\u0001');
   const fb = P.feedback || [];
   const famName = (code) => (fams.find((f) => f.code === code) || {}).name || code;
-  app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Back to library</button></header>
+  app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Library →</button></header>
   ${note ? `<div class="ok">${note}</div>` : ''}
   <div class="pl-acts"><button class="btn ghost small" id="csv">Download all stats (CSV)</button><button class="btn ghost small" id="reload">Refresh</button><span class="hint">Updated ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>
   ${ov[0]}
@@ -339,7 +344,7 @@ function famDetail(r, fb) {
       <p class="hint" style="margin:6px 0 0">${a.first ? `Started ${new Date(a.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. ` : ''}Plan seen: ${esc(a.plans.join(', ') || '–')}. Devices: ${a.devices.map((d) => `${esc(d.ua || 'device')}${d.ios ? ' (iOS)' : ''}${d.inst ? ' · on Home Screen' : d.ios ? ' · <b style="color:#B22A1E">not on Home Screen: data at risk</b>' : ''} (synced ${ago(d.synced)})`).join(', ') || '–'}.</p>
       ${r.f.note ? `<p class="hint" style="margin:6px 0 0"><b>Notes:</b> ${esc(r.f.note)}</p>` : ''}</div>
     <div><h3>Books</h3>${a.books.length ? a.books.map((b) => `<div class="fd-row"><span>${esc(b.title)} <small>${esc(b.subject)} ${esc(b.level)}</small></span><b>${b.pct === null ? '–' : b.pct + '%'}</b></div>`).join('') : '<p class="muted">None added yet.</p>'}
-      <h3 style="margin-top:12px">Totals</h3><p class="hint" style="margin:0">Mistakes open ${a.counts.mistakes || 0} · lessons ${a.counts.learned || 0} · tests ${a.counts.tests || 0} · school tests ${a.counts.schoolTests || 0} · homework ${a.counts.homework || 0} · essays marked ${a.counts.writing || 0} · speaking ${a.counts.speaking || 0}</p></div>
+      <h3 style="margin-top:12px">Totals</h3>${[['Mistakes open', a.counts.mistakes], ['Mistakes fixed', a.counts.fixed], ['Lessons finished', a.counts.learned], ['Tests taken', a.counts.tests], ['School tests planned', a.counts.schoolTests], ['Homework sessions', a.counts.homework], ['Essays marked', a.counts.writing], ['Speaking answers', a.counts.speaking], ['Dictations', a.counts.dictation]].map(([k, v]) => `<div class="fd-row"><span>${k}</span><b>${v || 0}</b></div>`).join('')}</div>
     <div><h3>Features used</h3>${fx.length ? fx.map(([k, v]) => `<div class="fd-row"><span>${esc(fname(k))}</span><b>${v.n}× <small>${ago(v.last)}</small></b></div>`).join('') : '<p class="muted">Nothing yet.</p>'}</div>
     <div><h3>Screens visited</h3>${scr.map(([k, v]) => `<div class="fd-row"><span>${esc(k.slice(7))}</span><b>${v.n}</b></div>`).join('') || '<p class="muted">–</p>'}
       ${a.errs.length ? `<h3 style="margin-top:12px">Problems seen</h3>${a.errs.map((e) => `<div class="fd-err">${esc(e.m)} <small>${esc(e.v || '')} · ${ago(e.t)}</small></div>`).join('')}` : ''}
@@ -396,7 +401,7 @@ let draft = null; // { fileName, pageCount, pageTexts, units: [{ title, startPag
 const steps = (k) => `<div class="steps">${['1. Upload', '2. Check chapters', '3. Details', '4. Publish'].map((s, i) => `<span class="${i === k ? 'on' : ''}">${s}</span>`).join('')}</div>`;
 
 function renderUpload(msg) {
-  app.innerHTML = `<header><h1>Add a textbook</h1><button class="btn ghost small" id="back">Back to library</button></header>${steps(0)}
+  app.innerHTML = `<header><h1>Add a textbook</h1><button class="btn ghost small" id="back">Library →</button></header>${steps(0)}
   <div class="card">
     <h2>Upload the PDF</h2>
     <p class="hint" style="margin:0">Only add books you have the right to share with every student (for example free, openly licensed books like OpenStax, or with the publisher’s permission).</p>
@@ -632,5 +637,5 @@ async function starterFor(book) {
   return makeBank(book, units, existing);
 }
 
-if (pw) adminApi({ action: 'check' }).then(() => renderLibrary()).catch(() => { pw = ''; renderLogin(); });
+if (pw) adminApi({ action: 'check' }).then(() => home()).catch(() => { pw = ''; renderLogin(); });
 else renderLogin();
