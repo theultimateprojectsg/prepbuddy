@@ -236,7 +236,8 @@ export function reportHTML(r) {
         ${r.sr.b.length ? `<p><b>${T('New badges', '新徽章')}:</b> ${r.sr.b.map(esc).join(' · ')}</p>` : ''}
         ${r.sr.r.length ? `<p><b>${T('Rewards given', '已換領獎勵')}:</b> ${r.sr.r.map(esc).join(' · ')}</p>` : ''}
         <p class="rep-note">${T('Your child spends stars on rewards you set in PrepBuddy (Star shop → For parents). Each one needs your PIN.', '孩子可用星星換領你在 PrepBuddy 設定的獎勵（星星商店 → 家長專區），每次都需要你的密碼。')}</p></section>` : ''}
-      <div class="rp-two">
+      ${r.bs ? `<section class="rp-card rp-basic"><h2>${ri('book')} ${T('Want the full picture?', '想看完整報告？')}</h2><p>${T('With PrepBuddy Plus, this report also shows scores for each chapter, how ready your child is for each subject, 6-week trends, tests and mock papers, and thinking skills.', '升級 PrepBuddy Plus 後，報告會顯示各章分數、各科準備程度、6 星期趨勢、測驗及模擬試卷成績和思考能力。')}</p></section>` : ''}
+      <div class="rp-two" ${r.bs ? 'hidden' : ''}>
         ${skillsHTML(r)}
         <section class="rep-card"><h2>${ri('memory')} ${T('Remembering and fixing', '記憶與改正')}</h2>
           <div class="rp-tiles">
@@ -300,6 +301,7 @@ export const REPORT_CSS = `
 .rp-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .rp-stats div{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:3px}
 .rp-stats b{font-size:21px;font-weight:700;line-height:1.1;white-space:nowrap}.rp-stats span{font-size:12px;color:#C9D0EA}
+.rp-basic{background:#FFF8E1;border-color:#F4D27A}.rp-basic p{margin:6px 0 0;line-height:1.55}.rp-two[hidden]{display:none}
 .rp-stats em{font-style:normal;font-size:12px;font-weight:600}.rp-stats em.up{color:#7FE0B5}.rp-stats em.down{color:#FFB98A}
 .rp-grid{display:flex;flex-direction:column;gap:16px;padding:18px 16px}
 .rp-main{display:flex;flex-direction:column;gap:16px}

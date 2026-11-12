@@ -23,6 +23,7 @@ const matchType = (q, types) => !types || types === 'mix' || (types === 'mcq' ? 
 // (1 Recall, 2 Understand, 3 Apply, 4 Analyse / evaluate).
 const DIFFS = [['auto', 'Auto'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard'], ['master', 'Master']];
 const DIFF_RANGE = { easy: [1, 2], medium: [2, 3], hard: [3, 4], master: [4, 4] };
+const curDiff = () => { const d = local.diff || 'auto'; return limitOf('hardDiff') || d === 'easy' || d === 'medium' ? d : 'medium'; };
 const diffOK = (q, diff) => { const r = DIFF_RANGE[diff]; if (!r) return true; const l = q.level || 2; return l >= r[0] && l <= r[1]; };
 const PLAN = [[2, 'mcq'], [1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
               [4, 'structured'], [1, 'mcq'], [2, 'short'], [3, 'mcq'], [3, 'structured'], [2, 'mcq']];
@@ -637,7 +638,8 @@ let view = { name: 'home' };
 let S = null; // current practice session
 
 async function go(v) {
-  if ((v.name === 'paper' || (v.name === 'pick' && v.mode === 'mock')) && !allow('mock')) return; // mock papers: plan check before leaving the screen
+  if ((v.name === 'paper' || (v.name === 'pick' && v.mode === 'mock')) && !allow('mock')) return; // plan checks before leaving the screen
+  { const f = { homework: 'homework', writing: 'writing', speaking: 'speaking', stars: 'stars' }[v.name]; if (f && locked(f)) return upsell(f, 'locked'); }
   view = v;
   getBooks().then((bs) => { bs.forEach((b) => { bookKinds.set(b.id, kindOfBook(b)); aliases.set(b.id, b.alias || {}); }); const pr = bs.some(looksPrimary); if (pr !== primaryCache) { primaryCache = pr; renderTabs(); } });
   document.querySelectorAll('.toast').forEach((x) => x.remove());
@@ -878,6 +880,9 @@ async function runCoachAction(a) {
 const COACH_CHIPS = ['How am I doing?', 'What should I work on this week?', 'Which chapter is my weakest?', 'Make me a plan for today'];
 const coach = { busy: false, error: null };
 function coachHTML() {
+  if (locked('coach')) return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div><b>${PL('Study coach', '溫習教練')} <span class="lock-tag inl">🔒 Plus</span></b><span>${PL('Plans your day from your scores and mistakes', '按你的分數和錯題計劃每天溫習')}</span></div></div>
+    <div class="coach-msgs coach-demo"><div class="tmsg me nomath">${PL('What should I work on today?', '我今天應該溫習甚麼？')}</div><div class="tmsg ai">${PL('Your weakest chapter is <b>Forces</b> (52%). Let’s do 10 questions on it, then fix the 3 mistakes from Monday. About 15 minutes.', '你最弱的章節是<b>力</b>（52%）。先做 10 題，再改正星期一的 3 題錯題，大約 15 分鐘。')}</div><div class="coach-acts"><span class="btn-sm primary">▶ ${PL('Start 10 questions', '開始 10 題')}</span></div></div>
+    <div class="coach-lock"><span>${PL('Upgrade to Plus for a coach that sees your progress and plans every day.', '升級至 Plus，教練會按你的進度每天幫你計劃。')}</span><button class="btn" id="coachUp">${PL('See Plus', '查看 Plus')}</button></div>`;
   const msgs = local.coach || [];
   return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div>${helper.open ? '<b>Ask Buddy</b><span>About the app or your studies</span>' : '<b>Ask Buddy</b><span>Your study coach: sees your scores, mistakes and reviews</span>'}</div>
       <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
@@ -894,6 +899,7 @@ function coachHTML() {
 }
 function bindCoach() {
   const box = document.getElementById('coach'); if (!box) return;
+  { const cu = document.getElementById('coachUp'); if (cu) { cu.onclick = () => go({ name: 'plans', hi: 'plus' }); return; } }
   const redraw = () => { const b = document.getElementById('coach'); if (!b) return; b.innerHTML = coachHTML(); bindCoach(); const m = document.getElementById('coachMsgs'); if (m) m.scrollTop = m.scrollHeight; };
   const ask = async (text, chip, voice, onChunk) => {
     text = String(text || '').trim(); if (!text || coach.busy) return;
@@ -1977,9 +1983,9 @@ async function renderHome() {
       <div class="quick">
         <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
-        <button class="qtile hwtile" id="hwgo">${actionTile('notes', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
+        <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('notes', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('flashcards', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${actionTile('notes', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${actionTile('review', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
+        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('notes', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('review', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -2105,7 +2111,7 @@ function renderSettings() {
       <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
     </section>
     <section class="card stack g10" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">Stars and rewards</b>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Plus</span>' : ''}</b>
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:13.5px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
     </section>
@@ -2122,7 +2128,7 @@ function renderSettings() {
   document.getElementById('susage').onclick = () => go({ name: 'usage' });
   document.getElementById('splans').onclick = () => go({ name: 'plans' });
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(); renderTabs(); }));
-  document.getElementById('sstars').onclick = () => { local.starsOn = !starsOn(); saveLocal(); renderSettings(); renderTabs(); };
+  document.getElementById('sstars').onclick = () => { if (locked('stars')) return upsell('stars', 'locked'); local.starsOn = !starsOn(); saveLocal(); renderSettings(); renderTabs(); };
   window.scrollTo(0, 0);
 }
 
@@ -2136,6 +2142,7 @@ const DAY_CAP = 10;
 const looksPrimary = (b) => /\bP\.?\s?[1-6]\b|primary|小[一二三四五六]|小學|初小|高小/i.test(`${b.title || ''} ${b.level || ''}`);
 let primaryCache = null;
 function starsOn() {
+  if (!cap('stars')) return false;
   if (local.starsOn === true || local.starsOn === false) return local.starsOn;
   return !!primaryCache;
 }
@@ -2816,7 +2823,7 @@ async function renderBook(bookId) {
     <div class="setup-row diffrow">
       <span id="diff-label">Difficulty</span>
       <div class="seg diffseg" role="radiogroup" aria-labelledby="diff-label">
-        ${DIFFS.map(([k, l]) => `<button role="radio" aria-checked="${(local.diff || 'auto') === k}" data-diff="${k}" class="${(local.diff || 'auto') === k ? 'on' : ''}" title="${{ auto: 'Adjusts to how you are doing', easy: 'Remember and understand', medium: 'Understand and apply', hard: 'Apply and analyse', master: 'Analyse and evaluate: the hardest questions' }[k]}">${l}</button>`).join('')}
+        ${DIFFS.map(([k, l]) => `<button role="radio" aria-checked="${curDiff() === k}" data-diff="${k}" class="${curDiff() === k ? 'on' : ''} ${!cap('hardDiff') && !['easy', 'medium'].includes(k) ? 'dlock' : ''}" title="${{ auto: 'Adjusts to how you are doing', easy: 'Remember and understand', medium: 'Understand and apply', hard: 'Apply and analyse', master: 'Analyse and evaluate: the hardest questions' }[k]}">${l}${!cap('hardDiff') && !['easy', 'medium'].includes(k) ? ' 🔒' : ''}</button>`).join('')}
       </div>
     </div>
     <div class="setup-row">
@@ -2830,7 +2837,7 @@ async function renderBook(bookId) {
     <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter'}</button>
     <div class="more-ways"><p class="mw-h">More ways to study${n ? '' : ' <span class="muted">· tick a chapter first</span>'}</p>
       <div class="mw-grid">
-        <button class="mw" id="ctest" ${n ? '' : 'disabled'}>${actionIcon('mock', 24)}<b>Chapter test</b><span>Timed, like a school test</span></button>
+        <button class="mw" id="ctest" ${n ? '' : 'disabled'}>${lockTag('test')}${actionIcon('mock', 24)}<b>Chapter test</b><span>Timed, like a school test</span></button>
         <button class="mw" id="notes" ${n ? '' : 'disabled'}>${actionIcon('notes', 24)}<b>Notes</b><span>Key points to revise</span></button>
         <button class="mw" id="cards" ${n ? '' : 'disabled'}>${actionIcon('flashcards', 24)}<b>Flashcards</b><span>Quick-fire recall</span></button>
         <button class="mw" id="paper">${lockTag('mock')}${actionIcon('mistakes', 24)}<b>Mock paper</b><span>DSE-style or worksheet</span></button>
@@ -2863,7 +2870,7 @@ async function renderBook(bookId) {
   bindRows();
   prefetch(book, book.units.filter((u) => pick.ids.has(u.id)));
   $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; saveLocal(); keep(); }));
-  $app.querySelectorAll('[data-diff]').forEach((b) => (b.onclick = () => { local.diff = b.dataset.diff; saveLocal(); keep(); }));
+  $app.querySelectorAll('[data-diff]').forEach((b) => (b.onclick = () => { if (b.classList.contains('dlock')) return upsell('hardDiff', 'locked'); local.diff = b.dataset.diff; saveLocal(); keep(); }));
   const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || SESSION_SIZE) + d)); saveLocal(); keep(); };
   document.getElementById('minus').onclick = () => step((local.count || SESSION_SIZE) > 20 ? -10 : -5);
   document.getElementById('plus').onclick = () => step((local.count || SESSION_SIZE) >= 20 ? 10 : 5);
@@ -2895,7 +2902,7 @@ async function prefetch(book, units) {
   const types = local.types || 'mix', count = local.count || SESSION_SIZE;
   for (const u of units) {
     getSnippets(book, u).catch(() => {});
-    const diff = local.diff || 'auto';
+    const diff = curDiff();
     if (jobs.has(`${book.id}:${u.id}:${types}${diff === 'auto' ? '' : ':' + diff}`)) continue;
     const fresh = (await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types) && diffOK(q, diff)).length;
     const want = Math.ceil(count / units.length);
@@ -3304,6 +3311,7 @@ async function renderProgress() {
   bindStarChips($app);
   on('goal-edit', () => goalDialog());
   on('goal-set', () => goalDialog());
+  on('fcUp', () => go({ name: 'plans', hi: 'pro' }));
   $app.querySelectorAll('[data-tests-more]').forEach((b) => (b.onclick = () => { b.previousElementSibling.hidden = false; b.remove(); }));
 }
 
@@ -3316,7 +3324,8 @@ function goalCardHTML(D) {
       <div class="pg-gdays">${G.week.map((d) => `<span class="${d.met ? 'met' : d.m ? 'some' : ''} ${d.future ? 'fut' : ''} ${d.today ? 'tod' : ''}" title="${fmt(d.t, { weekday: 'long' })}: ${d.m} min">${d.met ? pIcon('check', 14) : fmt(d.t, { weekday: 'narrow' })}</span>`).join('')}</div>
       <b class="pg-gmsg ${G.reached ? 'ok' : ''}">${G.reached ? PT('Goal reached this week!', '本週目標已達成！') : PT(`${G.met} of ${G.days} days done · ${G.days - G.met} to go`, `已完成 ${G.met}／${G.days} 日 · 尚餘 ${G.days - G.met} 日`)}</b>
       <span class="pg-gsub">${PT(`Goal: ${G.days} days a week, ${G.mins} min each`, `目標：每星期 ${G.days} 日，每次 ${G.mins} 分鐘`)}${!G.reached && !G.possible ? PT(' · try again next week', ' · 下星期再努力') : ''}</span></div>` : '';
-  const examPart = E && E.left !== null ? `<div class="pg-ex"><div class="pg-exn"><b>${E.left}</b><span>${PT(E.left === 1 ? 'day to your exam' : 'days to your exam', '日後考試')}</span><small>${fmt(E.date, { day: 'numeric', month: 'short', year: 'numeric' })}</small></div>
+  const examPart = E && E.left !== null && locked('forecast') ? `<div class="pg-ex"><div class="pg-exn"><b>${E.left}</b><span>${PT(E.left === 1 ? 'day to your exam' : 'days to your exam', '日後考試')}</span></div><div class="pg-fc"><button class="btn-sm" id="fcUp">🔒 ${PT('See your exam forecast with Pro', '升級 Pro 查看考試預測')}</button></div></div>`
+    : E && E.left !== null ? `<div class="pg-ex"><div class="pg-exn"><b>${E.left}</b><span>${PT(E.left === 1 ? 'day to your exam' : 'days to your exam', '日後考試')}</span><small>${fmt(E.date, { day: 'numeric', month: 'short', year: 'numeric' })}</small></div>
       <div class="pg-fc">${E.fc.length ? E.fc.map((f) => `<div><span data-raw>${esc(f.x.book.subject ? subj(f.x.book.subject) : f.x.book.title)}</span>${f.wait ? `<small>${PT('Forecast after a week of practice', '練習一星期後會有預測')}</small>` : `<b class="${tone(f.by)}">${f.by >= 85 ? PT(`On track: ~${f.by}% by the exam`, `進度理想：考試時約 ${f.by}%`) : f.rate > 0 ? PT(`At this pace: ~${f.by}% by the exam`, `按現時進度：考試時約 ${f.by}%`) : PT('Not moving yet: practise to start climbing', '暫未進步：多練習就會上升')}</b>`}</div>`).join('') : ''}</div></div>`
     : E ? `<div class="pg-ex"><span class="pg-gsub">${PT('Your exam date has passed. Set the next one.', '考試日期已過，請設定下一個。')}</span></div>` : '';
   return `<section class="pgcard"><h2>${pIcon('target', 18)} ${PT('Your goal', '你的目標')}<button class="btn-sm quiet" id="goal-edit">${PT('Edit', '修改')}</button></h2>
@@ -3384,7 +3393,7 @@ function reportDialog() {
   document.getElementById('rd-close').onclick = close;
   const nameEl = document.getElementById('rd-name');
   nameEl.oninput = () => { local.name = nameEl.value.trim().slice(0, 30); saveLocal(); };
-  const link = async () => { const rep = await currentReport(); return { rep, url: `${location.origin}${location.pathname.replace(/[^/]*$/, '')}report.html#d=${encodeReport(rep)}` }; };
+  const link = async () => { const rep = await currentReport(); if (locked('report')) { Object.assign(rep, { ch: [], ms: [], tr: [], ts: [], ex: null, bs: 1 }); delete rep.sk; } return { rep, url: `${location.origin}${location.pathname.replace(/[^/]*$/, '')}report.html#d=${encodeReport(rep)}` }; };
   document.getElementById('rd-prev').onclick = async () => { const { url } = await link(); window.open(url, '_blank', 'noopener'); };
   document.getElementById('rd-send').onclick = async () => {
     const { rep, url } = await link();
@@ -3804,7 +3813,8 @@ const MAKE_PAR = 4;
 async function startUnits(book, units, count = SESSION_SIZE, opts = {}) {
   if (!opts.placement) { if (!allow('q')) return; if (limitOf('q') !== UNL) count = Math.max(1, Math.min(count, leftOf('q'))); }
   const k = units.length, quota = Math.ceil(count / k);
-  const types = opts.types || local.types || 'mix', diff = opts.diff || local.diff || 'auto';
+  let types = opts.types || local.types || 'mix'; const diff = opts.diff || curDiff();
+  if (types !== 'mcq' && limitOf('written') !== UNL && leftOf('written') <= 0) { types = 'mcq'; toast(PL('Today’s written questions are used up: multiple choice for now. Plus has unlimited.', '今日的文字題已用完，暫時只有選擇題。Plus 無限使用。')); }
   const pools = [];
   for (const u of units) {
     const want = 2 + levelShift(book.id, u.id);
@@ -3831,29 +3841,39 @@ async function startUnits(book, units, count = SESSION_SIZE, opts = {}) {
 const PL = (en, zh) => (LANG === 'zh' ? zh : en);
 const UNL = Infinity;
 const TIERS = {
-  free: { name: 'Free', zh: '免費', price: 0, year: 0, tag: ['For every student, free forever', '永久免費，每位學生都可以用'],
-    lim: { books: 1, q: 15, lesson: 1, buddy: 10, voice: 0, test: 1, mock: 0, homework: 2, writing: 1, speaking: 1, sched: 1 } },
-  plus: { name: 'Plus', zh: 'Plus', price: 98, year: 980, tag: ['Steady weekly practice', '每週穩定練習'],
-    lim: { books: 3, q: 60, lesson: 5, buddy: 50, voice: 0, test: 5, mock: 2, homework: 10, writing: 4, speaking: 4, sched: UNL } },
-  pro: { name: 'Pro', zh: 'Pro', price: 168, year: 1680, best: true, tag: ['Everything, unlimited: a private tutor for less than one lesson a month', '全部無限使用：每月比一堂補習更便宜'],
-    lim: { books: UNL, q: UNL, lesson: UNL, buddy: UNL, voice: 1, test: UNL, mock: UNL, homework: UNL, writing: UNL, speaking: UNL, sched: UNL } },
+  free: { name: 'Free', zh: '免費', price: 0, year: 0, tag: ['Practise and fix mistakes. Free forever.', '練習、改正錯誤，永久免費。'],
+    lim: { books: 1, q: 20, written: 3, lesson: 2, buddy: 10, hardDiff: 0, stars: 0, coach: 0, report: 0, test: 0, sched: 0, homework: 0, writing: 0, speaking: 0, mock: 0, voice: 0, forecast: 0 },
+    pitch: ['', ''], has: [['Practice questions from your textbooks: multiple choice, plus 3 written a day', '課本練習題：選擇題，另每日 3 條文字題'], ['Learn mode lessons with Buddy', '學習模式課堂，有 Buddy 陪你'], ['Buddy hints on every question', '每條題目都有 Buddy 提示'], ['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Easy and Medium difficulty', '容易和中等難度'], ['Weekly activity report for parents', '家長每週練習報告']] },
+  plus: { name: 'Plus', zh: 'Plus', price: 98, year: 980, tag: ['Exam-ready at school', '應付校內考試'],
+    lim: { books: 3, q: 80, written: UNL, lesson: 10, buddy: 60, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: 10, writing: 2, speaking: 2, mock: 0, voice: 0, forecast: 0 },
+    pitch: ['Everything in Free, plus:', 'Free 的全部功能，再加上：'], has: [['Unlimited written questions, marked by AI', '無限文字題，由 AI 批改'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
+  pro: { name: 'Pro', zh: 'Pro', price: 168, year: 1680, best: true, tag: ['A private DSE tutor, for less than one lesson a month', '私人 DSE 導師，每月比一堂補習更便宜'],
+    lim: { books: UNL, q: UNL, written: UNL, lesson: UNL, buddy: UNL, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: UNL, writing: UNL, speaking: UNL, mock: UNL, voice: 1, forecast: 1 },
+    pitch: ['Everything in Plus, plus:', 'Plus 的全部功能，再加上：'], has: [['DSE mock papers and printable worksheets', 'DSE 模擬試卷和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['Coming soon: live parent dashboard', '即將推出：家長即時查看']] },
 };
 const PLAN_ORDER = ['free', 'plus', 'pro'];
-// What each limit is, how it's counted, and how it reads on the plans page.
+// What each capability or allowance is, how it's counted, how it reads, and (for locked ones) what it does.
 const FEAT = {
-  books: { per: 'total', en: ['Textbooks', 'textbook', 'textbooks'], zh: ['課本', '本課本'] },
   q: { per: 'day', en: ['New practice questions', 'question a day', 'questions a day'], zh: ['新練習題目', '題／日'] },
+  written: { per: 'day', en: ['Written questions marked by AI', 'a day'], zh: ['AI 批改文字題', '題／日'] },
   lesson: { per: 'day', en: ['Learn mode lessons', 'lesson a day', 'lessons a day'], zh: ['學習模式課堂', '課／日'] },
   buddy: { per: 'day', en: ['Ask Buddy messages', 'message a day', 'messages a day'], zh: ['問 Buddy 訊息', '則／日'] },
-  voice: { per: 'flag', en: ['Talk to Buddy (voice)', ''], zh: ['與 Buddy 對話（語音）', ''] },
-  test: { per: 'week', en: ['Chapter tests', 'a week'], zh: ['章節測驗', '次／週'] },
-  mock: { per: 'week', en: ['DSE mock papers', 'a week'], zh: ['DSE 模擬試卷', '份／週'] },
-  homework: { per: 'week', en: ['Homework help (photos)', 'a week'], zh: ['功課輔導（拍照）', '次／週'] },
-  writing: { per: 'week', en: ['Writing marked (DSE criteria)', 'a week'], zh: ['寫作批改（DSE 準則）', '篇／週'] },
-  speaking: { per: 'week', en: ['Speaking answers marked', 'a week'], zh: ['說話回應評分', '次／週'] },
-  sched: { per: 'total', en: ['School test planner', 'test at a time', 'tests at a time'], zh: ['學校測驗計劃', '個測驗'] },
+  books: { per: 'total', en: ['Textbooks', 'textbook', 'textbooks'], zh: ['課本', '本課本'] },
+  hardDiff: { per: 'flag', en: ['Hard and Master difficulty'], zh: ['困難和大師難度'], d: ['Questions that stretch top students: applying and analysing, like the hardest exam questions.', '挑戰尖子的題目：應用和分析，好似考試最難的題目。'] },
+  test: { per: 'week', en: ['Chapter tests', 'a week'], zh: ['章節測驗', '次／週'], d: ['Timed tests on a chapter, 80% to pass, like a school test.', '限時章節測驗，80% 合格，好似學校測驗。'] },
+  sched: { per: 'total', en: ['School test planner', 'test at a time', 'tests at a time'], zh: ['學校測驗計劃', '個測驗'], d: ['Add a school test and Today’s plan counts down to it, day by day.', '加入學校測驗，今日計劃會每天幫你倒數準備。'] },
+  homework: { per: 'week', en: ['Homework help (photos)', 'a week'], zh: ['功課輔導（拍照）', '次／週'], d: ['Snap tonight’s homework: Buddy explains, gives hints and checks your answers.', '拍下今晚的功課，Buddy 會解釋、給提示和檢查答案。'] },
+  coach: { per: 'flag', en: ['Study coach'], zh: ['溫習教練'], d: ['A coach that sees your scores and mistakes, plans your day and starts it in one tap.', '教練看得到你的分數和錯題，幫你計劃每天溫習，一按就開始。'] },
+  stars: { per: 'flag', en: ['Stars and rewards'], zh: ['星星獎勵'], d: ['Earn stars for practising and spend them on rewards your parents choose.', '練習賺星星，換取家長設定的獎勵。'] },
+  report: { per: 'flag', en: ['Full parent report'], zh: ['完整家長報告'], d: ['Chapter scores, how ready for each subject, trends, tests and thinking skills.', '各章分數、各科準備程度、趨勢、測驗和思考能力。'] },
+  writing: { per: 'week', en: ['Writing marked (DSE criteria)', 'a week'], zh: ['寫作批改（DSE 準則）', '篇／週'], d: ['DSE-style feedback on your essays with estimated bands, then redraft and see what improved.', '按 DSE 準則批改文章，估計等級，再修改並看到進步。'] },
+  speaking: { per: 'week', en: ['Speaking answers marked', 'a week'], zh: ['說話回應評分', '次／週'], d: ['Answer DSE Paper 4 questions out loud and get marked on the four speaking domains.', '大聲回答 DSE 卷四題目，按四個說話範疇評分。'] },
+  mock: { per: 'week', en: ['DSE mock papers and worksheets', 'a week'], zh: ['DSE 模擬試卷和工作紙', '份／週'], d: ['Full DSE-style papers, timed like the real exam, or printed as worksheets.', '完整 DSE 模式試卷，像真實考試限時，或列印成工作紙。'] },
+  voice: { per: 'flag', en: ['Talk to Buddy (voice)'], zh: ['與 Buddy 對話（語音）'], d: ['Ask Buddy out loud in English or Cantonese and hear the answer.', '用英文或廣東話問 Buddy，並聽到回答。'] },
+  forecast: { per: 'flag', en: ['Exam forecast'], zh: ['考試預測'], d: ['See where each subject is heading by your exam date, at your current pace.', '按現時進度，預測考試時各科的準備程度。'] },
 };
-const ALWAYS = [['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Stars and rewards', '星星獎勵'], ['Weekly parent report', '家長每週報告']];
+const ALWAYS = [['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Weekly activity report', '每週練習報告']];
+const cap = (f) => !!limitOf(f);
 (() => { try { const m = location.search.match(/[?&]plan=(free|plus|pro)\b/); if (m) { local.planPreview = m[1]; saveLocal(); } } catch (e) {} })();
 const planId = () => local.planPreview || local.plan || 'pro'; // testing: Pro unless previewing
 const curPlan = () => TIERS[planId()];
@@ -3893,7 +3913,7 @@ function upsell(f, why) {
   box.innerHTML = `<div class="cdlg updlg" role="dialog" aria-modal="true" aria-labelledby="up-t" data-raw>
     <span class="up-bud">${buddySVG(why === 'locked' ? 'think' : 'happy', 64)}</span>
     <b id="up-t">${why === 'locked' ? PL(`${name} is part of ${P.name}`, `${name}屬於 ${P.zh} 計劃`) : F.per === 'day' ? PL(`You’ve used today’s ${name}`, `你已用完今日的${name}`) : F.per === 'week' ? PL(`You’ve used this week’s ${name}`, `你已用完本週的${name}`) : PL(`Your plan’s limit for ${name}`, `你的計劃的${name}已達上限`)}</b>
-    <span>${why === 'locked' ? PL(`Upgrade to ${P.name} to unlock it.`, `升級至 ${P.name} 即可使用。`) : PL(`The ${TIERS[planId()].name} plan includes ${limText(f, limitOf(f))}. ${reset} ${P.name} gives you ${limText(f, P.lim[f]).toLowerCase()}.`, `${TIERS[planId()].zh}計劃包括 ${limText(f, limitOf(f))}。${reset}${P.zh} 計劃有 ${limText(f, P.lim[f])}。`)}</span>
+    <span>${why === 'locked' ? `${F.d ? PL(F.d[0], F.d[1]) + ' ' : ''}${PL(`Upgrade to ${P.name} to unlock it.`, `升級至 ${P.zh} 即可使用。`)}` : PL(`The ${TIERS[planId()].name} plan includes ${limText(f, limitOf(f))}. ${reset} ${P.name} gives you ${limText(f, P.lim[f]).toLowerCase()}.`, `${TIERS[planId()].zh}計劃包括 ${limText(f, limitOf(f))}。${reset}${P.zh} 計劃有 ${limText(f, P.lim[f])}。`)}</span>
     <div class="up-price"><b>HK$${P.price}</b><small>${PL('a month', '每月')}</small>${P.year ? `<em>${PL(`or HK$${P.year} a year`, `或每年 HK$${P.year}`)}</em>` : ''}</div>
     <button class="btn" id="up-see">${PL(`See ${P.name}`, `查看 ${P.zh}`)}</button>
     <button class="btn-sm quiet" id="up-later">${why === 'limit' && reset ? PL('OK, I’ll come back', '好，我稍後再來') : PL('Not now', '稍後再說')}</button>
@@ -3933,7 +3953,8 @@ function renderPlans(hi) {
         <h2>${PL(P.name, P.zh)}</h2><p class="pp-tag">${PL(...P.tag)}</p>
         <div class="pp-price"><b>${price ? `HK$${price}` : PL('Free', '免費')}</b>${price ? `<small>${PL('/ month', '／月')}</small>` : ''}</div>
         <p class="pp-sub">${!price ? PL('No card needed', '不用信用卡') : yearly ? PL(`HK$${P.year} billed yearly`, `每年收費 HK$${P.year}`) : PL(`or HK$${Math.round(P.year / 12)}/month yearly`, `按年只需每月 HK$${Math.round(P.year / 12)}`)}</p>
-        <ul>${['q', 'buddy', 'lesson', 'books', 'writing', 'speaking', 'mock', 'voice'].map((f) => { const v = P.lim[f]; return `<li class="${!v ? 'no' : ''}">${!v ? '—' : '✓'} ${FEAT[f].per === 'flag' ? PL(FEAT[f].en[0], FEAT[f].zh[0]) : `${PL(FEAT[f].en[0], FEAT[f].zh[0])}: <b>${limText(f, v)}</b>`}</li>`; }).join('')}</ul>
+        ${P.pitch[0] ? `<p class="pp-pitch">${PL(...P.pitch)}</p>` : ''}
+        <ul>${P.has.map((h) => `<li>✓ ${PL(...h)}</li>`).join('')}</ul>
         ${p === cur ? `<button class="btn ghost" disabled>${PL('Your plan', '你的計劃')}</button>` : `<button class="btn ${P.best ? '' : 'ghost'}" data-pick="${p}">${p === 'free' ? PL('Use Free', '使用免費計劃') : PL(`Choose ${P.name}`, `選擇 ${P.zh}`)}</button>`}
       </section>`; }).join('')}</div>
     <section class="card pp-social"><span>${buddySVG('happy', 44)}</span><div><b>${PL('No student is left out', '不讓任何學生落後')}</b>
@@ -3953,7 +3974,7 @@ function renderPlans(hi) {
 // Settings: the plan card with today's and this week's allowance.
 function planCardHTML() {
   const P = curPlan(), id = planId();
-  const meters = ['q', 'buddy', 'lesson', 'homework', 'writing', 'speaking', 'test', 'mock'].filter((f) => limitOf(f) !== UNL && limitOf(f) > 0).map((f) => { const lim = limitOf(f), u = Math.min(lim, usedOf(f)); return `<div class="pm"><span>${PL(FEAT[f].en[0], FEAT[f].zh[0])}</span><span class="pm-bar"><i style="width:${(u / lim) * 100}%" class="${u >= lim ? 'full' : ''}"></i></span><b>${u}/${lim}</b><small>${FEAT[f].per === 'day' ? PL('today', '今日') : PL('this week', '本週')}</small></div>`; }).join('');
+  const meters = ['q', 'written', 'buddy', 'lesson', 'homework', 'writing', 'speaking', 'mock'].filter((f) => limitOf(f) !== UNL && limitOf(f) > 0).map((f) => { const lim = limitOf(f), u = Math.min(lim, usedOf(f)); return `<div class="pm"><span>${PL(FEAT[f].en[0], FEAT[f].zh[0])}</span><span class="pm-bar"><i style="width:${(u / lim) * 100}%" class="${u >= lim ? 'full' : ''}"></i></span><b>${u}/${lim}</b><small>${FEAT[f].per === 'day' ? PL('today', '今日') : PL('this week', '本週')}</small></div>`; }).join('');
   return `<section class="card stack g10 plancard" style="padding:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PL('Your plan', '你的計劃')}: <span class="plan-pill ${id}">${PL(P.name, P.zh)}</span></b><button class="btn-sm ${id === 'pro' ? '' : 'primary'}" id="splans">${id === 'pro' ? PL('See plans', '查看計劃') : PL('Upgrade', '升級')}</button></div>
     ${meters ? `<div class="pms">${meters}</div>` : `<span class="muted" style="font-size:13.5px">${PL('Everything unlimited.', '全部無限使用。')}</span>`}
@@ -3997,6 +4018,7 @@ async function testStep(x) {
   return { x, book, units, left, ready, step };
 }
 function testDialog(edit) {
+  if (!allow('sched')) return;
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   const st = { id: edit ? edit.id : uid(), name: edit ? edit.name : '', date: edit ? edit.date : ymd(Date.now() + 7 * DAY), b: edit ? edit.b : null, u: new Set(edit ? edit.u : []) };
   const draw = async () => {
@@ -4044,7 +4066,7 @@ async function schoolTestsHTML() {
       <span class="stx-t"><b data-raw>${esc(p.x.name)}</b><small>${leftText(p.left)} · <span data-raw>${esc(p.units.length === 1 ? cleanUnitTitle(p.units[0].title) : SCH(`${p.units.length} chapters`, `${p.units.length} 個章節`))}</span></small></span>
       <span class="stx-r"><b>${p.ready}%</b><small>${SCH('ready', '準備度')}</small></span></button></div>`).join('');
   return { steps, html: `<section class="stack g10" aria-label="${SCH('School tests', '學校測驗')}">
-      <div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}</button></div>
+      <div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>
       ${past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><span class="stx-sc"><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm primary" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('')}
       ${rows ? `<div class="card stx-list">${rows}</div>` : `<button class="weekstrip" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s plan will count down to it, day by day.', '加入後，今日計劃會每天幫你倒數準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button>`}
     </section>` };
@@ -4823,7 +4845,7 @@ const preTutorHTML = (q) => `<div class="tutor pre" id="tutor">${tutorHTML(q)}</
 function renderQuestion() {
   S.waiting = false;
   const q = S.qs[S.i];
-  if (S.mode === 'unit' && !S.placement && !S.review && !q.recap) { S.metered = S.metered || new Set(); if (!S.metered.has(q.id)) { S.metered.add(q.id); meter('q'); } }
+  if (S.mode === 'unit' && !S.placement && !S.review && !q.recap) { S.metered = S.metered || new Set(); if (!S.metered.has(q.id)) { S.metered.add(q.id); meter('q'); if (!choiceType(q)) meter('written'); } }
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
