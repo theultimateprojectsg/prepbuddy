@@ -2433,16 +2433,34 @@ function checkBadges(extra) {
 }
 
 // Stars for a finished set (called once, from the results screen).
+const STAR_PASS = 50, RUSH_SECS = 4;
+// A set counts as rushed when most of it is choice questions and the typical (median) time per answer is under RUSH_SECS.
+function rushedSet(qs) {
+  if (!S || !S.times || !qs.length) return false;
+  const choice = qs.filter((q) => choiceType(q)).length;
+  if (choice < qs.length * 0.6) return false;
+  const ts = [S.at, ...S.times].slice(0, qs.length + 1), gaps = [];
+  for (let k = 1; k < ts.length; k++) gaps.push((ts[k] - ts[k - 1]) / 1000);
+  if (gaps.length < 3) return false;
+  gaps.sort((a, b) => a - b);
+  return gaps[Math.floor(gaps.length / 2)] < RUSH_SECS;
+}
 function awardSession(qs, pct) {
   if (!starsOn() || !S || S.starred || S.endedEarly || !qs.length) return null;
   S.starred = true;
   const s = starState(), lines = [];
   let n = 0;
   const add = (k, why, label) => { const got = addStars(k, why); if (got) { n += got; lines.push([label, got]); } };
-  if (qs.length >= 3) { s.sets = (s.sets || 0) + 1; add(1, 'set', ST('Finished a set', '完成一組練習')); }
-  if (qs.length >= 5 && pct >= 80) add(1, 'score', ST('Scored 80% or more', '得分 80% 或以上'));
+  // Stars are for real effort: a set that was rushed (tapping through choice questions in a few seconds each)
+  // or scored under half earns no set star. Fixing mistakes and passing tests still need right answers.
+  const rushed = rushedSet(qs), passed = pct >= STAR_PASS;
+  if (qs.length >= 3 && passed && !rushed) { s.sets = (s.sets || 0) + 1; add(1, 'set', ST('Finished a set', '完成一組練習')); }
+  if (qs.length >= 5 && pct >= 80 && !rushed) add(1, 'score', ST('Scored 80% or more', '得分 80% 或以上'));
+  S.starNote = qs.length < 3 ? '' : rushed
+    ? ST('No stars for this set: the answers came too fast. Take your time to read each question and stars come back.', '這組沒有星星：答得太快了。慢慢讀清楚每一題，就可以再賺星星。')
+    : !passed ? ST(`Score ${STAR_PASS}% or more to earn a star for a set. Fix the ones you missed and try again!`, `得分 ${STAR_PASS}% 或以上才可以賺到星星。改正錯題再試一次吧！`) : '';
   if (S.fixedNow) add(S.fixedNow, 'fix', ST(`Fixed ${S.fixedNow} mistake${S.fixedNow > 1 ? 's' : ''}`, `改正了 ${S.fixedNow} 題錯題`));
-  if (S.mode === 'spaced' && onceToday('reviews')) add(1, 'reviews', ST('Did today’s reviews', '完成今日溫習'));
+  if (S.mode === 'spaced' && !rushed && onceToday('reviews')) add(1, 'reviews', ST('Did today’s reviews', '完成今日溫習'));
   if (S.test && pct >= 80) { const g = addStars(3, 'test', false); if (g) { n += g; lines.push([ST('Passed the chapter test', '通過章節測驗'), g]); } }
   // weekly goal reached (once per week)
   const G = typeof goalWeek === 'function' ? goalWeek() : null;
@@ -2556,10 +2574,10 @@ function renderStars(parent = false) {
     </section>
     <section class="stack g10"><h2 class="st-h">${ST('How to earn stars', '怎樣賺星星')}</h2>
       <div class="st-earn">${[
-        ['📘', ST('Finish a practice set', '完成一組練習'), 1], ['🎯', ST('Score 80% or more', '得分 80% 或以上'), '+1'], ['🛠️', ST('Fix a mistake', '改正一題錯題'), 1],
+        ['📘', ST(`Finish a practice set with ${STAR_PASS}% or more`, `完成一組練習並得 ${STAR_PASS}% 或以上`), 1], ['🎯', ST('Score 80% or more', '得分 80% 或以上'), '+1'], ['🛠️', ST('Fix a mistake', '改正一題錯題'), 1],
         ['🔁', ST('Do today’s reviews', '完成今日溫習'), 1], ['🏆', ST('Reach your weekly goal', '達成每週目標'), 5], ['🎓', ST('Pass a chapter test', '通過章節測驗'), 3]]
         .map(([i, t, n]) => `<div><span>${i}</span><span>${t}</span><b>${n} ★</b></div>`).join('')}</div>
-      <p class="hint">${ST(`Up to ${DAY_CAP} stars a day from practice. Badges and goals give extra.`, `練習每日最多可賺 ${DAY_CAP} 粒星，徽章和目標另有獎勵。`)}</p>
+      <p class="hint">${ST(`Up to ${DAY_CAP} stars a day from practice. Badges and goals give extra. Rushing through answers earns no stars.`, `練習每日最多可賺 ${DAY_CAP} 粒星，徽章和目標另有獎勵。亂答一通不會賺到星星。`)}</p>
     </section>
     <section class="stack g10"><h2 class="st-h">${ST('Badges', '徽章')}</h2>${badgeShelf()}</section>
     ${s.redeemed.length ? `<section class="stack g10"><h2 class="st-h">${ST('Rewards you got', '已換領的獎勵')}</h2><div class="st-hist">${s.redeemed.slice().reverse().slice(0, 8).map((x) => `<div><span>${esc(x.icon || '🎁')}</span><span>${esc(x.name)}</span><small>${fmt(x.t)} · ${x.cost} ★</small></div>`).join('')}</div></section>` : ''}
@@ -5767,6 +5785,7 @@ function renderSummary() {
       <p class="rsub">${sub}</p>
       <div class="rcounts"><span class="right">${V} ${nRight} right</span>${nPart ? `<span class="part">${H} ${nPart} partly</span>` : ''}<span class="miss">${X} ${nMiss} missed</span></div>
       ${sections}
+      ${starsOn() && S.starNote ? `<p class="starnote">${starSVG(16)} ${esc(S.starNote)}</p>` : ''}
     </section>
     <div class="ractions">
       ${drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} Drill my weak spots · ${drillable.length * PER_IDEA} new questions</button>` : ''}
