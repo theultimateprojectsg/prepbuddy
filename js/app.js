@@ -657,6 +657,7 @@ async function go(v) {
   if (v.name === 'writing') return renderWriting(v.id, v.sub);
   if (v.name === 'speaking') return renderSpeaking(v.id, v.sub, v.qi);
   if (v.name === 'plans') return renderPlans(v.hi);
+  if (v.name === 'parent') return renderParent();
   if (v.name === 'learn') return renderLearn(v.bookId, v.unitId);
   if (v.name === 'paper') return renderPaper(v.bookId, v.from);
   if (v.name === 'pick') return renderPick(v.mode);
@@ -1810,7 +1811,7 @@ async function renderLearn(bookId, unitId) {
 
 /* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
 const helper = { open: false };
-const SCREEN_NAME = { plans: 'Plans and prices (Free, Plus, Pro)', speaking: 'Speaking practice (DSE English Paper 4 one-minute individual response)', writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+const SCREEN_NAME = { parent: 'Parent dashboard (for parents, PIN-protected)', plans: 'Plans and prices (Free, Plus, Pro)', speaking: 'Speaking practice (DSE English Paper 4 one-minute individual response)', writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
 function helperChips() {
   const v = view && view.name;
   const by = {
@@ -2415,7 +2416,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { plans: 'settings', speaking: 'home', writing: 'home', learn: 'books', dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { parent: 'progress', plans: 'settings', speaking: 'home', writing: 'home', learn: 'books', dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
@@ -3293,7 +3294,7 @@ async function renderProgress() {
         ${starsOn() ? `<section class="pgcard"><h2>${starSVG(18)} ${PT('Stars and badges', '星星與徽章')}<button class="btn-sm quiet" data-stargo>${PT('Star shop', '星星商店')}</button></h2>
           <div class="pg-starrow"><b>${starState().bal}</b><span>${PT('stars to spend', '粒星星可以用')}</span><small>${PT(`${starState().log.filter((x) => x.t > Date.now() - 7 * DAY).reduce((a, x) => a + x.n, 0)} earned this week`, `本週賺了 ${starState().log.filter((x) => x.t > Date.now() - 7 * DAY).reduce((a, x) => a + x.n, 0)} 粒`)}</small></div>
           ${badgeShelf()}</section>` : ''}
-        <section class="pgcard pg-parent"><span class="pg-ic blue">${pIcon('send')}</span><div><b>${PT('Weekly report for parents', '家長每週報告')}</b><span>${PT('One page, sent as a link', '一頁報告，以連結傳送')}</span></div><button class="btn-sm" id="report">${PT('Preview & send', '預覽及傳送')}</button></section>
+        <section class="pgcard pg-parent"><span class="pg-ic blue">${pIcon('send')}</span><div><b>${PT('Weekly report for parents', '家長每週報告')}</b><span>${PT('One page, sent as a link', '一頁報告，以連結傳送')}</span></div><span class="pg-pbtns"><button class="btn-sm primary" id="parentDash">${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}</button><button class="btn-sm" id="report">${PT('Preview & send', '預覽及傳送')}</button></span></section>
       </div>
     </div>
   </main>`;
@@ -3308,6 +3309,7 @@ async function renderProgress() {
   on('mini-mistakes', () => go({ name: 'mistakes' }));
   on('act-books', () => go({ name: 'books' }));
   on('report', () => reportDialog());
+  on('parentDash', () => openParent());
   bindStarChips($app);
   on('goal-edit', () => goalDialog());
   on('goal-set', () => goalDialog());
@@ -3842,14 +3844,14 @@ const PL = (en, zh) => (LANG === 'zh' ? zh : en);
 const UNL = Infinity;
 const TIERS = {
   free: { name: 'Free', zh: '免費', price: 0, year: 0, tag: ['Practise and fix mistakes. Free forever.', '練習、改正錯誤，永久免費。'],
-    lim: { books: 1, q: 20, written: 3, lesson: 2, buddy: 10, hardDiff: 0, stars: 0, coach: 0, report: 0, test: 0, sched: 0, homework: 0, writing: 0, speaking: 0, mock: 0, voice: 0, forecast: 0 },
+    lim: { books: 1, q: 20, written: 3, lesson: 2, buddy: 10, hardDiff: 0, stars: 0, coach: 0, report: 0, test: 0, sched: 0, homework: 0, writing: 0, speaking: 0, mock: 0, voice: 0, forecast: 0, parent: 0 },
     pitch: ['', ''], has: [['Practice questions from your textbooks: multiple choice, plus 3 written a day', '課本練習題：選擇題，另每日 3 條文字題'], ['Learn mode lessons with Buddy', '學習模式課堂，有 Buddy 陪你'], ['Buddy hints on every question', '每條題目都有 Buddy 提示'], ['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Easy and Medium difficulty', '容易和中等難度'], ['Weekly activity report for parents', '家長每週練習報告']] },
   plus: { name: 'Plus', zh: 'Plus', price: 98, year: 980, tag: ['Exam-ready at school', '應付校內考試'],
-    lim: { books: 3, q: 80, written: UNL, lesson: 10, buddy: 60, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: 10, writing: 2, speaking: 2, mock: 0, voice: 0, forecast: 0 },
+    lim: { books: 3, q: 80, written: UNL, lesson: 10, buddy: 60, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: 10, writing: 2, speaking: 2, mock: 0, voice: 0, forecast: 0, parent: 0 },
     pitch: ['Everything in Free, plus:', 'Free 的全部功能，再加上：'], has: [['Unlimited written questions, marked by AI', '無限文字題，由 AI 批改'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
   pro: { name: 'Pro', zh: 'Pro', price: 168, year: 1680, best: true, tag: ['A private DSE tutor, for less than one lesson a month', '私人 DSE 導師，每月比一堂補習更便宜'],
-    lim: { books: UNL, q: UNL, written: UNL, lesson: UNL, buddy: UNL, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: UNL, writing: UNL, speaking: UNL, mock: UNL, voice: 1, forecast: 1 },
-    pitch: ['Everything in Plus, plus:', 'Plus 的全部功能，再加上：'], has: [['DSE mock papers and printable worksheets', 'DSE 模擬試卷和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['Coming soon: live parent dashboard', '即將推出：家長即時查看']] },
+    lim: { books: UNL, q: UNL, written: UNL, lesson: UNL, buddy: UNL, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: UNL, writing: UNL, speaking: UNL, mock: UNL, voice: 1, forecast: 1, parent: 1 },
+    pitch: ['Everything in Plus, plus:', 'Plus 的全部功能，再加上：'], has: [['DSE mock papers and printable worksheets', 'DSE 模擬試卷和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['A parent dashboard: today, this week, tests and what needs attention', '家長主頁：今日、本週、測驗和需要留意的地方']] },
 };
 const PLAN_ORDER = ['free', 'plus', 'pro'];
 // What each capability or allowance is, how it's counted, how it reads, and (for locked ones) what it does.
@@ -3870,6 +3872,7 @@ const FEAT = {
   speaking: { per: 'week', en: ['Speaking answers marked', 'a week'], zh: ['說話回應評分', '次／週'], d: ['Answer DSE Paper 4 questions out loud and get marked on the four speaking domains.', '大聲回答 DSE 卷四題目，按四個說話範疇評分。'] },
   mock: { per: 'week', en: ['DSE mock papers and worksheets', 'a week'], zh: ['DSE 模擬試卷和工作紙', '份／週'], d: ['Full DSE-style papers, timed like the real exam, or printed as worksheets.', '完整 DSE 模式試卷，像真實考試限時，或列印成工作紙。'] },
   voice: { per: 'flag', en: ['Talk to Buddy (voice)'], zh: ['與 Buddy 對話（語音）'], d: ['Ask Buddy out loud in English or Cantonese and hear the answer.', '用英文或廣東話問 Buddy，並聽到回答。'] },
+  parent: { per: 'flag', en: ['Parent dashboard'], zh: ['家長主頁'], d: ['A PIN-protected dashboard for parents: today’s practice, the week, school tests coming up, each subject and what needs attention.', '家長專用、有密碼保護的主頁：今日練習、本週情況、即將來臨的測驗、各科進度和需要留意的地方。'] },
   forecast: { per: 'flag', en: ['Exam forecast'], zh: ['考試預測'], d: ['See where each subject is heading by your exam date, at your current pace.', '按現時進度，預測考試時各科的準備程度。'] },
 };
 const ALWAYS = [['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Weekly activity report', '每週練習報告']];
@@ -3980,6 +3983,98 @@ function planCardHTML() {
     ${meters ? `<div class="pms">${meters}</div>` : `<span class="muted" style="font-size:13.5px">${PL('Everything unlimited.', '全部無限使用。')}</span>`}
     <div class="pv"><span class="muted">${PL('Testing: preview a plan on this device', '測試中：在這部裝置預覽計劃')}</span><div class="seg">${PLAN_ORDER.map((p) => `<button class="${p === id ? 'on' : ''}" data-pv="${p}">${PL(TIERS[p].name, TIERS[p].zh)}</button>`).join('')}</div></div>
   </section>`;
+}
+
+
+/* ---------- parent dashboard (Pro) ----------
+   A parent opens it on the child's device with the parent PIN and sees what the child has been doing, live from
+   this device's data: today, this week, upcoming school tests, subjects, what needs attention and recent
+   activity. With accounts later, the same screen moves to the parent's own phone. */
+const PD = (en, zh) => (LANG === 'zh' ? zh : en);
+let parentUntil = 0;
+async function openParent() {
+  if (!allow('parent')) return;
+  if (Date.now() < parentUntil) return go({ name: 'parent' });
+  const ok = await askPin(PD('Parent dashboard: enter the parent PIN.', '家長主頁：請輸入家長密碼。'));
+  if (!ok) return;
+  parentUntil = Date.now() + 15 * 60000;
+  go({ name: 'parent' });
+}
+const agoWords = (t) => {
+  const m = Math.round((Date.now() - t) / 60000);
+  if (m < 2) return PD('just now', '剛剛');
+  if (m < 60) return PD(`${m} min ago`, `${m} 分鐘前`);
+  const h = Math.round(m / 60); if (h < 24) return PD(`${h} h ago`, `${h} 小時前`);
+  const d = Math.round(h / 24); return d === 1 ? PD('yesterday', '昨天') : PD(`${d} days ago`, `${d} 天前`);
+};
+async function renderParent() {
+  const subj_ = (x) => subjectName(x, LANG);
+  if (locked('parent') || Date.now() > parentUntil) return go({ name: 'progress' });
+  const books = await getBooks();
+  const r = await currentReport();
+  const t0 = dayStart(), log = local.log || [];
+  const today = log.filter((e) => e.t >= t0);
+  const todayMin = minutesOf(today);
+  const tg = today.reduce((a, e) => a + (e.g || 0), 0), tm = today.reduce((a, e) => a + (e.m || 0), 0);
+  const last = log.length ? log[log.length - 1].t : 0;
+  const name = (local.name || '').trim() || PD('Your child', '你的孩子');
+  const weekMin = r.days.reduce((a, b) => a + b, 0);
+  const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short' }));
+  const maxMin = Math.max(20, ...r.days);
+  // subjects
+  const subj = [];
+  for (const b of books) { const m = await bookMastery(b); subj.push({ b, m }); }
+  const started = subj.flatMap(({ b, m }) => m.chapters.filter((c) => c.done).map((c) => ({ b, c })));
+  const weakest = started.slice().sort((x, y) => x.c.pct - y.c.pct).slice(0, 3);
+  const due = (await dueItems()).length, mk = mistakeCount();
+  const tests = (await Promise.all(upcomingTests().slice(0, 3).map(testStep))).filter(Boolean);
+  // recent activity, newest first
+  const feed = [];
+  const sessions = []; // group answers within 20 minutes of each other into one session
+  for (const e of log.slice(-300)) { const s = sessions[sessions.length - 1]; if (s && e.t - s.end < 20 * 60000 && s.b === String(e.q).split(':')[0]) { s.end = e.t; s.n++; s.g += e.g || 0; s.m += e.m || 0; } else sessions.push({ start: e.t, end: e.t, n: 1, g: e.g || 0, m: e.m || 0, b: String(e.q).split(':')[0] }); }
+  const bookName = (id) => { const b = books.find((x) => x.id === id); return b ? (b.subject ? subj_(b.subject) : b.title) : ''; };
+  sessions.slice(-12).forEach((s) => feed.push({ t: s.end, ic: 'bars', tx: PD(`Practised ${bookName(s.b)}: ${s.n} question${s.n > 1 ? 's' : ''}, ${s.m ? Math.round(100 * s.g / s.m) : 0}% of marks`, `練習 ${bookName(s.b)}：${s.n} 題，得分率 ${s.m ? Math.round(100 * s.g / s.m) : 0}%`) }));
+  (local.tests || []).slice(-8).forEach((x) => feed.push({ t: x.t, ic: 'pencil', tx: PD(`${x.kind === 'test' ? 'Chapter test' : 'Mock paper'}: ${x.m ? Math.round(100 * x.g / x.m) : 0}%`, `${x.kind === 'test' ? '章節測驗' : '模擬試卷'}：${x.m ? Math.round(100 * x.g / x.m) : 0}%`) + ` · ${x.title || ''}` }));
+  Object.entries(local.learned || {}).forEach(([k, t]) => { const [bid, uid_] = k.split(':'); const b = books.find((x) => x.id === bid); const u = b && b.units.find((x) => x.id === uid_); if (u) feed.push({ t, ic: 'book', tx: PD(`Finished a lesson: ${cleanUnitTitle(u.title)}`, `完成一課：${cleanUnitTitle(u.title)}`) }); });
+  (local.wr || []).forEach((w) => w.drafts.forEach((d, i) => feed.push({ t: d.t, ic: 'pencil', tx: PD(`Writing marked (draft ${i + 1}): ≈ level ${wrLevel(d.fb, w.kind)}`, `寫作批改（第 ${i + 1} 稿）：估計等級 ${wrLevel(d.fb, w.kind)}`) + ` · ${w.title}` })));
+  (local.sp || []).forEach((x) => x.tries.forEach((t) => feed.push({ t: t.t, ic: 'send', tx: PD(`Speaking answer marked: ≈ level ${spLevel(t.fb)}`, `說話回應評分：估計等級 ${spLevel(t.fb)}`) + ` · ${x.task.title}` })));
+  (local.hw || []).forEach((h) => feed.push({ t: h.t, ic: 'check', tx: PD(`Homework help: ${h.title || 'homework'}`, `功課輔導：${h.title || '功課'}`) }));
+  schoolTests().filter((x) => typeof x.score === 'number').forEach((x) => feed.push({ t: testDay(x), ic: 'target', tx: PD(`School test result: ${x.name} ${x.score}%`, `學校測驗成績：${x.name} ${x.score}%`) }));
+  feed.sort((a, b) => b.t - a.t);
+  const tone = (p) => (p >= 75 ? 'good' : p >= 50 ? 'mid' : 'low');
+  $app.innerHTML = `
+  <main class="pad stack g14 parentpage" data-view="parent" data-raw style="flex:1">
+    <div class="pd-head"><div><h1 class="pagetitle">${PD(`${esc(name)}’s dashboard`, `${esc(name)}的學習主頁`)}</h1>
+      <p class="muted">${last ? PD(`Last practised ${agoWords(last)}`, `上次練習：${agoWords(last)}`) : PD('No practice yet', '仍未開始練習')} · <span class="pd-live">● ${PD('Live on this device', '此裝置即時資料')}</span></p></div>
+      <div class="pd-acts"><button class="btn-sm" id="pdReport">${pIcon('send', 16)} ${PD('Send weekly report', '傳送每週報告')}</button><button class="btn-sm quiet" id="pdLock">🔒 ${PD('Lock', '鎖上')}</button></div></div>
+    <section class="pd-kpis">
+      <div class="pd-k ${todayMin ? '' : 'none'}"><small>${PD('Today', '今日')}</small><b>${todayMin} ${PD('min', '分鐘')}</b><span>${today.length ? PD(`${today.length} questions · ${tm ? Math.round(100 * tg / tm) : 0}%`, `${today.length} 題 · ${tm ? Math.round(100 * tg / tm) : 0}%`) : PD('Not yet today', '今日未練習')}</span></div>
+      <div class="pd-k"><small>${PD('This week', '本週')}</small><b>${weekMin} ${PD('min', '分鐘')}</b><span>${PD(`${r.dp} of 7 days · ${r.q} questions`, `7 日中 ${r.dp} 日 · ${r.q} 題`)}</span></div>
+      <div class="pd-k"><small>${PD('Marks this week', '本週得分率')}</small><b class="${r.a === null ? '' : tone(r.a)}">${r.a === null ? '–' : r.a + '%'}</b><span>${r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<em class="wr-up">▲ ${PD(`from ${r.pa}%`, `上週 ${r.pa}%`)}</em>` : `<em class="wr-down">▼ ${PD(`from ${r.pa}%`, `上週 ${r.pa}%`)}</em>`) : PD('vs last week', '對比上週')}</span></div>
+      <div class="pd-k"><small>${PD('Streak', '連續練習')}</small><b>${r.st || 0}</b><span>${PD('days in a row', '日')}</span></div>
+    </section>
+    <div class="pd-grid">
+      <div class="stack g14">
+        <section class="pgcard"><h2 class="pd-h">${pIcon('bars')} ${PD('Minutes each day', '每日練習分鐘')}</h2>
+          <div class="pd-bars">${r.days.map((m, i) => `<div><small>${m || ''}</small><i style="height:${m ? Math.max(6, Math.round(90 * m / maxMin)) : 3}px" class="${m ? '' : 'none'} ${i === 6 ? 'today' : ''}"></i><span>${dayNames[i]}</span></div>`).join('')}</div></section>
+        ${tests.length ? `<section class="pgcard"><h2 class="pd-h">${pIcon('target')} ${PD('School tests coming up', '即將來臨的學校測驗')}</h2>
+          ${tests.map((p) => `<div class="pd-row"><span class="stx-cal"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span><span class="pd-rt"><b>${esc(p.x.name)}</b><small>${leftText(p.left)} · ${PD('today’s plan:', '今日計劃：')} ${esc(p.step.t)}</small></span><b class="pd-pct ${tone(p.ready)}">${p.ready}%<small>${PD('ready', '準備度')}</small></b></div>`).join('')}</section>` : ''}
+        <section class="pgcard"><h2 class="pd-h">${pIcon('ring')} ${PD('How ready for each subject', '各科準備程度')}</h2>
+          ${subj.length ? subj.map(({ b, m }) => `<div class="pd-row"><span class="pd-rt"><b>${esc(b.subject ? subj_(b.subject) : b.title)}</b><small>${esc(b.title)}</small></span><span class="pd-bar"><i class="${tone(m.pct)}" style="width:${m.pct}%"></i></span><b class="pd-pct ${tone(m.pct)}">${m.pct}%</b></div>`).join('') : `<p class="muted">${PD('No textbooks yet.', '仍未加入課本。')}</p>`}</section>
+      </div>
+      <div class="stack g14">
+        <section class="pgcard pd-attn"><h2 class="pd-h">${pIcon('alert')} ${PD('Needs attention', '需要留意')}</h2>
+          ${weakest.length ? weakest.map(({ b, c }) => `<div class="pd-row"><span class="pd-rt"><b>${esc(cleanUnitTitle(c.unit.title))}</b><small>${esc(b.title)} · ${c.done} ${PD('answered', '題已答')}</small></span><b class="pd-pct ${tone(c.pct)}">${c.pct}%</b></div>`).join('') : `<p class="muted" style="margin:0">${PD('Nothing yet: chapters show here once practised.', '暫時沒有：練習過的章節會在這裏顯示。')}</p>`}
+          <div class="pd-chips"><span class="${mk ? 'warn' : ''}">${mk} ${PD('mistakes to fix', '題錯題待改正')}</span><span class="${due > 10 ? 'warn' : ''}">${due} ${PD('reviews due', '題待溫習')}</span>${today.length ? '' : `<span class="warn">${PD('No practice today yet', '今日仍未練習')}</span>`}</div></section>
+        <section class="pgcard"><h2 class="pd-h">${pIcon('clock')} ${PD('Recent activity', '最近活動')}</h2>
+          ${feed.length ? `<ol class="pd-feed">${feed.slice(0, 12).map((f) => `<li><span class="pd-fi">${pIcon(f.ic, 16)}</span><span>${esc(f.tx)}<small>${agoWords(f.t)}</small></span></li>`).join('')}</ol>` : `<p class="muted" style="margin:0">${PD('Activity will show here as your child studies.', '孩子溫習時，活動會在這裏顯示。')}</p>`}</section>
+      </div>
+    </div>
+    <p class="hint" style="margin:0;text-align:center">${PD('This dashboard reads the progress saved on this device. With PrepBuddy accounts (coming soon) it will open on your own phone and update live.', '這個主頁讀取此裝置儲存的進度。推出 PrepBuddy 帳戶後，可在你自己的手機即時查看。')}</p>
+  </main>`;
+  document.getElementById('pdReport').onclick = () => reportDialog();
+  document.getElementById('pdLock').onclick = () => { parentUntil = 0; go({ name: 'progress' }); };
+  window.scrollTo(0, 0);
 }
 
 /* ---------- school tests: plan the days before a test ----------
