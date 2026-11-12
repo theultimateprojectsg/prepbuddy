@@ -108,7 +108,7 @@ module.exports = async (req, res) => {
       out = { ok: true, family: fam };
     } else if (body.action === 'pilot_note') {
       const P = require('../lib/pilot');
-      await P.writeFile('families.json', (cur) => (cur || []).map((f) => (f.code === body.code ? { ...f, note: String(body.note || '').slice(0, 300), off: !!body.off } : f)), `Pilot: update ${body.code}`);
+      await P.writeFile('families.json', (cur) => (cur || []).map((f) => (f.code === body.code ? { ...f, ...(body.note !== undefined ? { note: String(body.note || '').slice(0, 300) } : {}), ...(body.off !== undefined ? { off: !!body.off } : {}), ...(body.plan !== undefined ? { plan: ['free', 'plus', 'pro'].includes(body.plan) ? body.plan : null } : {}) } : f)), `Pilot: update ${body.code}`);
       out = { ok: true };
     } else if (body.action === 'remove') {
       if (!safeId(body.id)) throw err(400, 'Bad book id.');

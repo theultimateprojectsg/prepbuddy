@@ -97,19 +97,173 @@ const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${Stri
 // one family = every device that used its code
 function mergeFamily(snaps) {
   const days = {}, fx = {}, books = new Map(); let last = 0, first = null, errs = [], counts = {}, names = new Set(), plans = new Set(), devices = [];
+  const hours = Array(24).fill(0), wdays = Array(7).fill(0), modes = {}, usage = { usd: 0, calls: 0, by: {} }, why = {}, langs = new Set();
+  let sess = [], streak = 0, best = 0, stars = null, pin = false, goal = null;
   for (const s of snaps) {
     devices.push({ device: s.device, ua: s.ua, synced: s.synced, last: s.last });
-    if (s.name) names.add(s.name); if (s.plan) plans.add(s.plan);
+    if (s.name) names.add(s.name); if (s.plan) plans.add(s.plan); if (s.lang) langs.add(s.lang);
     last = Math.max(last, s.last || 0); if (s.first) first = first ? Math.min(first, s.first) : s.first;
     for (const d of s.days || []) { const x = days[d.d] || (days[d.d] = { q: 0, g: 0, m: 0, min: 0 }); x.q += d.q; x.g += d.g; x.m += d.m; x.min += d.min; }
     for (const [k, v] of Object.entries(s.fx || {})) { const x = fx[k] || (fx[k] = { n: 0, last: 0 }); x.n += v.n; x.last = Math.max(x.last, v.last || 0); }
-    for (const b of s.books || []) books.set(b.title, b);
+    for (const b of s.books || []) { const o = books.get(b.title); books.set(b.title, o ? { ...b, q: (o.q || 0) + (b.q || 0), pct: Math.max(o.pct || 0, b.pct || 0) } : b); }
     errs = errs.concat((s.errs || []).map((e) => ({ ...e, device: s.device })));
     for (const [k, v] of Object.entries(s.counts || {})) if (typeof v === 'number') counts[k] = (counts[k] || 0) + v;
+    (s.hours || []).forEach((n, i) => (hours[i] += n || 0)); (s.wdays || []).forEach((n, i) => (wdays[i] += n || 0));
+    for (const [k, v] of Object.entries(s.modes || {})) { const x = modes[k] || (modes[k] = { q: 0, g: 0, m: 0 }); x.q += v.q; x.g += v.g; x.m += v.m; }
+    if (s.usage) { usage.usd += s.usage.usd || 0; usage.calls += s.usage.calls || 0; for (const [k, v] of Object.entries(s.usage.by || {})) { const x = usage.by[k] || (usage.by[k] = { n: 0, usd: 0 }); x.n += v.n || 0; x.usd += v.usd || 0; } }
+    sess = sess.concat(s.sess || []);
+    streak = Math.max(streak, s.streak || 0); best = Math.max(best, s.best || 0);
+    if (s.stars) { stars = stars || { on: false, bal: 0, total: 0, redeemed: 0, rewards: 0, rushedQ: 0, capDays: 0, badges: 0 }; for (const k of ['bal', 'total', 'redeemed', 'rushedQ', 'capDays', 'badges']) stars[k] += s.stars[k] || 0; stars.rewards = Math.max(stars.rewards, s.stars.rewards || 0); stars.on = stars.on || !!s.stars.on; for (const [k, v] of Object.entries(s.stars.why || {})) why[k] = (why[k] || 0) + v; }
+    if (s.parent && s.parent.pin) pin = true;
+    if (s.goal) goal = s.goal;
   }
+  sess.sort((a, b) => a.t - b.t);
   const t0 = new Date(); t0.setHours(0, 0, 0, 0);
-  const sum = (n) => { let q = 0, g = 0, m = 0, min = 0, act = 0; for (let i = 0; i < n; i++) { const x = days[dayKey(t0.getTime() - i * 864e5)]; if (x) { q += x.q; g += x.g; m += x.m; min += x.min; act++; } } return { q, acc: m ? Math.round(100 * g / m) : null, min, act }; };
-  return { days, fx, books: [...books.values()], last, first, errs: errs.sort((a, b) => b.t - a.t).slice(0, 12), counts, names: [...names], plans: [...plans], devices, w: sum(7), w2: sum(14) };
+  if (last < t0.getTime() - 864e5) streak = 0; // the streak broke since their last sync
+  const sum = (n, from = 0) => { let q = 0, g = 0, m = 0, min = 0, act = 0; for (let i = from; i < from + n; i++) { const x = days[dayKey(t0.getTime() - i * 864e5)]; if (x) { q += x.q; g += x.g; m += x.m; min += x.min; act++; } } return { q, acc: m ? Math.round(100 * g / m) : null, min, act }; };
+  const all = Object.values(days), actDays = all.length;
+  const tot = all.reduce((o, x) => ({ q: o.q + x.q, g: o.g + x.g, m: o.m + x.m, min: o.min + x.min }), { q: 0, g: 0, m: 0, min: 0 });
+  // came back in week 2: any activity 7–13 days after the first day (null while it's too early to tell)
+  const f0 = first ? new Date(first).setHours(0, 0, 0, 0) : null;
+  const wk2 = f0 === null ? null : (Date.now() - f0 < 7 * 864e5 ? null : Object.keys(days).some((k) => { const t = new Date(k + 'T00:00:00').getTime(); return t >= f0 + 7 * 864e5 && t < f0 + 14 * 864e5; }));
+  if (stars) stars.why = why;
+  return { days, fx, books: [...books.values()], last, first, errs: errs.sort((a, b) => b.t - a.t).slice(0, 12), counts, names: [...names], plans: [...plans], devices, w: sum(7), w2: sum(14), pw: sum(7, 7),
+    hours, wdays, modes, usage, sess, streak, best, stars, pin, goal, langs: [...langs], actDays, tot: { ...tot, acc: tot.m ? Math.round(100 * tot.g / tot.m) : null }, wk2,
+    parentUse: (fx.parent_dashboard ? fx.parent_dashboard.n : 0) + (fx.parent_report ? fx.parent_report.n : 0) + (fx['ai:report'] ? fx['ai:report'].n : 0) };
+}
+const MODE_NAMES = { practice: 'Practice sets', '': 'Practice sets', spaced: 'Daily reviews', drill: 'Weak-spot drills', mistakes: 'Mistake book redo', dse: 'Chapter tests & DSE papers', mock: 'Mini mock tests', placement: 'Level check', units: 'Practice sets', unit: 'Practice sets', book: 'Practice sets' };
+const money = (x) => (x >= 10 ? '$' + x.toFixed(0) : '$' + (x || 0).toFixed(2));
+const pctOf = (a, b) => (b ? Math.round(100 * a / b) : 0);
+// small horizontal bar list: [[label, value, note]]
+const barList = (rows, fmt = (v) => v) => { const mx = Math.max(1, ...rows.map((r) => r[1])); return rows.length ? `<div class="pl-feats">${rows.map(([l, v, n]) => `<div><span>${esc(l)}</span><i style="width:${Math.max(2, Math.round(100 * v / mx))}%"></i><b>${fmt(v)}${n ? ` <small>${esc(n)}</small>` : ''}</b></div>`).join('')}</div>` : '<p class="muted" style="margin:0">Nothing yet.</p>'; };
+// vertical mini bars: values with labels underneath
+const colBars = (vals, labels, title = (i, v) => `${labels[i]}: ${v}`) => { const mx = Math.max(1, ...vals); return `<div class="pl-cols">${vals.map((v, i) => `<span title="${esc(title(i, v))}"><i style="height:${v ? Math.max(3, Math.round(70 * v / mx)) : 1}px" class="${v ? '' : 'none'}"></i><small>${esc(labels[i])}</small></span>`).join('')}</div>`; };
+
+function pilotOverview(rows, fams) {
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0); const T = t0.getTime(), D = 864e5;
+  const started = rows.filter((r) => r.a.devices.length), withQ = rows.filter((r) => r.a.tot.q > 0);
+  // funnel
+  const elig = rows.filter((r) => r.a.wk2 !== null);
+  const funnel = [
+    ['Invited (family code made)', fams.length],
+    ['Opened the app', started.length],
+    ['Added a textbook', rows.filter((r) => r.a.books.length).length],
+    ['Answered a question', withQ.length],
+    ['Answered 50+ questions', rows.filter((r) => r.a.tot.q >= 50).length],
+    ['Practised on 3+ different days', rows.filter((r) => r.a.actDays >= 3).length],
+    ['Practised on 7+ different days', rows.filter((r) => r.a.actDays >= 7).length],
+    ['Parent looked at the dashboard or report', rows.filter((r) => r.a.parentUse > 0).length],
+  ];
+  const wk2n = elig.filter((r) => r.a.wk2).length;
+  // weekly trend, last 8 weeks (7-day blocks ending today)
+  const weeks = Array.from({ length: 8 }, (_, w) => {
+    let q = 0, g = 0, m = 0, min = 0; const act = new Set();
+    rows.forEach((r, i) => { for (let d = 0; d < 7; d++) { const x = r.a.days[dayKey(T - (w * 7 + d) * D)]; if (x) { q += x.q; g += x.g; m += x.m; min += x.min; act.add(i); } } });
+    const from = new Date(T - (w * 7 + 6) * D);
+    return { label: w === 0 ? 'This week' : from.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), q, min, act: act.size, acc: m ? Math.round(100 * g / m) : null };
+  }).reverse();
+  const firstWeek = weeks.findIndex((w) => w.q > 0); const wks = firstWeek < 0 ? weeks.slice(-1) : weeks.slice(firstWeek);
+  // heatmap: families x last 28 days
+  const hdays = Array.from({ length: 28 }, (_, i) => T - (27 - i) * D);
+  const heat = rows.filter((r) => r.a.devices.length).map((r) => `<div class="hm-row"><span title="${esc(r.f.name)}">${esc(r.f.name)}</span>${hdays.map((t) => { const x = r.a.days[dayKey(t)]; const lv = !x ? 0 : x.min >= 30 ? 4 : x.min >= 15 ? 3 : x.min >= 5 ? 2 : 1; return `<i class="l${lv}" title="${dayKey(t)}: ${x ? `${x.min} min, ${x.q} questions` : 'nothing'}"></i>`; }).join('')}</div>`).join('');
+  // study times
+  const hours = Array(24).fill(0), wd = Array(7).fill(0);
+  rows.forEach((r) => { r.a.hours.forEach((n, i) => (hours[i] += n)); r.a.wdays.forEach((n, i) => (wd[i] += n)); });
+  // engagement per active day
+  const actDays = rows.reduce((x, r) => x + r.a.actDays, 0), totMin = rows.reduce((x, r) => x + r.a.tot.min, 0), totQ = rows.reduce((x, r) => x + r.a.tot.q, 0);
+  const totG = rows.reduce((x, r) => x + r.a.tot.g, 0), totM = rows.reduce((x, r) => x + r.a.tot.m, 0);
+  // sessions
+  const sess = rows.flatMap((r) => r.a.sess);
+  const done = sess.filter((x) => !x.e);
+  const avg = (xs, f) => (xs.length ? xs.reduce((a, x) => a + f(x), 0) / xs.length : 0);
+  // modes
+  const modes = {}; rows.forEach((r) => Object.entries(r.a.modes).forEach(([k, v]) => { const n = MODE_NAMES[k] || k; const x = modes[n] || (modes[n] = { q: 0, g: 0, m: 0, fam: 0 }); x.q += v.q; x.g += v.g; x.m += v.m; x.fam++; }));
+  // subjects
+  const subj = {}; rows.forEach((r) => r.a.books.forEach((b) => { const k = b.subject || 'Other'; const x = subj[k] || (subj[k] = { fam: new Set(), books: 0, q: 0, mast: [], acc: [] }); x.fam.add(r.f.code); x.books++; x.q += b.q || 0; if (b.pct !== null && b.pct !== undefined) x.mast.push(b.pct); if (b.acc !== null && b.acc !== undefined) x.acc.push(b.acc); }));
+  const levels = {}; rows.forEach((r) => r.a.books.forEach((b) => { const k = b.level || 'Not set'; levels[k] = (levels[k] || 0) + 1; }));
+  // stars
+  const st = rows.map((r) => r.a.stars).filter(Boolean);
+  const why = {}; st.forEach((x) => Object.entries(x.why || {}).forEach(([k, v]) => (why[k] = (why[k] || 0) + v)));
+  const WHY = { set: 'Finished sets', score: 'Scored 80%+', fix: 'Fixed mistakes', reviews: 'Daily reviews', test: 'Chapter tests', goal: 'Weekly goals', badge: 'Badges', writing: 'Writing', speaking: 'Speaking', dictation: 'Dictation', 'dictation-perfect': 'Perfect dictation', lesson: 'Lessons', 'level check': 'Level checks' };
+  const rushedSets = sess.filter((x) => x.r).length;
+  // AI cost
+  const usd = rows.reduce((x, r) => x + r.a.usage.usd, 0), calls = rows.reduce((x, r) => x + r.a.usage.calls, 0);
+  const byPath = {}; rows.forEach((r) => Object.entries(r.a.usage.by).forEach(([k, v]) => { const x = byPath[k] || (byPath[k] = { n: 0, usd: 0 }); x.n += v.n; x.usd += v.usd; }));
+  const costWeek = rows.filter((r) => r.a.first && r.a.usage.usd).map((r) => r.a.usage.usd / Math.max(1, (Date.now() - r.a.first) / (7 * D)));
+  // upgrade signals
+  const ups = {}; rows.forEach((r) => Object.entries(r.a.fx).forEach(([k, v]) => { if (!k.startsWith('upsell:')) return; const x = ups[k.slice(7)] || (ups[k.slice(7)] = { fam: 0, n: 0 }); x.fam++; x.n += v.n; }));
+  const plansSet = {}; rows.forEach((r) => { const p = r.f.plan || 'pro (default)'; plansSet[p] = (plansSet[p] || 0) + 1; });
+  const dev = {}; rows.forEach((r) => r.a.devices.forEach((d) => (dev[d.ua || 'unknown'] = (dev[d.ua || 'unknown'] || 0) + 1)));
+  const lang = {}; rows.forEach((r) => r.a.langs.forEach((l) => (lang[l === 'zh' ? 'Chinese' : 'English'] = (lang[l === 'zh' ? 'Chinese' : 'English'] || 0) + 1)));
+  const wkNow = weeks[weeks.length - 1], wkPrev = weeks[weeks.length - 2];
+  const delta = (a, b) => (b ? `<small class="${a >= b ? 'up' : 'down'}">${a >= b ? '▲' : '▼'} ${Math.abs(pctOf(a - b, b))}% vs last week</small>` : '');
+  const card = (h, body, sub) => `<div class="card"><h2>${h}</h2>${sub ? `<p class="hint" style="margin:-4px 0 4px">${sub}</p>` : ''}${body}</div>`;
+  const kv = (list) => `<div class="pl-kv">${list.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
+  return `
+  <div class="pl-tiles">
+    <div><b>${fams.length}</b><span>families invited</span></div>
+    <div><b>${started.length}</b><span>opened the app</span></div>
+    <div><b>${wkNow.act}</b><span>active this week</span>${delta(wkNow.act, wkPrev.act)}</div>
+    <div><b>${elig.length ? pctOf(wk2n, elig.length) + '%' : '–'}</b><span>came back in week 2${elig.length ? ` (${wk2n}/${elig.length})` : ''}</span></div>
+    <div><b>${wkNow.q}</b><span>questions this week</span>${delta(wkNow.q, wkPrev.q)}</div>
+    <div><b>${wkNow.min}</b><span>minutes this week</span>${delta(wkNow.min, wkPrev.min)}</div>
+    <div><b>${actDays ? Math.round(totMin / actDays) : '–'}</b><span>minutes per active day</span></div>
+    <div><b>${totM ? pctOf(totG, totM) + '%' : '–'}</b><span>accuracy overall</span></div>
+    <div><b>${money(usd)}</b><span>AI cost so far</span></div>
+    <div><b>${costWeek.length ? money(avg(costWeek, (x) => x)) : '–'}</b><span>AI cost per family per week</span></div>
+    <div><b>${rows.reduce((x, r) => x + r.a.errs.length, 0)}</b><span>errors seen</span></div>
+    <div><b>${rows.filter((r) => r.a.last && Date.now() - r.a.last > 4 * D).length}</b><span>gone quiet (4+ days)</span></div>
+  </div>
+  <div class="pl-grid">
+    ${card('Getting started funnel', barList(funnel.map(([l, v]) => [l, v, `${pctOf(v, fams.length)}%`])), 'How far each family has got. The biggest drop is where to help.')}
+    ${card('Week by week', `<div class="pl-tablewrap"><table class="pl-table pl-mini"><thead><tr><th>Week starting</th><th>Active families</th><th>Questions</th><th>Minutes</th><th>Accuracy</th></tr></thead><tbody>${wks.map((w) => `<tr><td>${w.label}</td><td>${w.act}</td><td>${w.q}</td><td>${w.min}</td><td>${w.acc === null ? '–' : w.acc + '%'}</td></tr>`).join('')}</tbody></table></div>`, 'Is usage holding up, and is accuracy going up?')}
+  </div>
+  ${card('Who practised when (last 4 weeks)', heat ? `<div class="hm">${heat}<div class="hm-row hm-key"><span></span>${hdays.map((t, i) => `<small>${i % 7 === 6 ? new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}</small>`).join('')}</div></div><p class="hint" style="margin:6px 0 0">Darker = more minutes (1–4, 5–14, 15–29, 30+). Hover a square for details.</p>` : '<p class="muted" style="margin:0">No activity yet.</p>')}
+  <div class="pl-grid">
+    ${card('Time of day', colBars(hours, hours.map((_, i) => (i % 3 === 0 ? String(i) : '')), (i, v) => `${i}:00–${i + 1}:00: ${v} questions`), 'Questions answered by hour (the device’s clock).')}
+    ${card('Day of the week', colBars([1, 2, 3, 4, 5, 6, 0].map((i) => wd[i]), ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']), 'Questions answered by weekday.')}
+  </div>
+  <div class="pl-grid">
+    ${card('Practice sessions', kv([
+      ['Sets finished', done.length], ['Sets left early', `${sess.length - done.length} (${pctOf(sess.length - done.length, sess.length)}%)`],
+      ['Average set', `${avg(done, (x) => x.n).toFixed(1)} questions · ${avg(done, (x) => x.min).toFixed(1)} min`], ['Average score', done.length ? Math.round(avg(done, (x) => x.p)) + '%' : '–'],
+      ['Rushed sets (no stars)', `${rushedSets} (${pctOf(rushedSets, sess.length)}%)`], ['Chapter tests passed', `${done.filter((x) => x.ts && x.p >= 80).length} of ${done.filter((x) => x.ts).length}`],
+      ['Questions per active day', actDays ? Math.round(totQ / actDays) : '–'], ['Longest streak', `${Math.max(0, ...rows.map((r) => r.a.best))} days`]]))}
+    ${card('How they practise', barList(Object.entries(modes).sort((a, b) => b[1].q - a[1].q).map(([k, v]) => [k, v.q, `${v.m ? pctOf(v.g, v.m) + '% right' : ''} · ${v.fam} fam`])), 'Questions answered in each mode.')}
+  </div>
+  <div class="pl-grid">
+    ${card('What’s being used', barList(Object.entries(rows.reduce((o, r) => { Object.entries(r.a.fx).forEach(([k, v]) => { if (k.startsWith('screen:') || k.startsWith('upsell:')) return; const x = o[k] || (o[k] = { fam: 0, n: 0 }); x.fam++; x.n += v.n; }); return o; }, {})).sort((a, b) => b[1].fam - a[1].fam || b[1].n - a[1].n).map(([k, v]) => [fname(k), v.fam, `famil${v.fam === 1 ? 'y' : 'ies'} · ${v.n}×`])) + (() => { const used = new Set(rows.flatMap((r) => Object.keys(r.a.fx))); const un = Object.keys(FEATURE_NAMES).filter((k) => !used.has(k)); return un.length && withQ.length ? `<p class="hint" style="margin:8px 0 0"><b>Not used by anyone yet:</b> ${un.map(fname).join(' · ')}</p>` : ''; })())}
+    ${card('Other work done', kv([
+      ['Lessons finished', rows.reduce((x, r) => x + (r.a.counts.learned || 0), 0)], ['Mistakes fixed', rows.reduce((x, r) => x + (r.a.counts.fixed || 0), 0)], ['Mistakes still open', rows.reduce((x, r) => x + (r.a.counts.mistakes || 0), 0)],
+      ['Essays marked', rows.reduce((x, r) => x + (r.a.counts.writing || 0), 0)], ['Speaking answers', rows.reduce((x, r) => x + (r.a.counts.speaking || 0), 0)], ['Dictations', rows.reduce((x, r) => x + (r.a.counts.dictation || 0), 0)],
+      ['Homework sessions', rows.reduce((x, r) => x + (r.a.counts.homework || 0), 0)], ['School tests planned', rows.reduce((x, r) => x + (r.a.counts.schoolTests || 0), 0)], ['Level checks', rows.reduce((x, r) => x + (r.a.counts.placement || 0), 0)],
+      ['Weekly goal set', `${rows.filter((r) => r.a.goal).length} families`]]))}
+  </div>
+  <div class="pl-grid">
+    ${card('Subjects', Object.keys(subj).length ? `<div class="pl-tablewrap"><table class="pl-table pl-mini"><thead><tr><th>Subject</th><th>Families</th><th>Books</th><th>Questions</th><th>Accuracy</th><th>Mastery</th></tr></thead><tbody>${Object.entries(subj).sort((a, b) => b[1].q - a[1].q).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.fam.size}</td><td>${v.books}</td><td>${v.q}</td><td>${v.acc.length ? Math.round(avg(v.acc, (x) => x)) + '%' : '–'}</td><td>${v.mast.length ? Math.round(avg(v.mast, (x) => x)) + '%' : '–'}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No books yet.</p>')}
+    ${card('Year levels (books)', barList(Object.entries(levels).sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, v, `book${v === 1 ? '' : 's'}`])))}
+  </div>
+  <div class="pl-grid">
+    ${card('Stars and rewards', kv([
+      ['Families with stars on', st.filter((x) => x.on).length], ['Stars earned', st.reduce((x, y) => x + y.total, 0)], ['Rewards redeemed', st.reduce((x, y) => x + y.redeemed, 0)],
+      ['Families with rewards set up', st.filter((x) => x.rewards).length], ['Parent PIN set', `${rows.filter((r) => r.a.pin).length} families`], ['Days someone hit the 10-star cap', st.reduce((x, y) => x + y.capDays, 0)],
+      ['Questions in rushed sets', st.reduce((x, y) => x + y.rushedQ, 0)], ['Badges won', st.reduce((x, y) => x + y.badges, 0)]]) + `<h3 class="pl-h3">Where stars come from</h3>` + barList(Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, v]) => [WHY[k] || k, v])), 'Rushed sets and cap hits show children chasing stars rather than learning.')}
+    ${card('AI cost', kv([['Total so far', money(usd)], ['AI requests', calls], ['Per family so far', started.length ? money(usd / started.length) : '–'], ['Per family per week', costWeek.length ? money(avg(costWeek, (x) => x)) : '–'], ['Most expensive family', rows.length ? (() => { const r = rows.slice().sort((a, b) => b.a.usage.usd - a.a.usage.usd)[0]; return r.a.usage.usd ? `${esc(r.f.name)} · ${money(r.a.usage.usd)}` : '–'; })() : '–']]) + `<h3 class="pl-h3">By feature</h3>` + barList(Object.entries(byPath).sort((a, b) => b[1].usd - a[1].usd).map(([k, v]) => [k, v.usd, `${v.n} requests`]), money), 'From each device’s own record of AI use (US$). Use this to check plan prices cover the cost.')}
+  </div>
+  <div class="pl-grid">
+    ${card('Upgrade signals', `${kv(Object.entries(plansSet).map(([k, v]) => [`Families on ${esc(k)}`, v]))}<h3 class="pl-h3">Plan limits hit</h3>${barList(Object.entries(ups).sort((a, b) => b[1].fam - a[1].fam).map(([k, v]) => [k, v.fam, `famil${v.fam === 1 ? 'y' : 'ies'} · ${v.n}×`]))}`, 'Put some families on Free or Plus (in the table below) to see which locked features they reach for.')}
+    ${card('Devices and language', kv([...Object.entries(dev).map(([k, v]) => [`On a ${esc(k)}`, `${v} device${v === 1 ? '' : 's'}`]), ...Object.entries(lang).map(([k, v]) => [`Using ${k}`, `${v} famil${v === 1 ? 'y' : 'ies'}`])]))}
+  </div>`;
+}
+
+function pilotCSV(rows) {
+  const cols = ['Family', 'Code', 'Plan', 'Child', 'Started', 'Last active', 'Active days', 'Came back week 2', 'Questions', 'Accuracy %', 'Minutes', 'Questions 7d', 'Minutes 7d', 'Streak', 'Best streak', 'Sets', 'Rushed sets', 'Books', 'Subjects', 'Lessons', 'Essays', 'Speaking', 'Dictations', 'Mistakes open', 'Mistakes fixed', 'Stars earned', 'Rewards redeemed', 'Parent PIN', 'Parent views', 'AI requests', 'AI cost USD', 'Errors', 'Devices', 'Notes'];
+  const d = (t) => (t ? new Date(t).toISOString().slice(0, 10) : '');
+  const lines = rows.map(({ f, a }) => [f.name, f.code, f.plan || 'pro', a.names.join(' / '), d(a.first), d(a.last), a.actDays, a.wk2 === null ? '' : a.wk2 ? 'yes' : 'no', a.tot.q, a.tot.acc ?? '', a.tot.min, a.w.q, a.w.min, a.streak, a.best,
+    a.sess.filter((x) => !x.e).length, a.sess.filter((x) => x.r).length, a.books.length, [...new Set(a.books.map((b) => b.subject))].join(' / '), a.counts.learned || 0, a.counts.writing || 0, a.counts.speaking || 0, a.counts.dictation || 0,
+    a.counts.mistakes || 0, a.counts.fixed || 0, a.stars ? a.stars.total : '', a.stars ? a.stars.redeemed : '', a.pin ? 'yes' : 'no', a.parentUse, a.usage.calls, a.usage.usd.toFixed(3), a.errs.length, a.devices.map((x) => x.ua).join(' / '), f.note || '']);
+  const q = (v) => { const x = String(v ?? ''); return /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x; };
+  return [cols, ...lines].map((r) => r.map(q).join(',')).join('\n');
 }
 async function renderPilot(note) {
   app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Back to library</button></header><div class="card"><p class="muted" style="margin:0">Loading…</p></div>`;
@@ -128,38 +282,35 @@ async function renderPilot(note) {
   const known = new Set(fams.map((f) => f.code));
   Object.keys(P.activity || {}).forEach((c) => { if (!known.has(c)) fams.push({ code: c, name: '(not on the list)', created: 0 }); });
   const rows = fams.map((f) => ({ f, a: mergeFamily(P.activity[f.code] || []) })).sort((x, y) => (y.a.last || 0) - (x.a.last || 0));
-  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
-  const activeToday = rows.filter((r) => r.a.last >= t0.getTime()).length, active7 = rows.filter((r) => r.a.w.act > 0).length;
-  const q7 = rows.reduce((x, r) => x + r.a.w.q, 0), min7 = rows.reduce((x, r) => x + r.a.w.min, 0);
-  // features across families: how many families used each, and how often
-  const feat = {};
-  rows.forEach((r) => Object.entries(r.a.fx).forEach(([k, v]) => { if (k.startsWith('screen:')) return; const x = feat[k] || (feat[k] = { fam: 0, n: 0 }); x.fam++; x.n += v.n; }));
-  const featList = Object.entries(feat).sort((a, b) => b[1].fam - a[1].fam || b[1].n - a[1].n);
-  const unused = Object.keys(FEATURE_NAMES).filter((k) => !feat[k]);
-  const maxF = Math.max(1, ...featList.map(([, v]) => v.fam));
+  const ov = pilotOverview(rows, fams).split('\u0001');
   const fb = P.feedback || [];
   const famName = (code) => (fams.find((f) => f.code === code) || {}).name || code;
   app.innerHTML = `<header><h1>Pilot families</h1><button class="btn ghost small" id="back">Back to library</button></header>
   ${note ? `<div class="ok">${note}</div>` : ''}
-  <div class="pl-tiles">
-    <div><b>${fams.length}</b><span>families</span></div><div><b>${activeToday}</b><span>active today</span></div><div><b>${active7}</b><span>active this week</span></div>
-    <div><b>${q7}</b><span>questions this week</span></div><div><b>${min7}</b><span>minutes this week</span></div><div><b>${fb.length}</b><span>feedback messages</span></div>
-  </div>
+  <div class="pl-acts"><button class="btn ghost small" id="csv">Download all stats (CSV)</button><button class="btn ghost small" id="reload">Refresh</button><span class="hint">Updated ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>
+  ${ov[0]}
   <div class="card"><h2>Add a family</h2>
     <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
     <button class="btn" style="grid-column:1/-1" id="addgo">Make a family code</button></form><div id="newcode"></div></div>
   <div class="card"><h2>Families</h2>
-    ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Books</th><th>Problems</th></tr></thead>
+    ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Streak</th><th>AI cost</th><th>Books</th><th>Problems</th><th>Plan</th></tr></thead>
     <tbody>${rows.map((r, i) => `<tr class="pl-row ${r.a.last ? (Date.now() - r.a.last > 4 * 864e5 ? 'cold' : '') : 'never'}" data-fam="${i}"><td><b>${esc(r.f.name)}</b><small>${esc(r.f.code)}${r.a.names.length ? ' · ' + esc(r.a.names.join(', ')) : ''}${r.a.devices.length ? ` · ${r.a.devices.length} device${r.a.devices.length > 1 ? 's' : ''}` : ''}</small></td>
-      <td>${r.a.last ? ago(r.a.last) : '<span class="tag">not started</span>'}</td><td>${r.a.w2.act}</td><td>${r.a.w.q}</td><td>${r.a.w.min}</td><td>${r.a.w.acc === null ? '–' : r.a.w.acc + '%'}</td><td>${r.a.books.length}</td><td>${r.a.errs.length ? `<span class="tag red">${r.a.errs.length}</span>` : '–'}</td></tr>
-      <tr class="pl-detail" id="fd${i}" hidden><td colspan="8">${famDetail(r, fb.filter((x) => x.code === r.f.code))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No families yet. Add one above.</p>'}
+      <td>${r.a.last ? ago(r.a.last) : '<span class="tag">not started</span>'}</td><td>${r.a.w2.act}</td><td>${r.a.w.q}</td><td>${r.a.w.min}</td><td>${r.a.w.acc === null ? '–' : r.a.w.acc + '%'}</td><td>${r.a.streak ? r.a.streak + ' d' : '–'}</td><td>${r.a.usage.usd ? money(r.a.usage.usd) : '–'}</td><td>${r.a.books.length}</td><td>${r.a.errs.length ? `<span class="tag red">${r.a.errs.length}</span>` : '–'}</td><td><select class="pl-plan" data-code="${esc(r.f.code)}" aria-label="Plan for ${esc(r.f.name)}">${['', 'free', 'plus', 'pro'].map((p) => `<option value="${p}" ${(r.f.plan || '') === p ? 'selected' : ''}>${p ? p[0].toUpperCase() + p.slice(1) : 'Pro (default)'}</option>`).join('')}</select></td></tr>
+      <tr class="pl-detail" id="fd${i}" hidden><td colspan="11">${famDetail(r, fb.filter((x) => x.code === r.f.code))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No families yet. Add one above.</p>'}
     <p class="hint" style="margin:0">Devices send a summary when the app opens, after each practice set and every 10 minutes while it’s open. Families idle for 4+ days are greyed.</p></div>
-  <div class="card"><h2>What’s being used</h2>
-    ${featList.length ? `<div class="pl-feats">${featList.map(([k, v]) => `<div><span>${esc(fname(k))}</span><i style="width:${Math.round(100 * v.fam / maxF)}%"></i><b>${v.fam} famil${v.fam === 1 ? 'y' : 'ies'} · ${v.n}×</b></div>`).join('')}</div>` : '<p class="muted" style="margin:0">Nothing yet.</p>'}
-    ${unused.length && rows.some((r) => r.a.last) ? `<p class="hint" style="margin:0"><b>Not used by anyone yet:</b> ${unused.map(fname).join(' · ')}</p>` : ''}</div>
+  <h2 class="pl-sec">Across all families</h2>
+  ${ov[1]}
   <div class="card"><h2>Feedback (${fb.length})</h2>
     ${fb.length ? fb.map((x) => `<div class="pl-fb"><div><b>${esc(famName(x.code))}</b>${x.name ? ` · ${esc(x.name)}` : ''} <small>${ago(x.at)}</small></div><p>${esc(x.text)}</p></div>`).join('') : '<p class="muted" style="margin:0">No feedback yet. Families send it from Settings in the app.</p>'}</div>`;
   $('back').onclick = () => renderLibrary();
+  $('reload').onclick = () => renderPilot();
+  $('csv').onclick = () => { const blob = new Blob([pilotCSV(rows)], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `prepbuddy-pilot-${dayKey(Date.now())}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
+  app.querySelectorAll('.pl-plan').forEach((sel) => { sel.onclick = (e) => e.stopPropagation(); sel.onchange = async () => {
+    sel.disabled = true;
+    try { await adminApi({ action: 'pilot_note', code: sel.dataset.code, plan: sel.value || null }); const f = fams.find((x) => x.code === sel.dataset.code); if (f) f.plan = sel.value || null; sel.insertAdjacentHTML('afterend', '<small class="pl-saved">Saved. Applies next time they open the app.</small>'); }
+    catch (err) { alert('Couldn’t change the plan: ' + err.message); }
+    sel.disabled = false;
+  }; });
   app.querySelectorAll('[data-fam]').forEach((tr) => (tr.onclick = () => { const d = $('fd' + tr.dataset.fam); d.hidden = !d.hidden; tr.classList.toggle('open', !d.hidden); }));
   $('addf').onsubmit = async (e) => {
     e.preventDefault(); const btn = $('addgo'); btn.disabled = true;
@@ -191,6 +342,19 @@ function famDetail(r, fb) {
     <div><h3>Screens visited</h3>${scr.map(([k, v]) => `<div class="fd-row"><span>${esc(k.slice(7))}</span><b>${v.n}</b></div>`).join('') || '<p class="muted">–</p>'}
       ${a.errs.length ? `<h3 style="margin-top:12px">Problems seen</h3>${a.errs.map((e) => `<div class="fd-err">${esc(e.m)} <small>${esc(e.v || '')} · ${ago(e.t)}</small></div>`).join('')}` : ''}
       ${fb.length ? `<h3 style="margin-top:12px">Their feedback</h3>${fb.map((x) => `<p class="fd-fb">“${esc(x.text)}” <small>${ago(x.at)}</small></p>`).join('')}` : ''}</div>
+    <div><h3>Summary</h3>
+      <div class="fd-row"><span>Active days</span><b>${a.actDays}${a.wk2 === null ? '' : a.wk2 ? ' · came back in week 2' : ' · didn’t come back in week 2'}</b></div>
+      <div class="fd-row"><span>All time</span><b>${a.tot.q} questions · ${a.tot.min} min · ${a.tot.acc === null ? '–' : a.tot.acc + '%'}</b></div>
+      <div class="fd-row"><span>This week vs last</span><b>${a.w.q} vs ${a.pw.q} questions · ${a.w.min} vs ${a.pw.min} min</b></div>
+      <div class="fd-row"><span>Streak</span><b>${a.streak} days now · best ${a.best}</b></div>
+      <div class="fd-row"><span>Weekly goal</span><b>${a.goal ? `${a.goal.days} days × ${a.goal.mins} min` : 'not set'}</b></div>
+      <div class="fd-row"><span>Parent</span><b>${a.pin ? 'PIN set' : 'no PIN yet'} · ${a.parentUse} dashboard/report views</b></div>
+      ${a.stars ? `<div class="fd-row"><span>Stars</span><b>${a.stars.total} earned · ${a.stars.bal} unspent · ${a.stars.redeemed} rewards redeemed</b></div>
+      <div class="fd-row"><span>Star warnings</span><b>${a.stars.rushedQ} questions in rushed sets · hit the daily cap ${a.stars.capDays}×</b></div>` : ''}
+      <div class="fd-row"><span>AI use</span><b>${a.usage.calls} requests · ${money(a.usage.usd)}</b></div>
+      ${Object.keys(a.modes).length ? `<h3 style="margin-top:12px">How they practise</h3>${Object.entries(a.modes).sort((x, y) => y[1].q - x[1].q).map(([k, v]) => `<div class="fd-row"><span>${esc(MODE_NAMES[k] || k)}</span><b>${v.q} <small>${v.m ? pctOf(v.g, v.m) + '% right' : ''}</small></b></div>`).join('')}` : ''}</div>
+    <div><h3>When they study</h3>${colBars(a.hours, a.hours.map((_, i) => (i % 3 === 0 ? String(i) : '')), (i, v) => `${i}:00: ${v} questions`)}
+      <h3 style="margin-top:12px">Recent sets</h3>${a.sess.length ? a.sess.slice(-8).reverse().map((x) => `<div class="fd-row"><span>${esc(MODE_NAMES[x.k] || x.k || 'Practice')} <small>${new Date(x.t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · ${x.n} q · ${x.min} min${x.r ? ' · <span class="tag red">rushed</span>' : ''}${x.e ? ' · left early' : ''}</small></span><b>${x.p}%</b></div>`).join('') : '<p class="muted">None yet.</p>'}</div>
   </div>`;
 }
 

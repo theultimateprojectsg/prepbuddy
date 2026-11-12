@@ -2305,25 +2305,50 @@ async function pilotGate() {
 // A short summary of how PrepBuddy is used on this device (sent to the pilot admin page).
 async function pilotSnap() {
   const books = await getBooks();
-  const t0 = dayStart(), log = local.log || [];
+  const t0 = dayStart(), log = local.log || [], since = t0 - 59 * DAY;
   const days = [];
-  for (let i = 20; i >= 0; i--) {
+  for (let i = 59; i >= 0; i--) {
     const a = t0 - i * DAY, es = log.filter((e) => e.t >= a && e.t < a + DAY);
     if (!es.length) continue;
     days.push({ d: ymd(a), q: es.length, g: es.reduce((x, e) => x + (e.g || 0), 0), m: es.reduce((x, e) => x + (e.m || 0), 0), min: minutesOf(es) });
   }
+  const recent = log.filter((e) => e.t >= since);
+  // when they study: hour of day and day of week (device time), counted in questions
+  const hours = Array(24).fill(0), wdays = Array(7).fill(0);
+  recent.forEach((e) => { const d = new Date(e.t); hours[d.getHours()]++; wdays[d.getDay()]++; });
+  // questions and score by practice mode
+  const modes = {};
+  recent.forEach((e) => { const k = e.k || 'practice'; const x = modes[k] || (modes[k] = { q: 0, g: 0, m: 0 }); x.q++; x.g += e.g || 0; x.m += e.m || 0; });
   const bk = [];
-  for (const b of books.slice(0, 12)) { let pct = null; try { pct = (await bookMastery(b)).pct; } catch (e) {} bk.push({ title: b.title, subject: b.subject || '', level: b.level || '', chapters: b.units.length, pct }); }
+  for (const b of books.slice(0, 12)) {
+    let pct = null; try { pct = (await bookMastery(b)).pct; } catch (e) {}
+    const es = log.filter((e) => e.q && e.q.startsWith(b.id + ':')), g = es.reduce((x, e) => x + (e.g || 0), 0), m = es.reduce((x, e) => x + (e.m || 0), 0);
+    bk.push({ title: b.title, subject: b.subject || '', level: b.level || '', chapters: b.units.length, pct, q: es.length, acc: m ? Math.round(100 * g / m) : null });
+  }
   const g = log.reduce((x, e) => x + (e.g || 0), 0), m = log.reduce((x, e) => x + (e.m || 0), 0);
+  const st = starsOn() || local.stars ? starState() : null;
+  const why = {};
+  if (st) (st.log || []).forEach((x) => { const k = String(x.why || '').split(':')[0]; why[k] = (why[k] || 0) + x.n; });
+  const U = local.usage || {}, usage = { usd: 0, calls: 0, by: {} };
+  Object.entries(U).forEach(([k, v]) => { usage.usd += v.usd || 0; usage.calls += v.requests || 0; usage.by[k] = { n: v.requests || 0, usd: Math.round((v.usd || 0) * 1000) / 1000 }; });
+  usage.usd = Math.round(usage.usd * 1000) / 1000;
+  const dset = new Set(log.map((e) => dayStart(e.t)));
+  let streak = 0; for (let d = dset.has(t0) ? t0 : t0 - DAY; dset.has(d); d -= DAY) streak++;
+  let best = 0, run = 0, prev = 0; [...dset].sort((a, b) => a - b).forEach((d) => { run = prev && d - prev <= DAY + 3600e3 ? run + 1 : 1; best = Math.max(best, run); prev = d; });
+  const mk = Object.values(local.mistakes || {});
   return {
-    v: 1, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache,
+    v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache,
     ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',
     first: log.length ? log[0].t : null, last: log.length ? log[log.length - 1].t : null,
     total: { q: log.length, acc: m ? Math.round(100 * g / m) : null, min: minutesOf(log) },
-    days, books: bk, fx: local.fx || {},
-    counts: { mistakes: mistakeCount(), learned: Object.keys(local.learned || {}).length, tests: (local.tests || []).length, schoolTests: (local.sched || []).length, homework: (local.hw || []).length,
+    days, hours, wdays, modes, books: bk, fx: local.fx || {}, streak, best,
+    sess: (local.sess || []).filter((x) => x.t >= since).slice(-150),
+    goal: local.goal || null, usage,
+    stars: st ? { on: starsOn(), bal: st.bal, total: st.total, why, redeemed: (st.redeemed || []).length, rewards: (st.rewards || []).length, rushedQ: st.rushedQ || 0, capDays: st.capDays || 0, badges: Object.keys(st.badges || {}).length } : null,
+    parent: { pin: !!local.pin, pinAt: local.pinAt || null },
+    counts: { mistakes: mistakeCount(), fixed: mk.filter((x) => x.done).length, learned: Object.keys(local.learned || {}).length, tests: (local.tests || []).length, schoolTests: (local.sched || []).length, homework: (local.hw || []).length,
       writing: (local.wr || []).reduce((x, w) => x + w.drafts.length, 0), speaking: (local.sp || []).reduce((x, w) => x + w.tries.length, 0), placement: Object.keys(local.placement || {}).length,
-      stars: starsOn() ? { bal: starState().bal, total: starState().total, redeemed: (starState().redeemed || []).length } : null },
+      dictation: (local.dict || []).reduce((x, d) => x + ((d.runs || []).length), 0) },
     errs: (local.errs || []).slice(-10),
   };
 }
@@ -2332,7 +2357,13 @@ async function pilotSync(force) {
   if (!local.pilot || !local.code || syncing) return;
   if (!force && local.syncAt && Date.now() - local.syncAt < 4 * 60000) return;
   syncing = true;
-  try { const snap = await pilotSnap(); await pilotPost({ step: 'sync', code: local.code, device: local.device, snap }); local.syncAt = Date.now(); saveLocal(); }
+  try {
+    const snap = await pilotSnap(); const r = await pilotPost({ step: 'sync', code: local.code, device: local.device, snap }); local.syncAt = Date.now();
+    // The admin can put a pilot family on a plan; that overrides any preview on the device.
+    if (r && r.plan && TIERS[r.plan]) { const changed = planId() !== r.plan; local.plan = r.plan; local.planLock = true; delete local.planPreview; if (changed) renderTabs(); }
+    else if (r && r.ok && local.planLock && !r.plan) { local.planLock = false; delete local.plan; }
+    saveLocal();
+  }
   catch (e) { if (e.status === 401) { local.pilot = true; } }
   finally { syncing = false; }
 }
@@ -2411,7 +2442,7 @@ function addStars(n, why, capped = true) {
   if (!s.day || s.day.d !== today) s.day = { d: today, n: 0, once: {} };
   if (capped) n = Math.max(0, Math.min(n, DAY_CAP - s.day.n));
   if (!n) return 0;
-  if (capped) s.day.n += n;
+  if (capped) { s.day.n += n; if (s.day.n >= DAY_CAP && !s.day.hit) { s.day.hit = 1; s.capDays = (s.capDays || 0) + 1; } }
   s.bal += n; s.total += n;
   s.log.push({ t: Date.now(), n, why });
   if (s.log.length > 400) s.log = s.log.slice(-400);
@@ -4166,7 +4197,7 @@ const FEAT = {
 const ALWAYS = [['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Weekly activity report', '每週練習報告']];
 const cap = (f) => !!limitOf(f);
 (() => { try { const m = location.search.match(/[?&]plan=(free|plus|pro)\b/); if (m) { local.planPreview = m[1]; saveLocal(); } } catch (e) {} })();
-const planId = () => local.planPreview || local.plan || 'pro'; // testing: Pro unless previewing
+const planId = () => (local.planLock ? local.plan : local.planPreview || local.plan) || 'pro'; // testing: Pro unless previewing
 const curPlan = () => TIERS[planId()];
 const limitOf = (f) => curPlan().lim[f];
 const weekStart = (t = Date.now()) => { const d = new Date(dayStart(t)); const k = (d.getDay() + 6) % 7; return d.getTime() - k * DAY; };
@@ -4260,7 +4291,7 @@ function renderPlans(hi) {
     <p class="hint" style="margin:0;text-align:center">${PL('Prices are a draft while PrepBuddy is in testing. Payments aren’t switched on yet: choosing a plan previews it on this device.', '測試期間價錢只是初稿，暫未接受付款：選擇計劃只會在這部裝置預覽。')}</p>
   </main>`;
   $app.querySelectorAll('[data-bill]').forEach((b) => (b.onclick = () => { local.planYearly = b.dataset.bill === 'y'; saveLocal(); renderPlans(hi); }));
-  $app.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pick; saveLocal(); renderTabs(); toast(PL(`Previewing ${TIERS[b.dataset.pick].name}. Payments come later.`, `正在預覽 ${TIERS[b.dataset.pick].zh}，付款功能稍後推出。`)); renderPlans(); }));
+  $app.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = () => { if (local.planLock) return toast(PL('Your plan is set for the pilot. Ask us if you’d like to change it.', '試用期間的計劃已設定，如想更改請聯絡我們。')); local.planPreview = b.dataset.pick; saveLocal(); renderTabs(); toast(PL(`Previewing ${TIERS[b.dataset.pick].name}. Payments come later.`, `正在預覽 ${TIERS[b.dataset.pick].zh}，付款功能稍後推出。`)); renderPlans(); }));
   document.getElementById('bursary').onclick = () => toast(PL('Bursary applications open with accounts. Coming soon.', '助學計劃會在帳戶功能推出時開放申請。'));
   window.scrollTo(0, 0);
 }
@@ -4271,7 +4302,7 @@ function planCardHTML() {
   return `<section class="card stack g10 plancard" style="padding:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PL('Your plan', '你的計劃')}: <span class="plan-pill ${id}">${PL(P.name, P.zh)}</span></b><button class="btn-sm ${id === 'pro' ? '' : 'primary'}" id="splans">${id === 'pro' ? PL('See plans', '查看計劃') : PL('Upgrade', '升級')}</button></div>
     ${meters ? `<div class="pms">${meters}</div>` : `<span class="muted" style="font-size:13.5px">${PL('Everything unlimited.', '全部無限使用。')}</span>`}
-    <div class="pv"><span class="muted">${PL('Testing: preview a plan on this device', '測試中：在這部裝置預覽計劃')}</span><div class="seg">${PLAN_ORDER.map((p) => `<button class="${p === id ? 'on' : ''}" data-pv="${p}">${PL(TIERS[p].name, TIERS[p].zh)}</button>`).join('')}</div></div>
+    ${local.planLock ? '' : `<div class="pv"><span class="muted">${PL('Testing: preview a plan on this device', '測試中：在這部裝置預覽計劃')}</span><div class="seg">${PLAN_ORDER.map((p) => `<button class="${p === id ? 'on' : ''}" data-pv="${p}">${PL(TIERS[p].name, TIERS[p].zh)}</button>`).join('')}</div></div>`}
   </section>`;
 }
 
@@ -4287,7 +4318,7 @@ async function openParent() {
   if (Date.now() < parentUntil) return go({ name: 'parent' });
   const ok = await askPin(PD('Parent dashboard: enter the parent PIN.', '家長主頁：請輸入家長密碼。'));
   if (!ok) return;
-  parentUntil = Date.now() + 15 * 60000;
+  parentUntil = Date.now() + 15 * 60000; track('parent_dashboard');
   go({ name: 'parent' });
 }
 const agoWords = (t) => {
@@ -5800,6 +5831,12 @@ function renderSummary() {
   }
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
   const won = awardSession(qs, pct);
+  if (!S.sessLogged && qs.length) {
+    // One line per finished set, for the pilot dashboard: mode, size, score, minutes, rushed or not.
+    S.sessLogged = true;
+    local.sess = [...(local.sess || []), { t: Date.now(), k: S.mode || '', b: S.book ? S.book.id : '', n: qs.length, p: pct, min: Math.max(1, Math.round((Date.now() - S.at) / 60000)), r: rushedSet(qs) ? 1 : 0, e: S.endedEarly ? 1 : 0, ts: S.test ? 1 : 0 }].slice(-400);
+    saveLocal();
+  }
   if (won) setTimeout(() => { if (document.querySelector('main.results')) celebrate(won); }, 500);
   const nRight = qs.filter((q, k) => (S.got[k] || 0) === marksOf(q)).length;
   const nMiss = qs.filter((q, k) => !(S.got[k] || 0) && marksOf(q)).length;
