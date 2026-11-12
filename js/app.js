@@ -904,13 +904,80 @@ function helperOpen() {
   helper.open = true;
   const panel = document.createElement('div');
   panel.id = 'helperPanel'; panel.className = 'helper-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'PrepBuddy helper');
-  panel.innerHTML = `<button class="helper-x" id="helperX" aria-label="Close">✕</button><section class="coach" id="coach">${coachHTML()}</section>`;
+  panel.innerHTML = `<div class="helper-grip" id="helperGrip" title="Drag to resize" aria-hidden="true"></div>
+    <button class="helper-big" id="helperBig" aria-label="Make bigger or smaller" title="Bigger / smaller">${helperBigIcon()}</button>
+    <button class="helper-x" id="helperX" aria-label="Close">✕</button><section class="coach" id="coach">${coachHTML()}</section>`;
   document.body.appendChild(panel);
   document.getElementById('helperX').onclick = helperClose;
+  applyHelperSize(panel);
+  bindHelperResize(panel);
   bindCoach();
   helperSync();
   const q = document.getElementById('coachQ'); if (q && matchMedia('(min-width:700px)').matches) q.focus();
 }
+// The helper window can be resized: drag its top-left corner (top edge on phones), or tap the bigger/smaller button.
+// The size is remembered on this device.
+const desk = () => matchMedia('(min-width:1024px)').matches;
+function helperBigIcon() { const big = local.helperSize && local.helperSize.big; return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${big ? '<path d="M9 4v5H4M15 20v-5h5M4 9l6-6M20 15l-6 6" transform="rotate(0)"/>' : '<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>'}</svg>`; }
+function applyHelperSize(panel) {
+  const z = local.helperSize || {};
+  const vw = innerWidth, vh = innerHeight;
+  if (desk()) {
+    const w = z.big ? Math.min(760, vw - 300) : z.w, h = z.big ? vh - 120 : z.h;
+    panel.style.width = w ? `${Math.max(320, Math.min(w, vw - 260))}px` : '';
+    panel.style.height = h ? `${Math.max(360, Math.min(h, vh - 110))}px` : '';
+  } else {
+    const h = z.big ? vh - 150 : z.mh;
+    panel.style.width = ''; panel.style.height = h ? `${Math.max(300, Math.min(h, vh - 150))}px` : '';
+  }
+  const b = panel.querySelector('#helperBig'); if (b) b.innerHTML = helperBigIcon();
+}
+function bindHelperResize(panel) {
+  panel.querySelector('#helperBig').onclick = () => { local.helperSize = { ...(local.helperSize || {}), big: !(local.helperSize && local.helperSize.big) }; saveLocal(); applyHelperSize(panel); };
+  const grip = panel.querySelector('#helperGrip');
+  grip.onpointerdown = (e) => {
+    e.preventDefault(); grip.setPointerCapture(e.pointerId);
+    const r = panel.getBoundingClientRect(), x0 = e.clientX, y0 = e.clientY, d = desk();
+    document.body.classList.add(d ? 'resizing-nw' : 'resizing-ns');
+    grip.onpointermove = (ev) => {
+      const h = Math.max(d ? 360 : 300, Math.min(r.height + (y0 - ev.clientY), innerHeight - (d ? 110 : 150)));
+      panel.style.height = `${h}px`;
+      if (d) panel.style.width = `${Math.max(320, Math.min(r.width + (x0 - ev.clientX), innerWidth - 260))}px`;
+    };
+    grip.onpointerup = () => {
+      grip.onpointermove = grip.onpointerup = null; document.body.classList.remove('resizing-nw', 'resizing-ns');
+      const b = panel.getBoundingClientRect();
+      local.helperSize = d ? { ...(local.helperSize || {}), w: Math.round(b.width), h: Math.round(b.height), big: false } : { ...(local.helperSize || {}), mh: Math.round(b.height), big: false };
+      saveLocal(); applyHelperSize(panel);
+    };
+  };
+}
+
+// On laptops the chat beside a question can be made wider or narrower by dragging the line on its left edge.
+function applySideWidth() {
+  const w = local.sideW;
+  if (w) document.documentElement.style.setProperty('--sidew', `${Math.max(340, Math.min(w, Math.round(innerWidth * 0.6)))}px`);
+  else document.documentElement.style.removeProperty('--sidew');
+}
+function addSideGrip() {
+  const side = $app.querySelector(':scope > .qside.chatside, :scope > .sheet');
+  if (!side || !$app.querySelector(':scope > main.qpaper') || side.querySelector(':scope > .side-grip')) return;
+  const g = document.createElement('div');
+  g.className = 'side-grip'; g.title = 'Drag to make the chat wider or narrower (double-click to reset)';
+  g.setAttribute('aria-hidden', 'true');
+  side.prepend(g);
+  g.ondblclick = () => { local.sideW = null; saveLocal(); applySideWidth(); };
+  g.onpointerdown = (e) => {
+    e.preventDefault(); g.setPointerCapture(e.pointerId); g.classList.add('drag'); document.body.classList.add('resizing');
+    const right = side.getBoundingClientRect().right;
+    g.onpointermove = (ev) => { local.sideW = Math.round(right - ev.clientX); applySideWidth(); };
+    g.onpointerup = () => { g.onpointermove = g.onpointerup = null; g.classList.remove('drag'); document.body.classList.remove('resizing'); saveLocal(); };
+  };
+}
+applySideWidth();
+addEventListener('resize', () => { applySideWidth(); const p = document.getElementById('helperPanel'); if (p) applyHelperSize(p); });
+new MutationObserver(() => addSideGrip()).observe($app, { childList: true, subtree: false });
+
 function helperClose() {
   if (!helper.open) return;
   helper.open = false;

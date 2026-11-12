@@ -680,7 +680,7 @@ body[data-tab] .app{padding-bottom:76px}
   .qkeys{margin-top:6px;font-size:13px}.qkeys kbd{display:inline-block;min-width:22px;text-align:center;font-family:inherit;font-size:12px;font-weight:600;padding:1px 6px;margin-right:2px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:#fff;color:var(--ink)}
   .app:has(> main.qpaper)>.sheet .verdict.ok,.app:has(> main.qpaper)>.sheet .verdict.no{font-size:25px}
   /* full width beside the menu, same margin both sides; the right column grows with the screen */
-  .app:has(> main.qpaper){max-width:none;margin:0 auto!important;grid-template-columns:minmax(0,1fr) clamp(400px,36%,600px);column-gap:32px;padding:0 40px 32px}
+  .app:has(> main.qpaper){max-width:none;margin:0 auto!important;grid-template-columns:minmax(0,1fr) var(--sidew,clamp(400px,36%,600px));column-gap:32px;padding:0 40px 32px}
   body[data-tab] .app:has(> main.qpaper){margin:0 0 0 220px!important}
   /* before answering, the right column is a proper chat window that fills the screen height */
   .app:has(> main.qpaper)>.qside.chatside{border-style:solid;background:#fff;padding:0;height:calc(100vh - 110px);height:calc(100dvh - 110px);max-height:none;overflow:hidden;gap:0}
@@ -841,11 +841,24 @@ button.pg-act{cursor:pointer}button.pg-act:hover{background:#F7F8FB}.pg-act>svg{
 @keyframes hpin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .helper-panel>.coach{flex:1;min-height:0;margin:0;border:none;box-shadow:none;display:flex;flex-direction:column}
 .helper-panel .coach-msgs{flex:1;min-height:0;max-height:none!important;overflow-y:auto}
-.helper-panel .coach-head{padding-right:34px}
+.helper-panel .coach-head{padding-right:72px;padding-left:12px}
 .helper-x{position:absolute;top:10px;right:10px;z-index:2;width:30px;height:30px;border-radius:50%;border:none;background:#F1F3F7;color:var(--muted);font-size:14px;cursor:pointer}
 @media (min-width:1024px){.helper-fab{right:28px;bottom:28px}.helper-panel{left:auto;right:28px;bottom:90px;width:400px;height:min(600px,calc(100vh - 130px))}}
 @media print{.helper-fab,.helper-panel{display:none}}
 .thead-t{display:flex;align-items:center;gap:8px}.thead-t span{display:flex;flex-direction:column;line-height:1.2}.thead-t small{font-size:12px;font-weight:500;color:var(--muted)}
+.side-grip{display:none}
+@media (min-width:1100px){
+  .app:has(> main.qpaper)>.sheet,.app:has(> main.qpaper)>.qside{position:sticky}
+  .side-grip{display:block;position:absolute;left:0;top:0;bottom:0;width:12px;cursor:col-resize;z-index:5;touch-action:none}
+  .side-grip::after{content:'';position:absolute;left:3px;top:50%;width:4px;height:48px;margin-top:-24px;border-radius:2px;background:#C9D0DE;transition:background .15s,height .15s}
+  .side-grip:hover::after,.side-grip.drag::after{background:var(--accent);height:72px;margin-top:-36px}
+}
+body.resizing{cursor:col-resize;user-select:none}body.resizing-nw{cursor:nwse-resize;user-select:none}body.resizing-ns{cursor:ns-resize;user-select:none}
+.helper-grip{position:absolute;left:0;top:0;width:26px;height:26px;cursor:nwse-resize;z-index:3;touch-action:none;border-top-left-radius:20px}
+.helper-grip::before{content:'';position:absolute;left:7px;top:7px;width:10px;height:10px;border-left:2.5px solid #B8C0D2;border-top:2.5px solid #B8C0D2;border-top-left-radius:3px}
+.helper-grip:hover::before{border-color:var(--accent)}
+.helper-big{position:absolute;top:10px;right:46px;z-index:2;width:30px;height:30px;border-radius:50%;border:none;background:#F1F3F7;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+@media (max-width:1023px){.helper-grip{left:50%;width:60px;margin-left:-30px;height:18px;cursor:ns-resize;border-radius:0}.helper-grip::before{left:16px;top:6px;width:28px;height:0;border-left:none;border-top:4px solid #C9D0DE;border-radius:2px}}
 .coach-picked{align-self:flex-end;font-size:13px;font-weight:600;color:var(--good)}
 .coach-acts{display:flex;flex-wrap:wrap;gap:8px;margin:-2px 0 4px}
 .coach-acts .btn-sm.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.coach-acts .btn-sm.primary:hover{filter:brightness(1.1)}
