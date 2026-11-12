@@ -116,12 +116,28 @@ const T = (en, c) => (ZH ? c : en);
 const fmtDate = (t, opts) => new Date(t).toLocaleDateString(ZH ? 'zh-HK' : 'en-GB', opts);
 function hm(min) { const h = Math.floor(min / 60), m = min % 60; return ZH ? (h ? `${h} 小時 ${m} 分鐘` : `${m} 分鐘`) : (h ? `${h}h ${m}m` : `${m} min`); }
 
+// How the week went, counting effort as well as scores:
+// strong = practised most days (or scores clearly up) without practising much less than last week;
+// lighter = clearly less practice than last week (time down by more than 30%).
+export function weekTone(r) {
+  if (!r.q) return 'none';
+  const mins = (r.days || []).reduce((x, m) => x + m, 0);
+  const less = r.pm !== undefined && r.pm >= 20 && mins < r.pm * 0.7;
+  const better = r.a !== null && r.pa !== null && r.a - r.pa >= 5;
+  if (!less && (r.dp >= 5 || (better && r.dp >= 3))) return 'strong';
+  if (less) return 'lighter';
+  if (r.dp >= 3) return 'steady';
+  return 'start';
+}
+
 export function headline(r) {
   ZH = r.u === 'zh';
   const who = r.n || T('Your child', '你的子女');
-  if (!r.q) return T(`${who} didn't practise this week`, `${who}本週沒有練習`);
-  if (r.dp >= 5 || (r.a !== null && r.pa !== null && r.a - r.pa >= 5)) return T(`${who} had a strong week`, `${who}本週表現出色`);
-  if (r.dp >= 3) return T(`${who} had a steady week`, `${who}本週表現穩定`);
+  const k = weekTone(r);
+  if (k === 'none') return T(`${who} didn't practise this week`, `${who}本週沒有練習`);
+  if (k === 'strong') return T(`${who} had a strong week`, `${who}本週表現出色`);
+  if (k === 'lighter') return T(`${who} had a lighter week`, `${who}本週練習較少`);
+  if (k === 'steady') return T(`${who} had a steady week`, `${who}本週表現穩定`);
   return T(`${who} made a start this week`, `${who}本週已經起步`);
 }
 

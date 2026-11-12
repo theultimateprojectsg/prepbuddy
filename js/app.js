@@ -1,6 +1,6 @@
 // PrepBuddy app: books, chapters, on-demand questions, practice sessions.
 import * as store from './store.js';
-import { buildReport, encodeReport, headline, skillsHTML, REPORT_CSS } from './report.js';
+import { buildReport, encodeReport, headline, weekTone, skillsHTML, REPORT_CSS } from './report.js';
 import { initLang, setLang, watch, LANG } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
 import { logoSVG, buddySVG, buddyFace } from './buddy.js';
@@ -1770,10 +1770,11 @@ async function renderProgress() {
   const zh = LANG === 'zh';
   const mins = r.days.reduce((a, m) => a + m, 0);
   const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : PT(`${mins} min`, `${mins} 分鐘`);
-  const verdict = !r.q ? PT('No practice yet this week', '本週還未練習')
-    : r.dp >= 5 || (r.a !== null && r.pa !== null && r.a - r.pa >= 5) ? PT('You had a strong week', '你本週表現出色')
-    : r.dp >= 3 ? PT('You had a steady week', '你本週表現穩定') : PT('Good start this week', '本週好的開始');
-  const sub = !r.q ? PT('A short session today gets your week going.', '今天練習一會兒，為這星期開個好頭。')
+  const tone0 = weekTone(r);
+  const verdict = { none: PT('No practice yet this week', '本週還未練習'), strong: PT('You had a strong week', '你本週表現出色'),
+    lighter: PT('A lighter week', '本週練習較少'), steady: PT('You had a steady week', '你本週表現穩定'), start: PT('Good start this week', '本週好的開始') }[tone0];
+  const sub = tone0 === 'none' ? PT('A short session today gets your week going.', '今天練習一會兒，為這星期開個好頭。')
+    : tone0 === 'lighter' ? PT(`You practised ${r.pm - mins} min less than last week. A short session today gets you back on track.`, `比上週少練習了 ${r.pm - mins} 分鐘。今天練習一會兒，就能重回正軌。`)
     : PT(`Practised ${r.dp} of the last 7 days`, `過去 7 日中有 ${r.dp} 日練習`);
   const diff = r.a !== null && r.pa !== null ? r.a - r.pa : null;
   const stat = (icon, tone, value, label, extra = '') => `<div class="pg-stat"><span class="pg-ic ${tone}">${pIcon(icon, 20)}</span><div><b>${value}</b><span>${label}</span>${extra}</div></div>`;
