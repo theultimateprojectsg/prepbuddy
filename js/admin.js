@@ -95,7 +95,7 @@ const FEATURE_NAMES = {
   'ai:homework:read': 'Homework help: photos read', 'ai:homework:chat': 'Homework help: chat', 'ai:homework:list': '默書: list from photo', 'ai:writing:mark': 'Writing marked', 'ai:writing:prompt': 'Writing: task written',
   'ai:writing:read': 'Writing: handwriting read', 'ai:speaking:mark': 'Speaking answers marked', 'ai:speaking:task': 'Speaking: topics', 'ai:notes': 'Revision notes', 'ai:report': 'Parent report link',
 };
-const fname = (k) => FEATURE_NAMES[k] || (k.startsWith('upsell:') ? `Hit plan limit: ${k.slice(7)}` : k.startsWith('screen:') ? `Screen: ${k.slice(7)}` : k);
+const fname = (k) => FEATURE_NAMES[k] || (k.startsWith('upsell:') ? `Hit plan limit: ${(typeof UPSELL_NAMES !== 'undefined' && UPSELL_NAMES[k.slice(7)]) || k.slice(7)}` : k.startsWith('screen:') ? `Screen: ${k.slice(7)}` : k);
 const ago = (t) => { if (!t) return 'never'; const m = Math.round((Date.now() - t) / 60000); if (m < 2) return 'just now'; if (m < 60) return `${m} min ago`; const h = Math.round(m / 60); if (h < 24) return `${h} h ago`; const d = Math.round(h / 24); return d === 1 ? 'yesterday' : `${d} days ago`; };
 const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 // one family = every device that used its code
@@ -261,6 +261,112 @@ function pilotOverview(rows, fams) {
   </div>`;
 }
 
+
+/* ---------- what the numbers mean ----------
+   Plain-language reading of the pilot: each family gets a status, and the pilot gets a handful of findings
+   (good / okay / watch) with what to do next, plus a ready-to-paste paragraph of evidence for funding applications.
+   Thresholds are rules of thumb for a small pilot, stated on the page so they can be challenged. */
+const UPSELL_NAMES = {q: 'More practice questions', written: 'More written questions', lesson: 'More lessons', buddy: 'More Buddy messages', books: 'More textbooks', test: 'Chapter tests', sched: 'School test planner', homework: 'Homework help', coach: 'Study coach', stars: 'Stars and rewards', report: 'Full parent report', writing: 'Writing marking', speaking: 'Speaking marking', mock: 'Mock papers', voice: 'Voice Buddy', parent: 'Parent dashboard', forecast: 'Exam forecast', hard: 'Hard questions', master: 'Master questions'};
+const USD_HKD = 7.8, PLUS_HKD = 98, PRO_HKD = 168;
+function famStatus(a, f) {
+  const D = 864e5, now = Date.now();
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  if (!a.devices.length || !a.tot.q) return { k: 'none', label: 'Not started', tone: 'grey', why: a.devices.length ? 'Opened the app but hasn’t answered a question.' : 'Hasn’t opened the app yet.', act: 'Send a friendly reminder, or offer a 5-minute call to set it up together.' };
+  const since = (now - (a.last || 0)) / D;
+  const firstAgo = a.first ? (now - a.first) / D : 99;
+  if (a.w.act >= 4 || a.w.min >= 90) return { k: 'power', label: 'Power user', tone: 'green', why: `Practised on ${a.w.act} days this week (${a.w.min} min).`, act: 'Ask for a short testimonial or a quote you can use, and what they’d pay for.' };
+  if (a.w.act >= 2) return { k: 'regular', label: 'Regular', tone: 'green', why: `Practised on ${a.w.act} days this week (${a.w.min} min).`, act: 'Keep going. Ask the parent what would make it a daily habit.' };
+  if (firstAgo < 7) return { k: 'new', label: 'Just started', tone: 'blue', why: `First used ${Math.max(1, Math.round(firstAgo))} day${Math.round(firstAgo) === 1 ? '' : 's'} ago.`, act: 'Check in after their first week: what did they like, what was confusing?' };
+  if (since > 7 && a.actDays <= 2) return { k: 'tried', label: 'Tried it, stopped', tone: 'red', why: `Used it on ${a.actDays} day${a.actDays === 1 ? '' : 's'}, nothing for ${Math.round(since)} days.`, act: 'Ask what got in the way. This is the most useful feedback you can get.' };
+  if (since > 7) return { k: 'drift', label: 'Drifting away', tone: 'red', why: `Was active on ${a.actDays} days, but nothing for ${Math.round(since)} days.`, act: 'Nudge the parent: a school test coming up is a good reason to come back.' };
+  return { k: 'light', label: 'Occasional', tone: 'amber', why: `Only ${a.w.act} day${a.w.act === 1 ? '' : 's'} this week (${a.w.min} min).`, act: 'Suggest a fixed time each day (e.g. 15 min after dinner) and setting a weekly goal.' };
+}
+// accuracy early vs late: first half of a family's active days against the second half (4+ active days)
+function accTrend(a) {
+  const ds = Object.keys(a.days).sort().map((k) => a.days[k]).filter((x) => x.m);
+  if (ds.length < 4) return null;
+  const h = Math.floor(ds.length / 2), sum = (xs) => xs.reduce((o, x) => [o[0] + x.g, o[1] + x.m], [0, 0]);
+  const [g1, m1] = sum(ds.slice(0, h)), [g2, m2] = sum(ds.slice(-h));
+  return { from: Math.round(100 * g1 / m1), to: Math.round(100 * g2 / m2), g1, m1, g2, m2 };
+}
+function pilotInsights(rows, fams) {
+  const D = 864e5;
+  const st = rows.map((r) => ({ r, s: famStatus(r.a, r.f) }));
+  const by = (k) => st.filter((x) => x.s.k === k);
+  const started = rows.filter((r) => r.a.tot.q > 0), invited = fams.length;
+  const activeNow = st.filter((x) => ['power', 'regular'].includes(x.s.k));
+  const elig = rows.filter((r) => r.a.wk2 !== null), back = elig.filter((r) => r.a.wk2);
+  // minutes per week for families who've practised in the last 14 days
+  const recent = rows.filter((r) => r.a.w2.act > 0);
+  const minWk = recent.length ? Math.round(recent.reduce((x, r) => x + r.a.w2.min, 0) / recent.length / 2) : 0;
+  const daysWk = recent.length ? recent.reduce((x, r) => x + r.a.w2.act, 0) / recent.length / 2 : 0;
+  // learning
+  const tr = rows.map((r) => accTrend(r.a)).filter(Boolean);
+  const agg = tr.reduce((o, t) => [o[0] + t.g1, o[1] + t.m1, o[2] + t.g2, o[3] + t.m2], [0, 0, 0, 0]);
+  const accFrom = agg[1] ? Math.round(100 * agg[0] / agg[1]) : null, accTo = agg[3] ? Math.round(100 * agg[2] / agg[3]) : null;
+  const improved = tr.filter((t) => t.to - t.from >= 5).length;
+  const fixed = rows.reduce((x, r) => x + (r.a.counts.fixed || 0), 0), open = rows.reduce((x, r) => x + (r.a.counts.mistakes || 0), 0);
+  const mastery = rows.flatMap((r) => r.a.books.filter((b) => b.pct !== null && b.pct !== undefined && (b.q || 0) > 0).map((b) => b.pct));
+  // parents
+  const parents = started.filter((r) => r.a.parentUse > 0 || r.a.pin).length;
+  // features: share of started families using each
+  const fx = {}; started.forEach((r) => Object.entries(r.a.fx).forEach(([k, v]) => { if (k.startsWith('screen:') || k.startsWith('upsell:') || !v.n) return; (fx[k] = fx[k] || { fam: 0, n: 0 }); fx[k].fam++; fx[k].n += v.n; }));
+  const topF = Object.entries(fx).sort((a, b) => b[1].fam - a[1].fam || b[1].n - a[1].n);
+  const loved = topF.filter(([, v]) => v.n / Math.max(1, v.fam) >= 3).slice(0, 3).map(([k]) => fname(k));
+  const unused = Object.keys(FEATURE_NAMES).filter((k) => !fx[k]).map(fname);
+  // when
+  const hours = Array(24).fill(0); rows.forEach((r) => r.a.hours.forEach((n, i) => (hours[i] += n)));
+  const totH = hours.reduce((a, b) => a + b, 0);
+  const peak = totH ? hours.indexOf(Math.max(...hours)) : null;
+  const evening = totH ? Math.round(100 * hours.slice(18, 23).reduce((a, b) => a + b, 0) / totH) : 0;
+  const late = totH ? Math.round(100 * (hours.slice(23).reduce((a, b) => a + b, 0) + hours.slice(0, 5).reduce((a, b) => a + b, 0)) / totH) : 0;
+  // money: AI cost per active family per month, in HKD
+  const costs = rows.filter((r) => r.a.usage.usd > 0 && r.a.first).map((r) => (r.a.usage.usd * USD_HKD) / Math.max(1, (Date.now() - r.a.first) / (30 * D)));
+  const costMo = costs.length ? costs.reduce((a, b) => a + b, 0) / costs.length : null, costMax = costs.length ? Math.max(...costs) : null;
+  // upgrades
+  const ups = {}; rows.forEach((r) => Object.entries(r.a.fx).forEach(([k, v]) => { if (k.startsWith('upsell:') && v.n) ups[k.slice(7)] = (ups[k.slice(7)] || 0) + 1; }));
+  const onLow = rows.filter((r) => r.f.plan === 'free' || r.f.plan === 'plus').length;
+  // stars
+  const sess = rows.flatMap((r) => r.a.sess), rushed = sess.filter((x) => x.r).length;
+  const errs = rows.reduce((x, r) => x + r.a.errs.length, 0);
+  const pilotStart = Math.min(...rows.map((r) => r.a.first || Infinity), ...fams.map((f) => f.created || Infinity));
+  const days = isFinite(pilotStart) ? Math.max(1, Math.round((Date.now() - pilotStart) / D)) : 0;
+  const pct = (a, b) => (b ? Math.round(100 * a / b) : 0);
+  const tone = (v, good, ok) => (v === null ? 'grey' : v >= good ? 'green' : v >= ok ? 'amber' : 'red');
+  const F = [];
+  if (!started.length) {
+    F.push(['grey', 'Waiting for the first family', 'Nothing to read yet. Findings appear here once families start practising.', 'Make sure every family has their code and has added PrepBuddy to their Home Screen.']);
+  } else {
+    const act = pct(started.length, invited);
+    F.push([tone(act, 80, 50), `${started.length} of ${invited} families have started (${act}%)`, act >= 80 ? 'Getting families going isn’t the problem.' : 'A big share of invited families haven’t answered a single question. That usually means setup friction (finding the code, adding a book), not lack of interest.', act >= 80 ? 'Focus on keeping them.' : `Message the ${invited - started.length} who haven’t started and offer to set it up with them.`]);
+    const reg = pct(activeNow.length, started.length);
+    F.push([tone(reg, 60, 35), `${activeNow.length} of ${started.length} are using it regularly this week`, `“Regularly” means 2+ days in the last 7. ${reg >= 60 ? 'That’s a strong sign it’s becoming a habit.' : reg >= 35 ? 'Some families have a habit, others dip in and out.' : 'Most families aren’t coming back often yet.'}`, reg >= 60 ? 'Ask regular families why it works for them, and use their words in your pitch.' : 'Look at the “Drifting” and “Occasional” families below and ask what got in the way.']);
+    if (elig.length) { const w2 = pct(back.length, elig.length); F.push([tone(w2, 60, 40), `${w2}% came back in their second week (${back.length} of ${elig.length})`, `Week-2 return is the earliest sign of whether a learning app sticks. ${w2 >= 60 ? 'Above 60% is very good for a new app.' : w2 >= 40 ? 'Between 40 and 60% is typical; there’s room to improve.' : 'Under 40% means most families try it once and leave.'}`, w2 >= 60 ? 'Keep measuring as more families pass day 7.' : 'Add a reason to return: reminders, the weekly goal, a school test countdown.']); }
+    if (recent.length) F.push([tone(minWk, 60, 30), `Active families practise about ${minWk} min a week (${daysWk.toFixed(1)} days)`, `For comparison, one tuition lesson is 60–90 minutes a week. ${minWk >= 60 ? 'PrepBuddy is getting as much time as a weekly tutor.' : minWk >= 30 ? 'Real use, but less than a weekly lesson.' : 'Usage is light so far.'}`, minWk >= 60 ? 'Use this in your pitch: same time as a weekly tutor, at a fraction of the price.' : 'Suggest 15 minutes a day; a weekly goal and stars help.']);
+    if (tr.length) F.push([accTo - accFrom >= 5 ? 'green' : accTo - accFrom >= -3 ? 'amber' : 'red', `Accuracy went from ${accFrom}% to ${accTo}% (${tr.length} famil${tr.length === 1 ? 'y' : 'ies'} with 4+ active days)`, `Compares each student’s first active days with their latest. ${improved} of ${tr.length} improved by 5 points or more. Questions get harder as students improve, so a steady score can still mean progress; mastery is the better long-term measure${mastery.length ? ` (average mastery so far: ${Math.round(mastery.reduce((a, b) => a + b, 0) / mastery.length)}%)` : ''}.`, accTo - accFrom >= -3 ? 'This is your learning-outcome evidence. Collect more weeks before quoting it publicly.' : 'Scores dropped: check whether questions got harder too quickly for these students. Don’t quote this yet.']);
+    else F.push(['grey', 'Too early to measure learning gains', 'Needs students with at least 4 active days to compare their early and recent accuracy.', 'Check again after the first week or two.']);
+    if (fixed + open) F.push([tone(pct(fixed, fixed + open), 40, 20), `${fixed} mistakes fixed, ${open} still open (${pct(fixed, fixed + open)}% fixed)`, 'Students coming back to get wrong answers right is the core learning loop.', pct(fixed, fixed + open) >= 40 ? 'Good. Mention the mistake book in your pitch.' : 'Students aren’t revisiting mistakes much. Make the Mistake book more visible in Today’s plan.']);
+    F.push([tone(pct(parents, started.length), 50, 25), `Parents involved in ${parents} of ${started.length} families`, 'Counts families where a parent set the PIN or opened the dashboard or weekly report. Parents are your buyers; their engagement predicts who will pay.', pct(parents, started.length) >= 50 ? 'Ask these parents what they’d pay and which plan they’d choose.' : 'Show parents the dashboard on day one; it’s your strongest selling point.']);
+    if (topF.length) F.push(['blue', `Most used: ${topF.slice(0, 3).map(([k]) => fname(k)).join(', ')}`, `${loved.length ? `Used again and again: ${loved.join(', ')}. ` : ''}${unused.length ? `Nobody has tried: ${unused.slice(0, 5).join(', ')}${unused.length > 5 ? ` and ${unused.length - 5} more` : ''}.` : 'Every feature has been tried.'}`, 'Features nobody touches either need to be easier to find or can wait.']);
+    if (peak !== null) F.push(['blue', `Peak study time is ${peak}:00–${peak + 1}:00`, `${evening}% of questions are answered between 6 and 11pm${late >= 10 ? `, and ${late}% late at night (11pm–5am)` : ''}. This is after school and homework time, when a tutor isn’t available.`, late >= 10 ? 'Late-night use may worry parents; consider a bedtime reminder.' : 'Send reminders around 7pm.']);
+    if (costMo !== null) { const m = Math.round(100 * (1 - costMo / PLUS_HKD)); F.push([costMo <= PLUS_HKD * 0.3 ? 'green' : costMo <= PLUS_HKD * 0.6 ? 'amber' : 'red', `AI costs about HK$${costMo.toFixed(costMo < 10 ? 1 : 0)} per family a month`, `Against the Plus price of HK$${PLUS_HKD}, that leaves about ${m}% gross margin (Pro at HK$${PRO_HKD}: ${Math.round(100 * (1 - costMo / PRO_HKD))}%). The heaviest family costs HK$${costMax.toFixed(0)}/month. Early use includes one-off costs (writing questions for a new book), so this should fall.`, costMo <= PLUS_HKD * 0.3 ? 'Healthy unit economics: quote this in the business-model section.' : 'Watch the heaviest families and consider tighter fair-use limits.']); }
+    if (onLow) F.push([Object.keys(ups).length ? 'blue' : 'grey', Object.keys(ups).length ? `Families on Free/Plus reached for: ${Object.entries(ups).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${UPSELL_NAMES[k] || k} (${v} famil${v === 1 ? 'y' : 'ies'})`).join(', ')}` : 'No upgrade signals yet', 'Taps on locked features show what people would pay for.', 'Make the most-tapped feature the headline of the paid plan.']);
+    else F.push(['grey', 'No upgrade data yet', 'Every family is on Pro, so nobody ever hits a locked feature.', 'Put 2–3 families on Free and 2–3 on Plus from the table.']);
+    if (sess.length >= 10) F.push([tone(100 - pct(rushed, sess.length), 90, 80), `${pct(rushed, sess.length)}% of sets were rushed`, 'Rushed = answering multiple choice in under 4 seconds a question, usually to farm stars.', pct(rushed, sess.length) > 10 ? 'Talk to those families about stars; consider turning stars off for them.' : 'Students are taking the questions seriously.']);
+    if (errs) F.push(['red', `${errs} app error${errs === 1 ? '' : 's'} recorded`, 'Errors can stop a family using a feature. Check “Problems” in the family cards.', 'Send the error text to Claude to fix.']);
+  }
+  // CCMF-ready paragraph
+  const ccmf = started.length ? `In a ${days}-day closed pilot, ${invited} Hong Kong families were invited to use PrepBuddy; ${started.length} started (${pct(started.length, invited)}%) and together answered ${rows.reduce((x, r) => x + r.a.tot.q, 0).toLocaleString('en-GB')} questions over ${Math.round(rows.reduce((x, r) => x + r.a.tot.min, 0) / 60)} hours of study. ${elig.length ? `${pct(back.length, elig.length)}% of families came back in their second week. ` : ''}${recent.length ? `Active students practised about ${minWk} minutes a week, mostly between 6 and 11pm when no tutor is available. ` : ''}${tr.length && accTo > accFrom ? `Among students with four or more active days, accuracy rose from ${accFrom}% to ${accTo}%, even as questions adapted to their level. ` : ''}${fixed ? `Students went back and fixed ${fixed.toLocaleString('en-GB')} mistakes. ` : ''}${parents ? `Parents in ${parents} of ${started.length} families followed progress through the parent dashboard or weekly report. ` : ''}${costMo !== null ? `The AI cost is about HK$${costMo.toFixed(0)} per family per month, against a planned price of HK$${PLUS_HKD}–${PRO_HKD}.` : ''}` : '';
+  const seg = [['power', 'Power users'], ['regular', 'Regular'], ['new', 'Just started'], ['light', 'Occasional'], ['drift', 'Drifting away'], ['tried', 'Tried it, stopped'], ['none', 'Not started']];
+  const icon = { green: '●', amber: '●', red: '●', blue: '●', grey: '○' };
+  return `<div class="card pl-ins"><h2>What it means</h2>
+    <div class="ins-segs">${seg.map(([k, l]) => { const xs = by(k); return `<div class="ins-seg ${xs.length ? '' : 'zero'}"><b>${xs.length}</b><span>${l}</span><small>${xs.map((x) => esc(x.r.f.name.replace(/\s*\(.*\)$/, ''))).join(', ') || '–'}</small></div>`; }).join('')}</div>
+    <div class="ins-list">${F.map(([t, h, why, act]) => `<div class="ins ${t}"><i>${icon[t]}</i><div><b>${h}</b><p>${why}</p><p class="ins-act">→ ${act}</p></div></div>`).join('')}</div>
+    ${ccmf ? `<details class="ins-ccmf"><summary>Evidence paragraph for your CCMF application</summary><p id="ccmftext">${esc(ccmf)}</p><button class="btn ghost small" id="ccmfcopy">Copy</button><p class="hint" style="margin:6px 0 0">Updates as the pilot runs. Numbers from a small pilot are early signals, so present them as such.</p></details>` : ''}
+    <details class="ins-rules"><summary>How families are grouped</summary><p class="hint">Power user: 4+ days or 90+ minutes in the last 7 days. Regular: 2–3 days in the last 7. Just started: first used under 7 days ago. Occasional: 1 day in the last 7. Drifting away: nothing for 7+ days after 3+ active days. Tried it, stopped: 1–2 active days, then nothing for 7+ days. Green / amber / red use rules of thumb for a small pilot (e.g. week-2 return above 60% is good).</p></details>
+  </div>`;
+}
+
 function pilotCSV(rows) {
   const cols = ['Family', 'Code', 'Plan', 'Child', 'Started', 'Last active', 'Active days', 'Came back week 2', 'Questions', 'Accuracy %', 'Minutes', 'Questions 7d', 'Minutes 7d', 'Streak', 'Best streak', 'Sets', 'Rushed sets', 'Books', 'Subjects', 'Lessons', 'Essays', 'Speaking', 'Dictations', 'Mistakes open', 'Mistakes fixed', 'Stars earned', 'Rewards redeemed', 'Parent PIN', 'Parent views', 'AI requests', 'AI cost USD', 'Errors', 'Devices', 'Notes'];
   const d = (t) => (t ? new Date(t).toISOString().slice(0, 10) : '');
@@ -295,21 +401,24 @@ async function renderPilot(note) {
   ${note ? `<div class="ok">${note}</div>` : ''}
   <div class="pl-acts"><button class="btn ghost small" id="csv">Download all stats (CSV)</button><button class="btn ghost small" id="reload">Refresh</button><span class="hint">Updated ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>
   ${ov[0]}
+  ${pilotInsights(rows, fams)}
   <div class="card"><h2>Families</h2>
     ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Streak</th><th>AI cost</th><th>Books</th><th>Problems</th><th>Plan</th></tr></thead>
-    <tbody>${rows.map((r, i) => `<tr class="pl-row ${r.a.last ? (Date.now() - r.a.last > 4 * 864e5 ? 'cold' : '') : 'never'}" data-fam="${i}"><td class="c-name"><b>${esc(r.f.name)}</b><small>${esc(r.f.code)}${r.a.names.length ? ' · ' + esc(r.a.names.join(', ')) : ''}${r.a.devices.length ? ` · ${r.a.devices.length} device${r.a.devices.length > 1 ? 's' : ''}` : ''}</small></td>
+    <tbody>${rows.map((r, i) => `<tr class="pl-row ${r.a.last ? (Date.now() - r.a.last > 4 * 864e5 ? 'cold' : '') : 'never'}" data-fam="${i}"><td class="c-name"><b>${esc(r.f.name)}</b> ${(() => { const x = famStatus(r.a, r.f); return `<span class="stag ${x.tone}" title="${esc(x.why)}">${x.label}</span>`; })()}<small>${esc(r.f.code)}${r.a.names.length ? ' · ' + esc(r.a.names.join(', ')) : ''}${r.a.devices.length ? ` · ${r.a.devices.length} device${r.a.devices.length > 1 ? 's' : ''}` : ''}</small></td>
       <td class="c-last" data-l="Last active">${r.a.last ? ago(r.a.last) : '<span class="tag">not started</span>'}</td><td data-l="Days active (14)">${r.a.w2.act}</td><td data-l="Questions (7d)">${r.a.w.q}</td><td data-l="Minutes (7d)">${r.a.w.min}</td><td data-l="Score (7d)">${r.a.w.acc === null ? '–' : r.a.w.acc + '%'}</td><td data-l="Streak">${r.a.streak ? r.a.streak + ' d' : '–'}</td><td data-l="AI cost">${r.a.usage.usd ? money(r.a.usage.usd) : '–'}</td><td data-l="Books">${r.a.books.length}</td><td data-l="Problems">${r.a.errs.length ? `<span class="tag red">${r.a.errs.length}</span>` : '–'}</td><td class="c-plan" data-l="Plan"><select class="pl-plan" data-code="${esc(r.f.code)}" aria-label="Plan for ${esc(r.f.name)}">${['', 'free', 'plus', 'pro'].map((p) => `<option value="${p}" ${(r.f.plan || '') === p ? 'selected' : ''}>${p ? p[0].toUpperCase() + p.slice(1) : 'Pro (default)'}</option>`).join('')}</select></td></tr>
       <tr class="pl-detail" id="fd${i}" hidden><td colspan="11"><button class="link pl-close" data-close="${i}">Close ✕</button>${famDetail(r, fb.filter((x) => x.code === r.f.code))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No families yet. Add one below.</p>'}
     <p class="hint" style="margin:0">Devices send a summary when the app opens, after each practice set and every 10 minutes while it’s open. Families idle for 4+ days are greyed.</p></div>
   <details class="card pl-add" ${fams.length ? '' : 'open'}><summary><h2>＋ Add a family</h2></summary>
     <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
     <button class="btn" style="grid-column:1/-1" id="addgo">Make a family code</button></form><div id="newcode"></div></details>
-  <h2 class="pl-sec">Across all families</h2>
+  <details class="pl-all"><summary><h2 class="pl-sec">All the numbers</h2><span class="hint">Funnel, weekly trend, study times, subjects, stars, AI cost…</span></summary>
   ${ov[1]}
+  </details>
   <div class="card"><h2>Feedback (${fb.length})</h2>
     ${fb.length ? fb.map((x) => `<div class="pl-fb"><div><b>${esc(famName(x.code))}</b>${x.name ? ` · ${esc(x.name)}` : ''} <small>${ago(x.at)}</small></div><p>${esc(x.text)}</p></div>`).join('') : '<p class="muted" style="margin:0">No feedback yet. Families send it from Settings in the app.</p>'}</div>`;
   $('back').onclick = () => renderLibrary();
   $('reload').onclick = () => renderPilot();
+  { const c = $('ccmfcopy'); if (c) c.onclick = () => { navigator.clipboard.writeText($('ccmftext').textContent); c.textContent = 'Copied'; }; }
   $('csv').onclick = () => { const blob = new Blob([pilotCSV(rows)], { type: 'text/csv' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `prepbuddy-pilot-${dayKey(Date.now())}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
   app.querySelectorAll('.pl-plan').forEach((sel) => { sel.onclick = (e) => e.stopPropagation(); sel.onchange = async () => {
     sel.disabled = true;
@@ -349,7 +458,7 @@ function famDetail(r, fb) {
     <div><h3>Screens visited</h3>${scr.map(([k, v]) => `<div class="fd-row"><span>${esc(k.slice(7))}</span><b>${v.n}</b></div>`).join('') || '<p class="muted">–</p>'}
       ${a.errs.length ? `<h3 style="margin-top:12px">Problems seen</h3>${a.errs.map((e) => `<div class="fd-err">${esc(e.m)} <small>${esc(e.v || '')} · ${ago(e.t)}</small></div>`).join('')}` : ''}
       ${fb.length ? `<h3 style="margin-top:12px">Their feedback</h3>${fb.map((x) => `<p class="fd-fb">“${esc(x.text)}” <small>${ago(x.at)}</small></p>`).join('')}` : ''}</div>
-    <div><h3>Summary</h3>
+    <div><h3>Summary</h3>${(() => { const x = famStatus(a, r.f); return `<div class="ins ${x.tone} fd-status"><i>●</i><div><b>${x.label}</b><p>${esc(x.why)}</p><p class="ins-act">→ ${esc(x.act)}</p></div></div>`; })()}
       <div class="fd-tiles">${[
         [a.actDays, `active day${a.actDays === 1 ? '' : 's'}`, a.wk2 === null ? '' : a.wk2 ? 'came back in week 2' : 'didn’t come back in week 2', a.wk2 === false ? 'down' : a.wk2 ? 'up' : ''],
         [a.tot.q, 'questions', `${a.w.q} this week · ${a.pw.q} last week`],
