@@ -311,6 +311,8 @@ const EXACT = {
   'While you wait, a quick look at this chapter': '等候期間，快速重溫這一章',
   'A quick look while it’s checked': '檢查期間，快速重溫一下',
   'Start practising': '開始練習',
+  'I don’t know this one. Show me the answer': '我不懂這題，給我看答案',
+  'It goes into your Mistake book so you can try it again later.': '這題會放進錯題簿，方便你之後再試。',
   'One more look before you start': '開始前再看一眼',
   'tap to start now': '按此立即開始',
   'Next card ›': '下一張 ›',

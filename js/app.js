@@ -2786,8 +2786,8 @@ function qSide(q) {
 
 // Before answering, the tutor can explain what the question means (never the answer). Not in timed tests.
 const preTutorOK = (q) => S.phase !== 'revealed' && !isExam();
-// Laptops show it in the right-hand panel next to a multiple-choice question; otherwise it sits under the question.
-const preTutorInSide = (q) => preTutorOK(q) && choiceType(q) && matchMedia('(min-width:1024px)').matches;
+// Laptops show it in the right-hand panel next to the question (every type); phones have it under the question.
+const preTutorInSide = (q) => preTutorOK(q) && matchMedia('(min-width:1024px)').matches;
 const preTutorHTML = (q) => `<div class="tutor pre" id="tutor">${tutorHTML(q)}</div>`;
 
 function renderQuestion() {
@@ -3074,7 +3074,8 @@ function writtenBody(q, revealed) {
   const ans = S.answers[S.i] || q.parts.map(() => '');
   const stem = figHTML(q) + (q.stem ? renderStem(writtenStem(q)) : '');
   if (!revealed) {
-    const maths = kindSync(q.id) === 'maths', essay = q.type === 'essay';
+    // The maths keypad and "show your working" only for questions that involve working something out.
+    const maths = kindSync(q.id) === 'maths' && q.type !== 'essay' && /\d|calculat|work out|find|solve|show that|evaluate|simplif|expand|factori|prove|estimate|計算|求/i.test(q.parts.map((p) => `${p.prompt} ${p.mark_scheme.join(' ')}`).join(' ')), essay = q.type === 'essay';
     const parts = q.parts.map((p, k) => {
       const ink = inkOf(S.i, k, true);
       return `<div class="part">
@@ -3087,7 +3088,7 @@ function writtenBody(q, revealed) {
       ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}`}</div>`;
     }).join('');
     const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
-    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">Show the answer without trying</button>'}</div>`;
+    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">I don’t know this one. Show me the answer</button><span class="hint" style="text-align:center">It goes into your Mistake book so you can try it again later.</span>'}</div>`;
     return { main, footer, bind() {
       const grab = () => {
         const prev = S.answers[S.i] || [];
