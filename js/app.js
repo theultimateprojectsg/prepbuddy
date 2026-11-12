@@ -4011,10 +4011,17 @@ function readingNow() {
   S.readAt = Date.now();
   if (S.countdown) { clearInterval(S.countdown); S.countdown = null; S.autoOff = true; const b = document.getElementById('startnow'); if (b) b.innerHTML = 'Start practising <span aria-hidden="true">→</span>'; }
 }
+const WAIT_STEPS = ['Reading your textbook…', 'Picking an important idea…', 'Writing a question…', 'Checking the answer is right…', 'Making sure it’s clear…', 'Almost there…'];
 function paintWait() {
   if (!S || !document.getElementById('wcard')) return renderWaiting();
   const ready = Math.min(S.target, S.qs.length), go = S.holdStart && S.i < S.qs.length;
   const bar = document.getElementById('wbar'); if (bar) bar.style.width = `${Math.round(100 * ready / Math.max(1, S.target))}%`;
+  { const pr = document.getElementById('wprog'); if (pr) pr.classList.toggle('busy', !go); }
+  if (go) {
+    const wb = document.getElementById('wbud');
+    if (wb && !wb.classList.contains('ready')) { wb.classList.add('ready'); const f = document.getElementById('wbudFace'); if (f) f.innerHTML = buddySVG('done', 92); }
+    const st = document.getElementById('wstat'); if (st) { st.dataset.done = '1'; st.textContent = 'Ready when you are!'; }
+  }
   const r = document.getElementById('wready'); if (r) r.textContent = S.holdStart ? `${ready} of ${S.target} ready` : 'Checking your next question';
   const g = document.getElementById('wgo');
   if (g && go && !g.firstChild) {
@@ -4063,9 +4070,15 @@ function renderWaiting() {
     $app.innerHTML = `${top}
   <main class="pad waitpage" style="flex:1">
     <div class="wait-head">
+      <div class="wbud ${S.holdStart ? '' : 'small'}" id="wbud" aria-hidden="true">
+        <div class="wbud-paper"><svg viewBox="0 0 60 72" width="60" height="72"><rect x="1" y="1" width="58" height="70" rx="7" fill="#fff" stroke="#DCE2EE" stroke-width="2"/><path class="wl l1" d="M10 18H50"/><path class="wl l2" d="M10 30H46"/><path class="wl l3" d="M10 42H50"/><path class="wl l4" d="M10 54H36"/></svg><span class="wbud-pen">✏️</span></div>
+        <div class="wbud-me"><div class="wbud-bubble"><i></i><i></i><i></i></div><div class="wbud-b" id="wbudFace">${buddySVG('think', 92)}</div><div class="wbud-shadow"></div></div>
+        <span class="wsp s1">✦</span><span class="wsp s2">✦</span><span class="wsp s3">✦</span>
+      </div>
       <h1 class="display" id="wtitle">${S.holdStart ? 'Getting your questions ready' : 'Your next question is almost ready'}</h1>
       <p class="muted" data-raw>${esc(where)}</p>
-      <div class="wait-prog"><div class="progress"><i id="wbar" style="width:0%"></i></div><span id="wready" class="hint"></span></div>
+      <div class="wait-prog"><div class="progress" id="wprog"><i id="wbar" style="width:0%"></i></div><span id="wready" class="hint"></span></div>
+      <p class="wstat" id="wstat" aria-live="polite">${WAIT_STEPS[0]}</p>
     </div>
     <p class="hint wait-sub" id="wsub">${S.holdStart ? 'While you wait, a quick look at this chapter' : 'A quick look while it’s checked'}</p>
     <section class="card wcard" id="wcard" aria-live="polite"></section>
@@ -4079,6 +4092,9 @@ function renderWaiting() {
     sess.cardTimer = setInterval(() => {
       if (sess !== S || !document.getElementById('wcard')) return clearInterval(sess.cardTimer);
       if (Date.now() - sess.cardTick >= 9000 && (sess.cards || []).length > 1) { sess.cardAt++; sess.cardTick = Date.now(); paintCard(); }
+      sess.waitTick = (sess.waitTick || 0) + 1;
+      const st = document.getElementById('wstat');
+      if (st && !st.dataset.done && sess.waitTick % 3 === 0) { st.classList.remove('in'); void st.offsetWidth; st.textContent = WAIT_STEPS[(sess.waitTick / 3) % WAIT_STEPS.length]; st.classList.add('in'); }
     }, 1000);
   }
   document.getElementById('quit').onclick = async () => { if (await confirmLeave(leaveText('wait'))) go(S && S.book ? { name: 'book', bookId: S.book.id } : { name: 'home' }); };

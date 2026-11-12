@@ -55,6 +55,35 @@ h1,.display{font-family:'Lexend','PingFang HK','PingFang TC','Microsoft JhengHei
 .chip.recap{background:#FFF4DB;color:#8A5A00}
 .waitpage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
 .waitpage>*{width:100%;max-width:460px}
+/* waiting: Buddy busy writing your questions */
+.wbud{position:relative;display:flex;align-items:flex-end;justify-content:center;gap:14px;height:132px;margin-bottom:4px}
+.wbud-me{position:relative;display:flex;flex-direction:column;align-items:center}
+.wbud-b{animation:wbob 1.6s ease-in-out infinite;transform-origin:50% 100%}.wbud-b .buddy{display:block}
+@keyframes wbob{0%,100%{transform:translateY(0) rotate(-3deg)}25%{transform:translateY(-10px) rotate(0)}50%{transform:translateY(0) rotate(3deg) scaleY(.96)}75%{transform:translateY(-6px) rotate(0)}}
+.wbud-shadow{width:56px;height:8px;border-radius:50%;background:rgba(30,42,90,.14);margin-top:2px;animation:wshad 1.6s ease-in-out infinite}
+@keyframes wshad{0%,50%,100%{transform:scaleX(1);opacity:1}25%{transform:scaleX(.7);opacity:.6}75%{transform:scaleX(.8);opacity:.7}}
+.wbud-bubble{position:absolute;top:-6px;right:-30px;display:flex;gap:4px;background:#fff;border:1.5px solid #DCE2EE;border-radius:14px;padding:7px 9px;box-shadow:0 3px 10px rgba(30,42,90,.08)}
+.wbud-bubble i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:wdot 1.2s ease-in-out infinite}.wbud-bubble i:nth-child(2){animation-delay:.2s}.wbud-bubble i:nth-child(3){animation-delay:.4s}
+@keyframes wdot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+.wbud-paper{position:relative;margin-bottom:10px;animation:wpaper 3.2s ease-in-out infinite}
+@keyframes wpaper{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(-1deg) translateY(-3px)}}
+.wbud-paper .wl{stroke:#9DB0E6;stroke-width:4;stroke-linecap:round;stroke-dasharray:44;stroke-dashoffset:44;animation:wwrite 4s linear infinite}
+.wbud-paper .l2{animation-delay:.8s}.wbud-paper .l3{animation-delay:1.6s}.wbud-paper .l4{animation-delay:2.4s}
+@keyframes wwrite{0%{stroke-dashoffset:44}18%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:0;opacity:0}}
+.wbud-pen{position:absolute;font-size:20px;left:30px;top:6px;animation:wpen 4s ease-in-out infinite}
+@keyframes wpen{0%{transform:translate(-22px,0)}18%{transform:translate(18px,0)}20%{transform:translate(-22px,12px)}38%{transform:translate(14px,12px)}40%{transform:translate(-22px,24px)}58%{transform:translate(18px,24px)}60%{transform:translate(-22px,36px)}78%{transform:translate(4px,36px)}100%{transform:translate(-22px,0)}}
+.wsp{position:absolute;color:#F2B630;font-size:14px;opacity:0;animation:wspk 2.4s ease-in-out infinite}
+.wsp.s1{left:calc(50% + 62px);top:18px}.wsp.s2{left:calc(50% - 92px);top:4px;animation-delay:.8s;color:#9DB0E6}.wsp.s3{left:calc(50% + 40px);top:92px;animation-delay:1.6s;font-size:11px}
+@keyframes wspk{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1.1) rotate(20deg)}}
+.wbud.small{height:104px}.wbud.small .buddy{width:72px;height:72px}
+.wbud.ready .wbud-bubble,.wbud.ready .wbud-pen{display:none}.wbud.ready .wbud-b{animation:wjump .9s ease-in-out infinite}.wbud.ready .wl{animation:none;stroke-dashoffset:0}
+@keyframes wjump{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px) scale(1.04)}}
+.wstat{margin:6px 0 0;font-size:14px;font-weight:600;color:var(--accent);min-height:20px}.wstat.in{animation:wcin .35s ease}
+.wait-prog .progress.busy{position:relative;overflow:hidden}.wait-prog .progress.busy::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:translateX(-100%);animation:wshim 1.4s linear infinite}
+.wait-prog .progress.busy{background:repeating-linear-gradient(-45deg,#E3E8F1 0 8px,#EDF1F8 8px 16px);background-size:22px 22px;animation:wstripe .8s linear infinite}
+@keyframes wshim{to{transform:translateX(100%)}}@keyframes wstripe{to{background-position:22px 0}}
+@media (prefers-reduced-motion:reduce){.wbud *,.wsp,.wait-prog .progress.busy,.wait-prog .progress.busy::after{animation:none!important}.wbud-paper .wl{stroke-dashoffset:0}}
+@media (min-width:1024px){.wbud{height:160px}.wbud .wbud-b .buddy{width:112px;height:112px}.wstat{font-size:16px}}
 .wait-head{display:flex;flex-direction:column;align-items:center;gap:6px}
 .wait-head h1{margin:0;font-size:22px}
 .wait-head p{margin:0;font-size:14px}
