@@ -311,7 +311,7 @@ const EXACT = {
   'While you wait, a quick look at this chapter': '等候期間，快速重溫這一章',
   'A quick look while it’s checked': '檢查期間，快速重溫一下',
   'Start practising': '開始練習',
-  'Ask Buddy': '問 Buddy', 'About the app or your studies': '程式使用或溫習問題都可以問', 'Ask me anything…': '有甚麼都可以問我…',
+  'Ask Buddy': '問 Buddy', 'I can explain what the question means or give you a hint, without giving away the answer. You can also ask me about anything else, like how to use the app.': '我可以解釋題目的意思或給你提示，但不會直接告訴你答案。其他問題，例如怎樣使用這個程式，也可以問我。', 'Your study coach: sees your scores, mistakes and reviews': '你的溫習教練：看得到你的分數、錯題和溫習', 'About this question, or anything else': '關於這題，或其他問題都可以問', 'About the app or your studies': '程式使用或溫習問題都可以問', 'Ask me anything…': '有甚麼都可以問我…',
   'Need help? Ask me anything about PrepBuddy or your studies.': '需要幫忙？PrepBuddy 或溫習上的問題都可以問我。',
   'I can’t find my book': '我找不到我的課本', 'How do I add a textbook?': '怎樣加入課本？', 'What is a book code?': '甚麼是課本編號？',
   'How do I start practising?': '怎樣開始練習？', 'What is a chapter test?': '甚麼是章節測驗？', 'How do I fix my mistakes?': '怎樣改正錯題？',

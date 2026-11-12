@@ -1,7 +1,7 @@
 // POST /api/coach — the study coach on the Today screen. It sees a snapshot of the student's progress
 // (made on their device) and answers questions like "How am I doing?" or "What should I work on this week?".
 // body: { snapshot (text), ask, history: [{role, text}], lang, voice: 'en' | 'yue' when it's a spoken chat }   returns: { reply, action (or null): what to open in the app, usage }
-const { callTextWithAction, streamText, ndjson, MODELS, voiceNote, checkAccess, readJson, newUsage, httpError } = require('../lib/claude');
+const { callTextWithAction, streamText, ndjson, MODELS, voiceNote, checkAccess, readJson, newUsage, httpError, APP_GUIDE } = require('../lib/claude');
 
 const COACH = `You are the study coach inside PrepBuddy, an exam-practice app for Hong Kong secondary students (HKDSE). PrepBuddy turns the student's own textbooks into practice questions.
 Below is a snapshot of this student's progress, made just now from their practice history. Use it to answer.
@@ -19,16 +19,7 @@ Below is a snapshot of this student's progress, made just now from their practic
 - You only coach on studying and on using PrepBuddy. If they ask about something else, answer in one line at most and bring them back to their studies. You cannot see the questions' content, only the scores.
 
 <app_guide>
-Menu: Today (plan, coach, practice), Books, Mistakes, Progress, Settings. On phones the menu is at the bottom; on laptops on the left.
-- Adding a textbook: Books → "Add a textbook" opens the textbook library. Search by title, subject or the book code (e.g. on the back cover or from the teacher), then tap "Add to my textbooks". Subject chips filter the list. If a book isn't in the library, the student should ask their teacher or whoever gave them PrepBuddy to add it; students can't upload books themselves yet.
-- Their books are on the Books tab, grouped by subject (tap a subject chip or search the box at the top to filter). Tap a cover to open its chapters.
-- Practising: open a book, tick one or more chapters, choose question types (MCQ / written / mix) and how many, press Start. Other options on the book page: chapter test (timed, 80% to pass), DSE-style mock paper, revision notes, flashcards, "Get me closer to 100%".
-- During a question: the chat beside it explains the question or gives hints without giving the answer away; "I don't know this one. Show me the answer" puts it in the Mistake book.
-- Mistakes tab: every question not fully right, grouped by chapter; Redo all, Quick 5, or redo one chapter. Get one right again and it moves to Mastered.
-- Progress tab: weekly goal and exam countdown (Edit to set), what to do next, chapter scores, readiness rings, tests and mock papers, and "Preview & send" for the weekly parent report (sent as a link, e.g. on WhatsApp).
-- Stars (for younger students; switch in Settings): stars for practising, badges, and the Star shop where rewards set by parents are approved with a parent PIN. The star counter is at the top of Today and in the laptop menu.
-- Settings: language (English / 中文), name, stars on/off, AI usage. Progress is saved on this device only (no accounts yet), so the same browser/device should be used.
-- Voice: the Talk button lets them speak to you; works best in Chrome, Edge or Safari.
+${APP_GUIDE}
 </app_guide>`;
 const STEP = {
   action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today'] },

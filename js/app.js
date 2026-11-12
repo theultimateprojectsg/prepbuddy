@@ -810,7 +810,7 @@ const COACH_CHIPS = ['How am I doing?', 'What should I work on this week?', 'Whi
 const coach = { busy: false, error: null };
 function coachHTML() {
   const msgs = local.coach || [];
-  return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div>${helper.open ? '<b>Ask Buddy</b><span>About the app or your studies</span>' : '<b>Your study coach</b><span>Sees your scores, mistakes and reviews</span>'}</div>
+  return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div>${helper.open ? '<b>Ask Buddy</b><span>About the app or your studies</span>' : '<b>Ask Buddy</b><span>Your study coach: sees your scores, mistakes and reviews</span>'}</div>
       <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
       ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk</button>`}</span></div>
     ${voiceOn('coach') ? voicePanelHTML() + (coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : '') : `<div class="coach-msgs" id="coachMsgs">
@@ -3593,9 +3593,9 @@ function tutorHTML(q) {
     ['example', 'Give me another example'],
   ];
   return `<div class="tchat">
-    <div class="thead"><b>${buddySVG('happy', 28)} Ask about this question</b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}</span></div>
+    <div class="thead"><b class="thead-t">${buddySVG('happy', 28)}<span>Ask Buddy<small>About this question, or anything else</small></span></b><span style="display:flex;gap:6px">${von ? '' : `<button class="vtalk" id="tutorTalk">${ICON.mic} Talk</button>`}</span></div>
     ${von ? voicePanelHTML() + (c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : '') : `
-    <div class="tlog" id="tlog">${!c.msgs.length && !c.busy ? `<div class="tempty">${buddySVG('happy', 64)}<b>${before ? 'Stuck? Ask me.' : 'Want to understand it better?'}</b><span>${before ? 'I can explain what the question means or give you a hint. I won’t give away the answer.' : 'Ask why the answer is right, or have it explained another way.'}</span>${before ? `<span class="tnote">${choiceType(q) ? 'Pick an answer to see if it’s right, with the explanation.' : 'Your marks and feedback appear here when you press Mark my answer.'}</span>` : ''}</div>` : ''}
+    <div class="tlog" id="tlog">${!c.msgs.length && !c.busy ? `<div class="tempty">${buddySVG('happy', 64)}<b>${before ? 'Stuck? Ask me.' : 'Want to understand it better?'}</b><span>${before ? 'I can explain what the question means or give you a hint, without giving away the answer. You can also ask me about anything else, like how to use the app.' : 'Ask why the answer is right, or have it explained another way.'}</span>${before ? `<span class="tnote">${choiceType(q) ? 'Pick an answer to see if it’s right, with the explanation.' : 'Your marks and feedback appear here when you press Mark my answer.'}</span>` : ''}</div>` : ''}
     ${c.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>`).join('')}
     ${c.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}</div>
     ${c.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(c.error)}</p>` : ''}
