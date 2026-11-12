@@ -716,7 +716,7 @@ async function go(v) {
   stopTimer();
   if (v.name === 'home') return renderHome();
   if (v.name === 'books') return renderBooks();
-  if (v.name === 'book') return renderBook(v.bookId);
+  if (v.name === 'book') { const r = renderBook(v.bookId); if (!local.bookToured && local.toured) Promise.resolve(r).then(() => setTimeout(() => { if (view.name === 'book') bookTour(); }, 500)); return r; }
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
   if (v.name === 'settings') return renderSettings();
@@ -2301,10 +2301,14 @@ async function pilotGate() {
     const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
     const done = () => { if (nav) nav.style.display = ''; resolve(); };
     document.body.dataset.tab = '';
+    let talk = 0;
+    const paint = () => {
+    clearInterval(talk);
     const SAY = [PLT('Yay, you made it!', '好開心見到你！'), PLT('So excited you’re here!', '你來了，太好了！'), PLT('Ready to learn together?', '一齊學習吧！')];
     const sparkles = Array.from({ length: 14 }, (_, i) => `<i style="left:${(i * 37 + 7) % 100}%;top:${(i * 53 + 11) % 100}%;animation-delay:${(i % 7) * 0.45}s;font-size:${10 + (i % 4) * 5}px">${['✦', '★', '•', '✧'][i % 4]}</i>`).join('');
     $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
       <div class="pg-sky" aria-hidden="true">${sparkles}</div>
+      <div class="pg-lang" role="group" aria-label="Language / 語言"><button data-gl="en" class="${LANG === 'en' ? 'on' : ''}" aria-pressed="${LANG === 'en'}" lang="en">English</button><button data-gl="zh" class="${LANG === 'zh' ? 'on' : ''}" aria-pressed="${LANG === 'zh'}" lang="zh-HK">中文</button></div>
       <div class="pg-box" id="pgbox">
         <div class="pg-buddy" aria-hidden="true"><div class="pg-say" id="pgsay">${SAY[0]}</div><div class="pg-bob" id="pgbob">${buddySVG('happy', 96)}</div><div class="pg-shadow"></div></div>
         <span class="pg-tag">${PLT('Private pilot · you’re one of the first!', '小規模試用 · 你是首批家庭之一！')}</span>
@@ -2317,9 +2321,10 @@ async function pilotGate() {
       </div></main>`;
     const box = document.getElementById('pgbox'), say = document.getElementById('pgsay'), bob = document.getElementById('pgbob'), inp = document.getElementById('pgc'), err = document.getElementById('pgerr'), ok = document.getElementById('pgok');
     let si = 0, typing = 0;
+    $app.querySelectorAll('[data-gl]').forEach((b) => (b.onclick = () => { if (b.dataset.gl === LANG) return; const v = inp.value; setLang(b.dataset.gl); paint(); const i2 = document.getElementById('pgc'); if (i2) i2.value = v; }));
     const face = (k) => { bob.innerHTML = buddySVG(k, 96); };
     const speak = (t) => { say.classList.remove('pop'); void say.offsetWidth; say.textContent = t; say.classList.add('pop'); };
-    const talk = setInterval(() => { if (!typing && !box.classList.contains('bad')) speak(SAY[(si = (si + 1) % SAY.length)]); }, 3200);
+    talk = setInterval(() => { if (!typing && !box.classList.contains('bad')) speak(SAY[(si = (si + 1) % SAY.length)]); }, 3200);
     inp.oninput = () => {
       clearTimeout(typing); face('listen'); err.hidden = true; box.classList.remove('bad');
       typing = setTimeout(() => { typing = 0; face('happy'); }, 900);
@@ -2359,6 +2364,8 @@ async function pilotGate() {
         fail(PLT('That code isn’t right. Check it and try again.', '代碼不正確，請檢查後再試。'));
       } catch (er) { fail(PLT('Couldn’t check the code. Are you online?', '未能檢查代碼，你有連接網絡嗎？')); }
     };
+    };
+    paint();
   });
 }
 
@@ -2387,8 +2394,8 @@ function consentScreen() {
         <div class="cs-head">${buddySVG('listen', 64)}<div><span class="pg-tag">${C('Step 1 of 2 · for parents', '第 1 步，共 2 步 · 家長專用')}</span><h1>${C('Before we start', '開始之前')}</h1></div></div>
         <p>${C('Please ask a parent or guardian to read this and agree. It takes a minute.', '請家長或監護人閱讀並同意以下內容，只需一分鐘。')}</p>
         <div class="cs-list">${items.map(([i, h, t]) => `<div class="cs-item"><span>${i}</span><div><b>${h}</b><p>${t}</p></div></div>`).join('')}</div>
-        <label class="cs-agree"><input type="checkbox" id="cs-ok"><span>${C('I’m this child’s parent or guardian. I’ve read this and agree to my child taking part in the PrepBuddy pilot.', '我是這名子女的家長或監護人，已閱讀以上內容，並同意子女參加 PrepBuddy 試用計劃。')}</span></label>
-        <button class="btn" id="cs-go" disabled>${C('Agree and continue', '同意並繼續')}</button>
+        <div class="cs-foot"><label class="cs-agree"><input type="checkbox" id="cs-ok"><span>${C('I’m this child’s parent or guardian. I’ve read this and agree to my child taking part in the PrepBuddy pilot.', '我是這名子女的家長或監護人，已閱讀以上內容，並同意子女參加 PrepBuddy 試用計劃。')}</span></label>
+        <button class="btn" id="cs-go" disabled>${C('Agree and continue', '同意並繼續')}</button></div>
         <p class="hint">${C('Questions? Ask the person who invited you. You can also send us a message any time from Settings.', '有疑問？請聯絡邀請你的人，或隨時在「設定」中發送訊息給我們。')}</p>
       </div></main>`;
     const ok = document.getElementById('cs-ok'), go2 = document.getElementById('cs-go');
@@ -2401,50 +2408,111 @@ function consentScreen() {
     };
   });
 }
-// The tour: what PrepBuddy does, card by card. Features the family's plan doesn't include carry a small plan tag.
-function startTour(replay) {
+// Guided tours: go to each screen, spotlight the real button, and say what it does.
+// A step: { view, sel (CSS, first visible match), t, d, need } — no view = stay; sel missing on screen = a centred card.
+const waitFor = (sel, ms = 2500) => new Promise((res) => {
+  const t0 = Date.now();
+  const look = () => { const el = [...document.querySelectorAll(sel)].find((e) => e.offsetParent || e.getClientRects().length); if (el || Date.now() - t0 > ms) return res(el || null); setTimeout(look, 80); };
+  look();
+});
+function coachTour(steps, done) {
   return new Promise((resolve) => {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
-    const tag = (f) => (f && locked(f) ? ` <span class="tr-lock">🔒 ${TIERS[nextPlanFor(f)].name}</span>` : '');
-    const S2 = [
-      { ic: buddySVG('happy', 96), t: C('Meet Buddy, your study buddy', '認識你的學習夥伴 Buddy'), d: C('PrepBuddy turns your own textbooks into practice, lessons and marking, at your level. Here’s a quick look around.', 'PrepBuddy 會把你自己的課本變成練習、課堂和批改，配合你的程度。我們帶你快速看看。') },
-      { ic: actionTile('practise', 84), t: C('Practice from your textbook', '用你的課本練習'), d: C('Questions written from each chapter, from easy to DSE level. Stuck? Tap “I don’t get it” and Buddy explains step by step.', '每一章都有由淺入深、直至 DSE 程度的題目。不明白？按「我不明白」，Buddy 會一步一步解釋。') },
-      { ic: actionTile('learn', 84), t: C('Learn mode', '學習模式'), d: C('New chapter? Buddy teaches it in short steps with quick checks, and you can ask questions any time.', '新的章節？Buddy 會用簡短步驟教你，並有小測驗，你也可以隨時發問。') },
-      { ic: actionTile('mistakes', 84), t: C('Your Mistake book', '你的錯題簿'), d: C('Every wrong answer is saved. Get it right a day later and it’s really learned. Today’s plan reminds you.', '每一題答錯的都會記下。隔天再答對，才是真正學會。今日計劃會提醒你。') },
-      { ic: actionTile('test', 84), t: C('Tests and school planning', '測驗與學校考試計劃') + tag('test'), d: C('Timed chapter tests marked like the real exam. Add your school test dates and Today’s plan counts down to them.', '計時章節測驗，按真實考試方式批改。加入學校測驗日期，今日計劃會為你倒數。') },
-      { ic: actionTile('writing', 84), t: C('Writing and speaking', '寫作與說話') + tag('writing'), d: C('DSE English and Chinese writing marked against the real criteria, with redrafts. Speaking practice with feedback on your answer.', '按 DSE 準則批改中英文寫作，可以修改重交；說話練習並附回饋。') },
-      { ic: actionTile('homework', 84), t: C('Homework help', '功課幫手') + tag('homework'), d: C('Snap a homework question and Buddy guides you to the answer, without just giving it away.', '拍下功課題目，Buddy 會引導你找出答案，而不是直接給你答案。') },
-      { ic: `<span class="tr-emoji">👨‍👩‍👧</span>`, t: C('For parents', '給家長') + tag('parent'), d: C('A PIN-protected parent dashboard, a one-page weekly report, and stars your child earns for real effort, swapped for rewards you choose.', '有密碼保護的家長主頁、一頁的每週報告，以及子女憑真正努力賺取的星星，可換取你設定的獎勵。') },
-      { ic: buddySVG('done', 96), t: C('Let’s add your textbook!', '加入你的課本吧！'), d: C('Search for your textbook, then tap “Find your level” so Buddy starts at the right difficulty. 15 minutes a day is all it takes.', '搜尋你的課本，然後按「找出你的程度」，讓 Buddy 由合適的難度開始。每天 15 分鐘就足夠。') },
-    ];
-    let k = 0;
-    const box = document.createElement('div');
-    box.className = 'tr-wrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', C('PrepBuddy tour', 'PrepBuddy 導覽'));
-    document.body.appendChild(box);
-    const end = () => { local.toured = Date.now(); saveLocal(); track(replay ? 'tour_replay' : (k >= S2.length - 1 ? 'tour_done' : 'tour_skip:' + k)); box.remove(); document.removeEventListener('keydown', key); resolve(); };
-    const draw = (dir = 0) => {
-      const x = S2[k], last = k === S2.length - 1;
-      box.innerHTML = `<div class="tr-card ${dir > 0 ? 'in-r' : dir < 0 ? 'in-l' : ''}">
-        <button class="tr-skip" id="tr-skip">${last ? '' : C('Skip', '略過')}</button>
-        <div class="tr-ic">${x.ic}</div>
-        ${k === 0 && !replay ? `<span class="pg-tag">${C('Step 2 of 2 · a quick tour', '第 2 步，共 2 步 · 快速導覽')}</span>` : ''}
-        <h2>${x.t}</h2><p>${x.d}</p>
-        <div class="tr-dots" aria-hidden="true">${S2.map((_, i) => `<i class="${i === k ? 'on' : ''}"></i>`).join('')}</div>
-        <div class="tr-btns">${k ? `<button class="btn ghost" id="tr-back">${C('Back', '上一步')}</button>` : ''}<button class="btn" id="tr-next">${last ? C('Let’s go!', '開始吧！') : C('Next', '下一步')}</button></div>
-        <span class="tr-count">${k + 1} / ${S2.length}</span>
-      </div>`;
-      box.querySelector('#tr-next').onclick = () => (last ? end() : (k++, draw(1)));
-      const b = box.querySelector('#tr-back'); if (b) b.onclick = () => { k--; draw(-1); };
-      const sk = box.querySelector('#tr-skip'); if (sk && !last) sk.onclick = end; else if (sk) sk.style.visibility = 'hidden';
-      box.querySelector('#tr-next').focus();
+    let k = 0, el = null, alive = true;
+    const ov = document.createElement('div'); ov.className = 'cmk'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+    ov.innerHTML = `<div class="cmk-hole" id="cmk-hole"></div><div class="cmk-tip" id="cmk-tip" aria-live="polite"></div>`;
+    document.body.appendChild(ov);
+    const hole = ov.querySelector('#cmk-hole'), tip = ov.querySelector('#cmk-tip');
+    const finish = (how) => { if (!alive) return; alive = false; window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); document.removeEventListener('keydown', key); ov.remove(); done && done(how, k); resolve(how); };
+    const place = () => {
+      if (!alive) return;
+      const mob = innerWidth < 640;
+      if (!el) { hole.style.display = 'none'; tip.className = 'cmk-tip center'; tip.style.cssText = ''; return; }
+      const r = el.getBoundingClientRect(), pad = 8;
+      hole.style.display = 'block';
+      Object.assign(hole.style, { left: `${r.left - pad}px`, top: `${r.top - pad}px`, width: `${r.width + 2 * pad}px`, height: `${r.height + 2 * pad}px` });
+      tip.className = 'cmk-tip';
+      const tw = Math.min(360, innerWidth - 24); tip.style.width = `${tw}px`;
+      const th = tip.offsetHeight;
+      let top = r.bottom + pad + 14, left = Math.min(Math.max(12, r.left + r.width / 2 - tw / 2), innerWidth - tw - 12);
+      if (top + th > innerHeight - 12) top = r.top - pad - 14 - th; // above
+      if (top < 12) { // no room above or below (tall targets): beside, or pinned to the bottom on phones
+        if (!mob && r.right + 16 + tw < innerWidth) { left = r.right + 16; top = Math.max(12, Math.min(innerHeight - th - 12, r.top)); }
+        else { top = innerHeight - th - 12; }
+      }
+      Object.assign(tip.style, { left: `${left}px`, top: `${top}px` });
     };
-    const key = (e) => { if (e.key === 'ArrowRight') { if (k < S2.length - 1) { k++; draw(1); } } else if (e.key === 'ArrowLeft') { if (k) { k--; draw(-1); } } else if (e.key === 'Escape') end(); };
-    document.addEventListener('keydown', key);
-    let x0 = null;
-    box.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
-    box.addEventListener('touchend', (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (dx < -50 && k < S2.length - 1) { k++; draw(1); } else if (dx > 50 && k) { k--; draw(-1); } });
-    draw();
+    const show = async (dir) => {
+      const x = steps[k];
+      tip.classList.add('busy');
+      if (x.view && view.name !== x.view) { await go({ name: x.view }); await new Promise((r) => setTimeout(r, 250)); }
+      if (x.before) x.before();
+      el = x.sel ? await waitFor(x.sel) : null;
+      if (!alive) return;
+      if (!el && x.skipIfMissing) { k += dir || 1; if (k < 0) k = 0; if (k >= steps.length) return finish('done'); return show(dir); }
+      if (el) { el.scrollIntoView({ block: 'center', behavior: 'instant' in document.documentElement.style ? 'instant' : 'auto' }); await new Promise((r) => setTimeout(r, 60)); }
+      const last = k === steps.length - 1;
+      tip.innerHTML = `<div class="cmk-head">${buddySVG(x.face || 'happy', 34)}<b>${x.t}</b></div><p>${x.d}</p>
+        <div class="cmk-foot"><span class="cmk-n">${k + 1} / ${steps.length}</span>${last ? '' : `<button class="cmk-skip" id="cmk-skip">${C('Skip tour', '略過導覽')}</button>`}
+        ${k ? `<button class="btn-sm" id="cmk-back">${C('Back', '上一步')}</button>` : ''}<button class="btn-sm primary" id="cmk-next">${x.cta || (last ? C('Done', '完成') : C('Next', '下一步'))}</button></div>`;
+      tip.classList.remove('busy');
+      tip.querySelector('#cmk-next').onclick = () => { if (last) return finish('done'); k++; show(1); };
+      const bk = tip.querySelector('#cmk-back'); if (bk) bk.onclick = () => { k--; show(-1); };
+      const sk = tip.querySelector('#cmk-skip'); if (sk) sk.onclick = () => finish('skip');
+      place();
+      hole.classList.remove('pulse'); void hole.offsetWidth; hole.classList.add('pulse');
+      tip.querySelector('#cmk-next').focus({ preventScroll: true });
+    };
+    const key = (e) => { if (e.key === 'Escape') finish('skip'); else if (e.key === 'ArrowRight') tip.querySelector('#cmk-next')?.click(); else if (e.key === 'ArrowLeft') tip.querySelector('#cmk-back')?.click(); };
+    window.addEventListener('resize', place); window.addEventListener('scroll', place, true); document.addEventListener('keydown', key);
+    ov.addEventListener('click', (e) => { if (e.target === ov || e.target === hole) { tip.classList.remove('nudge'); void tip.offsetWidth; tip.classList.add('nudge'); } });
+    show(1);
   });
+}
+// The app tour: Today, Books, Mistakes, Progress, Settings — on the real screens.
+async function startTour(replay) {
+  const C = (en, zh) => (LANG === 'zh' ? zh : en);
+  const hasBook = (await getBooks()).length > 0;
+  const tab = (k) => `[data-tabgo="${k}"]`;
+  const lt = (f) => (locked(f) ? ` <span class="tr-lock">🔒 ${TIERS[nextPlanFor(f)].name}</span>` : '');
+  const steps = [
+    { view: 'home', t: C('Hi, I’m Buddy!', '你好，我是 Buddy！'), d: C('Let me show you around PrepBuddy. It takes about a minute, and you can skip any time.', '讓我帶你看看 PrepBuddy，大約一分鐘，隨時可以略過。'), face: 'happy' },
+    { view: 'home', sel: tab('home'), t: C('Today', '今日'), d: C('Your home screen. Buddy plans what to do each day: reviews, a chapter to practise, mistakes to fix.', '你的主頁。Buddy 每天為你安排要做的事：溫習、練習章節、改正錯題。') },
+    hasBook
+      ? { view: 'home', sel: 'section[aria-label="Today\'s plan"]', t: C('Today’s plan', '今日計劃'), d: C('Start here every day. Tap an item and Buddy takes you straight to it. 15 minutes is plenty.', '每天由這裏開始。按一下項目，Buddy 會直接帶你去。每天 15 分鐘就足夠。') }
+      : { view: 'home', sel: 'section.empty-start', t: C('Start with your textbook', '由你的課本開始'), d: C('Search for your textbook here. PrepBuddy turns every chapter into questions, lessons, notes and flashcards.', '在這裏搜尋你的課本。PrepBuddy 會把每一章變成題目、課堂、筆記和閃卡。') },
+    { view: 'home', sel: 'section[aria-label="School tests"]', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates. Today’s plan counts down and focuses on the chapters that are coming up.', '加入測驗日期，今日計劃會倒數，並集中溫習要考的章節。') },
+    { view: 'home', sel: 'section[aria-label="Practice"]', skipIfMissing: true, t: C('More ways to practise', '更多練習方法'), d: C('Weak topics, mock papers, homework help from a photo, 默書, and DSE writing and speaking with marking.', '弱項練習、模擬試卷、拍照功課幫手、默書，以及附批改的 DSE 寫作和說話。') },
+    { view: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('All your textbooks. Open one to choose chapters, learn with Buddy, practise, or take a chapter test.', '你所有的課本。打開課本可以選章節、跟 Buddy 學習、練習或做章節測驗。') },
+    { view: 'books', sel: '#addbook', t: C('Add a textbook', '加入課本'), d: C('Add more books from the library any time, by title, subject or book code.', '隨時從書庫加入更多課本，可用書名、科目或書本代碼搜尋。') },
+    { view: 'mistakes', sel: tab('mistakes'), t: C('Mistake book', '錯題簿'), d: C('Every question you get wrong lands here, by subject and chapter. Get it right again a day later and it’s mastered.', '答錯的題目會按科目和章節放在這裏。隔天再答對，就算掌握了。') },
+    { view: 'progress', sel: tab('progress'), t: C('Progress', '進度'), d: C('How much you practised, your scores over time, and how ready you are for each book.', '你練習了多少、分數變化，以及每本課本的準備程度。') },
+    { view: 'progress', sel: '#goal-set, #goal-edit', skipIfMissing: true, t: C('Weekly goal', '每週目標'), d: C('Pick how many days and minutes a week. Hitting your goal earns bonus stars.', '選擇每週練習幾天、每次幾分鐘。達成目標可以賺額外星星。') },
+    { view: 'progress', sel: '#parentDash', skipIfMissing: true, t: C('For parents', '家長專用') + lt('parent'), d: C('The parent dashboard, behind a PIN that a parent sets: today, this week, and what needs attention.', '家長主頁，由家長設定密碼保護：今日、本週，以及需要留意的地方。') },
+    { view: 'progress', sel: '#report', skipIfMissing: true, t: C('Weekly report', '每週報告'), d: C('A one-page summary to send to a parent as a link.', '一頁摘要，可以用連結傳送給家長。') },
+    { view: 'progress', sel: '#helperFab', skipIfMissing: true, t: C('Ask Buddy any time', '隨時問 Buddy'), d: C('Tap here on any screen to ask Buddy a question, get study advice, or find your way around.', '在任何頁面按這裏，都可以問 Buddy 問題、取得溫習建議，或問怎樣使用。') },
+    { view: 'settings', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, plan, backups and feedback.', '你的名字、語言、計劃、備份和意見。') },
+    { view: 'settings', sel: '#sstars', skipIfMissing: true, t: C('Stars and rewards', '星星與獎勵') + lt('stars'), d: C('Turn on stars: you earn them for real effort and swap them for rewards your parents choose.', '開啟星星：憑真正努力賺取星星，再換取家長設定的獎勵。') },
+    { view: 'settings', sel: '#sfb', skipIfMissing: true, t: C('Tell us what you think', '告訴我們你的意見'), d: C('Something confusing or a great idea? Type it here. We read every message.', '有地方令你困惑，或有好主意？在這裏輸入，我們會細閱每一個訊息。') },
+    { view: 'settings', sel: '#stour', skipIfMissing: true, t: C('See this again', '再看一次'), d: C('You can replay this tour from here any time.', '你可以隨時在這裏再看一次導覽。') },
+    { view: 'home', t: hasBook ? C('You’re all set!', '準備好了！') : C('Now add your textbook', '現在加入你的課本'), d: hasBook ? C('Follow Today’s plan and Buddy will do the rest. Open a book and I’ll show you around it too.', '跟著今日計劃做，其餘交給 Buddy。打開課本，我也會帶你看看。') : C('Search for your textbook on the Today screen. When you open it, I’ll show you how a book works.', '在今日頁面搜尋你的課本。打開課本時，我會教你怎樣使用。'), face: 'done', cta: C('Let’s go!', '開始吧！') },
+  ];
+  await coachTour(steps, (how, k) => { local.toured = Date.now(); saveLocal(); track(replay ? 'tour_replay' : how === 'done' ? 'tour_done' : `tour_skip:${k}`); });
+  if (!hasBook) { const q = document.getElementById('q'); if (q) q.focus(); }
+}
+// The book tour: the first time a book page opens.
+async function bookTour() {
+  if (local.bookToured || document.querySelector('.cmk')) return;
+  local.bookToured = Date.now(); saveLocal();
+  const C = (en, zh) => (LANG === 'zh' ? zh : en);
+  await coachTour([
+    { t: C('Your book', '你的課本'), d: C('Every chapter of this book is ready to learn and practise. Here’s how it works.', '這本課本的每一章都可以學習和練習。我們看看怎樣用。'), face: 'happy' },
+    { sel: '.pl-card', skipIfMissing: true, t: C('Find your level first', '先找出你的程度'), d: C('A short quiz across the book, so questions start at the right difficulty for you.', '一個涵蓋全書的小測驗，讓題目由適合你的難度開始。') },
+    { sel: 'section.learn-card', skipIfMissing: true, t: C('Learn with Buddy', '跟 Buddy 學習'), d: C('New chapter? Buddy teaches it step by step with quick checks. Ask anything along the way.', '新章節？Buddy 會一步一步教你，並有小測驗。過程中隨時發問。') },
+    { sel: '.crow', skipIfMissing: true, t: C('Pick chapters', '選擇章節'), d: C('Tick one or more chapters, then start a practice set. Stuck on a question? Tap “I don’t get it”.', '剔選一個或多個章節，然後開始練習。不明白某一題？按「我不明白」。') },
+    { sel: '#go', skipIfMissing: true, t: C('Start practising', '開始練習'), d: C('About 10 questions at a time. Wrong answers go to your Mistake book automatically.', '每次約 10 題。答錯的題目會自動放進錯題簿。') },
+    { sel: '#ctest', skipIfMissing: true, t: C('More ways to revise', '更多溫習方法'), d: C('Chapter tests, notes, flashcards and mock papers for the chapters you picked.', '為你選的章節提供章節測驗、筆記、閃卡和模擬試卷。') },
+  ], (how, k) => track(how === 'done' ? 'booktour_done' : `booktour_skip:${k}`));
 }
 // A short summary of how PrepBuddy is used on this device (sent to the pilot admin page).
 async function pilotSnap() {
