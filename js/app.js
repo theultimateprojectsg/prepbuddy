@@ -5535,6 +5535,7 @@ function renderQuestion() {
     ${preTutorOK(q) && !preTutorInSide(q) ? preTutorHTML(q) : ''}
   </main>
   ${body.footer}${/class="sheet/.test(body.footer) ? '' : qSide(q)}`;
+  liftActions();
   bindCommon(q);
   body.bind && body.bind();
   startTimer();
@@ -5594,6 +5595,19 @@ function cropFigure(pageUrl, box) {
 }
 const figHTML = (q, cls = 'qfig') => (q.figure && q.figure.img ? `<figure class="${cls}"><img src="${q.figure.img}" alt="Diagram for this question"></figure>` : '');
 
+// On a laptop the answer panel sits beside the question, so Next and "Report a problem" go under the question
+// itself (where the eye already is) instead of at the bottom of the side panel.
+function liftActions() {
+  if (!matchMedia('(min-width:1024px)').matches) return;
+  const main = $app.querySelector(':scope > main.qpaper'), sheet = $app.querySelector(':scope > .sheet');
+  if (!main || !sheet) return;
+  const next = sheet.querySelector(':scope > #next'), rb = sheet.querySelector('#rbox');
+  if (!next && !rb) return;
+  const box = document.createElement('div'); box.className = 'qafter';
+  if (rb) box.appendChild(rb);
+  if (next) box.appendChild(next);
+  main.appendChild(box);
+}
 function feedbackBits(q) {
   return `<p class="expl">${esc(q.explanation)}</p>
     ${q.source_quote ? `<p class="src">${esc(q.section || 'Textbook')}${q.pages ? `, pp. ${esc(q.pages)}` : ''}: “${esc(q.source_quote)}”</p>` : ''}

@@ -717,6 +717,9 @@ body[data-tab] .app{padding-bottom:76px}
 
 /* ---------- question screen on laptops: question left, marks + feedback right ---------- */
 .qside{display:none}
+.qafter{display:flex;align-items:flex-end;gap:16px;padding-top:16px;border-top:1px solid var(--line)}
+.qafter .rbox{flex:1;min-width:0}.qafter .rbox>div{justify-content:flex-start!important}
+.qafter>#next{width:auto;min-width:240px;margin-left:auto}
 @media (min-width:1100px){
   .app:has(> main.qpaper){max-width:1320px;display:grid;grid-template-columns:minmax(0,1fr) 420px;grid-template-rows:auto auto 1fr;column-gap:24px;align-items:start;padding:0 32px 32px}
   .app:has(> main.qpaper)>.topbar{grid-column:1/-1;padding-left:0;padding-right:0}
