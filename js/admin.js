@@ -2,6 +2,7 @@
 // Publishing saves the files to the GitHub repo in one commit (via /api/admin); Vercel then updates the site.
 
 import { fit, LEVEL_B } from './progress.js';
+import { decodeReport } from './report.js';
 const $ = (id) => document.getElementById(id);
 const app = $('app');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -51,7 +52,7 @@ function renderLogin(msg) {
 
 /* ---------- the library ---------- */
 // Admin sections, each with its own address (admin.html#families etc.), so Back and bookmarks work.
-const NAV = [['overview', 'Overview'], ['families', 'Families'], ['numbers', 'Numbers'], ['feedback', 'Feedback'], ['library', 'Library'], ['reports', 'Reports']];
+const NAV = [['overview', 'Overview'], ['families', 'Families'], ['updates', 'Weekly updates'], ['numbers', 'Numbers'], ['feedback', 'Feedback'], ['library', 'Library'], ['reports', 'Reports']];
 const route = () => { const h = (location.hash || '').slice(1); return h === 'pilot' ? 'overview' : NAV.some(([k]) => k === h) ? h : 'overview'; };
 function home() { const r = route(); if (r === 'library') return renderLibrary(); if (r === 'reports') return renderReports(); return renderPilot(null, r); }
 const setHash = (h) => { if (location.hash !== h) { try { history.pushState(null, '', h); } catch (e) {} } };
@@ -396,9 +397,9 @@ function pilotCSV(rows) {
 }
 let PILOT = null; // the pilot data, loaded once and reused across sections until Refresh
 async function renderPilot(note, tab = route()) {
-  if (!['overview', 'families', 'numbers', 'feedback'].includes(tab)) tab = 'overview';
+  if (!['overview', 'families', 'updates', 'numbers', 'feedback'].includes(tab)) tab = 'overview';
   setHash('#' + tab);
-  const TITLE = { overview: 'Pilot overview', families: 'Families', numbers: 'All the numbers', feedback: 'Feedback' }[tab];
+  const TITLE = { overview: 'Pilot overview', families: 'Families', updates: 'Weekly updates to parents', numbers: 'All the numbers', feedback: 'Feedback' }[tab];
   if (!PILOT || note === 'reload') {
     shell(tab, `<header><h1>${TITLE}</h1></header><div class="card" id="pl-load"><p class="muted" style="margin:0">Loading the pilot…</p></div>`);
     try { PILOT = await adminApi({ action: 'pilot' }); PILOT.at = Date.now(); } catch (e) { $('pl-load').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
@@ -420,7 +421,7 @@ async function renderPilot(note, tab = route()) {
   const rows = fams.map((f) => ({ f, a: mergeFamily(P.activity[f.code] || []) })).sort((x, y) => (y.a.last || 0) - (x.a.last || 0));
   const fb = P.feedback || [];
   const famName = (code) => (fams.find((f) => f.code === code) || {}).name || code;
-  navBadge = { feedback: fb.length || 0, families: fams.length || 0 };
+  navBadge = { feedback: fb.length || 0, families: fams.length || 0, updates: fams.filter((f) => f.phone && !(f.sent > Date.now() - 6 * 864e5)).length || 0 };
   const acts = `<div class="pl-acts"><button class="btn ghost small" id="reload">↻ Refresh</button><button class="btn ghost small" id="csv">Download all stats (CSV)</button><span class="hint">Updated ${new Date(P.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div>`;
   const head = `<header><h1>${TITLE}</h1></header>${note ? `<div class="ok">${note}</div>` : ''}${acts}`;
   let body = '';
@@ -430,7 +431,7 @@ async function renderPilot(note, tab = route()) {
   } else if (tab === 'families') {
     body = `<div class="pl-famtop"><button class="btn" id="addopen">＋ Add a family</button></div>
   <div class="card pl-add" id="addcard" ${fams.length ? 'hidden' : ''}><h2>Add a family</h2>
-    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
+    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Parent’s WhatsApp (optional)<input id="fphone" inputmode="tel" placeholder="e.g. 9123 4567"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
     <button class="btn" style="grid-column:1/-1" id="addgo">Make a family code</button></form><div id="newcode"></div></div>
   <div class="card"><h2>Families</h2>
     ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Streak</th><th>AI cost</th><th>Books</th><th>Problems</th><th>Plan</th></tr></thead>
@@ -439,6 +440,8 @@ async function renderPilot(note, tab = route()) {
       <tr class="pl-detail" id="fd${i}" hidden><td colspan="11"><button class="link pl-close" data-close="${i}">Close ✕</button><div class="fd-tools"><button class="btn ghost small danger" data-remove="${esc(r.f.code)}" data-name="${esc(r.f.name)}">Remove this family</button></div>${famDetail(r, fb.filter((x) => x.code === r.f.code))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">No families yet. Add one below.</p>'}
     <p class="hint" style="margin:0">Devices send a summary when the app opens, after each practice set and every 10 minutes while it’s open. Families idle for 4+ days are greyed.</p></div>
 `;
+  } else if (tab === 'updates') {
+    body = updatesHTML(rows);
   } else if (tab === 'numbers') {
     body = pilotOverview(rows, fams).split('\u0001')[1];
   } else {
@@ -446,6 +449,7 @@ async function renderPilot(note, tab = route()) {
     ${fb.length ? fb.map((x) => `<div class="pl-fb"><div><b>${esc(famName(x.code))}</b>${x.name ? ` · ${esc(x.name)}` : ''} <small>${ago(x.at)}</small></div><p>${esc(x.text)}</p></div>`).join('') : '<p class="muted" style="margin:0">No feedback yet. Families send it from Settings in the app.</p>'}</div>`;
   }
   shell(tab, head + body);
+  if (tab === 'updates') bindUpdates(rows);
   { const ao = $('addopen'); if (ao) ao.onclick = () => { const c = $('addcard'); c.hidden = !c.hidden; if (!c.hidden) $('fname').focus(); }; }
   $('reload').onclick = () => renderPilot('reload', tab);
   { const c = $('ccmfcopy'); if (c) c.onclick = () => { navigator.clipboard.writeText($('ccmftext').textContent); c.textContent = 'Copied'; }; }
@@ -468,7 +472,7 @@ async function renderPilot(note, tab = route()) {
   { const af = $('addf'); if (af) af.onsubmit = async (e) => {
     e.preventDefault(); const btn = $('addgo'); btn.disabled = true;
     try {
-      const r = await adminApi({ action: 'pilot_add', name: $('fname').value, note: $('fnote').value });
+      const r = await adminApi({ action: 'pilot_add', name: $('fname').value, note: $('fnote').value, phone: $('fphone') ? $('fphone').value : '' });
       const msg = `Hi! Thanks for trying PrepBuddy. Open ${location.origin} on your child’s phone or computer and enter this family code: ${r.family.code}\nAny feedback is welcome: there’s a box for it in Settings.`;
       $('newcode').innerHTML = `<div class="ok">Code for ${esc(r.family.name)}: <b style="font-size:18px;letter-spacing:.05em">${esc(r.family.code)}</b></div>
         <label>Message to send them<textarea id="invite" rows="3">${esc(msg)}</textarea></label><div class="acts"><button class="link" id="copyinv">Copy message</button><button class="link" id="refresh">Done: refresh the list</button></div>`;
@@ -479,6 +483,80 @@ async function renderPilot(note, tab = route()) {
     btn.disabled = false;
   }; }
 }
+/* ---------- weekly updates to parents ----------
+   One ready-made message per family (each child's week, their subject levels, one thing to do, and a permanent
+   link to the child's latest report), in the parent's language. "Open in WhatsApp" opens it addressed to the
+   parent; you press send. Until accounts, this is how parents hear from PrepBuddy without opening the child's device. */
+const SUBJ_ZH = { math: '數學', chi: '中文', eng: '英文', gs: '常識', phy: '物理', chem: '化學', bio: '生物', econ: '經濟', hist: '歷史', geog: '地理', csd: '公民', sci: '科學', hum: '人文', ict: 'ICT', bafs: 'BAFS' };
+let LINKS = null; // { 'CODE/device': token }
+function kidsOf(code) { return (PILOT.activity[code] || []).filter((sn) => sn && (sn.rep || sn.prog || sn.total)).sort((a, b) => (b.synced || 0) - (a.synced || 0)); }
+function weeklyMsg(f, lang) {
+  const zh = lang === 'zh', T = (en, c) => (zh ? c : en), kids = kidsOf(f.code);
+  const fam = String(f.name || '').split('(')[0].trim();
+  const blocks = kids.map((sn) => {
+    let r = null; try { r = sn.rep ? decodeReport(sn.rep) : null; } catch (e) {}
+    const who = (sn.name || (r && r.n) || '').trim() || T('Your child', '孩子');
+    const grade = sn.learner && sn.learner.grade ? ` (${sn.learner.grade})` : '';
+    const lines = [];
+    if (r) {
+      const min = (r.days || []).reduce((a, b) => a + b, 0);
+      lines.push(r.q ? T(`• Practised ${r.dp} of 7 days, ${min} min, ${r.q} questions${r.a != null ? `, ${r.a}% of marks` : ''}`, `• 7 日中練習了 ${r.dp} 日，共 ${min} 分鐘、${r.q} 題${r.a != null ? `，得分率 ${r.a}%` : ''}`)
+        : T('• No practice this week. 15 minutes at the same time each day helps most.', '• 本週未有練習。每天固定時間練習 15 分鐘最有效。'));
+    }
+    const subs = (sn.prog && sn.prog.s ? sn.prog.s : []).filter((x) => x.level != null).slice(0, 4);
+    const name = (k) => (zh ? SUBJ_ZH[k] : SUBJ_NAME[k]) || (k.startsWith('s:') ? k.slice(2) : T('a book', '課本'));
+    const up = subs.filter((x) => x.status === 'rising');
+    subs.forEach((x) => {
+      const lv = x.level.toFixed(1);
+      lines.push(x.status === 'rising' ? T(`• ${name(x.key)}: getting stronger, level ${x.start != null ? x.start.toFixed(1) + ' → ' : ''}${lv} ▲`, `• ${name(x.key)}：進步中，程度 ${x.start != null ? x.start.toFixed(1) + ' → ' : ''}${lv} ▲`)
+        : x.status === 'dipping' ? T(`• ${name(x.key)}: level ${lv}, slipping a little: worth some extra practice`, `• ${name(x.key)}：程度 ${lv}，略有退步，值得多加練習`)
+        : x.status === 'steady' ? T(`• ${name(x.key)}: holding steady at level ${lv}`, `• ${name(x.key)}：保持穩定，程度 ${lv}`)
+        : T(`• ${name(x.key)}: level ${lv} so far (trend after ~3 weeks)`, `• ${name(x.key)}：目前程度 ${lv}（約 3 星期後顯示走勢）`));
+    });
+    if (up.length) lines.push(T('  (Level = how hard the questions they get 2 in 3 right are, so it rises even when % stays the same.)', '  （程度＝孩子能答對約三分之二的題目難度，所以即使得分率不變，程度也會上升。）'));
+    if (r && r.q && r.next && (r.u === 'zh') === zh) lines.push(T(`• Next: ${r.next}`, `• 下一步：${r.next}`)); // written in the app's language
+    const t = LINKS && LINKS[`${f.code}/${sn.device}`];
+    if (t) lines.push(T(`Full report: ${location.origin}/r/${t}`, `完整報告：${location.origin}/r/${t}`));
+    return `*${who}${grade}*\n${lines.join('\n')}`;
+  });
+  if (!blocks.length) return T(`Hi ${fam}! Just checking in from PrepBuddy: we haven’t seen practice on the app yet. Anything we can help with to get started?`, `${fam}你好！PrepBuddy 想跟進一下：我們暫時未見孩子在 app 練習。開始使用時有甚麼需要幫忙嗎？`);
+  return T(`Hi ${fam}! Your PrepBuddy weekly update:\n\n${blocks.join('\n\n')}\n\nAny questions or feedback, just reply here. Thank you!`, `${fam}你好！以下是 PrepBuddy 每週更新：\n\n${blocks.join('\n\n')}\n\n有任何問題或意見，直接回覆便可。謝謝！`);
+}
+function updatesHTML(rows) {
+  const list = rows.filter((r) => r.f.name !== '(not on the list)');
+  return `<div class="card"><p class="hint" style="margin:0">Each family’s update is written for you from their latest sync. Check it, edit if you like, then <b>Open in WhatsApp</b> (it opens addressed to the parent; press send there). Report links are permanent per child and always show their latest report. Families not updated in 6+ days are marked.</p></div>
+  ${list.map((r) => { const f = r.f, lang = f.lang || ([...(r.a.langs || [])][0] === 'zh' ? 'zh' : 'en'), due = !(f.sent > Date.now() - 6 * 864e5);
+    return `<div class="card wu ${due ? 'due' : ''}" data-code="${esc(f.code)}"><div class="wu-head"><b>${esc(f.name)}</b><span class="wu-sent">${f.sent ? `Sent ${ago(f.sent)}` : 'Not sent yet'}</span></div>
+      <div class="wu-row"><label>WhatsApp <input class="wu-phone" inputmode="tel" value="${esc(f.phone || '')}" placeholder="e.g. 9123 4567"></label>
+        <span class="wu-lang"><button class="btn ghost small ${lang === 'en' ? 'on' : ''}" data-lang="en">English</button><button class="btn ghost small ${lang === 'zh' ? 'on' : ''}" data-lang="zh">中文</button></span></div>
+      <textarea class="wu-msg" rows="10">${esc(weeklyMsg(f, lang))}</textarea>
+      <div class="wu-acts"><a class="btn small wu-wa" target="_blank" rel="noopener">Open in WhatsApp</a><button class="btn ghost small wu-copy">Copy</button><button class="btn ghost small wu-mark">Mark as sent</button><span class="hint wu-note"></span></div></div>`; }).join('') || '<div class="card"><p class="muted" style="margin:0">No families yet.</p></div>'}`;
+}
+function bindUpdates(rows) {
+  const fams = rows.map((r) => r.f);
+  const waLink = (card) => { const ph = String(card.querySelector('.wu-phone').value).replace(/[^0-9]/g, ''), full = ph.length === 8 ? '852' + ph : ph; const a = card.querySelector('.wu-wa');
+    a.href = `https://wa.me/${full}?text=${encodeURIComponent(card.querySelector('.wu-msg').value)}`; a.classList.toggle('disabled', !full); a.title = full ? '' : 'Add the parent’s WhatsApp number first'; };
+  const save = async (code, patch, card, msg) => { try { await adminApi({ action: 'pilot_note', code, ...patch }); const f = fams.find((x) => x.code === code); if (f) Object.assign(f, patch.phone !== undefined ? { phone: patch.phone } : {}, patch.lang ? { lang: patch.lang } : {}, patch.sent ? { sent: Date.now() } : {}); if (msg) card.querySelector('.wu-note').textContent = msg; } catch (e) { card.querySelector('.wu-note').textContent = 'Couldn’t save: ' + e.message; } };
+  app.querySelectorAll('.wu').forEach((card) => {
+    const code = card.dataset.code, f = fams.find((x) => x.code === code);
+    waLink(card);
+    card.querySelector('.wu-msg').oninput = () => waLink(card);
+    card.querySelector('.wu-phone').oninput = () => waLink(card);
+    card.querySelector('.wu-phone').onchange = (e) => save(code, { phone: e.target.value }, card, 'Number saved.');
+    card.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { card.querySelectorAll('[data-lang]').forEach((x) => x.classList.toggle('on', x === b)); card.querySelector('.wu-msg').value = weeklyMsg(f, b.dataset.lang); waLink(card); save(code, { lang: b.dataset.lang }, card); }));
+    const sent = () => { save(code, { sent: 1 }, card, 'Marked as sent.'); card.classList.remove('due'); card.querySelector('.wu-sent').textContent = 'Sent just now'; };
+    card.querySelector('.wu-wa').addEventListener('click', (e) => { if (e.currentTarget.classList.contains('disabled')) { e.preventDefault(); card.querySelector('.wu-phone').focus(); return; } sent(); });
+    card.querySelector('.wu-mark').onclick = sent;
+    card.querySelector('.wu-copy').onclick = async () => { try { await navigator.clipboard.writeText(card.querySelector('.wu-msg').value); card.querySelector('.wu-note').textContent = 'Copied.'; } catch (e) {} };
+  });
+  // make (or fetch) the report links, then refresh the messages with them
+  if (!LINKS) {
+    const devices = []; rows.forEach((r) => kidsOf(r.f.code).forEach((sn) => { if (sn.device) devices.push({ code: r.f.code, device: sn.device }); }));
+    adminApi({ action: 'pilot_links', devices }).then((x) => { LINKS = x.links || {}; app.querySelectorAll('.wu').forEach((card) => { const f = fams.find((y) => y.code === card.dataset.code), on = card.querySelector('[data-lang].on'); card.querySelector('.wu-msg').value = weeklyMsg(f, on ? on.dataset.lang : 'en'); waLink(card); }); })
+      .catch((e) => { const c = app.querySelector('.adm-body .card'); if (c) c.insertAdjacentHTML('beforeend', `<p class="err" style="margin:8px 0 0">Couldn’t make report links: ${esc(e.message)}</p>`); });
+  }
+}
+
 // Getting stronger (js/progress.js): each child's level per subject (1-4: the difficulty they get about 2 in 3
 // marks on, first attempts only) and its trend, which allows for questions getting harder. One child per device snapshot.
 const SUBJ_NAME = { math: 'Maths', chi: 'Chinese', eng: 'English', gs: 'General Studies', phy: 'Physics', chem: 'Chemistry', bio: 'Biology', econ: 'Economics', hist: 'History', geog: 'Geography', csd: 'Citizenship', sci: 'Science', hum: 'Humanities', ict: 'ICT', bafs: 'BAFS' };

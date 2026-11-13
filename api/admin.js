@@ -57,6 +57,8 @@ async function commitWith({ change, files = [], deletePrefix = null, message }) 
 
 const safeId = (s) => /^[a-z0-9][a-z0-9-]{1,40}$/.test(String(s || ''));
 
+// WhatsApp number: digits only, with country code (Hong Kong 852 added to 8-digit local numbers).
+function phoneOf(v) { let d = String(v || '').replace(/[^0-9]/g, '').slice(0, 15); if (d.length === 8) d = '852' + d; return d || null; }
 module.exports = async (req, res) => {
   res.setHeader('content-type', 'application/json');
   try {
@@ -103,9 +105,24 @@ module.exports = async (req, res) => {
       const P = require('../lib/pilot');
       if (!P.pilotOn()) throw err(400, 'Set PILOT_REPO in Vercel first.');
       const name = String(body.name || '').trim().slice(0, 60); if (!name) throw err(400, 'Give the family a name.');
-      const fam = { code: P.makeCode(name), name, note: String(body.note || '').trim().slice(0, 300), created: Date.now() };
+      const fam = { code: P.makeCode(name), name, note: String(body.note || '').trim().slice(0, 300), created: Date.now(), ...(body.phone ? { phone: phoneOf(body.phone) } : {}) };
       await P.writeFile('families.json', (cur) => [...(cur || []), fam], `Pilot: add ${fam.code}`);
       out = { ok: true, family: fam };
+    } else if (body.action === 'pilot_links') {
+      // A permanent link per child (device) to their latest weekly report: /r/<token>. Made once, then reused.
+      const P = require('../lib/pilot');
+      const fams = (await P.readFile('families.json')).data || [];
+      const want = (Array.isArray(body.devices) ? body.devices : []).filter((d) => d && fams.some((f) => f.code === d.code)).slice(0, 60);
+      const links = {}; let changed = false;
+      for (const f of fams) for (const [dev, t] of Object.entries(f.links || {})) links[`${f.code}/${dev}`] = t;
+      for (const d of want) {
+        const key = `${d.code}/${P.safe(d.device)}`; if (links[key]) continue;
+        const t = require('crypto').randomBytes(9).toString('base64').replace(/[^A-Za-z0-9]/g, '').slice(0, 12).padEnd(12, 'x');
+        await P.writeFile(`links/${t}.json`, { code: d.code, device: P.safe(d.device), at: Date.now() }, `Report link for ${d.code}`);
+        links[key] = t; changed = true;
+      }
+      if (changed) await P.writeFile('families.json', (cur) => (cur || []).map((f) => { const own = Object.fromEntries(Object.entries(links).filter(([k]) => k.startsWith(f.code + '/')).map(([k, t]) => [k.slice(f.code.length + 1), t])); return Object.keys(own).length ? { ...f, links: own } : f; }), 'Pilot: report links');
+      out = { ok: true, links };
     } else if (body.action === 'pilot_remove') {
       const P = require('../lib/pilot');
       if (!P.validCode(body.code) && !/^[A-Z]{1,6}\d{2}-[A-Z0-9]{6}$/.test(String(body.code || ''))) throw err(400, 'Bad family code.');
@@ -113,7 +130,9 @@ module.exports = async (req, res) => {
       out = { ok: true };
     } else if (body.action === 'pilot_note') {
       const P = require('../lib/pilot');
-      await P.writeFile('families.json', (cur) => (cur || []).map((f) => (f.code === body.code ? { ...f, ...(body.note !== undefined ? { note: String(body.note || '').slice(0, 300) } : {}), ...(body.off !== undefined ? { off: !!body.off } : {}), ...(body.plan !== undefined ? { plan: ['free', 'plus', 'pro'].includes(body.plan) ? body.plan : null } : {}) } : f)), `Pilot: update ${body.code}`);
+      await P.writeFile('families.json', (cur) => (cur || []).map((f) => (f.code === body.code ? { ...f, ...(body.note !== undefined ? { note: String(body.note || '').slice(0, 300) } : {}), ...(body.off !== undefined ? { off: !!body.off } : {}), ...(body.plan !== undefined ? { plan: ['free', 'plus', 'pro'].includes(body.plan) ? body.plan : null } : {}),
+        ...(body.phone !== undefined ? { phone: phoneOf(body.phone) } : {}), ...(body.lang !== undefined ? { lang: body.lang === 'zh' ? 'zh' : 'en' } : {}),
+        ...(body.sent !== undefined ? { sent: Date.now() } : {}) } : f)), `Pilot: update ${body.code}`);
       out = { ok: true };
     } else if (body.action === 'remove') {
       if (!safeId(body.id)) throw err(400, 'Bad book id.');

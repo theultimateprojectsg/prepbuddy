@@ -2538,7 +2538,7 @@ function consentScreen() {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
     const items = [
       ['📱', C('Stays on this device', '保存在這部裝置'), C('Your child’s answers, textbooks, essays, recordings and progress are saved in this browser.', '子女的答案、課本、文章、錄音和進度都保存在這個瀏覽器內。')],
-      ['📊', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('First name (if entered), questions answered and how many were right, minutes, features used, book titles, school marks you choose to enter, and app errors. Only the PrepBuddy team can see it.', '名字（如有輸入）、答題數目和答對數目、練習分鐘、使用過的功能、課本名稱、你選擇填寫的學校成績，以及程式錯誤。只有 PrepBuddy 團隊可以看到。')],
+      ['📊', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('First name (if entered), questions answered and how many were right, minutes, features used, book titles, school marks you choose to enter, and app errors. Only the PrepBuddy team can see it. If you give us your WhatsApp number, we use it to send you a short weekly progress update with a link to your child’s report.', '名字（如有輸入）、答題數目和答對數目、練習分鐘、使用過的功能、課本名稱、你選擇填寫的學校成績，以及程式錯誤。只有 PrepBuddy 團隊可以看到。如你提供 WhatsApp 號碼，我們會每週傳送簡短的進度更新及孩子報告的連結。')],
       ['🤖', C('The AI reads what it needs', 'AI 只會讀取需要的內容'), C('To write questions and mark answers, textbook text and your child’s answers, photos and essays are sent to our AI provider, Anthropic. It isn’t used to train their AI.', '為了出題和批改，課文以及子女的答案、相片和文章會傳送給我們的 AI 服務供應商 Anthropic，不會用來訓練他們的 AI。')],
       ['🚫', C('What we never ask for', '我們不會收集'), C('Full name, school, address, ID or payment details. Please remind your child not to type personal details into answers or chats.', '全名、學校、地址、身份證或付款資料。請提醒子女不要在答案或對話中輸入個人資料。')],
       ['✋', C('You’re in control', '由你決定'), C('Ask to see or delete your family’s data, or leave the pilot, any time. Pilot data is deleted within 3 months after the pilot ends.', '你可隨時要求查閱或刪除你家庭的資料，或退出試用。試用結束後 3 個月內會刪除試用資料。')],
@@ -2925,6 +2925,8 @@ async function pilotSnap() {
       return { v: 2, s: P.subjects.map((x) => ({ key: x.key, level: x.level, se: x.se, status: x.status, change: x.change, cse: x.cse, n: x.n, weeks: x.weeks, start: x.start, since: x.since, line: x.line.map((p) => p[1]),
         books: x.books.map((k) => { const b = books.find((y) => y.id === k.id); return { t: b ? String(b.title).slice(0, 40) : '', level: k.level, status: k.status, change: k.change, n: k.n }; }) })),
         fixed: P.fixed, kept: P.kept, cal: PG.calibData(st) }; } catch (e) { return null; } })(),
+    // The weekly report as of this sync, for the parent's report link (admin → Weekly updates; opened via /r/<token>).
+    rep: await (async () => { try { const rep = await currentReport(); if (locked('report')) { Object.assign(rep, { ch: [], ms: [], tr: [], ts: [], ex: null, bs: 1 }); delete rep.sk; } return encodeReport(rep); } catch (e) { return null; } })(),
     stests: schoolTests().filter((x) => typeof x.score === 'number').slice(-20).map((x) => ({ d: new Date(testDay(x)).toISOString().slice(0, 10), score: x.score })),
     inst: isInstalled(), keep: persisted, ios: isIOS,
     ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',

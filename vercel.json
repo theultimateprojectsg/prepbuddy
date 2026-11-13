@@ -6,6 +6,10 @@
   },
   "rewrites": [
     {
+      "source": "/r/:t",
+      "destination": "/api/study?fn=pilot&r=:t"
+    },
+    {
       "source": "/api/homework",
       "destination": "/api/study?fn=homework"
     },

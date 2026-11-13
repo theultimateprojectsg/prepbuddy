@@ -10,7 +10,7 @@ module.exports = async (req, res) => {
   res.setHeader('content-type', 'application/json');
   try {
     if (req.method !== 'POST') { res.statusCode = 405; return res.end(JSON.stringify({ error: 'Use POST.' })); }
-    checkAccess(req); await require('../lib/spend').gate();
+    checkAccess(req);
     let body = req.body;
     if (!body || typeof body !== 'object') { const chunks = []; for await (const c of req) chunks.push(c); body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); }
     if (!REASONS.includes(body.reason)) { res.statusCode = 400; return res.end(JSON.stringify({ error: 'Pick what is wrong.' })); }
