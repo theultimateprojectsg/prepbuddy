@@ -1,7 +1,8 @@
 // PrepBuddy app: books, chapters, on-demand questions, practice sessions.
 import * as store from './store.js';
 import { DEMO_ID, installDemo, removeDemo } from './demo.js';
-import { buildReport, encodeReport, headline, weekTone, minutesOf, skillsHTML, REPORT_CSS, reportHTML } from './report.js';
+import { buildReport, encodeReport, headline, weekTone, minutesOf, skillsHTML, REPORT_CSS, reportHTML, strongerHTML } from './report.js';
+import * as PG from './progress.js';
 import { initLang, setLang, watch, LANG } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
 import { logoSVG, buddySVG, buddyFace } from './buddy.js';
@@ -302,7 +303,9 @@ function renderStem(stem, cls = 'stem') {
 }
 
 /* ---------- books ---------- */
-async function getBooks() { return store.get('books', []); }
+// Each book's subject (grouped: two maths books are one subject), kept in memory for the progress tracker.
+const BOOK_SUBJ = {};
+async function getBooks() { const bs = await store.get('books', []); bs.forEach((b) => { BOOK_SUBJ[b.id] = PG.subjectKey(b.subject, b.id); }); return bs; }
 // Questions that mention a figure/table/page the student can't see, or that the student reported, are never used.
 const REF = /\b(?:fig(?:ure)?s?\.?|tables?|diagrams?|photos?|images?|charts?|graphs?|pages?|pp?\.|examples?|activit(?:y|ies)|exercises?)\s*\d+[a-z]?(?:[.\-–]\d+)*\b|(?:圖|表|頁|例題|練習)\s*[0-9０-９一二三四五六七八九十]+(?:\s*[.\-．]\s*[0-9]+)*|第\s*[0-9０-９]+\s*頁/i;
 function missingRef(q) {
@@ -2640,77 +2643,28 @@ function profileScreen({ first } = {}) {
     window.scrollTo(0, 0);
   });
 }
-/* ---------- progress that allows for harder questions ----------
-   Questions get harder as a child does well, so a flat score can hide real progress. Each week we keep the
-   answers by difficulty level (1-4) and estimate a "working level": the difficulty at which the child gets
-   about 2 in 3 marks. 60% on level 3 questions is a higher working level than 70% on level 2.
-   Method: a simple one-parameter (Rasch-style) model, levels 1.5 logits apart, and a mild
-   prior so a few answers can't swing it. Kept as weekly totals (local.prog), so it survives the answer log
-   being trimmed; built once from the log for families who already have answers. */
-const weekKey = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+/* ---------- getting stronger: progress that allows for harder questions ----------
+   The model is in progress.js. Here: keeping its state (local.pg), feeding it each answer, and the summary that
+   the Progress tab, the Parent dashboard, the weekly report and the pilot sync show. */
 function prevAnswer(qid) { const L = local.log || []; for (let i = L.length - 1; i >= 0; i--) if (L[i].q === qid) return L[i]; return null; }
-function progAdd(e, prev) {
-  if (!local.prog) progBuild();
-  const lv = Math.max(1, Math.min(4, Math.round(Number(e.l) || 2))), wk = weekKey(e.t), bid = String(e.q).split(':')[0];
-  const W = local.prog.w[wk] || (local.prog.w[wk] = { n: 0, g: 0, m: 0, L: {}, fx: [0, 0], rt: [0, 0], b: {} });
-  const put = (o) => { o.n = (o.n || 0) + 1; o.g = (o.g || 0) + e.g; o.m = (o.m || 0) + e.m; const x = o.L || (o.L = {}); const c = x[lv] || (x[lv] = [0, 0]); c[0] += e.g; c[1] += e.m; };
-  put(W); put(W.b[bid] || (W.b[bid] = {}));
-  if (prev) {
-    if (prev.g < prev.m) { W.fx[1]++; if (e.g >= e.m) W.fx[0]++; }               // a mistake tried again: fixed?
-    if (e.t - prev.t >= 7 * DAY) { W.rt[0] += e.g; W.rt[1] += e.m; }            // came back a week or more later: remembered?
-  }
-  const ks = Object.keys(local.prog.w).sort(); if (ks.length > 60) ks.slice(0, ks.length - 60).forEach((k) => delete local.prog.w[k]);
+function pgState() {
+  // (re)build from the answer log when new, or when a book's subject became known after it was first counted
+  const stale = local.pg && local.pg.v === 2 && Object.keys(local.pg.b).some((bid) => !local.pg.bs[bid] && BOOK_SUBJ[bid] && !BOOK_SUBJ[bid].startsWith('b:'));
+  if (!local.pg || local.pg.v !== 2 || stale) { local.pg = PG.build(local.log, (bid) => BOOK_SUBJ[bid]); delete local.prog; }
+  return local.pg;
 }
-function progBuild() {
-  local.prog = { v: 1, w: {} };
-  const last = {};
-  for (const e of local.log || []) { if (e.q && e.m) progAdd(e, last[e.q] || null); last[e.q] = e; }
-}
-// Working level from answers by level ({1:[got, max], ...}); null if too few answers.
-function workLevel(L) {
-  const S_ = 1.5; // logits between neighbouring levels
-  const rows = Object.entries(L || {}).map(([l, [g, m]]) => [(Number(l) - 2.5) * S_, g, m]).filter((r) => r[2] > 0);
-  if (rows.reduce((a, r) => a + r[2], 0) < 8) return null;
-  let th = 0;
-  for (let i = 0; i < 30; i++) {
-    let gr = -th / 4, he = -1 / 4; // mild prior: sd 2 logits around the middle
-    for (const [b, g, m] of rows) { const p = 1 / (1 + Math.exp(-(th - b))); gr += g - m * p; he -= m * p * (1 - p); }
-    const step = gr / he; th -= step; th = Math.max(-5, Math.min(5, th)); if (Math.abs(step) < 1e-4) break;
-  }
-  return Math.max(0.5, Math.min(4.5, (th - Math.log(2)) / S_ + 2.5)); // difficulty where P(right) = 2/3, on the 1-4 level scale
-}
-const mergeL = (list) => { const out = {}; list.forEach((L) => Object.entries(L || {}).forEach(([l, [g, m]]) => { const c = out[l] || (out[l] = [0, 0]); c[0] += g; c[1] += m; })); return out; };
-// Start vs now: the first two active weeks against the latest two, overall and per book.
-function progSummary() {
-  if (!local.prog) progBuild();
-  const ks = Object.keys(local.prog.w).sort(), W = local.prog.w;
-  const side = (keys, pick) => { const xs = keys.map((k) => pick(W[k])).filter(Boolean); const L = mergeL(xs.map((x) => x.L)); const g = xs.reduce((a, x) => a + x.g, 0), m = xs.reduce((a, x) => a + x.m, 0), n = xs.reduce((a, x) => a + x.n, 0);
-    const lv = Object.entries(L).reduce((a, [l, [, mm]]) => a + Number(l) * mm, 0) / (Object.values(L).reduce((a, [, mm]) => a + mm, 0) || 1);
-    return { n, acc: m ? g / m : null, avgLv: n ? lv : null, wl: workLevel(L) }; };
-  const span = (pick) => { const act = ks.filter((k) => pick(W[k]) && pick(W[k]).n); if (act.length < 3) return { weeks: act.length, start: act.length ? side(act, pick) : null, now: null };
-    return { weeks: act.length, start: side(act.slice(0, 2), pick), now: side(act.slice(-2), pick) }; };
-  const books = {}; ks.forEach((k) => Object.keys(W[k].b).forEach((b) => { books[b] = 1; }));
-  const fx = ks.reduce((a, k) => [a[0] + W[k].fx[0], a[1] + W[k].fx[1]], [0, 0]), rt = ks.reduce((a, k) => [a[0] + W[k].rt[0], a[1] + W[k].rt[1]], [0, 0]);
-  return { all: span((w) => w), books: Object.fromEntries(Object.keys(books).map((b) => [b, span((w) => w.b[b])])), fixed: fx, kept: rt,
-    weeks: ks.map((k) => ({ wk: k, n: W[k].n, acc: W[k].m ? Math.round(100 * W[k].g / W[k].m) : null, wl: workLevel(W[k].L) })) };
-}
-// Parent dashboard card: working level start → now, overall and by subject.
-async function progCard() {
-  const C = (en, zh) => (LANG === 'zh' ? zh : en), P = progSummary(), books = await getBooks();
-  const f1 = (x) => (x == null ? '–' : x.toFixed(1)), pc = (x) => (x == null ? '–' : `${Math.round(100 * x)}%`);
-  const row = (label, sp) => { if (!sp.now || sp.start.wl == null || sp.now.wl == null) return '';
-    const d = sp.now.wl - sp.start.wl;
-    return `<div class="pr-row"><span>${esc(label)}</span><div class="pr-bar"><i class="a" style="left:${(sp.start.wl - 0.5) / 4 * 100}%"></i><i class="b" style="left:${(sp.now.wl - 0.5) / 4 * 100}%"></i></div><b>${f1(sp.start.wl)} → ${f1(sp.now.wl)}</b><em class="${d >= 0.2 ? 'up' : d <= -0.2 ? 'down' : ''}">${d >= 0.2 ? '▲' : d <= -0.2 ? '▼' : '='}</em></div>`; };
-  const bookRows = Object.entries(P.books).map(([id, sp]) => { const b = books.find((x) => x.id === id); return b ? row(b.subject ? subjectName(b.subject, LANG) : b.title, sp) : ''; }).filter(Boolean);
-  const a = P.all;
-  const body = a.now && a.start.wl != null && a.now.wl != null
-    ? `<p style="font-size:14px;margin:0 0 6px">${C(`Questions are now level ${f1(a.now.avgLv)} on average (was ${f1(a.start.avgLv)}), with ${pc(a.now.acc)} of marks (was ${pc(a.start.acc)}).`, `題目平均難度現為 ${f1(a.now.avgLv)}（之前 ${f1(a.start.avgLv)}），得分率 ${pc(a.now.acc)}（之前 ${pc(a.start.acc)}）。`)}</p>
-      ${row(C('Overall', '整體'), a)}${bookRows.join('')}`
-    : `<p style="font-size:14px;margin:0">${C(`Shows after about 3 weeks of practice (${a.weeks} so far).`, `練習約 3 星期後會顯示（目前 ${a.weeks} 星期）。`)}</p>`;
-  const extra = [P.fixed[1] >= 5 ? C(`Mistakes fixed on a retry: ${pc(P.fixed[0] / P.fixed[1])}`, `重做時改正錯題：${pc(P.fixed[0] / P.fixed[1])}`) : '', P.kept[1] >= 5 ? C(`Remembered a week or more later: ${pc(P.kept[0] / P.kept[1])}`, `一星期後仍記得：${pc(P.kept[0] / P.kept[1])}`) : ''].filter(Boolean);
-  return `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('bars', 18)} ${C('Getting stronger?', '有進步嗎？')}</h2><span>${C('first 2 weeks → last 2', '首兩星期 → 最近兩星期')}</span></div>
-    ${body}${extra.length ? `<p class="hint" style="margin:8px 0 0;text-align:left">${extra.join(' · ')}</p>` : ''}
-    <p class="hint" style="margin:8px 0 0;text-align:left">${C('Questions get harder as your child improves, so the score alone can stay flat. Working level (1–4) is the difficulty they get about 2 in 3 right: if it rises, they’re progressing, even at 60%.', '孩子進步時題目會愈來愈難，所以單看分數未必會上升。「實力程度」（1–4）是孩子大約答對三分之二的難度：只要它上升，即使得分約六成，也代表有進步。')}</p></section>`;
+// The compact summary carried by the weekly report (r.gs) and shown in the app:
+// s: [subject, level, status, change, since, weekly levels, books [[title, level, status, change]], uncertainty, answers]
+async function gsData() {
+  const books = await getBooks(), P = PG.summary(pgState());
+  const label = (key) => { if (key.startsWith('b:')) { const b = books.find((x) => x.id === key.slice(2)); return b ? b.title : null; }
+    const b = books.find((x) => BOOK_SUBJ[x.id] === key); return b ? (b.subject ? subj(b.subject) : b.title) : null; };
+  const s = P.subjects.map((x) => {
+    const lab = label(x.key); if (!lab || x.level == null) return null;
+    const bks = x.books.length > 1 ? x.books.map((k) => { const b = books.find((y) => y.id === k.id); return b && k.level != null ? [b.title.slice(0, 40), k.level, k.status, k.change] : null; }).filter(Boolean) : [];
+    return [lab.slice(0, 30), x.level, x.status, x.change, x.since, x.line.map((p) => p[1]), bks, x.cse, x.n];
+  }).filter(Boolean).slice(0, 8);
+  return { s, fx: P.fixed, kt: P.kept };
 }
 
 /* ---------- school results: is PrepBuddy helping? ----------
@@ -2966,10 +2920,11 @@ async function pilotSnap() {
     v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache, learner: profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], kid: KIDS.list.length > 1 ? KIDS.list.indexOf(KID) + 1 : 0 } : null,
     // School marks entered by the parent (subject: percent), and school test results the child noted after each test.
     marks: (local.marks || []).slice(-12).map((m) => ({ kind: m.kind, exam: m.exam, when: m.when, s: m.s, other: m.other ? String(m.other).slice(0, 20) : '' })),
-    prog: (() => { try { const P = progSummary(); const r = (x) => (x == null ? null : Math.round(x * 100) / 100);
-      const sp = (z) => (z ? { n: z.n, acc: r(z.acc), lv: r(z.avgLv), wl: r(z.wl) } : null);
-      return { weeks: P.weeks.slice(-26).map((w) => ({ ...w, wl: r(w.wl) })), start: sp(P.all.start), now: sp(P.all.now), fixed: P.fixed, kept: P.kept,
-        books: Object.entries(P.books).map(([id, z]) => { const b = books.find((x) => x.id === id); return { s: b ? (b.subject || b.title || '').slice(0, 30) : '', weeks: z.weeks, start: sp(z.start), now: sp(z.now) }; }).filter((x) => x.now) }; } catch (e) { return null; } })(),
+    // Getting stronger, per subject (see progress.js), plus first-attempt totals by level for the admin's calibration check.
+    prog: (() => { try { const st = pgState(), P = PG.summary(st);
+      return { v: 2, s: P.subjects.map((x) => ({ key: x.key, level: x.level, se: x.se, status: x.status, change: x.change, cse: x.cse, n: x.n, weeks: x.weeks, start: x.start, since: x.since, line: x.line.map((p) => p[1]),
+        books: x.books.map((k) => { const b = books.find((y) => y.id === k.id); return { t: b ? String(b.title).slice(0, 40) : '', level: k.level, status: k.status, change: k.change, n: k.n }; }) })),
+        fixed: P.fixed, kept: P.kept, cal: PG.calibData(st) }; } catch (e) { return null; } })(),
     stests: schoolTests().filter((x) => typeof x.score === 'number').slice(-20).map((x) => ({ d: new Date(testDay(x)).toISOString().slice(0, 10), score: x.score })),
     inst: isInstalled(), keep: persisted, ios: isIOS,
     ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',
@@ -3734,12 +3689,14 @@ async function renderBook(bookId) {
         <label class="lc-pick"><span>Or choose a chapter</span><select id="learnpick"><option value="">Choose…</option>${book.units.map((u) => `<option value="${esc(u.id)}">${lkey(u) ? '✓ ' : ''}${esc(cleanTitle(u.title))}</option>`).join('')}</select></label>`}
     </section>`;
   const stat = (v, label) => `<span><b>${v}</b> ${label}</span>`;
+  const bkT = (() => { try { return PG.trackSummary(pgState().b[book.id]); } catch (e) { return null; } })();
+  const bkLevel = bkT && bkT.level != null && bkT.n >= 15 ? `<span class="bk-lv ${bkT.status}" title="${LANG === 'zh' ? '程度 1–4：大約答對三分之二的題目難度' : 'Level 1–4: the difficulty you get about 2 in 3 right'}">${LANG === 'zh' ? '程度' : 'Level'} <b>${bkT.level.toFixed(1)}</b>${bkT.status === 'rising' ? ' ▲' : bkT.status === 'dipping' ? ' ▼' : ''}</span>` : '';
   const head = `<section class="bk-head">
       <div class="bk-cover" style="background:${coverColour(book)}" aria-hidden="true">${subjectIcon(book.subject, 30, '#FFFFFF', book.title)}</div>
       <div class="bk-info">
         <h1 data-raw>${esc(book.title)}</h1>
         <p data-raw>${esc([subj(book.subject), book.level, book.library ? '' : (LANG === 'zh' ? '自行上載' : 'Uploaded by you')].filter(Boolean).join(' · ') || ' ')}</p>
-        <div class="bk-stats">${stat(book.units.length, book.units.length === 1 ? 'chapter' : 'chapters')}${stat(qReady, qReady === 1 ? 'question ready' : 'questions ready')}${stat(answered, 'answered')}</div>
+        <div class="bk-stats">${stat(book.units.length, book.units.length === 1 ? 'chapter' : 'chapters')}${stat(qReady, qReady === 1 ? 'question ready' : 'questions ready')}${stat(answered, 'answered')}${bkLevel}</div>
       </div>
     </section>`;
   $app.innerHTML = `
@@ -4014,7 +3971,8 @@ async function currentReport() {
   const weekAgo = Date.now() - 7 * DAY, monthAgo = Date.now() - 30 * DAY;
   const fx = Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > weekAgo).length;
   const ts = (local.tests || []).filter((t) => t.kind && t.t > monthAgo).slice(-6).reverse().map((t) => [t.kind, String(t.title || '').slice(0, 60), t.t, t.m ? Math.round(100 * t.g / t.m) : 0, t.min || 0]);
-  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms, mk: mistakeCount(), fx,
+  const gs = await gsData().catch(() => null);
+  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms, mk: mistakeCount(), fx, gs,
     goal: local.goal || null, exam: E && E.left !== null ? { left: E.left, date: E.date } : null, ts,
     sr: starsOn() ? (() => { const st = starState(), wk = Date.now() - 7 * DAY;
       return { w: st.log.filter((x) => x.t > wk).reduce((a, x) => a + x.n, 0), bal: st.bal,
@@ -4171,6 +4129,7 @@ function trendSVG(weeks) {
 }
 
 async function renderProgress() {
+  const gsHTML = strongerHTML(await gsData().catch(() => null), LANG === 'zh', 'pgcard', true);
   const D = await progressData(), r = D.r;
   const zh = LANG === 'zh';
   const mins = r.days.reduce((a, m) => a + m, 0);
@@ -4226,6 +4185,7 @@ async function renderProgress() {
           <div class="pg-chs">${D.chapters.slice(0, 8).map((c) => `<div class="pg-ch"><div class="pg-ch-top"><span>${esc(chName(c))}</span><b class="${tone(c.a)}">${c.a}%</b></div><div class="pg-bar ${tone(c.a)}"><i style="width:${c.a}%"></i></div><small>${chLabel(c.a)} · ${PT(`${c.n} answered`, `${c.n} 題`)}${c.was === null ? '' : c.a === c.was ? ` · ${PT('same as last week', '與上週相同')}` : ` · ${c.a > c.was ? '↑' : '↓'} ${PT(`from ${c.was}%`, `上週 ${c.was}%`)}`}</small></div>`).join('')}</div></section>` : ''}
       </div>
       <div class="pg-c">
+        ${gsHTML}
         ${D.subjects.length ? `<section class="pgcard"><h2>${pIcon('ring', 18)} ${PT('How ready you are', '準備程度')}</h2>
           <div class="pg-rings">${D.subjects.map((x) => {
             const started = x.pct > 0;
@@ -5013,7 +4973,7 @@ async function renderParent() {
   <main class="pad stack g14 parentpage" data-view="parent" data-raw style="flex:1">
     <div class="pd-top"><span class="muted" style="font-size:13.5px">${PD('Updates as your child practises', '孩子練習時會即時更新')}</span>
       <div class="pd-acts"><button class="btn-sm" id="pdReport">${pIcon('send', 16)} ${PD('Send as weekly report', '傳送每週報告')}</button><button class="btn-sm quiet" id="pdLock">🔒 ${PD('Lock', '鎖上')}</button></div></div>
-    <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: (await progCard()) + marksCard() + feedCard })}</div>
+    <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: marksCard() + feedCard })}</div>
     <p class="hint" style="margin:0;text-align:center">${PD('Same as the weekly report, kept up to date. With PrepBuddy accounts (coming soon) it will open on your own phone.', '與每週報告相同，但會即時更新。推出 PrepBuddy 帳戶後，可在你自己的手機查看。')}</p>
   </main>`;
   document.getElementById('pdReport').onclick = () => reportDialog();
@@ -6499,13 +6459,15 @@ function essayRevealed(q, m, ans, stem) {
 }
 
 function record(q, got) {
-  progAdd({ t: Date.now(), q: q.id, g: got, m: marksOf(q), l: q.level }, prevAnswer(q.id));
+  // Getting stronger (progress.js): first attempts only, allowing for guessing and for help asked from Buddy first.
+  const k_ = S && S.qs ? S.qs.indexOf(q) : -1, helped = !!(k_ >= 0 && S.chat && S.chat[k_] && S.chat[k_].msgs.length), ty = choiceType(q) ? 'c' : 'w';
+  try { PG.update(pgState(), { t: Date.now(), q: q.id, g: got, m: marksOf(q), l: q.level, ty, h: helped }, prevAnswer(q.id) || (local.stats[q.id] ? { t: Date.now(), g: 1, m: 1 } : null), BOOK_SUBJ[String(q.id).split(':')[0]]); } catch (e) {}
   const s = local.stats[q.id] || { seen: 0, got: 0, total: 0, last: 0 };
   s.seen++; s.got += got; s.total += marksOf(q); s.last = got / marksOf(q);
   schedule(s, got >= marksOf(q));
   local.stats[q.id] = s;
   // Activity log for progress reports: when, which question/chapter, marks, and how it was practised.
-  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '' });
+  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '', ty, ...(helped ? { h: 1 } : {}) });
   // Mistake book: every question not fully right goes in; getting it fully right later marks it mastered.
   const mk = local.mistakes[q.id];
   if (got < marksOf(q)) {

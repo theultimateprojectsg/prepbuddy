@@ -1,6 +1,7 @@
 // PrepBuddy admin: add textbooks to the shared library, edit their details, or remove them.
 // Publishing saves the files to the GitHub repo in one commit (via /api/admin); Vercel then updates the site.
 
+import { fit, LEVEL_B } from './progress.js';
 const $ = (id) => document.getElementById(id);
 const app = $('app');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -478,27 +479,81 @@ async function renderPilot(note, tab = route()) {
     btn.disabled = false;
   }; }
 }
-// In-app progress that allows for harder questions (js/app.js progSummary): working level = the difficulty (1-4) a child
-// gets about 2 in 3 marks on. First 2 active weeks vs the latest 2, per child (one child per device snapshot).
-function progCard(rows, card, kv) {
+// Getting stronger (js/progress.js): each child's level per subject (1-4: the difficulty they get about 2 in 3
+// marks on, first attempts only) and its trend, which allows for questions getting harder. One child per device snapshot.
+const SUBJ_NAME = { math: 'Maths', chi: 'Chinese', eng: 'English', gs: 'General Studies', phy: 'Physics', chem: 'Chemistry', bio: 'Biology', econ: 'Economics', hist: 'History', geog: 'Geography', csd: 'Citizenship', sci: 'Science', hum: 'Humanities', ict: 'ICT', bafs: 'BAFS' };
+const subjLabel = (k) => SUBJ_NAME[k] || (k.startsWith('s:') ? k.slice(2) : k.startsWith('b:') ? 'Book' : k);
+function progKids(rows) {
   const kids = [];
-  for (const r of rows) for (const sn of (PILOT.activity[r.f.code] || [])) if (sn.prog) kids.push({ fam: r.f.name, grade: sn.learner && sn.learner.grade, p: sn.prog });
-  const pairs = kids.filter((k) => k.p.start && k.p.now && k.p.start.wl != null && k.p.now.wl != null).map((k) => ({ ...k, d: k.p.now.wl - k.p.start.wl }));
-  const up = pairs.filter((k) => k.d >= 0.2).length, down = pairs.filter((k) => k.d <= -0.2).length;
-  const avg = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null), f1 = (x) => (x == null ? '–' : x.toFixed(1)), pc = (x) => (x == null ? '–' : `${Math.round(100 * x)}%`), sg = (x) => (x == null ? '–' : (x > 0 ? '+' : '') + x.toFixed(2));
-  const fx = kids.reduce((a, k) => [a[0] + (k.p.fixed || [0, 0])[0], a[1] + (k.p.fixed || [0, 0])[1]], [0, 0]), kp = kids.reduce((a, k) => [a[0] + (k.p.kept || [0, 0])[0], a[1] + (k.p.kept || [0, 0])[1]], [0, 0]);
-  const flat = pairs.filter((k) => k.d >= 0.2 && k.p.now.acc != null && k.p.start.acc != null && k.p.now.acc <= k.p.start.acc + 0.03).length;
-  return card('In-app progress (allows for harder questions)', kv([
-    ['Children with 3+ weeks of practice', `${pairs.length} of ${kids.length}`],
-    ['Working level, average change', sg(avg(pairs.map((k) => k.d)))],
-    ['Up / about the same / down', pairs.length ? `${up} / ${pairs.length - up - down} / ${down}` : '–'],
-    ['Up even though their % stayed flat or fell', pairs.length ? `${flat} of ${up}` : '–'],
-    ['Mistakes fixed on a retry', fx[1] ? `${pc(fx[0] / fx[1])} <small>(${fx[1]})</small>` : '–'],
-    ['Remembered a week or more later', kp[1] ? `${pc(kp[0] / kp[1])} <small>(${Math.round(kp[1])} marks)</small>` : '–']])
-    + (pairs.length ? `<h3 class="pl-h3">By child: working level, question level, % of marks (first 2 weeks → last 2)</h3>` + kv(pairs.sort((a, b) => b.d - a.d).map((k) => [`${esc(k.fam)}${k.grade ? ` · ${esc(k.grade)}` : ''}`,
-      `${f1(k.p.start.wl)} → ${f1(k.p.now.wl)} <small>Lv ${f1(k.p.start.lv)}→${f1(k.p.now.lv)} · ${pc(k.p.start.acc)}→${pc(k.p.now.acc)}</small>`])) : ''),
-    'Questions get harder as a child does well, so % right can stay flat while they improve. Working level (1–4) = the difficulty at which the child gets about 2 in 3 marks, estimated from all their answers by level (a simple Rasch-style model; level spacing is an assumption until calibrated on pilot data). “Up” = +0.2 or more.');
+  for (const r of rows) for (const sn of (PILOT.activity[r.f.code] || [])) if (sn.prog && sn.prog.v === 2) kids.push({ fam: r.f.name, grade: sn.learner && sn.learner.grade, p: sn.prog, sn });
+  return kids;
 }
+// % of marks in a child's first 14 active days vs their last 14 (from the daily totals), to show "level up while % flat".
+function pctTrend(sn) {
+  const ds = (sn.days || []).filter((d) => d.m > 0); if (ds.length < 6) return null;
+  const a = ds.slice(0, Math.min(5, Math.floor(ds.length / 2))), b = ds.slice(-Math.min(5, Math.floor(ds.length / 2)));
+  const pc = (xs) => xs.reduce((s, d) => s + d.g, 0) / Math.max(1, xs.reduce((s, d) => s + d.m, 0));
+  return [pc(a), pc(b)];
+}
+// Pooled check of the level difficulties: fit every child-subject's ability and the four level difficulties
+// together (joint maximum likelihood, level 1 fixed), from first attempts only. Compare with LEVEL_B.
+function calibrate(kids) {
+  const groups = []; kids.forEach((k) => (k.p.cal || []).forEach((g) => groups.push(g.c)));
+  const total = groups.reduce((a, c) => a + Object.values(c).reduce((x, v) => x + v[1], 0), 0);
+  const lvSeen = new Set(); groups.forEach((c) => Object.keys(c).forEach((k) => lvSeen.add(k[0])));
+  if (groups.length < 4 || total < 300 || lvSeen.size < 3) return { ok: false, groups: groups.length, total };
+  let b = { ...LEVEL_B };
+  const GU = { c: 0.25, w: 0, u: 0.15 }, sig = (x) => 1 / (1 + Math.exp(-x));
+  for (let it = 0; it < 30; it++) {
+    const th = groups.map((c) => fit([c], b).th);
+    for (const L of [2, 3, 4]) {
+      if (!lvSeen.has(String(L))) continue;
+      let gr = 0, inf = 0;
+      groups.forEach((c, i) => Object.entries(c).forEach(([k, [so, sw]]) => { if (k[0] !== String(L)) return; const g = GU[k[1]] ?? 0, s = sig(th[i] - b[L]), p = Math.min(0.999, Math.max(0.001, g + (1 - g) * s)), dp = (1 - g) * s * (1 - s); gr -= (so - sw * p) * dp / (p * (1 - p)); inf += sw * dp * dp / (p * (1 - p)); }));
+      if (inf > 0) b[L] += Math.max(-1, Math.min(1, gr / inf));
+    }
+  }
+  return { ok: true, groups: groups.length, total, gaps: [b[2] - b[1], b[3] - b[2], b[4] - b[3]].map((x) => Math.round(x * 100) / 100) };
+}
+// Spearman rank correlation.
+function spearman(xs, ys) {
+  const rank = (a) => { const o = a.map((v, i) => [v, i]).sort((p, q) => p[0] - q[0]), r = Array(a.length); o.forEach(([, i], k) => { r[i] = k + 1; }); return r; };
+  const rx = rank(xs), ry = rank(ys), n = xs.length, mx = (n + 1) / 2;
+  const cov = rx.reduce((a, v, i) => a + (v - mx) * (ry[i] - mx), 0), vx = rx.reduce((a, v) => a + (v - mx) ** 2, 0), vy = ry.reduce((a, v) => a + (v - mx) ** 2, 0);
+  return vx && vy ? cov / Math.sqrt(vx * vy) : null;
+}
+function progCard(rows, card, kv) {
+  const kids = progKids(rows);
+  const subs = kids.flatMap((k) => k.p.s.map((x) => ({ ...x, k })));
+  const ready = subs.filter((x) => x.status !== 'building');
+  const cnt = (st) => ready.filter((x) => x.status === st).length;
+  const kidsUp = kids.filter((k) => k.p.s.some((x) => x.status === 'rising')).length, kidsReady = kids.filter((k) => k.p.s.some((x) => x.status !== 'building')).length;
+  const flatUp = kids.filter((k) => k.p.s.some((x) => x.status === 'rising')).filter((k) => { const t = pctTrend(k.sn); return t && t[1] <= t[0] + 0.03; }).length;
+  const med = (xs) => { const a = xs.slice().sort((p, q) => p - q); return a.length ? a[Math.floor(a.length / 2)] : null; };
+  const sg = (x) => (x == null ? '–' : (x > 0 ? '+' : '') + x.toFixed(1)), pc = (a) => (a && a[1] ? `${Math.round(100 * a[0] / a[1])}%` : '–');
+  const fx = kids.reduce((a, k) => [a[0] + k.p.fixed[0], a[1] + k.p.fixed[1]], [0, 0]), kp = kids.reduce((a, k) => [a[0] + k.p.kept[0], a[1] + k.p.kept[1]], [0, 0]);
+  const cal = calibrate(kids);
+  // validation: in-app level vs the latest school marks for the same subject
+  const pairs = [];
+  kids.forEach((k) => { const ms = (k.sn.marks || []).slice().sort((a, b) => String(a.when).localeCompare(String(b.when))); const last = ms[ms.length - 1]; if (!last) return;
+    k.p.s.forEach((x) => { if (x.level != null && x.n >= 30 && typeof last.s[x.key] === 'number') pairs.push([x.level, last.s[x.key], k.fam, x.key]); }); });
+  const rho = pairs.length >= 5 ? spearman(pairs.map((p) => p[0]), pairs.map((p) => p[1])) : null;
+  const chip = (x) => `<span class="gsa ${x.status}">${esc(subjLabel(x.key))} ${x.level == null ? '–' : x.level.toFixed(1)}${x.status === 'rising' ? ` ▲${sg(x.change)}` : x.status === 'dipping' ? ` ▼${sg(x.change)}` : x.status === 'steady' ? ' =' : ' …'}</span>`;
+  return card('Getting stronger (allows for harder questions)', kv([
+    ['Children with a trend in at least one subject', `${kidsReady} of ${kids.length}`],
+    ['… getting stronger in at least one subject', `${kidsUp}`],
+    ['… of those, with % of marks flat or lower', kidsUp ? `${flatUp} of ${kidsUp}` : '–'],
+    ['Subjects: getting stronger / steady / slipping', ready.length ? `${cnt('rising')} / ${cnt('steady')} / ${cnt('dipping')}` : '–'],
+    ['Typical change (median, levels)', sg(med(ready.map((x) => x.change)))],
+    ['Mistakes fixed on a retry', fx[1] ? `${pc(fx)} <small>(${fx[1]})</small>` : '–'],
+    ['Remembered a week or more later', kp[1] ? `${pc(kp)} <small>(${Math.round(kp[1])} marks)</small>` : '–']])
+    + (kids.length ? `<h3 class="pl-h3">By child (level now, change since they started)</h3>` + kv(kids.map((k) => [`${esc(k.fam)}${k.grade ? ` · ${esc(k.grade)}` : ''}`, k.p.s.length ? k.p.s.slice(0, 5).map(chip).join(' ') : '–'])) : '')
+    + `<h3 class="pl-h3">Checks</h3>` + kv([
+      ['Level difficulties (pooled fit)', cal.ok ? `gaps ${cal.gaps.join(' · ')} <small>assumed 1.5 each · ${cal.total} first-attempt marks, ${cal.groups} child-subjects</small>` : `<small>needs 4+ child-subjects and 300+ first-attempt marks across 3 levels (now ${cal.groups}, ${Math.round(cal.total)})</small>`],
+      ['In-app level vs school marks', rho != null ? `Spearman ${rho.toFixed(2)} <small>(${pairs.length} child-subjects)</small>` : `<small>needs 5+ child-subjects with 30+ answers and school marks (now ${pairs.length})</small>`]]),
+    'Level (1–4) = the difficulty a child gets about 2 in 3 marks on, from first attempts only (redos excluded), allowing for guessing on multiple choice and for help asked from Buddy. A subject is “getting stronger” or “slipping” only once it has 3+ weeks and 30+ first attempts and the change is at least 0.25 levels and clearly bigger than its uncertainty (in simulations: about 2–5% false alarms for children who aren’t changing). Checks: if a pooled gap differs from 1.5 by more than about 0.5, update LEVEL_B in js/progress.js. A positive correlation with school marks is the evidence the level means something outside the app.');
+}
+
 // Is it helping? School marks before PrepBuddy vs the latest, entered by parents (one child per device snapshot).
 function marksCard(rows, card, kv) {
   const kids = [];

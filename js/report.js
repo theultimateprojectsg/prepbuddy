@@ -22,7 +22,7 @@ function acc(entries) {
 const shortTitle = (c) => c.replace(/\s*\(part \d+ of \d+\)$/i, '');
 
 // Build the report from the log. `stats` gives the spaced-review box per question.
-export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, exam, ts, sr }) {
+export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, exam, ts, sr, gs }) {
   const zh = lang === 'zh'; const T = (en, c) => (zh ? c : en);
   const today = dayStart(Date.now());
   const from = today - 6 * DAY, prevFrom = from - 7 * DAY;
@@ -95,7 +95,7 @@ export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, e
   return {
     v: 1, u: zh ? 'zh' : 'en', n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
     days, q: week.length, a, pa, dp: daysPractised, tr, st, pq: prev.length, pm: minutesOf(prev), mk: mk ?? null, fx: fx ?? null, lt, rd, ch: chapters, up, weak, rev, next, sk, ms: (ms || []).slice(0, 6).map(([n, p, by]) => (by === undefined ? [String(n).slice(0, 40), p] : [String(n).slice(0, 40), p, by])),
-    g: goal ? { d: goal.days, m: goal.mins, met: days.filter((x) => x >= goal.mins).length } : null, ex: exam || null, ts: ts || [], sr: sr || null,
+    g: goal ? { d: goal.days, m: goal.mins, met: days.filter((x) => x >= goal.mins).length } : null, ex: exam || null, ts: ts || [], sr: sr || null, gs: gs && gs.s && gs.s.length ? gs : null,
   };
 }
 
@@ -221,6 +221,7 @@ export function reportHTML(r, opts = {}) {
     </aside>
     <main class="rp-main">
       ${opts.top || ''}
+      ${r.gs ? strongerHTML(r.gs, ZH) : ''}
       <section class="rp-card">
         <div class="rp-card-head"><h2>${ri('bars')} ${T('Practice this week', '本週練習')}</h2><span>${r.q ? T(`Longest: ${fmtDate(r.from + longest * DAY, { weekday: 'long' })}, ${r.days[longest]} min`, `最長：${fmtDate(r.from + longest * DAY, { weekday: 'long' })}，${r.days[longest]} 分鐘`) : T('No practice in these 7 days', '這 7 日沒有練習')}</span></div>
         <div class="rp-bars" role="img" aria-label="${T('Minutes practised each day', '每日練習分鐘')}: ${r.days.map((m, i) => `${dayNames[i]} ${m}`).join(', ')}">
@@ -262,6 +263,38 @@ export function reportHTML(r, opts = {}) {
     <button class="rp-print" onclick="window.print()">${T('Print or save as PDF', '列印或儲存為 PDF')}</button>
   </footer>`}
   </div>`;
+}
+
+// "Getting stronger": each subject's level (1-4: the difficulty the child gets about 2 in 3 marks on) and its
+// trend, which allows for questions getting harder (see progress.js). gs = { s: [[subject, level, status,
+// change, since, weekly levels, books, uncertainty, answers]], fx, kt }. cls: the card class of the page.
+export function strongerHTML(gs, zh, cls = 'rp-card', kid = false) {
+  const was = ZH; ZH = !!zh;
+  try {
+    if (!gs || !gs.s || !gs.s.length) return '';
+    const f1 = (x) => (x == null ? '–' : Number(x).toFixed(1));
+    const mon = (k) => { try { return fmtDate(new Date(k + 'T00:00:00').getTime(), { day: 'numeric', month: 'short' }); } catch (e) { return ''; } };
+    const chip = (st, ch, since) => st === 'rising' ? `<span class="gs-chip up">▲ ${T('Getting stronger', '進步中')} <b>+${f1(ch)}</b></span>`
+      : st === 'dipping' ? `<span class="gs-chip down">▼ ${T('Slipping', '退步')} <b>${f1(ch)}</b></span>`
+      : st === 'steady' ? `<span class="gs-chip">= ${T('Holding steady', '保持穩定')}</span>`
+      : `<span class="gs-chip wait">${T('Building a picture', '收集數據中')}</span>`;
+    const spark = (pts) => { if (!pts || pts.length < 2) return '<svg class="gs-sp" viewBox="0 0 120 34" aria-hidden="true"></svg>';
+      const X = (i) => 4 + i * 112 / (pts.length - 1), Y = (v) => 30 - (Math.max(0.5, Math.min(4.5, v)) - 0.5) / 4 * 26;
+      return `<svg class="gs-sp" viewBox="0 0 120 34" aria-hidden="true"><line x1="0" x2="120" y1="${Y(2.5)}" y2="${Y(2.5)}" class="gs-mid"/><polyline points="${pts.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"/>${pts.map((v, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${i === pts.length - 1 ? 3 : 1.8}"/>`).join('')}</svg>`; };
+    const ready = gs.s.filter((x) => x[2] !== 'building'), up = ready.filter((x) => x[2] === 'rising').length;
+    const lead = !ready.length ? T('PrepBuddy needs about 3 weeks of practice in a subject to show a trend. Levels so far are shown below.', 'PrepBuddy 需要大約 3 星期的練習才能顯示走勢。以下是目前的程度。')
+      : up ? T(`Getting stronger in ${up} of ${ready.length} subject${ready.length > 1 ? 's' : ''}${kid ? '. Keep it up!' : ', even as the questions get harder.'}`, `${ready.length} 科中有 ${up} 科在進步${kid ? '，繼續加油！' : '，即使題目愈來愈難。'}`)
+      : T('Holding steady so far. Steady practice on the weakest chapters is what moves the level up.', '目前保持穩定。多練習最弱的章節，程度就會提升。');
+    const rows = gs.s.map(([name, lvl, st, ch, since, line, books]) => `<div class="gs-row"><div class="gs-name"><b>${esc(name)}</b><small>${st !== 'building' && since ? T(`since ${mon(since)}`, `自 ${mon(since)}`) : ''}</small></div>
+        ${spark(line)}<div class="gs-lvl"><b>${f1(lvl)}</b><small>${T('level', '程度')}</small></div>${chip(st, ch)}</div>
+        ${(books || []).map(([t, l, bst]) => `<div class="gs-book"><span>${esc(t)}</span><b>${f1(l)}</b><em class="${bst === 'rising' ? 'up' : bst === 'dipping' ? 'down' : ''}">${bst === 'rising' ? '▲' : bst === 'dipping' ? '▼' : bst === 'steady' ? '=' : '…'}</em></div>`).join('')}`).join('');
+    const pc = (a) => (a && a[1] >= 5 ? Math.round(100 * a[0] / a[1]) + '%' : null);
+    const extra = [pc(gs.fx) ? T(`Mistakes fixed on a retry: <b>${pc(gs.fx)}</b>`, `重做時改正錯題：<b>${pc(gs.fx)}</b>`) : '', pc(gs.kt) ? T(`Remembered a week or more later: <b>${pc(gs.kt)}</b>`, `一星期後仍記得：<b>${pc(gs.kt)}</b>`) : ''].filter(Boolean);
+    return `<section class="${cls} gs-card"><div class="rp-card-head"><h2>${ri('up')} ${T(kid ? 'Your levels' : 'Getting stronger?', kid ? '你的程度' : '有進步嗎？')}</h2><span>${T('level 1–4, allowing for harder questions', '程度 1–4，已計及題目難度')}</span></div>
+      <p class="gs-lead">${lead}</p><div class="gs-rows">${rows}</div>
+      ${extra.length ? `<p class="gs-extra">${extra.join(' · ')}</p>` : ''}
+      <p class="rep-note">${kid ? T('Questions get harder as you improve, so your % can stay the same while you get stronger. Your level is the difficulty you get about 2 in 3 right, from first tries only.', '你進步時題目會愈來愈難，所以得分率可能不變，但你其實在進步。「程度」是你大約答對三分之二的題目難度，只計第一次作答。') : T('Questions get harder as your child improves, so the % of marks can stay the same while they get stronger. Level is the difficulty they get about 2 in 3 right, from first tries only: 60% on harder questions is a higher level than 70% on easier ones. A trend is only called once it’s clear.', '孩子進步時題目會愈來愈難，所以得分率可能不變，但實力其實在提升。「程度」是孩子大約答對三分之二的題目難度，只計第一次作答：難題答對六成，比易題答對七成的程度更高。只有走勢明顯時才會顯示進步或退步。')}</p></section>`;
+  } finally { ZH = was; }
 }
 
 // Shared by the report and the in-app progress screen.
@@ -326,6 +359,15 @@ export const REPORT_CSS = `
 .rp-call.help{background:#FFF8D6}.rp-call.help h3{color:#7A5B00}
 .rp-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
 .rp-card-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.gs-lead{margin:4px 0 8px;font-size:14.5px}.gs-rows{display:flex;flex-direction:column}
+.gs-row{display:grid;grid-template-columns:minmax(90px,1.2fr) 120px 52px minmax(120px,auto);gap:12px;align-items:center;padding:9px 0;border-top:1px solid #EEF1F6}
+.gs-name b{display:block;font-size:14.5px}.gs-name small{color:#6B7591;font-size:12px}
+.gs-sp{width:120px;height:34px}.gs-sp polyline{fill:none;stroke:#2C3E8F;stroke-width:2;stroke-linejoin:round}.gs-sp circle{fill:#2C3E8F}.gs-sp .gs-mid{stroke:#E3E7F2;stroke-dasharray:3 3}
+.gs-lvl{text-align:center}.gs-lvl b{display:block;font-size:20px;line-height:1.1}.gs-lvl small{font-size:11px;color:#6B7591}
+.gs-chip{justify-self:end;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:#EEF1F8;color:#3B4668;white-space:nowrap}.gs-chip.up{background:#E3F5EA;color:#14804A}.gs-chip.down{background:#FDEEE3;color:#B4531A}.gs-chip.wait{background:#F4F5F9;color:#6B7591;font-weight:500}
+.gs-book{display:grid;grid-template-columns:1fr 52px 20px;gap:12px;padding:3px 0 6px 14px;font-size:13px;color:#4A5370}.gs-book b{text-align:center}.gs-book em{font-style:normal;text-align:center}.gs-book em.up{color:#14804A}.gs-book em.down{color:#B4531A}
+.gs-extra{font-size:13px;color:#4A5370;margin:8px 0 0}
+@media (max-width:560px){.gs-row{grid-template-columns:1fr auto;row-gap:4px}.gs-sp{grid-column:1;grid-row:2;width:100%}.gs-chip{grid-column:2;grid-row:2;justify-self:end}.gs-lvl{grid-column:2;grid-row:1}}
 .rp-card p{margin:0}.rp-card-head h2{margin:0;font-size:16px}.rp-card-head span{font-size:12.5px;color:var(--muted)}
 .rp-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;height:150px}
 .rp-bars div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
