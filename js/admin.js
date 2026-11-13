@@ -267,6 +267,7 @@ function pilotOverview(rows, fams) {
       ['Questions in rushed sets', st.reduce((x, y) => x + y.rushedQ, 0)], ['Badges won', st.reduce((x, y) => x + y.badges, 0)]]) + `<h3 class="pl-h3">Where stars come from</h3>` + barList(Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, v]) => [WHY[k] || k, v])), 'Rushed sets and cap hits show children chasing stars rather than learning.')}
     ${card('AI cost', kv([['Total so far', money(usd)], ['AI requests', calls], ['Per family so far', started.length ? money(usd / started.length) : '–'], ['Per family per week', costWeek.length ? money(avg(costWeek, (x) => x)) : '–'], ['Most expensive family', rows.length ? (() => { const r = rows.slice().sort((a, b) => b.a.usage.usd - a.a.usage.usd)[0]; return r.a.usage.usd ? `${esc(r.f.name)} · ${money(r.a.usage.usd)}` : '–'; })() : '–']]) + `<h3 class="pl-h3">By feature</h3>` + barList(Object.entries(byPath).sort((a, b) => b[1].usd - a[1].usd).map(([k, v]) => [k, v.usd, `${v.n} requests`]), money), 'From each device’s own record of AI use (US$). Use this to check plan prices cover the cost.')}
     ${spendCard(rows, card, kv)}
+    ${progCard(rows, card, kv)}
     ${marksCard(rows, card, kv)}
   </div>
   <div class="pl-grid">
@@ -476,6 +477,27 @@ async function renderPilot(note, tab = route()) {
     } catch (err) { $('newcode').innerHTML = `<div class="err">${esc(err.message)}</div>`; }
     btn.disabled = false;
   }; }
+}
+// In-app progress that allows for harder questions (js/app.js progSummary): working level = the difficulty (1-4) a child
+// gets about 2 in 3 marks on. First 2 active weeks vs the latest 2, per child (one child per device snapshot).
+function progCard(rows, card, kv) {
+  const kids = [];
+  for (const r of rows) for (const sn of (PILOT.activity[r.f.code] || [])) if (sn.prog) kids.push({ fam: r.f.name, grade: sn.learner && sn.learner.grade, p: sn.prog });
+  const pairs = kids.filter((k) => k.p.start && k.p.now && k.p.start.wl != null && k.p.now.wl != null).map((k) => ({ ...k, d: k.p.now.wl - k.p.start.wl }));
+  const up = pairs.filter((k) => k.d >= 0.2).length, down = pairs.filter((k) => k.d <= -0.2).length;
+  const avg = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null), f1 = (x) => (x == null ? '–' : x.toFixed(1)), pc = (x) => (x == null ? '–' : `${Math.round(100 * x)}%`), sg = (x) => (x == null ? '–' : (x > 0 ? '+' : '') + x.toFixed(2));
+  const fx = kids.reduce((a, k) => [a[0] + (k.p.fixed || [0, 0])[0], a[1] + (k.p.fixed || [0, 0])[1]], [0, 0]), kp = kids.reduce((a, k) => [a[0] + (k.p.kept || [0, 0])[0], a[1] + (k.p.kept || [0, 0])[1]], [0, 0]);
+  const flat = pairs.filter((k) => k.d >= 0.2 && k.p.now.acc != null && k.p.start.acc != null && k.p.now.acc <= k.p.start.acc + 0.03).length;
+  return card('In-app progress (allows for harder questions)', kv([
+    ['Children with 3+ weeks of practice', `${pairs.length} of ${kids.length}`],
+    ['Working level, average change', sg(avg(pairs.map((k) => k.d)))],
+    ['Up / about the same / down', pairs.length ? `${up} / ${pairs.length - up - down} / ${down}` : '–'],
+    ['Up even though their % stayed flat or fell', pairs.length ? `${flat} of ${up}` : '–'],
+    ['Mistakes fixed on a retry', fx[1] ? `${pc(fx[0] / fx[1])} <small>(${fx[1]})</small>` : '–'],
+    ['Remembered a week or more later', kp[1] ? `${pc(kp[0] / kp[1])} <small>(${Math.round(kp[1])} marks)</small>` : '–']])
+    + (pairs.length ? `<h3 class="pl-h3">By child: working level, question level, % of marks (first 2 weeks → last 2)</h3>` + kv(pairs.sort((a, b) => b.d - a.d).map((k) => [`${esc(k.fam)}${k.grade ? ` · ${esc(k.grade)}` : ''}`,
+      `${f1(k.p.start.wl)} → ${f1(k.p.now.wl)} <small>Lv ${f1(k.p.start.lv)}→${f1(k.p.now.lv)} · ${pc(k.p.start.acc)}→${pc(k.p.now.acc)}</small>`])) : ''),
+    'Questions get harder as a child does well, so % right can stay flat while they improve. Working level (1–4) = the difficulty at which the child gets about 2 in 3 marks, estimated from all their answers by level (a simple Rasch-style model; level spacing is an assumption until calibrated on pilot data). “Up” = +0.2 or more.');
 }
 // Is it helping? School marks before PrepBuddy vs the latest, entered by parents (one child per device snapshot).
 function marksCard(rows, card, kv) {

@@ -2640,6 +2640,79 @@ function profileScreen({ first } = {}) {
     window.scrollTo(0, 0);
   });
 }
+/* ---------- progress that allows for harder questions ----------
+   Questions get harder as a child does well, so a flat score can hide real progress. Each week we keep the
+   answers by difficulty level (1-4) and estimate a "working level": the difficulty at which the child gets
+   about 2 in 3 marks. 60% on level 3 questions is a higher working level than 70% on level 2.
+   Method: a simple one-parameter (Rasch-style) model, levels 1.5 logits apart, and a mild
+   prior so a few answers can't swing it. Kept as weekly totals (local.prog), so it survives the answer log
+   being trimmed; built once from the log for families who already have answers. */
+const weekKey = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+function prevAnswer(qid) { const L = local.log || []; for (let i = L.length - 1; i >= 0; i--) if (L[i].q === qid) return L[i]; return null; }
+function progAdd(e, prev) {
+  if (!local.prog) progBuild();
+  const lv = Math.max(1, Math.min(4, Math.round(Number(e.l) || 2))), wk = weekKey(e.t), bid = String(e.q).split(':')[0];
+  const W = local.prog.w[wk] || (local.prog.w[wk] = { n: 0, g: 0, m: 0, L: {}, fx: [0, 0], rt: [0, 0], b: {} });
+  const put = (o) => { o.n = (o.n || 0) + 1; o.g = (o.g || 0) + e.g; o.m = (o.m || 0) + e.m; const x = o.L || (o.L = {}); const c = x[lv] || (x[lv] = [0, 0]); c[0] += e.g; c[1] += e.m; };
+  put(W); put(W.b[bid] || (W.b[bid] = {}));
+  if (prev) {
+    if (prev.g < prev.m) { W.fx[1]++; if (e.g >= e.m) W.fx[0]++; }               // a mistake tried again: fixed?
+    if (e.t - prev.t >= 7 * DAY) { W.rt[0] += e.g; W.rt[1] += e.m; }            // came back a week or more later: remembered?
+  }
+  const ks = Object.keys(local.prog.w).sort(); if (ks.length > 60) ks.slice(0, ks.length - 60).forEach((k) => delete local.prog.w[k]);
+}
+function progBuild() {
+  local.prog = { v: 1, w: {} };
+  const last = {};
+  for (const e of local.log || []) { if (e.q && e.m) progAdd(e, last[e.q] || null); last[e.q] = e; }
+}
+// Working level from answers by level ({1:[got, max], ...}); null if too few answers.
+function workLevel(L) {
+  const S_ = 1.5; // logits between neighbouring levels
+  const rows = Object.entries(L || {}).map(([l, [g, m]]) => [(Number(l) - 2.5) * S_, g, m]).filter((r) => r[2] > 0);
+  if (rows.reduce((a, r) => a + r[2], 0) < 8) return null;
+  let th = 0;
+  for (let i = 0; i < 30; i++) {
+    let gr = -th / 4, he = -1 / 4; // mild prior: sd 2 logits around the middle
+    for (const [b, g, m] of rows) { const p = 1 / (1 + Math.exp(-(th - b))); gr += g - m * p; he -= m * p * (1 - p); }
+    const step = gr / he; th -= step; th = Math.max(-5, Math.min(5, th)); if (Math.abs(step) < 1e-4) break;
+  }
+  return Math.max(0.5, Math.min(4.5, (th - Math.log(2)) / S_ + 2.5)); // difficulty where P(right) = 2/3, on the 1-4 level scale
+}
+const mergeL = (list) => { const out = {}; list.forEach((L) => Object.entries(L || {}).forEach(([l, [g, m]]) => { const c = out[l] || (out[l] = [0, 0]); c[0] += g; c[1] += m; })); return out; };
+// Start vs now: the first two active weeks against the latest two, overall and per book.
+function progSummary() {
+  if (!local.prog) progBuild();
+  const ks = Object.keys(local.prog.w).sort(), W = local.prog.w;
+  const side = (keys, pick) => { const xs = keys.map((k) => pick(W[k])).filter(Boolean); const L = mergeL(xs.map((x) => x.L)); const g = xs.reduce((a, x) => a + x.g, 0), m = xs.reduce((a, x) => a + x.m, 0), n = xs.reduce((a, x) => a + x.n, 0);
+    const lv = Object.entries(L).reduce((a, [l, [, mm]]) => a + Number(l) * mm, 0) / (Object.values(L).reduce((a, [, mm]) => a + mm, 0) || 1);
+    return { n, acc: m ? g / m : null, avgLv: n ? lv : null, wl: workLevel(L) }; };
+  const span = (pick) => { const act = ks.filter((k) => pick(W[k]) && pick(W[k]).n); if (act.length < 3) return { weeks: act.length, start: act.length ? side(act, pick) : null, now: null };
+    return { weeks: act.length, start: side(act.slice(0, 2), pick), now: side(act.slice(-2), pick) }; };
+  const books = {}; ks.forEach((k) => Object.keys(W[k].b).forEach((b) => { books[b] = 1; }));
+  const fx = ks.reduce((a, k) => [a[0] + W[k].fx[0], a[1] + W[k].fx[1]], [0, 0]), rt = ks.reduce((a, k) => [a[0] + W[k].rt[0], a[1] + W[k].rt[1]], [0, 0]);
+  return { all: span((w) => w), books: Object.fromEntries(Object.keys(books).map((b) => [b, span((w) => w.b[b])])), fixed: fx, kept: rt,
+    weeks: ks.map((k) => ({ wk: k, n: W[k].n, acc: W[k].m ? Math.round(100 * W[k].g / W[k].m) : null, wl: workLevel(W[k].L) })) };
+}
+// Parent dashboard card: working level start → now, overall and by subject.
+async function progCard() {
+  const C = (en, zh) => (LANG === 'zh' ? zh : en), P = progSummary(), books = await getBooks();
+  const f1 = (x) => (x == null ? '–' : x.toFixed(1)), pc = (x) => (x == null ? '–' : `${Math.round(100 * x)}%`);
+  const row = (label, sp) => { if (!sp.now || sp.start.wl == null || sp.now.wl == null) return '';
+    const d = sp.now.wl - sp.start.wl;
+    return `<div class="pr-row"><span>${esc(label)}</span><div class="pr-bar"><i class="a" style="left:${(sp.start.wl - 0.5) / 4 * 100}%"></i><i class="b" style="left:${(sp.now.wl - 0.5) / 4 * 100}%"></i></div><b>${f1(sp.start.wl)} → ${f1(sp.now.wl)}</b><em class="${d >= 0.2 ? 'up' : d <= -0.2 ? 'down' : ''}">${d >= 0.2 ? '▲' : d <= -0.2 ? '▼' : '='}</em></div>`; };
+  const bookRows = Object.entries(P.books).map(([id, sp]) => { const b = books.find((x) => x.id === id); return b ? row(b.subject ? subjectName(b.subject, LANG) : b.title, sp) : ''; }).filter(Boolean);
+  const a = P.all;
+  const body = a.now && a.start.wl != null && a.now.wl != null
+    ? `<p style="font-size:14px;margin:0 0 6px">${C(`Questions are now level ${f1(a.now.avgLv)} on average (was ${f1(a.start.avgLv)}), with ${pc(a.now.acc)} of marks (was ${pc(a.start.acc)}).`, `題目平均難度現為 ${f1(a.now.avgLv)}（之前 ${f1(a.start.avgLv)}），得分率 ${pc(a.now.acc)}（之前 ${pc(a.start.acc)}）。`)}</p>
+      ${row(C('Overall', '整體'), a)}${bookRows.join('')}`
+    : `<p style="font-size:14px;margin:0">${C(`Shows after about 3 weeks of practice (${a.weeks} so far).`, `練習約 3 星期後會顯示（目前 ${a.weeks} 星期）。`)}</p>`;
+  const extra = [P.fixed[1] >= 5 ? C(`Mistakes fixed on a retry: ${pc(P.fixed[0] / P.fixed[1])}`, `重做時改正錯題：${pc(P.fixed[0] / P.fixed[1])}`) : '', P.kept[1] >= 5 ? C(`Remembered a week or more later: ${pc(P.kept[0] / P.kept[1])}`, `一星期後仍記得：${pc(P.kept[0] / P.kept[1])}`) : ''].filter(Boolean);
+  return `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('bars', 18)} ${C('Getting stronger?', '有進步嗎？')}</h2><span>${C('first 2 weeks → last 2', '首兩星期 → 最近兩星期')}</span></div>
+    ${body}${extra.length ? `<p class="hint" style="margin:8px 0 0;text-align:left">${extra.join(' · ')}</p>` : ''}
+    <p class="hint" style="margin:8px 0 0;text-align:left">${C('Questions get harder as your child improves, so the score alone can stay flat. Working level (1–4) is the difficulty they get about 2 in 3 right: if it rises, they’re progressing, even at 60%.', '孩子進步時題目會愈來愈難，所以單看分數未必會上升。「實力程度」（1–4）是孩子大約答對三分之二的難度：只要它上升，即使得分約六成，也代表有進步。')}</p></section>`;
+}
+
 /* ---------- school results: is PrepBuddy helping? ----------
    Parents enter the child's school marks (percent) for the main subjects: once for the last test or exam
    before PrepBuddy (the baseline), then after each later test or exam. The admin page compares the baseline
@@ -2893,6 +2966,10 @@ async function pilotSnap() {
     v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache, learner: profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], kid: KIDS.list.length > 1 ? KIDS.list.indexOf(KID) + 1 : 0 } : null,
     // School marks entered by the parent (subject: percent), and school test results the child noted after each test.
     marks: (local.marks || []).slice(-12).map((m) => ({ kind: m.kind, exam: m.exam, when: m.when, s: m.s, other: m.other ? String(m.other).slice(0, 20) : '' })),
+    prog: (() => { try { const P = progSummary(); const r = (x) => (x == null ? null : Math.round(x * 100) / 100);
+      const sp = (z) => (z ? { n: z.n, acc: r(z.acc), lv: r(z.avgLv), wl: r(z.wl) } : null);
+      return { weeks: P.weeks.slice(-26).map((w) => ({ ...w, wl: r(w.wl) })), start: sp(P.all.start), now: sp(P.all.now), fixed: P.fixed, kept: P.kept,
+        books: Object.entries(P.books).map(([id, z]) => { const b = books.find((x) => x.id === id); return { s: b ? (b.subject || b.title || '').slice(0, 30) : '', weeks: z.weeks, start: sp(z.start), now: sp(z.now) }; }).filter((x) => x.now) }; } catch (e) { return null; } })(),
     stests: schoolTests().filter((x) => typeof x.score === 'number').slice(-20).map((x) => ({ d: new Date(testDay(x)).toISOString().slice(0, 10), score: x.score })),
     inst: isInstalled(), keep: persisted, ios: isIOS,
     ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',
@@ -4936,7 +5013,7 @@ async function renderParent() {
   <main class="pad stack g14 parentpage" data-view="parent" data-raw style="flex:1">
     <div class="pd-top"><span class="muted" style="font-size:13.5px">${PD('Updates as your child practises', '孩子練習時會即時更新')}</span>
       <div class="pd-acts"><button class="btn-sm" id="pdReport">${pIcon('send', 16)} ${PD('Send as weekly report', '傳送每週報告')}</button><button class="btn-sm quiet" id="pdLock">🔒 ${PD('Lock', '鎖上')}</button></div></div>
-    <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: marksCard() + feedCard })}</div>
+    <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: (await progCard()) + marksCard() + feedCard })}</div>
     <p class="hint" style="margin:0;text-align:center">${PD('Same as the weekly report, kept up to date. With PrepBuddy accounts (coming soon) it will open on your own phone.', '與每週報告相同，但會即時更新。推出 PrepBuddy 帳戶後，可在你自己的手機查看。')}</p>
   </main>`;
   document.getElementById('pdReport').onclick = () => reportDialog();
@@ -6422,6 +6499,7 @@ function essayRevealed(q, m, ans, stem) {
 }
 
 function record(q, got) {
+  progAdd({ t: Date.now(), q: q.id, g: got, m: marksOf(q), l: q.level }, prevAnswer(q.id));
   const s = local.stats[q.id] || { seen: 0, got: 0, total: 0, last: 0 };
   s.seen++; s.got += got; s.total += marksOf(q); s.last = got / marksOf(q);
   schedule(s, got >= marksOf(q));
