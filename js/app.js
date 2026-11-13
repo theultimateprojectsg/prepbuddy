@@ -2127,6 +2127,7 @@ async function renderHome() {
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head}
+    ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
     <section class="stack g10" aria-label="Today's plan"><div class="sect-head"><h2>Today’s plan</h2></div><div class="plan">${items.join('')}</div></section>
     ${tests.html}
@@ -2149,6 +2150,8 @@ async function renderHome() {
   <aside class="coach" id="coach" aria-label="Study coach">${coachHTML()}</aside>${footerHTML()}`;
   bindHomeCommon();
   bindCoach();
+  { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
+  { const pl = document.getElementById('profLater'); if (pl) pl.onclick = () => { local.profSkip = Date.now(); saveLocal(); go({ name: 'home' }); }; }
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   const mr = document.getElementById('moreready'); if (mr) mr.onclick = () => go({ name: 'progress' });
   $app.querySelectorAll('.today-week .mrowb[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
@@ -2445,7 +2448,8 @@ async function pilotGate() {
 const CONSENT_V = 1;
 async function pilotWelcome() {
   if (local.pilot && local.code && !(local.consent && local.consent.v >= CONSENT_V)) await consentScreen();
-  if (profileOn() && !local.learner) await profileScreen({ first: true });
+  // New families set it up during onboarding; families already using the app get a card on Today instead.
+  if (profileOn() && !local.learner && !local.toured) await profileScreen({ first: true });
   if (!local.toured) await startTour();
 }
 function consentScreen() {
@@ -2483,7 +2487,7 @@ function consentScreen() {
    Set by a parent once (in the welcome steps, or Settings). Every AI request then carries it (learnerPayload), so
    questions, marking, Buddy, lessons and notes fit this child's age and level. Kept on this device; only these
    fields are sent with AI requests, never a name or school. The grade moves up by itself each September. */
-const PROFILE_ALL = false; // switch on for everyone once checked; until then ?beta=profile turns it on for a device
+const PROFILE_ALL = true; // on for everyone; ?beta=off turns it off on one device
 (() => { try { const m = location.search.match(/[?&]beta=(profile|off)\b/); if (m) { local.beta = m[1] === 'off' ? '' : 'profile'; saveLocal(); } } catch (e) {} })();
 const profileOn = () => PROFILE_ALL || local.beta === 'profile';
 const GRADE_LIST = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
