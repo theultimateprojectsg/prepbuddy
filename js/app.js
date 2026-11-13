@@ -2133,6 +2133,7 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
+    ${!(profileOn() && !local.learner && !local.profSkip) && marksAsk() ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '孩子使用前的學校成績' : 'Your child’s school marks before PrepBuddy'}</b><span>${LANG === 'zh' ? '填寫最近一次測驗或考試的分數，之後便可看到 PrepBuddy 是否有幫助。家長填寫，約 1 分鐘。' : 'Add the last test or exam marks, so later you can see if PrepBuddy is helping. For parents, about 1 minute.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="marksAsk">${LANG === 'zh' ? '填寫' : 'Add marks'}</button><button class="btn-sm quiet" id="marksLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
     <section class="stack g10" aria-label="Today's plan"><div class="sect-head"><h2>Today’s plan</h2></div><div class="plan">${items.join('')}</div></section>
     ${tests.html}
@@ -2156,6 +2157,8 @@ async function renderHome() {
   bindHomeCommon();
   bindCoach();
   { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
+  { const ma = document.getElementById('marksAsk'); if (ma) ma.onclick = async () => { await marksScreen(); go({ name: 'home' }); }; }
+  { const ml = document.getElementById('marksLater'); if (ml) ml.onclick = () => { local.marksSkip = Date.now(); saveLocal(); go({ name: 'home' }); }; }
   { const pl = document.getElementById('profLater'); if (pl) pl.onclick = () => { local.profSkip = Date.now(); saveLocal(); go({ name: 'home' }); }; }
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   const mr = document.getElementById('moreready'); if (mr) mr.onclick = () => go({ name: 'progress' });
@@ -2360,7 +2363,7 @@ function renderSettings() {
       <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
     </section>
     ${profileOn() ? `<section class="card stack g10" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PLT('About your child', '關於你的孩子')}</b><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn-sm quiet" id="skids">${KIDS.list.length > 1 ? PLT('Switch child', '轉換孩子') : PLT('Add a child', '新增孩子')}</button><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PLT('About your child', '關於你的孩子')}</b><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn-sm quiet" id="smarks">${PLT('School marks', '學校成績')}</button><button class="btn-sm quiet" id="skids">${KIDS.list.length > 1 ? PLT('Switch child', '轉換孩子') : PLT('Add a child', '新增孩子')}</button><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></span></div>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
@@ -2397,6 +2400,7 @@ function renderSettings() {
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
   { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); }
+  { const sm = document.getElementById('smarks'); if (sm) sm.onclick = async () => { await marksScreen(); go({ name: 'settings' }); }; }
   { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings' }); }; }
   { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings' }); }; }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
@@ -2531,7 +2535,7 @@ function consentScreen() {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
     const items = [
       ['📱', C('Stays on this device', '保存在這部裝置'), C('Your child’s answers, textbooks, essays, recordings and progress are saved in this browser.', '子女的答案、課本、文章、錄音和進度都保存在這個瀏覽器內。')],
-      ['📊', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('First name (if entered), questions answered and how many were right, minutes, features used, book titles, and app errors. Only the PrepBuddy team can see it.', '名字（如有輸入）、答題數目和答對數目、練習分鐘、使用過的功能、課本名稱，以及程式錯誤。只有 PrepBuddy 團隊可以看到。')],
+      ['📊', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('First name (if entered), questions answered and how many were right, minutes, features used, book titles, school marks you choose to enter, and app errors. Only the PrepBuddy team can see it.', '名字（如有輸入）、答題數目和答對數目、練習分鐘、使用過的功能、課本名稱、你選擇填寫的學校成績，以及程式錯誤。只有 PrepBuddy 團隊可以看到。')],
       ['🤖', C('The AI reads what it needs', 'AI 只會讀取需要的內容'), C('To write questions and mark answers, textbook text and your child’s answers, photos and essays are sent to our AI provider, Anthropic. It isn’t used to train their AI.', '為了出題和批改，課文以及子女的答案、相片和文章會傳送給我們的 AI 服務供應商 Anthropic，不會用來訓練他們的 AI。')],
       ['🚫', C('What we never ask for', '我們不會收集'), C('Full name, school, address, ID or payment details. Please remind your child not to type personal details into answers or chats.', '全名、學校、地址、身份證或付款資料。請提醒子女不要在答案或對話中輸入個人資料。')],
       ['✋', C('You’re in control', '由你決定'), C('Ask to see or delete your family’s data, or leave the pilot, any time. Pilot data is deleted within 3 months after the pilot ends.', '你可隨時要求查閱或刪除你家庭的資料，或退出試用。試用結束後 3 個月內會刪除試用資料。')],
@@ -2636,6 +2640,78 @@ function profileScreen({ first } = {}) {
     window.scrollTo(0, 0);
   });
 }
+/* ---------- school results: is PrepBuddy helping? ----------
+   Parents enter the child's school marks (percent) for the main subjects: once for the last test or exam
+   before PrepBuddy (the baseline), then after each later test or exam. The admin page compares the baseline
+   with the latest results across pilot families. Kept on this device and in the pilot sync (marks only). */
+const MARK_SUBJ = () => (isPrimaryKid()
+  ? [['chi', '中文', 'Chinese'], ['eng', '英文', 'English'], ['math', '數學', 'Maths'], ['gs', '常識／科學／人文', 'General Studies / Science / Humanities']]
+  : [['chi', '中文', 'Chinese'], ['eng', '英文', 'English'], ['math', '數學', 'Maths']]);
+const marksList = () => (local.marks || []).slice().sort((a, b) => (a.when || '').localeCompare(b.when || '') || a.t - b.t);
+const marksBase = () => marksList().find((m) => m.kind === 'before') || null;
+const marksAsk = () => local.pilot && profileOn() && gradeNow() && !marksBase() && !(local.marksSkip && Date.now() - local.marksSkip < 14 * DAY);
+function marksScreen(edit) {
+  return new Promise((resolve) => {
+    const C = (en, zh) => (LANG === 'zh' ? zh : en);
+    const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
+    const base = marksBase(), first = !base && !edit;
+    const ym = (t) => new Date(t).toISOString().slice(0, 7);
+    const M = edit ? JSON.parse(JSON.stringify(edit)) : { id: uid(), kind: first ? 'before' : 'later', exam: 'exam', when: ym(first ? Date.now() - 45 * DAY : Date.now()), s: {}, other: '' };
+    const subs = MARK_SUBJ();
+    let drawn = false;
+    const draw = () => {
+      $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1"><div class="pg-box cs-box prof-box marks-box${drawn ? ' noanim' : ''}">
+        <div class="cs-head">${buddySVG('happy', 56)}<div><span class="cs-tag">${C('For parents', '家長專用')}</span>
+          <h1 style="margin:6px 0 0">${M.kind === 'before' ? C('School marks before PrepBuddy', '使用 PrepBuddy 前的學校成績') : C('Latest school marks', '最新學校成績')}</h1></div></div>
+        <p class="pg-lead" style="text-align:left">${M.kind === 'before'
+          ? C('From the last school test or exam before your child started PrepBuddy. Later you’ll add the next results, so you (and we) can see if it’s helping. Leave out any subject you don’t have.', '請填寫孩子開始使用 PrepBuddy 前最近一次測驗或考試的分數。之後再填下一次的成績，便可看到是否有幫助。沒有的科目可留空。')
+          : C('From the most recent school test or exam. Leave out any subject you don’t have.', '請填寫最近一次學校測驗或考試的分數。沒有的科目可留空。')}</p>
+        <section class="stack g10"><b>${C('Which results?', '哪一次的成績？')}</b>
+          <div class="prof-opts two"><button class="langopt${M.exam === 'exam' ? ' on' : ''}" data-ex="exam"><b>${C('Exam', '考試')}</b><span>${C('Term or final exam', '上／下學期考試')}</span></button><button class="langopt${M.exam === 'test' ? ' on' : ''}" data-ex="test"><b>${C('Test', '測驗')}</b><span>${C('Uniform or class test', '統測／小測')}</span></button></div>
+          <label class="mk-when"><span>${C('Month', '月份')}</span><input id="mwhen" class="input" type="month" value="${esc(M.when)}" max="${ym(Date.now())}"></label></section>
+        <section class="stack g8"><b>${C('Marks (out of 100)', '分數（滿分 100）')}</b>
+          ${subs.map(([k, zh, en]) => `<label class="mk-row"><span>${C(en, zh)}</span><input class="input" type="number" inputmode="numeric" min="0" max="100" data-m="${k}" value="${M.s[k] ?? ''}" placeholder="–"></label>`).join('')}
+          <label class="mk-row"><input id="moth" class="input" maxlength="20" placeholder="${C('Another subject (optional)', '其他科目（可選填）')}" value="${esc(M.other || '')}"><input class="input" type="number" inputmode="numeric" min="0" max="100" data-m="other" value="${M.s.other ?? ''}" placeholder="–"></label>
+          <span class="hint" style="margin:0;text-align:left">${C('Not out of 100? Work it out as a percentage, e.g. 45 out of 60 = 75.', '滿分不是 100？請換算成百分比，例如 60 分中得 45 分 = 75。')}</span></section>
+        <p class="hw-err" id="merr" hidden></p>
+        <div class="prof-btns"><button class="btn" id="msave">${C('Save', '儲存')}</button><button class="btn-sm quiet" id="mlater">${first ? C('Later', '稍後') : C('Cancel', '取消')}</button>${edit ? `<button class="btn-sm quiet" id="mdel">${C('Delete', '刪除')}</button>` : ''}</div>
+        <p class="hint" style="margin:0">${C('Only the marks and the month are shared with the PrepBuddy pilot team, to measure whether the app helps. Not the school or any comments.', '只會把分數和月份分享給 PrepBuddy 試用團隊，用來衡量成效，不包括學校名稱或評語。')}</p>
+      </div></main>`;
+      drawn = true;
+      const read = () => { $app.querySelectorAll('[data-m]').forEach((i) => { const v = i.value.trim(); if (v === '') delete M.s[i.dataset.m]; else M.s[i.dataset.m] = Math.round(Number(v)); }); M.when = document.getElementById('mwhen').value || M.when; M.other = document.getElementById('moth').value.replace(/[<>]/g, '').trim().slice(0, 20); };
+      $app.querySelectorAll('[data-ex]').forEach((b) => (b.onclick = () => { read(); M.exam = b.dataset.ex; draw(); }));
+      const done = () => { if (nav) nav.style.display = ''; resolve(); };
+      document.getElementById('msave').onclick = () => {
+        read();
+        const bad = Object.values(M.s).some((v) => !(v >= 0 && v <= 100));
+        if (bad || !Object.keys(M.s).length) { const e = document.getElementById('merr'); e.hidden = false; e.textContent = bad ? C('Marks need to be between 0 and 100 (a percentage).', '分數需介乎 0 至 100（百分比）。') : C('Add at least one mark.', '請至少填寫一科分數。'); return; }
+        M.t = M.t || Date.now();
+        local.marks = [...(local.marks || []).filter((x) => x.id !== M.id), M]; delete local.marksSkip; saveLocal(); track('marks');
+        toast(C('Saved. Thank you!', '已儲存，謝謝！')); done();
+      };
+      document.getElementById('mlater').onclick = () => { if (first) { local.marksSkip = Date.now(); saveLocal(); } done(); };
+      const dl = document.getElementById('mdel'); if (dl) dl.onclick = () => { local.marks = (local.marks || []).filter((x) => x.id !== M.id); saveLocal(); done(); };
+    };
+    draw(); window.scrollTo(0, 0);
+  });
+}
+// Parent dashboard card: before vs latest, per subject.
+function marksCard() {
+  const C = (en, zh) => (LANG === 'zh' ? zh : en);
+  const list = marksList(), base = marksBase(), later = list.filter((m) => m.kind === 'later'), last = later[later.length - 1];
+  const name = (k, m) => (k === 'other' ? (m.other || C('Other', '其他')) : ((MARK_SUBJ().concat([['gs', '常識', 'General Studies']]).find((x) => x[0] === k) || [k, k, k])[LANG === 'zh' ? 1 : 2]));
+  const mon = (w) => { try { return new Date(w + '-01').toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short', year: 'numeric' }); } catch (e) { return w; } };
+  const rows = base ? Object.keys({ ...base.s, ...(last ? last.s : {}) }).map((k) => {
+    const a = base.s[k], b = last ? last.s[k] : undefined, d = typeof a === 'number' && typeof b === 'number' ? b - a : null;
+    return `<div class="mk-cmp"><span>${esc(name(k, last && last.s[k] !== undefined ? last : base))}</span><b>${a ?? '–'}</b><b>${b ?? '–'}</b><em class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d === null ? '' : d > 0 ? `+${d}` : d}</em></div>`; }).join('') : '';
+  return `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('target', 18)} ${C('School results', '學校成績')}</h2><button class="btn-sm" id="pdMarks">+ ${base ? C('Add results', '加入成績') : C('Add marks before PrepBuddy', '加入使用前成績')}</button></div>
+    ${base ? `<div class="mk-cmp head"><span></span><b>${C('Before', '使用前')}<small>${esc(mon(base.when))}</small></b><b>${C('Latest', '最新')}<small>${last ? esc(mon(last.when)) : '–'}</small></b><em></em></div>${rows}
+      ${!last ? `<p class="hint" style="margin:6px 0 0;text-align:left">${C('Add the next test or exam results to see the change.', '加入下一次測驗或考試成績，便可看到變化。')}</p>` : ''}
+      ${list.length ? `<div class="mk-hist">${list.map((m) => `<button class="chip" data-mk="${esc(m.id)}">${esc(mon(m.when))} · ${m.exam === 'test' ? C('test', '測驗') : C('exam', '考試')}</button>`).join('')}</div>` : ''}`
+    : `<p style="font-size:14px;margin:0">${C('Add your child’s school marks from before PrepBuddy, then the next results. You’ll see, subject by subject, whether practice is paying off.', '加入孩子使用 PrepBuddy 前的學校成績，再加入之後的成績，便可逐科看到練習的成效。')}</p>`}
+  </section>`;
+}
+
 // Guided tours: go to each screen, spotlight the real button, and say what it does.
 // A step: { go (view name or view), run (async: sets up the screen itself), sel (CSS, first visible match), t, d,
 // skipIfMissing } — no sel, or sel missing, = a centred card.
@@ -2815,6 +2891,9 @@ async function pilotSnap() {
   const mk = Object.values(local.mistakes || {});
   return {
     v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache, learner: profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], kid: KIDS.list.length > 1 ? KIDS.list.indexOf(KID) + 1 : 0 } : null,
+    // School marks entered by the parent (subject: percent), and school test results the child noted after each test.
+    marks: (local.marks || []).slice(-12).map((m) => ({ kind: m.kind, exam: m.exam, when: m.when, s: m.s, other: m.other ? String(m.other).slice(0, 20) : '' })),
+    stests: schoolTests().filter((x) => typeof x.score === 'number').slice(-20).map((x) => ({ d: new Date(testDay(x)).toISOString().slice(0, 10), score: x.score })),
     inst: isInstalled(), keep: persisted, ios: isIOS,
     ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',
     first: log.length ? log[0].t : null, last: log.length ? log[log.length - 1].t : null,
@@ -4857,11 +4936,13 @@ async function renderParent() {
   <main class="pad stack g14 parentpage" data-view="parent" data-raw style="flex:1">
     <div class="pd-top"><span class="muted" style="font-size:13.5px">${PD('Updates as your child practises', '孩子練習時會即時更新')}</span>
       <div class="pd-acts"><button class="btn-sm" id="pdReport">${pIcon('send', 16)} ${PD('Send as weekly report', '傳送每週報告')}</button><button class="btn-sm quiet" id="pdLock">🔒 ${PD('Lock', '鎖上')}</button></div></div>
-    <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: feedCard })}</div>
+    <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: marksCard() + feedCard })}</div>
     <p class="hint" style="margin:0;text-align:center">${PD('Same as the weekly report, kept up to date. With PrepBuddy accounts (coming soon) it will open on your own phone.', '與每週報告相同，但會即時更新。推出 PrepBuddy 帳戶後，可在你自己的手機查看。')}</p>
   </main>`;
   document.getElementById('pdReport').onclick = () => reportDialog();
   document.getElementById('pdLock').onclick = () => { parentUntil = 0; go({ name: 'progress' }); };
+  { const b = document.getElementById('pdMarks'); if (b) b.onclick = async () => { await marksScreen(); go({ name: 'parent' }); }; }
+  $app.querySelectorAll('[data-mk]').forEach((b) => (b.onclick = async () => { await marksScreen((local.marks || []).find((x) => x.id === b.dataset.mk)); go({ name: 'parent' }); }));
   window.scrollTo(0, 0);
 }
 

@@ -266,6 +266,8 @@ function pilotOverview(rows, fams) {
       ['Families with rewards set up', st.filter((x) => x.rewards).length], ['Parent PIN set', `${rows.filter((r) => r.a.pin).length} families`], ['Days someone hit the 10-star cap', st.reduce((x, y) => x + y.capDays, 0)],
       ['Questions in rushed sets', st.reduce((x, y) => x + y.rushedQ, 0)], ['Badges won', st.reduce((x, y) => x + y.badges, 0)]]) + `<h3 class="pl-h3">Where stars come from</h3>` + barList(Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, v]) => [WHY[k] || k, v])), 'Rushed sets and cap hits show children chasing stars rather than learning.')}
     ${card('AI cost', kv([['Total so far', money(usd)], ['AI requests', calls], ['Per family so far', started.length ? money(usd / started.length) : '–'], ['Per family per week', costWeek.length ? money(avg(costWeek, (x) => x)) : '–'], ['Most expensive family', rows.length ? (() => { const r = rows.slice().sort((a, b) => b.a.usage.usd - a.a.usage.usd)[0]; return r.a.usage.usd ? `${esc(r.f.name)} · ${money(r.a.usage.usd)}` : '–'; })() : '–']]) + `<h3 class="pl-h3">By feature</h3>` + barList(Object.entries(byPath).sort((a, b) => b[1].usd - a[1].usd).map(([k, v]) => [k, v.usd, `${v.n} requests`]), money), 'From each device’s own record of AI use (US$). Use this to check plan prices cover the cost.')}
+    ${spendCard(rows, card, kv)}
+    ${marksCard(rows, card, kv)}
   </div>
   <div class="pl-grid">
     ${card('Upgrade signals', `${kv(Object.entries(plansSet).map(([k, v]) => [`Families on ${esc(k)}`, v]))}<h3 class="pl-h3">Plan limits hit</h3>${barList(Object.entries(ups).sort((a, b) => b[1].fam - a[1].fam).map(([k, v]) => [k, v.fam, `famil${v.fam === 1 ? 'y' : 'ies'} · ${v.n}×`]))}`, 'Put some families on Free or Plus (in the table below) to see which locked features they reach for.')}
@@ -474,6 +476,39 @@ async function renderPilot(note, tab = route()) {
     } catch (err) { $('newcode').innerHTML = `<div class="err">${esc(err.message)}</div>`; }
     btn.disabled = false;
   }; }
+}
+// Is it helping? School marks before PrepBuddy vs the latest, entered by parents (one child per device snapshot).
+function marksCard(rows, card, kv) {
+  const kids = [];
+  for (const r of rows) for (const sn of (PILOT.activity[r.f.code] || [])) {
+    const ms = (sn.marks || []).slice().sort((a, b) => String(a.when).localeCompare(String(b.when)));
+    const base = ms.find((m) => m.kind === 'before'), later = ms.filter((m) => m.kind === 'later'), last = later[later.length - 1];
+    kids.push({ fam: r.f.name, grade: sn.learner && sn.learner.grade, base, last });
+  }
+  const withBase = kids.filter((k) => k.base), pairs = withBase.filter((k) => k.last);
+  const subj = {}, per = pairs.map((k) => {
+    const ds = Object.keys(k.base.s).filter((s) => typeof k.last.s[s] === 'number').map((s) => { const d = k.last.s[s] - k.base.s[s]; (subj[s] || (subj[s] = [])).push(d); return d; });
+    return { ...k, d: ds.length ? ds.reduce((a, b) => a + b, 0) / ds.length : null, n: ds.length };
+  }).filter((k) => k.d !== null);
+  const up = per.filter((k) => k.d >= 2).length, down = per.filter((k) => k.d <= -2).length, avg = per.length ? per.reduce((a, k) => a + k.d, 0) / per.length : null;
+  const NAMES = { chi: 'Chinese', eng: 'English', math: 'Maths', gs: 'General Studies', other: 'Other' }, sg = (x) => (x > 0 ? '+' : '') + x.toFixed(1);
+  return card('Is it helping? School marks', kv([
+    ['Children with marks before PrepBuddy', `${withBase.length} of ${kids.length}`], ['… and later results', pairs.length],
+    ['Average change (points)', avg === null ? '–' : sg(avg)], ['Improved / about the same / lower', per.length ? `${up} / ${per.length - up - down} / ${down}` : '–']])
+    + (Object.keys(subj).length ? `<h3 class="pl-h3">By subject (average change)</h3>` + kv(Object.entries(subj).map(([s, ds]) => [NAMES[s] || s, `${sg(ds.reduce((a, b) => a + b, 0) / ds.length)} <small>(${ds.length})</small>`])) : '')
+    + (per.length ? `<h3 class="pl-h3">By child</h3>` + kv(per.map((k) => [`${esc(k.fam)}${k.grade ? ` · ${esc(k.grade)}` : ''}`, `${sg(k.d)} <small>${esc(k.base.when)} → ${esc(k.last.when)}</small>`])) : ''),
+    'Parents enter the last school test or exam before PrepBuddy, then later results (Parent dashboard, or the card on Today). “Improved” = 2+ points up on average across the subjects entered both times. Small numbers and no comparison group: treat as early signs, not proof.');
+}
+// The server's own count of AI cost per family per day (lib/spend.js), and the daily caps it enforces.
+function spendCard(rows, card, kv) {
+  const sp = PILOT && PILOT.spend; if (!sp || !sp.days) return '';
+  const days = Object.keys(sp.days).sort().reverse(), today = days[0], name = (c) => { const r = rows.find((x) => x.f.code === c); return r ? r.f.name : c === 'SHARED' ? 'Shared access code' : c; };
+  const t = sp.days[today] || {}, tot = Object.values(t).reduce((a, b) => a + b, 0);
+  const week = {}; days.forEach((d) => Object.entries(sp.days[d]).forEach(([c, v]) => { week[c] = (week[c] || 0) + v; }));
+  const near = Object.entries(t).filter(([, v]) => v >= sp.familyCap * 0.8);
+  return card('Daily AI cap (server)', kv([['Today, all families', `${money(tot)} of ${money(sp.totalCap)}`], ['Cap per family per day', money(sp.familyCap)], ['Families at or near the cap today', near.length ? near.map(([c, v]) => `${esc(name(c))} · ${money(v)}`).join(', ') : 'None']])
+    + `<h3 class="pl-h3">Last 7 days by family</h3>` + barList(Object.entries(week).sort((a, b) => b[1] - a[1]).map(([c, v]) => [name(c), v, `today ${money(t[c] || 0)}`]), money),
+    'Counted on the server for every AI request, so it can’t be skipped like the app’s own limits. A family that reaches the cap can still practise saved questions until midnight (HK time). Change the caps in Vercel: FAMILY_DAILY_USD and DAILY_USD_CAP.');
 }
 function famDetail(r, fb) {
   const a = r.a, t0 = new Date(); t0.setHours(0, 0, 0, 0);
