@@ -1,0 +1,275 @@
+Lesson
+WORDS
+TO LEARN
+acoess
+allocate
+compatible '
+delete
+display :
+duplicate :
+failure
+figure out I
+ignore
+search
+shut down
+warning
+Computers
+Study the following definitions and examples.
+1. access n., the ability or right to enter or use; v., to obtain; to gain entry
+a. You can't gain access to the files unless you know the password.
+b. We accessed the information on the company's web site.
+2. allocate v., to designate for a specific purpose
+a. The office manager did not allocate enough money to purchase software.
+b. The software architect did not allocate enough memory for the sound card
+to work in your computer.
+3. compatible adj., able to function together
+a. This operating system is not compatible with this model computer.
+b. Users of software applications want new versions to be compatible with
+current versions.
+4. delete v., to remove; to erase
+a. The technicians deleted all the data on the disk accidentally.
+b. This button on the keyboard deletes the characters from the screen.
+5. display n., what is visible on a monitor; v., to show
+a. The light on the LCD display is too weak.
+b. The accounting program displays a current balance when opened.
+6. duplicate v., to produce something equal; to make identical
+a. I think the new word processing program will duplicate the success of the
+one introduced last year.
+b. Before you leave, please duplicate that file by making a copy on the
+CD-ROM.
+7 failure n., an unsuccessful work or effort
+a. Your failure to inform us about the changed password cost the company a
+day's work.
+b. The repeated failure of her printer baffled the technician.
+8. figure out v. , to understand; to solve
+a. By examining all of the errors, the technicians figured out how to fix the
+problem.
+b. We figured out that it would take us at least ten minutes to download the
+file.
+9. ignore v., not to notice; to disregard
+a. When the director is working at the computer, she ignores everything
+around her.
+b. Don't ignore the technician's advice when connecting cables.
+10. search n., investigation; v., to look for
+a. Our search of the database produced very little information.
+b. The computer searched for all names that began with W.
+11 . shut down v., to turn off; to cease operations
+a. Please shut down the computer before you leave.
+b. We always shut down the air conditioning system on the weekend.
+12 warning n., an alert to danger or problems
+a. The red flashing light gives a warning to users that the battery is low.
+b. Flashing images on a web page are warnings to attract users' attention.
+
+WORDS IN CONTEXT
+Read the following passage and write the words in the blanks below.
+access
+allocate
+compatible
+deleted
+display
+duplicate
+When I try to (1)
+failed
+figure out
+ignore
+search
+shut down
+warning
+my computer, a
+(2) _______ pops up that says ~Low Memory." From there,
+I can't (3) _______ what to do. The computer won't
+let me (4) any of my files, so I can't
+(5) _______ for those that I could delete. I've already
+(6) _______ an of my (7) _______ files, and I
+can't believe that my remaining files are using up so much memory. I'd
+be happy to (8) _______ the computer's warning, but I
+have no option, since the (9) _______ is frozen on this
+message. Do you think I've (1 O) _______ to understand
+something about the operations of this computer? If you can, would
+you please (11) _ ______ a few minutes in your busy
+schedule to help me solve this dilemma? As I said before, I'm sure that
+my software is (12) _______ and is not the source of this
+problem.
+
+LESSON 6: COMPUTERS 35
+WORD FAMILIES
+noun access To gain access to the computer lab, all users must have a valid ID.
+verb access Internet cafes allow you to access your web-based e-mail account.
+~ accessible The staff assistant always keeps the door to her office open to show she is
+accessible.
+verb allocate Marla didn't allocate enough time to train the new hires on our computer
+systems.
+noun allocation A different allocation of resources could certainly strengthen the R&D
+department.
+.... allocated The allocated money was never spent on new monitors.
+Wllb duplicate If we work hard, we can duplicate last year's sales records for computers.
+noun duplicate Don't worry, I have a duplicate on my hard drive.
+noun duplication His success at our company was based on the duplication of management
+techniques he had used elsewhere in his career.
+noun failure The power failure caused the system to shut down.
+velb fail We failed to tell you that your records were deleted.
+adjeclhM fallible Everyone can make a mistake. Even a computer is fallible.
+verb ignore Unfortunately, she ignored the warning about the virus.
+noun ignorance His ignorance of this word processing program surprised everyone.
+acladfve ignored The ignored computer glitch caused the database to function improperly.
+verb warn We were warned that our e-mail was not private.
+noun warning The warning was written on the box.
+~ warning The warning signs were all there; we shoutd have paid attention to them.
+
+WORD PRACTICE
+LISTENING COMPREHENSION
+~
+ITrack 61
+I I
+Part 1 Photo
+Look at the picture and listen to the
+sentences. Choose the sentence
+that best describes the picture.
+1. ®@ ©@
+Part 2 Question-Response
+Listen to the question and the three responses. Choose the response that best answers the question.
+2. ®@ © 3. ®@ ©
+Part 3 Conversation
+Listen to the dialogue. Then read each question and choose the best response.
+4. What happens when the man tries to access his
+e-mail?
+(A) The computer shuts down.
+(B) A warning appears on the screen.
+(C) He hears a beeping noise.
+(D) The screen turns black.
+5. What will the man do now?
+(A) Turn off the computer.
+(B) Get a new monitor.
+(C) Use a different program.
+(D) Wait some more time.
+Part 4 Talk
+6. What does the woman suggest doing?
+(A) Working harder.
+(B) Taking the computer back to the store.
+(C) Calling someone to fix the computer.
+(D) Ignoring the problem.
+Listen to the talk. Then read each question and choose the best answer.
+7. What does the speaker suggest that listeners do? 9. What does the speaker recommend doing with
+(A) Buy his software. files?
+(B) Read the manual. (A) Reading them.
+(C) Figure out the program by tinkering with it. (B) Accessing them.
+(D) Consult the competitor's manual to check for (C) Deleting them.
+compatibility. (D) Copying them.
+8. What problems could users face?
+(A) Their warranties could be invalidated.
+(B) Their warning systems could malfunction.
+(C) Their computers could shut down without
+warning.
+(D) Their manuals could be inaccurate.
+
+READING
+Part 5 Incomplete Sentences
+10. In order to __ your e-mail messages, you must
+type in your password.
+(A) access (C) accessed
+(B) accessible (D) accessibility
+11. After reviewing the schedule, I realized we had
+not ___ enough time for the software
+training.
+(A) allocate
+(B) allocated
+(C) allocating
+(D) allocation
+12. The computer staff is responsible for making sure
+all system files are __.
+(A) duplication (C) duplicator
+(B) duplicated (D) duplicate
+Part 6 Text Completion
+To: All Office Staff
+From: IT Department
+Re: Avoiding Computer Problems
+LESSON 6: COMPUTERS 37
+13. __ to examine the capabilities of the computer
+carefully has cost us a lot of time and money.
+(A) Fail (C) Failed
+(B) Failure (D) Fallible
+14. She ___ the warning that the hard drive was
+full, and consequently they were unable to save
+the test data.
+(A) ignore
+(B) ignored
+(C) ignoring
+(D) ignorant
+15. The computer will __ you to save your work
+Memo
+before quitting.
+(A) warning
+(B) warned
+(C) warn
+(D) warns
+We are here to help you with any problems you may have with your computer. Please make our job easier by
+observing the following guidelines.
+• If you have problems seeing the 16 , check to make sure that your monitor is turned on.
+• If your computer crashes, write down any warning message that appears. We can 17 a problem more easily if
+we have this information.
+• Please do not install any new software without our approval. Some software is not compatible with what is already
+on the computer and can cause problems.
+• Some parts of the company web site are 18 without a password. If you need a password, please let us know
+and we will assign you one.
+16. (A) keyboard
+(B) display
+(C) printer
+(D) controls
+17. (A) figure out
+(B) to figure out
+(C) will figure out
+(D) figures out
+18. (A) accesses
+(B) accessing
+(C) accessible
+(D) inaccessible
+
+Part 7 Reading Comprehension
+Questions 19-23 refer to the following note.
+Jim,
+I have decided to get a new computer for my home office,
+and I need your advice to help me select the right one. I
+have allocated a certain amount of money from my budget
+for this. I think it is enough for a completely new system
+including computer, monitor, printer, and scanner. I would
+like to continue using the software I already use, so I need
+a system that is compatible with my current system and
+software. However, I think I should get a different brand. I
+have had nothing but trouble with the computer I have
+now. It often shuts down without warning, and sometimes I
+can't access my files. I haven't been able to figure out the
+reason for these problems, and no one has been able to fix
+it for me.
+I plan to go to some stores this Saturday and Sunday to
+search for my new computer. Would you be able to go with
+me? If not, I'll call you before the weekend to get your
+advice. I have a big project coming up next month. so I
+would like to get my new computer up and running soon.
+Let me know if you can help me this weekend.
+Janet
+19. What does Janet want Jim to help her with?
+(A) Finding money to buy a computer.
+22. The word allocated in line 3 is closest in meaning
+to
+(B) Accessing her files.
+(C) Choosing a new computer.
+(D) Repairing her computer.
+20. What does Janet plan to do this weekend?
+(A) Call Jim.
+(B) Go on a date with Jim.
+(C) Look for a new computer.
+{D) Figure out the reason for her problems.
+21. When will Janet's big project begin?
+(A) Saturday.
+(B) Sunday.
+(C) Before the weekend.
+(D) Next month.
+(A) earned
+(B) designated
+(C) borrowed
+(D) removed
+23. The word access in line 11 is closest in meaning to
+(A) save
+(B) write
+(C) close
+{D) open

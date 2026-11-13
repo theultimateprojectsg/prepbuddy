@@ -1,0 +1,292 @@
+Lesson
+WORDS
+TOLEARN
+disk
+facilitate
+network
+popularity
+process
+replace
+revolution
+sharp
+skill
+software
+store
+technicatly
+Electronics
+Study the following definitions and examples.
+1. disk n., an object used to store digital information
+a. The head of the optical disk reader was dirty.
+b. Rewritable compact discs are more expensive than read-only CDs.
+2. facilitate v., to make easier
+a. The computer program facilitated the scheduling of appointments.
+b. The director tried to facilitate the transition to the new policy by meeting
+with all staff who would be affected.
+3. network v., to connect; to broadcast; n., an interconnected group or system
+over a radio or TV; to engage in informal communication
+a. The recent graduate networked with her mother's coworkers.
+b. We set up a new network in my office to share files.
+4. popularity n., the state of being widely admired, sought, or accepted
+a. After the new commercials began running, the popularity of the batteries
+increased significantly.
+b. This brand of computers is extremely popular among college students.
+5. process v., to put through a series of actions or prescribed procedure; n., a
+series of operations or actions to bring about a result
+a. I've processed the data I collected and have gotten some interesting
+results.
+b. There is a process for determining why your computer is malfunctioning.
+6. replace v., to put back in a former place or position; to take the place of
+a. I've replaced the hard drive that was malfunctioning.
+b. We have been looking for three months and we've found no one who can
+replace our former administrator.
+7. revolution n., a sudden or momentous change in a situation; a single complete
+cycle
+a. We see a revolution in the computer field almost every day.
+b. My CD player is broken; the disk cannot make a complete revolution
+around the magnet.
+8. sharp adj., abrupt or acute; smart
+a. There was a sharp decline in calls to the help desk after we upgraded
+each employee's computer.
+b. The new employee proved how sharp she was when she mastered the
+new program in a few days.
+9. skill n., a developed ability
+a. The software developer has excellent technical skills and would be an
+asset to our software programming team.
+b. Salman's job as designer of electronic tools makes good use of his
+manual dexterity skills.
+10. software n., the programs for a computer
+a. This software allows me to integrate tables and spreadsheets into my reports.
+b. Many computers come pre-loaded with software.
+11 . store v., to keep
+a. You can store more data on a zip drive.
+b. We store the master disks in the fireproof safe.
+12. technically adv., with specialized skill or knowledge
+a. Technically speaking, the virus infected only script files.
+b. The office was finally up-to-speed technically.
+
+WORDS IN CONTEXT
+Read the following passage and write the words in the blanks below.
+disks
+facilitated
+networks
+popular
+processing
+replace
+revolutionize
+sharply
+skills
+software
+storage
+technical
+By the mid-1980s, virtually all U.S. businesses owned at least one
+computer. Prices of computers declined (1) _ ______ over
+the next few years, resulting in a surge in popularity. At the same
+time, offices started to rely on (2) which
+(3) _ ______ the sharing and processing of data. Such data
+(4) _______ was made possible by improvements in both
+the hardware and software industries.
+More recently, data storage (5) _______ have undergone their own revolution. Because of (6)
+advancements, the (7) _______ capacity of a compact
+disc increased significantly.
+In addition, manufacturers of (8) _ ______ offer competitive upgrades to (9) _______ competitors' products.
+Virtually all office workers today are trained in the most
+(10) _______ word processing software.
+Computers repeatedly (11) _______ the workplace, and
+everyone, no matter how accomplished he or she is with other
+(12) _ _____ _ , needs to stay abreast of major trends in
+computer development.
+
+LESSON 9: ELECTRONICS 53
+WORD FAMILIES
+verb popularize The Internet has popularized last-minute travel.
+noun popularity The popularity of the product was extremely short-lived, and it soon
+I disappeared from the store shelves.
+adjective popular The new computer program was extremely popular, and people asked for it at
+all the stores.
+verb replace I replaced your music CDs that I borrowed from your desk last week.
+noun replacement A replacement for this damaged computer will not be cheap.
+adjective replaceable That hard disk is not easily replaceable.
+WIii> revolutionized Using diamond has revolutionized the pressure sensor industry during the last
+decade.
+noun revolution The revolution in electronics technology has allowed products such as phones
+to get smaller and more portable.
+adjective revolutionary The Internet is revolutionary in how it has changed the way we communicate.
+noun skill Her marketing skills inspired Jason to return to school for his MBA.
+~ skilled Our carpenters are skilled in everything from cabinetry to furniture making.
+adverb skillfully He negotiates so skillfully that both parties end up feeling that they've gotten
+what they wanted.
+verb store He stored too much information on the hard drive, making the computer
+sluggish.
+noun store The store's inventory has to be entered manually into the database.
+noun storage The storage closet is where you will find all our office supplies.
+adverb technically Technically, she was fired from her job.
+adjective technical The computer can only be repaired by someone with technical knowledge.
+noun technicality After we go over these minor technicalities, the agreement will be set.
+
+WORD PRACTICE
+LISTENING COMPREHENSION
+~
+ITrack 91
+I I
+Part 1 Photo
+Look at the picture and listen to the
+sentences. Choose the sentence
+that best describes the picture.
+1. @@ ©@
+Part 2 Question-Response
+Listen to the question and the three responses. Choose the response that best answers the question.
+2. @@ © 3. ®@ ©
+Part 3 Conversation
+Listen to the dialogue. Then read each question and choose the best response.
+4. Why can't the woman retrieve her file?
+(A) She doesn't know how.
+(B) She forgot its name.
+(C) It was accidentally deleted.
+(D) She can't remember where it's stored.
+5. Why does she need the file?
+(A) To do her accounts.
+(B) To report the news.
+(C) To finish her proposal.
+(D) To get information about a store.
+Part 4 Talk
+6. What does the man suggest the woman should
+do?
+(A) Figure it out herself.
+(B) Let him help her.
+(C) Improve her skills.
+(D} Get help from the IT department.
+Listen to the talk. Then read each question and choose the best answer.
+7, What is the speaker's opinion of the process of 9. What will the listeners do next?
+downloading software? (A} Look at a chart.
+(A) Anyone can do it. (8) Turn on their computers.
+(B) It requires technical skills. (C} Connect to the Internet.
+(C) It's easiest if you download from a remote (D) Type a web address.
+server.
+(D) It's time-consuming.
+8. Who is the intended audience for this talk?
+(A) Computer technicians.
+(8) Network managers.
+(C) New computer users.
+(D) Software writers.
+
+READING
+Part 5 Incomplete Sentences
+10. The __ of the new computer network was
+apparent among the employees after only a few
+months.
+(A) popular
+(B) popularize
+(C) popularity
+(D) population
+11 . We will ____ all of our outdated software with
+the newest versions.
+(A) replacement (C) replaceable
+(B) replaced (D) replace
+12. There is a ___ approach to software design
+integration that all the big software developers are
+currently learning.
+(A) revolutionized (C) revolution
+(B) revolutionary (D) revolt
+Part 6 Text Completion
+LESSON 9: ELECTRONICS 55
+13. While Fabio's ___ with computers surpasses
+the technicians, he is unable to communicate his
+personal needs to the office manager.
+(A) skill (C) skillful
+(B) skilled (D) skillfully
+14. The hard disk can ___ up to 25 gigabytes of
+data.
+(A) stores
+(B) storage
+(C) store
+(D) storing
+15. The newspaper article on the development of new
+fiber-optic cables was so full of ___ language
+that nobody could understand it.
+(A) technical (C) technicality
+(B) technically (D) technique
+Computer technology has brought about a 16 in the workplace. Now employees all around the country do all or
+part of their jobs from home. This phenomenon is called telecommuting and has been made possible by the
+widespread use of the Internet. Telecommuting has become 17 among employees, although the reactions of
+employers are mixed. Some like telecommuting and some don't. But most agree that it facilitates work for employees
+who live at a distance from the worksite. Telecommuting enables companies to keep skilled employees who move out
+of the area or who have family obligations that require them to stay close to home. 18 the regular nine-to-five
+office job? Probably not entirely, but we are sure to see more and more of it in the future.
+16. (A) revolted
+(B) revolution
+(C) revolutionary
+(D) revolutionize
+17. (A) sharp
+(B) technical
+(C) popular
+(D) replaceable
+18. (A) It replaces
+(8) It will replace
+(C) Will it replace
+(D) Will it be replaced by
+
+Part 7 Reading Comprehension
+Questions 19-23 refer to the following two e-mails.
+To: mary@acme.com
+From: fred@acme.com
+Subject: software training
+Mary,
+As you know, we have decided to replace our old software with a new program that will facilitate our work
+better. Although the new software is not technically
+difficult to use, it is significantly different from our old
+software. The entire staff will need to be trained to
+use it. Of course, not everyone can attend a training
+session together, because we need some staff members to be in the office at all times. The trainer suggests that each person attend one training session and
+one follow-up session. The sessions will last three to
+four hours each. The trainer can be here once a week.
+Please develop a training schedule so that everyone
+can be trained over the next two months. Thank you.
+Fred
+19. What is true about the new software?
+(A) It's difficult to use.
+(B) It's very different from the old software.
+(C) It requires many months of training.
+(0) It's very expensive.
+20. Which staff members will be trained to use the new
+software?
+(A) Just one from each department.
+(B) Fred and Mary only.
+(C) Only four of them.
+(0) All of them.
+21 . How many training sessions will each person
+attend?
+(A) One.
+(B) Two.
+(C) Four.
+(D) Eight.
+To:
+From:
+Subject:
+Fred,
+fred@acme.com
+mary@acme.com
+re: software training
+I have written up a schedule that will facilitate the
+training process. There will be eight weekly training
+sessions all together. Since we have four departments,
+the easiest way is to send one person from each
+department to each training session during the first
+month. Of course it will be a different person each
+week. We can repeat the process during the second
+month for the follow up sessions. This way everyone
+will have a chance to develop their skills on the new
+software. I am attaching a copy of the schedule.
+Please let me know what you think.
+Mary
+22. The word skills in line 9 of the second e-mail is
+closest in meaning to
+(A) abilities
+(B) opportunities
+(C) tasks
+(D) ideas
+23. The word replace in line 1 of the first e-mail is
+closest in meaning to
+(A) sell
+(B) change
+(C) keep
+(D) locate
