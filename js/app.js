@@ -19,6 +19,22 @@ const PLANS = {
   written: [[2, 'short'], [3, 'structured'], [2, 'short'], [4, 'structured'], [3, 'short'], [3, 'structured']],
 };
 const choiceType = (q) => q.type === 'mcq' || q.type === 'graph';
+// Young children: mostly multiple choice (typing is hard at P1-P3), small written questions, and no DSE-style essays
+// before secondary. Uses the grade a parent set; otherwise the plan is unchanged.
+const GRADE_MIX = {
+  p12: [[1, 'mcq'], [2, 'mcq'], [1, 'mcq'], [2, 'short'], [2, 'mcq'], [3, 'mcq'], [1, 'mcq'], [2, 'mcq']],
+  p34: [[1, 'mcq'], [2, 'mcq'], [2, 'short'], [2, 'mcq'], [3, 'mcq'], [3, 'structured'], [2, 'mcq'], [3, 'short']],
+};
+function gradePlan(plan, types) {
+  const b = typeof gradeBand === 'function' ? gradeBand() : '';
+  if (!b) return plan;
+  if (types === 'mix' && GRADE_MIX[b]) return GRADE_MIX[b];
+  if (b === 'p12' && types === 'written') return [[1, 'short'], [2, 'short'], [2, 'structured'], [1, 'short']];
+  if (/^p/.test(b)) return plan.map(([l, t]) => [l, t === 'essay' ? 'structured' : t]);
+  return plan;
+}
+// Question types: what the student picked, or for P1-P2 multiple choice until they choose otherwise.
+const curTypes = () => (local.typesSet || typeof gradeBand !== 'function' || gradeBand() !== 'p12' ? local.types || 'mix' : 'mcq');
 const matchType = (q, types) => !types || types === 'mix' || (types === 'mcq' ? choiceType(q) : !choiceType(q));
 // Difficulty the student picks. Auto adapts to how they're doing; the others keep questions to these levels
 // (1 Recall, 2 Understand, 3 Apply, 4 Analyse / evaluate).
@@ -710,6 +726,7 @@ window.addEventListener('popstate', (e) => {
 });
 
 async function go(v) {
+  try { if (window.speechSynthesis && VC.state === 'off') speechSynthesis.cancel(); } catch (e) {}
   if ((v.name === 'paper' || (v.name === 'pick' && v.mode === 'mock')) && !allow('mock')) return; // plan checks before leaving the screen
   { const f = { homework: 'homework', writing: 'writing', speaking: 'speaking', stars: 'stars' }[v.name]; if (f && locked(f) && !TOURING) return upsell(f, 'locked'); }
   // a screen's back button pointing at the screen we came from = a real step back
@@ -3372,7 +3389,7 @@ async function renderBook(bookId) {
     if (b) { b.kind = book.kind; await store.set('books', books); }
   }
   bookKinds.set(book.id, kindOfBook(book));
-  const t = local.types || 'mix';
+  const t = curTypes();
   const count = local.count || sessionSize();
   const bm = await bookMastery(book);
   const bmByUnit = Object.fromEntries(bm.chapters.map((c) => [c.unit.id, c]));
@@ -3543,7 +3560,7 @@ async function renderBook(bookId) {
   function bindRows() { $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => { const id = b.dataset.unit; pick.ids.has(id) ? pick.ids.delete(id) : pick.ids.add(id); keep(); })); }
   bindRows();
   prefetch(book, book.units.filter((u) => pick.ids.has(u.id)));
-  $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; saveLocal(); keep(); }));
+  $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; local.typesSet = true; saveLocal(); keep(); }));
   $app.querySelectorAll('[data-diff]').forEach((b) => (b.onclick = () => { if (b.classList.contains('dlock')) return upsell('hardDiff', 'locked'); local.diff = b.dataset.diff; saveLocal(); keep(); }));
   const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || sessionSize()) + d)); saveLocal(); keep(); };
   document.getElementById('minus').onclick = () => step((local.count || sessionSize()) > 20 ? -10 : -5);
@@ -3573,7 +3590,7 @@ async function renderBook(bookId) {
 // so by the time the student presses Start there is little or nothing left to wait for.
 async function prefetch(book, units) {
   if (!units.length || units.length > 3 || navigator.onLine === false) return;
-  const types = local.types || 'mix', count = local.count || sessionSize();
+  const types = curTypes(), count = local.count || sessionSize();
   for (const u of units) {
     getSnippets(book, u).catch(() => {});
     const diff = curDiff();
@@ -4490,7 +4507,7 @@ async function startUnits(book, units, count = sessionSize(), opts = {}) {
   track(opts.placement ? 'level_check' : 'practice');
   if (!opts.placement) { if (!allow('q')) return; if (limitOf('q') !== UNL) count = Math.max(1, Math.min(count, leftOf('q'))); }
   const k = units.length, quota = Math.ceil(count / k);
-  let types = opts.types || local.types || 'mix'; const diff = opts.diff || curDiff();
+  let types = opts.types || curTypes(); const diff = opts.diff || curDiff();
   if (types !== 'mcq' && limitOf('written') !== UNL && leftOf('written') <= 0) { types = 'mcq'; toast(PL('Today’s written questions are used up: multiple choice for now. Plus has unlimited.', '今日的文字題已用完，暫時只有選擇題。Plus 無限使用。')); }
   const pools = [];
   for (const u of units) {
@@ -5144,7 +5161,7 @@ function ensureFill(book, unit, want, types = 'mix', par = PARALLEL, adapt = fal
   const key = `${book.id}:${unit.id}:${types}${diff === 'auto' ? '' : ':' + diff}`;
   if (jobs.has(key)) { const j = jobs.get(key); j.want = Math.max(j.want, j.made + want); j.par = Math.max(j.par, par); if (j.spawn) j.spawn(); return j; }
   const kp = KIND_PLANS[kindOfBook(book)];
-  const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: (kp && kp[types]) || PLANS[types] || PLAN, par, adapt, diff };
+  const job = { want, made: 0, error: null, done: false, listeners: new Set(), plan: gradePlan((kp && kp[types]) || PLANS[types] || PLAN, types), par, adapt, diff };
   jobs.set(key, job);
   job.promise = doFill(book, unit, job)
     .catch((e) => { job.error = e; if (e.status === 401) { local.code = ''; saveLocal(); } })
@@ -5630,7 +5647,7 @@ function renderQuestion() {
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
-    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
+    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊 ${LANG === 'zh' ? '讀出題目' : 'Read to me'}</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? preTutorHTML(q) : ''}
   </main>
@@ -5638,9 +5655,48 @@ function renderQuestion() {
   liftActions();
   bindCommon(q);
   body.bind && body.bind();
+  { const sq = document.getElementById('sayq'); if (sq) sq.onclick = () => sayAloud(questionSpeech(q)); }
+  // P1-P2: read each new question aloud once, as a parent would
+  if (gradeBand() === 'p12' && S.phase !== 'revealed' && S.saidQ !== q.id && navigator.userActivation && navigator.userActivation.hasBeenActive) { S.saidQ = q.id; setTimeout(() => { if (S && S.qs[S.i] === q) sayAloud(questionSpeech(q)); }, 350); }
   startTimer();
   window.scrollTo(0, 0);
 }
+/* ---------- read aloud (primary): questions and Buddy's replies, with the same free browser voices as 默書 ---------- */
+const readAloudOn = () => !!(window.speechSynthesis && isPrimaryKid());
+const plainSpeech = (t) => String(t || '').replace(/\$([^$]+)\$/g, (m, x) => x.replace(/\\(text|mathrm|ce)\{([^}]*)\}/g, '$2').replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '$1 over $2').replace(/\\times/g, ' times ').replace(/[{}\\^_]/g, ' '))
+  .replace(/[*#>|`]/g, ' ').replace(/_{2,}/g, LANG === 'zh' ? '，空格，' : ', blank, ').replace(/\s+/g, ' ').trim();
+function questionSpeech(q) {
+  const parts = [q.stem || ''];
+  if (choiceType(q)) (q.options || []).forEach((o, i) => parts.push(`${'ABCD'[i]}. ${o}`));
+  else (q.parts || []).forEach((p) => parts.push(`${p.label || ''} ${p.prompt || ''}`));
+  return parts.join('. ');
+}
+function sayAloud(text) {
+  try {
+    speechSynthesis.cancel();
+    const t = plainSpeech(text); if (!t) return;
+    const zh = (t.match(/[\u3400-\u9fff]/g) || []).length > t.length / 4;
+    const u = new SpeechSynthesisUtterance(t), v = dictVoice(zh ? 'yue' : 'en');
+    if (v) u.voice = v; u.lang = v ? v.lang : (zh ? 'zh-HK' : 'en-GB');
+    u.rate = gradeBand() === 'p12' ? 0.85 : 0.95;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+// A small 🔊 on each of Buddy's replies (tutor, coach, homework, lessons), for primary children.
+(() => {
+  const add = () => {
+    if (!readAloudOn()) return;
+    document.querySelectorAll('.tmsg.ai:not([data-say-on])').forEach((m) => {
+      if (m.querySelector('.dots') || m.closest('.coach-demo')) return;
+      m.setAttribute('data-say-on', '1');
+      const b = document.createElement('button'); b.className = 'say-mini'; b.type = 'button'; b.textContent = '🔊';
+      b.setAttribute('aria-label', LANG === 'zh' ? '讀出來' : 'Read this to me');
+      b.onclick = (e) => { e.stopPropagation(); const c = m.cloneNode(true); c.querySelectorAll('.say-mini').forEach((x) => x.remove()); sayAloud(c.textContent); };
+      m.appendChild(b);
+    });
+  };
+  try { new MutationObserver(() => { clearTimeout(add.t); add.t = setTimeout(add, 120); }).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+})();
 
 // Pictures of the chapter's diagram pages. Library books added before diagrams existed fetch them now.
 async function figsFor(book, unit) {

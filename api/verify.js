@@ -19,7 +19,7 @@ module.exports = handler(async (body, usage) => {
   const blind = essay ? { answer: '(writing task: no single answer)', option: '' } : await callTool({
     system: VERIFY_SYSTEM, sectionBlock: block, toolName: 'answer', maxTokens: 2000, usage, step: 'check',
     images: fig,
-    instruction: `<question>\n${questionForChecker(q, false)}\n</question>\n\nAnswer this question as a top student would, using only the section${fig.length ? ' and the attached figure' : ''}. ` +
+    instruction: `<question>\n${questionForChecker(q, false, body.learner)}\n</question>\n\nAnswer this question as a top student would, using only the section${fig.length ? ' and the attached figure' : ''}. ` +
       'List any assumption you had to make because the question did not say it.',
   });
   if ((q.type === 'mcq' || q.type === 'graph') && blind.option !== q.correct_option) {
@@ -28,7 +28,7 @@ module.exports = handler(async (body, usage) => {
 
   const check = await callTool({
     system: VERIFY_SYSTEM, sectionBlock: block, toolName: 'report', maxTokens: 2000, usage, step: 'check',
-    instruction: `<question>\n${questionForChecker(q, true)}\n</question>\n\n<independent_answer>\n${blind.answer}\n</independent_answer>\n\n` +
+    instruction: `<question>\n${questionForChecker(q, true, body.learner)}\n</question>\n\n<independent_answer>\n${blind.answer}\n</independent_answer>\n\n` +
       (blind.assumptions ? `<assumptions_the_answerer_had_to_make>\n${blind.assumptions}\n</assumptions_the_answerer_had_to_make>\n\nIf any of these assumptions could change the answer, the question is not fully specified.\n\n` : '') +
       (essay ? 'This is a writing task. key_correct = the task is clear, fits what the section teaches, and the rubric suits it; unambiguous = the student knows exactly what to write.'
         : 'Judge the answer key. Where the independent answer and the key disagree, decide which the section supports.') +

@@ -2,7 +2,8 @@
 // body: { title, text, items: [{level, type}], avoid: [string] }
 // returns: { questions: [...] } in the same order as items (possibly fewer)
 
-const { langNote, kindNote, KIND_RULES, LEVELS, GEN_SYSTEM, FIGURE_RULES, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
+const { GRADES, band } = require('../lib/learner');
+const { levelText, langNote, kindNote, KIND_RULES, LEVELS, GEN_SYSTEM, FIGURE_RULES, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
 
 const TYPES = { mcq: 'MCQ', graph: 'CHOOSE-THE-GRAPH', short: 'SHORT-ANSWER', structured: 'STRUCTURED', essay: 'ESSAY (extended writing)' };
 
@@ -22,10 +23,15 @@ module.exports = handler(async (body, usage) => {
     : '';
   const avoid = (Array.isArray(body.avoid) ? body.avoid : []).slice(-40).map((s) => String(s).slice(0, 200));
 
+  // How big written questions are depends on the student's grade (when a parent has set it).
+  const g = body.learner && String(body.learner.grade || '').toUpperCase();
+  const bd = GRADES.includes(g) ? band(g) : '';
+  const SIZE = { p12: { structured: '2 short parts totalling 2-3 marks', short: '1 mark' }, p34: { structured: '2-3 short parts totalling 3-5 marks', short: '1-2 marks' },
+    p56: { structured: '2-4 parts totalling 4-6 marks', short: '1-3 marks' } }[bd] || { structured: '2-4 parts totalling 4-8 marks', short: '2-3 marks' };
   const wanted = items.map((it, i) =>
-    `${i + 1}. A level ${it.level} ${TYPES[it.type]} ${it.figure && figures.length && it.type !== 'graph' ? 'FIGURE ' : ''}question. Level ${it.level} means: ${LEVELS[it.level]}` +
-    (it.type === 'structured' ? ' Give a short scenario or data in the stem, then 2-4 parts totalling 4-8 marks.' : '') +
-    (it.type === 'short' ? ' One part, 2-3 marks.' : '') +
+    `${i + 1}. A level ${it.level} ${TYPES[it.type]} ${it.figure && figures.length && it.type !== 'graph' ? 'FIGURE ' : ''}question. Level ${it.level} means: ${levelText(it.level, body.learner) || LEVELS[it.level]}` +
+    (it.type === 'structured' ? ` Give a short scenario or data in the stem, then ${SIZE.structured}.` : '') +
+    (it.type === 'short' ? ` One part, ${SIZE.short}.` : '') +
     (it.type === 'essay' ? ' One part holding the writing task (genre, purpose, audience, about 200-400 words), with a rubric.' : '') +
     (it.type === 'graph' ? ' The student picks which of 4 sketch graphs correctly shows a relationship the section describes ' +
       '(e.g. enzyme activity against temperature, population against time). Give the 4 graphs in "graphs" with identical axes and ' +

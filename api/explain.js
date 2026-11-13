@@ -40,8 +40,8 @@ module.exports = handler(async (body, usage, emit) => {
   const fig = q.figure && typeof body.figure === 'string' ? [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: body.figure } }] : [];
   // Before answering, the tutor doesn't even see the answer key, so it can't give it away.
   const context = body.before
-    ? `${BEFORE}${body.lang === 'zh-HK' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, false)}\n</question>`
-    : `${TUTOR}${body.lang === 'zh-HK' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, true)}\n</question>\n` +
+    ? `${BEFORE}${body.lang === 'zh-HK' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, false, body.learner)}\n</question>`
+    : `${TUTOR}${body.lang === 'zh-HK' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, true, body.learner)}\n</question>\n` +
       `<explanation_shown>${String(q.explanation || '')}</explanation_shown>\n<student_answer>${String(body.answer || '(none)').slice(0, 3000)}</student_answer>`;
   // First turn carries the context; later turns are the conversation so far.
   const list = [];
