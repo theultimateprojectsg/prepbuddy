@@ -278,15 +278,20 @@ export function strongerHTML(gs, zh, cls = 'rp-card', kid = false) {
       : st === 'dipping' ? `<span class="gs-chip down">▼ ${T('Slipping', '退步')} <b>${f1(ch)}</b></span>`
       : st === 'steady' ? `<span class="gs-chip">= ${T('Holding steady', '保持穩定')}</span>`
       : `<span class="gs-chip wait">${T('Building a picture', '收集數據中')}</span>`;
+    // before a trend: an early read of the level once there are 10+ answers, and roughly when the trend will show
+    const early = (n, wk) => (!n || n < 10 ? `<span class="gs-chip wait">${T('Just started', '剛開始')}</span>`
+      : `<span class="gs-chip wait">${T(`Early read · trend in ~${Math.max(1, wk || 1)} wk${Math.max(1, wk || 1) > 1 ? 's' : ''}`, `初步評估 · 約 ${Math.max(1, wk || 1)} 星期後顯示走勢`)}</span>`);
     const spark = (pts) => { if (!pts || pts.length < 2) return '<svg class="gs-sp" viewBox="0 0 120 34" aria-hidden="true"></svg>';
       const X = (i) => 4 + i * 112 / (pts.length - 1), Y = (v) => 30 - (Math.max(0.5, Math.min(4.5, v)) - 0.5) / 4 * 26;
       return `<svg class="gs-sp" viewBox="0 0 120 34" aria-hidden="true"><line x1="0" x2="120" y1="${Y(2.5)}" y2="${Y(2.5)}" class="gs-mid"/><polyline points="${pts.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"/>${pts.map((v, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${i === pts.length - 1 ? 3 : 1.8}"/>`).join('')}</svg>`; };
-    const ready = gs.s.filter((x) => x[2] !== 'building'), up = ready.filter((x) => x[2] === 'rising').length;
-    const lead = !ready.length ? T('PrepBuddy needs about 3 weeks of practice in a subject to show a trend. Levels so far are shown below.', 'PrepBuddy 需要大約 3 星期的練習才能顯示走勢。以下是目前的程度。')
+    const ready = gs.s.filter((x) => x[2] !== 'building'), up = ready.filter((x) => x[2] === 'rising').length, started = gs.s.some((x) => x[1] != null);
+    const lead = !ready.length ? (started ? T('Starting levels are in. A trend shows after about 3 weeks of practice in a subject.', '已有初步程度。每科練習約 3 星期後便會顯示走勢。')
+        : T('Levels appear after about 10 questions in a subject, and a trend after about 3 weeks.', '每科完成約 10 題後會顯示程度，約 3 星期後顯示走勢。'))
       : up ? T(`Getting stronger in ${up} of ${ready.length} subject${ready.length > 1 ? 's' : ''}${kid ? '. Keep it up!' : ', even as the questions get harder.'}`, `${ready.length} 科中有 ${up} 科在進步${kid ? '，繼續加油！' : '，即使題目愈來愈難。'}`)
       : T('Holding steady so far. Steady practice on the weakest chapters is what moves the level up.', '目前保持穩定。多練習最弱的章節，程度就會提升。');
-    const rows = gs.s.map(([name, lvl, st, ch, since, line, books]) => `<div class="gs-row"><div class="gs-name"><b>${esc(name)}</b><small>${st !== 'building' && since ? T(`since ${mon(since)}`, `自 ${mon(since)}`) : ''}</small></div>
-        ${spark(line)}<div class="gs-lvl"><b>${f1(lvl)}</b><small>${T('level', '程度')}</small></div>${chip(st, ch)}</div>
+    const rows = gs.s.map(([name, lvl, st, ch, since, line, books, , n, wk, next]) => `<div class="gs-row"><div class="gs-name"><b>${esc(name)}</b><small>${st !== 'building' && since ? T(`since ${mon(since)}`, `自 ${mon(since)}`) : st === 'building' && lvl != null ? T('starting level', '初步程度') : ''}</small></div>
+        ${spark(line)}<div class="gs-lvl"><b>${f1(lvl)}</b><small>${T('level', '程度')}</small></div>${st === 'building' ? early(n, wk) : chip(st, ch)}</div>
+        ${next && next[0] ? (kid && next[1] ? `<button class="gs-next" data-unit="${esc(next[1])}">→ ${esc(next[0])}</button>` : `<p class="gs-next">→ ${T('Next', '下一步')}: ${esc(next[0])}</p>`) : ''}
         ${(books || []).map(([t, l, bst]) => `<div class="gs-book"><span>${esc(t)}</span><b>${f1(l)}</b><em class="${bst === 'rising' ? 'up' : bst === 'dipping' ? 'down' : ''}">${bst === 'rising' ? '▲' : bst === 'dipping' ? '▼' : bst === 'steady' ? '=' : '…'}</em></div>`).join('')}`).join('');
     const pc = (a) => (a && a[1] >= 5 ? Math.round(100 * a[0] / a[1]) + '%' : null);
     const extra = [pc(gs.fx) ? T(`Mistakes fixed on a retry: <b>${pc(gs.fx)}</b>`, `重做時改正錯題：<b>${pc(gs.fx)}</b>`) : '', pc(gs.kt) ? T(`Remembered a week or more later: <b>${pc(gs.kt)}</b>`, `一星期後仍記得：<b>${pc(gs.kt)}</b>`) : ''].filter(Boolean);
@@ -367,6 +372,7 @@ export const REPORT_CSS = `
 .gs-chip{justify-self:end;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:#EEF1F8;color:#3B4668;white-space:nowrap}.gs-chip.up{background:#E3F5EA;color:#14804A}.gs-chip.down{background:#FDEEE3;color:#B4531A}.gs-chip.wait{background:#F4F5F9;color:#6B7591;font-weight:500}
 .gs-book{display:grid;grid-template-columns:1fr 52px 20px;gap:12px;padding:3px 0 6px 14px;font-size:13px;color:#4A5370}.gs-book b{text-align:center}.gs-book em{font-style:normal;text-align:center}.gs-book em.up{color:#14804A}.gs-book em.down{color:#B4531A}
 .gs-extra{font-size:13px;color:#4A5370;margin:8px 0 0}
+.gs-next{display:block;width:100%;text-align:left;margin:0 0 6px;padding:7px 12px;border-radius:10px;background:#F4F6FC;border:0;font:inherit;font-size:13.5px;color:#2C3E8F}button.gs-next{cursor:pointer;font-weight:600}button.gs-next:hover{background:#E9EDFA}
 @media (max-width:560px){.gs-row{grid-template-columns:1fr auto;row-gap:4px}.gs-sp{grid-column:1;grid-row:2;width:100%}.gs-chip{grid-column:2;grid-row:2;justify-self:end}.gs-lvl{grid-column:2;grid-row:1}}
 .rp-card p{margin:0}.rp-card-head h2{margin:0;font-size:16px}.rp-card-head span{font-size:12.5px;color:var(--muted)}
 .rp-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;height:150px}

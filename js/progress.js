@@ -120,7 +120,10 @@ export function trackSummary(T) {
   for (let i = weeks.length - 1; i >= 0 && (recent.length < 2 || rn < 20); i--) { recent.push(T.wk[weeks[i]].c); rn += T.wk[weeks[i]].n; }
   const now = fit(recent);
   const out = { n: T.n, weeks: weeks.length, level: now ? r2(toLevel(now.th)) : null, se: now ? r2(now.se / SPACING) : null,
-    line: pts.slice(-12).map((p) => [p.k, r2(toLevel(p.th)), p.n]), status: 'building', change: null, cse: null, since: weeks[0] || null, start: null, perWeek: null };
+    line: pts.slice(-12).map((p) => [p.k, r2(toLevel(p.th)), p.n]), status: 'building', change: null, cse: null, since: weeks[0] || null, start: null, perWeek: null,
+    // until there's a trend: how many more weeks (with 5+ answers) and first attempts it needs
+    wkLeft: Math.max(0, MIN_WEEKS - pts.length), nLeft: Math.max(0, MIN_N - T.n) };
+  if (T.n < 10) out.level = null; // too few answers for even an early read
   if (T.n < MIN_N || pts.length < MIN_WEEKS) return out;
   // weighted straight line through the weekly levels
   const ws = pts.map((p) => 1 / (p.se * p.se)), sw = ws.reduce((a, b) => a + b, 0);

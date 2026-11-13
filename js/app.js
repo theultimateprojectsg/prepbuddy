@@ -2655,15 +2655,38 @@ function pgState() {
 }
 // The compact summary carried by the weekly report (r.gs) and shown in the app:
 // s: [subject, level, status, change, since, weekly levels, books [[title, level, status, change]], uncertainty, answers]
+// What to do next in a subject that's holding steady or slipping (or any subject, for the WhatsApp update):
+// the weakest chapter started so far, its open mistakes, or the next chapter not yet started.
+async function subjNext(key, status, books) {
+  const bs = books.filter((b) => BOOK_SUBJ[b.id] === key);
+  let weak = null, fresh = null;
+  for (const b of bs) {
+    const m = await bookMastery(b);
+    for (const c of m.chapters) {
+      if (c.done >= 3 && (!weak || c.pct < weak.c.pct)) weak = { b, c };
+      if (!c.done && !fresh) fresh = { b, c };
+    }
+  }
+  const mk = (x) => Object.entries(local.mistakes || {}).filter(([id, v]) => !v.done && id.startsWith(`${x.b.id}:${x.c.unit.id}:`)).length;
+  const nm = (x) => cleanUnitTitle(x.c.unit.title).slice(0, 50);
+  const at = (x) => `${x.b.id}:${x.c.unit.id}`;
+  if (status === 'dipping' && weak) { const n = mk(weak);
+    return { u: at(weak), en: n ? `Go back over “${nm(weak)}”: redo its ${n} mistake${n > 1 ? 's' : ''}, then a short set` : `Go back over “${nm(weak)}” with a short set`, zh: n ? `重溫「${nm(weak)}」：重做 ${n} 題錯題，再做一組短練習` : `重溫「${nm(weak)}」，做一組短練習` }; }
+  if (weak && weak.c.pct < 70) return { u: at(weak), en: `Focus on “${nm(weak)}”, the weakest chapter so far`, zh: `集中練習「${nm(weak)}」，目前最弱的章節` };
+  if (fresh) return { u: at(fresh), en: `Start a new chapter: “${nm(fresh)}”`, zh: `開始新章節：「${nm(fresh)}」` };
+  if (weak) return { u: at(weak), en: `Try harder questions in “${nm(weak)}”`, zh: `在「${nm(weak)}」試做較難的題目` };
+  return null;
+}
 async function gsData() {
   const books = await getBooks(), P = PG.summary(pgState());
   const label = (key) => { if (key.startsWith('b:')) { const b = books.find((x) => x.id === key.slice(2)); return b ? b.title : null; }
     const b = books.find((x) => BOOK_SUBJ[x.id] === key); return b ? (b.subject ? subj(b.subject) : b.title) : null; };
-  const s = P.subjects.map((x) => {
-    const lab = label(x.key); if (!lab || x.level == null) return null;
+  const s = (await Promise.all(P.subjects.map(async (x) => {
+    const lab = label(x.key); if (!lab || !x.n) return null;
     const bks = x.books.length > 1 ? x.books.map((k) => { const b = books.find((y) => y.id === k.id); return b && k.level != null ? [b.title.slice(0, 40), k.level, k.status, k.change] : null; }).filter(Boolean) : [];
-    return [lab.slice(0, 30), x.level, x.status, x.change, x.since, x.line.map((p) => p[1]), bks, x.cse, x.n];
-  }).filter(Boolean).slice(0, 8);
+    const nx = x.status === 'steady' || x.status === 'dipping' ? await subjNext(x.key, x.status, books).catch(() => null) : null;
+    return [lab.slice(0, 30), x.level, x.status, x.change, x.since, x.line.map((p) => p[1]), bks, x.cse, x.n, x.wkLeft, nx ? [LANG === 'zh' ? nx.zh : nx.en, nx.u] : null];
+  }))).filter(Boolean).slice(0, 8);
   return { s, fx: P.fixed, kt: P.kept };
 }
 
@@ -2885,6 +2908,9 @@ async function offerResume() {
 // A short summary of how PrepBuddy is used on this device (sent to the pilot admin page).
 async function pilotSnap() {
   const books = await getBooks();
+  // next steps per subject for the parent's weekly update (both languages: the parent may read the other one)
+  const NEXT_CACHE = {};
+  try { for (const x of PG.summary(pgState()).subjects) { const nx = await subjNext(x.key, x.status, books); if (nx) NEXT_CACHE[x.key] = { en: nx.en, zh: nx.zh }; } } catch (e) {}
   const t0 = dayStart(), log = local.log || [], since = t0 - 59 * DAY;
   const days = [];
   for (let i = 59; i >= 0; i--) {
@@ -2922,7 +2948,7 @@ async function pilotSnap() {
     marks: (local.marks || []).slice(-12).map((m) => ({ kind: m.kind, exam: m.exam, when: m.when, s: m.s, other: m.other ? String(m.other).slice(0, 20) : '' })),
     // Getting stronger, per subject (see progress.js), plus first-attempt totals by level for the admin's calibration check.
     prog: (() => { try { const st = pgState(), P = PG.summary(st);
-      return { v: 2, s: P.subjects.map((x) => ({ key: x.key, level: x.level, se: x.se, status: x.status, change: x.change, cse: x.cse, n: x.n, weeks: x.weeks, start: x.start, since: x.since, line: x.line.map((p) => p[1]),
+      return { v: 2, s: P.subjects.map((x) => ({ key: x.key, level: x.level, se: x.se, status: x.status, change: x.change, cse: x.cse, n: x.n, weeks: x.weeks, start: x.start, since: x.since, line: x.line.map((p) => p[1]), wkLeft: x.wkLeft, next: NEXT_CACHE[x.key] || null,
         books: x.books.map((k) => { const b = books.find((y) => y.id === k.id); return { t: b ? String(b.title).slice(0, 40) : '', level: k.level, status: k.status, change: k.change, n: k.n }; }) })),
         fixed: P.fixed, kept: P.kept, cal: PG.calibData(st) }; } catch (e) { return null; } })(),
     // The weekly report as of this sync, for the parent's report link (admin → Weekly updates; opened via /r/<token>).
@@ -4212,7 +4238,7 @@ async function renderProgress() {
     </div>
   </main>`;
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
-  $app.querySelectorAll('.pg-act[data-unit]').forEach((b) => (b.onclick = async () => {
+  $app.querySelectorAll('.gs-next[data-unit], .pg-act[data-unit]').forEach((b) => (b.onclick = async () => {
     const [bid, uid2] = b.dataset.unit.split(':'); const book = (await getBooks()).find((x) => x.id === bid);
     const u = book && book.units.find((x) => x.id === uid2); if (u) startUnits(book, [u], local.count || sessionSize());
   }));

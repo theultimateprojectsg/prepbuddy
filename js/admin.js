@@ -506,12 +506,13 @@ function weeklyMsg(f, lang) {
     const subs = (sn.prog && sn.prog.s ? sn.prog.s : []).filter((x) => x.level != null).slice(0, 4);
     const name = (k) => (zh ? SUBJ_ZH[k] : SUBJ_NAME[k]) || (k.startsWith('s:') ? k.slice(2) : T('a book', '課本'));
     const up = subs.filter((x) => x.status === 'rising');
+    const nextOf = (x) => (x.next && x.next[zh ? 'zh' : 'en'] ? T(`\n   → ${x.next.en}`, `\n   → ${x.next.zh}`) : '');
     subs.forEach((x) => {
       const lv = x.level.toFixed(1);
       lines.push(x.status === 'rising' ? T(`• ${name(x.key)}: getting stronger, level ${x.start != null ? x.start.toFixed(1) + ' → ' : ''}${lv} ▲`, `• ${name(x.key)}：進步中，程度 ${x.start != null ? x.start.toFixed(1) + ' → ' : ''}${lv} ▲`)
-        : x.status === 'dipping' ? T(`• ${name(x.key)}: level ${lv}, slipping a little: worth some extra practice`, `• ${name(x.key)}：程度 ${lv}，略有退步，值得多加練習`)
-        : x.status === 'steady' ? T(`• ${name(x.key)}: holding steady at level ${lv}`, `• ${name(x.key)}：保持穩定，程度 ${lv}`)
-        : T(`• ${name(x.key)}: level ${lv} so far (trend after ~3 weeks)`, `• ${name(x.key)}：目前程度 ${lv}（約 3 星期後顯示走勢）`));
+        : x.status === 'dipping' ? T(`• ${name(x.key)}: level ${lv}, slipping a little`, `• ${name(x.key)}：程度 ${lv}，略有退步`) + nextOf(x)
+        : x.status === 'steady' ? T(`• ${name(x.key)}: holding steady at level ${lv}`, `• ${name(x.key)}：保持穩定，程度 ${lv}`) + nextOf(x)
+        : T(`• ${name(x.key)}: starting level ${lv} (trend in ~${Math.max(1, x.wkLeft || 1)} week${Math.max(1, x.wkLeft || 1) > 1 ? 's' : ''})`, `• ${name(x.key)}：初步程度 ${lv}（約 ${Math.max(1, x.wkLeft || 1)} 星期後顯示走勢）`));
     });
     if (up.length) lines.push(T('  (Level = how hard the questions they get 2 in 3 right are, so it rises even when % stays the same.)', '  （程度＝孩子能答對約三分之二的題目難度，所以即使得分率不變，程度也會上升。）'));
     if (r && r.q && r.next && (r.u === 'zh') === zh) lines.push(T(`• Next: ${r.next}`, `• 下一步：${r.next}`)); // written in the app's language
