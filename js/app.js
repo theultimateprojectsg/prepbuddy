@@ -558,7 +558,7 @@ async function apiStream(path, body, onChunk) {
 async function apiStreamOnce(path, body, onChunk) {
   let r;
   try {
-    r = await fetch('/api/' + path, { method: 'POST', headers: { 'content-type': 'application/json', 'x-access-code': local.code || '' }, body: JSON.stringify({ ...body, stream: true }) });
+    r = await fetch('/api/' + path, { method: 'POST', headers: { 'content-type': 'application/json', 'x-access-code': local.code || '' }, body: JSON.stringify({ ...withProfile(body), stream: true }) });
   } catch (e) { const err = new Error('No internet connection.'); err.status = 0; throw err; }
   if (!r.ok || !/ndjson/.test(r.headers.get('content-type') || '') || !r.body) {
     let data = {}; try { data = await r.json(); } catch (e) {}
@@ -586,13 +586,15 @@ async function apiStreamOnce(path, body, onChunk) {
   if (done.usage) recordUsage(path, done.usage);
   return done;
 }
+// Every AI request carries the student profile (grade etc.), when a parent has set one.
+const withProfile = (body) => { const l = learnerPayload(); return l && body && typeof body === 'object' && !body.learner ? { ...body, learner: l } : body; };
 async function apiOnce(path, body) {
   let r;
   try {
     r = await fetch('/api/' + path, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-access-code': local.code || '' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(withProfile(body)),
     });
   } catch (e) { const err = new Error('No internet connection. Questions need a connection to be made.'); err.status = 0; throw err; }
   let data = {};
@@ -929,7 +931,7 @@ async function runCoachAction(a) {
   const units = book ? book.units.filter((u) => chs.some((c) => c.bookId === book.id && c.unitId === u.id)) : [];
   if (book && units.length) pick = { bookId: book.id, ids: new Set(units.map((u) => u.id)) };
   switch (a.action) {
-    case 'practise': if (book && units.length) return startUnits(book, units, Math.min(30, Math.max(5, Number(a.count) || SESSION_SIZE))); break;
+    case 'practise': if (book && units.length) return startUnits(book, units, Math.min(30, Math.max(5, Number(a.count) || sessionSize()))); break;
     case 'chapter_test': if (book && units.length) return startChapterTest(book, units); break;
     case 'review': return startReview('spaced');
     case 'mistakes': return go({ name: 'mistakes' });
@@ -1903,7 +1905,7 @@ async function renderLearn(bookId, unitId) {
     on('next', () => { R.k++; if (R.k >= n) finish(); draw(); });
     on('again', () => { R.k = 0; R.picked = {}; R.right = 0; draw(); });
     on('done', () => go({ name: 'book', bookId }));
-    on('practise', () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], local.count || SESSION_SIZE); });
+    on('practise', () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], local.count || sessionSize()); });
     $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => { const s = L.steps[R.k]; R.picked[R.k] = +b.dataset.opt; if (+b.dataset.opt === s.check.answer) R.right++; draw(); }));
   };
   const finish = () => {
@@ -2100,10 +2102,10 @@ async function renderHome() {
       <div class="sect-head"><h2>Practice</h2></div>
       <div class="quick">
         <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
-        <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>Mock paper</b><span>DSE-style, timed</span></button>
+        <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${isPrimaryKid() ? (LANG === 'zh' ? '模擬試卷' : 'Practice paper') : 'Mock paper'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
         <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        ${primaryCache ? '' : `<button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
+        ${isPrimaryKid() ? '' : `<button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -2251,6 +2253,10 @@ function renderSettings() {
       <span class="muted" style="font-size:13.5px;line-height:1.5">Used to greet you and on the weekly report you send your parents.</span>
       <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
     </section>
+    ${profileOn() ? `<section class="card stack g10" style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PLT('About your child', '關於你的孩子')}</b><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></div>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
+    </section>` : ''}
     <section class="card stack g10" style="padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Plus</span>' : ''}</b>
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
@@ -2285,6 +2291,7 @@ function renderSettings() {
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
   { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); }
+  { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings' }); }; }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
   document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
   document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
@@ -2404,6 +2411,7 @@ async function pilotGate() {
 const CONSENT_V = 1;
 async function pilotWelcome() {
   if (local.pilot && local.code && !(local.consent && local.consent.v >= CONSENT_V)) await consentScreen();
+  if (profileOn() && !local.learner) await profileScreen({ first: true });
   if (!local.toured) await startTour();
 }
 function consentScreen() {
@@ -2420,7 +2428,7 @@ function consentScreen() {
     ];
     $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
       <div class="pg-box cs-box">
-        <div class="cs-head">${buddySVG('listen', 64)}<div><span class="pg-tag">${C('Step 1 of 2 · for parents', '第 1 步，共 2 步 · 家長專用')}</span><h1>${C('Before we start', '開始之前')}</h1></div></div>
+        <div class="cs-head">${buddySVG('listen', 64)}<div><span class="pg-tag">${profileOn() ? C('Step 1 of 3 · for parents', '第 1 步，共 3 步 · 家長專用') : C('Step 1 of 2 · for parents', '第 1 步，共 2 步 · 家長專用')}</span><h1>${C('Before we start', '開始之前')}</h1></div></div>
         <p>${C('Please ask a parent or guardian to read this and agree. It takes a minute.', '請家長或監護人閱讀並同意以下內容，只需一分鐘。')}</p>
         <div class="cs-list">${items.map(([i, h, t]) => `<div class="cs-item"><span>${i}</span><div><b>${h}</b><p>${t}</p></div></div>`).join('')}</div>
         <div class="cs-foot"><label class="cs-agree"><input type="checkbox" id="cs-ok"><span>${C('I’m this child’s parent or guardian. I’ve read this and agree to my child taking part in the PrepBuddy pilot.', '我是這名子女的家長或監護人，已閱讀以上內容，並同意子女參加 PrepBuddy 試用計劃。')}</span></label>
@@ -2435,6 +2443,75 @@ function consentScreen() {
       $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
       resolve();
     };
+  });
+}
+/* ---------- the student profile: grade, pace, school language, goals, likes ----------
+   Set by a parent once (in the welcome steps, or Settings). Every AI request then carries it (learnerPayload), so
+   questions, marking, Buddy, lessons and notes fit this child's age and level. Kept on this device; only these
+   fields are sent with AI requests, never a name or school. The grade moves up by itself each September. */
+const PROFILE_ALL = false; // switch on for everyone once checked; until then ?beta=profile turns it on for a device
+(() => { try { const m = location.search.match(/[?&]beta=(profile|off)\b/); if (m) { local.beta = m[1] === 'off' ? '' : 'profile'; saveLocal(); } } catch (e) {} })();
+const profileOn = () => PROFILE_ALL || local.beta === 'profile';
+const GRADE_LIST = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+const schoolYearOf = (t) => { const d = new Date(t); return d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear() - 1; };
+function gradeNow() {
+  const L = local.learner; if (!L || !GRADE_LIST.includes(L.grade)) return '';
+  const i = GRADE_LIST.indexOf(L.grade) + Math.max(0, schoolYearOf(Date.now()) - schoolYearOf(L.at || Date.now()));
+  return GRADE_LIST[Math.min(i, GRADE_LIST.length - 1)];
+}
+const learnerPayload = () => (profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', goals: local.learner.goals || [], likes: local.learner.likes || '' } : null);
+const gradeBand = () => { const g = gradeNow(); return !g ? '' : /^P[12]$/.test(g) ? 'p12' : /^P[34]$/.test(g) ? 'p34' : /^P[56]$/.test(g) ? 'p56' : /^S[123]$/.test(g) ? 's13' : 's46'; };
+// Primary or not: the child's grade when the parent has set it, otherwise a guess from their books.
+const isPrimaryKid = () => (profileOn() && gradeNow() ? gradeNow()[0] === 'P' : !!primaryCache);
+const sessionSize = () => ({ p12: 6, p34: 8 }[gradeBand()] || SESSION_SIZE);
+const gradeName = (g) => (LANG === 'zh' ? `${g[0] === 'P' ? '小' : '中'}${'一二三四五六'[+g[1] - 1]}` : `${g[0] === 'P' ? 'Primary' : 'Secondary'} ${g[1]}`);
+function profileScreen({ first } = {}) {
+  return new Promise((resolve) => {
+    const C = (en, zh) => (LANG === 'zh' ? zh : en);
+    const L = { grade: gradeNow(), pace: '', medium: '', goals: [], likes: '', ...(local.learner || {}) }; L.grade = gradeNow() || '';
+    const nav = document.getElementById('tabs'); if (first && nav) nav.style.display = 'none';
+    if (first) document.body.dataset.tab = '';
+    const GOALS = (g) => [['tests', C('School tests and exams', '校內測驗及考試')], ...(/^P[23]$|^S[23]$/.test(g) || g === 'P6' ? [['tsa', C('TSA', '全港性系統評估 (TSA)')]] : []),
+      ...(/^P[456]$/.test(g) ? [['ssa', C('呈分試 (counts for secondary places)', '呈分試')]] : []), ...(/^S[3-6]$/.test(g) ? [['dse', 'HKDSE']] : []), ['habits', C('A regular study habit', '建立溫習習慣')]];
+    const opt = (k, v, t, sub) => `<button class="langopt ${L[k] === v ? 'on' : ''}" data-k="${k}" data-v="${v}" aria-pressed="${L[k] === v}"><b>${t}</b>${sub ? `<span>${sub}</span>` : ''}</button>`;
+    let drawn = false;
+    const draw = () => {
+      L.goals = L.goals.filter((x) => GOALS(L.grade).some(([k]) => k === x));
+      $app.innerHTML = `<main class="pad ${first ? 'pilotgate' : 'stack g18'}" data-raw style="flex:1">
+      <div class="${first ? 'pg-box cs-box' : 'stack g18'} prof-box${drawn ? ' noanim' : ''}">
+        <div class="cs-head">${buddySVG('happy', 64)}<div>${first ? `<span class="pg-tag">${local.pilot ? C('Step 2 of 3 · for parents', '第 2 步，共 3 步 · 家長專用') : C('For parents', '家長專用')}</span>` : ''}<h1 class="${first ? '' : 'pagetitle'}" style="margin:6px 0 0">${C('About your child', '關於你的孩子')}</h1></div></div>
+        <p style="margin:0;line-height:1.5;color:var(--text-2)">${C('Buddy uses this to talk, explain and set questions at the right level for your child. It stays on this device.', 'Buddy 會按這些資料，用適合孩子程度的方式講解和出題。資料只保存在這部裝置。')}</p>
+        <section class="stack g10"><b>${C('Which grade are they in?', '孩子讀幾年級？')}</b>
+          <div class="prof-grades"><span class="muted">${C('Primary', '小學')}</span>${GRADE_LIST.slice(0, 6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div>
+          <div class="prof-grades"><span class="muted">${C('Secondary', '中學')}</span>${GRADE_LIST.slice(6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div></section>
+        <section class="stack g10"><b>${C('How are they doing at school?', '孩子在學校的情況？')}</b>
+          <div class="prof-opts">${opt('pace', 'support', C('Needs extra help', '需要多些幫助'), C('Smaller steps, easier start', '由淺入深，循序漸進'))}${opt('pace', 'ontrack', C('About right', '跟得上'), C('Keeping up with the class', '跟上班中進度'))}${opt('pace', 'ahead', C('Ahead', '超前'), C('Ready for harder work', '可以挑戰較深的題目'))}</div></section>
+        <section class="stack g10"><b>${C('Their school mostly teaches in…', '學校主要用甚麼語言教學？')}</b>
+          <div class="prof-opts two">${opt('medium', 'cmi', C('Chinese', '中文'), C('Cantonese / Chinese', '廣東話／中文'))}${opt('medium', 'emi', C('English', '英文'), C('English-medium school', '英文中學／小學'))}</div></section>
+        ${L.grade ? `<section class="stack g10"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
+          <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
+        <section class="stack g10"><label for="plikes"><b>${C('What do they love?', '孩子喜歡甚麼？')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
+          <input id="plikes" class="input" maxlength="80" placeholder="${C('e.g. football, dinosaurs, drawing', '例如：足球、恐龍、畫畫')}" value="${esc(L.likes || '')}">
+          <span class="hint" style="margin:0;text-align:left">${C('Buddy may use these in examples. Please don’t enter their name or school.', 'Buddy 或會用這些例子講解。請勿輸入孩子的名字或學校。')}</span></section>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">${first ? '' : `<button class="btn-sm" id="pcancel">${C('Cancel', '取消')}</button>`}<button class="btn" id="psave" ${L.grade ? '' : 'disabled'} style="${first ? '' : 'width:auto;padding:12px 24px'}">${first ? C('Continue', '繼續') : C('Save', '儲存')}</button></div>
+      </div></main>`;
+      const likes = document.getElementById('plikes');
+      const redraw = () => { const y = window.scrollY; draw(); window.scrollTo(0, y); };
+      $app.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.grade = b.dataset.g; redraw(); }));
+      $app.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L[b.dataset.k] = b.dataset.v; redraw(); }));
+      $app.querySelectorAll('[data-goal]').forEach((b) => (b.onclick = () => { L.likes = likes.value; const k = b.dataset.goal; L.goals = L.goals.includes(k) ? L.goals.filter((x) => x !== k) : [...L.goals, k]; redraw(); }));
+      document.getElementById('psave').onclick = () => {
+        if (!L.grade) return;
+        local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
+        saveLocal(); track('profile');
+        if (first && nav) nav.style.display = '';
+        if (first) $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
+        resolve(true);
+      };
+      const pc = document.getElementById('pcancel'); if (pc) pc.onclick = () => resolve(false);
+    };
+    draw(); drawn = true;
+    window.scrollTo(0, 0);
   });
 }
 // Guided tours: go to each screen, spotlight the real button, and say what it does.
@@ -2615,7 +2692,7 @@ async function pilotSnap() {
   let best = 0, run = 0, prev = 0; [...dset].sort((a, b) => a - b).forEach((d) => { run = prev && d - prev <= DAY + 3600e3 ? run + 1 : 1; best = Math.max(best, run); prev = d; });
   const mk = Object.values(local.mistakes || {});
   return {
-    v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache,
+    v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache, learner: profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', goals: local.learner.goals || [] } : null,
     inst: isInstalled(), keep: persisted, ios: isIOS,
     ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',
     first: log.length ? log[0].t : null, last: log.length ? log[log.length - 1].t : null,
@@ -2695,7 +2772,7 @@ let primaryCache = null;
 function starsOn() {
   if (!cap('stars')) return false;
   if (local.starsOn === true || local.starsOn === false) return local.starsOn;
-  return !!primaryCache;
+  return isPrimaryKid();
 }
 function starState() {
   local.stars = local.stars || { bal: 0, total: 0, log: [], badges: {}, rewards: null, saving: null, redeemed: [], day: null };
@@ -3296,7 +3373,7 @@ async function renderBook(bookId) {
   }
   bookKinds.set(book.id, kindOfBook(book));
   const t = local.types || 'mix';
-  const count = local.count || SESSION_SIZE;
+  const count = local.count || sessionSize();
   const bm = await bookMastery(book);
   const bmByUnit = Object.fromEntries(bm.chapters.map((c) => [c.unit.id, c]));
   // Sections are grouped under their chapter ("1.1", "1.2" → Chapter 1) so long books stay short to scroll.
@@ -3468,10 +3545,10 @@ async function renderBook(bookId) {
   prefetch(book, book.units.filter((u) => pick.ids.has(u.id)));
   $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; saveLocal(); keep(); }));
   $app.querySelectorAll('[data-diff]').forEach((b) => (b.onclick = () => { if (b.classList.contains('dlock')) return upsell('hardDiff', 'locked'); local.diff = b.dataset.diff; saveLocal(); keep(); }));
-  const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || SESSION_SIZE) + d)); saveLocal(); keep(); };
-  document.getElementById('minus').onclick = () => step((local.count || SESSION_SIZE) > 20 ? -10 : -5);
-  document.getElementById('plus').onclick = () => step((local.count || SESSION_SIZE) >= 20 ? 10 : 5);
-  document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || SESSION_SIZE); };
+  const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || sessionSize()) + d)); saveLocal(); keep(); };
+  document.getElementById('minus').onclick = () => step((local.count || sessionSize()) > 20 ? -10 : -5);
+  document.getElementById('plus').onclick = () => step((local.count || sessionSize()) >= 20 ? 10 : 5);
+  document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || sessionSize()); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
   const bst = document.getElementById('boost'); if (bst) bst.onclick = () => boostSession(book);
   $app.querySelectorAll('[data-step-unit]').forEach((b) => (b.onclick = () => {
@@ -3496,7 +3573,7 @@ async function renderBook(bookId) {
 // so by the time the student presses Start there is little or nothing left to wait for.
 async function prefetch(book, units) {
   if (!units.length || units.length > 3 || navigator.onLine === false) return;
-  const types = local.types || 'mix', count = local.count || SESSION_SIZE;
+  const types = local.types || 'mix', count = local.count || sessionSize();
   for (const u of units) {
     getSnippets(book, u).catch(() => {});
     const diff = curDiff();
@@ -3642,7 +3719,7 @@ function cardsDone() {
   const deck = [...C.firstTry, ...C.missed];
   const r = document.getElementById('redo'); if (r) r.onclick = () => { const m = shuffle([...C.missed]); const id = C.bookId; C = null; renderCards(id, m); };
   document.getElementById('all').onclick = () => { const id = C.bookId; renderCards(id, shuffle(deck)); };
-  document.getElementById('practise').onclick = async () => { const b = (await getBooks()).find((x) => x.id === C.bookId); startUnits(b, paperUnits(b), local.count || SESSION_SIZE); };
+  document.getElementById('practise').onclick = async () => { const b = (await getBooks()).find((x) => x.id === C.bookId); startUnits(b, paperUnits(b), local.count || sessionSize()); };
   document.getElementById('back').onclick = () => go({ name: 'book', bookId: C.bookId });
 }
 
@@ -3897,7 +3974,7 @@ async function renderProgress() {
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('.pg-act[data-unit]').forEach((b) => (b.onclick = async () => {
     const [bid, uid2] = b.dataset.unit.split(':'); const book = (await getBooks()).find((x) => x.id === bid);
-    const u = book && book.units.find((x) => x.id === uid2); if (u) startUnits(book, [u], local.count || SESSION_SIZE);
+    const u = book && book.units.find((x) => x.id === uid2); if (u) startUnits(book, [u], local.count || sessionSize());
   }));
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
   on('act-review', () => startReview('spaced'));
@@ -4409,7 +4486,7 @@ function newSession(props) {
 // fast student rarely catches up with the AI. Spare questions stay in the bank and are used first next session.
 const SPARE = 3;
 const MAKE_PAR = 4;
-async function startUnits(book, units, count = SESSION_SIZE, opts = {}) {
+async function startUnits(book, units, count = sessionSize(), opts = {}) {
   track(opts.placement ? 'level_check' : 'practice');
   if (!opts.placement) { if (!allow('q')) return; if (limitOf('q') !== UNL) count = Math.max(1, Math.min(count, leftOf('q'))); }
   const k = units.length, quota = Math.ceil(count / k);
@@ -4813,7 +4890,7 @@ function renderPlacementResult() {
   const bk = book;
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
   on('plLearn', () => go({ name: 'learn', bookId: bk.id, unitId: first.id }));
-  on('plPrac', () => { pick = { bookId: bk.id, ids: new Set([first.id]) }; startUnits(bk, [first], local.count || SESSION_SIZE); });
+  on('plPrac', () => { pick = { bookId: bk.id, ids: new Set([first.id]) }; startUnits(bk, [first], local.count || sessionSize()); });
   on('plBook', () => go({ name: 'book', bookId: bk.id }));
   window.scrollTo(0, 0);
 }
@@ -5043,7 +5120,7 @@ async function startReview(mode, bookId = null) {
   if (mode === 'weak') {
     const tried = items.filter((x) => local.stats[x.q.id]);
     if (tried.length < 3) return toast('Answer a few questions first, so PrepBuddy knows your weak spots.');
-    pick = shuffle(tried).sort((a, b) => local.stats[a.q.id].last - local.stats[b.q.id].last).slice(0, SESSION_SIZE).map((x) => shuffleOptions(x.q));
+    pick = shuffle(tried).sort((a, b) => local.stats[a.q.id].last - local.stats[b.q.id].last).slice(0, sessionSize()).map((x) => shuffleOptions(x.q));
     const book = bookId && items[0] && items[0].book;
     S = newSession({ mode: 'weak', title: book ? `${LANG === 'zh' ? '弱項' : 'Weak topics'} · ${book.subject ? subj(book.subject) : book.title}` : (LANG === 'zh' ? '弱項' : 'Weak topics'), qs: pick, target: pick.length });
   } else {
@@ -6172,7 +6249,7 @@ function renderSummary() {
         const sv = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
         const I = { more: sv('<path d="M12 5v14M5 12h14"/>'), retry: sv('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'), redo: sv('<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>'), book: sv('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/>'), home: sv('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>') };
         const row = (id, icon, tone, t, sub) => `<button class="ropt" id="${id}"><span class="ropt-i ${tone}">${icon}</span><span class="ropt-t"><b>${t}</b><small>${sub}</small></span><span class="ropt-go" aria-hidden="true">›</span></button>`;
-        const n = S.count || SESSION_SIZE, many = unitRef && unitRef.units.length > 1, Z = (en, zh) => (LANG === 'zh' ? zh : en);
+        const n = S.count || sessionSize(), many = unitRef && unitRef.units.length > 1, Z = (en, zh) => (LANG === 'zh' ? zh : en);
         const prim = !drillable.length && unitRef ? `<button class="btn" id="more">${I.more} ${n} more on ${many ? 'these chapters' : 'this chapter'}</button>` : '';
         const rows = [
           drillable.length && unitRef ? row('more', I.more, 'blue', Z(`${n} more questions`, `再做 ${n} 題`), many ? Z('New questions on these chapters', '這些章節的新題目') : Z('New questions on this chapter', '這一章的新題目')) : '',
@@ -6191,7 +6268,7 @@ function renderSummary() {
   const leave = () => (S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' }));
   document.getElementById('home').onclick = leave;
   document.getElementById('back').onclick = leave;
-  const m = document.getElementById('more'); if (m) m.onclick = () => startUnits(unitRef.book, unitRef.units, S.count || SESSION_SIZE);
+  const m = document.getElementById('more'); if (m) m.onclick = () => startUnits(unitRef.book, unitRef.units, S.count || sessionSize());
   const r = document.getElementById('retry');
   const again = (list, title) => { const l = shuffle(list).map(shuffleOptions); S = newSession({ mode: 'retry', title, book: S.book, qs: l, target: l.length }); renderQuestion(); };
   if (r) r.onclick = () => again(missed, 'Retry');

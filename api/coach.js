@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
     const list = [...history, { role: 'user', content: ask }];
     for (let i = 1; i < list.length; i++) if (list[i].role === list[i - 1].role) throw httpError(400, 'Bad conversation.');
     const system = [{ type: 'text', text: `${COACH}${body.lang === 'zh' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>${body.screen ? `\n\nThe student is on this screen right now: ${String(body.screen).slice(0, 60)}.` : ''}` }];
-    const usage = newUsage();
+    const usage = require('../lib/learner').attachLearner(newUsage(), body);
     const fallback = (out) => out.text || (out.action ? (body.lang === 'zh' ? '好，而家幫你打開。' : 'Okay, opening it now.') : '') || 'Sorry, I could not answer that. Please try asking another way.';
     if (body.stream) {
       // Spoken chat: stream the words so the browser can start speaking the first sentence straight away.

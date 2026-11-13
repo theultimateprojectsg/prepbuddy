@@ -111,7 +111,7 @@ const dayKey = (t) => { const d = new Date(t); return `${d.getFullYear()}-${Stri
 function mergeFamily(snaps) {
   const days = {}, fx = {}, books = new Map(); let last = 0, first = null, errs = [], counts = {}, names = new Set(), plans = new Set(), devices = [];
   const hours = Array(24).fill(0), wdays = Array(7).fill(0), modes = {}, usage = { usd: 0, calls: 0, by: {} }, why = {}, langs = new Set();
-  let sess = [], streak = 0, best = 0, stars = null, pin = false, goal = null, consent = null, toured = null;
+  let sess = [], streak = 0, best = 0, stars = null, pin = false, goal = null, consent = null, toured = null, learner = null, learnerAt = 0;
   for (const s of snaps) {
     devices.push({ device: s.device, ua: s.ua, synced: s.synced, last: s.last, inst: s.inst, keep: s.keep, ios: s.ios });
     if (s.name) names.add(s.name); if (s.plan) plans.add(s.plan); if (s.lang) langs.add(s.lang);
@@ -130,6 +130,7 @@ function mergeFamily(snaps) {
     if (s.parent && s.parent.pin) pin = true;
     if (s.consent && (!consent || s.consent.at < consent.at)) consent = s.consent; if (s.toured) toured = Math.max(toured || 0, s.toured);
     if (s.goal) goal = s.goal;
+    if (s.learner && typeof s.learner === 'object' && (s.synced || s.at || 0) >= learnerAt) { learner = s.learner; learnerAt = s.synced || s.at || 0; }
   }
   sess.sort((a, b) => a.t - b.t);
   const t0 = new Date(); t0.setHours(0, 0, 0, 0);
@@ -142,7 +143,7 @@ function mergeFamily(snaps) {
   const wk2 = f0 === null ? null : (Date.now() - f0 < 7 * 864e5 ? null : Object.keys(days).some((k) => { const t = new Date(k + 'T00:00:00').getTime(); return t >= f0 + 7 * 864e5 && t < f0 + 14 * 864e5; }));
   if (stars) stars.why = why;
   return { days, fx, books: [...books.values()], last, first, errs: errs.sort((a, b) => b.t - a.t).slice(0, 12), counts, names: [...names], plans: [...plans], devices, w: sum(7), w2: sum(14), pw: sum(7, 7),
-    hours, wdays, modes, usage, sess, streak, best, stars, pin, goal, consent, toured, langs: [...langs], actDays, tot: { ...tot, acc: tot.m ? Math.round(100 * tot.g / tot.m) : null }, wk2,
+    hours, wdays, modes, usage, sess, streak, best, stars, pin, goal, consent, toured, learner, langs: [...langs], actDays, tot: { ...tot, acc: tot.m ? Math.round(100 * tot.g / tot.m) : null }, wk2,
     parentUse: (fx.parent_dashboard ? fx.parent_dashboard.n : 0) + (fx.parent_report ? fx.parent_report.n : 0) + (fx['ai:report'] ? fx['ai:report'].n : 0) };
 }
 const MODE_NAMES = { practice: 'Practice', '': 'Practice', spaced: 'Daily reviews', drill: 'Weak-spot drills', mistakes: 'Mistake book redo', dse: 'Chapter tests & DSE papers', mock: 'Mini mock tests', placement: 'Level check', units: 'Practice', unit: 'Practice', book: 'Practice' };
@@ -380,9 +381,9 @@ function pilotInsights(rows, fams) {
 }
 
 function pilotCSV(rows) {
-  const cols = ['Family', 'Code', 'Plan', 'Child', 'Started', 'Last active', 'Active days', 'Came back week 2', 'Questions', 'Accuracy %', 'Minutes', 'Questions 7d', 'Minutes 7d', 'Streak', 'Best streak', 'Sets', 'Rushed sets', 'Books', 'Subjects', 'Lessons', 'Essays', 'Speaking', 'Dictations', 'Mistakes open', 'Mistakes fixed', 'Stars earned', 'Rewards redeemed', 'Consent', 'Tour', 'Parent PIN', 'Parent views', 'AI requests', 'AI cost USD', 'Errors', 'Devices', 'Notes'];
+  const cols = ['Family', 'Code', 'Plan', 'Child', 'Grade', 'Started', 'Last active', 'Active days', 'Came back week 2', 'Questions', 'Accuracy %', 'Minutes', 'Questions 7d', 'Minutes 7d', 'Streak', 'Best streak', 'Sets', 'Rushed sets', 'Books', 'Subjects', 'Lessons', 'Essays', 'Speaking', 'Dictations', 'Mistakes open', 'Mistakes fixed', 'Stars earned', 'Rewards redeemed', 'Consent', 'Tour', 'Parent PIN', 'Parent views', 'AI requests', 'AI cost USD', 'Errors', 'Devices', 'Notes'];
   const d = (t) => (t ? dayKey(t) : ''); // local date, not UTC
-  const lines = rows.map(({ f, a }) => [f.name, f.code, f.plan || 'pro', a.names.join(' / '), d(a.first), d(a.last), a.actDays, a.wk2 === null ? '' : a.wk2 ? 'yes' : 'no', a.tot.q, a.tot.acc ?? '', a.tot.min, a.w.q, a.w.min, a.streak, a.best,
+  const lines = rows.map(({ f, a }) => [f.name, f.code, f.plan || 'pro', a.names.join(' / '), a.learner ? String(a.learner.grade || '') : '', d(a.first), d(a.last), a.actDays, a.wk2 === null ? '' : a.wk2 ? 'yes' : 'no', a.tot.q, a.tot.acc ?? '', a.tot.min, a.w.q, a.w.min, a.streak, a.best,
     a.sess.filter((x) => !x.e).length, a.sess.filter((x) => x.r).length, a.books.length, [...new Set(a.books.map((b) => b.subject))].join(' / '), a.counts.learned || 0, a.counts.writing || 0, a.counts.speaking || 0, a.counts.dictation || 0,
     a.counts.mistakes || 0, a.counts.fixed || 0, a.stars ? a.stars.total : '', a.stars ? a.stars.redeemed : '', a.consent ? d(a.consent.at) : 'no', a.toured ? 'yes' : 'no', a.pin ? 'yes' : 'no', a.parentUse, a.usage.calls, a.usage.usd.toFixed(3), a.errs.length, a.devices.map((x) => x.ua).join(' / '), f.note || '']);
   const q = (v) => { let x = String(v ?? ''); if (/^[=+\-@\t\r]/.test(x) && typeof v !== 'number') x = "'" + x; return /[",\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x; }; // a leading = + - @ would run as a formula in Excel
@@ -481,7 +482,7 @@ function famDetail(r, fb) {
   const scr = Object.entries(a.fx).filter(([k]) => k.startsWith('screen:')).sort((x, y) => y[1].n - x[1].n).slice(0, 10);
   return `<div class="fd">
     <div><h3>Minutes each day (last 3 weeks)</h3><div class="fd-bars">${days.map((d) => `<span title="${dayKey(d.t)}: ${d.x ? `${d.x.min} min, ${d.x.q} questions` : 'none'}"><i style="height:${d.x ? Math.max(4, Math.round(70 * d.x.min / max)) : 2}px" class="${d.x ? '' : 'none'}"></i></span>`).join('')}</div>
-      <div style="margin-top:8px">${a.first ? `<div class="fd-row"><span>Started</span><b>${new Date(a.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</b></div>` : ''}<div class="fd-row"><span>Plan on device</span><b>${esc(a.plans.join(', ') || '–')}</b></div>${a.devices.map((d) => `<div class="fd-row"><span>${esc(d.ua ? d.ua[0].toUpperCase() + d.ua.slice(1) : 'Device')}${d.ios ? ' (iOS)' : ''}${d.inst ? ' · on Home Screen' : d.ios ? ' · <b style="color:#B22A1E">not on Home Screen</b>' : ''}</span><b>synced ${ago(d.synced)}</b></div>`).join('')}</div>
+      <div style="margin-top:8px">${a.first ? `<div class="fd-row"><span>Started</span><b>${new Date(a.first).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</b></div>` : ''}${a.learner ? `<div class="fd-row"><span>Grade (set by parent)</span><b>${esc(String(a.learner.grade || ''))}${a.learner.pace ? ` <small>${esc({ support: 'needs extra help', ontrack: 'about right', ahead: 'ahead' }[a.learner.pace] || '')}</small>` : ''}</b></div>` : ''}<div class="fd-row"><span>Plan on device</span><b>${esc(a.plans.join(', ') || '–')}</b></div>${a.devices.map((d) => `<div class="fd-row"><span>${esc(d.ua ? d.ua[0].toUpperCase() + d.ua.slice(1) : 'Device')}${d.ios ? ' (iOS)' : ''}${d.inst ? ' · on Home Screen' : d.ios ? ' · <b style="color:#B22A1E">not on Home Screen</b>' : ''}</span><b>synced ${ago(d.synced)}</b></div>`).join('')}</div>
       ${r.f.note ? `<p class="hint" style="margin:6px 0 0"><b>Notes:</b> ${esc(r.f.note)}</p>` : ''}</div>
     <div><h3>Books</h3>${a.books.length ? a.books.map((b) => `<div class="fd-row"><span>${esc(b.title)} <small>${esc(b.subject)} ${esc(b.level)}</small></span><b>${b.pct === null ? '–' : b.pct + '%'}</b></div>`).join('') : '<p class="muted">None added yet.</p>'}
       <h3 style="margin-top:12px">Totals</h3>${[['Mistakes open', a.counts.mistakes], ['Mistakes fixed', a.counts.fixed], ['Lessons finished', a.counts.learned], ['Tests taken', a.counts.tests], ['School tests planned', a.counts.schoolTests], ['Homework sessions', a.counts.homework], ['Essays marked', a.counts.writing], ['Speaking answers', a.counts.speaking], ['Dictations', a.counts.dictation]].map(([k, v]) => `<div class="fd-row"><span>${k}</span><b>${v || 0}</b></div>`).join('')}</div>
