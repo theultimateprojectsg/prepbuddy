@@ -98,7 +98,7 @@ module.exports = async (req, res) => {
       out = { ok: true, commit };
     } else if (body.action === 'pilot') {
       const P = require('../lib/pilot');
-      out = P.pilotOn() ? { on: true, ...(await P.overview()) } : { on: false };
+      out = P.pilotOn() ? { on: true, ...(await P.overview()), spend: await require('../lib/spend').report(7).catch(() => null) } : { on: false };
     } else if (body.action === 'pilot_add') {
       const P = require('../lib/pilot');
       if (!P.pilotOn()) throw err(400, 'Set PILOT_REPO in Vercel first.');

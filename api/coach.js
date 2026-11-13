@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
   res.setHeader('content-type', 'application/json');
   try {
     if (req.method !== 'POST') throw httpError(405, 'Use POST.');
-    checkAccess(req);
+    checkAccess(req); await require('../lib/spend').gate();
     const body = await readJson(req);
     const ask = String(body.ask || '').trim().slice(0, 1500);
     if (!ask) throw httpError(400, 'No question asked.');
