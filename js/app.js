@@ -2160,42 +2160,64 @@ let booksPick = 'all';
 
 async function renderBooks() {
   const books = await getBooks();
+  // When each book was last practised (newest first), so the books in use are always at the top.
+  const lastT = {};
+  for (const e of local.log) { const [bid] = qUnit(e.q); if (bid && (!lastT[bid] || e.t > lastT[bid])) lastT[bid] = e.t; }
   const items = [];
   for (const b of books) {
     const { n } = await bookSummary(b); const sc = (await bookMastery(b)).pct;
-    items.push({ b, n, sc });
+    items.push({ b, n, sc, t: lastT[b.id] || 0 });
   }
+  items.sort((x, y) => (y.t - x.t) || subjectOf(x.b).localeCompare(subjectOf(y.b)) || x.b.title.localeCompare(y.b.title));
+  const recentId = items.length > 1 && items[0].t ? items[0].b.id : '';
   const groupsAll = groupBySubject(items, (it) => subjectOf(it.b));
   if (booksPick !== 'all' && !groupsAll.some(([k]) => k === booksPick)) booksPick = 'all';
   const many = books.length > 6;
+  const view = local.bookView === 'list' ? 'list' : 'grid';
+  const W = (en, zh) => (LANG === 'zh' ? zh : en);
+  const chN = (n) => W(`${n} chapter${n === 1 ? '' : 's'}`, `${n} 章`);
+  const viewBtn = (v, icon, label) => `<button class="bv-btn ${view === v ? 'on' : ''}" data-view-set="${v}" aria-pressed="${view === v}" aria-label="${label}" title="${label}">${icon}</button>`;
+  const GRID = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>';
+  const LIST = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor"/></svg>';
   $app.innerHTML = `
   <main class="pad stack g18" data-view="books" style="flex:1">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-      <h1 class="pagetitle" style="margin:0">Books</h1>
+    <div class="bks-head">
+      <div class="stack" style="gap:2px"><h1 class="pagetitle" style="margin:0">Books</h1>${books.length ? `<span class="muted bk-count">${W(`${books.length} textbook${books.length === 1 ? '' : 's'}`, `${books.length} 本課本`)}</span>` : ''}</div>
       <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} Add a textbook</button>
     </div>
-    ${books.length ? `${many ? `<form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
-      <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form>` : ''}
+    ${books.length ? `<div class="bk-tools">
+      ${many ? `<form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
+      <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form>` : '<span style="flex:1"></span>'}
+      ${books.length > 1 ? `<div class="bk-view" role="group" aria-label="${W('Show as', '顯示方式')}">${viewBtn('grid', GRID, W('Covers', '封面'))}${viewBtn('list', LIST, W('List', '清單'))}</div>` : ''}
+    </div>
     <div id="chips">${subjectChips(groupsAll, booksPick, books.length)}</div>
-    <div id="shelf" class="stack g18" aria-live="polite"></div>`
-    : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No textbooks yet. Tap Add a textbook to find yours in the library.</p></div>`}
+    <div id="shelf" aria-live="polite"></div>`
+    : `<div class="card bk-empty"><span class="bk-empty-ic">${subjectIcon('', 34, null, '')}</span><b>${W('No textbooks yet', '仍未加入課本')}</b><p>${W('Add the textbooks you use at school, then practise any chapter.', '加入你在學校用的課本，就可以練習任何一章。')}</p></div>`}
   </main>`;
-  // Each book as a cover, in its subject's colour, with its icon and how much is mastered.
-  const cover = ({ b, n, sc }) => `<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}, ${sc}%">
-      <span class="c-ic">${subjectIcon(b.subject, 22, '#FFFFFF', b.title)}</span>
-      <span class="c-sub" data-raw>${esc(b.subject ? subj(b.subject) : (b.library ? '' : (LANG === 'zh' ? '我上載的' : 'My upload')))}</span>
+  // A cover in the subject's colour. A book not started yet says "New" instead of a discouraging 0%.
+  const prog = ({ sc, t }) => (sc || t ? `<b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span>` : `<span class="c-new">${W('New', '新')}</span>`);
+  const recentTag = (b) => (b.id === recentId ? `<span class="c-recent">${W('Last used', '最近使用')}</span>` : '');
+  const cover = (it) => { const { b, sc } = it; return `<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}, ${sc}%">
+      ${recentTag(b)}<span class="c-ic">${subjectIcon(b.subject, 20, '#FFFFFF', b.title)}</span>
+      <span class="c-sub" data-raw>${esc(b.subject ? subj(b.subject) : (b.library ? '' : W('My upload', '我上載的')))}</span>
       <span class="c-title" data-raw>${esc(b.title)}</span>
-      <span class="c-foot"><span class="c-ch">${b.units.length} chapter${b.units.length === 1 ? '' : 's'}</span><b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span></span>
-    </button>`;
+      <span class="c-foot"><span class="c-ch">${chN(b.units.length)}</span>${prog(it)}</span>
+    </button>`; };
+  // A row: spine in the subject colour, title, subject and level, and a progress ring.
+  const row = (it) => { const { b, sc, t } = it; return `<button class="bkrow" data-book="${esc(b.id)}" aria-label="${esc(b.title)}, ${sc}%">
+      <span class="bkr-spine" style="background:${coverColour(b)}">${subjectIcon(b.subject, 20, '#FFFFFF', b.title)}</span>
+      <span class="bkr-main"><b data-raw>${esc(b.title)}</b><span class="bkr-meta"><span data-raw>${esc(b.subject ? subj(b.subject) : W('My upload', '我上載的'))}</span>${b.level ? ` · <span data-raw>${esc(b.level)}</span>` : ''} · ${chN(b.units.length)}${b.id === recentId ? ` · <span class="bkr-recent">${W('Last used', '最近使用')}</span>` : ''}</span></span>
+      ${sc || t ? `<span class="bkr-ring" style="--p:${sc};--c:${coverColour(b)}"><span>${sc}%</span></span>` : `<span class="c-new on-light">${W('New', '新')}</span>`}
+      <span class="bkr-go" aria-hidden="true">›</span>
+    </button>`; };
   const q = document.getElementById('q');
   const draw = () => {
     const shelf = document.getElementById('shelf'); if (!shelf) return;
     const words = (q ? q.value : '').toLowerCase().split(/\s+/).filter(Boolean);
     const hits = items.filter((it) => (booksPick === 'all' || subjectOf(it.b) === booksPick) &&
       textMatch(words, `${it.b.title} ${it.b.subject || ''} ${subjectName(it.b.subject, 'zh')} ${it.b.code || ''} ${it.b.level || ''}`.toLowerCase()));
-    const groups = groupBySubject(hits, (it) => subjectOf(it.b));
-    shelf.innerHTML = groups.length
-      ? groups.map(([k, xs], gi) => `<section class="stack g10 bgroup" aria-label="${esc(subjLabel(k))}"><h2>${subjectIcon(k === 'Other' || k === 'My uploads' ? '' : k, 22, null, k)}<span data-raw>${esc(subjLabel(k))}</span><small>${xs.length}</small></h2><div class="covergrid">${xs.map(cover).join('')}</div></section>`).join('')
+    shelf.innerHTML = hits.length
+      ? (view === 'list' ? `<div class="bklist">${hits.map(row).join('')}</div>` : `<div class="covergrid">${hits.map(cover).join('')}</div>`)
       : `<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5">None of your textbooks match.</p><p class="muted" style="margin:8px 0 0;font-size:14px;line-height:1.5">Try another word, or tap Add a textbook to search the library.</p></div>`;
     shelf.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   };
@@ -2204,6 +2226,7 @@ async function renderBooks() {
     document.getElementById('chips').innerHTML = subjectChips(groupsAll, booksPick, books.length); bindChips(); draw();
   }));
   bindChips();
+  $app.querySelectorAll('[data-view-set]').forEach((v) => (v.onclick = () => { local.bookView = v.dataset.viewSet; saveLocal(); renderBooks(); }));
   if (q) { q.oninput = draw; document.getElementById('find').onsubmit = (e) => { e.preventDefault(); q.blur(); }; }
   document.getElementById('addbook').onclick = () => go({ name: 'library', query: '' });
   draw();
