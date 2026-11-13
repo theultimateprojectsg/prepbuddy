@@ -1,6 +1,8 @@
 // Small key-value store on the student's device (IndexedDB), with an in-memory fallback.
 
-const DB = 'prepbuddy', STORE = 'kv';
+// Each child on this device has their own database (siblings sharing a tablet). The first child keeps the
+// original name, so nothing moves for families who had one child before. See KIDS in app.js.
+const DB = (() => { try { const r = JSON.parse(localStorage.getItem('prepbuddy.kids')); const k = r && r.list && r.list.find((x) => x.id === r.cur); return (k && k.db) || 'prepbuddy'; } catch (e) { return 'prepbuddy'; } })(), STORE = 'kv';
 let dbPromise = null;
 const memory = new Map();
 // Values already read or written this session, so screens that read every chapter (mastery %, progress)

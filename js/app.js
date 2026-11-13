@@ -46,7 +46,12 @@ const PLAN = [[2, 'mcq'], [1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 
               [4, 'structured'], [1, 'mcq'], [2, 'short'], [3, 'mcq'], [3, 'structured'], [2, 'mcq']];
 
 /* ---------- small local settings + progress (localStorage) ---------- */
-const LKEY = 'prepbuddy.v2';
+// Children on this device. Each has their own saved progress (localStorage key) and books (IndexedDB database).
+// The first child uses the original key and database, so a family with one child sees no change.
+const KIDS_KEY = 'prepbuddy.kids';
+const KIDS = (() => { try { const r = JSON.parse(localStorage.getItem(KIDS_KEY)); if (r && Array.isArray(r.list) && r.list.length) return r; } catch (e) {} return { cur: 'k0', list: [{ id: 'k0', key: 'prepbuddy.v2', db: 'prepbuddy', av: 0 }] }; })();
+const KID = KIDS.list.find((k) => k.id === KIDS.cur) || KIDS.list[0];
+const LKEY = KID.key;
 function loadLocal() {
   try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; }
 }
@@ -1680,7 +1685,7 @@ async function renderDictation(id, sub) {
 }
 
 function editDictation(L) {
-  const st = { title: L ? L.title : '', lang: L ? L.lang : (LANG === 'zh' ? 'yue' : 'en'), text: L ? L.items.join('\n') : '', busy: false, err: '' };
+  const st = { title: L ? L.title : '', lang: L ? L.lang : (LANG === 'zh' ? zhVoice() : 'en'), text: L ? L.items.join('\n') : '', busy: false, err: '' };
   const draw = () => {
     $app.innerHTML = `
     <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button><span style="font-weight:600;font-size:15px">${L ? DT('Edit list', '修改默書') : DT('New list', '新默書')}</span></div>
@@ -1710,7 +1715,7 @@ function editDictation(L) {
       st.busy = false; draw();
     };
     document.getElementById('dsave').onclick = () => {
-      { const ta = document.getElementById('ditems'); const tx = ta ? ta.value : st.text; if (!st.picked && !L && /[\u3400-\u9fff]/.test(tx) && st.lang === 'en') st.lang = 'yue'; } // Chinese words left on English: read them in Cantonese
+      { const ta = document.getElementById('ditems'); const tx = ta ? ta.value : st.text; if (!st.picked && !L && /[\u3400-\u9fff]/.test(tx) && st.lang === 'en') st.lang = zhVoice(); } // Chinese words left on English: read them in Cantonese
       keep();
       const items = st.text.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 60);
       if (!items.length) { st.err = DT('Add at least one word.', '請最少加入一個詞語。'); return draw(); }
@@ -2089,7 +2094,7 @@ async function renderHome() {
   const name = (local.name || '').trim();
   const dateText = new Date().toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div>${starChip()}</div>`;
+      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div><div class="greet-r">${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}</div></div>`;
   if (!books.length) {
     $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
     <section class="empty-start" aria-label="Add a textbook">
@@ -2173,7 +2178,71 @@ async function renderHome() {
   window.scrollTo(0, 0);
 }
 const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. ${local.pilot ? '' : '<button class="btn-sm quiet" id="usage" >AI usage</button>'}</footer>`;
+/* ---------- children on this device (siblings sharing a tablet) ----------
+   Each child gets their own localStorage key and IndexedDB database (see KIDS near the top and store.js).
+   Switching child reloads the app, so every screen starts clean with that child's books and progress.
+   Family-wide things (family code, consent, plan, parent PIN, screen settings) are copied to a new child. */
+const KID_AV = ['🦊', '🐼', '🐯', '🐨', '🐸', '🐧', '🦁', '🐰'];
+const KID_SHARED = ['code', 'pilot', 'consent', 'toured', 'plan', 'planLock', 'planYearly', 'pin', 'pinAt', 'beta', 'installTipOff', 'helperSize', 'sideW', 'voiceCC', 'starsOn'];
+const kidSave = () => { try { localStorage.setItem(KIDS_KEY, JSON.stringify(KIDS)); } catch (e) {} };
+function kidMeta() { KID.grade = gradeNow() || ''; KID.name = (local.name || '').trim().slice(0, 20); if (KIDS.list.length > 1 || localStorage.getItem(KIDS_KEY)) kidSave(); }
+const kidLabel = (k) => k.nick || k.name || (k.grade ? (LANG === 'zh' ? gradeName(k.grade) : k.grade) : (LANG === 'zh' ? `孩子 ${KIDS.list.indexOf(k) + 1}` : `Child ${KIDS.list.indexOf(k) + 1}`));
+const kidChip = () => `<button class="kidchip" data-kidgo aria-label="${LANG === 'zh' ? '轉換孩子' : 'Switch child'}"><span>${KID_AV[KID.av || 0]}</span><b>${esc(kidLabel(KID))}</b><span aria-hidden="true">▾</span></button>`;
+function switchKid(id) {
+  KIDS.cur = id; kidSave();
+  try { sessionStorage.setItem('pb.kid', id); } catch (e) {}
+  location.replace(location.pathname + location.search); // back to Today for the other child
+}
+function addKid() {
+  const id = 'k' + Date.now().toString(36);
+  const used = new Set(KIDS.list.map((k) => k.av || 0)); let av = 0; while (used.has(av) && av < KID_AV.length - 1) av++;
+  const fresh = { stats: {}, reports: [], usage: {}, log: [], name: '', types: 'mix', mistakes: {}, needProfile: true };
+  KID_SHARED.forEach((k) => { if (local[k] !== undefined) fresh[k] = local[k]; });
+  const kid = { id, key: `prepbuddy.v2:${id}`, db: `prepbuddy:${id}`, av };
+  try { localStorage.setItem(kid.key, JSON.stringify(fresh)); } catch (e) { return toast(LANG === 'zh' ? '這部裝置的儲存空間不足。' : 'This device is out of storage space.'); }
+  kidMeta(); KIDS.list.push(kid); switchKid(id);
+}
+async function removeKid(id) {
+  const k = KIDS.list.find((x) => x.id === id); if (!k || k.id === KID.id) return false;
+  const ok = await confirmLeave({ title: LANG === 'zh' ? `移除 ${kidLabel(k)}？` : `Remove ${kidLabel(k)}?`,
+    body: LANG === 'zh' ? '這個孩子在這部裝置上的課本、進度和星星都會刪除，不能復原。' : 'Their books, progress and stars on this device will be deleted. This can’t be undone.',
+    stay: LANG === 'zh' ? '取消' : 'Cancel', leave: LANG === 'zh' ? '移除' : 'Remove' });
+  if (!ok || !(await askPin('remove'))) return false;
+  try { localStorage.removeItem(k.key); } catch (e) {}
+  try { indexedDB.deleteDatabase(k.db); } catch (e) {}
+  KIDS.list = KIDS.list.filter((x) => x.id !== id); kidSave();
+  return true;
+}
+// "Who's studying?" Shown when the app opens on a device with more than one child, and from the chip on Today.
+function kidPicker({ boot } = {}) {
+  return new Promise((resolve) => {
+    const C = (en, zh) => (LANG === 'zh' ? zh : en);
+    const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
+    let manage = false, drawn = false;
+    const close = () => { if (nav) nav.style.display = ''; resolve(); };
+    const draw = () => {
+      $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1"><div class="pg-box cs-box kid-box${drawn ? ' noanim' : ''}">
+        <h1 style="margin:0;text-align:center">${C('Who’s studying?', '邊個溫習？')}</h1>
+        <div class="kid-grid">${KIDS.list.map((k) => `<div class="kid-cell"><button class="kid${k.id === KID.id ? ' on' : ''}" data-kid="${k.id}" ${manage ? 'disabled' : ''}><span class="kid-av">${KID_AV[k.av || 0]}</span><b>${esc(kidLabel(k))}</b>${(k.nick || k.name) && k.grade ? `<small>${esc(LANG === 'zh' ? gradeName(k.grade) : k.grade)}</small>` : ''}</button>${manage && k.id !== KID.id ? `<button class="btn-sm quiet kid-del" data-del="${k.id}">${C('Remove', '移除')}</button>` : ''}</div>`).join('')}
+          ${!manage && KIDS.list.length < 6 ? `<div class="kid-cell"><button class="kid add" id="kidAdd"><span class="kid-av">＋</span><b>${C('Add a child', '新增孩子')}</b></button></div>` : ''}</div>
+        <p class="hint" style="margin:0;text-align:center">${C('Each child has their own books, progress and stars on this device.', '每個孩子在這部裝置上都有自己的課本、進度和星星。')}</p>
+        <div class="kid-foot">${boot ? '' : `<button class="btn-sm" id="kidBack">${C('Back', '返回')}</button>`}${KIDS.list.length > 1 ? `<button class="btn-sm quiet" id="kidManage">${manage ? C('Done', '完成') : C('Manage children', '管理')}</button>` : ''}</div>
+      </div></main>`;
+      drawn = true;
+      $app.querySelectorAll('[data-kid]').forEach((b) => (b.onclick = () => { if (b.dataset.kid === KID.id) { try { sessionStorage.setItem('pb.kid', KID.id); } catch (e) {} return close(); } switchKid(b.dataset.kid); }));
+      $app.querySelectorAll('[data-del]').forEach((b) => (b.onclick = async () => { if (await removeKid(b.dataset.del)) { if (KIDS.list.length < 2) manage = false; } draw(); }));
+      const ad = document.getElementById('kidAdd'); if (ad) ad.onclick = async () => {
+        const ok = await confirmLeave({ title: C('Add another child?', '新增另一個孩子？'), body: C('They’ll start fresh with their own books and progress. You’ll set their grade next. Switch between children from the chip at the top of Today.', '新孩子會有自己的課本和進度，下一步會設定年級。可在「今日」頁頂轉換孩子。'), stay: C('Cancel', '取消'), leave: C('Add child', '新增') });
+        if (ok) addKid();
+      };
+      const bk = document.getElementById('kidBack'); if (bk) bk.onclick = close;
+      const mg = document.getElementById('kidManage'); if (mg) mg.onclick = () => { manage = !manage; draw(); };
+    };
+    draw(); window.scrollTo(0, 0);
+  });
+}
 function bindHomeCommon() {
+  $app.querySelectorAll('[data-kidgo]').forEach((b) => (b.onclick = async () => { await kidPicker(); go({ name: 'home' }); }));
   { const u = document.getElementById('usage'); if (u) u.onclick = () => go({ name: 'usage' }); }
 }
 
@@ -2291,7 +2360,7 @@ function renderSettings() {
       <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
     </section>
     ${profileOn() ? `<section class="card stack g10" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PLT('About your child', '關於你的孩子')}</b><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PLT('About your child', '關於你的孩子')}</b><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn-sm quiet" id="skids">${KIDS.list.length > 1 ? PLT('Switch child', '轉換孩子') : PLT('Add a child', '新增孩子')}</button><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></span></div>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
@@ -2328,6 +2397,7 @@ function renderSettings() {
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
   { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); }
+  { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings' }); }; }
   { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings' }); }; }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
   document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
@@ -2447,9 +2517,11 @@ async function pilotGate() {
    before that). Then a six-card tour of what PrepBuddy does, which can be skipped and replayed from Settings. */
 const CONSENT_V = 1;
 async function pilotWelcome() {
+  kidMeta();
+  if (KIDS.list.length > 1 && (() => { try { return sessionStorage.getItem('pb.kid') !== KID.id; } catch (e) { return false; } })()) await kidPicker({ boot: true });
   if (local.pilot && local.code && !(local.consent && local.consent.v >= CONSENT_V)) await consentScreen();
   // New families set it up during onboarding; families already using the app get a card on Today instead.
-  if (profileOn() && !local.learner && !local.toured) await profileScreen({ first: true });
+  if (profileOn() && !local.learner && (!local.toured || local.needProfile)) await profileScreen({ first: true });
   if (!local.toured) await startTour();
 }
 function consentScreen() {
@@ -2497,7 +2569,9 @@ function gradeNow() {
   const i = GRADE_LIST.indexOf(L.grade) + Math.max(0, schoolYearOf(Date.now()) - schoolYearOf(L.at || Date.now()));
   return GRADE_LIST[Math.min(i, GRADE_LIST.length - 1)];
 }
-const learnerPayload = () => (profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', goals: local.learner.goals || [], likes: local.learner.likes || '' } : null);
+const learnerPayload = () => (profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], likes: local.learner.likes || '' } : null);
+// Chinese read aloud in Putonghua when the parent says the school teaches Chinese in Putonghua (普教中).
+const zhVoice = () => (local.learner && local.learner.zhLang === 'cmn' ? 'cmn' : 'yue');
 const gradeBand = () => { const g = gradeNow(); return !g ? '' : /^P[12]$/.test(g) ? 'p12' : /^P[34]$/.test(g) ? 'p34' : /^P[56]$/.test(g) ? 'p56' : /^S[123]$/.test(g) ? 's13' : 's46'; };
 // Primary or not: the child's grade when the parent has set it, otherwise a guess from their books.
 const isPrimaryKid = () => (profileOn() && gradeNow() ? gradeNow()[0] === 'P' : !!primaryCache);
@@ -2518,7 +2592,7 @@ function profileScreen({ first } = {}) {
       L.goals = L.goals.filter((x) => GOALS(L.grade).some(([k]) => k === x));
       $app.innerHTML = `<main class="pad ${first ? 'pilotgate' : 'stack g18'}" data-raw style="flex:1">
       <div class="${first ? 'pg-box cs-box' : 'stack g18'} prof-box${drawn ? ' noanim' : ''}">
-        <div class="cs-head">${buddySVG('happy', 64)}<div>${first ? `<span class="pg-tag">${local.pilot ? C('Step 2 of 3 · for parents', '第 2 步，共 3 步 · 家長專用') : C('For parents', '家長專用')}</span>` : ''}<h1 class="${first ? '' : 'pagetitle'}" style="margin:6px 0 0">${C('About your child', '關於你的孩子')}</h1></div></div>
+        <div class="cs-head">${buddySVG('happy', 64)}<div>${first ? `<span class="pg-tag">${local.pilot && !local.needProfile ? C('Step 2 of 3 · for parents', '第 2 步，共 3 步 · 家長專用') : C('For parents', '家長專用')}</span>` : ''}<h1 class="${first ? '' : 'pagetitle'}" style="margin:6px 0 0">${C('About your child', '關於你的孩子')}</h1></div></div>
         <p style="margin:0;line-height:1.5;color:var(--text-2)">${C('Buddy uses this to talk, explain and set questions at the right level for your child. It stays on this device.', 'Buddy 會按這些資料，用適合孩子程度的方式講解和出題。資料只保存在這部裝置。')}</p>
         <section class="stack g10"><b>${C('Which grade are they in?', '孩子讀幾年級？')}</b>
           <div class="prof-grades"><span class="muted">${C('Primary', '小學')}</span>${GRADE_LIST.slice(0, 6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div>
@@ -2527,22 +2601,31 @@ function profileScreen({ first } = {}) {
           <div class="prof-opts">${opt('pace', 'support', C('Needs extra help', '需要多些幫助'), C('Smaller steps, easier start', '由淺入深，循序漸進'))}${opt('pace', 'ontrack', C('About right', '跟得上'), C('Keeping up with the class', '跟上班中進度'))}${opt('pace', 'ahead', C('Ahead', '超前'), C('Ready for harder work', '可以挑戰較深的題目'))}</div></section>
         <section class="stack g10"><b>${C('Their school mostly teaches in…', '學校主要用甚麼語言教學？')}</b>
           <div class="prof-opts two">${opt('medium', 'cmi', C('Chinese', '中文'), C('Cantonese / Chinese', '廣東話／中文'))}${opt('medium', 'emi', C('English', '英文'), C('English-medium school', '英文中學／小學'))}</div></section>
+        <section class="stack g10"><b>${C('Chinese lessons are taught in…', '中文科用甚麼語言教？')}</b>
+          <div class="prof-opts two">${opt('zhLang', 'yue', C('Cantonese', '廣東話'), C('粵教中', '粵教中'))}${opt('zhLang', 'cmn', C('Putonghua', '普通話'), C('普教中: Buddy reads Chinese in Putonghua', '普教中：Buddy 用普通話朗讀'))}</div></section>
+        <section class="stack g10"><b>${C('Buddy should explain in…', 'Buddy 用甚麼語言講解？')}</b>
+          <div class="prof-opts">${opt('explain', 'en', C('English', '英文'), C('Even if they type in Chinese', '即使孩子用中文提問'))}${opt('explain', 'zh', C('Chinese', '中文'), C('English terms in brackets', '英文術語放在括號內'))}${opt('explain', 'mix', C('Chinese + English terms', '中文 + 英文術語'), C('Learn the English words', '同時學英文詞彙'))}</div>
+          <span class="hint" style="margin:0;text-align:left">${C('Practice questions stay in the textbook’s language.', '練習題目會保持課本的語言。')}</span></section>
         ${L.grade ? `<section class="stack g10"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
+        ${KIDS.list.length > 1 ? `<section class="stack g10"><label for="pnick"><b>${C('Nickname on this device', '在這部裝置上的稱呼')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
+          <input id="pnick" class="input" maxlength="12" placeholder="${C('e.g. 哥哥, Kid 2', '例如：哥哥、妹妹')}" value="${esc(KID.nick || '')}">
+          <span class="hint" style="margin:0;text-align:left">${C('Only shown on this device to tell your children apart. Not sent to Buddy.', '只在這部裝置上用來分辨孩子，不會傳送給 Buddy。')}</span></section>` : ''}
         <section class="stack g10"><label for="plikes"><b>${C('What do they love?', '孩子喜歡甚麼？')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
           <input id="plikes" class="input" maxlength="80" placeholder="${C('e.g. football, dinosaurs, drawing', '例如：足球、恐龍、畫畫')}" value="${esc(L.likes || '')}">
           <span class="hint" style="margin:0;text-align:left">${C('Buddy may use these in examples. Please don’t enter their name or school.', 'Buddy 或會用這些例子講解。請勿輸入孩子的名字或學校。')}</span></section>
         <div style="display:flex;gap:10px;flex-wrap:wrap">${first ? '' : `<button class="btn-sm" id="pcancel">${C('Cancel', '取消')}</button>`}<button class="btn" id="psave" ${L.grade ? '' : 'disabled'} style="${first ? '' : 'width:auto;padding:12px 24px'}">${first ? C('Continue', '繼續') : C('Save', '儲存')}</button></div>
       </div></main>`;
       const likes = document.getElementById('plikes');
-      const redraw = () => { const y = window.scrollY; draw(); window.scrollTo(0, y); };
+      const redraw = () => { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.trim().slice(0, 12); const y = window.scrollY; draw(); window.scrollTo(0, y); };
       $app.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.grade = b.dataset.g; redraw(); }));
       $app.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L[b.dataset.k] = b.dataset.v; redraw(); }));
       $app.querySelectorAll('[data-goal]').forEach((b) => (b.onclick = () => { L.likes = likes.value; const k = b.dataset.goal; L.goals = L.goals.includes(k) ? L.goals.filter((x) => x !== k) : [...L.goals, k]; redraw(); }));
       document.getElementById('psave').onclick = () => {
         if (!L.grade) return;
-        local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
-        saveLocal(); track('profile');
+        { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.replace(/[<>]/g, '').trim().slice(0, 12); }
+        local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
+        delete local.needProfile; saveLocal(); track('profile'); kidMeta();
         if (first && nav) nav.style.display = '';
         if (first) $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
         resolve(true);
@@ -2731,7 +2814,7 @@ async function pilotSnap() {
   let best = 0, run = 0, prev = 0; [...dset].sort((a, b) => a - b).forEach((d) => { run = prev && d - prev <= DAY + 3600e3 ? run + 1 : 1; best = Math.max(best, run); prev = d; });
   const mk = Object.values(local.mistakes || {});
   return {
-    v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache, learner: profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', goals: local.learner.goals || [] } : null,
+    v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache, learner: profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], kid: KIDS.list.length > 1 ? KIDS.list.indexOf(KID) + 1 : 0 } : null,
     inst: isInstalled(), keep: persisted, ios: isIOS,
     ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : /iPad|Tablet/i.test(navigator.userAgent) ? 'tablet' : 'computer',
     first: log.length ? log[0].t : null, last: log.length ? log[log.length - 1].t : null,
@@ -2793,7 +2876,7 @@ async function restoreFile(file) {
   if (!ok) return false;
   for (const k of await store.keys('')) await store.del(k);
   for (const [k, v] of Object.entries(data.db)) await store.set(k, v);
-  try { localStorage.setItem('prepbuddy.v2', JSON.stringify(data.local)); if (data.ui) localStorage.setItem('prepbuddy.ui', data.ui); } catch (e) {}
+  try { localStorage.setItem(LKEY, JSON.stringify(data.local)); if (data.ui) localStorage.setItem('prepbuddy.ui', data.ui); } catch (e) {}
   await store.persist();
   location.reload();
   return true;
@@ -5137,7 +5220,7 @@ async function renderListening() {
     ${!it ? `<section class="hw-hero">${buddySVG('listen', 56)}<div><b>${SPK('Listen carefully, then answer.', '留心聆聽，然後作答。')}</b>
       <span>${SPK('Like the school listening test: Buddy reads a short passage aloud (you can hear it twice), then you answer the questions.', '就像學校的聆聽測驗：Buddy 會朗讀一段短文（可以聽兩次），然後你回答問題。')}</span></div></section>
     <section class="card wr-step"><h2 class="st-h">${SPK('Which language?', '哪一種語言？')}</h2>
-      <div class="wr-kinds"><button class="wr-kind" data-ln="en"><b>English</b><span>${SPK('English listening', '英文聆聽')}</span></button><button class="wr-kind" data-ln="zh"><b>中文</b><span>${SPK('Chinese listening (Cantonese voice)', '中文聆聽（廣東話）')}</span></button></div>
+      <div class="wr-kinds"><button class="wr-kind" data-ln="en"><b>English</b><span>${SPK('English listening', '英文聆聽')}</span></button><button class="wr-kind" data-ln="zh"><b>中文</b><span>${zhVoice() === 'cmn' ? SPK('Chinese listening (Putonghua voice)', '中文聆聽（普通話）') : SPK('Chinese listening (Cantonese voice)', '中文聆聽（廣東話）')}</span></button></div>
       ${x.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(x.busy)}</p>` : ''}
       ${x.error ? `<p class="hw-err" role="alert">${esc(x.error)}</p>` : ''}
     </section>` : `
@@ -5771,8 +5854,8 @@ function sayAloud(text) {
     speechSynthesis.cancel();
     const t = plainSpeech(text); if (!t) return;
     const zh = (t.match(/[\u3400-\u9fff]/g) || []).length > t.length / 4;
-    const u = new SpeechSynthesisUtterance(t), v = dictVoice(zh ? 'yue' : 'en');
-    if (v) u.voice = v; u.lang = v ? v.lang : (zh ? 'zh-HK' : 'en-GB');
+    const u = new SpeechSynthesisUtterance(t), v = dictVoice(zh ? zhVoice() : 'en');
+    if (v) u.voice = v; u.lang = v ? v.lang : (zh ? (zhVoice() === 'cmn' ? 'zh-CN' : 'zh-HK') : 'en-GB');
     u.rate = gradeBand() === 'p12' ? 0.85 : 0.95;
     speechSynthesis.speak(u);
   } catch (e) {}
