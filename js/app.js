@@ -1181,15 +1181,25 @@ const WR_KINDS = {
   en_b: { lang: 'en', en: 'English · Part B', zh: '英文 · Part B', sub: ['Longer task, ~400 words', '長篇寫作，約 400 字'], words: 400, crit: ['Content', 'Language', 'Organisation'], w: [1, 1, 1] },
   zh_essay: { lang: 'zh', en: '中文 · 命題寫作', zh: '中文 · 命題寫作', sub: ['卷二乙部，約 650 字以上', '卷二乙部，約 650 字以上'], words: 650, crit: ['內容', '表達', '結構', '標點字體'], w: [4, 3, 2, 1] },
   zh_practical: { lang: 'zh', en: '中文 · 實用寫作', zh: '中文 · 實用寫作', sub: ['卷二甲部，按字數上限', '卷二甲部，按字數上限'], words: 550, crit: ['內容', '行文組織'], w: [3, 2] },
+  // Primary: length follows the child's grade (same table as the server, lib/fns/writing.js).
+  en_p: { lang: 'en', primary: true, en: 'English writing', zh: '英文寫作', get sub() { const [a, b] = pLen('en'); return [`Guided writing, about ${a}-${b} words`, `引導寫作，約 ${a}-${b} 字`]; }, get words() { return pLen('en')[1]; }, get min() { return Math.max(12, Math.round(pLen('en')[0] * 0.6)); }, crit: ['Content', 'Language', 'Organisation'], w: [1, 1, 1] },
+  zh_p: { lang: 'zh', primary: true, en: '中文寫作', zh: '中文寫作', get sub() { const [a, b] = pLen('zh'); return [`看題目寫作，約 ${a}-${b} 字`, `看題目寫作，約 ${a}-${b} 字`]; }, get words() { return pLen('zh')[1]; }, get min() { return Math.max(30, Math.round(pLen('zh')[0] * 0.6)); }, crit: ['內容', '表達', '結構', '標點字體'], w: [4, 3, 2, 1] },
 };
+const P_LEN = { en: { p12: [20, 60], p34: [60, 120], p56: [120, 200] }, zh: { p12: [60, 150], p34: [200, 350], p56: [350, 600] } };
+function pLen(lang) { const b = gradeBand(); return P_LEN[lang][b && b[0] === 'p' ? b : 'p34']; }
+// Which writing kinds to offer: primary pupils get the two primary kinds, everyone else the DSE papers.
+const wrKindsFor = () => Object.entries(WR_KINDS).filter(([, x]) => !!x.primary === isPrimaryKid());
+// Level shown on cards: DSE kinds get "≈5*", primary kinds get stars for their grade.
+const lvShow = (lv) => (!lv ? '' : /^\d/.test(lv) ? `≈${lv}` : lv);
 const wrState = { kind: null, prompt: '', topic: '', busy: '', error: null, open: {} };
 const wrCount = (text, lang) => (lang === 'zh' ? String(text || '').replace(/[\s\p{P}]/gu, '').length : (String(text || '').match(/[A-Za-z’'-]+/g) || []).length);
 // A rough overall DSE level from the criterion bands (weighted mean of 1-7 bands). An estimate only.
 function wrLevel(fb, kind) {
-  const k = WR_KINDS[kind]; if (!fb || !fb.criteria) return null;
+  const k = WR_KINDS[kind]; if (!k || !fb || !fb.criteria) return null;
   let s = 0, w = 0;
   fb.criteria.forEach((c, i) => { const wt = k.w[i] || 1; s += c.band * wt; w += wt; });
   const m = s / (w || 1);
+  if (k.primary) return '★'.repeat(m >= 6.2 ? 5 : m >= 5.2 ? 4 : m >= 4.2 ? 3 : m >= 3 ? 2 : 1);
   return m >= 6.6 ? '5**' : m >= 6 ? '5*' : m >= 5.2 ? '5' : m >= 4.3 ? '4' : m >= 3.4 ? '3' : m >= 2.5 ? '2' : '1';
 }
 function wrSave() { local.wr = (local.wr || []).slice(-15); saveLocal(); }
@@ -1215,7 +1225,8 @@ function changedShare(a, b) {
 function writingStarOK(it) {
   const d = it.drafts, last = d[d.length - 1], text = (last && last.text) || '';
   const zh = (text.match(/[㐀-鿿]/g) || []).length > 20;
-  if (zh ? wordCount(text) < 150 : wordCount(text) < 80) return false;
+  const pk = WR_KINDS[it.kind] && WR_KINDS[it.kind].primary;
+  if (zh ? wordCount(text) < (pk ? WR_KINDS[it.kind].min : 150) : wordCount(text) < (pk ? WR_KINDS[it.kind].min : 80)) return false;
   if (d.length > 1 && changedShare(d[d.length - 2].text, text) < 0.1) return false;
   if (it.starDay === dayStart()) return false;
   it.starDay = dayStart(); wrSave();
@@ -1230,16 +1241,17 @@ async function renderWriting(id, sub) {
   ${backTop({name:'home'}, 'Today')}
   <main class="pad stack g18 wrpage" data-view="writing" data-raw style="flex:1">
     <h1 class="pagetitle">${WT('Writing practice', '寫作練習')}</h1>
-    <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${WT('Write, get DSE-style feedback, then make it better.', '寫作、取得 DSE 式評語，再改得更好。')}</b>
-      <span>${WT('Buddy marks by the DSE criteria, shows what to fix first, and checks your redraft. Bands are estimates, not official marks.', 'Buddy 按 DSE 評分準則批改，指出最先要改的地方，再檢查你的修改稿。等級只是估計，並非正式分數。')}</span></div></section>
-    <section class="card wr-step"><h2 class="st-h">1 · ${WT('Which paper?', '哪一份卷？')}</h2>
-      <div class="wr-kinds">${Object.entries(WR_KINDS).map(([key, x]) => `<button class="wr-kind ${s.kind === key ? 'on' : ''}" data-kind="${key}" aria-pressed="${s.kind === key}"><b>${LANG === 'zh' ? x.zh : x.en}</b><span>${WT(...x.sub)}</span></button>`).join('')}</div>
+    <section class="hw-hero">${buddySVG('happy', 56)}<div>${isPrimaryKid() ? `<b>${WT('Write, get kind feedback from Buddy, then make it even better.', '寫作、聽聽 Buddy 的意見，再改得更好。')}</b>
+      <span>${WT(`Buddy marks it like a primary teacher, for a ${gradeLabel()} pupil: what you did well, up to 3 things to fix, and your spelling.`, `Buddy 會像小學老師一樣，按${gradeLabel()}程度批改：做得好的地方、最多三個要改的地方，還有錯別字。`)}</span>` : `<b>${WT('Write, get DSE-style feedback, then make it better.', '寫作、取得 DSE 式評語，再改得更好。')}</b>
+      <span>${WT('Buddy marks by the DSE criteria, shows what to fix first, and checks your redraft. Bands are estimates, not official marks.', 'Buddy 按 DSE 評分準則批改，指出最先要改的地方，再檢查你的修改稿。等級只是估計，並非正式分數。')}</span>`}</div></section>
+    <section class="card wr-step"><h2 class="st-h">1 · ${isPrimaryKid() ? WT('English or Chinese?', '英文還是中文？') : WT('Which paper?', '哪一份卷？')}</h2>
+      <div class="wr-kinds">${wrKindsFor().map(([key, x]) => `<button class="wr-kind ${s.kind === key ? 'on' : ''}" data-kind="${key}" aria-pressed="${s.kind === key}"><b>${LANG === 'zh' ? x.zh : x.en}</b><span>${WT(...x.sub)}</span></button>`).join('')}</div>
     </section>
     ${k ? `<section class="card wr-step"><h2 class="st-h">2 · ${WT('The task (question)', '題目')}</h2>
-      <textarea id="wrPrompt" class="wr-ta small" rows="6" placeholder="${WT('Paste or type your school’s writing task here, take a photo of it, or let Buddy write a DSE-style one.', '在這裏貼上或輸入學校的寫作題目，或拍下題目，或讓 Buddy 出一條 DSE 式題目。')}">${esc(s.prompt)}</textarea>
+      <textarea id="wrPrompt" class="wr-ta small" rows="6" placeholder="${k.primary ? WT('Type your school’s writing task here, take a photo of it, or let Buddy write one for you.', '在這裏輸入學校的寫作題目，或拍下題目，或讓 Buddy 幫你出題。') : WT('Paste or type your school’s writing task here, take a photo of it, or let Buddy write a DSE-style one.', '在這裏貼上或輸入學校的寫作題目，或拍下題目，或讓 Buddy 出一條 DSE 式題目。')}">${esc(s.prompt)}</textarea>
       <div class="wr-row">
         <button class="btn ghost" id="wrTaskPhoto" ${s.busy ? 'disabled' : ''}>📷 ${WT('Photo of the task', '拍下題目')}</button>
-        <div class="wr-gen"><input id="wrTopic" class="tinput" placeholder="${WT('Topic (optional), e.g. social media', '題材（可留空），例如：社交媒體')}" value="${esc(s.topic)}"><button class="btn ghost" id="wrGen" ${s.busy ? 'disabled' : ''}>✨ ${WT('Write me a task', '幫我出題')}</button></div>
+        <div class="wr-gen"><input id="wrTopic" class="tinput" placeholder="${k.primary ? WT('Topic (optional), e.g. my pet', '題材（可留空），例如：我的寵物') : WT('Topic (optional), e.g. social media', '題材（可留空），例如：社交媒體')}" value="${esc(s.topic)}"><button class="btn ghost" id="wrGen" ${s.busy ? 'disabled' : ''}>✨ ${WT('Write me a task', '幫我出題')}</button></div>
       </div>
       ${s.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(s.busy)}</p>` : ''}
       ${s.error ? `<p class="hw-err" role="alert">${esc(s.error)}</p>` : ''}
@@ -1247,7 +1259,7 @@ async function renderWriting(id, sub) {
       <p class="hint" style="margin:0">${WT('No task? You can still start: Buddy will judge it as a general piece of this type.', '沒有題目？也可以開始，Buddy 會按這類文章的一般要求批改。')}</p>
     </section>` : ''}
     ${list.length ? `<section class="stack g10"><h2 class="st-h">${WT('Your writing', '你的文章')}</h2>
-      <div class="hw-list">${list.slice().reverse().map((x) => { const d = x.drafts[x.drafts.length - 1], lv = d && wrLevel(d.fb, x.kind); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">✍️</span><span class="hw-it"><b>${esc(x.title)}</b><small>${LANG === 'zh' ? WR_KINDS[x.kind].zh : WR_KINDS[x.kind].en} · ${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.drafts.length ? WT(`${x.drafts.length} draft${x.drafts.length > 1 ? 's' : ''} marked`, `已批改 ${x.drafts.length} 稿`) : WT('Not marked yet', '未批改')}</small></span>${lv ? `<span class="wr-lv sm" title="${WT('Estimated level', '估計等級')}">≈${lv}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
+      <div class="hw-list">${list.slice().reverse().map((x) => { const d = x.drafts[x.drafts.length - 1], lv = d && wrLevel(d.fb, x.kind); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">✍️</span><span class="hw-it"><b>${esc(x.title)}</b><small>${LANG === 'zh' ? WR_KINDS[x.kind].zh : WR_KINDS[x.kind].en} · ${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.drafts.length ? WT(`${x.drafts.length} draft${x.drafts.length > 1 ? 's' : ''} marked`, `已批改 ${x.drafts.length} 稿`) : WT('Not marked yet', '未批改')}</small></span>${lv ? `<span class="wr-lv sm" title="${WT('Estimated level', '估計等級')}">${lvShow(lv)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
   </main>`;
   $app.querySelectorAll('[data-kind]').forEach((b) => (b.onclick = () => { s.kind = b.dataset.kind; s.error = null; renderWriting(); }));
   $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => { const x = list.find((y) => y.id === b.dataset.open); go({ name: 'writing', id: b.dataset.open, sub: x && x.drafts.length && !x.work ? 'fb' : undefined }); }));
@@ -1263,7 +1275,7 @@ async function renderWriting(id, sub) {
     const ph = await wrPhotos(true); if (!ph.length) return;
     run(WT('Reading the task…', '正在讀取題目…'), async () => { const r = await api('writing', { step: 'read', what: 'task', images: ph }); s.prompt = r.text; });
   };
-  document.getElementById('wrGen').onclick = () => run(WT('Writing a DSE-style task…', '正在出題…'), async () => { const r = await api('writing', { step: 'prompt', kind: s.kind, topic: s.topic }); s.prompt = r.prompt; });
+  document.getElementById('wrGen').onclick = () => run(WR_KINDS[s.kind].primary ? WT('Writing a task…', '正在出題…') : WT('Writing a DSE-style task…', '正在出題…'), async () => { const r = await api('writing', { step: 'prompt', kind: s.kind, topic: s.topic }); s.prompt = r.prompt; });
   document.getElementById('wrStart').onclick = () => {
     const prompt = s.prompt.trim();
     const first = prompt.split('\n').map((l) => l.trim()).find((l) => l.length > 3) || '';
@@ -1287,13 +1299,13 @@ function renderWritingEditor(it) {
       ${n ? `<div class="wr-tip">💡 ${WT('Redraft: work on the 3 fixes first.', '修改稿：先處理三個要改的地方。')} <button class="btn-sm quiet" id="seeFb">${WT('See feedback', '看評語')}</button>
         <ol>${it.drafts[n - 1].fb.fixes.map((f) => `<li>${esc(f.issue)}</li>`).join('')}</ol></div>` : ''}
       <section class="card wr-ed">
-        <textarea id="wrText" class="wr-ta" lang="${k.lang === 'zh' ? 'zh-HK' : 'en'}" spellcheck="false" placeholder="${k.lang === 'zh' ? '在這裏寫你的文章…' : 'Write your essay here…'}">${esc(it.work)}</textarea>
+        <textarea id="wrText" class="wr-ta" lang="${k.lang === 'zh' ? 'zh-HK' : 'en'}" spellcheck="false" placeholder="${k.lang === 'zh' ? '在這裏寫你的文章…' : k.primary ? 'Write here…' : 'Write your essay here…'}">${esc(it.work)}</textarea>
         <div class="wr-bar"><span class="wr-count ${c >= k.words * 0.9 ? 'ok' : ''}" id="wrCount">${c} / ~${k.words} ${k.lang === 'zh' ? '字' : WT('words', '字')}</span>
           <button class="btn-sm" id="wrPhoto" ${st.busy ? 'disabled' : ''}>📷 ${WT('Photo of handwritten pages', '拍下手寫稿')}</button></div>
         ${st.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(st.busy)}</p>` : ''}
         ${st.error ? `<p class="hw-err" role="alert">${esc(st.error)}</p>` : ''}
         <p class="hint" style="margin:0">${WT('Writing on paper? Photograph the pages: Buddy types it out exactly as you wrote it (mistakes too). Check the reading before you ask for feedback.', '在紙上寫？拍下每一頁，Buddy 會照你寫的打出來（錯字也會保留）。取得評語前請先核對。')}</p>
-        <button class="btn" id="wrMark" ${st.busy || c < 30 ? 'disabled' : ''}>${n ? WT('Mark my redraft', '批改修改稿') : WT('Get feedback', '取得評語')}</button>
+        <button class="btn" id="wrMark" ${st.busy || c < (k.min || 30) ? 'disabled' : ''}>${n ? WT('Mark my redraft', '批改修改稿') : WT('Get feedback', '取得評語')}</button>
       </section>
     </main>`;
     document.getElementById('back').onclick = () => go({ name: 'writing' });
@@ -1356,12 +1368,12 @@ function renderWritingFeedback(it, at) {
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${WT('Writing', '寫作')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(it.title)}</span></div>
   <main class="pad stack g14 wrpage" data-view="writing" data-raw style="flex:1">
-    ${it.drafts.length > 1 ? `<div class="wr-drafts" role="tablist">${it.drafts.map((x, j) => `<button role="tab" class="${j === i ? 'on' : ''}" aria-selected="${j === i}" data-d="${j}">${WT(`Draft ${j + 1}`, `第 ${j + 1} 稿`)}${wrLevel(x.fb, it.kind) ? ` · ≈${wrLevel(x.fb, it.kind)}` : ''}</button>`).join('')}</div>` : ''}
+    ${it.drafts.length > 1 ? `<div class="wr-drafts" role="tablist">${it.drafts.map((x, j) => `<button role="tab" class="${j === i ? 'on' : ''}" aria-selected="${j === i}" data-d="${j}">${WT(`Draft ${j + 1}`, `第 ${j + 1} 稿`)}${wrLevel(x.fb, it.kind) ? ` · ${lvShow(wrLevel(x.fb, it.kind))}` : ''}</button>`).join('')}</div>` : ''}
     <section class="card wr-score">
-      <div class="wr-lvbox"><span class="wr-lv">≈${lv}</span><small>${WT('Estimated level', '估計等級')}${plv && plv !== lv ? `<br><b class="${lv > plv ? 'wr-up' : 'wr-down'}">${WT('was', '之前')} ${plv}</b>` : ''}</small></div>
+      <div class="wr-lvbox"><span class="wr-lv${k.primary ? ' stars' : ''}">${lvShow(lv)}</span><small>${k.primary ? WT(`For a ${gradeLabel()} pupil`, `以${gradeLabel()}程度計`) : WT('Estimated level', '估計等級')}${plv && plv !== lv ? `<br><b class="${lv > plv ? 'wr-up' : 'wr-down'}">${WT('was', '之前')} ${plv}</b>` : ''}</small></div>
       <div class="wr-crits">${fb.criteria.map((c, j) => { const pc = prev && prev.fb.criteria[j], dlt = pc ? c.band - pc.band : 0; return `<div class="wr-crit"><div class="wr-ch"><b>${esc(c.name)}</b><span>${c.band}<small>/7</small>${dlt ? `<em class="${dlt > 0 ? 'wr-up' : 'wr-down'}">${dlt > 0 ? '▲' : '▼'}${Math.abs(dlt)}</em>` : ''}</span></div><div class="wr-bandbar"><i style="width:${(c.band / 7) * 100}%"></i></div><p>${esc(c.why)}</p></div>`; }).join('')}</div>
       <p class="wr-sum">${esc(fb.summary)}</p>
-      <p class="wr-note">${WT('Estimate from AI marking against the HKDSE criteria. Not an official HKEAA mark: use it to see what to improve.', '按 HKDSE 評分準則的 AI 估計，並非考評局正式分數，用來找出要改進的地方。')} · ${fb.count} ${zh ? '字' : WT('words', '字')}</p>
+      <p class="wr-note">${k.primary ? WT('Buddy’s marking for your grade, not an official school mark: use it to see what to improve.', 'Buddy 按你的年級批改，並非學校正式分數，用來找出要改進的地方。') : WT('Estimate from AI marking against the HKDSE criteria. Not an official HKEAA mark: use it to see what to improve.', '按 HKDSE 評分準則的 AI 估計，並非考評局正式分數，用來找出要改進的地方。')} · ${fb.count} ${zh ? '字' : WT('words', '字')}</p>
     </section>
     ${prev && (fb.improved.length || fb.still_to_do.length) ? `<section class="card wr-box better"><h2>${L('What got better', '進步了的地方')}</h2>${fb.improved.length ? `<ul>${fb.improved.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}${fb.still_to_do.length ? `<h3>${L('Still to work on', '仍要改進')}</h3><ul>${fb.still_to_do.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</section>` : ''}
     <section class="card wr-box good"><h2>👍 ${L('What you did well', '做得好的地方')}</h2><ul>${fb.strengths.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
@@ -1395,7 +1407,7 @@ const SPK = (en, zh) => (LANG === 'zh' ? zh : en);
 const SREC = window.SpeechRecognition || window.webkitSpeechRecognition;
 const spx = { busy: '', error: null, topic: '', rec: null };
 const SP_CRIT = ['Pronunciation & Delivery', 'Communication Strategies', 'Vocabulary & Language Patterns', 'Ideas & Organisation'];
-const spLevel = (fb) => (fb && fb.criteria ? wrLevel({ criteria: fb.criteria }, 'en_a') : null);
+const spLevel = (fb, it) => (fb && fb.criteria ? wrLevel({ criteria: fb.criteria }, it && it.task && it.task.primary ? 'en_p' : 'en_a') : null);
 const fmtSecs = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 function spSave() { local.sp = (local.sp || []).slice(-15); saveLocal(); }
 function sayQuestion(text) {
@@ -1417,23 +1429,24 @@ async function renderSpeaking(id, sub, qi) {
   ${backTop({name:'home'}, 'Today')}
   <main class="pad stack g18 wrpage" data-view="speaking" data-raw style="flex:1">
     <h1 class="pagetitle">${SPK('Speaking practice', '說話練習')}</h1>
-    <section class="hw-hero">${buddySVG('listen', 56)}<div><b>${SPK('DSE English Paper 4: the one-minute individual response.', 'DSE 英文卷四：一分鐘個人回應。')}</b>
-      <span>${SPK('Read a topic, prepare like the exam, then answer the examiner’s question out loud. Buddy marks it by the four speaking domains and shows you how to do better.', '閱讀題目、像考試一樣準備，然後大聲回答考官的問題。Buddy 會按四個說話範疇評分，並教你怎樣做得更好。')}</span></div></section>
+    <section class="hw-hero">${buddySVG('listen', 56)}<div>${isPrimaryKid() ? `<b>${SPK('Read aloud, then answer a question about you.', '朗讀短文，再回答關於你的問題。')}</b>
+      <span>${SPK('Like the school speaking test: read a short passage, then answer simple questions out loud. Buddy listens and tells you what you did well and what to try next.', '就像學校的說話測驗：先朗讀一篇短文，再大聲回答簡單的問題。Buddy 會告訴你做得好的地方和下次可以試的。')}</span>` : `<b>${SPK('DSE English Paper 4: the one-minute individual response.', 'DSE 英文卷四：一分鐘個人回應。')}</b>
+      <span>${SPK('Read a topic, prepare like the exam, then answer the examiner’s question out loud. Buddy marks it by the four speaking domains and shows you how to do better.', '閱讀題目、像考試一樣準備，然後大聲回答考官的問題。Buddy 會按四個說話範疇評分，並教你怎樣做得更好。')}</span>`}</div></section>
     ${SREC ? '' : `<p class="hw-err" role="alert">${SPK('This browser can’t turn speech into text. Please use Chrome, Edge or Safari.', '這個瀏覽器不能把說話轉成文字，請使用 Chrome、Edge 或 Safari。')}</p>`}
     <section class="card wr-step"><h2 class="st-h">${SPK('New topic', '新題目')}</h2>
-      <div class="wr-gen"><input id="spTopic" class="tinput" placeholder="${SPK('Topic (optional), e.g. online learning', '題材（可留空），例如：網上學習')}" value="${esc(spx.topic)}"><button class="btn" id="spNew" ${spx.busy ? 'disabled' : ''}>✨ ${SPK('Give me a DSE-style topic', '給我一條 DSE 式題目')}</button></div>
+      <div class="wr-gen"><input id="spTopic" class="tinput" placeholder="${isPrimaryKid() ? SPK('Topic (optional), e.g. my school', '題材（可留空），例如：我的學校') : SPK('Topic (optional), e.g. online learning', '題材（可留空），例如：網上學習')}" value="${esc(spx.topic)}"><button class="btn" id="spNew" ${spx.busy ? 'disabled' : ''}>✨ ${isPrimaryKid() ? SPK('Give me a topic', '給我一條題目') : SPK('Give me a DSE-style topic', '給我一條 DSE 式題目')}</button></div>
       ${spx.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(spx.busy)}</p>` : ''}
       ${spx.error ? `<p class="hw-err" role="alert">${esc(spx.error)}</p>` : ''}
     </section>
     ${list.length ? `<section class="stack g10"><h2 class="st-h">${SPK('Your topics', '你的題目')}</h2>
-      <div class="hw-list">${list.slice().reverse().map((x) => { const best = x.tries.reduce((b, t) => { const l = spLevel(t.fb); return l && (!b || l > b) ? l : b; }, null); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">🎤</span><span class="hw-it"><b>${esc(x.task.title)}</b><small>${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.tries.length ? SPK(`${x.tries.length} answer${x.tries.length > 1 ? 's' : ''}`, `已回答 ${x.tries.length} 次`) : SPK('Not answered yet', '未回答')}</small></span>${best ? `<span class="wr-lv sm">≈${best}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
+      <div class="hw-list">${list.slice().reverse().map((x) => { const best = x.tries.reduce((b, t) => { const l = spLevel(t.fb, x); return l && (!b || l > b) ? l : b; }, null); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">🎤</span><span class="hw-it"><b>${esc(x.task.title)}</b><small>${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.tries.length ? SPK(`${x.tries.length} answer${x.tries.length > 1 ? 's' : ''}`, `已回答 ${x.tries.length} 次`) : SPK('Not answered yet', '未回答')}</small></span>${best ? `<span class="wr-lv sm">${lvShow(best)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
   </main>`;
   const tp = document.getElementById('spTopic'); tp.oninput = () => (spx.topic = tp.value);
   $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => go({ name: 'speaking', id: b.dataset.open })));
   document.getElementById('spNew').onclick = async () => {
-    spx.busy = SPK('Writing a DSE-style topic…', '正在出題…'); spx.error = null; renderSpeaking();
+    spx.busy = isPrimaryKid() ? SPK('Writing a topic…', '正在出題…') : SPK('Writing a DSE-style topic…', '正在出題…'); spx.error = null; renderSpeaking();
     try {
-      const r = await api('speaking', { step: 'task', topic: spx.topic }); delete r.usage;
+      const r = await api('speaking', { step: 'task', topic: spx.topic }); delete r.usage; if (isPrimaryKid()) r.primary = true;
       const item = { id: uid(), t: Date.now(), task: r, notes: '', tries: [] };
       local.sp = [...(local.sp || []), item]; spSave(); spx.busy = ''; spx.topic = '';
       go({ name: 'speaking', id: item.id });
@@ -1448,23 +1461,24 @@ function renderSpeakingTask(it) {
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Speaking', '說話')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(T.title)}</span></div>
   <main class="pad sppage" data-view="speaking" data-raw style="flex:1">
     <div class="sp-col stack g14">
-      <section class="card sp-text"><small class="ln-step">${SPK('Read this', '閱讀')}</small><h2>${esc(T.title)}</h2><div>${esc(T.text).replace(/\n/g, '<br>')}</div></section>
-      ${T.discussion ? `<details class="card wr-task"><summary><b>${SPK('Group discussion task', '小組討論題目')}</b></summary><div class="wr-ptext">${esc(T.discussion).replace(/\n/g, '<br>')}</div></details>` : ''}
+      <section class="card sp-text"><small class="ln-step">${T.primary ? SPK('Read this aloud', '大聲朗讀') : SPK('Read this', '閱讀')}</small><h2>${esc(T.title)}</h2><div>${esc(T.text).replace(/\n/g, '<br>')}</div></section>
+      ${T.primary ? `${readAloudOn() ? `<button class="chip say" id="spHear">🔊 ${SPK('Hear it first', '先聽一次')}</button>` : ''}${T.discussion ? `<p class="hint" style="margin:0">${esc(T.discussion)}</p>` : ''}` : T.discussion ? `<details class="card wr-task"><summary><b>${SPK('Group discussion task', '小組討論題目')}</b></summary><div class="wr-ptext">${esc(T.discussion).replace(/\n/g, '<br>')}</div></details>` : ''}
     </div>
     <div class="sp-col stack g14">
       <section class="card sp-prep">
-        <div class="sp-prep-h"><b>${SPK('Prepare', '準備')}</b><span class="sp-clock" id="spClock">${it.prepEnd && prepLeft() ? fmtSecs(prepLeft()) : '10:00'}</span>
-          ${it.prepEnd && prepLeft() ? `<button class="btn-sm" id="spPrepStop">${SPK('I’m ready', '我準備好了')}</button>` : `<button class="btn-sm primary" id="spPrep">${SPK('Start 10-minute timer', '開始 10 分鐘計時')}</button>`}</div>
-        <textarea id="spNotes" class="wr-ta small" rows="5" placeholder="${SPK('Notes: key words and ideas only, like your exam note card.', '筆記：只寫關鍵字和要點，像考試的筆記卡。')}">${esc(it.notes || '')}</textarea>
+        <div class="sp-prep-h"><b>${SPK('Prepare', '準備')}</b><span class="sp-clock" id="spClock">${it.prepEnd && prepLeft() ? fmtSecs(prepLeft()) : T.primary ? '2:00' : '10:00'}</span>
+          ${it.prepEnd && prepLeft() ? `<button class="btn-sm" id="spPrepStop">${SPK('I’m ready', '我準備好了')}</button>` : `<button class="btn-sm primary" id="spPrep">${T.primary ? SPK('Start 2-minute timer', '開始 2 分鐘計時') : SPK('Start 10-minute timer', '開始 10 分鐘計時')}</button>`}</div>
+        <textarea id="spNotes" class="wr-ta small" rows="5" placeholder="${T.primary ? SPK('Notes (optional): a few key words to help you.', '筆記（可留空）：寫幾個關鍵字幫助你。') : SPK('Notes: key words and ideas only, like your exam note card.', '筆記：只寫關鍵字和要點，像考試的筆記卡。')}">${esc(it.notes || '')}</textarea>
       </section>
-      <section class="card sp-qs"><h2>${SPK('Individual response', '個人回應')}</h2><p class="hint" style="margin:0">${SPK('The examiner asks you one question. You answer for one minute.', '考官會問你一條問題，你要回答一分鐘。')}</p>
-        ${T.questions.map((q, i) => { const ts = it.tries.filter((t) => t.qi === i), last = ts[ts.length - 1], lv = last && spLevel(last.fb); return `<div class="sp-q"><span class="sp-qn">${i + 1}</span><span class="sp-qt">${esc(q)}${last ? `<small>${SPK(`Answered ${ts.length}×`, `已答 ${ts.length} 次`)}${lv ? ` · ≈${lv}` : ''} · <button class="linkbtn" data-fb="${i}">${SPK('See feedback', '看評語')}</button></small>` : ''}</span><button class="btn-sm ${last ? '' : 'primary'}" data-ans="${i}">🎤 ${last ? SPK('Again', '再答') : SPK('Answer', '回答')}</button></div>`; }).join('')}
+      <section class="card sp-qs"><h2>${T.primary ? SPK('Questions about you', '關於你的問題') : SPK('Individual response', '個人回應')}</h2><p class="hint" style="margin:0">${T.primary ? SPK('Pick a question and answer it out loud. Try to say why.', '揀一條問題大聲回答，試試說出原因。') : SPK('The examiner asks you one question. You answer for one minute.', '考官會問你一條問題，你要回答一分鐘。')}</p>
+        ${T.questions.map((q, i) => { const ts = it.tries.filter((t) => t.qi === i), last = ts[ts.length - 1], lv = last && spLevel(last.fb, it); return `<div class="sp-q"><span class="sp-qn">${i + 1}</span><span class="sp-qt">${esc(q)}${last ? `<small>${SPK(`Answered ${ts.length}×`, `已答 ${ts.length} 次`)}${lv ? ` · ${lvShow(lv)}` : ''} · <button class="linkbtn" data-fb="${i}">${SPK('See feedback', '看評語')}</button></small>` : ''}</span><button class="btn-sm ${last ? '' : 'primary'}" data-ans="${i}">🎤 ${last ? SPK('Again', '再答') : SPK('Answer', '回答')}</button></div>`; }).join('')}
       </section>
     </div>
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'speaking' });
   const nt = document.getElementById('spNotes'); let tm; nt.oninput = () => { it.notes = nt.value; clearTimeout(tm); tm = setTimeout(saveLocal, 500); };
-  const ps = document.getElementById('spPrep'); if (ps) ps.onclick = () => { it.prepEnd = Date.now() + 600000; saveLocal(); renderSpeakingTask(it); };
+  const hr = document.getElementById('spHear'); if (hr) hr.onclick = () => sayAloud(T.text);
+  const ps = document.getElementById('spPrep'); if (ps) ps.onclick = () => { it.prepEnd = Date.now() + (T.primary ? 120000 : 600000); saveLocal(); renderSpeakingTask(it); };
   const pe = document.getElementById('spPrepStop'); if (pe) pe.onclick = () => { it.prepEnd = 0; saveLocal(); renderSpeakingTask(it); };
   $app.querySelectorAll('[data-ans]').forEach((b) => (b.onclick = () => go({ name: 'speaking', id: it.id, sub: 'rec', qi: b.dataset.ans })));
   $app.querySelectorAll('[data-fb]').forEach((b) => (b.onclick = () => go({ name: 'speaking', id: it.id, sub: 'fb', qi: b.dataset.fb })));
@@ -1492,7 +1506,7 @@ function renderSpeakingRec(it, qi) {
       <section class="sp-exq"><span class="sp-ex">${buddySVG(R.state === 'rec' ? 'listen' : 'happy', 52)}<small>${SPK('Examiner', '考官')}</small></span><div><p>${esc(q)}</p><button class="btn-sm quiet" id="spSay">🔊 ${SPK('Hear it again', '再聽一次')}</button></div></section>
       <section class="sp-ring ${R.state}"><svg viewBox="0 0 120 120" width="170" height="170" aria-hidden="true"><circle cx="60" cy="60" r="52" class="rbg"/><circle cx="60" cy="60" r="52" class="rfg" id="spArc" style="stroke-dashoffset:${326.7 * (1 - left / 60)}"/></svg>
         <div class="sp-time"><b id="spLeft">${fmtSecs(Math.ceil(left))}</b><small>${R.state === 'rec' ? SPK('speaking…', '說話中…') : SPK('one minute', '一分鐘')}</small></div>${R.state === 'rec' ? '<span class="sp-dot" aria-hidden="true"></span>' : ''}</section>
-      ${R.state === 'ready' ? `<button class="btn sp-go" id="spGo">🎤 ${SPK('Start my minute', '開始我的一分鐘')}</button><p class="hint" style="margin:0;text-align:center">${SPK('Tip: answer the question first, give two reasons with an example, then round off.', '提示：先直接回答，再給兩個理由和例子，最後作總結。')}</p>`
+      ${R.state === 'ready' ? `<button class="btn sp-go" id="spGo">🎤 ${SPK('Start my minute', '開始我的一分鐘')}</button><p class="hint" style="margin:0;text-align:center">${it.task.primary ? SPK('Tip: answer first, then say why. “I like … because …”', '提示：先回答，再說原因。“I like … because …”') : SPK('Tip: answer the question first, give two reasons with an example, then round off.', '提示：先直接回答，再給兩個理由和例子，最後作總結。')}</p>`
         : R.state === 'rec' ? `<button class="btn ghost sp-go" id="spStop">■ ${SPK('I’ve finished', '我說完了')}</button>`
         : `<p class="muted wr-busy" style="justify-content:center"><span class="spinner sm" aria-hidden="true"></span>${SPK('Buddy is listening back and marking…', 'Buddy 正在重聽和評分…')}</p>`}
       <section class="card sp-live"><small class="ln-step">${SPK('What I heard', '我聽到的')}</small><p id="spTr">${esc(R.final)}<i>${esc(R.interim)}</i>${!R.final && !R.interim ? `<span class="muted">${SPK('Your words will appear here as you speak.', '你說話時，文字會在這裏出現。')}</span>` : ''}</p></section>
@@ -1576,23 +1590,23 @@ async function renderSpeakingFb(it, qi) {
   const k = idx[idx.length - 1], t = it.tries[k], fb = t.fb, prev = idx.length > 1 ? it.tries[idx[idx.length - 2]] : null;
   const blob = t.aud ? await store.get(`spaud:${it.id}:${k}`, null) : null;
   const url = blob ? URL.createObjectURL(blob) : '';
-  const lv = spLevel(fb), plv = prev && spLevel(prev.fb);
+  const lv = spLevel(fb, it), plv = prev && spLevel(prev.fb, it), pk = !!it.task.primary;
   const wpm = Math.round(t.words / Math.max(1, t.secs) * 60);
-  const pace = wpm < 90 ? ['slow', 'A bit slow: aim for 110–150 words a minute'] : wpm > 170 ? ['fast', 'Quite fast: slow down a little so every word is clear'] : ['ok', 'Good pace'];
+  const pace = pk ? (wpm < 50 ? ['slow', 'A bit slow: try to keep going without long stops'] : wpm > 160 ? ['fast', 'Quite fast: slow down so every word is clear'] : ['ok', 'Good pace']) : wpm < 90 ? ['slow', 'A bit slow: aim for 110–150 words a minute'] : wpm > 170 ? ['fast', 'Quite fast: slow down a little so every word is clear'] : ['ok', 'Good pace'];
   const markFill = (s) => esc(s).replace(/\b(um+|uh+|erm*|ah+|hmm+|you know|i mean)\b/gi, '<mark class="sp-fill">$1</mark>');
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Topic', '題目')}</span></button><span style="font-weight:600;font-size:15px">${SPK('Feedback', '評語')}</span></div>
   <main class="pad stack g14 wrpage" data-view="speaking" data-raw style="flex:1">
     <section class="card sp-exq small"><span class="sp-ex">${buddySVG('happy', 40)}</span><div><p>${esc(it.task.questions[qi])}</p></div></section>
     <section class="card wr-score">
-      <div class="wr-lvbox"><span class="wr-lv">≈${lv}</span><small>Estimated level${plv && plv !== lv ? `<br><b class="${lv > plv ? 'wr-up' : 'wr-down'}">was ${plv}</b>` : ''}</small></div>
+      <div class="wr-lvbox"><span class="wr-lv${pk ? ' stars' : ''}">${lvShow(lv)}</span><small>${pk ? `For a ${gradeLabel()} pupil` : 'Estimated level'}${plv && plv !== lv ? `<br><b class="${lv > plv ? 'wr-up' : 'wr-down'}">was ${plv}</b>` : ''}</small></div>
       <div class="wr-crits">${fb.criteria.map((c, j) => { const pc = prev && prev.fb.criteria[j], d = pc ? c.band - pc.band : 0; return `<div class="wr-crit"><div class="wr-ch"><b>${esc(c.name)}</b><span>${c.band}<small>/7</small>${d ? `<em class="${d > 0 ? 'wr-up' : 'wr-down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</em>` : ''}</span></div><div class="wr-bandbar"><i style="width:${(c.band / 7) * 100}%"></i></div><p>${esc(c.why)}</p></div>`; }).join('')}</div>
       <p class="wr-sum">${esc(fb.summary)}</p>
-      <p class="wr-note">Estimate from AI marking of a speech-to-text transcript against the HKDSE speaking domains. Pronunciation can’t be judged from text: listen back to check it yourself.</p>
+      <p class="wr-note">${pk ? 'Buddy’s marking for your grade, from a speech-to-text transcript.' : 'Estimate from AI marking of a speech-to-text transcript against the HKDSE speaking domains.'} Pronunciation can’t be judged from text: listen back to check it yourself.</p>
     </section>
     <section class="card sp-stats">
       <div><b>${t.secs}s</b><small>of 60 spoken</small></div><div class="${pace[0]}"><b>${wpm}</b><small>words / min</small></div><div><b>${t.fillers}</b><small>fillers (um, er…)</small></div><div><b>${t.pause}s</b><small>longest pause</small></div>
-      <p>${pace[1]}${t.secs < 45 ? ' · Try to use most of the minute.' : ''}${t.pause >= 4 ? ' · Long pauses: a short phrase like “Let me think…” keeps you going.' : ''}</p>
+      <p>${pace[1]}${t.secs < (pk ? 25 : 45) ? (pk ? ' · Try to say a little more: one more reason or example.' : ' · Try to use most of the minute.') : ''}${t.pause >= 4 ? ' · Long pauses: a short phrase like “Let me think…” keeps you going.' : ''}</p>
       ${url ? `<audio controls src="${url}" class="sp-audio"></audio>` : ''}
     </section>
     <section class="card wr-box"><h2>📝 What I heard</h2><p class="sp-trx">${markFill(t.tr)}</p></section>
@@ -2122,7 +2136,7 @@ async function renderHome() {
         <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${isPrimaryKid() ? (LANG === 'zh' ? '模擬試卷' : 'Practice paper') : 'Mock paper'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
         <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        ${isPrimaryKid() ? '' : `<button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>DSE-style feedback, then redraft</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>DSE Paper 4, one-minute answers</span></button>`}
+        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>${isPrimaryKid() ? 'Kind feedback, then redraft' : 'DSE-style feedback, then redraft'}</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>${isPrimaryKid() ? 'Read aloud and answer' : 'DSE Paper 4, one-minute answers'}</span></button>
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -2481,6 +2495,7 @@ const gradeBand = () => { const g = gradeNow(); return !g ? '' : /^P[12]$/.test(
 // Primary or not: the child's grade when the parent has set it, otherwise a guess from their books.
 const isPrimaryKid = () => (profileOn() && gradeNow() ? gradeNow()[0] === 'P' : !!primaryCache);
 const sessionSize = () => ({ p12: 6, p34: 8 }[gradeBand()] || SESSION_SIZE);
+const gradeLabel = () => (gradeNow() ? gradeName(gradeNow()) : LANG === 'zh' ? '小學' : 'primary');
 const gradeName = (g) => (LANG === 'zh' ? `${g[0] === 'P' ? '小' : '中'}${'一二三四五六'[+g[1] - 1]}` : `${g[0] === 'P' ? 'Primary' : 'Secondary'} ${g[1]}`);
 function profileScreen({ first } = {}) {
   return new Promise((resolve) => {
@@ -4732,8 +4747,8 @@ async function renderParent() {
   sessions.slice(-12).forEach((s) => feed.push({ t: s.end, ic: 'bars', tx: PD(`Practised ${bookName(s.b)}: ${s.n} question${s.n > 1 ? 's' : ''}, ${s.m ? Math.round(100 * s.g / s.m) : 0}% of marks`, `練習 ${bookName(s.b)}：${s.n} 題，得分率 ${s.m ? Math.round(100 * s.g / s.m) : 0}%`) }));
   (local.tests || []).slice(-8).forEach((x) => feed.push({ t: x.t, ic: 'pencil', tx: PD(`${x.kind === 'test' ? 'Chapter test' : 'Mock paper'}: ${x.m ? Math.round(100 * x.g / x.m) : 0}%`, `${x.kind === 'test' ? '章節測驗' : '模擬試卷'}：${x.m ? Math.round(100 * x.g / x.m) : 0}%`) + ` · ${x.title || ''}` }));
   Object.entries(local.learned || {}).forEach(([k, t]) => { const [bid, uid_] = k.split(':'); const b = books.find((x) => x.id === bid); const u = b && b.units.find((x) => x.id === uid_); if (u) feed.push({ t, ic: 'book', tx: PD(`Finished a lesson: ${cleanUnitTitle(u.title)}`, `完成一課：${cleanUnitTitle(u.title)}`) }); });
-  (local.wr || []).forEach((w) => w.drafts.forEach((d, i) => feed.push({ t: d.t, ic: 'pencil', tx: PD(`Writing marked (draft ${i + 1}): ≈ level ${wrLevel(d.fb, w.kind)}`, `寫作批改（第 ${i + 1} 稿）：估計等級 ${wrLevel(d.fb, w.kind)}`) + ` · ${w.title}` })));
-  (local.sp || []).forEach((x) => x.tries.forEach((t) => feed.push({ t: t.t, ic: 'send', tx: PD(`Speaking answer marked: ≈ level ${spLevel(t.fb)}`, `說話回應評分：估計等級 ${spLevel(t.fb)}`) + ` · ${x.task.title}` })));
+  (local.wr || []).forEach((w) => w.drafts.forEach((d, i) => feed.push({ t: d.t, ic: 'pencil', tx: PD(`Writing marked (draft ${i + 1}): ${lvShow(wrLevel(d.fb, w.kind))}`, `寫作批改（第 ${i + 1} 稿）：${lvShow(wrLevel(d.fb, w.kind))}`) + ` · ${w.title}` })));
+  (local.sp || []).forEach((x) => x.tries.forEach((t) => feed.push({ t: t.t, ic: 'send', tx: PD(`Speaking answer marked: ${lvShow(spLevel(t.fb, x))}`, `說話回應評分：${lvShow(spLevel(t.fb, x))}`) + ` · ${x.task.title}` })));
   (local.hw || []).forEach((h) => feed.push({ t: h.t, ic: 'check', tx: PD(`Homework help: ${h.title || 'homework'}`, `功課輔導：${h.title || '功課'}`) }));
   schoolTests().filter((x) => typeof x.score === 'number').forEach((x) => feed.push({ t: testDay(x), ic: 'target', tx: PD(`School test result: ${x.name} ${x.score}%`, `學校測驗成績：${x.name} ${x.score}%`) }));
   feed.sort((a, b) => b.t - a.t);
