@@ -669,7 +669,7 @@ let S = null; // current practice session
 let navStack = [], navPopping = false, navCur = null;
 const navKey = (v) => JSON.stringify(v || {});
 // Each screen has its own address (#/book?bookId=…), so a refresh, a bookmark or a shared link opens the same screen.
-const URL_OK = ['home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
+const URL_OK = ['listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
 function viewUrl(v) {
   if (!v || !URL_OK.includes(v.name)) return '#/' + (v && v.name === 'parent' ? 'progress' : 'home');
   const q = new URLSearchParams();
@@ -749,6 +749,7 @@ async function go(v) {
   if (v.name === 'dictation') return renderDictation(v.id, v.sub);
   if (v.name === 'writing') return renderWriting(v.id, v.sub);
   if (v.name === 'speaking') return renderSpeaking(v.id, v.sub, v.qi);
+  if (v.name === 'listening') return renderListening();
   if (v.name === 'plans') return renderPlans(v.hi);
   if (v.name === 'parent') return renderParent();
   if (v.name === 'learn') return renderLearn(v.bookId, v.unitId);
@@ -2136,7 +2137,7 @@ async function renderHome() {
         <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${isPrimaryKid() ? (LANG === 'zh' ? '模擬試卷' : 'Practice paper') : 'Mock paper'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
         <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>${isPrimaryKid() ? 'Kind feedback, then redraft' : 'DSE-style feedback, then redraft'}</span></button><button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>${isPrimaryKid() ? 'Read aloud and answer' : 'DSE Paper 4, one-minute answers'}</span></button>
+        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>${isPrimaryKid() ? 'Kind feedback, then redraft' : 'DSE-style feedback, then redraft'}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>Listening · 聆聽</b><span>Listen, then answer</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>呈分試 sprint</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>${isPrimaryKid() ? 'Read aloud and answer' : 'DSE Paper 4, one-minute answers'}</span></button>
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -2163,6 +2164,8 @@ async function renderHome() {
   { const dg = document.getElementById('dictgo'); if (dg) dg.onclick = () => go({ name: 'dictation' }); }
   { const wg = document.getElementById('wrgo'); if (wg) wg.onclick = () => go({ name: 'writing' }); }
   { const sg = document.getElementById('spgo'); if (sg) sg.onclick = () => go({ name: 'speaking' }); }
+  { const lg = document.getElementById('lngo'); if (lg) lg.onclick = () => go({ name: 'listening' }); }
+  { const sp = document.getElementById('ssago'); if (sp) sp.onclick = () => startReview('ssa'); }
   $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
   window.scrollTo(0, 0);
 }
@@ -5093,6 +5096,78 @@ function agoText(t) {
   const mo = Math.floor(d / 30); return zh ? `${mo} 個月前` : `${mo} month${mo > 1 ? 's' : ''} ago`;
 }
 
+/* ---------- 呈分試 sprint (P5-P6, when the parent picked it as a goal) ----------
+   A timed paper across the child's Chinese, English and Maths books: mostly the questions they found hardest,
+   topped up with ones they haven't tried, easiest first, like a school exam. */
+const ssaOn = () => /^P[56]$/.test(gradeNow() || '') && ((local.learner && local.learner.goals) || []).includes('ssa');
+const SSA_SUBJ = /chinese|中文|中國語文|english|英文|英國語文|math|數學|数学/i;
+async function startSprint() {
+  const all = (await allQuestions()).filter((x) => SSA_SUBJ.test(String(x.book.subject || '') + ' ' + x.book.title));
+  if (all.length < 6) return toast(LANG === 'zh' ? '先加入中文、英文或數學課本，並練習幾個章節。' : 'Add your Chinese, English or Maths books and practise a few chapters first.');
+  const tried = all.filter((x) => local.stats[x.q.id]).sort((a, b) => local.stats[a.q.id].last - local.stats[b.q.id].last);
+  const weak = tried.filter((x) => isWeak(x.q)).slice(0, 10);
+  const fresh = shuffle(all.filter((x) => !local.stats[x.q.id]));
+  const rest = shuffle(tried.filter((x) => !isWeak(x.q)));
+  const seen = new Set(), pick = [];
+  for (const x of [...weak, ...fresh, ...rest]) { if (pick.length >= 15) break; if (!seen.has(x.q.id)) { seen.add(x.q.id); pick.push(x); } }
+  const qs = pick.map((x) => shuffleOptions(x.q)).sort((a, b) => a.level - b.level);
+  const subs = [...new Set(pick.map((x) => subj(x.book.subject || '')).filter(Boolean))].join(', ');
+  const mm = await askTime('呈分試 sprint', LANG === 'zh' ? `${qs.length} 題，來自${subs}，以弱項為主。` : `${qs.length} questions from ${subs}, mostly your weak spots.`, 30);
+  if (mm === null) return;
+  S = newSession({ mode: 'mock', title: '呈分試 sprint', qs, target: qs.length, deadline: mm ? Date.now() + mm * 60 * 1000 : null });
+  renderQuestion();
+}
+
+/* ---------- listening practice ----------
+   Buddy writes a short passage (sized by grade) and reads it aloud with the device voice, up to twice, as in the
+   TSA and school listening papers. The child answers multiple-choice questions, then sees the answers and the script. */
+const lnx = { lang: null, busy: '', error: null, item: null, picks: {}, plays: 0, done: false };
+async function renderListening() {
+  const x = lnx, it = x.item, L = (en, zh) => (it ? (it.lang === 'zh' ? zh : en) : SPK(en, zh));
+  if (!window.speechSynthesis) { $app.innerHTML = `${backTop({ name: 'home' }, 'Today')}<main class="pad stack g18 wrpage" style="flex:1"><h1 class="pagetitle">${SPK('Listening practice', '聆聽練習')}</h1><p class="hw-err">${SPK('This browser can’t read aloud. Please use Chrome, Edge or Safari.', '這個瀏覽器不能朗讀，請使用 Chrome、Edge 或 Safari。')}</p></main>`; return; }
+  const score = it && x.done ? it.questions.filter((q, i) => x.picks[i] === q.answer).length : 0;
+  $app.innerHTML = `
+  ${backTop({ name: 'home' }, 'Today')}
+  <main class="pad stack g18 wrpage lnpage" data-view="listening" data-raw style="flex:1">
+    <h1 class="pagetitle">${SPK('Listening practice', '聆聽練習')}</h1>
+    ${!it ? `<section class="hw-hero">${buddySVG('listen', 56)}<div><b>${SPK('Listen carefully, then answer.', '留心聆聽，然後作答。')}</b>
+      <span>${SPK('Like the school listening test: Buddy reads a short passage aloud (you can hear it twice), then you answer the questions.', '就像學校的聆聽測驗：Buddy 會朗讀一段短文（可以聽兩次），然後你回答問題。')}</span></div></section>
+    <section class="card wr-step"><h2 class="st-h">${SPK('Which language?', '哪一種語言？')}</h2>
+      <div class="wr-kinds"><button class="wr-kind" data-ln="en"><b>English</b><span>${SPK('English listening', '英文聆聽')}</span></button><button class="wr-kind" data-ln="zh"><b>中文</b><span>${SPK('Chinese listening (Cantonese voice)', '中文聆聽（廣東話）')}</span></button></div>
+      ${x.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(x.busy)}</p>` : ''}
+      ${x.error ? `<p class="hw-err" role="alert">${esc(x.error)}</p>` : ''}
+    </section>` : `
+    <section class="card ln-play">
+      <div class="ln-ph">${buddySVG(x.done ? 'happy' : 'listen', 48)}<div><b>${esc(it.title)}</b><small>${x.done ? L('Here is what Buddy read.', '以下是 Buddy 讀的內容。') : L(`You can listen ${Math.max(0, 2 - x.plays)} more time${2 - x.plays === 1 ? '' : 's'}. Read the questions first.`, `你還可以聽 ${Math.max(0, 2 - x.plays)} 次。先看看問題。`)}</small></div></div>
+      ${x.done ? `<div class="ln-script">${esc(it.passage).replace(/\n/g, '<br>')}</div><button class="btn-sm" id="lnAgain">🔊 ${L('Hear it again', '再聽一次')}</button>` : `<button class="btn" id="lnPlay" ${x.plays >= 2 ? 'disabled' : ''}>▶ ${x.plays ? L('Play again', '再播一次') : L('Play', '播放')}</button>`}
+    </section>
+    <section class="stack g14">${it.questions.map((q, i) => `<div class="card ln-q"><b>${i + 1}. ${esc(q.q)}</b><div class="stack g8">${q.options.map((o, j) => {
+      const cls = x.done ? (j === q.answer ? 'right' : x.picks[i] === j ? 'wrong' : '') : x.picks[i] === j ? 'picked' : '';
+      return `<button class="opt ${cls}" data-q="${i}" data-o="${j}" ${x.done ? 'disabled' : ''} aria-pressed="${x.picks[i] === j}"><span class="dot">${'ABCD'[j]}</span><span>${esc(o)}</span></button>`; }).join('')}</div>
+      ${x.done && q.why ? `<p class="hint" style="margin:0">${esc(q.why)}</p>` : ''}</div>`).join('')}</section>
+    ${x.done ? `<section class="card ln-score"><b>${score} / ${it.questions.length}</b><span>${score === it.questions.length ? L('All correct. Great listening!', '全部答對，聽得很仔細！') : L('Listen again to the parts you missed.', '再聽聽你答錯的部分。')}</span><button class="btn" id="lnNew">${L('Another one', '再做一份')}</button></section>`
+      : `<button class="btn" id="lnCheck" ${Object.keys(x.picks).length < it.questions.length ? 'disabled' : ''}>${L('Check my answers', '核對答案')}</button>`}`}
+  </main>`;
+  $app.querySelectorAll('[data-ln]').forEach((b) => (b.onclick = async () => {
+    if (x.busy) return;
+    x.lang = b.dataset.ln; x.busy = SPK('Buddy is writing a passage…', 'Buddy 正在寫短文…'); x.error = null; renderListening();
+    try { const r = await api('speaking', { step: 'listen', lang: x.lang }); delete r.usage; Object.assign(x, { item: r, picks: {}, plays: 0, done: false, busy: '' }); }
+    catch (e) { x.busy = ''; x.error = wrErr(e); }
+    if (view.name === 'listening') renderListening();
+  }));
+  const pl = document.getElementById('lnPlay'); if (pl) pl.onclick = () => { x.plays++; sayAloud(it.passage); renderListening(); };
+  const ag = document.getElementById('lnAgain'); if (ag) ag.onclick = () => sayAloud(it.passage);
+  $app.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { x.picks[+b.dataset.q] = +b.dataset.o; renderListening(); }));
+  const ck = document.getElementById('lnCheck'); if (ck) ck.onclick = () => {
+    try { speechSynthesis.cancel(); } catch (e) {}
+    x.done = true; const n = it.questions.filter((q, i) => x.picks[i] === q.answer).length;
+    local.ln = [...(local.ln || []), { t: Date.now(), lang: it.lang, title: it.title, score: n, of: it.questions.length }].slice(-30); saveLocal();
+    if (n >= Math.ceil(it.questions.length / 2)) addStars(n === it.questions.length ? 2 : 1, 'listening');
+    renderListening(); window.scrollTo(0, 0);
+  };
+  const nw = document.getElementById('lnNew'); if (nw) nw.onclick = () => { Object.assign(x, { item: null, picks: {}, plays: 0, done: false }); renderListening(); };
+}
+
 /* ---------- choose a textbook for weak topics / mock paper ---------- */
 const isWeak = (q) => { const st = local.stats[q.id]; return !!st && st.last < 1; };
 async function renderPick(mode) {
@@ -5140,6 +5215,7 @@ async function renderPick(mode) {
 }
 
 async function startReview(mode, bookId = null) {
+  if (mode === 'ssa') return startSprint();
   const items = (await allQuestions()).filter((x) => !bookId || x.book.id === bookId);
   if (items.length < 4) return toast('Practise a chapter first, then come back here.');
   let pick;

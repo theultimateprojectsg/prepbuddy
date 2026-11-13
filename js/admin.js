@@ -199,7 +199,7 @@ function pilotOverview(rows, fams) {
   // stars
   const st = rows.map((r) => r.a.stars).filter(Boolean);
   const why = {}; st.forEach((x) => Object.entries(x.why || {}).forEach(([k, v]) => (why[k] = (why[k] || 0) + v)));
-  const WHY = { set: 'Finished sets', score: 'Scored 80%+', fix: 'Fixed mistakes', reviews: 'Daily reviews', test: 'Chapter tests', goal: 'Weekly goals', badge: 'Badges', writing: 'Writing', speaking: 'Speaking', dictation: 'Dictation', 'dictation-perfect': 'Perfect dictation', lesson: 'Lessons', 'level check': 'Level checks' };
+  const WHY = { set: 'Finished sets', score: 'Scored 80%+', fix: 'Fixed mistakes', reviews: 'Daily reviews', test: 'Chapter tests', goal: 'Weekly goals', badge: 'Badges', writing: 'Writing', speaking: 'Speaking', dictation: 'Dictation', 'dictation-perfect': 'Perfect dictation', lesson: 'Lessons', listening: 'Listening', 'level check': 'Level checks' };
   const rushedSets = sess.filter((x) => x.r).length;
   // AI cost
   const usd = rows.reduce((x, r) => x + r.a.usage.usd, 0), calls = rows.reduce((x, r) => x + r.a.usage.calls, 0);
