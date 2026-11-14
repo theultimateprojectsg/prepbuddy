@@ -2099,7 +2099,14 @@ async function renderHome() {
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
       <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div><div class="greet-r">${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}</div></div>`;
   if (!books.length) {
+    // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
+    let starters = [];
+    try { const cat = await getCatalog(); const g = gradeNow(); starters = cat.filter((b) => b.starter && (!g || String(b.level).toUpperCase() === g)).slice(0, 3); } catch (e) {}
     $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
+    ${starters.length ? `<section class="starter-card" aria-label="${LANG === 'zh' ? '免費入門書' : 'Free starter books'}"><span class="st-tag">${LANG === 'zh' ? '免費 · PrepBuddy 編寫' : 'Free · written by PrepBuddy'}</span>
+      <h2>${LANG === 'zh' ? '先試一本入門書' : 'Try a free starter book'}</h2>
+      <p>${LANG === 'zh' ? '跟足香港課程，即刻有練習、筆記和測驗，之後再加入學校課本。' : 'Follows the Hong Kong curriculum. Practice, notes and tests straight away, then add your school textbook later.'}</p>
+      ${starters.map((b) => `<button class="starter-book" data-starter="${esc(b.id)}"><span class="cover" aria-hidden="true" style="background:${subjectColour(b.subject, b.title)}1F">${subjectIcon(b.subject, 26, null, b.title)}</span><span><b data-raw>${esc(b.title)}</b><small>${esc([subj(b.subject), b.level].filter(Boolean).join(' · '))} · ${b.units.length} ${LANG === 'zh' ? '單元' : 'units'}</small></span><span class="st-go">${LANG === 'zh' ? '加入' : 'Add'}</span></button>`).join('')}</section>` : ''}
     <section class="empty-start" aria-label="Add a textbook">
       <h2>Start with your textbook</h2>
       <p style="margin:0;line-height:1.55;color:var(--text-2)">Search the library by title, subject or book code. PrepBuddy turns each chapter into exam practice, notes and flashcards, and marks your answers.</p>
@@ -2107,6 +2114,7 @@ async function renderHome() {
         <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off"></form>
     </section></main>${footerHTML()}`;
     bindHomeCommon();
+    $app.querySelectorAll('[data-starter]').forEach((b) => (b.onclick = async () => { b.disabled = true; const cat = await getCatalog(); addFromLibrary(cat.find((x) => x.id === b.dataset.starter), b.querySelector('.st-go')); }));
     const q = document.getElementById('q');
     q.onfocus = () => go({ name: 'library', query: q.value });
     document.getElementById('find').onsubmit = (e) => { e.preventDefault(); go({ name: 'library', query: q.value }); };
@@ -3397,7 +3405,7 @@ async function renderLibrary(query) {
     return `<div class="card libcard">
           <div class="cover" aria-hidden="true" style="background:${subjectColour(b.subject, b.title)}1F">${subjectIcon(b.subject, 30, null, b.title)}</div>
           <div class="stack g6" style="flex:1;min-width:0">
-            <b style="font-size:15px;line-height:1.35" data-raw>${esc(b.title)}</b>
+            ${b.starter ? `<span class="st-badge">${LANG === 'zh' ? '免費入門書 · PrepBuddy 編寫' : 'Free starter book · by PrepBuddy'}</span>` : ''}<b style="font-size:15px;line-height:1.35" data-raw>${esc(b.title)}</b>
             <span class="muted" style="font-size:13px" data-raw>${esc([subj(b.subject), b.level, b.publisher].filter(Boolean).join(' · '))}</span>
             <span class="muted" style="font-size:12px">${b.units.length} chapter${b.units.length === 1 ? '' : 's'} · ${b.questionCount ? b.questionCount + ' questions ready · ' : ''}code <span style="white-space:nowrap">${esc(b.code)}</span></span>
             ${added

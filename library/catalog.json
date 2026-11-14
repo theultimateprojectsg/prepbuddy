@@ -1,5 +1,100 @@
 [
  {
+  "id": "pb-p4-english",
+  "code": "ENG-P4PB",
+  "title": "PrepBuddy P4 English: Grammar, Reading and Writing",
+  "subject": "English Language",
+  "level": "P4",
+  "kind": "language",
+  "publisher": "PrepBuddy",
+  "licence": "PrepBuddy original",
+  "starter": true,
+  "credit": "Written by PrepBuddy for Hong Kong Primary 4 (Key Stage 2 English). Free starter book. © PrepBuddy.",
+  "lang": "en",
+  "pageCount": 11,
+  "addedAt": "2026-11-14",
+  "questionCount": 0,
+  "units": [
+   {
+    "id": "u0",
+    "title": "Unit 1: Talking about the past (simple past tense)",
+    "chapter": 1,
+    "startPage": 1,
+    "endPage": 1
+   },
+   {
+    "id": "u1",
+    "title": "Unit 2: Every day and right now (simple present and present continuous)",
+    "chapter": 2,
+    "startPage": 2,
+    "endPage": 2
+   },
+   {
+    "id": "u2",
+    "title": "Unit 3: Talking about the future (going to and will)",
+    "chapter": 3,
+    "startPage": 3,
+    "endPage": 3
+   },
+   {
+    "id": "u3",
+    "title": "Unit 4: Comparing things (comparatives and superlatives)",
+    "chapter": 4,
+    "startPage": 4,
+    "endPage": 4
+   },
+   {
+    "id": "u4",
+    "title": "Unit 5: How much? How many? (countable and uncountable nouns)",
+    "chapter": 5,
+    "startPage": 5,
+    "endPage": 5
+   },
+   {
+    "id": "u5",
+    "title": "Unit 6: Where and when? (prepositions of place and time)",
+    "chapter": 6,
+    "startPage": 6,
+    "endPage": 6
+   },
+   {
+    "id": "u6",
+    "title": "Unit 7: Whose is it? (pronouns and possessives)",
+    "chapter": 7,
+    "startPage": 7,
+    "endPage": 7
+   },
+   {
+    "id": "u7",
+    "title": "Unit 8: Joining ideas (connectives)",
+    "chapter": 8,
+    "startPage": 8,
+    "endPage": 8
+   },
+   {
+    "id": "u8",
+    "title": "Unit 9: Asking questions (question words and question forms)",
+    "chapter": 9,
+    "startPage": 9,
+    "endPage": 9
+   },
+   {
+    "id": "u9",
+    "title": "Unit 10: Reading skills (understanding a passage)",
+    "chapter": 10,
+    "startPage": 10,
+    "endPage": 10
+   },
+   {
+    "id": "u10",
+    "title": "Unit 11: Writing (diary, email and story)",
+    "chapter": 11,
+    "startPage": 11,
+    "endPage": 11
+   }
+  ]
+ },
+ {
   "id": "ifec-eli-booklet-en-235b",
   "code": "FIN-65TQ",
   "title": "Equity Linked Notes (Basic)",
