@@ -6,6 +6,7 @@ import * as PG from './progress.js';
 import { initLang, setLang, watch, LANG } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
 import { logoSVG, buddySVG, buddyFace } from './buddy.js';
+import { PRIVACY, PRIVACY_UPDATED } from './privacy.js';
 import { menuIcon, subjectIcon, subjectTile, subjectColour, actionIcon, actionTile, subjectName } from './icons.js';
 const subj = (s) => subjectName(s, LANG);
 
@@ -706,7 +707,7 @@ let S = null; // current practice session
 let navStack = [], navPopping = false, navCur = null;
 const navKey = (v) => JSON.stringify(v || {});
 // Each screen has its own address (#/book?bookId=…), so a refresh, a bookmark or a shared link opens the same screen.
-const URL_OK = ['listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
+const URL_OK = ['privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
 function viewUrl(v) {
   if (!v || !URL_OK.includes(v.name)) return '#/' + (v && v.name === 'parent' ? 'progress' : 'home');
   const q = new URLSearchParams();
@@ -781,6 +782,7 @@ async function go(v) {
   if (v.name === 'book') return renderBook(v.bookId);
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
+  if (v.name === 'privacy') return renderPrivacy();
   if (v.name === 'settings') return renderSettings();
   if (v.name === 'progress') return renderProgress();
   if (v.name === 'stars') return renderStars();
@@ -949,7 +951,7 @@ async function coachSnapshot() {
   const books = await getBooks(); const r = await currentReport();
   coachIndex = {};
   const pc = (x) => Math.round(100 * x);
-  const lines = [`Today: ${new Date().toDateString()}. Student name: ${local.name || '(not given)'}.`,
+  const lines = [`Today: ${new Date().toDateString()}.`, // the child's name is never sent to the AI
     `Last 7 days: practised on ${r.dp} of 7 days, ${r.q} questions answered, ${r.a === null ? 'no score yet' : r.a + '% of marks'}${r.pa !== null && r.a !== null ? ` (previous week ${r.pa}%)` : ''}.`,
     `Thinking skills, last 30 days (% of marks, answers): ${['Recall', 'Understand', 'Apply', 'Analyse/evaluate'].map((n, i) => `${n} ${r.sk[i][1] ? r.sk[i][0] + '%' : '-'} (${r.sk[i][1]})`).join(', ')}.`,
     `Mistake book: ${mistakeCount()} questions still to get right. Reviews due now: ${(await dueItems()).length}.`];
@@ -2370,8 +2372,9 @@ function renderPractice() {
 }
 function bindGear() {} // the gear is handled for every screen by the click listener below
 document.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('[data-gear]'); if (g) go({ name: 'settings' }); });
-document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('footer #usage')) go({ name: 'usage' }); }); // the footer's AI usage button, on every screen
-const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. ${local.pilot ? '' : '<button class="btn-sm quiet" id="usage" >AI usage</button>'}</footer>`;
+document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('footer #usage')) go({ name: 'usage' }); });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-privacy]'); if (!b) return; e.preventDefault(); if (document.querySelector('main.pilotgate')) privacyOverlay(); else go({ name: 'privacy' }); }); // Settings, footer and the consent step // the footer's AI usage button, on every screen
+const footerHTML = () => `<footer>${LANG === 'zh' ? '孩子的課本、題目和進度保存在這部裝置。題目由 AI 撰寫及檢查；如發現錯誤，請按「報告問題」。' : 'Your child’s textbooks, questions and progress are saved on this device. Questions are written and checked by AI; tap "Report a problem" if one looks wrong.'} <button class="btn-sm quiet" data-privacy>${LANG === 'zh' ? '私隱聲明' : 'Privacy notice'}</button>${local.pilot ? '' : '<button class="btn-sm quiet" id="usage" >AI usage</button>'}</footer>`;
 /* ---------- children on this device (siblings sharing a tablet) ----------
    Each child gets their own localStorage key and IndexedDB database (see KIDS near the top and store.js).
    Switching child reloads the app, so every screen starts clean with that child's books and progress.
@@ -2585,6 +2588,11 @@ function renderSettings() {
       <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
       <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
     </section>`}
+    <section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">${PLT('Privacy', '私隱')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('What PrepBuddy collects, where it goes, and how to see, correct or delete it.', 'PrepBuddy 收集甚麼資料、資料去向，以及如何查閱、更正或刪除。')}</span>
+      <button class="btn-sm" data-privacy style="align-self:flex-start">${PLT('Read the privacy notice', '閱讀私隱聲明')}</button>
+    </section>
     <section class="card stack g10 wipe-card" style="padding:16px">
       <b style="font-size:15px">${PLT('Delete everything on this device', '刪除這部裝置上的所有資料')}</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('Removes every child, book, question, mark, setting and saved voice clip from this phone or computer, and the family code. PrepBuddy then starts again like new. This can’t be undone, so save a backup first if you want to keep anything.', '刪除這部手機或電腦上所有孩子、課本、題目、成績、設定、已儲存的朗讀聲音和家庭代碼，PrepBuddy 會像新的一樣重新開始。刪除後不能復原，如想保留資料，請先儲存備份。')}${local.pilot ? PLT(' Pilot activity already sent to PrepBuddy is not deleted by this: ask us and we’ll remove it.', ' 已傳送給 PrepBuddy 的試用紀錄不會因此刪除：請聯絡我們，我們會為你刪除。') : ''}</span>
@@ -2628,6 +2636,36 @@ async function wipeDevice() {
   try { Object.keys(localStorage).filter((k) => /^(prepbuddy|pb\.)/.test(k)).forEach((k) => localStorage.removeItem(k)); } catch (e) {}
   try { sessionStorage.clear(); } catch (e) {}
   location.replace(location.pathname);
+}
+
+// The privacy notice (js/privacy.js), in English or Traditional Chinese. A page from Settings and the footer,
+// and a full-screen sheet over the consent step (which can't be left).
+let privLang = null;
+function privacyBody() {
+  const L = privLang || (LANG === 'zh' ? 'zh' : 'en'), P = PRIVACY[L];
+  return `<div class="priv" lang="${L === 'zh' ? 'zh-HK' : 'en'}">
+    <div class="priv-head"><h1>${P.title}</h1><div class="priv-lang" role="group" aria-label="Language">${[['en', 'English'], ['zh', '繁體中文']].map(([k, n]) => `<button class="chip${k === L ? ' on' : ''}" data-privlang="${k}">${n}</button>`).join('')}</div></div>
+    <p class="priv-upd">${L === 'zh' ? '最後更新：' : 'Last updated: '}${PRIVACY_UPDATED[L]}</p>
+    <p>${P.intro}</p>
+    ${P.sections.map(([h, b]) => `<section><h2>${h}</h2>${b}</section>`).join('')}
+  </div>`;
+}
+function bindPrivLang(root, redraw) { root.querySelectorAll('[data-privlang]').forEach((b) => (b.onclick = () => { privLang = b.dataset.privlang; redraw(); })); }
+function renderPrivacy() {
+  const draw = () => {
+    $app.innerHTML = `<main class="pad stack g14" data-raw>${backTop({ name: 'settings' }, 'Back')}${privacyBody()}</main>`;
+    bindPrivLang($app, draw);
+  };
+  draw(); window.scrollTo(0, 0);
+}
+function privacyOverlay() {
+  const box = document.createElement('div'); box.className = 'priv-sheet'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+  const draw = () => {
+    box.innerHTML = `<div class="priv-sheet-in" data-raw><div class="priv-close"><button class="btn-sm" data-privclose>${LANG === 'zh' ? '關閉' : 'Close'}</button></div>${privacyBody()}<div class="priv-close"><button class="btn" data-privclose>${LANG === 'zh' ? '返回' : 'Back to the agreement'}</button></div></div>`;
+    bindPrivLang(box, draw);
+    box.querySelectorAll('[data-privclose]').forEach((b) => (b.onclick = () => box.remove()));
+  };
+  draw(); document.body.appendChild(box); box.scrollTop = 0;
 }
 
 /* ---------- pilot: family codes, activity and feedback ----------
@@ -2735,12 +2773,12 @@ async function pilotGate() {
 /* ---------- pilot welcome: parent consent, then a short tour ----------
    Right after a family code is accepted, a parent reads what PrepBuddy collects and agrees (nothing is sent to us
    before that). Then a six-card tour of what PrepBuddy does, which can be skipped and replayed from Settings. */
-const CONSENT_V = 1;
+const CONSENT_V = 2; // 2 (15 Nov 2026): everyone agrees to the privacy notice, not just pilot families
 async function pilotWelcome() {
   kidMeta();
   if (KIDS.list.length > 1 && !kidPickFresh()) await kidPicker({ boot: true });
   if (KIDS.list.length > 1) kidPicked();
-  if (local.pilot && local.code && !(local.consent && local.consent.v >= CONSENT_V)) await consentScreen();
+  if (!(local.consent && local.consent.v >= CONSENT_V)) await consentScreen(); // every family, before anything is sent to the AI
   // New families set it up during onboarding; families already using the app get a card on Today instead.
   if (profileOn() && !local.learner && (!local.toured || local.needProfile)) await profileScreen({ first: true });
   await preloadStarters();
@@ -2780,21 +2818,22 @@ function consentScreen() {
     const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
     document.body.dataset.tab = '';
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
+    const pilot = !!(local.pilot && local.code);
     const items = [
-      ['📱', C('Stays on this device', '保存在這部裝置'), C('Your child’s answers, textbooks, essays, recordings and progress are saved in this browser.', '子女的答案、課本、文章、錄音和進度都保存在這個瀏覽器內。')],
-      ['📊', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('First name (if entered), questions answered and how many were right, minutes, features used, book titles, school marks you choose to enter, and app errors. Only the PrepBuddy team can see it. If you give us your WhatsApp number, we use it to send you a short weekly progress update with a link to your child’s report.', '名字（如有輸入）、答題數目和答對數目、練習分鐘、使用過的功能、課本名稱、你選擇填寫的學校成績，以及程式錯誤。只有 PrepBuddy 團隊可以看到。如你提供 WhatsApp 號碼，我們會每週傳送簡短的進度更新及孩子報告的連結。')],
-      ['🤖', C('The AI reads what it needs', 'AI 只會讀取需要的內容'), C('To write questions and mark answers, textbook text and your child’s answers, photos and essays are sent to our AI provider, Anthropic. It isn’t used to train their AI.', '為了出題和批改，課文以及子女的答案、相片和文章會傳送給我們的 AI 服務供應商 Anthropic，不會用來訓練他們的 AI。')],
-      ['🚫', C('What we never ask for', '我們不會收集'), C('Full name, school, address, ID or payment details. Please remind your child not to type personal details into answers or chats.', '全名、學校、地址、身份證或付款資料。請提醒子女不要在答案或對話中輸入個人資料。')],
-      ['✋', C('You’re in control', '由你決定'), C('Ask to see or delete your family’s data, or leave the pilot, any time. Pilot data is deleted within 3 months after the pilot ends.', '你可隨時要求查閱或刪除你家庭的資料，或退出試用。試用結束後 3 個月內會刪除試用資料。')],
-    ];
+      ['📱', C('Stays on this device', '保存在這部裝置'), C('Your child’s answers, textbooks, essays, recordings and progress are saved in this browser.', '孩子的答案、課本、文章、錄音和進度都保存在這個瀏覽器內。')],
+      pilot ? ['📊', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('For the pilot: first name (if entered), how much your child practised and how much was right, features used, book titles, school marks you choose to enter, and app errors. Only the PrepBuddy team can see it. If you give us your WhatsApp number, we use it to send you a short weekly update with a link to your child’s report.', '試用期間：名字（如有填寫）、練習了多少及答對多少、用過的功能、書名、你選擇填寫的學校成績及程式錯誤。只有 PrepBuddy 團隊可以查看。如你提供 WhatsApp 號碼，我們會用來每週傳送簡短進度更新及孩子報告的連結。')] : null,
+      ['🤖', C('The AI reads what it needs', 'AI 只會讀取需要的內容'), C('To write questions and mark answers, textbook text and your child’s answers, photos and essays are sent to our AI provider, Anthropic, outside Hong Kong. Never your child’s name. It isn’t used to train their AI and is deleted within 30 days.', '為了出題和批改，課文以及孩子的答案、相片和文章會傳送到香港以外的 AI 服務供應商 Anthropic，但不包括孩子的名字。這些內容不會用來訓練他們的 AI，並會在 30 天內刪除。')],
+      ['🚫', C('What we never ask for', '我們不會收集'), C('Full name, school, address, ID or payment details. Please remind your child not to type personal details into answers or chats.', '全名、學校、地址、身份證或付款資料。請提醒孩子不要在答案或對話中輸入個人資料。')],
+      ['✋', C('You’re in control', '由你決定'), pilot ? C('Delete everything on this device any time in Settings. Ask us to see, correct or delete your family’s data, or leave the pilot. Pilot data is deleted within 3 months after the pilot ends.', '你可隨時在「設定」刪除這部裝置上的所有資料，亦可要求我們查閱、更正或刪除你家庭的資料，或退出試用。試用結束後 3 個月內會刪除試用資料。') : C('Delete everything on this device any time in Settings, or ask us to see or correct your data.', '你可隨時在「設定」刪除這部裝置上的所有資料，或要求我們查閱或更正你的資料。')],
+    ].filter(Boolean);
     $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
       <div class="pg-box cs-box">
         <div class="cs-head">${buddySVG('listen', 64)}<div><span class="pg-tag">${profileOn() ? C('Step 1 of 3 · for parents', '第 1 步，共 3 步 · 家長專用') : C('Step 1 of 2 · for parents', '第 1 步，共 2 步 · 家長專用')}</span><h1>${C('Before we start', '開始之前')}</h1></div></div>
         <p>${C('Please ask a parent or guardian to read this and agree. It takes a minute.', '請家長或監護人閱讀並同意以下內容，只需一分鐘。')}</p>
         <div class="cs-list">${items.map(([i, h, t]) => `<div class="cs-item"><span>${i}</span><div><b>${h}</b><p>${t}</p></div></div>`).join('')}</div>
-        <div class="cs-foot"><label class="cs-agree"><input type="checkbox" id="cs-ok"><span>${C('I’m this child’s parent or guardian. I’ve read this and agree to my child taking part in the PrepBuddy pilot.', '我是這名子女的家長或監護人，已閱讀以上內容，並同意子女參加 PrepBuddy 試用計劃。')}</span></label>
+        <div class="cs-foot"><label class="cs-agree"><input type="checkbox" id="cs-ok"><span>${C('I’m this child’s parent or guardian and I agree to the ', '我是這名孩子的家長或監護人，並同意')}<button type="button" class="linkbtn" data-privacy>${C('privacy notice', '私隱聲明')}</button>${pilot ? C(', including my child taking part in the PrepBuddy pilot.', '，包括讓孩子參加 PrepBuddy 試用計劃。') : C('.', '。')}</span></label>
         <button class="btn" id="cs-go" disabled>${C('Agree and continue', '同意並繼續')}</button></div>
-        <p class="hint">${C('Questions? Ask the person who invited you. You can also send us a message any time from Settings.', '有疑問？請聯絡邀請你的人，或隨時在「設定」中發送訊息給我們。')}</p>
+        <p class="hint"><button type="button" class="linkbtn" data-privacy>${C('Read the full privacy notice', '閱讀完整私隱聲明')}</button> · ${pilot ? C('Questions? Ask the person who invited you.', '有疑問？請聯絡邀請你的人。') : C('You can read it again any time in Settings.', '你可隨時在「設定」再次閱讀。')}</p>
       </div></main>`;
     const ok = document.getElementById('cs-ok'), go2 = document.getElementById('cs-go');
     ok.onchange = () => { go2.disabled = !ok.checked; };
