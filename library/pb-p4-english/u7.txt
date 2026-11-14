@@ -21,6 +21,12 @@ Time connectives
 - then / next / after that / finally: for steps and stories.
   First, wash the rice. Next, put it in the rice cooker. After that, add water. Finally, press the button.
 
+too, either and both
+- too: in positive sentences, at the end: I like swimming. My sister likes swimming too.
+- either: in negative sentences, at the end: Tom doesn't eat carrots. I don't eat carrots either. (NOT "I don't eat carrots too")
+- both: two people or things together: Both Amy and Ben are in the choir. We both like pizza. Both of my parents are teachers.
+- either … or (one of two): You can choose either the red cap or the blue cap.
+
 Other useful connectives
 - also: Kitty plays the violin. She also sings in the choir.
 - although: Although it was late, the children weren't tired.

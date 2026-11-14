@@ -11,7 +11,7 @@
   "starter": true,
   "credit": "Written by PrepBuddy for Hong Kong Primary 4 (Key Stage 2 English). Free starter book. © PrepBuddy.",
   "lang": "en",
-  "pageCount": 11,
+  "pageCount": 14,
   "addedAt": "2026-11-14",
   "questionCount": 0,
   "units": [
@@ -91,6 +91,27 @@
     "chapter": 11,
     "startPage": 11,
     "endPage": 11
+   },
+   {
+    "id": "u11",
+    "title": "Unit 12: Can and could (ability, permission and requests)",
+    "chapter": 12,
+    "startPage": 12,
+    "endPage": 12
+   },
+   {
+    "id": "u12",
+    "title": "Unit 13: Word power (adverbs, prefixes and word partners)",
+    "chapter": 13,
+    "startPage": 13,
+    "endPage": 13
+   },
+   {
+    "id": "u13",
+    "title": "Unit 14: Reading notices, posters and timetables",
+    "chapter": 14,
+    "startPage": 14,
+    "endPage": 14
    }
   ]
  },
