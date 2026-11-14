@@ -6187,7 +6187,7 @@ function renderQuestion() {
 }
 /* ---------- read aloud (primary): questions and Buddy's replies, with the same free browser voices as 默書 ---------- */
 const readAloudOn = () => !!(window.speechSynthesis && isPrimaryKid());
-const plainSpeech = (t) => String(t || '').replace(/\$([^$]+)\$/g, (m, x) => x.replace(/\\(text|mathrm|ce)\{([^}]*)\}/g, '$2').replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '$1 over $2').replace(/\\times/g, ' times ').replace(/[{}\\^_]/g, ' '))
+const plainSpeech = (t) => String(t || '').replace(/\$([^$]+)\$/g, (m, x) => x.replace(/\\(text|mathrm|ce)\{([^}]*)\}/g, '$2').replace(/(\d)\s*\\[dt]?frac/g, '$1 and \\frac').replace(/\\[dt]?frac\{([^}]*)\}\{([^}]*)\}/g, ' $1 over $2 ').replace(/\\square/g, ' blank ').replace(/\\times/g, ' times ').replace(/[{}\\^_]/g, ' '))
   .replace(/[*#>|`]/g, ' ').replace(/_{2,}/g, LANG === 'zh' ? '，空格，' : ', blank, ').replace(/\s+/g, ' ').trim();
 function questionSpeech(q) {
   const parts = [q.stem || ''];
@@ -6548,7 +6548,7 @@ function writtenBody(q, revealed) {
       <textarea id="a${k}" data-k="${k}" class="${essay ? 'essay' : ''}" placeholder="${essay ? 'Write your answer here' : maths ? 'Show your working, one step per line' : 'Type, or tap the microphone on your keyboard to speak'}">${esc(ans[k])}</textarea>
       ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}`}</div>`;
     }).join('');
-    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : q.parts.every((p) => p.blank) ? 'Check your spelling: it counts.' : 'Aim for one clear point per mark.'}</p>`}`;
+    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${q.parts.every((p) => p.blank) ? (kindSync(q.id) === 'maths' ? 'Write just the answer. Units like cm² can be typed as cm2.' : 'Check your spelling: it counts.') : maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
     const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">I don’t know this one. Show me the answer</button><span class="hint" style="text-align:center">It goes into your Mistake book so you can try it again later.</span>'}</div>`;
     return { main, footer, bind() {
       const grab = () => {

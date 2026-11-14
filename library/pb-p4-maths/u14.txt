@@ -1,0 +1,62 @@
+Unit 15: The eight directions
+
+In this unit you will learn to:
+- use the eight directions: N, NE, E, SE, S, SW, W, NW
+- describe where one place is from another
+- use a compass to find directions
+- follow turning instructions
+
+Let's start
+On a map of Hong Kong, Tsim Sha Tsui is to the south of Mong Kok, and Sha Tin is to the northeast of Mong Kok. North, south, east and west are not enough to describe every place, so we use eight directions.
+
+The four main directions (from P2)
+North (N) is usually at the top of a map. Going clockwise: north, east, south, west. (Never Eat Shredded Wheat.)
+
+The four in-between directions
+- Northeast (NE): between north and east
+- Southeast (SE): between south and east
+- Southwest (SW): between south and west
+- Northwest (NW): between north and west
+Always say north or south FIRST: northeast, not "eastnorth".
+
+Describing positions
+Use: "X is to the ____ of Y."
+- The library is to the northeast of the school. This means: start at the school and look northeast to find the library.
+- Then the school is to the southwest of the library. Opposite directions swap: N ↔ S, E ↔ W, NE ↔ SW, NW ↔ SE.
+
+Using a compass
+A compass needle always points north.
+1. Hold the compass flat.
+2. Turn it until the needle lines up with N.
+3. Now read the other seven directions from the compass.
+The sun rises in the east and sets in the west, which can help you check.
+
+Turning
+- A quarter turn is one right angle (90°). Two right angles is a half turn. Four right angles is a full turn.
+- Facing north, turn right by one right angle → you face east.
+- Facing north, turn right by half a right angle → you face northeast.
+- Facing east, turn left by two right angles → you face west.
+- Facing southwest, turn right by one right angle → you face northwest.
+Turning right is clockwise. Turning left is anticlockwise.
+
+Reading a map with a grid
+On a grid with north at the top, moving 1 square up is north, 1 square to the right is east, and moving 1 square up AND 1 to the right (diagonally) is northeast.
+Example: From the bus stop, walk 3 squares east, then 2 squares north. You are at the park. The park is to the northeast of the bus stop (though not exactly on the diagonal).
+
+Common mistakes
+- Saying "eastnorth" or "westsouth". North or south always comes first.
+- Mixing up left and right turns when you are facing south (try turning your body to check).
+- Reversing the description: "The shop is to the west of the bank" means the shop is on the west side of the bank.
+
+Challenge (for fast learners)
+- Facing northwest, you turn left by three right angles. Which way do you face now? (Northeast)
+- A is to the north of B. C is to the east of B. Which direction is C from A? (Southeast)
+
+Key words
+- direction: the way something is pointing or going (方向)
+- northeast (NE): between north and east (東北)
+- southeast (SE): between south and east (東南)
+- southwest (SW): between south and west (西南)
+- northwest (NW): between north and west (西北)
+- compass: a tool with a needle that points north (指南針)
+- clockwise: the way the hands of a clock turn (順時針)

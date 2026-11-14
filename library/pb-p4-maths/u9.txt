@@ -1,0 +1,80 @@
+Unit 10: Adding and subtracting fractions (same denominator)
+
+In this unit you will learn to:
+- add and subtract fractions with the same denominator
+- add and subtract mixed numbers
+- do mixed addition and subtraction of three fractions
+- give answers in their lowest terms
+
+Let's start
+Amy drinks 3/8 of a bottle of juice in the morning and 2/8 in the afternoon. How much does she drink in total? 3/8 + 2/8.
+
+Adding fractions with the same denominator
+Add the numerators. Keep the denominator the same.
+- 3/8 + 2/8 = 5/8
+- 2/9 + 4/9 = 6/9 = 2/3 (reduce to lowest terms)
+- 5/6 + 4/6 = 9/6 = 3/2 = 1 1/2 (change to a mixed number)
+Do NOT add the denominators: 3/8 + 2/8 is NOT 5/16.
+
+Subtracting fractions with the same denominator
+Subtract the numerators. Keep the denominator.
+- 7/10 − 3/10 = 4/10 = 2/5
+- 1 − 3/7 = 7/7 − 3/7 = 4/7
+
+Adding mixed numbers
+Add the whole numbers, then add the fractions.
+Example 1: 2 3/5 + 1 4/5
+= 3 7/5 (whole numbers 2 + 1, fractions 3/5 + 4/5)
+= 3 + 1 2/5
+= 4 2/5
+
+Subtracting mixed numbers
+Example 2: 5 7/9 − 2 4/9
+= 3 3/9
+= 3 1/3
+
+Example 3: 4 1/6 − 1 5/6 (1/6 is smaller than 5/6, so borrow 1)
+= 3 7/6 − 1 5/6
+= 2 2/6
+= 2 1/3
+Or change both to improper fractions: 25/6 − 11/6 = 14/6 = 7/3 = 2 1/3.
+
+Three fractions at once
+Work from left to right.
+Example 4: 7/12 + 11/12 − 5/12
+= 18/12 − 5/12
+= 13/12
+= 1 1/12
+
+Example 5: 3 − 1 2/7 − 4/7
+= 2 7/7 − 1 2/7 − 4/7
+= 1 5/7 − 4/7
+= 1 1/7
+
+Word problems
+Example 6: A rope is 4 3/8 m long. Tom cuts off 1 5/8 m. How long is the rope left?
+4 3/8 − 1 5/8
+= 3 11/8 − 1 5/8
+= 2 6/8
+= 2 3/4
+Answer: The rope left is 2 3/4 m long.
+
+Estimate to check: 4 3/8 is about 4 and 1 5/8 is about 2, so the answer should be about 2.
+
+Common mistakes
+- Adding or subtracting the denominators.
+- Forgetting to reduce the answer to its lowest terms.
+- Leaving an improper fraction inside a mixed number, like 3 7/5. Change it to 4 2/5.
+
+Challenge (for fast learners)
+- Fill in the box: 2 □/9 + 1 5/9 = 4 1/9. (The fractions must make 1 1/9, so □ = 5.)
+- A tank is full. 3/10 of the water is used on Monday and 4/10 on Tuesday. What fraction is left? (3/10)
+
+Key words
+- add / sum: put together (加／和)
+- subtract / difference: take away (減／差)
+- same denominator: the bottom numbers are the same (同分母)
+- borrow: take 1 whole from the whole number part (借1)
+- lowest terms: the simplest form (最簡分數)
+- in total: altogether (總共)
+- left: remaining (剩下)

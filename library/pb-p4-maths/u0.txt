@@ -1,0 +1,74 @@
+Unit 1: Multiplication (2-digit and 3-digit numbers × 2-digit numbers)
+
+In this unit you will learn to:
+- multiply a 2-digit number by a 2-digit number in column form
+- multiply a 3-digit number by a 2-digit number, with carrying
+- use quick tricks to multiply in an easier order
+- estimate to check if your answer makes sense
+
+Let's start
+The school hall has 24 rows of chairs. There are 18 chairs in each row. How many chairs are there? We need 24 × 18. In P3 you multiplied by a 1-digit number. Now we multiply by a 2-digit number.
+
+Multiplying by a 2-digit number: split the tens and the ones
+24 × 18 means 24 × 8 (the ones) plus 24 × 10 (the tens).
+- Step 1: 24 × 8 = 192. Write 192.
+- Step 2: 24 × 10 = 240. Write 240 under it. (Many children write a 0 in the ones place first, then work out 24 × 1 = 24 next to it.)
+- Step 3: Add: 192 + 240 = 432.
+So 24 × 18 = 432. There are 432 chairs.
+
+Example 1: 36 × 27
+- 36 × 7 = 252 (6 × 7 = 42, write 2, carry 4; 3 × 7 = 21, add the 4 = 25)
+- 36 × 20 = 720
+- 252 + 720 = 972
+So 36 × 27 = 972.
+
+Multiplying a 3-digit number by a 2-digit number
+Example 2: 215 × 34
+- 215 × 4 = 860
+- 215 × 30 = 6450
+- 860 + 6450 = 7310
+So 215 × 34 = 7310.
+
+Example 3: 408 × 25 (a 0 in the middle)
+- 408 × 5 = 2040
+- 408 × 20 = 8160
+- 2040 + 8160 = 10 200
+So 408 × 25 = 10 200.
+
+Remember the carrying! Write small carried digits clearly and add them after you multiply, not before.
+
+Quick tricks: change the order
+You can multiply numbers in any order and group them in any way. The answer stays the same.
+- 25 × 53 × 4 = 53 × (25 × 4) = 53 × 100 = 5300
+- 5 × 37 × 2 = 37 × (5 × 2) = 37 × 10 = 370
+- 125 × 8 = 1000, so 125 × 16 × 8 = 16 × 1000 = 16 000
+Look for pairs that make 10, 100 or 1000: 2 × 5, 4 × 25, 8 × 125, 20 × 50.
+
+Estimate to check
+Round each number, then multiply.
+- 48 × 31 is about 50 × 30 = 1500. The exact answer is 1488, which is close, so it makes sense.
+- If you get 14 880 or 148, you know something went wrong.
+
+Word problems
+Read the question, write a number sentence, work it out, then write an answer sentence.
+Example 4: A box holds 144 pencils. How many pencils are there in 15 boxes?
+144 × 15 = 2160
+Answer: There are 2160 pencils.
+
+Common mistakes
+- Forgetting the 0 when you multiply by the tens: 24 × 18 is NOT 192 + 24.
+- Adding the carried digit before multiplying: in 36 × 7, do 3 × 7 = 21 first, then add the carried 4.
+- Lining up the digits in the wrong columns when adding the two rows.
+
+Challenge (for fast learners)
+- 2-digit × 3-digit works the same way: 32 × 125 = 125 × 32 = 4000.
+- Find the missing digit: 4□ × 12 = 504. (Hint: 504 ÷ 12 = 42.)
+
+Key words
+- multiply: find the total of equal groups (乘)
+- product: the answer to a multiplication (積)
+- column form: working with the numbers written in columns (直式)
+- carry: move a ten to the next column (進位)
+- tens: the second place from the right (十位)
+- estimate: find an answer that is close, to check your work (估算)
+- number sentence: a line of working such as 24 × 18 = 432 (算式)

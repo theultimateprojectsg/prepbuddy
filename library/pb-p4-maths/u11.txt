@@ -1,0 +1,82 @@
+Unit 12: Adding and subtracting decimals
+
+In this unit you will learn to:
+- add and subtract decimals with up to 2 decimal places
+- add and subtract three numbers
+- solve money and measurement problems with decimals
+
+Let's start
+A sandwich costs 18.5 dollars and a drink costs 7.8 dollars. How much do they cost together? 18.5 + 7.8.
+
+Line up the decimal points
+Write the numbers in column form with the decimal points in a straight line. Then add or subtract as with whole numbers, and put the decimal point in the answer straight below.
+Example 1: 18.5 + 7.8
+  18.5
++  7.8
+= 26.3
+(5 + 8 = 13 tenths: write 3, carry 1 to the ones.)
+
+Fill empty places with zeros
+Example 2: 6.4 + 2.75
+Write 6.4 as 6.40.
+  6.40
++ 2.75
+= 9.15
+
+Example 3: 9 − 3.65
+Write 9 as 9.00.
+  9.00
+− 3.65
+= 5.35
+
+Subtracting with borrowing
+Example 4: 12.3 − 4.86
+  12.30
+−  4.86
+=  7.44
+
+Three numbers
+Example 5: 15.6 + 4.25 − 7.8
+= 19.85 − 7.8
+= 12.05
+
+Example 6: 20 − 3.5 − 6.75
+= 16.5 − 6.75
+= 9.75
+
+Quick ways: change the order
+Addition can be done in any order. Look for numbers that make whole numbers.
+- 3.75 + 4.6 + 1.25 = (3.75 + 1.25) + 4.6 = 5 + 4.6 = 9.6
+- 8.4 + 2.9 + 1.6 = (8.4 + 1.6) + 2.9 = 10 + 2.9 = 12.9
+
+Word problems
+Example 7: Mum has 100 dollars. She spends 32.5 dollars on vegetables and 45.8 dollars on meat. How much money is left?
+100 − 32.5 − 45.8
+= 67.5 − 45.8
+= 21.7
+Answer: 21.7 dollars are left (21 dollars 70 cents).
+
+Example 8: Ming jumps 2.35 m. Kit jumps 0.4 m further. How far does Kit jump?
+2.35 + 0.4 = 2.75
+Answer: Kit jumps 2.75 m.
+
+Estimate to check
+18.5 + 7.8 is about 19 + 8 = 27. Our answer 26.3 is close.
+
+Common mistakes
+- Lining up the last digits instead of the decimal points: 6.4 + 2.75 is NOT 2.75 + 0.64.
+- Forgetting the decimal point in the answer.
+- In 9 − 3.65, writing 3.65 − 9 or forgetting that 9 = 9.00.
+
+Challenge (for fast learners)
+- Two numbers add up to 10. One of them is 3.48. What is the other? (6.52)
+- Fill in the box: □ − 2.75 = 4.5. (7.25)
+
+Key words
+- decimal point: the dot in a decimal (小數點)
+- line up: put in a straight line (對齊)
+- column form: working in columns (直式)
+- carry: move to the next place (進位)
+- borrow: take 1 from the next place (借位)
+- further: a longer distance (更遠)
+- altogether: in total (一共)

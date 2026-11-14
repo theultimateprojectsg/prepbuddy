@@ -1,0 +1,67 @@
+Unit 9: Fractions (proper, improper and mixed numbers)
+
+In this unit you will learn to:
+- tell proper fractions, improper fractions and mixed numbers apart
+- change improper fractions to mixed numbers, and back again
+- make equivalent fractions by expanding and reducing
+- write fractions in their lowest terms
+- compare fractions with the same denominator
+
+Let's start
+A pizza is cut into 4 equal slices. Ken eats 7 slices from two pizzas. That is 7 quarters, which is more than one whole pizza. How can we write that as a fraction?
+
+Parts of a fraction
+In 3/4 (three quarters): 3 is the numerator (the parts we have), 4 is the denominator (how many equal parts in one whole).
+
+Three kinds of fractions
+- Proper fraction: the numerator is smaller than the denominator. It is less than 1. Examples: 3/4, 5/8, 1/2.
+- Improper fraction: the numerator is equal to or bigger than the denominator. It is 1 or more. Examples: 7/4, 9/9, 11/3.
+- Mixed number: a whole number and a proper fraction. Example: 1 3/4 (one and three quarters).
+
+Improper fraction → mixed number: divide
+7/4: 7 ÷ 4 = 1 R 3, so 7/4 = 1 3/4.
+17/5: 17 ÷ 5 = 3 R 2, so 17/5 = 3 2/5.
+18/6: 18 ÷ 6 = 3 R 0, so 18/6 = 3 (a whole number).
+
+Mixed number → improper fraction: multiply, then add
+2 1/3: 2 × 3 + 1 = 7, so 2 1/3 = 7/3.
+4 5/8: 4 × 8 + 5 = 37, so 4 5/8 = 37/8.
+A whole number can be an improper fraction too: 3 = 12/4.
+
+Equivalent fractions: expanding
+Multiply the numerator AND the denominator by the same number (not 0). The value does not change.
+2/3 = 4/6 = 6/9 = 8/12 (× 2, × 3, × 4)
+
+Equivalent fractions: reducing
+Divide the numerator AND the denominator by the same number (a common factor).
+12/18 = 6/9 = 2/3 (÷ 2, then ÷ 3)
+Quicker: divide by the H.C.F. of 12 and 18, which is 6: 12/18 = 2/3.
+
+Lowest terms
+A fraction is in its lowest terms (simplest form) when the H.C.F. of the numerator and denominator is 1.
+- 2/3 is in its lowest terms. 4/6 is not.
+- Always give your final answer in its lowest terms.
+
+Comparing fractions with the same denominator
+When the denominators are the same, the bigger numerator means the bigger fraction.
+- 5/8 > 3/8
+- Arrange 11/4, 7/4, 3/4 and 2 from largest to smallest: 2 = 8/4, so 11/4 > 2 > 7/4 > 3/4.
+- Compare 2 1/5 and 12/5: 2 1/5 = 11/5, and 11/5 < 12/5.
+
+Common mistakes
+- Adding to expand: 2/3 is NOT equal to 3/4 (you must multiply or divide, not add 1).
+- Changing only the top or only the bottom when expanding or reducing.
+- 2 1/3 = 7/3, NOT 3/3 or 6/3 (multiply the whole number by the denominator, then add the numerator).
+
+Challenge (for fast learners)
+- Find three fractions equal to 3/5 with denominators between 20 and 40. (15/25, 18/30, 21/35)
+- Which is bigger, 3/4 or 5/8? (Expand: 3/4 = 6/8, so 3/4 is bigger.)
+
+Key words
+- numerator: the top number of a fraction (分子)
+- denominator: the bottom number of a fraction (分母)
+- proper fraction: smaller than 1 (真分數)
+- improper fraction: 1 or more, top ≥ bottom (假分數)
+- mixed number: a whole number and a proper fraction (帶分數)
+- expanding / reducing: making an equal fraction by multiplying / dividing top and bottom (擴分／約分)
+- lowest terms: the simplest form of a fraction (最簡分數)

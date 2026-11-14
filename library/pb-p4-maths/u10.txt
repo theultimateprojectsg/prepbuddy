@@ -1,0 +1,78 @@
+Unit 11: Decimals
+
+In this unit you will learn to:
+- understand what decimals are
+- know the value of each decimal place (tenths, hundredths, thousandths, ten thousandths)
+- read and write decimals
+- compare decimals, whole numbers and fractions
+- use decimals for money, length, weight and capacity
+
+Let's start
+On a price tag, 23.50 means 23 dollars 50 cents. On a ruler, 1.5 cm means one and a half centimetres. These are decimals.
+
+The decimal point
+In 30.102, the dot is the decimal point. The part before it is the whole number part (30). The part after it is the decimal part (.102).
+
+Decimal places and their values
+- tenths (1st place after the point): 0.1 = 1/10
+- hundredths (2nd place): 0.01 = 1/100
+- thousandths (3rd place): 0.001 = 1/1000
+- ten thousandths (4th place): 0.0001 = 1/10000
+In 4.2735:
+- 2 is in the tenths place. Its value is 0.2 (2/10).
+- 7 is in the hundredths place. Its value is 0.07 (7/100).
+- 3 is in the thousandths place. Its value is 0.003.
+- 5 is in the ten thousandths place. Its value is 0.0005.
+
+Reading decimals
+Read the whole number part as usual, then say "point", then read each digit one by one.
+- 30.102: thirty point one zero two
+- 0.45: zero point four five (NOT "zero point forty-five")
+
+Decimal places
+Count the digits after the decimal point.
+- 0.5 has 1 decimal place. 0.15 has 2. 0.135 has 3. 0.1224 has 4.
+
+Zeros at the end
+Adding or deleting zeros at the END of the decimal part does not change the value.
+- 0.5 = 0.50 = 0.500
+- 4 = 4.0 = 4.00
+But 0.5 is NOT the same as 0.05 (a zero right after the point does change the value).
+
+Decimals and fractions
+- 0.7 = 7/10
+- 0.25 = 25/100 = 1/4
+- 1/2 = 5/10 = 0.5
+- 3/4 = 75/100 = 0.75
+- 1/5 = 2/10 = 0.2
+
+Comparing decimals
+Compare the whole number parts first. If they are the same, compare the tenths, then the hundredths, and so on.
+- 3.45 and 3.5: whole numbers same (3); tenths: 4 < 5, so 3.45 < 3.5.
+- 0.8 and 0.75: 8 tenths > 7 tenths, so 0.8 > 0.75. (A longer decimal is NOT always bigger.)
+- 2.06 and 2.6: 0 tenths < 6 tenths, so 2.06 < 2.6.
+- Compare 0.6 and 3/5: 3/5 = 6/10 = 0.6, so they are equal.
+
+Decimals in daily life
+- Money: 23 dollars 50 cents = 23.5 dollars. 8 dollars 5 cents = 8.05 dollars.
+- Length: 1.25 m = 125 cm.
+- Capacity: 1.234 L = 1234 mL.
+- Weight: 2.5 kg = 2500 g.
+
+Common mistakes
+- Reading 0.45 as "zero point forty-five".
+- Thinking 0.75 > 0.8 because it has more digits.
+- 8 dollars 5 cents is 8.05 dollars, NOT 8.5 dollars.
+
+Challenge (for fast learners)
+- Arrange in order from smallest to largest: 0.405, 0.45, 0.054, 0.5. (0.054, 0.405, 0.45, 0.5)
+- Write the decimal: 3 tens, 4 tenths and 6 thousandths. (30.406)
+
+Key words
+- decimal: a number with a decimal point, such as 2.5 (小數)
+- decimal point: the dot in a decimal (小數點)
+- tenths: the first place after the point (十分位)
+- hundredths: the second place after the point (百分位)
+- thousandths: the third place after the point (千分位)
+- decimal places: the number of digits after the point (小數位)
+- value: how much a digit is worth (值)

@@ -1,0 +1,61 @@
+Unit 16: Perimeter
+
+In this unit you will learn to:
+- understand what perimeter is
+- measure and compare the perimeters of shapes
+- use formulas for the perimeters of squares and rectangles
+- find the perimeter of shapes made of squares and rectangles
+
+Let's start
+The school garden is a rectangle 12 m long and 8 m wide. The caretaker wants to put a fence all the way round it. How much fencing does he need? That length all the way round is the perimeter.
+
+What is perimeter?
+The perimeter of a shape is the total length of its outline (all the way round its edges).
+- Measure each side and add them up.
+- Perimeter is a length, so we use cm, m or km.
+- Estimate first, then measure.
+
+Perimeter of a rectangle
+Two lengths and two widths.
+Perimeter of a rectangle = (length + width) × 2
+Example 1: the garden: (12 + 8) × 2 = 20 × 2 = 40. The perimeter is 40 m.
+
+Perimeter of a square
+Four equal sides.
+Perimeter of a square = side × 4
+Example 2: a square tile with side 15 cm: 15 × 4 = 60. The perimeter is 60 cm.
+
+Working backwards
+- A square has a perimeter of 48 cm. Each side = 48 ÷ 4 = 12 cm.
+- A rectangle has a perimeter of 30 cm and a length of 9 cm. Length + width = 30 ÷ 2 = 15, so width = 15 − 9 = 6 cm.
+
+Shapes made of rectangles and squares
+Example 3: An L-shape. Going round: 10 cm, 4 cm, 6 cm, 5 cm, 4 cm, 9 cm.
+Perimeter = 10 + 4 + 6 + 5 + 4 + 9 = 38 cm.
+Tip: for a shape with only right angles, the total of the horizontal sides on top equals the total on the bottom, and the same for the left and right sides. Use this to find missing sides.
+
+Example 4: Two squares of side 5 cm are put side by side to make a rectangle 10 cm by 5 cm.
+- Perimeter of each square: 5 × 4 = 20 cm. Together, 20 + 20 = 40 cm.
+- Perimeter of the rectangle: (10 + 5) × 2 = 30 cm.
+The perimeter is less, because the two sides that touch are now inside the shape.
+
+Comparing perimeters
+Shapes with the same area can have different perimeters. A 4 cm × 4 cm square has perimeter 16 cm. A 8 cm × 2 cm rectangle has the same area but perimeter 20 cm.
+
+Common mistakes
+- Adding only the length and the width (forgetting to double): the perimeter of 12 m × 8 m is 40 m, not 20 m.
+- Forgetting a side, especially in L-shapes. Count the sides before you add.
+- Writing cm² for perimeter. Perimeter is a length: cm, not cm².
+
+Challenge (for fast learners)
+- A rectangle is 3 times as long as it is wide. Its perimeter is 64 cm. Find its length and width. (Width 8 cm, length 24 cm.)
+- A piece of wire 60 cm long is bent into a square. How long is each side? (15 cm)
+
+Key words
+- perimeter: the total length around a shape (周界)
+- length: the longer side of a rectangle (長)
+- width: the shorter side of a rectangle (闊)
+- side: one straight edge of a shape (邊)
+- outline: the line around the edge of a shape (邊線)
+- formula: a rule for working something out (公式)
+- fence: something built round an area (圍欄)

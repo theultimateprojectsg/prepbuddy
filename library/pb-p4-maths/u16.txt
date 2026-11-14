@@ -1,0 +1,65 @@
+Unit 17: Area
+
+In this unit you will learn to:
+- understand what area is
+- compare areas by looking, by overlapping and by counting squares
+- use square centimetres (cm²) and square metres (m²)
+- use formulas for the areas of squares and rectangles
+- find the area of shapes made of squares and rectangles
+
+Let's start
+Which is bigger, the top of your desk or your exercise book? The amount of flat surface a shape covers is its area.
+
+Comparing areas
+- By looking: a football pitch is clearly bigger than a classroom floor.
+- By overlapping: put one shape on top of the other. If it covers the other completely, it has the bigger area.
+- With a third shape: if A is bigger than B and B is bigger than C, then A is bigger than C.
+- By counting units: count how many stamps, tiles or squares cover each shape. Use the same unit for both!
+
+Square centimetres and square metres
+- 1 square centimetre (1 cm²) is the area of a square with sides of 1 cm. Good for small things: a stamp, a book cover.
+- 1 square metre (1 m²) is the area of a square with sides of 1 m. Good for big things: a classroom floor, a wall.
+- On squared paper with 1 cm squares, count the squares to find the area in cm². Two half squares make one whole square.
+
+Area of a rectangle
+A rectangle 5 cm long and 3 cm wide can be covered by 3 rows of 5 squares: 15 squares.
+Area of a rectangle = length × width
+Example 1: 5 × 3 = 15. The area is 15 cm².
+
+Area of a square
+Area of a square = side × side
+Example 2: a square floor tile with side 30 cm: 30 × 30 = 900. The area is 900 cm².
+
+Working backwards
+- A rectangle has an area of 48 m² and a length of 8 m. Width = 48 ÷ 8 = 6 m.
+- A square has an area of 49 cm². Each side is 7 cm (because 7 × 7 = 49).
+
+Shapes made of rectangles and squares
+Split the shape into rectangles, find each area, then add.
+Example 3: An L-shape is made of a rectangle 10 cm × 4 cm and a rectangle 5 cm × 3 cm.
+Area = 10 × 4 + 5 × 3 = 40 + 15 = 55 cm².
+Or take a piece away: a 10 m × 8 m garden has a 3 m × 2 m pond. The grass area is 10 × 8 − 3 × 2 = 80 − 6 = 74 m².
+
+Area or perimeter?
+- Area: how much surface is covered (painting a wall, laying a carpet). Units: cm², m².
+- Perimeter: how far it is round the edge (a fence, a frame, a ribbon border). Units: cm, m.
+Example 4: A 6 m × 4 m room. Carpet needed (area): 6 × 4 = 24 m². Skirting board needed (perimeter): (6 + 4) × 2 = 20 m.
+
+Common mistakes
+- Using cm instead of cm² for area.
+- Adding the sides (perimeter) when the question asks for area.
+- Counting squares of different sizes as if they were the same unit.
+- You do NOT need to change between cm² and m² in P4.
+
+Challenge (for fast learners)
+- A rectangle has an area of 36 cm². Its length and width are whole numbers. List all the possible rectangles. (1 × 36, 2 × 18, 3 × 12, 4 × 9, 6 × 6)
+- Which of these rectangles has the biggest perimeter? (1 × 36: perimeter 74 cm)
+
+Key words
+- area: the amount of surface a shape covers (面積)
+- square centimetre (cm²): the area of a 1 cm by 1 cm square (平方厘米)
+- square metre (m²): the area of a 1 m by 1 m square (平方米)
+- overlap: put one on top of the other (重疊)
+- squared paper: paper with small squares (方格紙)
+- cover: spread over the whole surface (覆蓋)
+- unit: the size you count with (單位)

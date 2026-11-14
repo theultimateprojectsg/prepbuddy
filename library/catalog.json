@@ -124,6 +124,151 @@
   "rev": 4
  },
  {
+  "id": "pb-p4-maths",
+  "code": "MATH-P4PB",
+  "title": "PrepBuddy P4 Maths: Numbers, Shapes and Data",
+  "subject": "Mathematics",
+  "level": "P4",
+  "kind": "maths",
+  "publisher": "PrepBuddy",
+  "licence": "PrepBuddy original",
+  "starter": true,
+  "credit": "Written by PrepBuddy for Hong Kong Primary 4 (Key Stage 2 Mathematics, EDB learning units 4N1–4D1). Free starter book. © PrepBuddy.",
+  "lang": "en",
+  "pageCount": 18,
+  "addedAt": "2026-11-14",
+  "questionCount": 156,
+  "units": [
+   {
+    "id": "u0",
+    "title": "Unit 1: Multiplication (2-digit and 3-digit numbers × 2-digit numbers)",
+    "chapter": 1,
+    "startPage": 1,
+    "endPage": 1
+   },
+   {
+    "id": "u1",
+    "title": "Unit 2: Division by a 2-digit number",
+    "chapter": 2,
+    "startPage": 2,
+    "endPage": 2
+   },
+   {
+    "id": "u2",
+    "title": "Unit 3: Divisibility (tests for 2, 3, 5 and 10)",
+    "chapter": 3,
+    "startPage": 3,
+    "endPage": 3
+   },
+   {
+    "id": "u3",
+    "title": "Unit 4: Multiples and factors",
+    "chapter": 4,
+    "startPage": 4,
+    "endPage": 4
+   },
+   {
+    "id": "u4",
+    "title": "Unit 5: Prime and composite numbers",
+    "chapter": 5,
+    "startPage": 5,
+    "endPage": 5
+   },
+   {
+    "id": "u5",
+    "title": "Unit 6: Common multiples and the L.C.M.",
+    "chapter": 6,
+    "startPage": 6,
+    "endPage": 6
+   },
+   {
+    "id": "u6",
+    "title": "Unit 7: Common factors and the H.C.F.",
+    "chapter": 7,
+    "startPage": 7,
+    "endPage": 7
+   },
+   {
+    "id": "u7",
+    "title": "Unit 8: Mixed operations and the unitary method",
+    "chapter": 8,
+    "startPage": 8,
+    "endPage": 8
+   },
+   {
+    "id": "u8",
+    "title": "Unit 9: Fractions (proper, improper and mixed numbers)",
+    "chapter": 9,
+    "startPage": 9,
+    "endPage": 9
+   },
+   {
+    "id": "u9",
+    "title": "Unit 10: Adding and subtracting fractions (same denominator)",
+    "chapter": 10,
+    "startPage": 10,
+    "endPage": 10
+   },
+   {
+    "id": "u10",
+    "title": "Unit 11: Decimals",
+    "chapter": 11,
+    "startPage": 11,
+    "endPage": 11
+   },
+   {
+    "id": "u11",
+    "title": "Unit 12: Adding and subtracting decimals",
+    "chapter": 12,
+    "startPage": 12,
+    "endPage": 12
+   },
+   {
+    "id": "u12",
+    "title": "Unit 13: Quadrilaterals (rhombuses and parallelograms)",
+    "chapter": 13,
+    "startPage": 13,
+    "endPage": 13
+   },
+   {
+    "id": "u13",
+    "title": "Unit 14: Dissecting and forming shapes",
+    "chapter": 14,
+    "startPage": 14,
+    "endPage": 14
+   },
+   {
+    "id": "u14",
+    "title": "Unit 15: The eight directions",
+    "chapter": 15,
+    "startPage": 15,
+    "endPage": 15
+   },
+   {
+    "id": "u15",
+    "title": "Unit 16: Perimeter",
+    "chapter": 16,
+    "startPage": 16,
+    "endPage": 16
+   },
+   {
+    "id": "u16",
+    "title": "Unit 17: Area",
+    "chapter": 17,
+    "startPage": 17,
+    "endPage": 17
+   },
+   {
+    "id": "u17",
+    "title": "Unit 18: Bar charts",
+    "chapter": 18,
+    "startPage": 18,
+    "endPage": 18
+   }
+  ],
+  "rev": 1
+ },
+ {
   "id": "ifec-eli-booklet-en-235b",
   "code": "FIN-65TQ",
   "title": "Equity Linked Notes (Basic)",

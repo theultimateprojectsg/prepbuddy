@@ -1,0 +1,61 @@
+Unit 6: Common multiples and the L.C.M.
+
+In this unit you will learn to:
+- find common multiples of two or three numbers
+- find the least common multiple (L.C.M.) by listing
+- find the L.C.M. by short division
+- solve problems about things that happen together again
+
+Let's start
+Bus A leaves the terminus every 6 minutes. Bus B leaves every 8 minutes. They both leave at 7:00. When will they next leave together? We need a number that is a multiple of 6 AND a multiple of 8.
+
+Common multiples
+Multiples of 6: 6, 12, 18, 24, 30, 36, 42, 48, …
+Multiples of 8: 8, 16, 24, 32, 40, 48, …
+24 and 48 are in both lists. They are common multiples of 6 and 8.
+The smallest one, 24, is the least common multiple. We write L.C.M.
+So the buses leave together again 24 minutes later, at 7:24.
+
+Method 1: listing
+Example 1: L.C.M. of 4 and 10
+Multiples of 10: 10, 20, 30, …
+Which is the first one that is also a multiple of 4? 10 no, 20 yes.
+L.C.M. of 4 and 10 = 20.
+Tip: list the multiples of the bigger number and test each one.
+
+Method 2: short division
+Example 2: L.C.M. of 12 and 18
+Divide both numbers by a number that goes into both (a common factor). Keep going until nothing (except 1) goes into both.
+- 2 | 12, 18 → 6, 9
+- 3 | 6, 9 → 2, 3
+- 2 and 3 have no common factor except 1, so stop.
+L.C.M. = multiply the numbers on the left AND the numbers at the bottom = 2 × 3 × 2 × 3 = 36.
+
+Example 3: L.C.M. of 6, 8 and 12
+- 2 | 6, 8, 12 → 3, 4, 6
+- 2 | 3, 4, 6 → 3, 2, 3 (3 cannot be divided by 2, so just bring it down)
+- 3 | 3, 2, 3 → 1, 2, 1
+L.C.M. = 2 × 2 × 3 × 1 × 2 × 1 = 24.
+For three numbers, keep dividing while a number goes into at least two of them.
+
+Useful facts
+- If the bigger number is a multiple of the smaller one, the L.C.M. is the bigger number. L.C.M. of 5 and 20 = 20.
+- If the only common factor is 1, the L.C.M. is the product. L.C.M. of 4 and 9 = 36.
+
+Common mistakes
+- Giving a common multiple that is not the least: 48 is a common multiple of 6 and 8, but the L.C.M. is 24.
+- In short division, multiplying only the numbers on the left. You must also multiply the numbers at the bottom.
+- Mixing up L.C.M. and H.C.F. (next unit). L.C.M. is always at least as big as the biggest number.
+
+Challenge (for fast learners)
+- Find the third common multiple of 6 and 9. (L.C.M. 18, so 18, 36, 54 → 54)
+- What is the smallest number of sweets that can be shared equally among 4, 5 or 6 children? (L.C.M. = 60)
+
+Key words
+- common multiple: a multiple of two or more numbers (公倍數)
+- least common multiple (L.C.M.): the smallest common multiple (最小公倍數)
+- short division: dividing several numbers at once in a short way (短除法)
+- listing: writing out the numbers in order (列舉法)
+- common factor: a number that divides two or more numbers (公因數)
+- terminus: the station where a bus starts (總站)
+- at the same time: together (同時)

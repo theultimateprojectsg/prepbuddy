@@ -1,0 +1,72 @@
+Unit 2: Division by a 2-digit number
+
+In this unit you will learn to:
+- divide a 2-digit or 3-digit number by a 2-digit number
+- find the quotient and the remainder
+- check a division by multiplying
+- solve word problems with division
+
+Let's start
+There are 156 students going on a school picnic. Each coach has 39 seats. How many coaches are needed? We need 156 ÷ 39.
+
+Words in division
+In 156 ÷ 12 = 13:
+- 156 is the dividend (the number being divided)
+- 12 is the divisor (the number we divide by)
+- 13 is the quotient (the answer)
+If something is left over, it is the remainder: 50 ÷ 12 = 4 R 2.
+The remainder must always be smaller than the divisor.
+
+Dividing a 2-digit number by a 2-digit number
+Example 1: 84 ÷ 21
+Think: how many 21s make 84? Try 21 × 4 = 84. So 84 ÷ 21 = 4.
+Tip: round the divisor to estimate. 21 is about 20, and 84 ÷ 20 is about 4.
+
+Example 2: 75 ÷ 18
+18 × 4 = 72 and 18 × 5 = 90 (too big). So the quotient is 4.
+75 − 72 = 3. So 75 ÷ 18 = 4 R 3.
+
+Dividing a 3-digit number by a 2-digit number
+Example 3: 468 ÷ 18
+- Look at the first two digits: 46 ÷ 18. 18 × 2 = 36. Write 2 above the 6 (the tens).
+- 46 − 36 = 10. Bring down the 8 to make 108.
+- 108 ÷ 18 = 6, because 18 × 6 = 108. Write 6 in the ones.
+- 108 − 108 = 0.
+So 468 ÷ 18 = 26.
+
+Example 4: 245 ÷ 32
+The first two digits, 24, are smaller than 32, so there is no tens digit in the quotient.
+Use all three digits: 245 ÷ 32. 32 × 7 = 224, 32 × 8 = 256 (too big).
+245 − 224 = 21. So 245 ÷ 32 = 7 R 21.
+
+Example 5: 830 ÷ 41
+- 83 ÷ 41 = 2 (41 × 2 = 82). 83 − 82 = 1. Bring down the 0 to make 10.
+- 10 ÷ 41 = 0. Write 0 in the ones. Remainder 10.
+So 830 ÷ 41 = 20 R 10. Don't forget the 0 in the quotient!
+
+Check by multiplying
+quotient × divisor + remainder = dividend
+- Check 245 ÷ 32 = 7 R 21: 7 × 32 + 21 = 224 + 21 = 245 ✓
+
+Word problems with remainders: read carefully!
+- 156 children, 39 seats on each coach: 156 ÷ 39 = 4. They need 4 coaches.
+- 160 children: 160 ÷ 39 = 4 R 4. The 4 children left over still need a coach, so they need 5 coaches.
+- A ribbon is 200 cm long. Each bow needs 24 cm. 200 ÷ 24 = 8 R 8. You can make 8 bows (the 8 cm left over is not enough for another bow).
+
+Common mistakes
+- Leaving out the 0 in the quotient (830 ÷ 41 is 20 R 10, not 2 R 10).
+- A remainder that is bigger than the divisor: this means the quotient should be bigger.
+- Mixing up the dividend and the divisor: 18 ÷ 468 is not the same as 468 ÷ 18.
+
+Challenge (for fast learners)
+- Find the biggest 3-digit number that gives a remainder of 0 when divided by 25.
+- A number divided by 15 gives 12 R 7. What is the number? (15 × 12 + 7 = 187)
+
+Key words
+- dividend: the number being divided (被除數)
+- divisor: the number you divide by (除數)
+- quotient: the answer to a division (商)
+- remainder: the amount left over (餘數)
+- divide: share or group equally (除)
+- bring down: move the next digit down in column division (移下)
+- check: make sure the answer is right (驗算)

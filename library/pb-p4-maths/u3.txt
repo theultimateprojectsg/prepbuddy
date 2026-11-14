@@ -1,0 +1,66 @@
+Unit 4: Multiples and factors
+
+In this unit you will learn to:
+- find the multiples of a number
+- find all the factors of a number
+- understand how factors and multiples are linked
+
+Let's start
+Cupcakes come in boxes of 6. You can buy 6, 12, 18, 24, … cupcakes. These are the multiples of 6.
+
+Multiples
+Multiples of a number are what you get when you multiply it by 1, 2, 3, 4, …
+- Multiples of 5: 5, 10, 15, 20, 25, 30, …
+- The first multiple of 7 is 7, the second is 14, the third is 21, the fourth is 28.
+- The list of multiples never ends.
+- Every number is a multiple of itself (8 = 8 × 1).
+
+Factors
+A factor of a number divides it with no remainder.
+- 12 ÷ 3 = 4, so 3 is a factor of 12.
+- 12 ÷ 5 = 2 R 2, so 5 is NOT a factor of 12.
+- 1 is a factor of every number. Every number is a factor of itself.
+- A number has only a few factors. You can list them all.
+
+Finding all the factors: work in pairs
+Find all the factors of 36:
+- 1 × 36
+- 2 × 18
+- 3 × 12
+- 4 × 9
+- (5 does not divide 36)
+- 6 × 6 (stop when the pairs meet)
+Factors of 36: 1, 2, 3, 4, 6, 9, 12, 18, 36.
+Write them in order from smallest to largest.
+
+Example: factors of 40
+1 × 40, 2 × 20, 4 × 10, 5 × 8 → 1, 2, 4, 5, 8, 10, 20, 40.
+
+Factors and multiples go together
+Because 51 ÷ 3 = 17 with no remainder:
+- 3 is a factor of 51, and
+- 51 is a multiple of 3.
+In the same way, 4 × 9 = 36 tells us that 4 and 9 are factors of 36, and 36 is a multiple of 4 and of 9.
+
+Is it a factor or a multiple?
+- "Is 8 a factor of 56?" 56 ÷ 8 = 7. Yes.
+- "Is 45 a multiple of 6?" 45 ÷ 6 = 7 R 3. No.
+Use the divisibility tests from Unit 3 to help: 135 ends in 5, so 5 is a factor of 135.
+
+Common mistakes
+- Mixing up the words: factors are small (they go INTO the number); multiples are big (they come FROM the number).
+- Forgetting 1 or the number itself in a list of factors.
+- Missing a pair: check every number from 1 upwards until the pairs meet.
+
+Challenge (for fast learners)
+- Which numbers below 50 have exactly 3 factors? (4, 9, 25, 49: they are square numbers of prime numbers)
+- I am a multiple of 7. I am between 50 and 60. What am I? (56)
+
+Key words
+- multiple: the result of multiplying a number by 1, 2, 3, … (倍數)
+- factor: a number that divides another with no remainder (因數)
+- first multiple: the number itself (第一個倍數)
+- pair of factors: two factors that multiply to make the number (一對因數)
+- list: write in order (列出)
+- divides: goes into exactly (整除)
+- smallest / largest: least / greatest (最小／最大)

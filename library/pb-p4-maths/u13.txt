@@ -1,0 +1,57 @@
+Unit 14: Dissecting and forming shapes
+
+In this unit you will learn to:
+- cut (dissect) a polygon into smaller polygons
+- say what the smaller shapes are
+- put (form) small polygons together to make a new polygon
+- say what the new shape is
+
+Let's start
+Fold a square piece of paper from corner to corner and cut along the fold. You get two triangles. What kind of triangles are they?
+
+Polygons
+A polygon is a flat shape made of 3 or more straight sides joined end to end.
+- Triangle (3 sides), quadrilateral (4 sides), pentagon (5 sides), hexagon (6 sides).
+- A circle is not a polygon (it has no straight sides).
+
+Kinds of triangles you will meet
+- Right-angled triangle: has one right angle.
+- Isosceles triangle: has two equal sides.
+- Isosceles right-angled triangle: has one right angle AND two equal sides.
+- Equilateral triangle: has three equal sides.
+
+Dissecting: cutting a shape into smaller shapes
+- Cut a rectangle from one corner to the opposite corner → 2 right-angled triangles (the same size and shape).
+- Cut a square from one corner to the opposite corner → 2 isosceles right-angled triangles.
+- Cut a square along the line joining the middles of two opposite sides → 2 rectangles.
+- Cut a parallelogram with a straight line that makes a right angle with the bottom side → a right-angled triangle and a right-angled trapezium (or two right-angled trapeziums).
+- Cut a regular hexagon from one corner to the opposite corner → 2 trapeziums.
+Tip: look at the new corners and the new sides. Are any sides equal? Are there right angles? Are there parallel sides?
+
+Forming: putting shapes together
+- 2 identical right-angled triangles can form a rectangle, or an isosceles triangle, or a parallelogram (it depends how you turn them).
+- 2 identical isosceles right-angled triangles can form a square.
+- 2 identical right-angled trapeziums can form a rectangle.
+- 2 identical trapeziums can form a parallelogram.
+- 6 identical equilateral triangles can form a regular hexagon.
+
+How many triangles?
+When a shape is cut into pieces, count carefully. For a square cut along both lines from corner to corner, there are 4 small triangles, and each one is an isosceles right-angled triangle.
+
+Common mistakes
+- Saying a rectangle cut from corner to corner gives isosceles triangles. It gives right-angled triangles, but they only have two equal sides if the rectangle is a square.
+- Forgetting that the same two pieces can form different shapes when you turn or flip one of them.
+- Counting only the small pieces when the question asks for all triangles of any size.
+
+Challenge (for fast learners)
+- With 4 identical squares, how many different shapes can you make if each square must share a whole side with another? (5 different shapes, called tetrominoes.)
+- Cut a rectangle into 3 triangles with 2 straight cuts. What kinds of triangles do you get?
+
+Key words
+- polygon: a flat shape with 3 or more straight sides (多邊形)
+- dissect: cut a shape into parts (分割)
+- form: put parts together to make a shape (拼砌)
+- right-angled triangle: a triangle with a right angle (直角三角形)
+- isosceles triangle: a triangle with two equal sides (等腰三角形)
+- identical: exactly the same size and shape (完全相同)
+- hexagon: a polygon with 6 sides (六邊形)

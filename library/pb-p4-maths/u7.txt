@@ -1,0 +1,82 @@
+Unit 8: Mixed operations and the unitary method
+
+In this unit you will learn to:
+- do the four operations in the right order, with and without brackets
+- use the distributive property to make calculations quicker
+- solve problems by first finding the value of one (the unitary method)
+
+Let's start
+Ken buys 3 notebooks at 12 dollars each and a pen for 8 dollars. He pays 3 × 12 + 8. Do we add first or multiply first?
+
+The order of operations
+1. Brackets ( ) first.
+2. Then × and ÷, working from left to right.
+3. Then + and −, working from left to right.
+- 3 × 12 + 8 = 36 + 8 = 44
+- 3 × (12 + 8) = 3 × 20 = 60
+- 48 ÷ 6 × 2 = 8 × 2 = 16 (left to right, NOT 48 ÷ 12)
+- 50 − 20 + 5 = 30 + 5 = 35 (left to right, NOT 50 − 25)
+
+Step-by-step working
+Write one step on each line, with "=" at the start of each line.
+Example 1: 72 + 36 ÷ 4 × 3
+= 72 + 9 × 3
+= 72 + 27
+= 99
+
+Example 2: (25 + 15) × 6 − 84 ÷ 7
+= 40 × 6 − 84 ÷ 7
+= 240 − 12
+= 228
+
+Example 3: two pairs of brackets
+(2 + 3) × (5 + 3)
+= 5 × 8
+= 40
+
+The distributive property: a quick way
+23 × 17 + 23 × 13: both parts have "23 ×", so
+= 23 × (17 + 13)
+= 23 × 30
+= 690
+It also works the other way: 15 × 12 = 15 × (10 + 2) = 150 + 30 = 180.
+And with subtraction: 46 × 99 = 46 × (100 − 1) = 4600 − 46 = 4554.
+
+The unitary method: find the value of ONE first
+Example 4: 5 pencils cost 30 dollars. How much do 8 pencils cost?
+- 1 pencil: 30 ÷ 5 = 6 dollars
+- 8 pencils: 6 × 8 = 48 dollars
+In one number sentence: 30 ÷ 5 × 8 = 48.
+Answer: 8 pencils cost 48 dollars.
+
+Example 5: A machine makes 360 masks in 4 minutes. How many masks does it make in 7 minutes?
+360 ÷ 4 × 7
+= 90 × 7
+= 630
+Answer: It makes 630 masks.
+
+Word problems with more than one step
+Example 6: Mum has 200 dollars. She buys 4 kg of apples at 18 dollars per kg and a fish for 65 dollars. How much money is left?
+200 − 18 × 4 − 65
+= 200 − 72 − 65
+= 128 − 65
+= 63
+Answer: 63 dollars are left.
+
+Common mistakes
+- Working from left to right when there is × or ÷ later: 10 + 5 × 2 = 20, NOT 30.
+- Doing ÷ before × when × comes first: 48 ÷ 6 × 2 = 16, NOT 4.
+- Forgetting to carry the rest of the line down to the next step.
+
+Challenge (for fast learners)
+- Put in one pair of brackets to make it true: 6 + 4 × 5 − 2 = 48. ((6 + 4) × 5 − 2 = 48)
+- Does division have a distributive property? (48 + 24) ÷ 6 = 8 + 4 = 12. ✓ But 48 ÷ (6 + 2) is NOT 48 ÷ 6 + 48 ÷ 2.
+
+Key words
+- brackets: the signs ( ) that show what to do first (括號)
+- operation: +, −, × or ÷ (運算)
+- mixed operations: more than one kind of operation in a calculation (四則混合計算)
+- from left to right: in reading order (由左至右)
+- distributive property: a × b + a × c = a × (b + c) (分配性質)
+- unitary method: find the value of one, then of many (先求一個單位的值)
+- each: for every one (每)

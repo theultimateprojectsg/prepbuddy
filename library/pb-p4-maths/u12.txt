@@ -1,0 +1,61 @@
+Unit 13: Quadrilaterals (rhombuses and parallelograms)
+
+In this unit you will learn to:
+- know the properties of a rhombus
+- draw and make rhombuses
+- see how squares, rectangles, rhombuses and parallelograms are related
+
+Let's start
+Look at the diamond shapes on a playing card or on some road signs. Many of them are rhombuses: four equal sides, but the corners are not always right angles.
+
+Quadrilaterals you already know
+A quadrilateral is a shape with 4 straight sides.
+- Square: 4 equal sides, 4 right angles.
+- Rectangle: opposite sides equal, 4 right angles.
+- Parallelogram: 2 pairs of parallel sides; opposite sides are equal.
+- Trapezium: only 1 pair of parallel sides.
+Parallel lines are always the same distance apart. They never meet, like railway tracks.
+
+The rhombus
+A rhombus has:
+- 4 equal sides
+- 2 pairs of parallel sides (opposite sides are parallel)
+- opposite angles that are equal
+Check for a rhombus: measure all 4 sides with a ruler. If they are all equal, it is a rhombus.
+
+Drawing and making rhombuses
+- On dot paper or grid paper: from a starting dot, move the same "step" (for example 2 right and 1 up) for each side, so all 4 sides are equal.
+- With 4 straws of the same length joined at the ends, you can push the shape into many different rhombuses.
+- With paper: fold a square of paper in half and in half again, cut off a corner at a slant, and open it out.
+
+How the shapes are related
+- Every square is a rectangle (it has 4 right angles).
+- Every square is a rhombus (it has 4 equal sides).
+- Squares, rectangles and rhombuses are all parallelograms (each has 2 pairs of parallel sides).
+- A rectangle is not always a square. A rhombus is not always a square. A parallelogram is not always a rhombus.
+A square is a special rhombus with right angles. A square is also a special rectangle with 4 equal sides.
+
+Telling them apart
+Ask these questions:
+1. Are there 2 pairs of parallel sides? If not, it is not a parallelogram.
+2. Are all 4 sides equal? If yes, it is a rhombus (or a square).
+3. Are all 4 angles right angles? If yes, it is a rectangle (or a square).
+4. Both 2 and 3? It is a square.
+
+Common mistakes
+- Thinking a rhombus must be "tilted". A square turned on its corner is still a square (and still a rhombus).
+- Saying a square is not a rectangle. It is!
+- Mixing up a rhombus and a parallelogram: a parallelogram only needs opposite sides equal; a rhombus needs all 4 sides equal.
+
+Challenge (for fast learners)
+- A rhombus has a perimeter of 36 cm. How long is each side? (36 ÷ 4 = 9 cm)
+- True or false: "Some rhombuses are rectangles." (True: squares.)
+
+Key words
+- quadrilateral: a shape with 4 straight sides (四邊形)
+- rhombus: a quadrilateral with 4 equal sides (菱形)
+- parallelogram: a quadrilateral with 2 pairs of parallel sides (平行四邊形)
+- trapezium: a quadrilateral with only 1 pair of parallel sides (梯形)
+- parallel: always the same distance apart, never meeting (平行)
+- right angle: a square corner, like the corner of a book (直角)
+- opposite sides: sides facing each other (對邊)

@@ -1,0 +1,63 @@
+Unit 18: Bar charts
+
+In this unit you will learn to:
+- read bar charts where one square stands for 10, 50 or 100
+- read approximate values from a bar chart
+- answer questions using a bar chart
+- draw a bar chart from a frequency table
+
+Let's start
+The school tuck shop sold drinks for a week: 230 cartons of milk, 180 bottles of water, 340 cartons of lemon tea and 90 cans of soya milk. Drawing one square for each drink would need hundreds of squares! In a bar chart, one square can stand for many.
+
+Parts of a bar chart
+- A title: tells what the chart is about.
+- Two axes: one shows the categories (kinds of drink), the other shows the numbers (the scale).
+- Bars: the length of each bar shows how many.
+- The scale: for example "1 square represents 10 cartons" or the numbers 0, 50, 100, 150, … along the axis.
+Bar charts can be vertical (bars go up) or horizontal (bars go across).
+
+Reading a bar chart
+If each grid line is 50 and a bar ends exactly on the 4th line, the value is 4 × 50 = 200.
+If a bar ends halfway between 200 and 250, the value is about 225.
+Some bars end between lines. Then we can only give an approximate value ("about 230").
+
+Answering questions
+Using the tuck shop data:
+- Most popular drink: lemon tea (340).
+- Least popular: soya milk (90).
+- How many more lemon tea than milk? 340 − 230 = 110.
+- Total drinks: 230 + 180 + 340 + 90 = 840.
+
+Rounding to fit the scale
+If 1 square represents 100, round each number to the nearest hundred before you draw:
+- 230 → 200 (3 is less than 5, round down)
+- 180 → 200 (8 is 5 or more, round up)
+- 340 → 300
+- 90 → 100
+If 1 square represents 10, round to the nearest ten: 234 → 230, 186 → 190, 345 → 350.
+
+Drawing a bar chart
+1. Put the data in a frequency table (a table of how many of each).
+2. Look at the biggest number and choose a scale: 1 to 10, 1 to 50 or 1 to 100.
+3. Draw and label the two axes, and write the scale.
+4. Draw the bars the same width with equal gaps.
+5. Give the chart a title.
+Tip: if you have an "Others" group, it should be small compared with the rest.
+
+Common mistakes
+- Reading the scale as 1 per square when it is 10, 50 or 100.
+- Counting the squares instead of reading where the bar ends on the scale.
+- Forgetting the title or the labels.
+
+Challenge (for fast learners)
+- In a chart where 1 square represents 50 people, a bar is 7 and a half squares long. How many people? (375)
+- If the scale changes from 50 to 100 per square, what happens to the length of every bar? (It halves.)
+
+Key words
+- bar chart: a chart that uses bars to show amounts (棒形圖)
+- scale: how much each square or line stands for (刻度／比例)
+- represent: stand for (代表)
+- frequency table: a table showing how many of each kind (統計表)
+- approximate: close but not exact (大約)
+- horizontal / vertical: going across / going up (橫向／縱向)
+- category: a group or kind (類別)

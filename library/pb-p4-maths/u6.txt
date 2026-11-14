@@ -1,0 +1,68 @@
+Unit 7: Common factors and the H.C.F.
+
+In this unit you will learn to:
+- find common factors of two or three numbers
+- find the highest common factor (H.C.F.) by listing
+- find the H.C.F. by short division
+- solve problems about sharing or cutting into equal parts
+
+Let's start
+Miss Lee has 24 red pens and 36 blue pens. She wants to make some packs that are exactly the same, with no pens left over. What is the greatest number of packs she can make? We need the biggest number that divides both 24 and 36.
+
+Common factors
+Factors of 24: 1, 2, 3, 4, 6, 8, 12, 24
+Factors of 36: 1, 2, 3, 4, 6, 9, 12, 18, 36
+Numbers in both lists: 1, 2, 3, 4, 6, 12. These are the common factors.
+The biggest one, 12, is the highest common factor. We write H.C.F.
+So Miss Lee can make 12 packs, each with 2 red pens and 3 blue pens.
+
+Method 1: listing
+Example 1: H.C.F. of 18 and 30
+Factors of 18: 1, 2, 3, 6, 9, 18
+Factors of 30: 1, 2, 3, 5, 6, 10, 15, 30
+Common factors: 1, 2, 3, 6. H.C.F. = 6.
+
+Method 2: short division
+Example 2: H.C.F. of 48 and 60
+- 2 | 48, 60 → 24, 30
+- 2 | 24, 30 → 12, 15
+- 3 | 12, 15 → 4, 5
+- 4 and 5 have no common factor except 1, so stop.
+H.C.F. = multiply ONLY the numbers on the left = 2 × 2 × 3 = 12.
+
+Example 3: H.C.F. of 12, 18 and 30
+- 2 | 12, 18, 30 → 6, 9, 15
+- 3 | 6, 9, 15 → 2, 3, 5
+H.C.F. = 2 × 3 = 6.
+For the H.C.F. of three numbers, the number on the left must divide ALL three numbers.
+
+H.C.F. or L.C.M.? Compare the short division
+For 12 and 18: 2 | 12, 18 → 6, 9; 3 | 6, 9 → 2, 3
+- H.C.F. = 2 × 3 = 6 (left side only)
+- L.C.M. = 2 × 3 × 2 × 3 = 36 (left side and bottom)
+
+Useful facts
+- If the bigger number is a multiple of the smaller one, the H.C.F. is the smaller number. H.C.F. of 7 and 35 = 7.
+- If the only common factor is 1, the H.C.F. is 1. H.C.F. of 8 and 15 = 1.
+
+Which one do I need in a word problem?
+- Sharing or cutting into the BIGGEST equal groups or pieces → H.C.F. (the answer is not bigger than the numbers).
+- Things happening together AGAIN, or the SMALLEST number that several numbers go into → L.C.M. (the answer is not smaller than the numbers).
+
+Common mistakes
+- Multiplying the bottom numbers too when finding the H.C.F.
+- Stopping the short division too early: always check if the bottom numbers still have a common factor.
+- Forgetting that 1 is a common factor of every pair of numbers.
+
+Challenge (for fast learners)
+- A rectangle of paper is 84 cm by 60 cm. It is cut into the biggest possible squares, with no paper left over. How long is each side? (H.C.F. = 12 cm)
+- Two numbers have H.C.F. 6. Both are between 20 and 40. Give one pair. (24 and 30, 30 and 36, …)
+
+Key words
+- common factor: a factor of two or more numbers (公因數)
+- highest common factor (H.C.F.): the biggest common factor (最大公因數)
+- short division: dividing several numbers at once in a short way (短除法)
+- equal: the same size or amount (相等)
+- pack: a group of things put together (一份)
+- no … left over: nothing remains (沒有剩餘)
+- greatest: biggest (最大)
