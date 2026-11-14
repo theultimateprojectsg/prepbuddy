@@ -30,7 +30,8 @@ Which one?
 Common mistakes
 - "I will to go swimming." → I will go swimming.
 - "She is going to plays." → She is going to play.
-- "Tomorrow I go to the dentist." → Tomorrow I am going to go to the dentist. (or: I am going to the dentist tomorrow.)
+- "Tomorrow I will to visit Grandma." → Tomorrow I will visit Grandma.
+- "Next week we going to have a test." → Next week we are going to have a test.
 
 Key words
 - holiday: days with no school (假期)
