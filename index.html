@@ -573,6 +573,12 @@ main.qpaper{background:#fff;background-image:linear-gradient(90deg,transparent 3
 .today{gap:22px}
 .greet h1{margin:0;font-size:26px;font-weight:700;line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
 .greet p{margin:4px 0 0;color:var(--muted);font-size:14.5px}
+.greet-r{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap}
+@media (max-width:1023.98px){
+  /* phones: child, stars and settings in one row at the top; the greeting below at full width */
+  .today .greet{flex-direction:column-reverse;align-items:stretch!important;gap:10px!important}
+  .today .greet-r .mob-gear{width:40px;height:40px;border-radius:999px}
+}
 .plan{background:#fff;border:1px solid var(--line);border-radius:18px;padding:6px 16px;display:flex;flex-direction:column}
 .plan h2{margin:0 0 6px;font-size:16px;font-weight:700}
 .plan-item{display:flex;gap:14px;align-items:center;padding:13px 0;border:none;border-top:1px solid #EEF1F6;background:none;text-align:left;width:100%;cursor:pointer;color:var(--ink);font-family:inherit}
