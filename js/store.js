@@ -24,6 +24,12 @@ function open() {
   return dbPromise;
 }
 
+// Close the database so it can be deleted ("Delete everything on this device"). Later reads and writes use memory.
+export async function close() {
+  try { const db = await open(); if (db) db.close(); } catch (e) {}
+  dbPromise = Promise.resolve(null);
+}
+
 function tx(db, mode, fn) {
   return new Promise((resolve, reject) => {
     const t = db.transaction(STORE, mode);

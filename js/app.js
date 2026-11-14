@@ -57,7 +57,8 @@ function loadLocal() {
   try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; }
 }
 const local = Object.assign({ stats: {}, reports: [], code: '', usage: {}, log: [], name: '', types: 'mix', mistakes: {} }, loadLocal());
-function saveLocal() { try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) {} }
+let WIPING = false; // set while 'Delete everything on this device' runs, so nothing is written back
+function saveLocal() { if (WIPING) return; try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) {} }
 
 /* ---------- helpers ---------- */
 const $app = document.getElementById('app');
@@ -2364,14 +2365,14 @@ const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progr
    Family-wide things (family code, consent, plan, parent PIN, screen settings) are copied to a new child. */
 const KID_AV = ['🦊', '🐼', '🐯', '🐨', '🐸', '🐧', '🦁', '🐰'];
 const KID_SHARED = ['code', 'pilot', 'consent', 'toured', 'plan', 'planLock', 'planYearly', 'pin', 'pinAt', 'beta', 'installTipOff', 'helperSize', 'sideW', 'voiceCC', 'starsOn'];
-const kidSave = () => { try { localStorage.setItem(KIDS_KEY, JSON.stringify(KIDS)); } catch (e) {} };
+const kidSave = () => { if (WIPING) return; try { localStorage.setItem(KIDS_KEY, JSON.stringify(KIDS)); } catch (e) {} };
 function kidMeta() { KID.grade = gradeNow() || ''; KID.name = (local.name || '').trim().slice(0, 20); if (KIDS.list.length > 1 || localStorage.getItem(KIDS_KEY)) kidSave(); }
 const kidLabel = (k) => k.nick || k.name || (k.grade ? (LANG === 'zh' ? gradeName(k.grade) : k.grade) : (LANG === 'zh' ? `孩子 ${KIDS.list.indexOf(k) + 1}` : `Child ${KIDS.list.indexOf(k) + 1}`));
 const kidChip = () => `<button class="kidchip" data-kidgo aria-label="${LANG === 'zh' ? '轉換孩子' : 'Switch child'}"><span>${KID_AV[KID.av || 0]}</span><b>${esc(kidLabel(KID))}</b><span aria-hidden="true">▾</span></button>`;
 // Which child is studying is remembered for a few hours of use, not just this browser tab: phones reload pages
 // (pull-to-refresh, switching apps, home-screen apps), and asking "Who's studying?" after every reload got in the way.
 const KID_PICK = 'pb.kidPick', KID_PICK_MS = 3 * 3600e3;
-function kidPicked(id) { try { localStorage.setItem(KID_PICK, JSON.stringify({ id: id || KID.id, at: Date.now() })); } catch (e) {} }
+function kidPicked(id) { if (WIPING) return; try { localStorage.setItem(KID_PICK, JSON.stringify({ id: id || KID.id, at: Date.now() })); } catch (e) {} }
 function kidPickFresh() { try { const p = JSON.parse(localStorage.getItem(KID_PICK) || 'null'); return !!(p && p.id === KID.id && Date.now() - p.at < KID_PICK_MS); } catch (e) { return true; } }
 function switchKid(id) {
   KIDS.cur = id; kidSave(); kidPicked(id);
@@ -2571,6 +2572,11 @@ function renderSettings() {
       <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
       <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
     </section>`}
+    <section class="card stack g10 wipe-card" style="padding:16px">
+      <b style="font-size:15px">${PLT('Delete everything on this device', '刪除這部裝置上的所有資料')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('Removes every child, book, question, mark, setting and saved voice clip from this phone or computer, and the family code. PrepBuddy then starts again like new. This can’t be undone, so save a backup first if you want to keep anything.', '刪除這部手機或電腦上所有孩子、課本、題目、成績、設定、已儲存的朗讀聲音和家庭代碼，PrepBuddy 會像新的一樣重新開始。刪除後不能復原，如想保留資料，請先儲存備份。')}${local.pilot ? PLT(' Pilot activity already sent to PrepBuddy is not deleted by this: ask us and we’ll remove it.', ' 已傳送給 PrepBuddy 的試用紀錄不會因此刪除：請聯絡我們，我們會為你刪除。') : ''}</span>
+      <button class="btn-sm danger" id="swipe" style="align-self:flex-start">${PLT('Delete everything', '刪除所有資料')}</button>
+    </section>
     <p class="hint" style="margin:0;line-height:1.5">Prototype. Your textbooks, questions and progress are saved on this device only.</p>
   </main>`;
   $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { if (b.dataset.lang === LANG) return; setLang(b.dataset.lang); go({ name: 'settings' }); }));
@@ -2582,6 +2588,12 @@ function renderSettings() {
   { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings' }); }; }
   { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings' }); }; }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
+  document.getElementById('swipe').onclick = async () => {
+    const ok = await confirmLeave({ title: PLT('Delete everything on this device?', '刪除這部裝置上的所有資料？'), body: PLT(`All ${KIDS.list.length > 1 ? `${KIDS.list.length} children’s` : 'your'} books, progress, stars and settings will be removed from this device, and you’ll need the family code again. This can’t be undone.`, `這部裝置上${KIDS.list.length > 1 ? `全部 ${KIDS.list.length} 個孩子的` : ''}課本、進度、星星和設定都會刪除，之後需要再輸入家庭代碼。刪除後不能復原。`), stay: PLT('Cancel', '取消'), leave: PLT('Delete everything', '刪除所有資料') });
+    if (!ok) return;
+    if (local.pin && !(await askPin(PLT('Enter the parent PIN to delete everything.', '輸入家長密碼以刪除所有資料。')))) return;
+    await wipeDevice();
+  };
   document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
   document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   document.getElementById('splans').onclick = () => go({ name: 'plans' });
@@ -2591,6 +2603,20 @@ function renderSettings() {
 }
 
 
+
+// "Delete everything on this device": every child's database, all PrepBuddy keys in local storage, the saved
+// voice clips and this tab's session, then a fresh start (the family-code screen in the pilot).
+async function wipeDevice() {
+  WIPING = true; stopSaying();
+  const dbs = new Set(['prepbuddy', ...KIDS.list.map((k) => k.db)]);
+  try { if (indexedDB.databases) (await indexedDB.databases()).forEach((d) => { if (d.name && /^prepbuddy/.test(d.name)) dbs.add(d.name); }); } catch (e) {}
+  await store.close();
+  await Promise.all([...dbs].map((n) => new Promise((r) => { try { const q = indexedDB.deleteDatabase(n); q.onsuccess = q.onerror = q.onblocked = () => r(); } catch (e) { r(); } })));
+  try { await caches.delete('pb-tts'); } catch (e) {}
+  try { Object.keys(localStorage).filter((k) => /^(prepbuddy|pb\.)/.test(k)).forEach((k) => localStorage.removeItem(k)); } catch (e) {}
+  try { sessionStorage.clear(); } catch (e) {}
+  location.replace(location.pathname);
+}
 
 /* ---------- pilot: family codes, activity and feedback ----------
    During the pilot each family gets its own code. The app asks for it once, then uses it for the AI. Each device
