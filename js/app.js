@@ -2969,6 +2969,7 @@ function marksScreen(edit) {
     const ym = (t) => new Date(t).toISOString().slice(0, 7);
     const M = edit ? JSON.parse(JSON.stringify(edit)) : { id: uid(), kind: first ? 'before' : 'later', exam: 'exam', when: ym(first ? Date.now() - 45 * DAY : Date.now()), s: {}, other: '' };
     const subs = MARK_SUBJ();
+    const snap = { busy: false, read: [], err: '' }; // marks read from photos of the papers
     let drawn = false;
     const draw = () => {
       $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1"><div class="pg-box cs-box prof-box marks-box${drawn ? ' noanim' : ''}">
@@ -2977,6 +2978,12 @@ function marksScreen(edit) {
         <p class="pg-lead" style="text-align:left">${M.kind === 'before'
           ? C('From the last school test or exam before your child started PrepBuddy. Later you’ll add the next results, so you (and we) can see if it’s helping. Leave out any subject you don’t have.', '請填寫孩子開始使用 PrepBuddy 前最近一次測驗或考試的分數。之後再填下一次的成績，便可看到是否有幫助。沒有的科目可留空。')
           : C('From the most recent school test or exam. Leave out any subject you don’t have.', '請填寫最近一次學校測驗或考試的分數。沒有的科目可留空。')}</p>
+        <section class="mk-snap">
+          <label class="mk-snapbtn${snap.busy ? ' busy' : ''}"><span class="mk-cam" aria-hidden="true">📷</span><span><b>${snap.busy ? C('Reading the papers…', '正在讀取試卷…') : C('Snap the marked papers', '拍下已批改的試卷')}</b><small>${C('Photo of the front page of each paper, where the total is. We fill in the marks for you.', '拍下每份試卷有總分的首頁，我們會為你填上分數。')}</small></span><input id="mphoto" type="file" accept="image/*" multiple hidden ${snap.busy ? 'disabled' : ''}></label>
+          ${snap.read.length ? `<div class="mk-read"><b>${C('Read from your photos. Please check:', '從相片讀到的分數，請核對：')}</b><ul>${snap.read.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+          ${snap.err ? `<p class="hw-err" style="margin:0">${esc(snap.err)}</p>` : ''}
+          <span class="hint" style="margin:0;text-align:left">${C('Photos are only used to read the marks, then thrown away. Or type the marks below.', '相片只用來讀取分數，之後不會保存。你也可以在下面自行輸入。')}</span>
+        </section>
         <section class="stack g10"><b>${C('Which results?', '哪一次的成績？')}</b>
           <div class="prof-opts two"><button class="langopt${M.exam === 'exam' ? ' on' : ''}" data-ex="exam"><b>${C('Exam', '考試')}</b><span>${C('Term or final exam', '上／下學期考試')}</span></button><button class="langopt${M.exam === 'test' ? ' on' : ''}" data-ex="test"><b>${C('Test', '測驗')}</b><span>${C('Uniform or class test', '統測／小測')}</span></button></div>
           <label class="mk-when"><span>${C('Month', '月份')}</span><input id="mwhen" class="input" type="month" value="${esc(M.when)}" max="${ym(Date.now())}"></label></section>
@@ -2991,6 +2998,28 @@ function marksScreen(edit) {
       drawn = true;
       const read = () => { $app.querySelectorAll('[data-m]').forEach((i) => { const v = i.value.trim(); if (v === '') delete M.s[i.dataset.m]; else M.s[i.dataset.m] = Math.round(Number(v)); }); M.when = document.getElementById('mwhen').value || M.when; M.other = document.getElementById('moth').value.replace(/[<>]/g, '').trim().slice(0, 20); };
       $app.querySelectorAll('[data-ex]').forEach((b) => (b.onclick = () => { read(); M.exam = b.dataset.ex; draw(); }));
+      document.getElementById('mphoto').onchange = async (e) => {
+        read(); const files = [...e.target.files].slice(0, 6); if (!files.length) return;
+        snap.busy = true; snap.err = ''; snap.read = []; draw();
+        try {
+          const images = []; for (const f of files) images.push(await shrinkPhoto(f, 1800));
+          const r = await api('homework', { step: 'marks', images, lang: LANG });
+          const label = (k, p) => (k === 'other' ? p.other_name || C('Other', '其他') : ((subs.find((x) => x[0] === k) || [k, k, k])[LANG === 'zh' ? 1 : 2]));
+          for (const p of r.papers || []) {
+            if (p.score === null || !p.total) { snap.read.push(`${label(p.subject, p)}: ${C('couldn’t read the mark', '看不清分數')}`); continue; }
+            const pct = Math.max(0, Math.min(100, Math.round((100 * p.score) / p.total)));
+            let k = subs.some((x) => x[0] === p.subject) ? p.subject : 'other';
+            if (k === 'other') { const nm = p.subject === 'other' ? p.other_name : label(p.subject, p); if (M.s.other !== undefined && M.other && M.other !== nm) continue; M.other = String(nm || '').slice(0, 20); }
+            M.s[k] = pct;
+            if (p.kind) M.exam = p.kind;
+            if (p.month && p.month <= ym(Date.now())) M.when = p.month;
+            snap.read.push(`${k === 'other' ? M.other : label(k, p)}: ${p.score} / ${p.total}${p.total !== 100 ? ` = ${pct}` : ''}`);
+          }
+          if (!snap.read.length) snap.err = r.note || C('I couldn’t find the marks in these photos. Try a clearer photo of the page with the total, or type them in.', '在相片中找不到分數。請拍清楚有總分的一頁，或自行輸入。');
+          else if (r.note) snap.read.push(r.note);
+        } catch (err) { snap.err = err.status === 0 ? C('You seem to be offline.', '你好像離線了。') : (err.message || C('Couldn’t read the photos.', '讀取相片失敗。')); }
+        snap.busy = false; draw();
+      };
       const done = () => { if (nav) nav.style.display = ''; resolve(); };
       document.getElementById('msave').onclick = () => {
         read();
