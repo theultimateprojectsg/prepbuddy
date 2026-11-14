@@ -1679,8 +1679,8 @@ let TTS_OFF = false, ttsEl = null, ttsSeq = 0;
 // The voices a family can choose from (Settings → About your child → Reading voice). Short names; the server only accepts these.
 const VOICE_OPTS = {
   yue: [['HiuGaai', '曉佳', 'Female · clear, like a teacher', '女聲 · 清晰，似老師'], ['HiuMaan', '曉曼', 'Female · bright and lively', '女聲 · 明亮活潑'], ['WanLung', '雲龍', 'Male · calm', '男聲 · 沉穩']],
-  cmn: [['Xiaoxiao', '曉曉', 'Female · warm', '女聲 · 溫和'], ['Xiaoyi', '曉伊', 'Female · young and lively', '女聲 · 年輕活潑'], ['Yunxi', '雲希', 'Male · clear', '男聲 · 清晰']],
-  en: [['Sonia', 'Sonia', 'Female · British', '女聲 · 英式'], ['Libby', 'Libby', 'Female · British, younger', '女聲 · 英式，較年輕'], ['Ryan', 'Ryan', 'Male · British', '男聲 · 英式']],
+  cmn: [['Xiaochen', '曉辰', 'Female · most natural (HD)', '女聲 · 最自然 (HD)'], ['Yunfan', '雲帆', 'Male · most natural (HD)', '男聲 · 最自然 (HD)'], ['Xiaoxiao', '曉曉', 'Female · classic', '女聲 · 經典']],
+  en: [['Sonia', 'Sonia', 'Female · British', '女聲 · 英式'], ['Ryan', 'Ryan', 'Male · British', '男聲 · 英式'], ['Ava', 'Ava', 'Female · most natural (HD) · American accent', '女聲 · 最自然 (HD) · 美式口音']],
 };
 const voicePref = (lang) => { const l = local.learner || {}, v = l.voices && l.voices[lang]; return VOICE_OPTS[lang] && VOICE_OPTS[lang].some((o) => o[0] === v) ? v : ''; };
 const ratePref = () => ((local.learner || {}).vrate === 'slower' ? 'slower' : '');
@@ -1690,7 +1690,7 @@ async function ttsClip(text, lang, mode) {
   const voice = voicePref(lang), rate = ratePref();
   const k = `${lang}|${mode}|${voice}|${rate}|${text}`;
   if (TTS_URL.has(k)) return TTS_URL.get(k);
-  const key = `/tts-cache/v1/${encodeURIComponent(k)}`;
+  const key = `/tts-cache/v2/${encodeURIComponent(k)}`;
   let cache = null, blob = null;
   try { cache = await caches.open('pb-tts'); const hit = await cache.match(key); if (hit) blob = await hit.blob(); } catch (e) {}
   if (!blob) {
