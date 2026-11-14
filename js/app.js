@@ -2705,7 +2705,35 @@ async function pilotWelcome() {
   if (local.pilot && local.code && !(local.consent && local.consent.v >= CONSENT_V)) await consentScreen();
   // New families set it up during onboarding; families already using the app get a card on Today instead.
   if (profileOn() && !local.learner && (!local.toured || local.needProfile)) await profileScreen({ first: true });
+  await preloadStarters();
   if (!local.toured) await startTour();
+}
+// A child with no books gets PrepBuddy's free starter books for their grade (e.g. P4 English, Maths and Science),
+// once, so they can start straight away. Books they remove later are not added back.
+async function preloadStarters() {
+  if (local.preloaded) return;
+  const g = gradeNow(); if (!g) return;
+  if ((await getBooks()).length) { local.preloaded = Date.now(); saveLocal(); return; }
+  let list = [];
+  try { list = (await getCatalog()).filter((b) => b.starter && String(b.level).toUpperCase() === g); } catch (e) { return; }
+  if (!list.length) return; // none for this grade yet: try again on a later visit
+  const C = (en, zh) => (LANG === 'zh' ? zh : en);
+  const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
+  let n = 0;
+  for (const e of list) {
+    n++;
+    $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1"><div class="pg-box" style="text-align:center">
+      <div class="pg-buddy" aria-hidden="true"><div class="pg-bob">${buddySVG('happy', 80)}</div></div>
+      <h1 style="margin:0">${C('Getting your books ready', '正在準備你的課本')}</h1>
+      <p style="margin:0">${C(`Adding ${esc(e.title)} (${n} of ${list.length})`, `正在加入《${esc(e.title)}》（${n}／${list.length}）`)}</p>
+      <div class="progress" role="progressbar" aria-valuenow="${Math.round(100 * (n - 1) / list.length)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${Math.round(100 * (n - 1) / list.length)}%"></i></div>
+    </div></main>`;
+    await addFromLibrary(e, null, { quiet: true });
+  }
+  if (nav) nav.style.display = '';
+  $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
+  local.preloaded = Date.now(); saveLocal();
+  if ((await getBooks()).length) toast(C(`${list.length} free starter book${list.length > 1 ? 's' : ''} added`, `已加入 ${list.length} 本免費入門書`));
 }
 function consentScreen() {
   return new Promise((resolve) => {
@@ -3621,8 +3649,8 @@ async function renderLibrary(query) {
   q.focus();
 }
 
-async function addFromLibrary(entry, btn) {
-  if (limitOf('books') !== UNL && (await getBooks()).length >= limitOf('books')) return upsell('books', 'limit');
+async function addFromLibrary(entry, btn, opts = {}) {
+  if (limitOf('books') !== UNL && (await getBooks()).length >= limitOf('books')) return opts.quiet ? false : upsell('books', 'limit');
   const id = libBookId(entry);
   if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
   try {
@@ -3651,9 +3679,11 @@ async function addFromLibrary(entry, btn) {
     books.unshift({ id, library: entry.id, rev: entry.rev || 1, code: entry.code, title: entry.title, subject: entry.subject, level: entry.level,
       credit: entry.credit, pageCount: entry.pageCount, addedAt: Date.now(), units: entry.units.map((u) => ({ ...u })), kind: entry.kind || guessKind(`${entry.subject || ''} ${entry.title}`, '') });
     await store.set('books', books);
+    if (opts.quiet) return true;
     toast('Added to your textbooks');
     go({ name: 'book', bookId: id });
   } catch (e) {
+    if (opts.quiet) return false;
     toast(e.message || 'Could not add this textbook.');
     if (btn) { btn.disabled = false; btn.textContent = 'Try again'; }
   }
@@ -6994,7 +7024,7 @@ async function refreshOldQuestions() {
     const lists = await store.getMany(keys, []);
     for (let i = 0; i < keys.length; i++) {
       const list = lists[i] || [];
-      const keep = list.filter((q) => local.stats[q.id] || (local.mistakes || {})[q.id]);
+      const keep = list.filter((q) => q.checked === 'human' || local.stats[q.id] || (local.mistakes || {})[q.id]); // starter-book questions are hand-written: never dropped
       if (keep.length !== list.length) await store.set(keys[i], keep);
     }
   }
