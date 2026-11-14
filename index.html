@@ -574,10 +574,24 @@ main.qpaper{background:#fff;background-image:linear-gradient(90deg,transparent 3
 .greet h1{margin:0;font-size:26px;font-weight:700;line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
 .greet p{margin:4px 0 0;color:var(--muted);font-size:14.5px}
 .greet-r{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap}
+.gr-brand,.gr-buddy,.gr-sub{display:none}
 @media (max-width:1023.98px){
   /* phones: child, stars and settings in one row at the top; the greeting below at full width */
-  .today .greet{flex-direction:column-reverse;align-items:stretch!important;gap:10px!important}
+  .today .greet{flex-direction:column-reverse;align-items:stretch!important;gap:14px!important}
   .today .greet-r .mob-gear{width:40px;height:40px;border-radius:999px}
+  .today .gr-brand{display:inline-flex;align-items:center;gap:7px;margin-right:auto;min-width:0}
+  .today .gr-brand b{font:700 17px 'Lexend',sans-serif;color:var(--ink);letter-spacing:-.01em}
+  .today .greet-r:has(.kidchip) .gr-brand b{display:none}
+  .today .greet-r .kidchip{max-width:46vw;overflow:hidden}.today .greet-r .kidchip b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .today .gr-hero{position:relative;display:flex;align-items:center;gap:12px;padding:18px 18px 18px 20px;border-radius:22px;overflow:hidden;
+    background:radial-gradient(120% 140% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 55%),linear-gradient(135deg,#EEF2FF 0%,#F7F3FF 60%,#FFF8E6 100%);border:1px solid #E3E8F7}
+  .today .gr-hero::after{content:"";position:absolute;right:-30px;bottom:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .today .gr-text{flex:1;min-width:0;position:relative;z-index:1}
+  .today .gr-text h1{font-size:24px}
+  .today .gr-sub{display:block;margin-top:8px;font-size:14px;font-weight:500;color:var(--ink);opacity:.85}
+  .today .gr-buddy{display:block;flex:none;position:relative;z-index:1;animation:grbob 3.2s ease-in-out infinite}
+  @keyframes grbob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+  @media (prefers-reduced-motion:reduce){.today .gr-buddy{animation:none}}
 }
 .plan{background:#fff;border:1px solid var(--line);border-radius:18px;padding:6px 16px;display:flex;flex-direction:column}
 .plan h2{margin:0 0 6px;font-size:16px;font-weight:700}

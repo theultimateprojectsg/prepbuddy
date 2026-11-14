@@ -2196,8 +2196,13 @@ async function renderHome() {
   const hello = LANG === 'zh' ? (hr < 12 ? '早晨' : hr < 18 ? '午安' : '晚安') : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
   const name = (local.name || '').trim();
   const dateText = new Date().toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  const who = name || (KIDS.list.length > 1 && KID && KID.nick) || '';
+  const cheer = LANG === 'zh' ? (hr < 12 ? '新的一天，先做一點點吧！' : hr < 18 ? '今天也來練習一下吧！' : '睡前做十分鐘，明天更有信心。')
+    : hr < 12 ? 'A little practice now, a lot easier later.' : hr < 18 ? 'Ready for a quick practice?' : 'Ten minutes before bed goes a long way.';
+  // Phones: an app bar (logo · child · stars · settings) above a friendly greeting card with Buddy. Computers: the plain greeting.
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div><div class="greet-r">${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}${gearBtn()}</div></div>`;
+      <div class="gr-hero"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}</h1><p data-raw>${esc(dateText)}</p><span class="gr-sub">${esc(cheer)}</span></div><span class="gr-buddy" aria-hidden="true">${buddySVG('happy', 64)}</span></div>
+      <div class="greet-r"><span class="gr-brand">${logoSVG(26)}<b>PrepBuddy</b></span>${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}${gearBtn()}</div></div>`;
   if (!books.length) {
     // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
     let starters = [];
