@@ -1013,9 +1013,9 @@ async function runCoachAction(a) {
 const COACH_CHIPS = ['How am I doing?', 'What should I work on this week?', 'Which chapter is my weakest?', 'Make me a plan for today'];
 const coach = { busy: false, error: null };
 function coachHTML() {
-  if (locked('coach')) return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div><b>${PL('Study coach', '溫習教練')} <span class="lock-tag inl">🔒 Plus</span></b><span>${PL('Plans your day from your scores and mistakes', '按你的分數和錯題計劃每天溫習')}</span></div></div>
+  if (locked('coach')) return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div><b>${PL('Study coach', '溫習教練')} <span class="lock-tag inl">🔒 Standard</span></b><span>${PL('Plans your day from your scores and mistakes', '按你的分數和錯題計劃每天溫習')}</span></div></div>
     <div class="coach-msgs coach-demo"><div class="tmsg me nomath">${PL('What should I work on today?', '我今天應該溫習甚麼？')}</div><div class="tmsg ai">${PL('Your weakest chapter is <b>Forces</b> (52%). Let’s do 10 questions on it, then fix the 3 mistakes from Monday. About 15 minutes.', '你最弱的章節是<b>力</b>（52%）。先做 10 題，再改正星期一的 3 題錯題，大約 15 分鐘。')}</div><div class="coach-acts"><span class="btn-sm primary">▶ ${PL('Start 10 questions', '開始 10 題')}</span></div></div>
-    <div class="coach-lock"><span>${PL('Upgrade to Plus for a coach that sees your progress and plans every day.', '升級至 Plus，教練會按你的進度每天幫你計劃。')}</span><button class="btn" id="coachUp">${PL('See Plus', '查看 Plus')}</button></div>`;
+    <div class="coach-lock"><span>${PL('Upgrade to Standard for a coach that sees your progress and plans every day.', '升級至標準計劃，教練會按你的進度每天幫你計劃。')}</span><button class="btn" id="coachUp">${PL('See Plus', '查看 Plus')}</button></div>`;
   const msgs = local.coach || [];
   return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div>${helper.open ? '<b>Ask Buddy</b><span>About the app or your studies</span>' : '<b>Ask Buddy</b><span>Your study coach: sees your scores, mistakes and reviews</span>'}</div>
       <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
@@ -2058,7 +2058,7 @@ async function renderLearn(bookId, unitId) {
 
 /* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
 const helper = { open: false };
-const SCREEN_NAME = { parent: 'Parent dashboard (for parents, PIN-protected)', plans: 'Plans and prices (Free, Plus, Pro)', speaking: 'Speaking practice (DSE English Paper 4 one-minute individual response)', writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+const SCREEN_NAME = { parent: 'Parent dashboard (for parents, PIN-protected)', plans: 'Plans and prices (Standard, Pro)', speaking: 'Speaking practice (DSE English Paper 4 one-minute individual response)', writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
 function helperChips() {
   const v = view && view.name;
   const by = {
@@ -2511,7 +2511,7 @@ function renderSettings() {
       <span class="muted" style="font-size:13.5px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Plus</span>' : ''}</b>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Standard</span>' : ''}</b>
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:13.5px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
     </section>
@@ -4915,7 +4915,7 @@ async function startUnits(book, units, count = sessionSize(), opts = {}) {
   if (!opts.placement) { if (!allow('q')) return; if (limitOf('q') !== UNL) count = Math.max(1, Math.min(count, leftOf('q'))); }
   const k = units.length, quota = Math.ceil(count / k);
   let types = opts.types || curTypes(); const diff = opts.diff || curDiff();
-  if (types !== 'mcq' && limitOf('written') !== UNL && leftOf('written') <= 0) { types = 'mcq'; toast(PL('Today’s written questions are used up: multiple choice for now. Plus has unlimited.', '今日的文字題已用完，暫時只有選擇題。Plus 無限使用。')); }
+  if (types !== 'mcq' && limitOf('written') !== UNL && leftOf('written') <= 0) { types = 'mcq'; toast(PL('Today’s written questions are used up: multiple choice for now. Standard has unlimited.', '今日的文字題已用完，暫時只有選擇題。標準計劃無限使用。')); }
   const pools = [];
   for (const u of units) {
     const want = 2 + levelShift(book.id, u.id);
@@ -4935,7 +4935,7 @@ async function startUnits(book, units, count = sessionSize(), opts = {}) {
 
 
 
-/* ---------- plans: Free, Plus and Pro ----------
+/* ---------- plans: Standard and Pro (internal id 'plus' = Standard) ----------
    One table decides what each plan includes; everything else asks it. Limits count per day or per week on
    this device (accounts and payments come later). While PrepBuddy is in testing everyone has Pro, and Settings
    (or ?plan=free in the address) previews the other plans, so their layouts can be shown. */
@@ -4945,14 +4945,16 @@ const TIERS = {
   free: { name: 'Free', zh: '免費', price: 0, year: 0, tag: ['Practise and fix mistakes. Free forever.', '練習、改正錯誤，永久免費。'],
     lim: { books: 1, q: 20, written: 3, lesson: 2, buddy: 10, hardDiff: 0, stars: 0, coach: 0, report: 0, test: 0, sched: 0, homework: 0, writing: 0, speaking: 0, mock: 0, voice: 0, forecast: 0, parent: 0 },
     pitch: ['', ''], has: [['Practice questions from your textbooks: multiple choice, plus 3 written a day', '課本練習題：選擇題，另每日 3 條文字題'], ['Learn mode lessons with Buddy', '學習模式課堂，有 Buddy 陪你'], ['Buddy hints on every question', '每條題目都有 Buddy 提示'], ['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Easy and Medium difficulty', '容易和中等難度'], ['Weekly activity report for parents', '家長每週練習報告']] },
-  plus: { name: 'Plus', zh: 'Plus', price: 98, year: 980, tag: ['Exam-ready at school', '應付校內考試'],
+  plus: { name: 'Standard', zh: '標準', price: 218, year: 2180, tag: ['Exam-ready at school', '應付校內考試'],
     lim: { books: 3, q: 80, written: UNL, lesson: 10, buddy: 60, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: 10, writing: 2, speaking: 2, mock: 0, voice: 0, forecast: 0, parent: 0 },
-    pitch: ['Everything in Free, plus:', 'Free 的全部功能，再加上：'], has: [['Unlimited written questions, marked by AI', '無限文字題，由 AI 批改'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
-  pro: { name: 'Pro', zh: 'Pro', price: 168, year: 1680, best: true, tag: ['A private DSE tutor, for less than one lesson a month', '私人 DSE 導師，每月比一堂補習更便宜'],
+    pitch: ['', ''], has: [['Practice questions from your textbooks, written answers marked by AI', '課本練習題，文字答案由 AI 批改'], ['Learn mode lessons with Buddy, and Buddy hints on every question', '學習模式課堂，每條題目都有 Buddy 提示'], ['Mistake book, reviews, notes, flashcards and 默書', '錯題簿、溫習、筆記、溫習卡和默書'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
+  pro: { name: 'Pro', zh: 'Pro', price: 298, year: 2980, best: true, tag: ['A private tutor, for less than one lesson a month', '私人導師，每月比一堂補習更便宜'],
     lim: { books: UNL, q: UNL, written: UNL, lesson: UNL, buddy: UNL, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: UNL, writing: UNL, speaking: UNL, mock: UNL, voice: 1, forecast: 1, parent: 1 },
-    pitch: ['Everything in Plus, plus:', 'Plus 的全部功能，再加上：'], has: [['DSE mock papers and printable worksheets', 'DSE 模擬試卷和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['A parent dashboard: today, this week, tests and what needs attention', '家長主頁：今日、本週、測驗和需要留意的地方']] },
+    pitch: ['Everything in Standard, plus:', '標準計劃的全部功能，再加上：'], has: [['Practice papers (school tests, 呈分試 or DSE) and printable worksheets', '模擬試卷（校內考試、呈分試或 DSE）和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['A parent dashboard: today, this week, tests and what needs attention', '家長主頁：今日、本週、測驗和需要留意的地方']] },
 };
-const PLAN_ORDER = ['free', 'plus', 'pro'];
+// No free plan (decided 14 Nov 2026): families start with a free trial; bursaries and vouchers cover families who can't pay.
+// 'free' stays defined only so an old preview setting on a device still works.
+const PLAN_ORDER = ['plus', 'pro'];
 // What each capability or allowance is, how it's counted, how it reads, and (for locked ones) what it does.
 const FEAT = {
   q: { per: 'day', en: ['New practice questions', 'question a day', 'questions a day'], zh: ['新練習題目', '題／日'] },
@@ -5064,12 +5066,13 @@ function renderPlans(hi) {
         ${p === cur ? `<button class="btn ghost" disabled>${PL('Your plan', '你的計劃')}</button>` : `<button class="btn ${P.best ? '' : 'ghost'}" data-pick="${p}">${p === 'free' ? PL('Use Free', '使用免費計劃') : PL(`Choose ${P.name}`, `選擇 ${P.zh}`)}</button>`}
       </section>`; }).join('')}</div>
     <section class="card pp-social"><span>${buddySVG('happy', 44)}</span><div><b>${PL('No student is left out', '不讓任何學生落後')}</b>
-      <span>${PL('Free is free forever. Families receiving CSSA or the full Student Finance grant can get Pro at no cost through the PrepBuddy bursary.', '免費計劃永久免費。領取綜援或全額學生資助的家庭，可透過 PrepBuddy 助學計劃免費使用 Pro。')}</span>
+      <span>${PL('Families receiving CSSA or the full Student Finance grant can get Pro at no cost through the PrepBuddy bursary. Schools and NGOs can ask us about sponsored places.', '領取綜援或全額學生資助的家庭，可透過 PrepBuddy 助學計劃免費使用 Pro。學校和社福機構可向我們查詢資助名額。')}</span>
       <button class="btn-sm" id="bursary">${PL('Apply for the bursary', '申請助學計劃')}</button></div></section>
     <section class="card pp-table"><h2>${PL('Compare plans', '比較計劃')}</h2><div class="pt-scroll"><table>
       <thead><tr><th></th>${PLAN_ORDER.map((p) => `<th class="${TIERS[p].best ? 'best' : ''}">${PL(TIERS[p].name, TIERS[p].zh)}</th>`).join('')}</tr></thead>
       <tbody>${Object.keys(FEAT).map((f) => `<tr><th>${PL(FEAT[f].en[0], FEAT[f].zh[0])}</th>${PLAN_ORDER.map((p) => cell(p, f)).join('')}</tr>`).join('')}
       ${ALWAYS.map((a) => `<tr><th>${PL(...a)}</th>${PLAN_ORDER.map(() => '<td class="pt-yes">✓</td>').join('')}</tr>`).join('')}</tbody></table></div></section>
+    <p class="pp-trial">${PL('Every family starts with a free trial of Pro.', '每個家庭都可以先免費試用 Pro。')}</p>
     <p class="hint" style="margin:0;text-align:center">${PL('Prices are a draft while PrepBuddy is in testing. Payments aren’t switched on yet: choosing a plan previews it on this device.', '測試期間價錢只是初稿，暫未接受付款：選擇計劃只會在這部裝置預覽。')}</p>
   </main>`;
   $app.querySelectorAll('[data-bill]').forEach((b) => (b.onclick = () => { local.planYearly = b.dataset.bill === 'y'; saveLocal(); renderPlans(hi); }));

@@ -242,7 +242,7 @@ export function reportHTML(r, opts = {}) {
         ${r.sr.b.length ? `<p><b>${T('New badges', '新徽章')}:</b> ${r.sr.b.map(esc).join(' · ')}</p>` : ''}
         ${r.sr.r.length ? `<p><b>${T('Rewards given', '已換領獎勵')}:</b> ${r.sr.r.map(esc).join(' · ')}</p>` : ''}
         <p class="rep-note">${T('Your child spends stars on rewards you set in PrepBuddy (Star shop → For parents). Each one needs your PIN.', '孩子可用星星換領你在 PrepBuddy 設定的獎勵（星星商店 → 家長專區），每次都需要你的密碼。')}</p></section>` : ''}
-      ${r.bs ? `<section class="rp-card rp-basic"><h2>${ri('book')} ${T('Want the full picture?', '想看完整報告？')}</h2><p>${T('With PrepBuddy Plus, this report also shows scores for each chapter, how ready your child is for each subject, 6-week trends, tests and mock papers, and thinking skills.', '升級 PrepBuddy Plus 後，報告會顯示各章分數、各科準備程度、6 星期趨勢、測驗及模擬試卷成績和思考能力。')}</p></section>` : ''}
+      ${r.bs ? `<section class="rp-card rp-basic"><h2>${ri('book')} ${T('Want the full picture?', '想看完整報告？')}</h2><p>${T('With PrepBuddy Standard, this report also shows scores for each chapter, how ready your child is for each subject, 6-week trends, tests and mock papers, and thinking skills.', '升級 PrepBuddy 標準計劃後，報告會顯示各章分數、各科準備程度、6 星期趨勢、測驗及模擬試卷成績和思考能力。')}</p></section>` : ''}
       <div class="rp-two" ${r.bs ? 'hidden' : ''}>
         ${skillsHTML(r)}
         <section class="rep-card"><h2>${ri('memory')} ${T('Remembering and fixing', '記憶與改正')}</h2>
