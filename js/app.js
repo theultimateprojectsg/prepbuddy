@@ -1448,14 +1448,7 @@ const SP_CRIT = ['Pronunciation & Delivery', 'Communication Strategies', 'Vocabu
 const spLevel = (fb, it) => (fb && fb.criteria ? wrLevel({ criteria: fb.criteria }, it && it.task && it.task.primary ? 'en_p' : 'en_a') : null);
 const fmtSecs = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 function spSave() { local.sp = (local.sp || []).slice(-15); saveLocal(); }
-function sayQuestion(text) {
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text); const v = dictVoice('en');
-    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
-    u.rate = 0.95; speechSynthesis.speak(u);
-  } catch (e) {}
-}
+function sayQuestion(text) { sayAloud(text, 'en'); }
 
 async function renderSpeaking(id, sub, qi) {
   const list = local.sp || [];
@@ -5462,7 +5455,7 @@ async function startSprint() {
 const lnx = { lang: null, busy: '', error: null, item: null, picks: {}, plays: 0, done: false };
 async function renderListening() {
   const x = lnx, it = x.item, L = (en, zh) => (it ? (it.lang === 'zh' ? zh : en) : SPK(en, zh));
-  if (!window.speechSynthesis) { $app.innerHTML = `${backTop({ name: 'home' }, 'Today')}<main class="pad stack g18 wrpage" style="flex:1"><h1 class="pagetitle">${SPK('Listening practice', '聆聽練習')}</h1><p class="hw-err">${SPK('This browser can’t read aloud. Please use Chrome, Edge or Safari.', '這個瀏覽器不能朗讀，請使用 Chrome、Edge 或 Safari。')}</p></main>`; return; }
+  if (!window.speechSynthesis && TTS_OFF) { $app.innerHTML = `${backTop({ name: 'home' }, 'Today')}<main class="pad stack g18 wrpage" style="flex:1"><h1 class="pagetitle">${SPK('Listening practice', '聆聽練習')}</h1><p class="hw-err">${SPK('This browser can’t read aloud. Please use Chrome, Edge or Safari.', '這個瀏覽器不能朗讀，請使用 Chrome、Edge 或 Safari。')}</p></main>`; return; }
   const score = it && x.done ? it.questions.filter((q, i) => x.picks[i] === q.answer).length : 0;
   $app.innerHTML = `
   ${backTop({ name: 'home' }, 'Today')}
@@ -5493,11 +5486,11 @@ async function renderListening() {
     catch (e) { x.busy = ''; x.error = wrErr(e); }
     if (view.name === 'listening') renderListening();
   }));
-  const pl = document.getElementById('lnPlay'); if (pl) pl.onclick = () => { x.plays++; sayAloud(it.passage); renderListening(); };
-  const ag = document.getElementById('lnAgain'); if (ag) ag.onclick = () => sayAloud(it.passage);
+  const pl = document.getElementById('lnPlay'); if (pl) pl.onclick = () => { x.plays++; sayAloud(it.passage, it.lang === 'zh' ? 'zh' : 'en'); renderListening(); };
+  const ag = document.getElementById('lnAgain'); if (ag) ag.onclick = () => sayAloud(it.passage, it.lang === 'zh' ? 'zh' : 'en');
   $app.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { x.picks[+b.dataset.q] = +b.dataset.o; renderListening(); }));
   const ck = document.getElementById('lnCheck'); if (ck) ck.onclick = () => {
-    try { speechSynthesis.cancel(); } catch (e) {}
+    stopSaying();
     x.done = true; const n = it.questions.filter((q, i) => x.picks[i] === q.answer).length;
     local.ln = [...(local.ln || []), { t: Date.now(), lang: it.lang, title: it.title, score: n, of: it.questions.length }].slice(-30); saveLocal();
     if (n >= Math.ceil(it.questions.length / 2)) addStars(n === it.questions.length ? 2 : 1, 'listening');
@@ -6100,15 +6093,27 @@ function questionSpeech(q) {
   else (q.parts || []).forEach((p) => parts.push(`${p.label || ''} ${p.prompt || ''}`));
   return parts.join('. ');
 }
-function sayAloud(text) {
+// Read any text aloud (questions, Buddy's replies, listening passages): the natural voice when the server has one,
+// otherwise the phone's own. lang: 'en' | 'yue' | 'cmn' | 'zh' (= the child's Chinese, Cantonese or Putonghua); guessed if left out.
+function sayAloud(text, lang) {
   try {
-    speechSynthesis.cancel();
+    stopSaying(); const my = ttsSeq;
     const t = plainSpeech(text); if (!t) return;
-    const zh = (t.match(/[\u3400-\u9fff]/g) || []).length > t.length / 4;
-    const u = new SpeechSynthesisUtterance(t), v = dictVoice(zh ? zhVoice() : 'en');
-    if (v) u.voice = v; u.lang = v ? v.lang : (zh ? (zhVoice() === 'cmn' ? 'zh-CN' : 'zh-HK') : 'en-GB');
-    u.rate = gradeBand() === 'p12' ? 0.85 : 0.95;
-    speechSynthesis.speak(u);
+    const zh = lang ? lang !== 'en' : (t.match(/[\u3400-\u9fff]/g) || []).length > t.length / 4;
+    const L = lang === 'yue' || lang === 'cmn' ? lang : zh ? zhVoice() : 'en';
+    const phone = () => {
+      if (!window.speechSynthesis || my !== ttsSeq) return;
+      const u = new SpeechSynthesisUtterance(t), v = dictVoice(L);
+      if (v) u.voice = v; u.lang = v ? v.lang : DL[L][2];
+      u.rate = gradeBand() === 'p12' ? 0.85 : 0.95;
+      speechSynthesis.speak(u);
+    };
+    (async () => {
+      const url = await ttsClip(t, L, 'normal').catch(() => null);
+      if (my !== ttsSeq) return;
+      if (url) { const a = ttsPlayer(); a.src = url; try { await a.play(); return; } catch (e) {} }
+      phone();
+    })();
   } catch (e) {}
 }
 // A small 🔊 on each of Buddy's replies (tutor, coach, homework, lessons), for primary children.
