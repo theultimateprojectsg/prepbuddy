@@ -40,6 +40,10 @@
     {
       "source": "/admin",
       "destination": "/admin.html"
+    },
+    {
+      "source": "/api/tts",
+      "destination": "/api/study?fn=tts"
     }
   ],
   "git": {

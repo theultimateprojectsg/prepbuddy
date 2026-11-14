@@ -763,6 +763,7 @@ window.addEventListener('popstate', (e) => {
 
 async function go(v) {
   try { if (window.speechSynthesis && VC.state === 'off') speechSynthesis.cancel(); } catch (e) {}
+  try { if (ttsEl) ttsEl.pause(); } catch (e) {}
   if ((v.name === 'paper' || (v.name === 'pick' && v.mode === 'mock')) && !allow('mock')) return; // plan checks before leaving the screen
   { const f = { homework: 'homework', writing: 'writing', speaking: 'speaking', stars: 'stars' }[v.name]; if (f && locked(f) && !TOURING) return upsell(f, 'locked'); }
   // a screen's back button pointing at the screen we came from = a real step back
@@ -1678,16 +1679,56 @@ function dictVoice(lang) {
   const score = (v) => (/Natural|Online|Neural|Premium|Enhanced/i.test(v.name) ? 4 : 0) + (/Google/i.test(v.name) ? 2 : 0) + (lang === 'en' && /en[-_]GB/i.test(v.lang) ? 1 : 0);
   return ok.sort((a, b) => score(b) - score(a))[0] || null;
 }
-function sayItem(text, lang, slow) {
-  if (!window.speechSynthesis) { toast(DT('This browser can’t read aloud. Try Chrome, Edge or Safari.', '這個瀏覽器不能朗讀，請用 Chrome、Edge 或 Safari。')); return; }
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  const v = dictVoice(lang);
-  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = DL[lang][2];
-  u.rate = slow ? 0.55 : 0.8;
-  speechSynthesis.speak(u);
-  return !!v;
+// Reading aloud: a natural voice from the server (Azure neural voices: HK Cantonese, Putonghua, British English),
+// kept on this device so each item is only fetched once. If the server has no voice set up, or there is no
+// connection, the phone's own voice is used. "teacher" = read it, pause, read it again (how HK teachers read 默書).
+let TTS_OFF = false, ttsEl = null, ttsSeq = 0;
+const TTS_URL = new Map();
+async function ttsClip(text, lang, mode) {
+  if (TTS_OFF) return null;
+  const k = `${lang}|${mode}|${text}`;
+  if (TTS_URL.has(k)) return TTS_URL.get(k);
+  const key = `/tts-cache/v1/${encodeURIComponent(k)}`;
+  let cache = null, blob = null;
+  try { cache = await caches.open('pb-tts'); const hit = await cache.match(key); if (hit) blob = await hit.blob(); } catch (e) {}
+  if (!blob) {
+    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json', 'x-access-code': local.code || '' }, body: JSON.stringify({ text, lang, mode }) }).catch(() => null);
+    if (!r) return null;
+    if (r.status === 501) { TTS_OFF = true; return null; }
+    if (!r.ok || !/audio/.test(r.headers.get('content-type') || '')) return null;
+    blob = await r.blob();
+    try { if (cache) await cache.put(key, new Response(blob, { headers: { 'content-type': 'audio/mpeg' } })); } catch (e) {}
+  }
+  const url = URL.createObjectURL(blob); TTS_URL.set(k, url); return url;
 }
+function ttsPlayer() { if (!ttsEl) { ttsEl = new Audio(); ttsEl.preload = 'auto'; } return ttsEl; }
+// iPhones only let a page play sound after a tap, so the player is "unlocked" with a silent clip on the first tap.
+document.addEventListener('pointerdown', function unlockTts() {
+  document.removeEventListener('pointerdown', unlockTts, true);
+  try { const a = ttsPlayer(); a.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA='; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+}, true);
+function stopSaying() { ttsSeq++; try { speechSynthesis.cancel(); } catch (e) {} if (ttsEl) { try { ttsEl.pause(); } catch (e) {} } }
+function phoneSay(text, lang, slow, teacher, my) {
+  if (!window.speechSynthesis) { toast(DT('This browser can’t read aloud. Try Chrome, Edge or Safari.', '這個瀏覽器不能朗讀，請用 Chrome、Edge 或 Safari。')); return; }
+  const one = () => { const u = new SpeechSynthesisUtterance(text); const v = dictVoice(lang); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = DL[lang][2]; u.rate = slow ? 0.55 : 0.8; return u; };
+  speechSynthesis.cancel();
+  const u = one();
+  if (teacher) u.onend = () => setTimeout(() => { if (my === ttsSeq) speechSynthesis.speak(one()); }, 1300);
+  speechSynthesis.speak(u);
+}
+function sayItem(text, lang, slow, teacher) {
+  stopSaying(); const my = ttsSeq;
+  const mode = slow ? 'slow' : teacher ? 'teacher' : 'normal';
+  (async () => {
+    const url = await ttsClip(text, lang, mode);
+    if (my !== ttsSeq) return;
+    if (url) { const a = ttsPlayer(); a.src = url; try { await a.play(); return; } catch (e) {} }
+    if (my === ttsSeq) phoneSay(text, lang, slow, teacher, my);
+  })();
+  return TTS_OFF ? !!dictVoice(lang) : true;
+}
+// Fetch the next item's clip early so it plays straight away.
+function ttsPrefetch(text, lang) { if (text && !TTS_OFF) ttsClip(text, lang, 'teacher').catch(() => {}); }
 try { speechSynthesis.getVoices(); } catch (e) {}
 const normDict = (s) => String(s || '').normalize('NFKC').toLowerCase().replace(/[\s，,。.、！!？?；;：:「」『』“”"'‘’()（）]/g, '');
 
@@ -1794,7 +1835,7 @@ function runDictation(L) {
     R.marks[i] = ok; saveLocal();
     R.k++; R.shown = false; R.typed = '';
     if (R.k >= R.order.length) return finish();
-    draw(); setTimeout(() => sayItem(L.items[R.order[R.k]], L.lang, false), 350);
+    draw(); setTimeout(() => sayItem(L.items[R.order[R.k]], L.lang, false, true), 350);
   };
   const draw = () => {
     const i = R.order[R.k], text = L.items[i], n = R.order.length;
@@ -1816,12 +1857,13 @@ function runDictation(L) {
         : `<button class="btn" id="show">${R.mode === 'type' ? DT('Check', '檢查') : DT('I’ve written it: show the answer', '寫好了，看答案')}</button>`}
     </main>`;
     const say = (slow) => { if (sayItem(text, L.lang, slow) === false) document.getElementById('novoice').hidden = false; };
+    ttsPrefetch(L.items[R.order[R.k + 1]], L.lang);
     document.getElementById('play').onclick = () => say(false);
     document.getElementById('again1').onclick = () => say(false);
     document.getElementById('slow').onclick = () => say(true);
-    if (!dictVoice(L.lang) && speechSynthesis.getVoices().length) document.getElementById('novoice').hidden = false;
+    if (TTS_OFF && !dictVoice(L.lang) && speechSynthesis.getVoices().length) document.getElementById('novoice').hidden = false;
     $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => { R.mode = local.dictMode = b.dataset.mode; saveLocal(); R.shown = false; draw(); }));
-    document.getElementById('quit').onclick = async () => { speechSynthesis.cancel(); if (!R.k || await confirmLeave({ title: DT('Stop this dictation?', '停止這次默書？'), body: DT('Words you’ve marked so far are saved.', '已核對的詞語會保存。'), leave: DT('Stop', '停止'), stay: DT('Keep going', '繼續') })) go({ name: 'dictation' }); };
+    document.getElementById('quit').onclick = async () => { stopSaying(); if (!R.k || await confirmLeave({ title: DT('Stop this dictation?', '停止這次默書？'), body: DT('Words you’ve marked so far are saved.', '已核對的詞語會保存。'), leave: DT('Stop', '停止'), stay: DT('Keep going', '繼續') })) go({ name: 'dictation' }); };
     const sh = document.getElementById('show'); if (sh) sh.onclick = () => { const t = document.getElementById('dtyped'); if (t) R.typed = t.value; R.shown = true; draw(); };
     const ty = document.getElementById('dtyped'); if (ty && !R.shown) { ty.focus(); ty.onkeydown = (e) => { if (e.key === 'Enter') sh.click(); }; }
     const y = document.getElementById('yes'); if (y) y.onclick = () => mark(true);
@@ -1829,7 +1871,7 @@ function runDictation(L) {
     const nx = document.getElementById('next'); if (nx) { nx.onclick = () => mark(okTyped); nx.focus(); }
   };
   draw();
-  setTimeout(() => sayItem(L.items[R.order[0]], L.lang, false), 500);
+  setTimeout(() => sayItem(L.items[R.order[0]], L.lang, false, true), 500);
 }
 
 /* ---------- Learn mode: a guided lesson before practising ----------
