@@ -3673,9 +3673,24 @@ async function renderLibrary(query) {
       <span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Search by title, subject or book code" aria-label="Search the library" autocomplete="off" value="${esc(query)}">
     </form>
+    <label class="card up-card">
+      <span class="up-ic" aria-hidden="true">${ICON.upload}</span>
+      <span class="stack" style="gap:2px;min-width:0"><b>${LANG === 'zh' ? '上載你自己的課本（PDF）' : 'Upload your own textbook (PDF)'}</b><span class="muted">${LANG === 'zh' ? '例如學校課本或作業的 PDF。PrepBuddy 會把它分成章節，並為每章出題。' : 'A PDF of your child’s school textbook or workbook. PrepBuddy splits it into chapters and makes practice for each one.'}</span></span>
+      <input type="file" id="file" accept="application/pdf,.pdf" style="position:absolute;width:1px;height:1px;opacity:0">
+    </label>
     <div id="chips"></div>
     <div id="results" class="stack g10" aria-live="polite"></div>
   </main>`;
+  // Families add only books they own, for their child's own study (content-copyright model, 13 Nov 2026): asked once per upload.
+  document.getElementById('file').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    if (limitOf('books') !== UNL && (await getBooks()).length >= limitOf('books')) return upsell('books', 'limit');
+    const zh = LANG === 'zh';
+    const ok = await confirmLeave({ title: zh ? '這是你家庭擁有的書嗎？' : 'Is this a book your family owns?', body: zh ? '請只上載你家庭擁有的課本或作業，供孩子自己溫習。書的內容只保存在這部裝置，不會與其他家庭分享。' : 'Please upload only textbooks or workbooks your family owns, for your child’s own study. The book stays on this device and is never shared with other families.', stay: zh ? '取消' : 'Cancel', leave: zh ? '是，上載' : 'Yes, upload it' });
+    if (!ok) return;
+    local.ownBooksOk = Date.now(); saveLocal();
+    uploadBook(f);
+  };
   const q = document.getElementById('q');
   const groupsAll = groupBySubject(list, subjectOf);
   let pickSubj = 'all';
