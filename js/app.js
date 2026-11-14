@@ -118,6 +118,7 @@ async function kindOfId(qid) {
   if (!bookKinds.has(id)) { const b = (await getBooks()).find((x) => x.id === id); bookKinds.set(id, kindOfBook(b)); }
   return bookKinds.get(id);
 }
+async function levelOfId(qid) { const id = String(qid || '').split(':')[0]; const b = (await getBooks()).find((x) => x.id === id); return (b && b.level) || ''; }
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const marksOf = (q) => (q.type === 'mcq' || q.type === 'graph' ? 1 : (q.parts || []).reduce((s, p) => s + p.marks, 0));
 // 'zh-HK' when the text is mostly Chinese characters, else 'en'.
@@ -5530,7 +5531,7 @@ async function doFill(book, unit, job) {
         if (k >= 0) { items[k] = { ...items[k], figure: true }; pages = shuffle([...figs]).slice(0, 2); }
       }
       let gen;
-      try { gen = await api('generate', { title, text, items, avoid, focus, kind: kindOfBook(book), lang: langOf(text), figures: pages ? pages.map((f) => f.img.split(',')[1]) : undefined, figureRegions: pages ? pages.map((f) => f.rects || []) : undefined }); }
+      try { gen = await api('generate', { title, text, items, avoid, focus, kind: kindOfBook(book), bookLevel: (book && book.level) || '', lang: langOf(text), figures: pages ? pages.map((f) => f.img.split(',')[1]) : undefined, figureRegions: pages ? pages.map((f) => f.rects || []) : undefined }); }
       catch (e) { if (e.status === 401 || e.status === 0) { stop = true; throw e; } if (!job.error) job.error = e; continue; }
       if (!gen.questions || !gen.questions.length) { if (++empty >= 2) stop = true; continue; }
       for (const q of gen.questions) {
@@ -5874,7 +5875,7 @@ async function makeDrill(q, idea, types, n = 2) {
     : q.type === 'mcq' ? [{ level: 2, type: 'mcq' }, { level: 2, type: 'short' }] : [{ level: 2, type: 'short' }, { level: 2, type: 'mcq' }];
   const items = pool.slice(0, n);
   const avoid = [(q.stem + ' ' + (q.parts || []).map((p) => p.prompt).join(' ')).slice(0, 200)];
-  const gen = await api('generate', { title, text, items, avoid, target: idea, kind: await kindOfId(q.id), lang: langOf(text) });
+  const gen = await api('generate', { title, text, items, avoid, target: idea, kind: await kindOfId(q.id), bookLevel: await levelOfId(q.id), lang: langOf(text) });
   const checked = await Promise.all((gen.questions || []).map((x) =>
     api('verify', { title, text, question: x }).then((v) => ({ x, v })).catch((e) => { if (e.status === 401) throw e; return { x, v: { passed: false } }; })));
   const passed = checked.filter((c) => c.v.passed && usable(c.x)).map((c) => c.x);

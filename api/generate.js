@@ -3,7 +3,7 @@
 // returns: { questions: [...] } in the same order as items (possibly fewer)
 
 const { GRADES, band } = require('../lib/learner');
-const { levelText, langNote, kindNote, KIND_RULES, LEVELS, GEN_SYSTEM, FIGURE_RULES, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
+const { levelText, langNote, kindNote, primaryEnRules, KIND_RULES, LEVELS, GEN_SYSTEM, FIGURE_RULES, callTool, sectionBlock, handler, httpError } = require('../lib/claude');
 
 const TYPES = { mcq: 'MCQ', graph: 'CHOOSE-THE-GRAPH', short: 'SHORT-ANSWER', structured: 'STRUCTURED', essay: 'ESSAY (extended writing)' };
 
@@ -24,12 +24,16 @@ module.exports = handler(async (body, usage) => {
   const avoid = (Array.isArray(body.avoid) ? body.avoid : []).slice(-40).map((s) => String(s).slice(0, 200));
 
   // How big written questions are depends on the student's grade (when a parent has set it).
-  const g = body.learner && String(body.learner.grade || '').toUpperCase();
-  const bd = GRADES.includes(g) ? band(g) : '';
+  // The student's grade decides; with no profile (e.g. admin starter questions) the book's level does.
+  const lg = body.learner && String(body.learner.grade || '').toUpperCase();
+  const bl = String(body.bookLevel || '').toUpperCase().replace(/^PRIMARY\s*/, 'P').replace(/^SECONDARY\s*/, 'S').trim();
+  const g = GRADES.includes(lg) ? lg : GRADES.includes(bl) ? bl : '';
+  const bd = g ? band(g) : '';
+  const primaryEn = body.kind === 'language' && (body.lang || 'en') === 'en' ? primaryEnRules(bd) : '';
   const SIZE = { p12: { structured: '2 short parts totalling 2-3 marks', short: '1 mark' }, p34: { structured: '2-3 short parts totalling 3-5 marks', short: '1-2 marks' },
     p56: { structured: '2-4 parts totalling 4-6 marks', short: '1-3 marks' } }[bd] || { structured: '2-4 parts totalling 4-8 marks', short: '2-3 marks' };
   const wanted = items.map((it, i) =>
-    `${i + 1}. A level ${it.level} ${TYPES[it.type]} ${it.figure && figures.length && it.type !== 'graph' ? 'FIGURE ' : ''}question. Level ${it.level} means: ${levelText(it.level, body.learner) || LEVELS[it.level]}` +
+    `${i + 1}. A level ${it.level} ${TYPES[it.type]} ${it.figure && figures.length && it.type !== 'graph' ? 'FIGURE ' : ''}question. Level ${it.level} means: ${levelText(it.level, body.learner || (g ? { grade: g } : null)) || LEVELS[it.level]}` +
     (it.type === 'structured' ? ` Give a short scenario or data in the stem, then ${SIZE.structured}.` : '') +
     (it.type === 'short' ? ` One part, ${SIZE.short}.` : '') +
     (it.type === 'essay' ? ' One part holding the writing task (genre, purpose, audience, about 200-400 words), with a rubric.' : '') +
@@ -51,7 +55,7 @@ module.exports = handler(async (body, usage) => {
       'Do not repeat the original question or simply reword it.'
     : '';
   const instruction =
-    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + (KIND_RULES[body.kind] !== undefined ? kindNote(body.kind) : '') + focusText + targetText +
+    `Write exactly these ${items.length} questions, in this order:\n${wanted}` + (KIND_RULES[body.kind] !== undefined ? kindNote(body.kind) : '') + (primaryEn ? `\n\n${primaryEn}` : '') + focusText + targetText +
     (figures.length && items.some((it) => it.figure) ? `\n\n${FIGURE_RULES}${regionText}` : '') + langNote(body.lang, 'write') +
     (avoid.length ? `\n\nQuestions already written for this section (test different ideas):\n- ${avoid.join('\n- ')}` : '');
 

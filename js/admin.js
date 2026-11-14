@@ -983,6 +983,9 @@ async function publish(details, codeIn) {
    4 questions per chapter (3 multiple choice at rising levels + 1 short written), each checked by the second AI
    exactly as in the app, published as the book's question bank. Students who add the book get them at once. */
 const STARTER = [{ level: 1, type: 'mcq' }, { level: 2, type: 'mcq' }, { level: 3, type: 'mcq' }, { level: 2, type: 'short' }];
+// Primary English books: 2 MCQs, 1 short written item and 1 cloze passage (the HK test formats); others as before.
+const STARTER_PEN = [{ level: 1, type: 'mcq' }, { level: 2, type: 'mcq' }, { level: 2, type: 'short' }, { level: 3, type: 'structured' }];
+const starterItems = (e) => (e.kind === 'language' && (e.lang || 'en') === 'en' && /^P[1-6]$/i.test(String(e.level || '').trim()) ? STARTER_PEN : STARTER);
 const okQ = (q) => q && (q.type === 'mcq' ? Array.isArray(q.options) && q.options.length === 4 && 'ABCD'.includes(q.correct_option || '?')
   : Array.isArray(q.parts) && q.parts.length > 0 && q.parts.every((p) => p && p.prompt && Array.isArray(p.mark_scheme) && p.marks > 0));
 async function makeBank(entry, units, existing = {}) {
@@ -995,7 +998,7 @@ async function makeBank(entry, units, existing = {}) {
   const one = async (u) => {
     if (!u.text || u.text.length < 300) return;
     let gen = null;
-    for (let t = 1; t <= 2 && !gen; t++) { try { gen = await aiApi('generate', { title: u.title, text: u.text, items: STARTER, kind: entry.kind, lang }); } catch (e) { if (t === 2) return; } }
+    for (let t = 1; t <= 2 && !gen; t++) { try { gen = await aiApi('generate', { title: u.title, text: u.text, items: starterItems(entry), kind: entry.kind, bookLevel: entry.level || '', lang }); } catch (e) { if (t === 2) return; } }
     const qs = (gen && gen.questions) || [];
     const passed = [];
     await Promise.all(qs.map(async (q, k) => {
