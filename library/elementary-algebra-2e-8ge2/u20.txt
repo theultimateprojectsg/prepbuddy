@@ -1,0 +1,713 @@
+3.4
+Solve Geometry Applications: Triangles, Rectangles, and the Pythagorean
+Theorem
+Learning Objectives
+By the end of this section, you will be able to:
+Solve applications using properties of triangles
+Use the Pythagorean Theorem
+Solve applications using rectangle properties
+BE PREPARED : : 3.12 Before you get started, take this readiness quiz.
+Simplify: 1
+2(6h).
+If you missed this problem, review Example 1.122.
+BE PREPARED : : 3.13
+The length of a rectangle is three less than the width. Let w represent the width. Write an expression for the length
+of the rectangle.
+If you missed this problem, review Example 1.26.
+BE PREPARED : : 3.14 Solve: A = 1
+2bh for b when A = 260 and h = 52.
+If you missed this problem, review Example 2.61.
+BE PREPARED : : 3.15 Simplify: 144.
+If you missed this problem, review Example 1.111.
+Solve Applications Using Properties of Triangles
+In this section we will use some common geometry formulas. We will adapt our problem-solving strategy so that we can
+solve geometry applications. The geometry formula will name the variables and give us the equation to solve. In addition,
+since these applications will all involve shapes of some sort, most people find it helpful to draw a figure and label it with
+the given information. We will include this in the first step of the problem solving strategy for geometry applications.
+HOW TO : : SOLVE GEOMETRY APPLICATIONS.
+Read the problem and make sure all the words and ideas are understood. Draw the figure and
+label it with the given information.
+Identify what we are looking for.
+Label what we are looking for by choosing a variable to represent it.
+Translate into an equation by writing the appropriate formula or model for the situation.
+Substitute in the given information.
+Solve the equation using good algebra techniques.
+Check the answer by substituting it back into the equation solved in step 5 and by making sure
+it makes sense in the context of the problem.
+Answer the question with a complete sentence.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Step 7.
+354 Chapter 3 Math Models
+We will start geometry applications by looking at the properties of triangles. Let’s review some basic facts about triangles.
+Triangles have three sides and three interior angles. Usually each side is labeled with a lowercase letter to match the
+uppercase letter of the opposite vertex.
+The plural of the word vertex is vertices. All triangles have three vertices. Triangles are named by their vertices: The triangle
+in Figure 3.4 is called △ABC.
+Figure 3.4 Triangle ABC has vertices A, B,
+and C. The lengths of the sides are a, b, and
+c.
+The three angles of a triangle are related in a special way. The sum of their measures is 180°. Note that we read m∠A
+as “the measure of angle A.” So in △ABC in Figure 3.4,
+m∠A + m∠B + m∠C = 180°
+Because the perimeter of a figure is the length of its boundary, the perimeter of △ABC is the sum of the lengths of its
+three sides.
+P = a + b + c
+To find the area of a triangle, we need to know its base and height. The height is a line that connects the base to the
+opposite vertex and makes a 90° angle with the base. We will draw △ABC again, and now show the height, h. See
+Figure 3.5.
+Figure 3.5 The formula for the area of
+△ABC is A = 1
+2bh, where b is the
+base and h is the height.
+Triangle Properties
+For △ABC
+Angle measures:
+Chapter 3 Math Models 355
+m∠A + m∠B + m∠C = 180
+• The sum of the measures of the angles of a triangle is 180°.
+Perimeter:
+P = a + b + c
+• The perimeter is the sum of the lengths of the sides of the triangle.
+Area:
+A = 1
+2bh, b = base, h = height
+• The area of a triangle is one-half the base times the height.
+The measures of two angles of a triangle are 55 and 82 degrees. Find the measure of the third angle.
+Step 1. Read the problem. Draw the figure and label it with the
+given information.
+Step 2. Identify what you are looking for. the measure of the third angle in a
+triangle
+Step 3. Name. Choose a variable to represent it. Let x = the measure of the angle.
+Step 4. Translate.
+Write the appropriate formula and substitute. m ∠ A + m ∠ B + m ∠ C = 180
+Step 5. Solve the equation. 55 + 82 + x = 180
+137 + x = 180
+x = 43
+Step 6. Check.
+55 + 82 + 43 ≟ 180
+180 = 180 ✓
+Step 7. Answer the question. The measure of the third angle is 43
+degrees.
+The measures of two angles of a triangle are 31 and 128 degrees. Find the measure of the third angle.
+The measures of two angles of a triangle are 49 and 75 degrees. Find the measure of the third angle.
+The perimeter of a triangular garden is 24 feet. The lengths of two sides are four feet and nine feet. How long is the third
+356 Chapter 3 Math Models
+side?
+Step 1. Read the problem. Draw the figure and label it with the given
+information.
+Step 2. Identify what you are looking for. length of the third side of a
+triangle
+Step 3. Name. Choose a variable to represent it. Let c = the third side.
+Step 4. Translate.
+Write the appropriate formula and substitute.
+Substitute in the given information.
+Step 5. Solve the equation.
+Step 6. Check.
+P = a + b + c
+24 ≟ 4 + 9 + 11
+24 = 24 ✓
+Step 7. Answer the question. The third side is 11 feet long.
+The perimeter of a triangular garden is 48 feet. The lengths of two sides are 18 feet and 22 feet. How long is the
+third side?
+The lengths of two sides of a triangular window are seven feet and five feet. The perimeter is 18 feet. How long is
+the third side?
+The area of a triangular church window is 90 square meters. The base of the window is 15 meters. What is the window’s
+height?
+Chapter 3 Math Models 357
+Step 1. Read the problem. Draw the figure and label it with the given
+information.
+Area = 90m2
+Step 2. Identify what you are looking for. height of a triangle
+Step 3. Name. Choose a variable to represent it. Let h = the height.
+Step 4. Translate.
+Write the appropriate formula.
+Substitute in the given information.
+Step 5. Solve the equation.
+Step 6. Check.
+A = 1
+2bh
+90 ≟ 1
+2 ⋅ 15 ⋅ 12
+90 = 90 ✓
+Step 7. Answer the question. The height of the triangle is 12
+meters.
+The area of a triangular painting is 126 square inches. The base is 18 inches. What is the height?
+TRY IT : : 3.72 A triangular tent door has area 15 square feet. The height is five feet. What is the base?
+The triangle properties we used so far apply to all triangles. Now we will look at one specific type of triangle—a right
+triangle. A right triangle has one 90° angle, which we usually mark with a small square in the corner.
+Right Triangle
+A right triangle has one 90° angle, which is often marked with a square at the vertex.
+358 Chapter 3 Math Models
+One angle of a right triangle measures 28°. What is the measure of the third angle?
+Step 1. Read the problem. Draw the figure and label it with the given
+information.
+Step 2. Identify what you are looking for. the measure of an angle
+Step 3. Name. Choose a variable to represent it. Let x = the measure of an
+angle.
+Step 4. Translate. m ∠ A + m ∠ B + m ∠ C = 180
+Write the appropriate formula and substitute. x + 90 + 28 = 180
+Step 5. Solve the equation. x + 118 = 180
+x = 62
+Step 6. Check.
+180 ≟ 90 + 28 + 62
+180 = 180 ✓
+Step 7. Answer the question. The measure of the third angle
+is 62°.
+TRY IT : : 3.73 One angle of a right triangle measures 56°. What is the measure of the other small angle?
+TRY IT : : 3.74 One angle of a right triangle measures 45°. What is the measure of the other small angle?
+In the examples we have seen so far, we could draw a figure and label it directly after reading the problem. In the next
+example, we will have to define one angle in terms of another. We will wait to draw the figure until we write expressions
+for all the angles we are looking for.
+The measure of one angle of a right triangle is 20 degrees more than the measure of the smallest angle. Find the
+measures of all three angles.
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. the measures of all three angles
+Step 3. Name. Choose a variable to represent it.
+Let a = 1st angle.
+a + 20 = 2nd angle
+90 = 3rd angle (the right angle)
+Chapter 3 Math Models 359
+Draw the figure and label it with the given information
+Step 4. Translate
+Write the appropriate formula.
+Substitute into the formula.
+Step 5. Solve the equation.
+90 third angle
+Step 6. Check.
+35 + 55 + 90 ≟ 180
+180 = 180 ✓
+Step 7. Answer the question. The three angles measure 35°, 55°, and 90°.
+The measure of one angle of a right triangle is 50° more than the measure of the smallest angle. Find the
+measures of all three angles.
+The measure of one angle of a right triangle is 30° more than the measure of the smallest angle. Find the
+measures of all three angles.
+Use the Pythagorean Theorem
+We have learned how the measures of the angles of a triangle relate to each other. Now, we will learn how the lengths of
+the sides relate to each other. An important property that describes the relationship among the lengths of the three sides
+of a right triangle is called the Pythagorean Theorem. This theorem has been used around the world since ancient times.
+It is named after the Greek philosopher and mathematician, Pythagoras, who lived around 500 BC.
+Before we state the Pythagorean Theorem, we need to introduce some terms for the sides of a triangle. Remember that a
+right triangle has a 90° angle, marked with a small square in the corner. The side of the triangle opposite the 90° angle
+is called the hypotenuse and each of the other sides are called legs.
+The Pythagorean Theorem tells how the lengths of the three sides of a right triangle relate to each other. It states that in
+any right triangle, the sum of the squares of the lengths of the two legs equals the square of the length of the hypotenuse.
+360 Chapter 3 Math Models
+In symbols we say: in any right triangle, a2 + b2 = c2, where a and b are the lengths of the legs and c is the length of
+the hypotenuse.
+Writing the formula in every exercise and saying it aloud as you write it, may help you remember the Pythagorean
+Theorem.
+The Pythagorean Theorem
+In any right triangle, a2 + b2 = c2.
+where a and b are the lengths of the legs, c is the length of the hypotenuse.
+To solve exercises that use the Pythagorean Theorem, we will need to find square roots. We have used the notation m
+and the definition:
+If m = n2, then m = n, for n ≥ 0.
+For example, we found that 25 is 5 because 25 = 52.
+Because the Pythagorean Theorem contains variables that are squared, to solve for the length of a side in a right triangle,
+we will have to use square roots.
+Use the Pythagorean Theorem to find the length of the hypotenuse shown below.
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. the length of the hypotenuse of the triangle
+Step 3. Name. Choose a variable to represent it.
+Label side c on the figure.
+Let c = the length of the hypotenuse.
+Step 4. Translate.
+Write the appropriate formula. a2 + b2 = c2
+Substitute. 32 + 42 = c2
+Step 5. Solve the equation. 9 + 16 = c2
+Chapter 3 Math Models 361
+Simplify. 25 = c2
+Use the definition of square root. 25 = c
+Simplify. 5 = c
+Step 6. Check.
+Step 7. Answer the question. The length of the hypotenuse is 5.
+Use the Pythagorean Theorem to find the length of the hypotenuse in the triangle shown below.
+Use the Pythagorean Theorem to find the length of the hypotenuse in the triangle shown below.
+Use the Pythagorean Theorem to find the length of the leg shown below.
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. the length of the leg of the triangle
+Step 3. Name. Choose a variable to represent it. Let b = the leg of the triangle.
+362 Chapter 3 Math Models
+Lable side b.
+Step 4. Translate
+Write the appropriate formula. a2 + b2 = c2
+Substitute. 52 + b2 = 132
+Step 5. Solve the equation. 25 + b2 = 169
+Isolate the variable term. b2 = 144
+Use the definition of square root. b2 = 144
+Simplify. b = 12
+Step 6. Check.
+Step 7. Answer the question. The length of the leg is 12.
+TRY IT : : 3.79 Use the Pythagorean Theorem to find the length of the leg in the triangle shown below.
+TRY IT : : 3.80 Use the Pythagorean Theorem to find the length of the leg in the triangle shown below.
+Chapter 3 Math Models 363
+Kelvin is building a gazebo and wants to brace each corner by placing a 10′′ piece of wood diagonally as shown above.
+If he fastens the wood so that the ends of the brace are the same distance from the corner, what is the length of the legs
+of the right triangle formed? Approximate to the nearest tenth of an inch.
+Step 1. Read the problem.
+Step 2. Identify what we are looking
+for.
+the distance from the corner that the bracket should be
+attached
+Step 3. Name. Choose a variable to
+represent it. Let x = the distance from the corner.
+Step 4. Translate
+Write the appropriate formula and
+substitute.
+a2 + b2 = c2
+x2 + x2 = 102
+Step 5. Solve the equation.
+Isolate the variable.
+Use the definition of square root.
+Simplify. Approximate to the nearest
+tenth.
+2x2 = 100
+x2 = 50
+x = 50
+x ≈ 7.1
+Step 6. Check.
+a2 + b2 = c2
+(7.1)2 + (7.1)2 ≈ 102 Yes.
+Step 7. Answer the question. Kelvin should fasten each piece of wood approximately 7.1"
+from the corner.
+Table 3.10
+364 Chapter 3 Math Models
+John puts the base of a 13-foot ladder five feet from the wall of his house as shown below. How far up the wall
+does the ladder reach?
+Randy wants to attach a 17 foot string of lights to the top of the 15 foot mast of his sailboat, as shown below. How
+far from the base of the mast should he attach the end of the light string?
+Solve Applications Using Rectangle Properties
+You may already be familiar with the properties of rectangles. Rectangles have four sides and four right (90°) angles. The
+opposite sides of a rectangle are the same length. We refer to one side of the rectangle as the length, L, and its adjacent
+side as the width, W.
+The distance around this rectangle is L + W + L + W, or 2L + 2W. This is the perimeter, P, of the rectangle.
+P = 2L + 2W
+What about the area of a rectangle? Imagine a rectangular rug that is 2-feet long by 3-feet wide. Its area is 6 square feet.
+There are six squares in the figure.
+Chapter 3 Math Models 365
+A = 6
+A = 2 · 3
+A = L · W
+The area is the length times the width.
+The formula for the area of a rectangle is A = LW.
+Properties of Rectangles
+Rectangles have four sides and four right (90°) angles.
+The lengths of opposite sides are equal.
+The perimeter of a rectangle is the sum of twice the length and twice the width.
+P = 2L + 2W
+The area of a rectangle is the product of the length and the width.
+A = L · W
+The length of a rectangle is 32 meters and the width is 20 meters. What is the perimeter?
+Step 1. Read the problem.
+Draw the figure and label it with the given information.
+Step 2. Identify what you are looking for. the perimeter of a rectangle
+Step 3. Name. Choose a variable to represent it. Let P = the perimeter.
+Step 4. Translate.
+Write the appropriate formula.
+Substitute.
+Step 5. Solve the equation.
+366 Chapter 3 Math Models
+Step 6. Check.
+P ≟ 104
+20 + 32 + 20 + 32 ≟ 104
+104 = 104 ✓
+Step 7. Answer the question. The perimeter of the rectangle is 104 meters.
+TRY IT : : 3.83 The length of a rectangle is 120 yards and the width is 50 yards. What is the perimeter?
+TRY IT : : 3.84 The length of a rectangle is 62 feet and the width is 48 feet. What is the perimeter?
+The area of a rectangular room is 168 square feet. The length is 14 feet. What is the width?
+Step 1. Read the problem.
+Draw the figure and label it with the given information.
+Step 2. Identify what you are looking for. the width of a rectangular room
+Step 3. Name. Choose a variable to represent it. Let W = the width.
+Step 4. Translate.
+Write the appropriate formula. A = LW
+Substitute. 168 = 14W
+Step 5. Solve the equation.
+14 = 14W
+12 = W
+Step 6. Check.
+A = LW
+168 ≟ 14 ⋅ 12
+168 = 168 ✓
+Chapter 3 Math Models 367
+Step 7. Answer the question. The width of the room is 12 feet.
+TRY IT : : 3.85 The area of a rectangle is 598 square feet. The length is 23 feet. What is the width?
+TRY IT : : 3.86 The width of a rectangle is 21 meters. The area is 609 square meters. What is the length?
+Find the length of a rectangle with perimeter 50 inches and width 10 inches.
+Step 1. Read the problem.
+Draw the figure and label it with the given information.
+Step 2. Identify what you are looking for. the length of the rectangle
+Step 3. Name. Choose a variable to represent it. Let L = the length.
+Step 4. Translate.
+Write the appropriate formula.
+Substitute.
+Step 5. Solve the equation.
+Step 6. Check.
+P = 50
+15 + 10 + 15 + 10 ≟ 50
+50 = 50 ✓
+Step 7. Answer the question. The length is 15 inches.
+TRY IT : : 3.87 Find the length of a rectangle with: perimeter 80 and width 25.
+TRY IT : : 3.88 Find the length of a rectangle with: perimeter 30 and width 6.
+368 Chapter 3 Math Models
+We have solved problems where either the length or width was given, along with the perimeter or area; now we will learn
+how to solve problems in which the width is defined in terms of the length. We will wait to draw the figure until we write
+an expression for the width so that we can label one side with that expression.
+The width of a rectangle is two feet less than the length. The perimeter is 52 feet. Find the length and width.
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. the length and width of a
+rectangle
+Step 3. Name. Choose a variable to represent it.
+Since the width is defined in terms of the length, we let L = length. The width
+is two feet less than the length, so we let L − 2 = width.
+P = 52 ft
+Step 4. Translate.
+Write the appropriate formula. The formula for the perimeter of a rectangle
+relates all the information. P = 2L + 2W
+Substitute in the given information. 52 = 2L + 2(L − 2)
+Step 5. Solve the equation. 52 = 2L + 2L − 4
+Combine like terms. 52 = 4L − 4
+Add 4 to each side. 56 = 4L
+Divide by 4.
+4 = 4L
+14 = L
+The length is 14 feet.
+Now we need to find the width. The width is L − 2 .
+The width is 12 feet.
+Step 6. Check.
+Since 14 + 12 + 14 + 12 = 52 , this works!
+Chapter 3 Math Models 369
+Step 7. Answer the question. The length is 14 feet and
+the width is 12 feet.
+The width of a rectangle is seven meters less than the length. The perimeter is 58 meters. Find the length and
+width.
+The length of a rectangle is eight feet more than the width. The perimeter is 60 feet. Find the length and width.
+The length of a rectangle is four centimeters more than twice the width. The perimeter is 32 centimeters. Find the length
+and width.
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. the length and the width
+Step 3. Name. Choose a variable to represent the width.
+The length is four more than twice the width.
+Step 4. Translate
+Write the appropriate formula.
+Substitute in the given information.
+Step 5. Solve the equation.
+The length is 12 cm.
+Step 6. Check.
+P = 2L + 2W
+32 ≟ 2 ⋅ 12 + 2 ⋅ 4
+32 = 32 ✓
+370 Chapter 3 Math Models
+Step 7. Answer the question. The length is 12 cm and the width is 4 cm.
+The length of a rectangle is eight more than twice the width. The perimeter is 64. Find the length and width.
+The width of a rectangle is six less than twice the length. The perimeter is 18. Find the length and width.
+The perimeter of a rectangular swimming pool is 150 feet. The length is 15 feet more than the width. Find the length and
+width.
+Step 1. Read the problem.
+Draw the figure and label it with the given
+information.
+P = 150 ft
+Step 2. Identify what you are looking for. the length and the width of the pool
+Step 3. Name.
+Choose a variable to represent the width.
+The length is 15 feet more than the width.
+Step 4. Translate
+Write the appropriate formula.
+Substitute.
+Step 5. Solve the equation.
+Step 6. Check.
+P = 2L + 2W
+150 ≟ 2⎛
+⎝ 45⎞
+⎠ + 2⎛
+⎝ 30⎞
+150 = 150 ✓
+Chapter 3 Math Models 371
+Step 7. Answer the question. The length of the pool is 45 feet and the width is 30
+feet.
+The perimeter of a rectangular swimming pool is 200 feet. The length is 40 feet more than the width. Find the
+length and width.
+The length of a rectangular garden is 30 yards more than the width. The perimeter is 300 yards. Find the length
+and width.
+372 Chapter 3 Math Models
+Practice Makes Perfect
+Solving Applications Using Triangle Properties
+In the following exercises, solve using triangle properties.
+211. The measures of two angles of
+a triangle are 26 and 98 degrees.
+Find the measure of the third
+angle.
+212. The measures of two angles
+of a triangle are 61 and 84
+degrees. Find the measure of the
+third angle.
+213. The measures of two angles
+of a triangle are 105 and 31
+degrees. Find the measure of the
+third angle.
+214. The measures of two angles
+of a triangle are 47 and 72
+degrees. Find the measure of the
+third angle.
+215. The perimeter of a triangular
+pool is 36 yards. The lengths of
+two sides are 10 yards and 15
+yards. How long is the third side?
+216. A triangular courtyard has
+perimeter 120 meters. The lengths
+of two sides are 30 meters and 50
+meters. How long is the third
+side?
+217. If a triangle has sides 6 feet
+and 9 feet and the perimeter is 23
+feet, how long is the third side?
+218. If a triangle has sides 14
+centimeters and 18 centimeters
+and the perimeter is 49
+centimeters, how long is the third
+side?
+219. A triangular flag has base one
+foot and height 1.5 foot. What is
+its area?
+220. A triangular window has base
+eight feet and height six feet.
+What is its area?
+221. What is the base of a triangle
+with area 207 square inches and
+height 18 inches?
+222. What is the height of a
+triangle with area 893 square
+inches and base 38 inches?
+223. One angle of a right triangle
+measures 33 degrees. What is the
+measure of the other small
+angle?
+224. One angle of a right triangle
+measures 51 degrees. What is the
+measure of the other small
+angle?
+225. One angle of a right triangle
+measures 22.5 degrees. What is
+the measure of the other small
+angle?
+226. One angle of a right triangle
+measures 36.5 degrees. What is
+the measure of the other small
+angle?
+227. The perimeter of a triangle is
+39 feet. One side of the triangle is
+one foot longer than the second
+side. The third side is two feet
+longer than the second side. Find
+the length of each side.
+228. The perimeter of a triangle is
+35 feet. One side of the triangle
+is five feet longer than the second
+side. The third side is three feet
+longer than the second side. Find
+the length of each side.
+229. One side of a triangle is twice
+the shortest side. The third side is
+five feet more than the shortest
+side. The perimeter is 17 feet. Find
+the lengths of all three sides.
+230. One side of a triangle is three
+times the shortest side. The third
+side is three feet more than the
+shortest side. The perimeter is 13
+feet. Find the lengths of all three
+sides.
+231. The two smaller angles of a
+right triangle have equal
+measures. Find the measures of
+all three angles.
+232. The measure of the smallest
+angle of a right triangle is 20° less
+than the measure of the next
+larger angle. Find the measures of
+all three angles.
+233. The angles in a triangle are
+such that one angle is twice the
+smallest angle, while the third
+angle is three times as large as the
+smallest angle. Find the measures
+of all three angles.
+234. The angles in a triangle are
+such that one angle is 20° more
+than the smallest angle, while the
+third angle is three times as large
+as the smallest angle. Find the
+measures of all three angles.
+3.4 EXERCISES
+Chapter 3 Math Models 373
+Use the Pythagorean Theorem
+In the following exercises, use the Pythagorean Theorem to find the length of the hypotenuse.
+235. 236. 237.
+238.
+In the following exercises, use the Pythagorean Theorem to find the length of the leg. Round to the nearest tenth, if necessary.
+239. 240. 241.
+242. 243. 244.
+245. 246.
+374 Chapter 3 Math Models
+In the following exercises, solve using the Pythagorean Theorem. Approximate to the nearest tenth, if necessary.
+247. A 13-foot string of lights will be attached to the top
+of a 12-foot pole for a holiday display, as shown below.
+How far from the base of the pole should the end of the
+string of lights be anchored?
+248. Pam wants to put a banner across her garage
+door, as shown below, to congratulate her son for his
+college graduation. The garage door is 12 feet high and
+16 feet wide. How long should the banner be to fit the
+garage door?
+249. Chi is planning to put a path of paving stones
+through her flower garden, as shown below. The flower
+garden is a square with side 10 feet. What will the
+length of the path be?
+250. Brian borrowed a 20 foot extension ladder to use
+when he paints his house. If he sets the base of the
+ladder 6 feet from the house, as shown below, how far
+up will the top of the ladder reach?
+Solve Applications Using Rectangle Properties
+In the following exercises, solve using rectangle properties.
+251. The length of a rectangle is 85
+feet and the width is 45 feet. What
+is the perimeter?
+252. The length of a rectangle is 26
+inches and the width is 58 inches.
+What is the perimeter?
+253. A rectangular room is 15 feet
+wide by 14 feet long. What is its
+perimeter?
+254. A driveway is in the shape of
+a rectangle 20 feet wide by 35 feet
+long. What is its perimeter?
+255. The area of a rectangle is 414
+square meters. The length is 18
+meters. What is the width?
+256. The area of a rectangle is 782
+square centimeters. The width is
+17 centimeters. What is the
+length?
+257. The width of a rectangular
+window is 24 inches. The area is
+624 square inches. What is the
+length?
+258. The length of a rectangular
+poster is 28 inches. The area is
+1316 square inches. What is the
+width?
+259. Find the length of a rectangle
+with perimeter 124 and width 38.
+260. Find the width of a rectangle
+with perimeter 92 and length 19.
+261. Find the width of a rectangle
+with perimeter 16.2 and length
+3.2.
+262. Find the length of a rectangle
+with perimeter 20.2 and width 7.8.
+Chapter 3 Math Models 375
+263. The length of a rectangle is
+nine inches more than the width.
+The perimeter is 46 inches. Find
+the length and the width.
+264. The width of a rectangle is
+eight inches more than the length.
+The perimeter is 52 inches. Find
+the length and the width.
+265. The perimeter of a rectangle
+is 58 meters. The width of the
+rectangle is five meters less than
+the length. Find the length and the
+width of the rectangle.
+266. The perimeter of a rectangle
+is 62 feet. The width is seven feet
+less than the length. Find the
+length and the width.
+267. The width of the rectangle is
+0.7 meters less than the length.
+The perimeter of a rectangle is
+52.6 meters. Find the dimensions
+of the rectangle.
+268. The length of the rectangle
+is 1.1 meters less than the width.
+The perimeter of a rectangle is
+49.4 meters. Find the dimensions
+of the rectangle.
+269. The perimeter of a rectangle
+is 150 feet. The length of the
+rectangle is twice the width. Find
+the length and width of the
+rectangle.
+270. The length of a rectangle is
+three times the width. The
+perimeter of the rectangle is 72
+feet. Find the length and width of
+the rectangle.
+271. The length of a rectangle is
+three meters less than twice the
+width. The perimeter of the
+rectangle is 36 meters. Find the
+dimensions of the rectangle.
+272. The length of a rectangle is
+five inches more than twice the
+width. The perimeter is 34 inches.
+Find the length and width.
+273. The perimeter of a
+rectangular field is 560 yards. The
+length is 40 yards more than the
+width. Find the length and width
+of the field.
+274. The perimeter of a
+rectangular atrium is 160 feet. The
+length is 16 feet more than the
+width. Find the length and width
+of the atrium.
+275. A rectangular parking lot has
+perimeter 250 feet. The length is
+five feet more than twice the
+width. Find the length and width
+of the parking lot.
+276. A rectangular rug has
+perimeter 240 inches. The length
+is 12 inches more than twice the
+width. Find the length and width
+of the rug.
+Everyday Math
+277. Christa wants to put a fence around her triangular
+flowerbed. The sides of the flowerbed are six feet, eight
+feet and 10 feet. How many feet of fencing will she
+need to enclose her flowerbed?
+278. Jose just removed the children’s playset from his
+back yard to make room for a rectangular garden. He
+wants to put a fence around the garden to keep out
+the dog. He has a 50 foot roll of fence in his garage
+that he plans to use. To fit in the backyard, the width of
+the garden must be 10 feet. How long can he make the
+other length?
+Writing Exercises
+279. If you need to put tile on your kitchen floor, do you
+need to know the perimeter or the area of the kitchen?
+Explain your reasoning.
+280. If you need to put a fence around your backyard,
+do you need to know the perimeter or the area of the
+backyard? Explain your reasoning.
+281. Look at the two figures below.
+a Which figure looks like it has the larger area?
+b Which looks like it has the larger perimeter?
+c Now calculate the area and perimeter of each
+figure.
+d Which has the larger area?
+e Which has the larger perimeter?
+282. Write a geometry word problem that relates to
+your life experience, then solve it and explain all your
+steps.
+376 Chapter 3 Math Models
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b What does this checklist tell you about your mastery of this section? What steps will you take to improve?
+Chapter 3 Math Models 377

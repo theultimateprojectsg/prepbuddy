@@ -1,0 +1,314 @@
+7.5
+General Strategy for Factoring Polynomials
+Learning Objectives
+By the end of this section, you will be able to:
+Recognize and use the appropriate method to factor a polynomial completely
+BE PREPARED : : 7.15 Before you get started, take this readiness quiz.
+Factor y2 − 2y − 24 .
+If you missed this problem, review Example 7.23.
+BE PREPARED : : 7.16 Factor 3t2 + 17t + 10 .
+If you missed this problem, review Example 7.38.
+BE PREPARED : : 7.17 Factor 36p2 − 60p + 25 .
+If you missed this problem, review Example 7.42.
+BE PREPARED : : 7.18 Factor 5x2 − 80 .
+If you missed this problem, review Example 7.52.
+Recognize and Use the Appropriate Method to Factor a Polynomial Completely
+You have now become acquainted with all the methods of factoring that you will need in this course. (In your next algebra
+course, more methods will be added to your repertoire.) The figure below summarizes all the factoring methods we have
+covered. Factor polynomials. outlines a strategy you should use when factoring polynomials.
+Figure 7.4
+Chapter 7 Factoring 869
+Remember, a polynomial is completely factored if, other than monomials, its factors are prime!
+Factor completely: 4x5 + 12x4 .
+Is there a GCF? Yes, 4x4. 4x5 + 12x4
+Factor out the GCF. 4x4 (x + 3)
+In the parentheses, is it a binomial, a
+trinomial, or are there more than three terms? Binomial.
+Is it a sum? Yes.
+Of squares? Of cubes? No.
+Check.
+Is the expression factored completely? Yes.
+Multiply.
+4x4 (x + 3)
+4x4 · x + 4x4 · 3
+4x5 + 12x4 ✓
+TRY IT : : 7.117 Factor completely: 3a4 + 18a3 .
+HOW TO : : FACTOR POLYNOMIALS.
+Is there a greatest common factor?
+◦ Factor it out.
+Is the polynomial a binomial, trinomial, or are there more than three terms?
+◦ If it is a binomial:
+Is it a sum?
+▪ Of squares? Sums of squares do not factor.
+▪ Of cubes? Use the sum of cubes pattern.
+Is it a difference?
+▪ Of squares? Factor as the product of conjugates.
+▪ Of cubes? Use the difference of cubes pattern.
+◦ If it is a trinomial:
+Is it of the form x2 + bx + c ? Undo FOIL.
+Is it of the form ax2 + bx + c ?
+▪ If a and c are squares, check if it fits the trinomial square pattern.
+▪ Use the trial and error or “ac” method.
+◦ If it has more than three terms:
+Use the grouping method.
+Check.
+◦ Is it factored completely?
+◦ Do the factors multiply back to the original polynomial?
+Step 1.
+Step 2.
+Step 3.
+870 Chapter 7 Factoring
+TRY IT : : 7.118 Factor completely: 45b6 + 27b5 .
+Factor completely: 12x2 − 11x + 2 .
+Is there a GCF? No.
+Is it a binomial, trinomial, or are
+there more than three terms? Trinomial.
+Are a and c perfect squares? No, a = 12,
+not a perfect square.
+Use trial and error or the “ac” method.
+We will use trial and error here.
+Check.
+(3x − 2)(4x − 1)
+12x2 − 3x − 8x + 2
+12x2 − 11x + 2 ✓
+TRY IT : : 7.119 Factor completely: 10a2 − 17a + 6 .
+TRY IT : : 7.120 Factor completely: 8x2 − 18x + 9 .
+Factor completely: g3 + 25g .
+Chapter 7 Factoring 871
+Is there a GCF? Yes, g. g3 + 25g
+Factor out the GCF. g⎛
+⎝g2 + 25⎞
+In the parentheses, is it a binomial, trinomial,
+or are there more than three terms? Binomial.
+Is it a sum ? Of squares? Yes. Sums of squares are prime.
+Check.
+Is the expression factored completely? Yes.
+Multiply.
+g⎛
+⎝g2 + 25⎞
+g3 + 25g ✓
+TRY IT : : 7.121 Factor completely: x3 + 36x .
+TRY IT : : 7.122 Factor completely: 27y2 + 48 .
+Factor completely: 12y2 − 75 .
+Is there a GCF? Yes, 3. 12y2 − 75
+Factor out the GCF. 3⎛
+⎝4y2 − 25⎞
+In the parentheses, is it a binomial, trinomial,
+or are there more than three terms? Binomial.
+Is it a sum? No.
+Is it a difference? Of squares or cubes? Yes, squares. 3⎛
+⎝⎛
+⎝2y⎞
+2 − (5)2⎞
+Write as a product of conjugates. 3⎛
+⎝2y − 5⎞
+⎠⎛
+⎝2y + 5⎞
+Check.
+Is the expression factored completely? Yes.
+Neither binomial is a difference of
+squares.
+Multiply.
+3⎛
+⎝2y − 5⎞
+⎠⎛
+⎝2y + 5⎞
+3⎛
+⎝4y2 − 25⎞
+12y2 − 75 ✓
+TRY IT : : 7.123 Factor completely: 16x3 − 36x .
+TRY IT : : 7.124 Factor completely: 27y2 − 48 .
+872 Chapter 7 Factoring
+Factor completely: 4a2 − 12ab + 9b2 .
+Is there a GCF? No.
+Is it a binomial, trinomial, or are there
+more terms?
+Trinomial with a ≠ 1 . But the first term is a
+perfect square.
+Is the last term a perfect square? Yes.
+Does it fit the pattern, a2 − 2ab + b2 ? Yes.
+Write it as a square.
+Check your answer.
+Is the expression factored completely?
+Yes.
+The binomial is not a difference of squares.
+Multiply.
+(2a − 3b)2
+(2a)2 − 2 ⋅ 2a ⋅ 3b + (3b)2
+4a2 − 12ab + 9b2 ✓
+TRY IT : : 7.125 Factor completely: 4x2 + 20xy + 25y2 .
+TRY IT : : 7.126 Factor completely: 9m2 + 42mn + 49n2 .
+Factor completely: 6y2 − 18y − 60 .
+Chapter 7 Factoring 873
+Is there a GCF? Yes, 6. 6y2 − 18y − 60
+Factor out the GCF. Trinomial with leading coefficient 1. 6⎛
+⎝y2 − 3y − 10⎞
+In the parentheses, is it a binomial, trinomial,
+or are there more terms?
+“Undo” FOIL. 6(y )(y ) 6⎛
+⎝y + 2⎞
+⎠⎛
+⎝y − 5⎞
+Check your answer.
+Is the expression factored completely? Yes.
+Neither binomial is a difference of squares.
+Multiply.
+6⎛
+⎝y + 2⎞
+⎠⎛
+⎝y − 5⎞
+6⎛
+⎝y2 − 5y + 2y − 10⎞
+6⎛
+⎝y2 − 3y − 10⎞
+6y2 − 18y − 60 ✓
+TRY IT : : 7.127 Factor completely: 8y2 + 16y − 24 .
+TRY IT : : 7.128 Factor completely: 5u2 − 15u − 270 .
+Factor completely: 24x3 + 81 .
+Is there a GCF? Yes, 3. 24x3 + 81
+Factor it out. 3⎛
+⎝8x3 + 27⎞
+In the parentheses, is it a binomial, trinomial,
+or are there more than three terms? Binomial.
+Is it a sum or difference? Sum.
+Of squares or cubes? Sum of cubes.
+Write it using the sum of cubes pattern.
+Is the expression factored completely? Yes. 3⎛
+⎝2x + 3⎞
+⎠⎛
+⎝4x2 − 6x + 9⎞
+Check by multiplying. We leave the check to you.
+TRY IT : : 7.129 Factor completely: 250m3 + 432 .
+874 Chapter 7 Factoring
+TRY IT : : 7.130 Factor completely: 81q3 + 192 .
+Factor completely: 2x4 − 32 .
+Is there a GCF? Yes, 2. 2x4 − 32
+Factor it out. 2⎛
+⎝x4 − 16⎞
+In the parentheses, is it a binomial, trinomial,
+or are there more than three terms? Binomial.
+Is it a sum or difference? Yes.
+Of squares or cubes? Difference of squares. 2⎛
+⎝⎛
+⎝x2⎞
+− (4)2⎞
+Write it as a product of conjugates. 2⎛
+⎝x2 − 4⎞
+⎠⎛
+⎝x2 + 4⎞
+The first binomial is again a difference of squares. 2⎛
+⎝(x)2 − (2)2⎞
+⎠⎛
+⎝x2 + 4⎞
+Write it as a product of conjugates. 2(x − 2)(x + 2)⎛
+⎝x2 + 4⎞
+Is the expression factored completely? Yes.
+None of these binomials is a difference of squares.
+Check your answer.
+Multiply.
+2(x − 2)(x + 2)(x2 + 4)
+2(x2 − 4)(x2 + 4)
+2(x4 − 16)
+2x4 − 32 ✓
+TRY IT : : 7.131 Factor completely: 4a4 − 64 .
+TRY IT : : 7.132 Factor completely: 7y4 − 7 .
+Factor completely: 3x2 + 6bx − 3ax − 6ab .
+Chapter 7 Factoring 875
+Is there a GCF? Yes, 3. 3x2 + 6bx − 3ax − 6ab
+Factor out the GCF. 3⎛
+⎝x2 + 2bx − ax − 2ab⎞
+In the parentheses, is it a binomial, trinomial, More than 3
+or are there more terms? terms.
+Use grouping. 3⎡
+⎣x(x + 2b) − a(x + 2b)⎤
+⎦
+3(x + 2b)(x − a)
+Check your answer.
+Is the expression factored completely? Yes.
+Multiply.
+3(x + 2b)(x − a)
+3⎛
+⎝x2 − ax + 2bx − 2ab⎞
+3x2 − 3ax + 6bx − 6ab ✓
+TRY IT : : 7.133 Factor completely: 6x2 − 12xc + 6bx − 12bc .
+TRY IT : : 7.134 Factor completely: 16x2 + 24xy − 4x − 6y .
+Factor completely: 10x2 − 34x − 24 .
+Is there a GCF? Yes, 2. 10x2 − 34x − 24
+Factor out the GCF. 2⎛
+⎝5x2 − 17x − 12⎞
+In the parentheses, is it a binomial, trinomial, Trinomial with
+or are there more than three terms? a ≠ 1.
+Use trial and error or the “ac” method. 2(5x2 − 17x−12)
+2(5x + 3)(x − 4)
+Check your answer. Is the expression factored
+completely? Yes.
+Multiply.
+2(5x + 3)(x − 4)
+2⎛
+⎝5x2 − 20x + 3x − 12⎞
+2⎛
+⎝5x2 − 17x − 12⎞
+10x2 − 34x − 24 ✓
+876 Chapter 7 Factoring
+TRY IT : : 7.135 Factor completely: 4p2 − 16p + 12 .
+TRY IT : : 7.136 Factor completely: 6q2 − 9q − 6 .
+Chapter 7 Factoring 877
+Practice Makes Perfect
+Recognize and Use the Appropriate Method to Factor a Polynomial Completely
+In the following exercises, factor completely.
+279. 10x4 + 35x3 280. 18p6 + 24p3 281. y2 + 10y − 39
+282. b2 − 17b + 60 283. 2n2 + 13n − 7 284. 8x2 − 9x − 3
+285. a5 + 9a3 286. 75m3 + 12m 287. 121r2 − s2
+288. 49b2 − 36a2 289. 8m2 − 32 290. 36q2 − 100
+291. 25w2 − 60w + 36 292. 49b2 − 112b + 64 293. m2 + 14mn + 49n2
+294. 64x2 + 16xy + y2 295. 7b2 + 7b − 42 296. 3n2 + 30n + 72
+297. 3x3 − 81 298. 5t3 − 40 299. k4 − 16
+300. m4 − 81 301. 15pq − 15p + 12q − 12 302. 12ab − 6a + 10b − 5
+303. 4x2 + 40x + 84 304. 5q2 − 15q − 90 305. u5 + u2
+306. 5n3 + 320 307. 4c2 + 20cd + 81d2 308. 25x2 + 35xy + 49y2
+309. 10m4 − 6250 310. 3v4 − 768
+Everyday Math
+311. Watermelon drop A springtime tradition at the
+University of California San Diego is the Watermelon
+Drop, where a watermelon is dropped from the
+seventh story of Urey Hall.
+a The binomial −16t2 + 80 gives the height of
+the watermelon t seconds after it is dropped.
+Factor the greatest common factor from this
+binomial.
+b If the watermelon is thrown down with initial
+velocity 8 feet per second, its height after t
+seconds is given by the trinomial
+−16t2 − 8t + 80 . Completely factor this
+trinomial.
+312. Pumpkin drop A fall tradition at the University
+of California San Diego is the Pumpkin Drop, where a
+pumpkin is dropped from the eleventh story of Tioga
+Hall.
+a The binomial −16t2 + 128 gives the height of
+the pumpkin t seconds after it is dropped. Factor
+the greatest common factor from this binomial.
+b If the pumpkin is thrown down with initial
+velocity 32 feet per second, its height after t
+seconds is given by the trinomial
+−16t2 − 32t + 128 . Completely factor this
+trinomial.
+7.5 EXERCISES
+878 Chapter 7 Factoring
+Writing Exercises
+313. The difference of squares y4 − 625 can be
+factored as ⎛
+⎝y2 − 25⎞
+⎠⎛
+⎝y2 + 25⎞
+⎠ . But it is not completely
+factored. What more must be done to completely
+factor it?
+314. Of all the factoring methods covered in this
+chapter (GCF, grouping, undo FOIL, ‘ac’ method,
+special products) which is the easiest for you? Which is
+the hardest? Explain your answers.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b Overall, after looking at the checklist, do you think you are well-prepared for the next section? Why or why not?
+Chapter 7 Factoring 879

@@ -1,0 +1,385 @@
+4.2
+Graph Linear Equations in Two Variables
+Learning Objectives
+BE PREPARED : : 4.4 Before you get started, take this readiness quiz.
+Evaluate 3x + 2 when x = −1 .
+If you missed this problem, review Example 1.57.
+BE PREPARED : : 4.5 Solve 3x + 2y = 12 for y in general.
+If you missed this problem, review Example 2.63.
+Recognize the Relationship Between the Solutions of an Equation and its Graph
+In the previous section, we found several solutions to the equation 3x + 2y = 6 . They are listed in Table 4.10. So, the
+ordered pairs (0, 3) , (2, 0) , and ⎛
+⎝1, 3
+⎞
+⎠ are some solutions to the equation 3x + 2y = 6 . We can plot these solutions
+in the rectangular coordinate system as shown in Figure 4.5.
+3x + 2y = 6
+x y (x, y)
+0 3 (0, 3)
+2 0 (2, 0)
+1 3
+⎛
+⎝1, 3
+⎞
+Table 4.10
+Figure 4.5
+Notice how the points line up perfectly? We connect the points with a line to get the graph of the equation 3x + 2y = 6 .
+See Figure 4.6. Notice the arrows on the ends of each side of the line. These arrows indicate the line continues.
+Chapter 4 Graphs 433
+Figure 4.6
+Every point on the line is a solution of the equation. Also, every solution of this equation is a point on this line. Points not
+on the line are not solutions.
+Notice that the point whose coordinates are (−2, 6) is on the line shown in Figure 4.7. If you substitute x = −2 and
+y = 6 into the equation, you find that it is a solution to the equation.
+Figure 4.7
+So the point (−2, 6) is a solution to the equation 3x + 2y = 6 . (The phrase “the point whose coordinates are (−2, 6) ”
+is often shortened to “the point (−2, 6) .”)
+So (4, 1) is not a solution to the equation 3x + 2y = 6 . Therefore, the point (4, 1) is not on the line. See Figure 4.6. This
+is an example of the saying, “A picture is worth a thousand words.” The line shows you all the solutions to the equation.
+Every point on the line is a solution of the equation. And, every solution of this equation is on this line. This line is called
+the graph of the equation 3x + 2y = 6 .
+434 Chapter 4 Graphs
+Graph of a Linear Equation
+The graph of a linear equation Ax + By = C is a line.
+• Every point on the line is a solution of the equation.
+• Every solution of this equation is a point on this line.
+The graph of y = 2x − 3 is shown.
+For each ordered pair, decide:
+a Is the ordered pair a solution to the equation?
+b Is the point on the line?
+A (0, −3) B (3, 3) C (2, −3) D (−1, −5)
+Substitute the x- and y- values into the equation to check if the ordered pair is a solution to the equation.
+a
+b Plot the points A (0, 3) , B (3, 3) , C (2, −3) , and D (−1, −5) .
+Chapter 4 Graphs 435
+The points (0, 3) , (3, 3) , and (−1, −5) are on the line y = 2x − 3 , and the point (2, −3) is not on the line.
+The points that are solutions to y = 2x − 3 are on the line, but the point that is not a solution is not on the line.
+TRY IT : : 4.19 Use the graph of y = 3x − 1 to decide whether each ordered pair is:
+• a solution to the equation.
+• on the line.
+a (0, −1) b (2, 5)
+TRY IT : : 4.20 Use graph of y = 3x − 1 to decide whether each ordered pair is:
+• a solution to the equation
+• on the line
+a (3, −1) b (−1, −4)
+Graph a Linear Equation by Plotting Points
+There are several methods that can be used to graph a linear equation. The method we used to graph 3x + 2y = 6 is
+called plotting points, or the Point–Plotting Method.
+EXAMPLE 4.11 HOW TO GRAPH AN EQUATION BY PLOTTING POINTS
+Graph the equation y = 2x + 1 by plotting points.
+436 Chapter 4 Graphs
+Chapter 4 Graphs 437
+TRY IT : : 4.21 Graph the equation by plotting points: y = 2x − 3 .
+TRY IT : : 4.22 Graph the equation by plotting points: y = −2x + 4 .
+The steps to take when graphing a linear equation by plotting points are summarized below.
+It is true that it only takes two points to determine a line, but it is a good habit to use three points. If you only plot two
+points and one of them is incorrect, you can still draw a line but it will not represent the solutions to the equation. It will
+be the wrong line.
+If you use three points, and one is incorrect, the points will not line up. This tells you something is wrong and you need to
+check your work. Look at the difference between part (a) and part (b) in Figure 4.8.
+Figure 4.8
+Let’s do another example. This time, we’ll show the last two steps all on one grid.
+Graph the equation y = −3x .
+Find three points that are solutions to the equation. Here, again, it’s easier to choose values for x . Do you see why?
+HOW TO : : GRAPH A LINEAR EQUATION BY PLOTTING POINTS.
+Find three points whose coordinates are solutions to the equation. Organize them in a table.
+Plot the points in a rectangular coordinate system. Check that the points line up. If they do not,
+carefully check your work.
+Draw the line through the three points. Extend the line to fill the grid and put arrows on both
+ends of the line.
+Step 1.
+Step 2.
+Step 3.
+438 Chapter 4 Graphs
+We list the points in Table 4.11.
+y = −3x
+x y (x, y)
+0 0 (0, 0)
+1 −3 (1, −3)
+−2 6 (−2, 6)
+Table 4.11
+Plot the points, check that they line up, and draw the line.
+TRY IT : : 4.23 Graph the equation by plotting points: y = −4x .
+TRY IT : : 4.24 Graph the equation by plotting points: y = x .
+When an equation includes a fraction as the coefficient of x , we can still substitute any numbers for x . But the math is
+easier if we make ‘good’ choices for the values of x . This way we will avoid fraction answers, which are hard to graph
+precisely.
+Graph the equation y = 1
+2x + 3 .
+Find three points that are solutions to the equation. Since this equation has the fraction 1
+2 as a coefficient of x, we will
+choose values of x carefully. We will use zero as one choice and multiples of 2 for the other choices. Why are multiples of
+Chapter 4 Graphs 439
+2 a good choice for values of x ?
+The points are shown in Table 4.12.
+y = 1
+2x + 3
+x y (x, y)
+0 3 (0, 3)
+2 4 (2, 4)
+4 5 (4, 5)
+Table 4.12
+Plot the points, check that they line up, and draw the line.
+TRY IT : : 4.25 Graph the equation y = 1
+3x − 1 .
+TRY IT : : 4.26 Graph the equation y = 1
+4x + 2 .
+So far, all the equations we graphed had y given in terms of x . Now we’ll graph an equation with x and y on the same
+side. Let’s see what happens in the equation 2x + y = 3 . If y = 0 what is the value of x ?
+440 Chapter 4 Graphs
+This point has a fraction for the x- coordinate and, while we could graph this point, it is hard to be precise graphing
+fractions. Remember in the example y = 1
+2x + 3 , we carefully chose values for x so as not to graph fractions at all. If we
+solve the equation 2x + y = 3 for y , it will be easier to find three solutions to the equation.
+2x + y = 3
+y = −2x + 3
+The solutions for x = 0 , x = 1 , and x = −1 are shown in the Table 4.13. The graph is shown in Figure 4.9.
+2x + y = 3
+x y (x, y)
+0 3 (0, 3)
+1 1 (1, 1)
+−1 5 (−1, 5)
+Table 4.13
+Figure 4.9
+Can you locate the point ⎛
+⎝3
+2, 0⎞
+⎠ , which we found by letting y = 0 , on the line?
+Graph the equation 3x + y = −1 .
+Chapter 4 Graphs 441
+Find three points that are solutions to the equation. 3x + y = −1
+First, solve the equation for y . y = −3x − 1
+Table 4.14
+We’ll let x be 0, 1, and −1 to find 3 points. The ordered pairs are shown in Table 4.15. Plot the points, check that they
+line up, and draw the line. See Figure 4.10.
+3x + y = −1
+x y (x, y)
+0 −1 (0, −1)
+1 −4 (1, −4)
+−1 2 (−1, 2)
+Table 4.15
+Figure 4.10
+TRY IT : : 4.27 Graph the equation 2x + y = 2 .
+TRY IT : : 4.28 Graph the equation 4x + y = −3 .
+If you can choose any three points to graph a line, how will you know if your graph matches the one shown in the answers
+in the book? If the points where the graphs cross the x- and y-axis are the same, the graphs match!
+The equation in Example 4.14 was written in standard form, with both x and y on the same side. We solved that
+equation for y in just one step. But for other equations in standard form it is not that easy to solve for y , so we will leave
+them in standard form. We can still find a first point to plot by letting x = 0 and solving for y . We can plot a second point
+by letting y = 0 and then solving for x . Then we will plot a third point by using some other value for x or y .
+442 Chapter 4 Graphs
+Graph the equation 2x − 3y = 6 .
+Find three points that are solutions to the equation. 2x − 3y = 6
+First, let x = 0 . 2(0) − 3y = 6
+Solve for y . −3y = 6
+y = −2
+Now let y = 0 . 2x − 3(0) = 6
+Solve for x . 2x = 6
+x = 3
+We need a third point. Remember, we can choose any value for x or y . We'll let
+x = 6 . 2(6) − 3y = 6
+Solve for y .
+12 − 3y = 6
+−3y = −6
+y = 2
+Table 4.16
+We list the ordered pairs in Table 4.17. Plot the points, check that they line up, and draw the line. See Figure 4.11.
+2x − 3y = 6
+x y (x, y)
+0 −2 (0, −2)
+3 0 (3, 0)
+6 2 (6, 2)
+Table 4.17
+Chapter 4 Graphs 443
+Figure 4.11
+TRY IT : : 4.29 Graph the equation 4x + 2y = 8 .
+TRY IT : : 4.30 Graph the equation 2x − 4y = 8 .
+Graph Vertical and Horizontal Lines
+Can we graph an equation with only one variable? Just x and no y , or just y without an x ? How will we make a table of
+values to get the points to plot?
+Let’s consider the equation x = −3 . This equation has only one variable, x . The equation says that x is always equal to
+−3 , so its value does not depend on y . No matter what y is, the value of x is always −3 .
+So to make a table of values, write −3 in for all the x values. Then choose any values for y . Since x does not depend
+on y , you can choose any numbers you like. But to fit the points on our coordinate graph, we’ll use 1, 2, and 3 for the
+y-coordinates. See Table 4.18.
+x = −3
+x y (x, y)
+−3 1 (−3, 1)
+−3 2 (−3, 2)
+−3 3 (−3, 3)
+Table 4.18
+Plot the points from Table 4.18 and connect them with a straight line. Notice in Figure 4.12 that we have graphed a vertical
+line.
+444 Chapter 4 Graphs
+Figure 4.12
+Vertical Line
+A vertical line is the graph of an equation of the form x = a .
+The line passes through the x-axis at (a, 0) .
+Graph the equation x = 2 .
+The equation has only one variable, x , and x is always equal to 2. We create Table 4.19 where x is always 2 and then
+put in any values for y . The graph is a vertical line passing through the x-axis at 2. See Figure 4.13.
+x = 2
+x y (x, y)
+2 1 (2, 1)
+2 2 (2, 2)
+2 3 (2, 3)
+Table 4.19
+Chapter 4 Graphs 445
+Figure 4.13
+TRY IT : : 4.31 Graph the equation x = 5 .
+TRY IT : : 4.32 Graph the equation x = −2 .
+What if the equation has y but no x ? Let’s graph the equation y = 4 . This time the y- value is a constant, so in this
+equation, y does not depend on x . Fill in 4 for all the y ’s in Table 4.20 and then choose any values for x . We’ll use 0, 2,
+and 4 for the x-coordinates.
+y = 4
+x y (x, y)
+0 4 (0, 4)
+2 4 (2, 4)
+4 4 (4, 4)
+Table 4.20
+The graph is a horizontal line passing through the y-axis at 4. See Figure 4.14.
+446 Chapter 4 Graphs
+Figure 4.14
+Horizontal Line
+A horizontal line is the graph of an equation of the form y = b .
+The line passes through the y-axis at (0, b) .
+Graph the equation y = −1.
+The equation y = −1 has only one variable, y . The value of y is constant. All the ordered pairs in Table 4.21 have the
+same y-coordinate. The graph is a horizontal line passing through the y-axis at −1 , as shown in Figure 4.15.
+y = −1
+x y (x, y)
+0 −1 (0, −1)
+3 −1 (3, −1)
+−3 −1 (−3, −1)
+Table 4.21
+Chapter 4 Graphs 447
+Figure 4.15
+TRY IT : : 4.33 Graph the equation y = −4 .
+TRY IT : : 4.34 Graph the equation y = 3 .
+The equations for vertical and horizontal lines look very similar to equations like y = 4x. What is the difference between
+the equations y = 4x and y = 4 ?
+The equation y = 4x has both x and y . The value of y depends on the value of x . The y-coordinate changes according
+to the value of x . The equation y = 4 has only one variable. The value of y is constant. The y-coordinate is always 4. It
+does not depend on the value of x . See Table 4.22.
+y = 4x y = 4
+x y (x, y) x y (x, y)
+0 0 (0, 0) 0 4 (0, 4)
+1 4 (1, 4) 1 4 (1, 4)
+2 8 (2, 8) 2 4 (2, 4)
+Table 4.22
+448 Chapter 4 Graphs
+Figure 4.16
+Notice, in Figure 4.16, the equation y = 4x gives a slanted line, while y = 4 gives a horizontal line.
+Chapter 4 Graphs 449
+Graph y = −3x and y = −3 in the same rectangular coordinate system.
+Notice that the first equation has the variable x , while the second does not. See Table 4.23. The two graphs are shown in
+Figure 4.17.
+y = −3x y = −3
+x y (x, y) x y (x, y)
+0 0 (0, 0) 0 −3 (0, −3)
+1 −3 (1, −3) 1 −3 (1, −3)
+2 −6 (2, −6) 2 −3 (2, −3)
+Table 4.23
+Figure 4.17
+TRY IT : : 4.35 Graph y = −4x and y = −4 in the same rectangular coordinate system.
+TRY IT : : 4.36 Graph y = 3 and y = 3x in the same rectangular coordinate system.
+450 Chapter 4 Graphs
+Practice Makes Perfect
+Recognize the Relationship Between the Solutions of an Equation and its Graph
+In the following exercises, for each ordered pair, decide:
+a Is the ordered pair a solution to the equation? b Is the point on the line?
+55. y = x + 2
+a (0, 2) b (1, 2) c (−1, 1)
+d (−3, −1)
+56. y = x − 4
+a (0, −4) b (3, −1) c (2, 2)
+d (1, −5)
+57. y = 1
+2x − 3
+a (0, −3) b (2, −2) c (−2, −4)
+d (4, 1)
+58. y = 1
+3x + 2
+a (0, 2) b (3, 3) c (−3, 2)
+d (−6, 0)
+Graph a Linear Equation by Plotting Points
+In the following exercises, graph by plotting points.
+59. y = 3x − 1 60. y = 2x + 3 61. y = −2x + 2
+62. y = −3x + 1 63. y = x + 2 64. y = x − 3
+4.2 EXERCISES
+Chapter 4 Graphs 451
+65. y = −x − 3 66. y = −x − 2 67. y = 2x
+68. y = 3x 69. y = −4x 70. y = −2x
+71. y = 1
+2x + 2 72. y = 1
+3x − 1 73. y = 4
+3x − 5
+74. y = 3
+2x − 3 75. y = − 2
+5x + 1 76. y = − 4
+5x − 1
+77. y = − 3
+2x + 2 78. y = − 5
+3x + 4 79. x + y = 6
+80. x + y = 4 81. x + y = −3 82. x + y = −2
+83. x − y = 2 84. x − y = 1 85. x − y = −1
+86. x − y = −3 87. 3x + y = 7 88. 5x + y = 6
+89. 2x + y = −3 90. 4x + y = −5 91. 1
+3x + y = 2
+92. 1
+2x + y = 3 93. 2
+5x − y = 4 94. 3
+4x − y = 6
+95. 2x + 3y = 12 96. 4x + 2y = 12 97. 3x − 4y = 12
+98. 2x − 5y = 10 99. x − 6y = 3 100. x − 4y = 2
+101. 5x + 2y = 4 102. 3x + 5y = 5
+Graph Vertical and Horizontal Lines
+In the following exercises, graph each equation.
+103. x = 4 104. x = 3 105. x = −2
+106. x = −5 107. y = 3 108. y = 1
+109. y = −5 110. y = −2 111. x = 7
+112. x = 5
+4 113. y = − 15
+4 114. y = − 5
+In the following exercises, graph each pair of equations in the same rectangular coordinate system.
+115. y = 2x and y = 2 116. y = 5x and y = 5 117. y = − 1
+2x and y = − 1
+118. y = − 1
+3x and y = − 1
+452 Chapter 4 Graphs
+Mixed Practice
+In the following exercises, graph each equation.
+119. y = 4x 120. y = 2x
+121. y = − 1
+2x + 3 122. y = 1
+4x − 2
+123. y = −x 124. y = x
+125. x − y = 3 126. x + y = −5
+127. 4x + y = 2 128. 2x + y = 6
+129. y = −1 130. y = 5
+131. 2x + 6y = 12 132. 5x + 2y = 10
+133. x = 3 134. x = −4
+Everyday Math
+135. Motor home cost. The Robinsons rented a motor
+home for one week to go on vacation. It cost them
+$594 plus $0.32 per mile to rent the motor home, so the
+linear equation y = 594 + 0.32x gives the cost, y , for
+driving x miles. Calculate the rental cost for driving
+400, 800, and 1200 miles, and then graph the line.
+136. Weekly earnings. At the art gallery where he
+works, Salvador gets paid $200 per week plus 15% of
+the sales he makes, so the equation y = 200 + 0.15x
+gives the amount, y , he earns for selling x dollars
+of artwork. Calculate the amount Salvador earns for
+selling $900, $1600, and $2000, and then graph the
+line.
+Writing Exercises
+137. Explain how you would choose three x- values to
+make a table to graph the line y = 1
+5x − 2 .
+138. What is the difference between the equations of a
+vertical and a horizontal line?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b After reviewing this checklist, what will you do to become confident for all goals?
+Chapter 4 Graphs 453

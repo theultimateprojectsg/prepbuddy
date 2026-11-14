@@ -1,0 +1,383 @@
+10.4
+Solve Applications Modeled by Quadratic Equations
+Learning Objectives
+BE PREPARED : : 10.10 Before you get started, take this readiness quiz.
+The sum of two consecutive odd numbers is −100 . Find the numbers.
+If you missed this problem, review Example 3.10.
+BE PREPARED : : 10.11 The area of triangular mural is 64 square feet. The base is 16 feet. Find the height.
+If you missed this problem, review Example 3.36.
+BE PREPARED : : 10.12
+Find the length of the hypotenuse of a right triangle with legs 5 inches and 12 inches.
+If you missed this problem, review Example 3.39.
+Solve Applications of the Quadratic Formula
+We solved some applications that are modeled by quadratic equations earlier, when the only method we had to solve
+them was factoring. Now that we have more methods to solve quadratic equations, we will take another look at
+applications. To get us started, we will copy our usual Problem Solving Strategy here so we can follow the steps.
+We have solved number applications that involved consecutive even integers and consecutive odd integers by
+modeling the situation with linear equations. Remember, we noticed each even integer is 2 more than the number
+preceding it. If we call the first one n, then the next one is n + 2 . The next one would be n + 2 + 2 or n + 4 . This is also
+true when we use odd integers. One set of even integers and one set of odd integers are shown below.
+Consecutive even integers Consecutive odd integers
+64, 66, 68 77, 79, 81
+n 1st even integer
+n + 2 2nd consecutive even integer
+n + 4 3rd consecutive even integer
+n 1st odd integer
+n + 2 2nd consecutive odd integer
+n + 4 3rd consecutive odd integer
+Some applications of consecutive odd integers or consecutive even integers are modeled by quadratic equations. The
+notation above will be helpful as you name the variables.
+HOW TO : : USE THE PROBLEM SOLVING STRATEGY.
+Read the problem. Make sure all the words and ideas are understood.
+Identify what we are looking for.
+Name what we are looking for. Choose a variable to represent that quantity.
+Translate into an equation. It may be helpful to restate the problem in one sentence with all
+the important information. Then, translate the English sentence into an algebra equation.
+Solve the equation using good algebra techniques.
+Check the answer in the problem and make sure it makes sense.
+Answer the question with a complete sentence.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Step 7.
+Chapter 10 Quadratic Equations 1197
+The product of two consecutive odd integers is 195. Find the integers.
+Step 1. Read the problem.
+Step 2. Identify what we are looking for. We are looking for two consecutive odd integers.
+Step 3. Name what we are looking for. Let n = the first odd integer.
+n + 2 = the next odd integer
+Step 4. Translate into an equation. State the
+problem in one sentence.
+"The product of two consecutive odd integers is 195."
+The product of the first odd integer and the second
+odd integer is 195.
+Translate into an equation
+Step 5. Solve the equation. Distribute.
+Subtract 195 to get the equation in standard
+form.
+Identify the a, b, c values.
+Write the quadratic equation.
+Then substitute in the values of a, b, c..
+Simplify.
+Simplify the radical.
+Rewrite to show two solutions.
+Solve each equation.
+There are two values of n that are solutions. This
+will give us two pairs of consecutive odd integers
+for our solution.
+First odd integer n = 13
+next odd integer n + 2
+13 + 2
+First odd integer n = −15
+next odd integer n + 2
+−15 + 2
+−13
+Step 6. Check the answer.
+Do these pairs work?
+Are they consecutive odd integers?
+Is their product 195?
+13, 15, yes −13, −15, yes
+13 ⋅ 15 = 195, yes −13⎛
+⎝−15⎞
+⎠ = 195, yes
+1198 Chapter 10 Quadratic Equations
+Step 7. Answer the question. The two consecutive odd integers whose product is
+195 are 13, 15, and −13, −15.
+TRY IT : : 10.75 The product of two consecutive odd integers is 99. Find the integers.
+TRY IT : : 10.76 The product of two consecutive odd integers is 168. Find the integers.
+We will use the formula for the area of a triangle to solve the next example.
+Area of a Triangle
+For a triangle with base b and height h , the area, A , is given by the formula A = 1
+2bh .
+Recall that, when we solve geometry applications, it is helpful to draw the figure.
+An architect is designing the entryway of a restaurant. She wants to put a triangular window above the doorway. Due to
+energy restrictions, the window can have an area of 120 square feet and the architect wants the width to be 4 feet more
+than twice the height. Find the height and width of the window.
+Step 1. Read the problem.
+Draw a picture.
+Step 2. Identify what we are looking for. We are looking for the height and width.
+Step 3. Name what we are looking for. Let h = the height of the triangle.
+2h + 4 = the width of the triangle
+Step 4. Translate.
+We know the area. Write the formula for the
+area of a triangle.
+Step 5. Solve the equation. Substitute in the values.
+Distribute.
+This is a quadratic equation, rewrite it in standard form.
+Solve the equation using the Quadratic Formula. Identify
+the a, b, c values.
+Chapter 10 Quadratic Equations 1199
+Write the quadratic equation.
+Then substitute in the values of a, b, c..
+Simplify.
+Simplify the radical.
+Rewrite to show two solutions.
+Simplify.
+Since h is the height of a window, a value of h = −12 does
+not make sense.
+The height of the triangle: h = 10
+The width of the triangle: 2h + 4
+2 ⋅ 10 + 4
+Step 6. Check the answer. Does a triangle with a height 10
+and width 24 have area 120? Yes.
+Step 7. Answer the question. The height of the triangular window is 10
+feet and the width is 24 feet.
+Notice that the solutions were integers. That tells us that we could have solved the equation by factoring.
+When we wrote the equation in standard form, h2 + 2h − 120 = 0 , we could have factored it. If we did, we would have
+solved the equation (h + 12)(h − 10) = 0 .
+Find the dimensions of a triangle whose width is four more than six times its height and has an area of 208 square
+inches.
+If a triangle that has an area of 110 square feet has a height that is two feet less than twice the width, what are its
+dimensions?
+In the two preceding examples, the number in the radical in the Quadratic Formula was a perfect square and so the
+solutions were rational numbers. If we get an irrational number as a solution to an application problem, we will use a
+calculator to get an approximate value.
+The Pythagorean Theorem gives the relation between the legs and hypotenuse of a right triangle. We will use the
+Pythagorean Theorem to solve the next example.
+Pythagorean Theorem
+In any right triangle, where a and b are the lengths of the legs and c is the length of the hypotenuse, a2 + b2 = c2
+1200 Chapter 10 Quadratic Equations
+Rene is setting up a holiday light display. He wants to make a ‘tree’ in the shape of two right triangles, as shown below,
+and has two 10-foot strings of lights to use for the sides. He will attach the lights to the top of a pole and to two stakes on
+the ground. He wants the height of the pole to be the same as the distance from the base of the pole to each stake. How
+tall should the pole be?
+Step 1. Read the problem. Draw a picture.
+Step 2. Identify what we are looking for. We are looking for the height of the pole.
+Step 3. Name what we are looking for.
+The distance from the base of the pole to either stake is the
+same as the height of the pole. Let x = the height of the
+pole.
+x = the distance from the pole to stake
+Each side is a right triangle. We draw a
+picture of one of them.
+Step 4. Translate into an equation. We
+can use the Pythagorean Theorem to solve
+for x.
+Write the Pythagorean Theorem. a2 + b2 = c2
+Step 5. Solve the equation. Substitute. x2 + x2 = 102
+Simplify. 2x2 = 100
+Divide by 2 to isolate the variable. 2x2
+2 = 100
+Simplify. x2 = 50
+Chapter 10 Quadratic Equations 1201
+Use the Square Root Property. x = ± 50
+Simplify the radical. x = ± 5 2
+Rewrite to show two solutions. x = 5 2
+x = −5 2
+Approximate this number to the nearest
+tenth with a calculator. x ≈ 7.1
+Step 6. Check the answer.
+Check on your own in the Pythagorean
+Theorem.
+Step 7. Answer the question. The pole should be about 7.1 feet tall.
+The sun casts a shadow from a flag pole. The height of the flag pole is three times the length of its shadow. The
+distance between the end of the shadow and the top of the flag pole is 20 feet. Find the length of the shadow and
+the length of the flag pole. Round to the nearest tenth of a foot.
+The distance between opposite corners of a rectangular field is four more than the width of the field. The length
+of the field is twice its width. Find the distance between the opposite corners. Round to the nearest tenth.
+Mike wants to put 150 square feet of artificial turf in his front yard. This is the maximum area of artificial turf allowed by
+his homeowners association. He wants to have a rectangular area of turf with length one foot less than three times the
+width. Find the length and width. Round to the nearest tenth of a foot.
+Step 1. Read the problem. Draw a picture.
+Step 2. Identify what we are looking for. We are looking for the length and width.
+Step 3. Name what we are looking for. Let w = the width of the rectangle.
+3w − 1 = the length of the rectangle
+Step 4. Translate into an equation.
+We know the area. Write the formula for the
+area of a rectangle.
+Step 5. Solve the equation. Substitute in the
+values.
+Distribute.
+1202 Chapter 10 Quadratic Equations
+This is a quadratic equation, rewrite it in
+standard form.
+Solve the equation using the Quadratic
+Formula.
+Identify the a, b, c values.
+Write the Quadratic Formula.
+Then substitute in the values of a, b, c.
+Simplify.
+Rewrite to show two solutions.
+Approximate the answers using a calculator.
+We eliminate the negative solution for the
+width.
+Step 6. Check the answer.
+Make sure that the answers make sense.
+Step 7. Answer the question. The width of the rectangle is approximately 7.2 feet and
+the length 20.6 feet.
+The length of a 200 square foot rectangular vegetable garden is four feet less than twice the width. Find the length
+and width of the garden. Round to the nearest tenth of a foot.
+A rectangular tablecloth has an area of 80 square feet. The width is 5 feet shorter than the length. What are the
+length and width of the tablecloth? Round to the nearest tenth of a foot.
+The height of a projectile shot upwards is modeled by a quadratic equation. The initial velocity, v0 , propels the object up
+until gravity causes the object to fall back down.
+Projectile Motion
+The height in feet, h , of an object shot upwards into the air with initial velocity, v0 , after t seconds is given by the
+formula:
+h = −16t2 + v0 t
+We can use the formula for projectile motion to find how many seconds it will take for a firework to reach a specific height.
+Chapter 10 Quadratic Equations 1203
+A firework is shot upwards with initial velocity 130 feet per second. How many seconds will it take to reach a height of 260
+feet? Round to the nearest tenth of a second.
+Step 1. Read the problem.
+Step 2. Identify what we are looking for. We are looking for the number of seconds, which is
+time.
+Step 3. Name what we are looking for. Let t = the number of seconds.
+Step 4. Translate into an equation. Use the formula.
+h = −16t2 + v0 t
+Step 5. Solve the equation.
+We know the velocity v0 is 130 feet per second.
+The height is 260 feet. Substitute the values.
+This is a quadratic equation, rewrite it in standard
+form.
+Solve the equation using the Quadratic Formula.
+Identify the a, b, c values.
+Write the Quadratic Formula.
+Then substitute in the values of a, b, c.
+Simplify.
+Rewrite to show two solutions.
+Approximate the answers with a calculator. t ≈ 4.6 seconds, t ≈ 3.6
+Step 6. Check the answer.
+The check is left to you.
+Step 7. Answer the question.
+The firework will go up and then fall back down.
+As the firework goes up, it will reach 260 feet after
+approximately 3.6 seconds. It will also pass that
+height on the way down at 4.6 seconds.
+1204 Chapter 10 Quadratic Equations
+An arrow is shot from the ground into the air at an initial speed of 108 ft/sec. Use the formula h = −16t2 + v0 t
+to determine when the arrow will be 180 feet from the ground. Round the nearest tenth of a second.
+A man throws a ball into the air with a velocity of 96 ft/sec. Use the formula h = −16t2 + v0 t to determine when
+the height of the ball will be 48 feet. Round to the nearest tenth of a second.
+MEDIA : :
+Access these online resources for additional instruction and practice with solving word problems using the quadratic
+equation:
+• General Quadratic Word Problems (https://openstax.org/l/25Quadproblem)
+• Word problem: Solve a projectile problem using a quadratic equation (https://openstax.org/l/
+25Projectile)
+Chapter 10 Quadratic Equations 1205
+Practice Makes Perfect
+Solve Applications of the Quadratic Formula
+In the following exercises, solve by using methods of factoring, the square root principle, or the Quadratic Formula. Round your
+answers to the nearest tenth.
+143. The product of two
+consecutive odd numbers is 255.
+Find the numbers.
+144. The product of two
+consecutive even numbers is 360.
+Find the numbers.
+145. The product of two
+consecutive even numbers is 624.
+Find the numbers.
+146. The product of two
+consecutive odd numbers is 1023.
+Find the numbers.
+147. The product of two
+consecutive odd numbers is 483.
+Find the numbers.
+148. The product of two
+consecutive even numbers is 528.
+Find the numbers.
+149. A triangle with area 45 square
+inches has a height that is two less
+than four times the width. Find the
+height and width of the triangle.
+150. The width of a triangle is six
+more than twice the height. The
+area of the triangle is 88 square
+yards. Find the height and width
+of the triangle.
+151. The hypotenuse of a right
+triangle is twice the length of one
+of its legs. The length of the other
+leg is three feet. Find the lengths
+of the three sides of the triangle.
+Round to the nearest tenth.
+152. The hypotenuse of a right
+triangle is 10 cm long. One of the
+triangle’s legs is three times the
+length of the other leg. Find the
+lengths of the three sides of the
+triangle. Round to the nearest
+tenth.
+153. A farmer plans to fence off
+sections of a rectangular corral.
+The diagonal distance from one
+corner of the corral to the
+opposite corner is five yards
+longer than the width of the
+corral. The length of the corral is
+three times the width. Find the
+length of the diagonal of the
+corral. Round to the nearest
+tenth.
+154. Nautical flags are used to
+represent letters of the alphabet.
+The flag for the letter O consists
+of a yellow right triangle and a red
+right triangle which are sewn
+together along their hypotenuse
+to form a square. The adjoining
+side of the two triangles is three
+inches longer than a side of the
+flag. Find the length of the side of
+the flag.
+155. The length of a rectangular
+driveway is five feet more than
+three times the width. The area is
+350 square feet. Find the length
+and width of the driveway.
+156. A rectangular lawn has area
+140 square yards. Its width that is
+six less than twice the length.
+What are the length and width of
+the lawn?
+157. A firework rocket is shot
+upward at a rate of 640 ft/sec. Use
+the projectile formula
+h = −16t2 + v0 t to determine
+when the height of the firework
+rocket will be 1200 feet.
+158. An arrow is shot vertically
+upward at a rate of 220 feet per
+second. Use the projectile formula
+h = −16t2 + v0 t to determine
+when height of the arrow will be
+400 feet.
+10.4 EXERCISES
+1206 Chapter 10 Quadratic Equations
+Everyday Math
+159. A bullet is fired straight up from a BB gun with
+initial velocity 1120 feet per second at an initial height
+of 8 feet. Use the formula h = −16t2 + v0 t + 8 to
+determine how many seconds it will take for the bullet
+to hit the ground. (That is, when will h = 0 ?)
+160. A city planner wants to build a bridge across a lake
+in a park. To find the length of the bridge, he makes
+a right triangle with one leg and the hypotenuse on
+land and the bridge as the other leg. The length of the
+hypotenuse is 340 feet and the leg is 160 feet. Find the
+length of the bridge.
+Writing Exercises
+161. Make up a problem involving the product of two
+consecutive odd integers. Start by choosing two
+consecutive odd integers. a What are your integers?
+b What is the product of your integers? c Solve the
+equation n(n + 2) = p , where p is the product you
+found in part (b). d Did you get the numbers you
+started with?
+162. Make up a problem involving the product of two
+consecutive even integers. Start by choosing two
+consecutive even integers. a What are your integers?
+b What is the product of your integers? c Solve the
+equation n(n + 2) = p , where p is the product you
+found in part (b). d Did you get the numbers you
+started with?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b On a scale of 1–10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+Chapter 10 Quadratic Equations 1207

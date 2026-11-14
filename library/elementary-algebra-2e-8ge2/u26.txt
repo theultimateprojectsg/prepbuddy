@@ -1,0 +1,585 @@
+4.4
+Understand Slope of a Line
+Learning Objectives
+By the end of this section, you will be able to:
+Use geoboards to model slope
+Use m = rise
+run to find the slope of a line from its graph
+Find the slope of horizontal and vertical lines
+Use the slope formula to find the slope of a line between two points
+Graph a line given a point and the slope
+Solve slope applications
+BE PREPARED : : 4.7 Before you get started, take this readiness quiz.
+Simplify: 1 – 4
+8 − 2 .
+If you missed this problem, review Example 1.74.
+BE PREPARED : : 4.8 Divide: 0
+4, 4
+0 .
+If you missed this problem, review Example 1.127.
+BE PREPARED : : 4.9 Simplify: 15
+−3, −15
+3 , −15
+−3 .
+If you missed this problem, review Example 1.65.
+When you graph linear equations, you may notice that some lines tilt up as they go from left to right and some lines tilt
+down. Some lines are very steep and some lines are flatter. What determines whether a line tilts up or down or if it is steep
+or flat?
+In mathematics, the ‘tilt’ of a line is called the slope of the line. The concept of slope has many applications in the real
+world. The pitch of a roof, grade of a highway, and a ramp for a wheelchair are some examples where you literally see
+slopes. And when you ride a bicycle, you feel the slope as you pump uphill or coast downhill.
+In this section, we will explore the concept of slope.
+Use Geoboards to Model Slope
+A geoboard is a board with a grid of pegs on it. Using rubber bands on a geoboard gives us a concrete way to model
+lines on a coordinate grid. By stretching a rubber band between two pegs on a geoboard, we can discover how to find the
+slope of a line.
+MANIPULATIVE MATHEMATICS
+Doing the Manipulative Mathematics activity “Exploring Slope” will help you develop a better understanding of the
+slope of a line. (Graph paper can be used instead of a geoboard, if needed.)
+We’ll start by stretching a rubber band between two pegs as shown in Figure 4.19.
+468 Chapter 4 Graphs
+Figure 4.19
+Doesn’t it look like a line?
+Now we stretch one part of the rubber band straight up from the left peg and around a third peg to make the sides of a
+right triangle, as shown in Figure 4.20
+Figure 4.20
+We carefully make a 90o angle around the third peg, so one of the newly formed lines is vertical and the other is horizontal.
+To find the slope of the line, we measure the distance along the vertical and horizontal sides of the triangle. The vertical
+distance is called the rise and the horizontal distance is called the run, as shown in Figure 4.21.
+Figure 4.21
+If our geoboard and rubber band look just like the one shown in Figure 4.22, the rise is 2. The rubber band goes up 2
+units. (Each space is one unit.)
+Figure 4.22 The rise on this geoboard is 2,
+as the rubber band goes up two units.
+What is the run?
+The rubber band goes across 3 units. The run is 3 (see Figure 4.22).
+The slope of a line is the ratio of the rise to the run. In mathematics, it is always referred to with the letter m .
+Chapter 4 Graphs 469
+Slope of a Line
+The slope of a line of a line is m = rise
+run .
+The rise measures the vertical change and the run measures the horizontal change between two points on the line.
+What is the slope of the line on the geoboard in Figure 4.22?
+m = rise
+run
+m = 2
+The line has slope 2
+3 . This means that the line rises 2 units for every 3 units of run.
+When we work with geoboards, it is a good idea to get in the habit of starting at a peg on the left and connecting to a
+peg to the right. If the rise goes up it is positive and if it goes down it is negative. The run will go from left to right and be
+positive.
+What is the slope of the line on the geoboard shown?
+Use the definition of slope: m = rise
+run.
+Start at the left peg and count the spaces up and to the right to reach the second peg.
+The rise is 3. m = 3
+run
+The run is 4. m = 3
+The slope is 3
+4 .
+Table 4.29
+This means that the line rises 3 units for every 4 units of run.
+470 Chapter 4 Graphs
+TRY IT : : 4.49 What is the slope of the line on the geoboard shown?
+TRY IT : : 4.50 What is the slope of the line on the geoboard shown?
+What is the slope of the line on the geoboard shown?
+Use the definition of slope: m = rise
+run.
+Start at the left peg and count the units down and to the right to reach the second peg.
+Chapter 4 Graphs 471
+The rise is −1. = −1
+run
+The run is 3.
+m = −1
+m = − 1
+The slope is − 1
+3 .
+Table 4.30
+This means that the line drops 1 unit for every 3 units of run.
+TRY IT : : 4.51 What is the slope of the line on the geoboard?
+TRY IT : : 4.52 What is the slope of the line on the geoboard?
+Notice that in Example 4.25 the slope is positive and in Example 4.26 the slope is negative. Do you notice any difference
+in the two lines shown in Figure 4.23(a) and Figure 4.23(b)?
+Figure 4.23
+We ‘read’ a line from left to right just like we read words in English. As you read from left to right, the line in Figure 4.23(a)
+472 Chapter 4 Graphs
+is going up; it has positive slope. The line in Figure 4.23(b) is going down; it has negative slope.
+Positive and Negative Slopes
+Use a geoboard to model a line with slope 1
+2 .
+To model a line on a geoboard, we need the rise and the run.
+Use the slope formula. m = rise
+run
+Replace m with 1
+2 . 1
+2 = rise
+run
+Table 4.31
+So, the rise is 1 and the run is 2.
+Start at a peg in the lower left of the geoboard.
+Stretch the rubber band up 1 unit, and then right 2 units.
+The hypotenuse of the right triangle formed by the rubber band represents a line whose slope is 1
+2 .
+TRY IT : : 4.53 Model the slope m = 1
+3 . Draw a picture to show your results.
+TRY IT : : 4.54 Model the slope m = 3
+2 . Draw a picture to show your results.
+Use a geoboard to model a line with slope −1
+4 .
+Chapter 4 Graphs 473
+Use the slope formula. m = rise
+run
+Replace m with −1
+4 . −1
+4 = rise
+run
+Table 4.32
+So, the rise is −1 and the run is 4.
+Since the rise is negative, we choose a starting peg on the upper left that will give us room to count down.
+We stretch the rubber band down 1 unit, then go to the right 4 units, as shown.
+The hypotenuse of the right triangle formed by the rubber band represents a line whose slope is −1
+4 .
+TRY IT : : 4.55 Model the slope m = −2
+3 . Draw a picture to show your results.
+TRY IT : : 4.56 Model the slope m = −1
+3 . Draw a picture to show your results.
+Use m = rise
+run to Find the Slope of a Line from its Graph
+Now, we’ll look at some graphs on the xy -coordinate plane and see how to find their slopes. The method will be very
+similar to what we just modeled on our geoboards.
+To find the slope, we must count out the rise and the run. But where do we start?
+We locate two points on the line whose coordinates are integers. We then start with the point on the left and sketch a
+right triangle, so we can count the rise and run.
+EXAMPLE 4.29 HOW TO USE m = rise
+run TO FIND THE SLOPE OF A LINE FROM ITS GRAPH
+Find the slope of the line shown.
+474 Chapter 4 Graphs
+TRY IT : : 4.57 Find the slope of the line shown.
+Chapter 4 Graphs 475
+TRY IT : : 4.58 Find the slope of the line shown.
+Find the slope of the line shown.
+Locate two points on the graph whose coordinates are integers. (0, 5) and (3, 3)
+Which point is on the left? (0, 5)
+Starting at (0, 5) , sketch a right triangle to (3, 3) .
+HOW TO : : FIND THE SLOPE OF A LINE FROM ITS GRAPH USING m = rise
+run.
+Locate two points on the line whose coordinates are integers.
+Starting with the point on the left, sketch a right triangle, going from the first point to the
+second point.
+Count the rise and the run on the legs of the triangle.
+Take the ratio of rise to run to find the slope, m = rise
+run .
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+476 Chapter 4 Graphs
+Count the rise—it is negative. The rise is −2 .
+Count the run. The run is 3.
+Use the slope formula. m = rise
+run
+Substitute the values of the rise and run. m = −2
+Simplify. m = − 2
+The slope of the line is − 2
+3 .
+So y increases by 3 units as x decreases by 2 units.
+What if we used the points (−3, 7) and (6, 1) to find the slope of the line?
+The rise would be −6 and the run would be 9. Then m = −6
+9 , and that simplifies to m = − 2
+3 . Remember, it does not
+matter which points you use—the slope of the line is always the same.
+TRY IT : : 4.59 Find the slope of the line shown.
+TRY IT : : 4.60 Find the slope of the line shown.
+In the last two examples, the lines had y-intercepts with integer values, so it was convenient to use the y-intercept as one
+Chapter 4 Graphs 477
+of the points to find the slope. In the next example, the y-intercept is a fraction. Instead of using that point, we’ll look for
+two other points whose coordinates are integers. This will make the slope calculations easier.
+Find the slope of the line shown.
+Locate two points on the graph whose coordinates are integers. (2, 3) and (7, 6)
+Which point is on the left? (2, 3)
+Starting at (2, 3) , sketch a right triangle to (7, 6) .
+Count the rise. The rise is 3.
+Count the run. The run is 5.
+Use the slope formula. m = rise
+run
+Substitute the values of the rise and run. m = 3
+The slope of the line is 3
+5 .
+This means that y increases 5 units as x increases 3 units.
+When we used geoboards to introduce the concept of slope, we said that we would always start with the point on the
+left and count the rise and the run to get to the point on the right. That way the run was always positive and the rise
+determined whether the slope was positive or negative.
+What would happen if we started with the point on the right?
+Let’s use the points (2, 3) and (7, 6) again, but now we’ll start at (7, 6) .
+478 Chapter 4 Graphs
+Count the rise. The rise is −3 .
+Count the run. It goes from right to left, so it is negative. The run is −5 .
+Use the slope formula. m = rise
+run
+Substitute the values of the rise and run. m = −3
+−5
+The slope of the line is −3
+−5 .
+Table 4.33
+It does not matter where you start—the slope of the line is always the same.
+TRY IT : : 4.61 Find the slope of the line shown.
+TRY IT : : 4.62 Find the slope of the line shown.
+Find the Slope of Horizontal and Vertical Lines
+Do you remember what was special about horizontal and vertical lines? Their equations had just one variable.
+Chapter 4 Graphs 479
+Horizontal line y = b Vertical line x = a
+y-coordinates are the same. x-coordinates are the same.
+So how do we find the slope of the horizontal line y = 4 ? One approach would be to graph the horizontal line, find two
+points on it, and count the rise and the run. Let’s see what happens when we do this.
+What is the rise? The rise is 0 .
+Count the run. The run is 3 .
+What is the slope?
+m = rise
+run
+m = 0
+m = 0
+The slope of the horizontal line y = 4 is 0 .
+Table 4.34
+All horizontal lines have slope 0. When the y-coordinates are the same, the rise is 0.
+Slope of a Horizontal Line
+The slope of a horizontal line, y = b , is 0.
+The floor of your room is horizontal. Its slope is 0. If you carefully placed a ball on the floor, it would not roll away.
+Now, we’ll consider a vertical line, the line.
+480 Chapter 4 Graphs
+What is the rise? The rise is 2 .
+Count the run. The run is 0 .
+What is the slope?
+m = rise
+run
+m = 2
+Table 4.35
+But we can’t divide by 0. Division by 0 is not defined. So we say that the slope of the vertical line x = 3 is undefined.
+The slope of any vertical line is undefined. When the x-coordinates of a line are all the same, the run is 0.
+Slope of a Vertical Line
+The slope of a vertical line, x = a , is undefined.
+Find the slope of each line:
+a x = 8 b y = −5 .
+a x = 8
+This is a vertical line.
+Its slope is undefined.
+b y = −5
+This is a horizontal line.
+It has slope 0.
+TRY IT : : 4.63 Find the slope of the line: x = −4.
+TRY IT : : 4.64 Find the slope of the line: y = 7.
+Quick Guide to the Slopes of Lines
+Remember, we ‘read’ a line from left to right, just like we read written words in English.
+Use the Slope Formula to find the Slope of a Line Between Two Points
+MANIPULATIVE MATHEMATICS
+Doing the Manipulative Mathematics activity “Slope of Lines Between Two Points” will help you develop a better
+understanding of how to find the slope of a line between two points.
+Sometimes we’ll need to find the slope of a line between two points when we don’t have a graph to count out the rise and
+the run. We could plot the points on grid paper, then count out the rise and the run, but as we’ll see, there is a way to find
+the slope without graphing. Before we get to it, we need to introduce some algebraic notation.
+Chapter 4 Graphs 481
+We have seen that an ordered pair (x, y) gives the coordinates of a point. But when we work with slopes, we use two
+points. How can the same symbol (x, y) be used to represent two different points? Mathematicians use subscripts to
+distinguish the points.
+(x1, y1) read ‘ x sub 1, y sub 1’
+(x2, y2) read ‘ x sub 2, y sub 2’
+The use of subscripts in math is very much like the use of last name initials in elementary school. Maybe you remember
+Laura C. and Laura M. in your third grade class?
+We will use (x1, y1) to identify the first point and (x2, y2) to identify the second point.
+If we had more than two points, we could use (x3, y3) , (x4, y4) , and so on.
+Let’s see how the rise and run relate to the coordinates of the two points by taking another look at the slope of the line
+between the points (2, 3) and (7, 6) .
+Since we have two points, we will use subscript notation, ⎛
+⎝2,
+x1,
+y1⎞
+⎠ ⎛
+⎝ 7, 6
+x2, y2⎞
+⎠ .
+On the graph, we counted the rise of 3 and the run of 5.
+Notice that the rise of 3 can be found by subtracting the y-coordinates 6 and 3.
+3 = 6 − 3
+And the run of 5 can be found by subtracting the x-coordinates 7 and 2.
+5 = 7 − 2
+We know m = rise
+run . So m = 3
+5 .
+We rewrite the rise and run by putting in the coordinates m = 6 − 3
+7 − 2 .
+But 6 is y2 , the y-coordinate of the second point and 3 is y1 , the y-coordinate of the first point.
+So we can rewrite the slope using subscript notation. m = y2 − y1
+7 − 2
+Also, 7 is x2 , the x-coordinate of the second point and 2 is x1 , the x-coordinate of the first point.
+So, again, we rewrite the slope using subscript notation. m = y2 − y1
+x2 − x1
+We’ve shown that m = y2 − y1
+x2 − x1 is really another version of m = rise
+run . We can use this formula to find the slope of a line
+when we have two points on the line.
+Slope Formula
+The slope of the line between two points (x1, y1) and (x2, y2) is
+m = y2 − y1
+x2 − x1
+This is the slope formula.
+482 Chapter 4 Graphs
+The slope is:
+y of the second point minus y of the first point
+over
+x of the second point minus x of the first point.
+Use the slope formula to find the slope of the line between the points (1, 2) and (4, 5) .
+We'll call (1, 2) point #1 and (4, 5) point #2. ⎛
+⎝ 1, 2
+x1, y1⎞
+⎠ ⎛
+⎝ 4, 5
+x2, y2⎞
+Use the slope formula. m = y2 − y1
+x2 − x1 .
+Substitute the values.
+y of the second point minus y of the first point m = 5 − 2
+x2 − x1 .
+x of the second point minus x of the first point m = 5 − 2
+4 − 1 .
+Simplify the numerator and the denominator. m = 3
+3 .
+Simplify. m = 1 .
+Table 4.36
+Let’s confirm this by counting out the slope on a graph using m = rise
+run .
+It doesn’t matter which point you call point #1 and which one you call point #2. The slope will be the same. Try the
+calculation yourself.
+TRY IT : : 4.65 Use the slope formula to find the slope of the line through the points: (8, 5) and (6, 3) .
+TRY IT : : 4.66 Use the slope formula to find the slope of the line through the points: (1, 5) and (5, 9) .
+Chapter 4 Graphs 483
+Use the slope formula to find the slope of the line through the points (−2, −3) and (−7, 4) .
+We'll call (−2, −3) point #1 and (−7, 4) point #2. ⎛
+⎝−2, −3
+x1, y1 ⎞
+⎠ ⎛
+⎝−7, 4
+x2, y2⎞
+Use the slope formula. m = y2 − y1
+x2 − x1 .
+Substitute the values.
+y of the second point minus y of the first point m = 4 − (−3)
+x2 − x1 .
+x of the second point minus x of the first point m = 4 − (−3)
+−7 − (−2) .
+Simplify.
+m = 7
+−5
+m = − 7
+Table 4.37
+Let’s verify this slope on the graph shown.
+m = rise
+run
+m = −7
+m = − 7
+TRY IT : : 4.67 Use the slope formula to find the slope of the line through the points: (−3, 4) and (2, −1).
+Use the slope formula to find the slope of the line through the pair of points: (−2, 6) and (−3, −4) .
+Graph a Line Given a Point and the Slope
+Up to now, in this chapter, we have graphed lines by plotting points, by using intercepts, and by recognizing horizontal
+and vertical lines.
+One other method we can use to graph lines is called the point–slope method. We will use this method when we know
+one point and the slope of the line. We will start by plotting the point and then use the definition of slope to draw the
+484 Chapter 4 Graphs
+graph of the line.
+EXAMPLE 4.35 HOW TO GRAPH A LINE GIVEN A POINT AND THE SLOPE
+Graph the line passing through the point (1, −1) whose slope is m = 3
+4 .
+TRY IT : : 4.69 Graph the line passing through the point (2, −2) with the slope m = 4
+3 .
+TRY IT : : 4.70 Graph the line passing through the point (−2, 3) with the slope m = 1
+4 .
+Chapter 4 Graphs 485
+Graph the line with y-intercept 2 whose slope is m = − 2
+3 .
+Plot the given point, the y-intercept, (0, 2) .
+Identify the rise and the run. m = − 2
+rise
+run = −2
+rise = −2
+run = 3
+Table 4.38
+Count the rise and the run. Mark the second point.
+Connect the two points with a line.
+HOW TO : : GRAPH A LINE GIVEN A POINT AND THE SLOPE.
+Plot the given point.
+Use the slope formula m = rise
+run to identify the rise and the run.
+Starting at the given point, count out the rise and run to mark the second point.
+Connect the points with a line.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+486 Chapter 4 Graphs
+You can check your work by finding a third point. Since the slope is m = − 2
+3 , it can be written as m = 2
+−3 . Go back to
+(0, 2) and count out the rise, 2, and the run, −3 .
+TRY IT : : 4.71 Graph the line with the y-intercept 4 and slope m = − 5
+2.
+TRY IT : : 4.72 Graph the line with the x-intercept −3 and slope m = − 3
+4 .
+Graph the line passing through the point (−1, −3) whose slope is m = 4.
+Plot the given point.
+Identify the rise and the run. m = 4
+Write 4 as a fraction. rise
+run = 4
+rise = 4, run = 1
+Table 4.39
+Count the rise and run and mark the second point.
+Chapter 4 Graphs 487
+Connect the two points with a line.
+You can check your work by finding a third point. Since the slope is m = 4 , it can be written as m = −4
+−1 . Go back to
+(−1, −3) and count out the rise, −4 , and the run, −1 .
+TRY IT : : 4.73 Graph the line with the point (−2, 1) and slope m = 3 .
+TRY IT : : 4.74 Graph the line with the point (4, −2) and slope m = −2 .
+Solve Slope Applications
+At the beginning of this section, we said there are many applications of slope in the real world. Let’s look at a few now.
+The ‘pitch’ of a building’s roof is the slope of the roof. Knowing the pitch is important in climates where there is heavy
+snowfall. If the roof is too flat, the weight of the snow may cause it to collapse. What is the slope of the roof shown?
+488 Chapter 4 Graphs
+Use the slope formula. m = rise
+run
+Substitute the values for rise and run. m = 9
+Simplify. m = 1
+The slope of the roof is 1
+2 .
+The roof rises 1 foot for every 2 feet of horizontal run.
+Table 4.40
+TRY IT : : 4.75 Use Example 4.38, substituting the rise = 14 and run = 24.
+TRY IT : : 4.76 Use Example 4.38, substituting rise = 15 and run = 36.
+Have you ever thought about the sewage pipes going from your house to the street? They must slope down 1
+4 inch per
+foot in order to drain properly. What is the required slope?
+Use the slope formula.
+m = rise
+run
+m = − 1
+4inch
+1 foot
+m = − 1
+4inch
+12 inches
+Simplify. m = − 1
+The slope of the pipe is − 1
+48 .
+The pipe drops 1 inch for every 48 inches of horizontal run.
+TRY IT : : 4.77 Find the slope of a pipe that slopes down 1
+3 inch per foot.
+TRY IT : : 4.78 Find the slope of a pipe that slopes down 3
+4 inch per yard.
+Chapter 4 Graphs 489
+MEDIA : :
+Access these online resources for additional instruction and practice with understanding slope of a line.
+• Practice Slope with a Virtual Geoboard (https://openstax.org/l/25Geoboard)
+• Small, Medium, and Large Virtual Geoboards (https://openstax.org/l/25VirtualGeo)
+• Explore Area and Perimeter with a Geoboard (https://openstax.org/l/25APGeoboard)
+490 Chapter 4 Graphs
+Practice Makes Perfect
+Use Geoboards to Model Slope
+In the following exercises, find the slope modeled on each geoboard.
+211. 212. 213.
+214. 215. 216.
+217. 218.
+In the following exercises, model each slope. Draw a picture to show your results.
+219. 2
+3 220. 3
+4 221. 1
+222. 4
+3 223. − 1
+2 224. − 3
+225. − 2
+3 226. − 3
+4.4 EXERCISES
+Chapter 4 Graphs 491
+Use m = rise
+run to find the Slope of a Line from its Graph
+In the following exercises, find the slope of each line shown.
+227. 228.
+229. 230.
+231. 232.
+492 Chapter 4 Graphs
+233. 234.
+235. 236.
+237. 238.
+Chapter 4 Graphs 493
+239. 240.
+241. 242.
+Find the Slope of Horizontal and Vertical Lines
+In the following exercises, find the slope of each line.
+243. y = 3 244. y = 1 245. x = 4
+246. x = 2 247. y = −2 248. y = −3
+249. x = −5 250. x = −4
+Use the Slope Formula to find the Slope of a Line between Two Points
+In the following exercises, use the slope formula to find the slope of the line between each pair of points.
+251. (1, 4), (3, 9) 252. (2, 3), (5, 7) 253. (0, 3), (4, 6)
+254. (0, 1), (5, 4) 255. (2, 5), (4, 0) 256. (3, 6), (8, 0)
+257. (−3, 3), (4, −5) 258. (−2, 4), (3, −1) 259. (−1, −2), (2, 5)
+260. (−2, −1), (6, 5) 261. (4, −5), (1, −2) 262. (3, −6), (2, −2)
+494 Chapter 4 Graphs
+Graph a Line Given a Point and the Slope
+In the following exercises, graph each line with the given point and slope.
+263. (1, −2) ; m = 3
+4 264. (1, −1) ; m = 2
+3 265. (2, 5) ; m = − 1
+266. (1, 4) ; m = − 1
+2 267. (−3, 4) ; m = − 3
+2 268. (−2, 5) ; m = − 5
+269. (−1, −4) ; m = 4
+3 270. (−3, −5) ; m = 3
+2 271. y-intercept 3; m = − 2
+272. y-intercept 5; m = − 4
+3 273. x-intercept −2 ; m = 3
+4 274. x-intercept −1 ; m = 1
+275. (−3, 3) ; m = 2 276. (−4, 2) ; m = 4 277. (1, 5) ; m = −3
+278. (2, 3) ; m = −1
+Everyday Math
+279. Slope of a roof. An easy way to determine the
+slope of a roof is to set one end of a 12 inch level on the
+roof surface and hold it level. Then take a tape measure
+or ruler and measure from the other end of the level
+down to the roof surface. This will give you the slope of
+the roof. Builders, sometimes, refer to this as pitch and
+state it as an “ x 12 pitch” meaning x
+12 , where x is
+the measurement from the roof to the level—the rise.
+It is also sometimes stated as an “ x -in-12 pitch”.
+a What is the slope of the roof in this picture?
+b What is the pitch in construction terms?
+280. The slope of the roof shown here is measured with
+a 12” level and a ruler. What is the slope of this roof?
+281. Road grade. A local road has a grade of 6%. The
+grade of a road is its slope expressed as a percent. Find
+the slope of the road as a fraction and then simplify.
+What rise and run would reflect this slope or grade?
+282. Highway grade. A local road rises 2 feet for every
+50 feet of highway.
+a What is the slope of the highway?
+b The grade of a highway is its slope expressed
+as a percent. What is the grade of this highway?
+283. Wheelchair ramp. The rules for wheelchair ramps
+require a maximum 1-inch rise for a 12-inch run.
+a How long must the ramp be to accommodate a
+24-inch rise to the door?
+b Create a model of this ramp.
+284. Wheelchair ramp. A 1-inch rise for a 16-inch run
+makes it easier for the wheelchair rider to ascend a
+ramp.
+a How long must a ramp be to easily
+accommodate a 24-inch rise to the door?
+b Create a model of this ramp.
+Chapter 4 Graphs 495
+Writing Exercises
+285. What does the sign of the slope tell you about a
+line? 286. How does the graph of a line with slope m = 1
+differ from the graph of a line with slope m = 2 ?
+287. Why is the slope of a vertical line “undefined”?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b On a scale of 1–10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+496 Chapter 4 Graphs

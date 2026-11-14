@@ -1,0 +1,596 @@
+1.2
+Use the Language of Algebra
+Learning Objectives
+By the end of this section, you will be able to:
+Use variables and algebraic symbols
+Simplify expressions using the order of operations
+Evaluate an expression
+Identify and combine like terms
+Translate an English phrase to an algebraic expression
+BE PREPARED : : 1.2
+A more thorough introduction to the topics covered in this section can be found in the Prealgebra chapter, The
+Language of Algebra.
+Use Variables and Algebraic Symbols
+Suppose this year Greg is 20 years old and Alex is 23. You know that Alex is 3 years older than Greg. When Greg was 12,
+Alex was 15. When Greg is 35, Alex will be 38. No matter what Greg’s age is, Alex’s age will always be 3 years more, right?
+In the language of algebra, we say that Greg’s age and Alex’s age are variables and the 3 is a constant. The ages change
+(“vary”) but the 3 years between them always stays the same (“constant”). Since Greg’s age and Alex’s age will always
+differ by 3 years, 3 is the constant.
+In algebra, we use letters of the alphabet to represent variables. So if we call Greg’s age g, then we could use g + 3 to
+represent Alex’s age. See Table 1.2.
+Greg’s age Alex’s age
+12 15
+20 23
+35 38
+g g + 3
+Table 1.2
+The letters used to represent these changing ages are called variables. The letters most commonly used for variables are
+x, y, a, b, and c.
+Variable
+A variable is a letter that represents a number whose value may change.
+Constant
+A constant is a number whose value always stays the same.
+To write algebraically, we need some operation symbols as well as numbers and variables. There are several types of
+symbols we will be using.
+There are four basic arithmetic operations: addition, subtraction, multiplication, and division. We’ll list the symbols used
+to indicate these operations below (Table 1.2). You’ll probably recognize some of them.
+Chapter 1 Foundations 21
+Operation Notation Say: The result is...
+Addition a + b a plus b the sum of a and b
+Subtraction a − b a minus
+b
+the difference of a and b
+Multiplication a · b, ab, (a)(b),
+(a)b, a(b)
+a times b the product of a and b
+Division a ÷ b, a/b, a
+b, b a a divided
+by b
+the quotient of a and b, a is called the dividend, and
+b is called the divisor
+We perform these operations on two numbers. When translating from symbolic form to English, or from English to
+symbolic form, pay attention to the words “of” and “and.”
+• The difference of 9 and 2 means subtract 9 and 2, in other words, 9 minus 2, which we write symbolically as 9 − 2.
+• The product of 4 and 8 means multiply 4 and 8, in other words 4 times 8, which we write symbolically as 4 · 8.
+In algebra, the cross symbol, ×, is not used to show multiplication because that symbol may cause confusion. Does 3xy
+mean 3 × y (‘three times y’) or 3 · x · y (three times x times y)? To make it clear, use · or parentheses for multiplication.
+When two quantities have the same value, we say they are equal and connect them with an equal sign.
+Equality Symbol
+a = b is read “a is equal to b”
+The symbol “=” is called the equal sign.
+On the number line, the numbers get larger as they go from left to right. The number line can be used to explain the
+symbols “<” and “>.”
+Inequality
+a < b is read “a is less than b”
+a is to the left of b on the number line
+a > b is read “a is greater than b”
+a is to the right of b on the number line
+The expressions a < b or a > b can be read from left to right or right to left, though in English we usually read from left to
+right (Table 1.3). In general, a < b is equivalent to b > a. For example 7 < 11 is equivalent to 11 > 7. And a > b is equivalent
+to b < a. For example 17 > 4 is equivalent to 4 < 17.
+22 Chapter 1 Foundations
+Inequality Symbols Words
+a ≠ b a is not equal to b
+a < b a is less than b
+a ≤ b a is less than or equal to b
+a > b a is greater than b
+a ≥ b a is greater than or equal to b
+Table 1.3
+Translate from algebra into English:
+a 17 ≤ 26 b 8 ≠ 17 − 3 c 12 > 27 ÷ 3 d y + 7 < 19
+a 17 ≤ 26
+17 is less than or equal to 26
+b 8 ≠ 17 − 3
+8 is not equal to 17 minus 3
+c 12 > 27 ÷ 3
+12 is greater than 27 divided by 3
+d y + 7 < 19
+y plus 7 is less than 19
+TRY IT : : 1.23 Translate from algebra into English:
+a 14 ≤ 27 b 19 − 2 ≠ 8 c 12 > 4 ÷ 2 d x − 7 < 1
+TRY IT : : 1.24 Translate from algebra into English:
+a 19 ≥ 15 b 7 = 12 − 5 c 15 ÷ 3 < 8 d y + 3 > 6
+Grouping symbols in algebra are much like the commas, colons, and other punctuation marks in English. They help to
+make clear which expressions are to be kept together and separate from other expressions. We will introduce three types
+now.
+Grouping Symbols
+Parentheses ()
+Brackets []
+Braces {}
+Here are some examples of expressions that include grouping symbols. We will simplify expressions like these later in this
+section.
+8(14 − 8) 21 − 3[2 + 4(9 − 8)] 24 ÷ ⎧
+⎩
+⎨13 − 2[1(6 − 5) + 4]⎫
+⎭
+⎬
+What is the difference in English between a phrase and a sentence? A phrase expresses a single thought that is incomplete
+by itself, but a sentence makes a complete statement. “Running very fast” is a phrase, but “The football player was
+Chapter 1 Foundations 23
+running very fast” is a sentence. A sentence has a subject and a verb. In algebra, we have expressions and equations.
+Expression
+An expression is a number, a variable, or a combination of numbers and variables using operation symbols.
+An expression is like an English phrase. Here are some examples of expressions:
+Expression Words English Phrase
+3 + 5 3 plus 5 the sum of three and five
+n − 1 n minus one the difference of n and one
+6 · 7 6 times 7 the product of six and seven
+x
+y x divided by y the quotient of x and y
+Notice that the English phrases do not form a complete sentence because the phrase does not have a verb.
+An equation is two expressions linked with an equal sign. When you read the words the symbols represent in an equation,
+you have a complete sentence in English. The equal sign gives the verb.
+Equation
+An equation is two expressions connected by an equal sign.
+Here are some examples of equations.
+Equation English Sentence
+3 + 5 = 8 The sum of three and five is equal to eight.
+n − 1 = 14 n minus one equals fourteen.
+6 · 7 = 42 The product of six and seven is equal to forty-two.
+x = 53 x is equal to fifty-three.
+y + 9 = 2y − 3 y plus nine is equal to two y minus three.
+Determine if each is an expression or an equation:
+a 2(x + 3) = 10 b 4(y − 1) + 1 c x ÷ 25 d y + 8 = 40
+a 2(x + 3) = 10 This is an equation—two expressions are connected with an equal sign.
+b 4(y − 1) + 1 This is an expression—no equal sign.
+c x ÷ 25 This is an expression—no equal sign.
+d y + 8 = 40 This is an equation—two expressions are connected with an equal sign.
+24 Chapter 1 Foundations
+TRY IT : : 1.25 Determine if each is an expression or an equation: a 3(x − 7) = 27 b 5(4y − 2) − 7 .
+TRY IT : : 1.26 Determine if each is an expression or an equation: a y3 ÷ 14 b 4x − 6 = 22 .
+Suppose we need to multiply 2 nine times. We could write this as 2 · 2 · 2 · 2 · 2 · 2 · 2 · 2 · 2. This is tedious and it can be
+hard to keep track of all those 2s, so we use exponents. We write 2 · 2 · 2 as 23 and 2 · 2 · 2 · 2 · 2 · 2 · 2 · 2 · 2 as 29. In
+expressions such as 23, the 2 is called the base and the 3 is called the exponent. The exponent tells us how many times
+we need to multiply the base.
+We read 23 as “two to the third power” or “two cubed.”
+We say 23 is in exponential notation and 2 · 2 · 2 is in expanded notation.
+Exponential Notation
+an means multiply a by itself, n times.
+The expression an is read a to the nth power.
+While we read an as “a to the nth power,” we usually read:
+• a2 “a squared”
+• a3 “a cubed”
+We’ll see later why a2 and a3 have special names.
+Table 1.4 shows how we read some expressions with exponents.
+Expression In Words
+72 7 to the second power or 7 squared
+53 5 to the third power or 5 cubed
+94 9 to the fourth power
+125 12 to the fifth power
+Table 1.4
+Simplify: 34.
+Chapter 1 Foundations 25
+Expand the expression. 3 · 3 · 3 · 3
+Multiply left to right. 9 · 3 · 3
+Multiply. 27 · 3
+Multiply. 81
+TRY IT : : 1.27 Simplify: a 53 b 17.
+TRY IT : : 1.28 Simplify: a 72 b 05.
+Simplify Expressions Using the Order of Operations
+To simplify an expression means to do all the math possible. For example, to simplify 4 · 2 + 1 we’d first multiply 4 · 2
+to get 8 and then add the 1 to get 9. A good habit to develop is to work down the page, writing each step of the process
+below the previous step. The example just described would look like this:
+4 · 2 + 1
+8 + 1
+By not using an equal sign when you simplify an expression, you may avoid confusing expressions with equations.
+Simplify an Expression
+To simplify an expression, do all operations in the expression.
+We’ve introduced most of the symbols and notation used in algebra, but now we need to clarify the order of operations.
+Otherwise, expressions may have different meanings, and they may result in different values. For example, consider the
+expression:
+4 + 3 · 7
+If you simplify this expression, what do you get?
+Some students say 49,
+4 + 3 · 7
+Since 4 + 3 gives 7. 7 · 7
+And 7 · 7 is 49. 49
+Others say 25,
+4 + 3 · 7
+Since 3 · 7 is 21. 4 + 21
+And 21 + 4 makes 25. 25
+Imagine the confusion in our banking system if every problem had several different correct answers!
+The same expression should give the same result. So mathematicians early on established some guidelines that are called
+the Order of Operations.
+26 Chapter 1 Foundations
+MANIPULATIVE MATHEMATICS
+Doing the Manipulative Mathematics activity “Game of 24” give you practice using the order of operations.
+Students often ask, “How will I remember the order?” Here is a way to help you remember: Take the first letter of each
+key word and substitute the silly phrase: “Please Excuse My Dear Aunt Sally.”
+Parentheses Please
+Exponents Excuse
+Multiplication Division My Dear
+Addition Subtraction Aunt Sally
+It’s good that “My Dear” goes together, as this reminds us that multiplication and division have equal priority. We do not
+always do multiplication before division or always do division before multiplication. We do them in order from left to right.
+Similarly, “Aunt Sally” goes together and so reminds us that addition and subtraction also have equal priority and we do
+them in order from left to right.
+Let’s try an example.
+Simplify: a 4 + 3 · 7 b (4 + 3) · 7.
+a
+Are there any parentheses? No.
+Are there any exponents? No.
+Is there any multiplication or division? Yes.
+Multiply first.
+Add.
+HOW TO : : PERFORM THE ORDER OF OPERATIONS.
+Parentheses and Other Grouping Symbols
+◦ Simplify all expressions inside the parentheses or other grouping symbols, working on
+the innermost parentheses first.
+Exponents
+◦ Simplify all expressions with exponents.
+Multiplication and Division
+◦ Perform all multiplication and division in order from left to right. These operations
+have equal priority.
+Addition and Subtraction
+◦ Perform all addition and subtraction in order from left to right. These operations have
+equal priority.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 1 Foundations 27
+b
+Are there any parentheses? Yes.
+Simplify inside the parentheses.
+Are there any exponents? No.
+Is there any multiplication or division? Yes.
+Multiply.
+TRY IT : : 1.29 Simplify: a 12 − 5 · 2 b (12 − 5) · 2.
+TRY IT : : 1.30 Simplify: a 8 + 3 · 9 b (8 + 3) · 9.
+Simplify: 18 ÷ 6 + 4(5 − 2).
+Parentheses? Yes, subtract first. 18 ÷ 6 + 4(5 − 2)
+Exponents? No.
+Multiplication or division? Yes.
+Divide first because we multiply and divide left to right.
+Any other multiplication or division? Yes.
+Multiply.
+Any other multiplication or division? No.
+Any addition or subtraction? Yes.
+TRY IT : : 1.31 Simplify: 30 ÷ 5 + 10(3 − 2).
+TRY IT : : 1.32 Simplify: 70 ÷ 10 + 4(6 − 2).
+When there are multiple grouping symbols, we simplify the innermost parentheses first and work outward.
+Simplify: 5 + 23 + 3⎡
+⎣6 − 3(4 − 2)⎤
+⎦.
+28 Chapter 1 Foundations
+Are there any parentheses (or other grouping symbol)? Yes.
+Focus on the parentheses that are inside the brackets.
+Subtract.
+Continue inside the brackets and multiply.
+Continue inside the brackets and subtract.
+The expression inside the brackets requires no further simplification.
+Are there any exponents? Yes.
+Simplify exponents.
+Is there any multiplication or division? Yes.
+Multiply.
+Is there any addition or subtraction? Yes.
+Add.
+Add.
+TRY IT : : 1.33 Simplify: 9 + 53 − ⎡
+⎣4(9 + 3)⎤
+⎦.
+TRY IT : : 1.34 Simplify: 72 − 2⎡
+⎣4(5 + 1)⎤
+⎦.
+Evaluate an Expression
+In the last few examples, we simplified expressions using the order of operations. Now we’ll evaluate some
+expressions—again following the order of operations. To evaluate an expression means to find the value of the
+expression when the variable is replaced by a given number.
+Evaluate an Expression
+To evaluate an expression means to find the value of the expression when the variable is replaced by a given
+number.
+To evaluate an expression, substitute that number for the variable in the expression and then simplify the expression.
+Evaluate 7x − 4, when a x = 5 and b x = 1.
+a
+Chapter 1 Foundations 29
+Multiply.
+Subtract.
+b
+Multiply.
+Subtract.
+TRY IT : : 1.35 Evaluate 8x − 3, when a x = 2 and b x = 1.
+TRY IT : : 1.36 Evaluate 4y − 4, when a y = 3 and b y = 5.
+Evaluate x = 4, when a x2 b 3x.
+a
+x2
+Use definition of exponent. 4 · 4
+Simplify. 16
+b
+3x
+Use definition of exponent. 3 · 3 · 3 · 3
+Simplify. 81
+TRY IT : : 1.37 Evaluate x = 3, when a x2 b 4x.
+30 Chapter 1 Foundations
+TRY IT : : 1.38 Evaluate x = 6, when a x3 b 2x.
+Evaluate 2x2 + 3x + 8 when x = 4.
+2x2 + 3x + 8
+Follow the order of operations. 2(16) + 3(4) + 8
+32 + 12 + 8
+TRY IT : : 1.39 Evaluate 3x2 + 4x + 1 when x = 3.
+TRY IT : : 1.40 Evaluate 6x2 − 4x − 7 when x = 2.
+Identify and Combine Like Terms
+Algebraic expressions are made up of terms. A term is a constant, or the product of a constant and one or more variables.
+Term
+A term is a constant, or the product of a constant and one or more variables.
+Examples of terms are 7, y, 5x2, 9a, and b5.
+The constant that multiplies the variable is called the coefficient.
+Coefficient
+The coefficient of a term is the constant that multiplies the variable in a term.
+Think of the coefficient as the number in front of the variable. The coefficient of the term 3x is 3. When we write x, the
+coefficient is 1, since x = 1 · x.
+Identify the coefficient of each term: a 14y b 15x2 c a.
+a The coefficient of 14y is 14.
+b The coefficient of 15x2 is 15.
+c The coefficient of a is 1 since a = 1 a.
+Chapter 1 Foundations 31
+TRY IT : : 1.41 Identify the coefficient of each term: a 17x b 41b2 c z.
+TRY IT : : 1.42 Identify the coefficient of each term: a 9p b 13a3 c y3.
+Some terms share common traits. Look at the following 6 terms. Which ones seem to have traits in common?
+5x 7 n2 4 3x 9n2
+The 7 and the 4 are both constant terms.
+The 5x and the 3x are both terms with x.
+The n2 and the 9n2 are both terms with n2.
+When two terms are constants or have the same variable and exponent, we say they are like terms.
+• 7 and 4 are like terms.
+• 5x and 3x are like terms.
+• x2 and 9x2 are like terms.
+Like Terms
+Terms that are either constants or have the same variables raised to the same powers are called like terms.
+Identify the like terms: y3, 7x2, 14, 23, 4y3, 9x, 5x2.
+y3 and 4y3 are like terms because both have y3; the variable and the exponent match.
+7x2 and 5x2 are like terms because both have x2; the variable and the exponent match.
+14 and 23 are like terms because both are constants.
+There is no other term like 9x.
+TRY IT : : 1.43 Identify the like terms: 9, 2x3, y2, 8x3, 15, 9y, 11y2.
+TRY IT : : 1.44 Identify the like terms: 4x3, 8x2, 19, 3x2, 24, 6x3.
+Adding or subtracting terms forms an expression. In the expression 2x2 + 3x + 8, from Example 1.20, the three terms
+are 2x2, 3x, and 8.
+Identify the terms in each expression.
+a 9x2 + 7x + 12 b 8x + 3y
+a The terms of 9x2 + 7x + 12 are 9x2, 7x, and 12.
+b The terms of 8x + 3y are 8x and 3y.
+TRY IT : : 1.45 Identify the terms in the expression 4x2 + 5x + 17.
+32 Chapter 1 Foundations
+TRY IT : : 1.46 Identify the terms in the expression 5x + 2y.
+If there are like terms in an expression, you can simplify the expression by combining the like terms. What do you think
+4x + 7x + x would simplify to? If you thought 12x, you would be right!
+4x + 7x + x
+x + x + x + x + x + x + x + x + x + x + x + x
+12x
+Add the coefficients and keep the same variable. It doesn’t matter what x is—if you have 4 of something and add 7 more
+of the same thing and then add 1 more, the result is 12 of them. For example, 4 oranges plus 7 oranges plus 1 orange is
+12 oranges. We will discuss the mathematical properties behind this later.
+Simplify: 4x + 7x + x.
+Add the coefficients. 12x
+EXAMPLE 1.24 HOW TO COMBINE LIKE TERMS
+Simplify: 2x2 + 3x + 7 + x2 + 4x + 5.
+TRY IT : : 1.47 Simplify: 3x2 + 7x + 9 + 7x2 + 9x + 8.
+TRY IT : : 1.48 Simplify: 4y2 + 5y + 2 + 8y2 + 4y + 5.
+Translate an English Phrase to an Algebraic Expression
+In the last section, we listed many operation symbols that are used in algebra, then we translated expressions and
+equations into English phrases and sentences. Now we’ll reverse the process. We’ll translate English phrases into
+algebraic expressions. The symbols and variables we’ve talked about will help us do that. Table 1.5 summarizes them.
+HOW TO : : COMBINE LIKE TERMS.
+Identify like terms.
+Rearrange the expression so like terms are together.
+Add or subtract the coefficients and keep the same variable for each group of like terms.
+Step 1.
+Step 2.
+Step 3.
+Chapter 1 Foundations 33
+Operation Phrase Expression
+Addition a plus b
+the sum of a and b
+a increased by b
+b more than a
+the total of a and b
+b added to a
+a + b
+Subtraction a minus b
+the difference of a and b
+a decreased by b
+b less than a
+b subtracted from a
+a − b
+Multiplication a times b
+the product of a and b
+twice a
+a · b, ab, a(b), (a)(b)
+2a
+Division a divided by b
+the quotient of a and b
+the ratio of a and b
+b divided into a
+a ÷ b, a/b, a
+b, b a
+Table 1.5
+Look closely at these phrases using the four operations:
+Each phrase tells us to operate on two numbers. Look for the words of and and to find the numbers.
+Translate each English phrase into an algebraic expression: a the difference of 17x and 5 b the quotient of 10x2 and
+7.
+a The key word is difference, which tells us the operation is subtraction. Look for the words of and and to find
+the numbers to subtract.
+b The key word is “quotient,” which tells us the operation is division.
+This can also be written 10x2 /7 or 10x2
+7 .
+34 Chapter 1 Foundations
+Translate the English phrase into an algebraic expression: a the difference of 14x2 and 13 b the quotient of 12x
+and 2.
+Translate the English phrase into an algebraic expression: a the sum of 17y2 and 19 b the product of 7 and
+y.
+How old will you be in eight years? What age is eight more years than your age now? Did you add 8 to your present age?
+Eight “more than” means 8 added to your present age. How old were you seven years ago? This is 7 years less than your
+age now. You subtract 7 from your present age. Seven “less than” means 7 subtracted from your present age.
+Translate the English phrase into an algebraic expression: a Seventeen more than y b Nine less than 9x2.
+a The key words are more than. They tell us the operation is addition. More than means “added to.”
+Seventeen more than y
+Seventeen added to y
+y + 17
+b The key words are less than. They tell us to subtract. Less than means “subtracted from.”
+Nine less than 9x2
+Nine subtracted from 9x2
+9x2 − 9
+Translate the English phrase into an algebraic expression: a Eleven more than x b Fourteen less than 11a.
+Translate the English phrase into an algebraic expression: a 13 more than z b 18 less than 8x.
+Translate the English phrase into an algebraic expression: a five times the sum of m and n b the sum of five times m and
+n.
+There are two operation words—times tells us to multiply and sum tells us to add.
+a Because we are multiplying 5 times the sum we need parentheses around the sum of m and n, (m + n).
+This forces us to determine the sum first. (Remember the order of operations.)
+five times the sum of m and n
+5 (m + n)
+b To take a sum, we look for the words “of” and “and” to see what is being added. Here we are taking the sum
+of five times m and n.
+the sum of five times m and n
+5m + n
+Chapter 1 Foundations 35
+Translate the English phrase into an algebraic expression: a four times the sum of p and q b the sum of four
+times p and q.
+Translate the English phrase into an algebraic expression: a the difference of two times x and 8, b two times the
+difference of x and 8.
+Later in this course, we’ll apply our skills in algebra to solving applications. The first step will be to translate an English
+phrase to an algebraic expression. We’ll see how to do this in the next two examples.
+The length of a rectangle is 6 less than the width. Let w represent the width of the rectangle. Write an expression for the
+length of the rectangle.
+Write a phrase about the length of the rectangle. 6 less than the width
+Substitute w for "the width." 6 less than w
+Rewrite "less than" as "subtracted from." 6 subtracted from w
+Translate the phrase into algebra. w − 6
+The length of a rectangle is 7 less than the width. Let w represent the width of the rectangle. Write an expression
+for the length of the rectangle.
+The width of a rectangle is 6 less than the length. Let l represent the length of the rectangle. Write an expression
+for the width of the rectangle.
+June has dimes and quarters in her purse. The number of dimes is three less than four times the number of quarters. Let
+q represent the number of quarters. Write an expression for the number of dimes.
+Write a phrase about the number of dimes. three less than four times the number of quarters
+Substitute q for the number of quarters. 3 less than 4 times q
+Translate "4 times q ." 3 less than 4q
+Translate the phase into algebra. 4q − 3
+Geoffrey has dimes and quarters in his pocket. The number of dimes is eight less than four times the number of
+quarters. Let q represent the number of quarters. Write an expression for the number of dimes.
+36 Chapter 1 Foundations
+Lauren has dimes and nickels in her purse. The number of dimes is three more than seven times the number of
+nickels. Let n represent the number of nickels. Write an expression for the number of dimes.
+Chapter 1 Foundations 37
+Practice Makes Perfect
+Use Variables and Algebraic Symbols
+In the following exercises, translate from algebra to English.
+83. 16 − 9 84. 3 · 9 85. 28 ÷ 4
+86. x + 11 87. (2)(7) 88. (4)(8)
+89. 14 < 21 90. 17 < 35 91. 36 ≥ 19
+92. 6n = 36 93. y − 1 > 6 94. y − 4 > 8
+95. 2 ≤ 18 ÷ 6 96. a ≠ 1 · 12
+In the following exercises, determine if each is an expression or an equation.
+97. 9 · 6 = 54 98. 7 · 9 = 63 99. 5 · 4 + 3
+100. x + 7 101. x + 9 102. y − 5 = 25
+Simplify Expressions Using the Order of Operations
+In the following exercises, simplify each expression.
+103. 53 104. 83 105. 28
+106. 105
+In the following exercises, simplify using the order of operations.
+107. a 3 + 8 · 5 b (3 + 8) · 5 108. a 2 + 6 · 3 b (2 + 6) · 3 109. 23 − 12 ÷ (9 − 5)
+110. 32 − 18 ÷ (11 − 5) 111. 3 · 8 + 5 · 2 112. 4 · 7 + 3 · 5
+113. 2 + 8(6 + 1) 114. 4 + 6(3 + 6) 115. 4 · 12/8
+116. 2 · 36/6 117. (6 + 10) ÷ (2 + 2) 118. (9 + 12) ÷ (3 + 4)
+119. 20 ÷ 4 + 6 · 5 120. 33 ÷ 3 + 8 · 2 121. 32 + 72
+122. (3 + 7)2 123. 3(1 + 9 · 6) − 42 124. 5(2 + 8 · 4) − 72
+125. 2⎡
+⎣1 + 3(10 − 2)⎤
+⎦ 126. 5⎡
+⎣2 + 4(3 − 2)⎤
+⎦
+Evaluate an Expression
+In the following exercises, evaluate the following expressions.
+127. 7x + 8 when x = 2 128. 8x − 6 when x = 7 129. x2 when x = 12
+130. x3 when x = 5 131. x5 when x = 2 132. 4x when x = 2
+1.2 EXERCISES
+38 Chapter 1 Foundations
+133. x2 + 3x − 7 when x = 4 134. 6x + 3y − 9 when
+x = 6, y = 9
+135. (x − y)2 when
+x = 10, y = 7
+136. (x + y)2 when x = 6, y = 9 137. a2 + b2 when a = 3, b = 8 138. r2 − s2 when r = 12, s = 5
+139. 2l + 2w when
+l = 15, w = 12
+140. 2l + 2w when
+l = 18, w = 14
+Simplify Expressions by Combining Like Terms
+In the following exercises, identify the coefficient of each term.
+141. 8a 142. 13m 143. 5r2
+144. 6x3
+In the following exercises, identify the like terms.
+145. x3, 8x, 14, 8y, 5, 8x3 146. 6z, 3w2, 1, 6z2, 4z, w2 147. 9a, a2, 16, 16b2, 4, 9b2
+148. 3, 25r2, 10s, 10r, 4r2, 3s
+In the following exercises, identify the terms in each expression.
+149. 15x2 + 6x + 2 150. 11x2 + 8x + 5 151. 10y3 + y + 2
+152. 9y3 + y + 5
+In the following exercises, simplify the following expressions by combining like terms.
+153. 10x + 3x 154. 15x + 4x 155. 4c + 2c + c
+156. 6y + 4y + y 157. 7u + 2 + 3u + 1 158. 8d + 6 + 2d + 5
+159. 10a + 7 + 5a − 2 + 7a − 4 160. 7c + 4 + 6c − 3 + 9c − 1
+161. 3x2 + 12x + 11 + 14x2 + 8x + 5 162. 5b2 + 9b + 10 + 2b2 + 3b − 4
+Translate an English Phrase to an Algebraic Expression
+In the following exercises, translate the phrases into algebraic expressions.
+163. the difference of 14 and 9 164. the difference of 19 and 8 165. the product of 9 and 7
+166. the product of 8 and 7 167. the quotient of 36 and 9 168. the quotient of 42 and 7
+169. the sum of 8x and 3x 170. the sum of 13x and 3x 171. the quotient of y and 3
+172. the quotient of y and 8 173. eight times the difference of y
+and nine
+174. seven times the difference of
+y and one
+Chapter 1 Foundations 39
+175. Eric has rock and classical CDs
+in his car. The number of rock CDs
+is 3 more than the number of
+classical CDs. Let c represent the
+number of classical CDs. Write an
+expression for the number of rock
+CDs.
+176. The number of girls in a
+second-grade class is 4 less than
+the number of boys. Let b
+represent the number of boys.
+Write an expression for the
+number of girls.
+177. Greg has nickels and pennies
+in his pocket. The number of
+pennies is seven less than twice
+the number of nickels. Let n
+represent the number of nickels.
+Write an expression for the
+number of pennies.
+178. Jeannette has $5 and $10 bills
+in her wallet. The number of fives
+is three more than six times the
+number of tens. Let t represent
+the number of tens. Write an
+expression for the number of
+fives.
+Everyday Math
+179. Car insurance Justin’s car insurance has a $750
+deductible per incident. This means that he pays $750
+and his insurance company will pay all costs beyond
+$750. If Justin files a claim for $2,100.
+a how much will he pay?
+b how much will his insurance company pay?
+180. Home insurance Armando’s home insurance has
+a $2,500 deductible per incident. This means that he
+pays $2,500 and the insurance company will pay all
+costs beyond $2,500. If Armando files a claim for
+$19,400.
+a how much will he pay?
+b how much will the insurance company pay?
+Writing Exercises
+181. Explain the difference between an expression and
+an equation.
+182. Why is it important to use the order of operations
+to simplify an expression?
+183. Explain how you identify the like terms in the
+expression 8a2 + 4a + 9 − a2 − 1.
+184. Explain the difference between the phrases “4
+times the sum of x and y” and “the sum of 4 times x and
+y.”
+Self Check
+a Use this checklist to evaluate your mastery of the objectives of this section.
+b After reviewing this checklist, what will you do to become confident for all objectives?
+40 Chapter 1 Foundations

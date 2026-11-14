@@ -1,0 +1,726 @@
+4.5
+Use the Slope-Intercept Form of an Equation of a Line
+Learning Objectives
+BE PREPARED : : 4.10 Before you get started, take this readiness quiz.
+Add: x
+4 + 1
+4.
+If you missed this problem, review Example 1.77.
+BE PREPARED : : 4.11 Find the reciprocal of 3
+7.
+If you missed this problem, review Example 1.70.
+BE PREPARED : : 4.12 Solve 2x − 3y = 12 for y .
+If you missed this problem, review Example 2.63.
+Recognize the Relation Between the Graph and the Slope–Intercept Form of an
+Equation of a Line
+We have graphed linear equations by plotting points, using intercepts, recognizing horizontal and vertical lines, and using
+the point–slope method. Once we see how an equation in slope–intercept form and its graph are related, we’ll have one
+more method we can use to graph lines.
+In Graph Linear Equations in Two Variables, we graphed the line of the equation y = 1
+2x + 3 by plotting points. See
+Figure 4.24. Let’s find the slope of this line.
+Figure 4.24
+The red lines show us the rise is 1 and the run is 2. Substituting into the slope formula:
+m = rise
+run
+m = 1
+What is the y-intercept of the line? The y-intercept is where the line crosses the y-axis, so y-intercept is (0, 3) . The
+equation of this line is:
+Chapter 4 Graphs 497
+Notice, the line has:
+When a linear equation is solved for y , the coefficient of the x term is the slope and the constant term is the y-coordinate
+of the y-intercept. We say that the equation y = 1
+2x + 3 is in slope–intercept form.
+Slope-Intercept Form of an Equation of a Line
+The slope–intercept form of an equation of a line with slope m and y-intercept, (0, b) is,
+y = mx + b
+Sometimes the slope–intercept form is called the “y-form.”
+Use the graph to find the slope and y-intercept of the line, y = 2x + 1 .
+Compare these values to the equation y = mx + b .
+To find the slope of the line, we need to choose two points on the line. We’ll use the points (0, 1) and (1, 3) .
+Find the rise and run.
+Find the y-intercept of the line. The y-intercept is the point (0, 1).
+The slope is the same as the coefficient of x and the y-coordinate of the y-intercept is the same as the constant term.
+498 Chapter 4 Graphs
+Use the graph to find the slope and y-intercept of the line y = 2
+3x − 1 . Compare these values to the equation
+y = mx + b .
+Use the graph to find the slope and y-intercept of the line y = 1
+2x + 3 . Compare these values to the equation
+y = mx + b .
+Identify the Slope and y-Intercept From an Equation of a Line
+In Understand Slope of a Line, we graphed a line using the slope and a point. When we are given an equation in
+slope–intercept form, we can use the y-intercept as the point, and then count out the slope from there. Let’s practice
+finding the values of the slope and y-intercept from the equation of a line.
+Identify the slope and y-intercept of the line with equation y = −3x + 5 .
+We compare our equation to the slope–intercept form of the equation.
+Write the equation of the line.
+Identify the slope.
+Chapter 4 Graphs 499
+Identify the y-intercept.
+TRY IT : : 4.81 Identify the slope and y-intercept of the line y = 2
+5x − 1 .
+TRY IT : : 4.82 Identify the slope and y-intercept of the line y = − 4
+3x + 1 .
+When an equation of a line is not given in slope–intercept form, our first step will be to solve the equation for y .
+Identify the slope and y-intercept of the line with equation x + 2y = 6 .
+This equation is not in slope–intercept form. In order to compare it to the slope–intercept form we must first solve the
+equation for y .
+Solve for y. x + 2y = 6
+Subtract x from each side.
+Divide both sides by 2.
+Simplify.
+⎛
+⎝Remember: a + b
+c = a
+c + b
+c⎞
+Simplify.
+Write the slope–intercept form of the equation of the line.
+Write the equation of the line.
+Identify the slope.
+Identify the y-intercept.
+TRY IT : : 4.83 Identify the slope and y-intercept of the line x + 4y = 8 .
+TRY IT : : 4.84 Identify the slope and y-intercept of the line 3x + 2y = 12 .
+Graph a Line Using its Slope and Intercept
+Now that we know how to find the slope and y-intercept of a line from its equation, we can graph the line by plotting the
+y-intercept and then using the slope to find another point.
+EXAMPLE 4.43 HOW TO GRAPH A LINE USING ITS SLOPE AND INTERCEPT
+Graph the line of the equation y = 4x − 2 using its slope and y-intercept.
+500 Chapter 4 Graphs
+Chapter 4 Graphs 501
+TRY IT : : 4.85 Graph the line of the equation y = 4x + 1 using its slope and y-intercept.
+TRY IT : : 4.86 Graph the line of the equation y = 2x − 3 using its slope and y-intercept.
+Graph the line of the equation y = −x + 4 using its slope and y-intercept.
+y = mx + b
+The equation is in slope–intercept form. y = −x + 4
+Identify the slope and y-intercept. m = −1
+y-intercept is (0, 4)
+Plot the y-intercept. See graph below.
+Identify the rise and the run. m = −1
+Count out the rise and run to mark the second point. rise −1, run 1
+HOW TO : : GRAPH A LINE USING ITS SLOPE AND
+Y-INTERCEPT.
+Find the slope-intercept form of the equation of the line.
+Identify the slope and y-intercept.
+Plot the y-intercept.
+Use the slope formula m = rise
+run to identify the rise and the run.
+Starting at the y-intercept, count out the rise and run to mark the second point.
+Connect the points with a line.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+502 Chapter 4 Graphs
+Draw the line.
+To check your work, you can find another point on the line and make sure it is a solution of the equation. In
+the graph we see the line goes through (4, 0).
+Check.
+y = −x + 4
+0 =? −4 + 4
+0 = 0 ✓
+TRY IT : : 4.87 Graph the line of the equation y = −x − 3 using its slope and y-intercept.
+TRY IT : : 4.88 Graph the line of the equation y = −x − 1 using its slope and y-intercept.
+Graph the line of the equation y = − 2
+3x − 3 using its slope and y-intercept.
+y = mx + b
+The equation is in slope–intercept form. y = − 2
+3x − 3
+Identify the slope and y-intercept. m = − 2
+3 ; y-intercept is (0, −3)
+Plot the y-intercept. See graph below.
+Identify the rise and the run.
+Count out the rise and run to mark the second point.
+Chapter 4 Graphs 503
+Draw the line.
+TRY IT : : 4.89 Graph the line of the equation y = − 5
+2x + 1 using its slope and y-intercept.
+TRY IT : : 4.90 Graph the line of the equation y = − 3
+4x − 2 using its slope and y-intercept.
+Graph the line of the equation 4x − 3y = 12 using its slope and y-intercept.
+4x − 3y = 12
+Find the slope–intercept form of the equation. −3y = −4x + 12
+− 3y
+3 = −4x + 12
+−3
+The equation is now in slope–intercept form. y = 4
+3x − 4
+Identify the slope and y-intercept. m = 4
+y-intercept is (0, −4)
+Plot the y-intercept. See graph below.
+Identify the rise and the run; count out the rise and run to mark the
+second point.
+504 Chapter 4 Graphs
+Draw the line.
+TRY IT : : 4.91 Graph the line of the equation 2x − y = 6 using its slope and y-intercept.
+TRY IT : : 4.92 Graph the line of the equation 3x − 2y = 8 using its slope and y-intercept.
+We have used a grid with x and y both going from about −10 to 10 for all the equations we’ve graphed so far. Not
+all linear equations can be graphed on this small grid. Often, especially in applications with real-world data, we’ll need to
+extend the axes to bigger positive or smaller negative numbers.
+Graph the line of the equation y = 0.2x + 45 using its slope and y-intercept.
+We’ll use a grid with the axes going from about −80 to 80.
+y = mx + b
+The equation is in slope–intercept form. y = 0.2x + 45
+Identify the slope and y-intercept. m = 0.2
+The y-intercept is (0, 45)
+Plot the y-intercept. See graph below.
+Count out the rise and run to mark the second point. The slope is
+m = 0.2 ; in fraction form this means m = 2
+10 . Given the scale of our
+graph, it would be easier to use the equivalent fraction m = 10
+50 .
+Chapter 4 Graphs 505
+Draw the line.
+TRY IT : : 4.93 Graph the line of the equation y = 0.5x + 25 using its slope and y-intercept.
+TRY IT : : 4.94 Graph the line of the equation y = 0.1x − 30 using its slope and y-intercept.
+Now that we have graphed lines by using the slope and y-intercept, let’s summarize all the methods we have used to
+graph lines. See Figure 4.25.
+Figure 4.25
+Choose the Most Convenient Method to Graph a Line
+Now that we have seen several methods we can use to graph lines, how do we know which method to use for a given
+equation?
+While we could plot points, use the slope–intercept form, or find the intercepts for any equation, if we recognize the most
+convenient way to graph a certain type of equation, our work will be easier. Generally, plotting points is not the most
+efficient way to graph a line. We saw better methods in sections 4.3, 4.4, and earlier in this section. Let’s look for some
+patterns to help determine the most convenient method to graph a line.
+Here are six equations we graphed in this chapter, and the method we used to graph each of them.
+Equation Method
+#1 x = 2 Vertical line
+#2 y = 4 Horizontal line
+#3 −x + 2y = 6 Intercepts
+#4 4x − 3y = 12 Intercepts
+#5 y = 4x − 2 Slope–intercept
+#6 y = −x + 4 Slope–intercept
+Equations #1 and #2 each have just one variable. Remember, in equations of this form the value of that one variable is
+506 Chapter 4 Graphs
+constant; it does not depend on the value of the other variable. Equations of this form have graphs that are vertical or
+horizontal lines.
+In equations #3 and #4, both x and y are on the same side of the equation. These two equations are of the form
+Ax + By = C . We substituted y = 0 to find the x-intercept and x = 0 to find the y-intercept, and then found a third
+point by choosing another value for x or y .
+Equations #5 and #6 are written in slope–intercept form. After identifying the slope and y-intercept from the equation we
+used them to graph the line.
+This leads to the following strategy.
+Strategy for Choosing the Most Convenient Method to Graph a Line
+Consider the form of the equation.
+• If it only has one variable, it is a vertical or horizontal line.
+◦ x = a is a vertical line passing through the x-axis at a .
+◦ y = b is a horizontal line passing through the y-axis at b .
+• If y is isolated on one side of the equation, in the form y = mx + b , graph by using the slope and y-intercept.
+◦ Identify the slope and y-intercept and then graph.
+• If the equation is of the form Ax + By = C , find the intercepts.
+◦ Find the x- and y-intercepts, a third point, and then graph.
+Determine the most convenient method to graph each line.
+a y = −6 b 5x − 3y = 15 c x = 7 d y = 2
+5x − 1 .
+a y = −6
+This equation has only one variable, y . Its graph is a horizontal line crossing the y-axis at −6 .
+b 5x − 3y = 15
+This equation is of the form Ax + By = C . The easiest way to graph it will be to find the intercepts and one
+more point.
+c x = 7
+There is only one variable, x . The graph is a vertical line crossing the x-axis at 7.
+d y = 2
+5x − 1
+Since this equation is in y = mx + b form, it will be easiest to graph this line by using the slope and y-intercept.
+Determine the most convenient method to graph each line: a 3x + 2y = 12 b y = 4 c y = 1
+5x − 4 d
+x = −7 .
+Determine the most convenient method to graph each line: a x = 6 b y = − 3
+4x + 1 c y = −8 d
+4x − 3y = −1 .
+Graph and Interpret Applications of Slope–Intercept
+Many real-world applications are modeled by linear equations. We will take a look at a few applications here so you can
+Chapter 4 Graphs 507
+see how equations written in slope–intercept form relate to real-world situations.
+Usually when a linear equation models a real-world situation, different letters are used for the variables, instead of x and
+y. The variable names remind us of what quantities are being measured.
+The equation F = 9
+5C + 32 is used to convert temperatures, C , on the Celsius scale to temperatures, F , on the
+Fahrenheit scale.
+a Find the Fahrenheit temperature for a Celsius temperature of 0.
+b Find the Fahrenheit temperature for a Celsius temperature of 20.
+c Interpret the slope and F-intercept of the equation.
+d Graph the equation.
+a
+Find the Fahrenheit temperature for a Celsius temperature of 0.
+Find F when C = 0 .
+Simplify.
+F = 9
+5C + 32
+F = 9
+5(0) + 32
+F = 32
+b
+Find the Fahrenheit temperature for a Celsius temperature of 20.
+Find F when C = 20 .
+Simplify.
+Simplify.
+F = 9
+5C + 32
+F = 9
+5(20) + 32
+F = 36 + 32
+F = 68
+Table 4.41
+c Interpret the slope and F-intercept of the equation.
+Even though this equation uses F and C , it is still in slope–intercept form.
+The slope, 9
+5 , means that the temperature Fahrenheit (F) increases 9 degrees when the temperature Celsius (C) increases
+5 degrees.
+The F-intercept means that when the temperature is 0° on the Celsius scale, it is 32° on the Fahrenheit scale.
+d Graph the equation.
+We’ll need to use a larger scale than our usual. Start at the F-intercept (0, 32) then count out the rise of 9 and the run of
+5 to get a second point. See Figure 4.26.
+508 Chapter 4 Graphs
+Figure 4.26
+The equation h = 2s + 50 is used to estimate a woman’s height in inches, h, based on her shoe size, s.
+a Estimate the height of a child who wears women’s shoe size 0.
+b Estimate the height of a woman with shoe size 8.
+c Interpret the slope and h-intercept of the equation. d Graph the equation.
+The equation T = 1
+4n + 40 is used to estimate the temperature in degrees Fahrenheit, T, based on the number
+of cricket chirps, n, in one minute.
+aEstimate the temperature when there are no chirps.
+b Estimate the temperature when the number of chirps in one minute is 100.
+c Interpret the slope and T-intercept of the equation. d Graph the equation.
+The cost of running some types business has two components—a fixed cost and a variable cost. The fixed cost is always the
+same regardless of how many units are produced. This is the cost of rent, insurance, equipment, advertising, and other
+items that must be paid regularly. The variable cost depends on the number of units produced. It is for the material and
+labor needed to produce each item.
+Stella has a home business selling gourmet pizzas. The equation C = 4p + 25 models the relation between her weekly
+cost, C, in dollars and the number of pizzas, p, that she sells.
+a Find Stella’s cost for a week when she sells no pizzas.
+b Find the cost for a week when she sells 15 pizzas.
+c Interpret the slope and C-intercept of the equation.
+d Graph the equation.
+Chapter 4 Graphs 509
+a Find Stella's cost for a week when she sells no
+pizzas.
+Find C when p = 0 .
+Simplify.
+Stella's fixed cost is $25 when she sells no pizzas.
+b Find the cost for a week when she sells 15 pizzas.
+Find C when p = 15 .
+Simplify.
+Stella's costs are $85 when she sells 15 pizzas.
+c Interpret the slope and C-intercept of the
+equation.
+The slope, 4, means that the cost increases by $4
+for each pizza Stella sells. The C-intercept means
+that even when Stella sells no pizzas, her costs for
+the week are $25.
+d Graph the equation. We'll need to use a larger
+scale than our usual. Start at the C-intercept (0, 25)
+then count out the rise of 4 and the run of 1 to get a
+second point.
+Sam drives a delivery van. The equation C = 0.5m + 60 models the relation between his weekly cost, C, in dollars
+and the number of miles, m, that he drives.
+a Find Sam’s cost for a week when he drives 0 miles.
+b Find the cost for a week when he drives 250 miles.
+c Interpret the slope and C-intercept of the equation.
+d Graph the equation.
+510 Chapter 4 Graphs
+Loreen has a calligraphy business. The equation C = 1.8n + 35 models the relation between her weekly cost, C,
+in dollars and the number of wedding invitations, n, that she writes.
+aFind Loreen’s cost for a week when she writes no invitations.
+b Find the cost for a week when she writes 75 invitations.
+c Interpret the slope and C-intercept of the equation. d Graph the equation.
+Use Slopes to Identify Parallel Lines
+The slope of a line indicates how steep the line is and whether it rises or falls as we read it from left to right. Two lines that
+have the same slope are called parallel lines. Parallel lines never intersect.
+We say this more formally in terms of the rectangular coordinate system. Two lines that have the same slope and different
+y-intercepts are called parallel lines. See Figure 4.27.
+Figure 4.27 Verify that both lines have the same
+slope, m = 2
+5 , and different y-intercepts.
+What about vertical lines? The slope of a vertical line is undefined, so vertical lines don’t fit in the definition above. We say
+that vertical lines that have different x-intercepts are parallel. See Figure 4.28.
+Chapter 4 Graphs 511
+Figure 4.28 Vertical lines with diferent x-intercepts are
+parallel.
+Parallel Lines
+Parallel lines are lines in the same plane that do not intersect.
+• Parallel lines have the same slope and different y-intercepts.
+• If m1 and m2 are the slopes of two parallel lines then m1 = m2 .
+• Parallel vertical lines have different x-intercepts.
+Let’s graph the equations y = −2x + 3 and 2x + y = −1 on the same grid. The first equation is already in
+slope–intercept form: y = −2x + 3 . We solve the second equation for y :
+2x + y = −1
+y = −2x − 1
+Graph the lines.
+Notice the lines look parallel. What is the slope of each line? What is the y-intercept of each line?
+512 Chapter 4 Graphs
+y = mx + b y = mx + b
+y = −2x + 3 y = −2x − 1
+m = −2 m = −2
+b = 3, (0, 3) b = −1, (0, −1)
+The slopes of the lines are the same and the y-intercept of each line is different. So we know these lines are parallel.
+Since parallel lines have the same slope and different y-intercepts, we can now just look at the slope–intercept form of the
+equations of lines and decide if the lines are parallel.
+Use slopes and y-intercepts to determine if the lines 3x − 2y = 6 and y = 3
+2x + 1 are parallel.
+Solve the first equation for y .
+3x − 2y = 6
+−2y = −3x + 6
+−2y
+−2 = −3x + 6
+−2
+and y = 3
+2x + 1
+The equation is now in slope-intercept form. y = 3
+2x − 3
+The equation of the second line is already in slopeintercept form. y = 3
+2x + 1
+Identify the slope and y -intercept of both lines. y = 3
+2x − 3
+y = mx + b
+m = 3
+y = 3
+2x + 1
+y = mx + b
+m = 3
+y-intercept is (0, −3) y-intercept is (0, 1)
+Table 4.42
+The lines have the same slope and different y-intercepts and so they are parallel. You may want to graph the lines to
+confirm whether they are parallel.
+Use slopes and y-intercepts to determine if the lines 2x + 5y = 5 and y = − 2
+5x − 4 are parallel.
+Use slopes and y-intercepts to determine if the lines 4x − 3y = 6 and y = 4
+3x − 1 are parallel.
+Use slopes and y-intercepts to determine if the lines y = −4 and y = 3 are parallel.
+Chapter 4 Graphs 513
+y = −4
+y = 0x − 4 and
+y = 3
+y = 0x + 3
+Write each equation in slope-intercept form. y = 0x − 4 y = 0x + 3
+Since there is no x term we write 0x . y = mx + b y = mx + b
+Identify the slope and y -intercept of both lines. m = 0 m = 0
+y-intercept is (0, 4) y-intercept is (0, 3)
+Table 4.43
+The lines have the same slope and different y-intercepts and so they are parallel.
+There is another way you can look at this example. If you recognize right away from the equations that these are
+horizontal lines, you know their slopes are both 0. Since the horizontal lines cross the y-axis at y = −4 and at y = 3 , we
+know the y-intercepts are (0, −4) and (0, 3) . The lines have the same slope and different y-intercepts and so they are
+parallel.
+TRY IT : : 4.103 Use slopes and y-intercepts to determine if the lines y = 8 and y = −6 are parallel.
+TRY IT : : 4.104 Use slopes and y-intercepts to determine if the lines y = 1 and y = −5 are parallel.
+Use slopes and y-intercepts to determine if the lines x = −2 and x = −5 are parallel.
+x = −2 and x = −5
+Since there is no y , the equations cannot be put in slope–intercept form. But we recognize them as equations of vertical
+lines. Their x-intercepts are −2 and −5 . Since their x-intercepts are different, the vertical lines are parallel.
+TRY IT : : 4.105 Use slopes and y-intercepts to determine if the lines x = 1 and x = −5 are parallel.
+TRY IT : : 4.106 Use slopes and y-intercepts to determine if the lines x = 8 and x = −6 are parallel.
+Use slopes and y-intercepts to determine if the lines y = 2x − 3 and −6x + 3y = −9 are parallel. You may want to
+graph these lines, too, to see what they look like.
+514 Chapter 4 Graphs
+y = 2x − 3 and −6x + 3y = −9
+The first equation is already in slope-intercept
+form. y = 2x − 3
+Solve the second equation for y .
+−6x + 3y = −9
+3y = 6x − 9
+3y
+3 = 6x − 9
+y = 2x − 3
+The second equation is now in slope-intercept
+form. y = 2x − 3
+Identify the slope and y -intercept of both lines.
+y = 2x − 3
+y = mx + b
+m = 2
+y = 2x − 3
+y = mx + b
+m = 2
+y-intercept is (0, −3) y-intercept is (0, −3)
+Table 4.44
+The lines have the same slope, but they also have the same y-intercepts. Their equations represent the same line. They
+are not parallel; they are the same line.
+Use slopes and y-intercepts to determine if the lines y = − 1
+2x − 1 and x + 2y = 2 are parallel.
+Use slopes and y-intercepts to determine if the lines y = 3
+4x − 3 and 3x − 4y = 12 are parallel.
+Use Slopes to Identify Perpendicular Lines
+Let’s look at the lines whose equations are y = 1
+4x − 1 and y = −4x + 2 , shown in Figure 4.29.
+Chapter 4 Graphs 515
+Figure 4.29
+These lines lie in the same plane and intersect in right angles. We call these lines perpendicular.
+What do you notice about the slopes of these two lines? As we read from left to right, the line y = 1
+4x − 1 rises, so its
+slope is positive. The line y = −4x + 2 drops from left to right, so it has a negative slope. Does it make sense to you that
+the slopes of two perpendicular lines will have opposite signs?
+If we look at the slope of the first line, m1 = 1
+4 , and the slope of the second line, m2 = −4 , we can see that they are
+negative reciprocals of each other. If we multiply them, their product is −1.
+m1 · m2
+4(−4)
+−1
+This is always true for perpendicular lines and leads us to this definition.
+Perpendicular Lines
+Perpendicular lines are lines in the same plane that form a right angle.
+If m1 and m2 are the slopes of two perpendicular lines, then:
+m1 · m2 = −1 and m1 = −1
+m2
+Vertical lines and horizontal lines are always perpendicular to each other.
+We were able to look at the slope–intercept form of linear equations and determine whether or not the lines were parallel.
+We can do the same thing for perpendicular lines.
+We find the slope–intercept form of the equation, and then see if the slopes are negative reciprocals. If the product of the
+slopes is −1 , the lines are perpendicular. Perpendicular lines may have the same y-intercepts.
+Use slopes to determine if the lines, y = −5x − 4 and x − 5y = 5 are perpendicular.
+516 Chapter 4 Graphs
+The first equation is already in slope-intercept form. y = −5x − 4
+Solve the second equation for y .
+x − 5y = 5
+−5y = −x + 5
+−5y
+−5 = −x + 5
+−5
+y = 1
+5x − 1
+Identify the slope of each line.
+y = −5x − 4
+y = mx + b
+m1 = −5
+y = 1
+5x − 1
+y = mx + b
+m2 = 1
+The slopes are negative reciprocals of each other, so the lines are perpendicular. We check by multiplying the slopes,
+m1 · m2
+−5⎛
+⎝1
+⎞
+−1 ✓
+TRY IT : : 4.109 Use slopes to determine if the lines y = −3x + 2 and x − 3y = 4 are perpendicular.
+TRY IT : : 4.110 Use slopes to determine if the lines y = 2x − 5 and x + 2y = −6 are perpendicular.
+Use slopes to determine if the lines, 7x + 2y = 3 and 2x + 7y = 5 are perpendicular.
+Solve the equations for y .
+7x + 2y = 3
+2y = −7x + 3
+2y
+2 = −7x + 3
+y = − 7
+2x + 3
+2x + 7y = 5
+7y = −2x + 5
+7y
+7 = −2x + 5
+y = − 2
+7x + 5
+Identify the slope of each line.
+y = mx + b
+m1 = − 7
+y = mx + b
+m2 = − 2
+Table 4.45
+The slopes are reciprocals of each other, but they have the same sign. Since they are not negative reciprocals, the lines
+are not perpendicular.
+TRY IT : : 4.111 Use slopes to determine if the lines 5x + 4y = 1 and 4x + 5y = 3 are perpendicular.
+Chapter 4 Graphs 517
+TRY IT : : 4.112 Use slopes to determine if the lines 2x − 9y = 3 and 9x − 2y = 1 are perpendicular.
+MEDIA : :
+Access this online resource for additional instruction and practice with graphs.
+• Explore the Relation Between a Graph and the Slope–Intercept Form of an Equation of a Line
+(https://openstax.org/l/25GraphPractice)
+518 Chapter 4 Graphs
+Practice Makes Perfect
+Recognize the Relation Between the Graph and the Slope–Intercept Form of an Equation of a Line
+In the following exercises, use the graph to find the slope and y-intercept of each line. Compare the values to the equation
+y = mx + b .
+288.
+y = 3x − 5
+289.
+y = 4x − 2
+290.
+y = −x + 4
+291.
+y = −3x + 1
+4.5 EXERCISES
+Chapter 4 Graphs 519
+292.
+y = − 4
+3x + 1
+293.
+y = − 2
+5x + 3
+Identify the Slope and y-Intercept From an Equation of a Line
+In the following exercises, identify the slope and y-intercept of each line.
+294. y = −7x + 3 295. y = −9x + 7 296. y = 6x − 8
+297. y = 4x − 10 298. 3x + y = 5 299. 4x + y = 8
+300. 6x + 4y = 12 301. 8x + 3y = 12 302. 5x − 2y = 6
+303. 7x − 3y = 9
+Graph a Line Using Its Slope and Intercept
+In the following exercises, graph the line of each equation using its slope and y-intercept.
+304. y = x + 3 305. y = x + 4 306. y = 3x − 1
+307. y = 2x − 3 308. y = −x + 2 309. y = −x + 3
+310. y = −x − 4 311. y = −x − 2 312. y = − 3
+4x − 1
+313. y = − 2
+5x − 3 314. y = − 3
+5x + 2 315. y = − 2
+3x + 1
+316. 3x − 4y = 8 317. 4x − 3y = 6 318. y = 0.1x + 15
+319. y = 0.3x + 25
+Choose the Most Convenient Method to Graph a Line
+In the following exercises, determine the most convenient method to graph each line.
+320. x = 2 321. y = 4 322. y = 5
+520 Chapter 4 Graphs
+323. x = −3 324. y = −3x + 4 325. y = −5x + 2
+326. x − y = 5 327. x − y = 1 328. y = 2
+3x − 1
+329. y = 4
+5x − 3 330. y = −3 331. y = −1
+332. 3x − 2y = −12 333. 2x − 5y = −10 334. y = − 1
+4x + 3
+335. y = − 1
+3x + 5
+Graph and Interpret Applications of Slope–Intercept
+336. The equation P = 31 + 1.75w models the
+relation between the amount of Tuyet’s monthly water
+bill payment, P, in dollars, and the number of units of
+water, w, used.
+a Find Tuyet’s payment for a month when 0 units
+of water are used.
+b Find Tuyet’s payment for a month when 12
+units of water are used.
+c Interpret the slope and P-intercept of the
+equation.
+d Graph the equation.
+337. The equation P = 28 + 2.54w models the
+relation between the amount of Randy’s monthly water
+bill payment, P, in dollars, and the number of units of
+water, w, used.
+a Find the payment for a month when Randy
+used 0 units of water.
+b Find the payment for a month when Randy
+used 15 units of water.
+c Interpret the slope and P-intercept of the
+equation.
+d Graph the equation.
+338. Bruce drives his car for his job. The equation
+R = 0.575m + 42 models the relation between the
+amount in dollars, R, that he is reimbursed and the
+number of miles, m, he drives in one day.
+a Find the amount Bruce is reimbursed on a day
+when he drives 0 miles.
+b Find the amount Bruce is reimbursed on a day
+when he drives 220 miles.
+c Interpret the slope and R-intercept of the
+equation.
+d Graph the equation.
+339. Janelle is planning to rent a car while on vacation.
+The equation C = 0.32m + 15 models the relation
+between the cost in dollars, C, per day and the number
+of miles, m, she drives in one day.
+a Find the cost if Janelle drives the car 0 miles one
+day.
+b Find the cost on a day when Janelle drives the
+car 400 miles.
+c Interpret the slope and C–intercept of the
+equation.
+d Graph the equation.
+340. Cherie works in retail and her weekly salary
+includes commission for the amount she sells. The
+equation S = 400 + 0.15c models the relation
+between her weekly salary, S, in dollars and the amount
+of her sales, c, in dollars.
+a Find Cherie’s salary for a week when her sales
+were 0.
+b Find Cherie’s salary for a week when her sales
+were 3600.
+c Interpret the slope and S–intercept of the
+equation.
+d Graph the equation.
+341. Patel’s weekly salary includes a base pay plus
+commission on his sales. The equation
+S = 750 + 0.09c models the relation between his
+weekly salary, S, in dollars and the amount of his sales,
+c, in dollars.
+a Find Patel’s salary for a week when his sales
+were 0.
+b Find Patel’s salary for a week when his sales
+were 18,540.
+c Interpret the slope and S-intercept of the
+equation.
+d Graph the equation.
+Chapter 4 Graphs 521
+342. Costa is planning a lunch banquet. The equation
+C = 450 + 28g models the relation between the cost
+in dollars, C, of the banquet and the number of guests,
+g.
+a Find the cost if the number of guests is 40.
+b Find the cost if the number of guests is 80.
+c Interpret the slope and C-intercept of the
+equation.
+d Graph the equation.
+343. Margie is planning a dinner banquet. The equation
+C = 750 + 42g models the relation between the cost
+in dollars, C of the banquet and the number of guests,
+g.
+a Find the cost if the number of guests is 50.
+b Find the cost if the number of guests is 100.
+c Interpret the slope and C–intercept of the
+equation.
+d Graph the equation.
+Use Slopes to Identify Parallel Lines
+In the following exercises, use slopes and y-intercepts to determine if the lines are parallel.
+344.
+y = 3
+4x − 3; 3x − 4y = − 2
+345.
+y = 2
+3x − 1; 2x − 3y = − 2
+346.
+2x − 5y = − 3; y = 2
+5x + 1
+347.
+3x − 4y = − 2; y = 3
+4x − 3
+348. 2x − 4y = 6; x − 2y = 3 349. 6x − 3y = 9; 2x − y = 3
+350. 4x + 2y = 6; 6x + 3y = 3 351.
+8x + 6y = 6; 12x + 9y = 12 352. x = 5; x = − 6
+353. x = 7; x = − 8 354. x = − 4; x = − 1 355. x = − 3; x = − 2
+356. y = 2; y = 6 357. y = 5; y = 1 358. y = − 4; y = 3
+359. y = − 1; y = 2 360. x − y = 2; 2x − 2y = 4 361. 4x + 4y = 8; x + y = 2
+362. x − 3y = 6; 2x − 6y = 12 363. 5x − 2y = 11; 5x − y = 7 364.
+3x − 6y = 12; 6x − 3y = 3
+365. 4x − 8y = 16; x − 2y = 4 366. 9x − 3y = 6; 3x − y = 2 367.
+x − 5y = 10; 5x − y = − 10
+368.
+7x − 4y = 8; 4x + 7y = 14
+369.
+9x − 5y = 4; 5x + 9y = − 1
+Use Slopes to Identify Perpendicular Lines
+In the following exercises, use slopes and y-intercepts to determine if the lines are perpendicular.
+370. 3x − 2y = 8; 2x + 3y = 6 371. x − 4y = 8; 4x + y = 2 372. 2x + 5y = 3; 5x − 2y = 6
+373. 2x + 3y = 5; 3x − 2y = 7 374. 3x − 2y = 1; 2x − 3y = 2 375. 3x − 4y = 8; 4x − 3y = 6
+376. 5x + 2y = 6; 2x + 5y = 8 377. 2x + 4y = 3; 6x + 3y = 2 378. 4x − 2y = 5; 3x + 6y = 8
+379. 2x − 6y = 4; 12x + 4y = 9 380. 6x − 4y = 5; 8x + 12y = 3 381. 8x − 2y = 7; 3x + 12y = 9
+522 Chapter 4 Graphs
+Everyday Math
+382. The equation C = 5
+9F − 17.8 can be used to
+convert temperatures F, on the Fahrenheit scale to
+temperatures, C, on the Celsius scale.
+a Explain what the slope of the equation means.
+b Explain what the C–intercept of the equation
+means.
+383. The equation n = 4T − 160 is used to estimate
+the number of cricket chirps, n, in one minute based on
+the temperature in degrees Fahrenheit, T.
+a Explain what the slope of the equation means.
+b Explain what the n–intercept of the equation
+means. Is this a realistic situation?
+Writing Exercises
+384. Explain in your own words how to decide which
+method to use to graph a line.
+385. Why are all horizontal lines parallel?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b After looking at the checklist, do you think you are well-prepared for the next section? Why or why not?
+Chapter 4 Graphs 523

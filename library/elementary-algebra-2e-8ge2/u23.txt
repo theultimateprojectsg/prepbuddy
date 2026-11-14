@@ -1,0 +1,508 @@
+Figure 4.1 This graph illustrates the annual vehicle sales of gas motorcycles, gas cars, and electric vehicles from 1994 to 2010. It is a
+line graph with x- and y-axes, one of the most common types of graphs. (credit: Steve Jurvetson, Flickr)
+Chapter Outline
+4.1 Use the Rectangular Coordinate System
+4.2 Graph Linear Equations in Two Variables
+4.3 Graph with Intercepts
+4.4 Understand Slope of a Line
+4.5 Use the Slope-Intercept Form of an Equation of a Line
+4.6 Find the Equation of a Line
+4.7 Graphs of Linear Inequalities
+Introduction
+Graphs are found in all areas of our lives—from commercials showing you which cell phone carrier provides the best
+coverage, to bank statements and news articles, to the boardroom of major corporations. In this chapter, we will study
+the rectangular coordinate system, which is the basis for most consumer graphs. We will look at linear graphs, slopes of
+lines, equations of lines, and linear inequalities.
+4.1
+Use the Rectangular Coordinate System
+Learning Objectives
+By the end of this section, you will be able to:
+Plot points in a rectangular coordinate system
+Verify solutions to an equation in two variables
+Complete a table of solutions to a linear equation
+Find solutions to a linear equation in two variables
+BE PREPARED : : 4.1 Before you get started, take this readiness quiz.
+Evaluate x + 3 when x = −1 .
+If you missed this problem, review Example 1.54.
+BE PREPARED : : 4.2 Evaluate 2x − 5y when x = 3 and y = −2.
+If you missed this problem, review Example 1.55.
+GRAPHS4
+Chapter 4 Graphs 413
+BE PREPARED : : 4.3 Solve for y : 40 − 4y = 20 .
+If you missed this problem, review Example 2.27.
+Plot Points on a Rectangular Coordinate System
+Just like maps use a grid system to identify locations, a grid system is used in algebra to show a relationship between
+two variables in a rectangular coordinate system. The rectangular coordinate system is also called the xy-plane or the
+‘coordinate plane’.
+The horizontal number line is called the x-axis. The vertical number line is called the y-axis. The x-axis and the y-axis
+together form the rectangular coordinate system. These axes divide a plane into four regions, called quadrants. The
+quadrants are identified by Roman numerals, beginning on the upper right and proceeding counterclockwise. See Figure
+4.2.
+Figure 4.2 ‘Quadrant’ has the root ‘quad,’
+which means ‘four.’
+In the rectangular coordinate system, every point is represented by an ordered pair. The first number in the ordered pair
+is the x-coordinate of the point, and the second number is the y-coordinate of the point.
+Ordered Pair
+An ordered pair, (x, y) , gives the coordinates of a point in a rectangular coordinate system.
+The first number is the x-coordinate.
+The second number is the y-coordinate.
+The phrase ‘ordered pair’ means the order is important. What is the ordered pair of the point where the axes cross? At
+that point both coordinates are zero, so its ordered pair is (0, 0) . The point (0, 0) has a special name. It is called the
+origin.
+The Origin
+The point (0, 0) is called the origin. It is the point where the x-axis and y-axis intersect.
+We use the coordinates to locate a point on the xy-plane. Let’s plot the point (1, 3) as an example. First, locate 1 on the
+x-axis and lightly sketch a vertical line through x = 1 . Then, locate 3 on the y-axis and sketch a horizontal line through
+y = 3 . Now, find the point where these two lines meet—that is the point with coordinates (1, 3) .
+414 Chapter 4 Graphs
+Notice that the vertical line through x = 1 and the horizontal line through y = 3 are not part of the graph. We just used
+them to help us locate the point (1, 3) .
+Plot each point in the rectangular coordinate system and identify the quadrant in which the point is located:
+a (−5, 4) b (−3, −4) c (2, −3) d (−2, 3) e ⎛
+⎝3, 5
+⎞
+⎠ .
+The first number of the coordinate pair is the x-coordinate, and the second number is the y-coordinate.
+a Since x = −5 , the point is to the left of the y-axis. Also, since y = 4 , the point is above the x-axis. The point
+(−5, 4) is in Quadrant II.
+b Since x = −3 , the point is to the left of the y-axis. Also, since y = −4 , the point is below the x-axis. The
+point (−3, −4) is in Quadrant III.
+c Since x = 2 , the point is to the right of the y-axis. Since y = −3 , the point is below the x-axis. The point
+(2, −3) is in Quadrant lV.
+d Since x = −2 , the point is to the left of the y-axis. Since y = 3 , the point is above the x-axis. The point
+(−2, 3) is in Quadrant II.
+e Since x = 3 , the point is to the right of the y-axis. Since y = 5
+2 , the point is above the x-axis. (It may be
+helpful to write 5
+2 as a mixed number or decimal.) The point ⎛
+⎝3, 5
+⎞
+⎠ is in Quadrant I.
+Figure 4.3
+Chapter 4 Graphs 415
+Plot each point in a rectangular coordinate system and identify the quadrant in which the point is located:
+a (−2, 1) b (−3, −1) c (4, −4) d (−4, 4) e ⎛
+⎝−4, 3
+⎞
+⎠ .
+Plot each point in a rectangular coordinate system and identify the quadrant in which the point is located:
+a (−4, 1) b (−2, 3) c (2, −5) d (−2, 5) e ⎛
+⎝−3, 5
+⎞
+⎠ .
+How do the signs affect the location of the points? You may have noticed some patterns as you graphed the points in the
+previous example.
+For the point in Figure 4.3 in Quadrant IV, what do you notice about the signs of the coordinates? What about the signs
+of the coordinates of points in the third quadrant? The second quadrant? The first quadrant?
+Can you tell just by looking at the coordinates in which quadrant the point (−2, 5) is located? In which quadrant is
+(2, −5) located?
+Quadrants
+We can summarize sign patterns of the quadrants in this way.
+Quadrant I Quadrant II Quadrant III Quadrant IV
+(x, y) (x, y) (x, y) (x, y)
+( + , + ) (−, + ) (−, −) ( + , −)
+What if one coordinate is zero as shown in Figure 4.4? Where is the point (0, 4) located? Where is the point (−2, 0)
+located?
+416 Chapter 4 Graphs
+Figure 4.4
+The point (0, 4) is on the y-axis and the point (−2, 0) is on the x-axis.
+Points on the Axes
+Points with a y-coordinate equal to 0 are on the x-axis, and have coordinates (a, 0) .
+Points with an x-coordinate equal to 0 are on the y-axis, and have coordinates (0, b) .
+Plot each point:
+a (0, 5) b (4, 0) c (−3, 0) d (0, 0) e (0, −1) .
+a Since x = 0 , the point whose coordinates are (0, 5) is on the y-axis.
+b Since y = 0 , the point whose coordinates are (4, 0) is on the x-axis.
+c Since y = 0 , the point whose coordinates are (−3, 0) is on the x-axis.
+d Since x = 0 and y = 0 , the point whose coordinates are (0, 0) is the origin.
+e Since x = 0 , the point whose coordinates are (0, −1) is on the y-axis.
+TRY IT : : 4.3 Plot each point:
+a (4, 0) b (−2, 0) c (0, 0) d (0, 2) e (0, −3) .
+Chapter 4 Graphs 417
+TRY IT : : 4.4 Plot each point:
+a (−5, 0) b (3, 0) c (0, 0) d (0, −1) e (0, 4) .
+In algebra, being able to identify the coordinates of a point shown on a graph is just as important as being able to plot
+points. To identify the x-coordinate of a point on a graph, read the number on the x-axis directly above or below the point.
+To identify the y-coordinate of a point, read the number on the y-axis directly to the left or right of the point. Remember,
+when you write the ordered pair use the correct order, (x, y) .
+Name the ordered pair of each point shown in the rectangular coordinate system.
+Point A is above −3 on the x-axis, so the x-coordinate of the point is −3 .
+• The point is to the left of 3 on the y-axis, so the y-coordinate of the point is 3.
+• The coordinates of the point are (−3, 3) .
+Point B is below −1 on the x-axis, so the x-coordinate of the point is −1 .
+• The point is to the left of −3 on the y-axis, so the y-coordinate of the point is −3 .
+• The coordinates of the point are (−1, −3) .
+Point C is above 2 on the x-axis, so the x-coordinate of the point is 2.
+• The point is to the right of 4 on the y-axis, so the y-coordinate of the point is 4.
+• The coordinates of the point are (2, 4) .
+Point D is below 4 on the x-axis, so the x-coordinate of the point is 4.
+• The point is to the right of −4 on the y-axis, so the y-coordinate of the point is −4.
+• The coordinates of the point are (4, −4) .
+Point E is on the y-axis at y = −2 . The coordinates of point E are (0, −2).
+Point F is on the x-axis at x = 3 . The coordinates of point F are (3, 0).
+418 Chapter 4 Graphs
+TRY IT : : 4.5 Name the ordered pair of each point shown in the rectangular coordinate system.
+TRY IT : : 4.6 Name the ordered pair of each point shown in the rectangular coordinate system.
+Verify Solutions to an Equation in Two Variables
+Up to now, all the equations you have solved were equations with just one variable. In almost every case, when you solved
+the equation you got exactly one solution. The process of solving an equation ended with a statement like x = 4 . (Then,
+you checked the solution by substituting back into the equation.)
+Here’s an example of an equation in one variable, and its one solution.
+3x + 5 = 17
+3x = 12
+x = 4
+But equations can have more than one variable. Equations with two variables may be of the form Ax + By = C .
+Equations of this form are called linear equations in two variables.
+Linear Equation
+An equation of the form Ax + By = C , where A and B are not both zero, is called a linear equation in two
+variables.
+Notice the word line in linear. Here is an example of a linear equation in two variables, x and y .
+The equation y = −3x + 5 is also a linear equation. But it does not appear to be in the form Ax + By = C . We can use
+the Addition Property of Equality and rewrite it in Ax + By = C form.
+Chapter 4 Graphs 419
+y = −3x + 5
+Add to both sides. y + 3x = −3x + 5 + 3x
+Simplify. y + 3x = 5
+Use the Commutative Property to put it in Ax + By = C form. 3x + y = 5
+Table 4.1
+By rewriting y = −3x + 5 as 3x + y = 5 , we can easily see that it is a linear equation in two variables because it is of the
+form Ax + By = C . When an equation is in the form Ax + By = C , we say it is in standard form.
+Standard Form of Linear Equation
+A linear equation is in standard form when it is written Ax + By = C .
+Most people prefer to have A , B , and C be integers and A ≥ 0 when writing a linear equation in standard form,
+although it is not strictly necessary.
+Linear equations have infinitely many solutions. For every number that is substituted for x there is a corresponding y
+value. This pair of values is a solution to the linear equation and is represented by the ordered pair (x, y) . When we
+substitute these values of x and y into the equation, the result is a true statement, because the value on the left side is
+equal to the value on the right side.
+Solution of a Linear Equation in Two Variables
+An ordered pair (x, y) is a solution of the linear equation Ax + By = C , if the equation is a true statement when
+the x- and y-values of the ordered pair are substituted into the equation.
+Determine which ordered pairs are solutions to the equation x + 4y = 8 .
+a (0, 2) b (2, −4) c (−4, 3)
+Substitute the x- and y-values from each ordered pair into the equation and determine if the result is a true statement.
+TRY IT : : 4.7 Which of the following ordered pairs are solutions to 2x + 3y = 6 ?
+a (3, 0) b (2, 0) c (6, −2)
+420 Chapter 4 Graphs
+TRY IT : : 4.8 Which of the following ordered pairs are solutions to the equation 4x − y = 8 ?
+a (0, 8) b (2, 0) c (1, −4)
+Which of the following ordered pairs are solutions to the equation y = 5x − 1 ?
+a (0, −1) b (1, 4) c (−2, −7)
+Substitute the x- and y-values from each ordered pair into the equation and determine if it results in a true statement.
+TRY IT : : 4.9 Which of the following ordered pairs are solutions to the equation y = 4x − 3 ?
+a (0, 3) b (1, 1) c (−1, −1)
+TRY IT : : 4.10 Which of the following ordered pairs are solutions to the equation y = −2x + 6 ?
+a (0, 6) b (1, 4) c (−2, −2)
+Complete a Table of Solutions to a Linear Equation in Two Variables
+In the examples above, we substituted the x- and y-values of a given ordered pair to determine whether or not it was
+a solution to a linear equation. But how do you find the ordered pairs if they are not given? It’s easier than you might
+think—you can just pick a value for x and then solve the equation for y . Or, pick a value for y and then solve for x .
+We’ll start by looking at the solutions to the equation y = 5x − 1 that we found in Example 4.5. We can summarize this
+information in a table of solutions, as shown in Table 4.2.
+y = 5x − 1
+x y (x, y)
+0 −1 (0, −1)
+1 4 (1, 4)
+Table 4.2
+To find a third solution, we’ll let x = 2 and solve for y .
+Chapter 4 Graphs 421
+The ordered pair (2, 9) is a solution to y = 5x − 1 . We will add it to Table 4.3.
+y = 5x − 1
+x y (x, y)
+0 −1 (0, −1)
+1 4 (1, 4)
+2 9 (2, 9)
+Table 4.3
+We can find more solutions to the equation by substituting in any value of x or any value of y and solving the resulting
+equation to get another ordered pair that is a solution. There are infinitely many solutions of this equation.
+Complete Table 4.4 to find three solutions to the equation y = 4x − 2 .
+y = 4x − 2
+x y (x, y)
+−1
+Table 4.4
+Substitute x = 0 , x = −1 , and x = 2 into y = 4x − 2 .
+The results are summarized in Table 4.5.
+422 Chapter 4 Graphs
+y = 4x − 2
+x y (x, y)
+0 −2 (0, −2)
+−1 −6 (−1, −6)
+2 6 (2, 6)
+Table 4.5
+TRY IT : : 4.11 Complete the table to find three solutions to this equation: y = 3x − 1 .
+y = 3x − 1
+x y (x, y)
+−1
+TRY IT : : 4.12 Complete the table to find three solutions to this equation: y = 6x + 1 .
+y = 6x + 1
+x y (x, y)
+−2
+Complete Table 4.6 to find three solutions to the equation 5x − 4y = 20 .
+Chapter 4 Graphs 423
+5x − 4y = 20
+x y (x, y)
+Table 4.6
+Substitute the given value into the equation 5x − 4y = 20 and solve for the other variable. Then, fill in the values in the
+table.
+The results are summarized in Table 4.7.
+5x − 4y = 20
+x y (x, y)
+0 −5 (0, −5)
+4 0 (4, 0)
+8 5 (8, 5)
+Table 4.7
+TRY IT : : 4.13 Complete the table to find three solutions to this equation: 2x − 5y = 20 .
+2x − 5y = 20
+x y (x, y)
+−5
+424 Chapter 4 Graphs
+TRY IT : : 4.14 Complete the table to find three solutions to this equation: 3x − 4y = 12 .
+3x − 4y = 12
+x y (x, y)
+−4
+Find Solutions to a Linear Equation
+To find a solution to a linear equation, you really can pick any number you want to substitute into the equation for x or
+y. But since you’ll need to use that number to solve for the other variable it’s a good idea to choose a number that’s easy
+to work with.
+When the equation is in y-form, with the y by itself on one side of the equation, it is usually easier to choose values of x
+and then solve for y .
+Find three solutions to the equation y = −3x + 2 .
+We can substitute any value we want for x or any value for y . Since the equation is in y-form, it will be easier to substitute
+in values of x . Let’s pick x = 0 , x = 1 , and x = −1 .
+Substitute the value into the equation.
+Simplify.
+Simplify.
+Write the ordered pair. (0, 2) (1, −1) (−1, 5)
+Check.
+y = −3x + 2 y = −3x + 2 y = −3x + 2
+2 ≟ −3 ⋅ 0 + 2 −1 ≟ −3 ⋅ 1 + 2 5 ≟ −3⎛
+⎝−1⎞
+⎠ + 2
+2 ≟ 0 + 2 −1 ≟ −3 + 2 5 ≟ 3 + 2
+2 = 2 ✓ −1 = −1 ✓ 5 = 5 ✓
+So, (0, 2) , (1, −1) and (−1, 5) are all solutions to y = −3x + 2 . We show them in Table 4.8.
+Chapter 4 Graphs 425
+y = −3x + 2
+x y (x, y)
+0 2 (0, 2)
+1 −1 (1, −1)
+−1 5 (−1, 5)
+Table 4.8
+TRY IT : : 4.15 Find three solutions to this equation: y = −2x + 3 .
+TRY IT : : 4.16 Find three solutions to this equation: y = −4x + 1 .
+We have seen how using zero as one value of x makes finding the value of y easy. When an equation is in standard
+form, with both the x and y on the same side of the equation, it is usually easier to first find one solution when x = 0
+find a second solution when y = 0 , and then find a third solution.
+Find three solutions to the equation 3x + 2y = 6 .
+We can substitute any value we want for x or any value for y . Since the equation is in standard form, let’s pick first
+x = 0 , then y = 0 , and then find a third point.
+Substitute the value into the equation.
+Simplify.
+Solve.
+Write the ordered pair. (0, 3) (2, 0) ⎛
+⎝1, 3
+⎞
+Check.
+3x + 2y = 6 3x + 2y = 6 3x + 2y = 6
+3 ⋅ 0 + 2 ⋅ 3 ≟ 6 3 ⋅ 2 + 2 ⋅ 0 ≟ 6 3 ⋅ 1 + 2 ⋅ 3
+2 ≟ 6
+0 + 6 ≟ 6 6 + 0 ≟ 6 3 + 3 ≟ 6
+6 = 6 ✓ 6 = 6 ✓ 6 = 6 ✓
+426 Chapter 4 Graphs
+So (0, 3) , (2, 0) , and ⎛
+⎝1, 3
+⎞
+⎠ are all solutions to the equation 3x + 2y = 6 . We can list these three solutions in Table
+4.9.
+3x + 2y = 6
+x y (x, y)
+0 3 (0, 3)
+2 0 (2, 0)
+1 3
+⎛
+⎝1, 3
+⎞
+Table 4.9
+TRY IT : : 4.17 Find three solutions to the equation 2x + 3y = 6 .
+TRY IT : : 4.18 Find three solutions to the equation 4x + 2y = 8 .
+Chapter 4 Graphs 427
+Practice Makes Perfect
+Plot Points in a Rectangular Coordinate System
+In the following exercises, plot each point in a rectangular coordinate system and identify the quadrant in which the point is
+located.
+1.
+a (−4, 2) b (−1, −2)
+c (3, −5)
+d (−3, 5)
+e ⎛
+⎝5
+3, 2⎞
+2.
+a (−2, −3) b (3, −3)
+c (−4, 1) d (4, −1)
+e ⎛
+⎝3
+2, 1⎞
+3.
+a (3, −1) b (−3, 1)
+c (−2, 2) d (−4, −3)
+e ⎛
+⎝1, 14
+⎞
+4.
+a (−1, 1) b (−2, −1)
+c (2, 1) d (1, −4)
+e ⎛
+⎝3, 7
+⎞
+In the following exercises, plot each point in a rectangular coordinate system.
+5.
+a (−2, 0) b (−3, 0)
+c (0, 0) d (0, 4)
+e (0, 2)
+6.
+a (0, 1) b (0, −4)
+c (−1, 0) d (0, 0)
+e (5, 0)
+7.
+a (0, 0) b (0, −3)
+c (−4, 0) d (1, 0)
+e (0, −2)
+8.
+a (−3, 0) b (0, 5)
+c (0, −2) d (2, 0)
+e (0, 0)
+In the following exercises, name the ordered pair of each point shown in the rectangular coordinate system.
+9. 10.
+4.1 EXERCISES
+428 Chapter 4 Graphs
+11. 12.
+Verify Solutions to an Equation in Two Variables
+In the following exercises, which ordered pairs are solutions to the given equations?
+13. 2x + y = 6
+a (1, 4) b (3, 0)
+c (2, 3)
+14. x + 3y = 9
+a (0, 3) b (6, 1)
+c (−3, −3)
+15. 4x − 2y = 8
+a (3, 2) b (1, 4)
+c (0, −4)
+16. 3x − 2y = 12
+a (4, 0) b (2, −3)
+c (1, 6)
+17. y = 4x + 3
+a (4, 3) b (−1, −1)
+c ⎛
+⎝1
+2, 5⎞
+18. y = 2x − 5
+a (0, −5) b (2, 1)
+c ⎛
+⎝1
+2, −4⎞
+19. y = 1
+2x − 1
+a (2, 0) b (−6, −4)
+c (−4, −1)
+20. y = 1
+3x + 1
+a (−3, 0) b (9, 4)
+c (−6, −1)
+Complete a Table of Solutions to a Linear Equation
+In the following exercises, complete the table to find solutions to each linear equation.
+21. y = 2x − 4
+x y (x, y)
+−1
+22. y = 3x − 1
+x y (x, y)
+−1
+23. y = −x + 5
+x y (x, y)
+−2
+Chapter 4 Graphs 429
+24. y = −x + 2
+x y (x, y)
+−2
+25. y = 1
+3x + 1
+x y (x, y)
+26. y = 1
+2x + 4
+x y (x, y)
+27. y = − 3
+2x − 2
+x y (x, y)
+−2
+28. y = − 2
+3x − 1
+x y (x, y)
+−3
+29. x + 3y = 6
+x y (x, y)
+30. x + 2y = 8
+x y (x, y)
+31. 2x − 5y = 10
+x y (x, y)
+32. 3x − 4y = 12
+x y (x, y)
+Find Solutions to a Linear Equation
+In the following exercises, find three solutions to each linear equation.
+33. y = 5x − 8 34. y = 3x − 9 35. y = −4x + 5
+36. y = −2x + 7 37. x + y = 8 38. x + y = 6
+39. x + y = −2 40. x + y = −1 41. 3x + y = 5
+42. 2x + y = 3 43. 4x − y = 8 44. 5x − y = 10
+45. 2x + 4y = 8 46. 3x + 2y = 6 47. 5x − 2y = 10
+48. 4x − 3y = 12
+430 Chapter 4 Graphs
+Everyday Math
+49. Weight of a baby. Mackenzie recorded her baby’s
+weight every two months. The baby’s age, in months,
+and weight, in pounds, are listed in the table below,
+and shown as an ordered pair in the third column.
+a Plot the points on a coordinate plane.
+b Why is only Quadrant I needed?
+Age x Weight y (x, y)
+0 7 (0, 7)
+2 11 (2, 11)
+4 15 (4, 15)
+6 16 (6, 16)
+8 19 (8, 19)
+10 20 (10, 20)
+12 21 (12, 21)
+50. Weight of a child. Latresha recorded her son’s
+height and weight every year. His height, in inches, and
+weight, in pounds, are listed in the table below, and
+shown as an ordered pair in the third column.
+a Plot the points on a coordinate plane.
+b Why is only Quadrant I needed?
+Height x Weight y (x, y)
+28 22 (28, 22)
+31 27 (31, 27)
+33 33 (33, 33)
+37 35 (37, 35)
+40 41 (40, 41)
+42 45 (42, 45)
+Writing Exercises
+51. Explain in words how you plot the point (4, −2) in
+a rectangular coordinate system.
+52. How do you determine if an ordered pair is a
+solution to a given equation?
+53. Is the point (−3, 0) on the x-axis or y-axis? How do
+you know?
+54. Is the point (0, 8) on the x-axis or y-axis? How do
+you know?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+Chapter 4 Graphs 431
+b If most of your checks were:
+...confidently. Congratulations! You have achieved the objectives in this section. Reflect on the study skills you used so that you
+can continue to use them. What did you do to become confident of your ability to do these things? Be specific.
+...with some help. This must be addressed quickly because topics you do not master become potholes in your road to success.
+In math every topic builds upon previous work. It is important to make sure you have a strong foundation before you move on.
+Whom can you ask for help? Your fellow classmates and instructor are good resources. Is there a place on campus where math
+tutors are available? Can your study skills be improved?
+...no, I don’t get it. This is a warning sign and you must not ignore it. You should get help right away or you will quickly be
+overwhelmed. See your instructor as soon as you can to discuss your situation. Together you can come up with a plan to get you
+the help you need.
+432 Chapter 4 Graphs

@@ -1,0 +1,466 @@
+7.3
+Factor Trinomials of the Form ax2+bx+c
+Learning Objectives
+BE PREPARED : : 7.8 Before you get started, take this readiness quiz.
+Find the GCF of 45p2 and 30p6 .
+If you missed this problem, review Example 7.2.
+BE PREPARED : : 7.9 Multiply (3y + 4)(2y + 5) .
+If you missed this problem, review Example 6.40.
+BE PREPARED : : 7.10 Combine like terms 12x2 + 3x + 5x + 9 .
+If you missed this problem, review Example 1.24.
+Recognize a Preliminary Strategy for Factoring
+Let’s summarize where we are so far with factoring polynomials. In the first two sections of this chapter, we used three
+methods of factoring: factoring the GCF, factoring by grouping, and factoring a trinomial by “undoing” FOIL. More
+methods will follow as you continue in this chapter, as well as later in your studies of algebra.
+How will you know when to use each factoring method? As you learn more methods of factoring, how will you know when
+to apply each method and not get them confused? It will help to organize the factoring methods into a strategy that can
+guide you to use the correct method.
+As you start to factor a polynomial, always ask first, “Is there a greatest common factor?” If there is, factor it first.
+The next thing to consider is the type of polynomial. How many terms does it have? Is it a binomial? A trinomial? Or does
+it have more than three terms?
+If it is a trinomial where the leading coefficient is one, x2 + bx + c , use the “undo FOIL” method.
+If it has more than three terms, try the grouping method. This is the only method to use for polynomials of more than
+three terms.
+Some polynomials cannot be factored. They are called “prime.”
+Below we summarize the methods we have so far. These are detailed in Choose a strategy to factor polynomials
+completely.
+834 Chapter 7 Factoring
+Use the preliminary strategy to completely factor a polynomial. A polynomial is factored completely if, other than
+monomials, all of its factors are prime.
+Identify the best method to use to factor each polynomial.
+a 6y2 − 72 b r2 − 10r − 24 c p2 + 5p + pq + 5q
+a
+6y2 − 72
+Is there a greatest common factor? Yes, 6.
+Factor out the 6. 6⎛
+⎝y2 − 12⎞
+Is it a binomial, trinomial, or are there Binomial, we have no method to factor
+more than 3 terms? binomials yet.
+b
+r2 − 10r − 24
+Is there a greatest common factor? No, there is no common factor.
+Is it a binomial, trinomial, or are there Trinomial, with leading coefficient 1, so
+more than three terms? “undo” FOIL.
+c
+p2 + 5p + pq + 5q
+Is there a greatest common factor? No, there is no common factor.
+Is it a binomial, trinomial, or are there More than three terms, so factor using
+more than three terms? grouping.
+TRY IT : : 7.57 Identify the best method to use to factor each polynomial:
+a 4y2 + 32 b y2 + 10y + 21 c yz + 2y + 3z + 6
+TRY IT : : 7.58 Identify the best method to use to factor each polynomial:
+a ab + a + 4b + 4 b 3k2 + 15 c p2 + 9p + 8
+HOW TO : : CHOOSE A STRATEGY TO FACTOR POLYNOMIALS COMPLETELY.
+Is there a greatest common factor?
+◦ Factor it out.
+Is the polynomial a binomial, trinomial, or are there more than three terms?
+◦ If it is a binomial, right now we have no method to factor it.
+◦ If it is a trinomial of the form x2 + bx + c : Undo FOIL (x )(x )
+◦ If it has more than three terms: Use the grouping method.
+Check by multiplying the factors.
+Step 1.
+Step 2.
+Step 3.
+Chapter 7 Factoring 835
+Factor Trinomials of the form ax2 + bx + c with a GCF
+Now that we have organized what we’ve covered so far, we are ready to factor trinomials whose leading coefficient is not
+1, trinomials of the form ax2 + bx + c .
+Remember to always check for a GCF first! Sometimes, after you factor the GCF, the leading coefficient of the trinomial
+becomes 1 and you can factor it by the methods in the last section. Let’s do a few examples to see how this works.
+Watch out for the signs in the next two examples.
+Factor completely: 2n2 − 8n − 42 .
+Use the preliminary strategy.
+Is there a greatest common factor? 2n2 − 8n − 42
+Yes, GCF = 2. Factor it out. 2⎛
+⎝n2 − 4n − 21⎞
+Inside the parentheses, is it a binomial, trinomial, or are there
+more than three terms?
+It is a trinomial whose coefficient is 1, so undo FOIL. 2(n )(n )
+Use 3 and −7 as the last terms of the binomials. 2(n + 3)(n − 7)
+Factors of −21 Sum of factors
+1, −21 1 + (−21) = −20
+3, −7 3 + (−7) = −4*
+Check.
+2(n + 3)(n − 7)
+2(n2 − 7n + 3n − 21)
+2(n2 − 4n − 21)
+2n2 − 8n − 42 ✓
+TRY IT : : 7.59 Factor completely: 4m2 − 4m − 8 .
+TRY IT : : 7.60 Factor completely: 5k2 − 15k − 50 .
+Factor completely: 4y2 − 36y + 56 .
+Use the preliminary strategy.
+836 Chapter 7 Factoring
+Is there a greatest common factor? 4y2 − 36y + 56
+Yes, GCF = 4. Factor it. 4⎛
+⎝y2 − 9y + 14⎞
+Inside the parentheses, is it a binomial, trinomial, or are
+there more than three terms?
+It is a trinomial whose coefficient is 1. So undo FOIL. 4(y )(y )
+Use a table like the one below to find two numbers that multiply to
+14 and add to −9.
+Both factors of 14 must be negative. 4⎛
+⎝y − 2⎞
+⎠⎛
+⎝y − 7⎞
+Factors of 14 Sum of factors
+−1, −14 −1 + (−14) = −15
+−2, −7 −2 + (−7) = −9*
+Check.
+4⎛
+⎝y − 2⎞
+⎠⎛
+⎝y − 7⎞
+4(y2 − 7y − 2y + 14)
+4(y2 − 9y + 14)
+4y2 − 36y + 42 ✓
+TRY IT : : 7.61 Factor completely: 3r2 − 9r + 6 .
+TRY IT : : 7.62 Factor completely: 2t2 − 10t + 12 .
+In the next example the GCF will include a variable.
+Chapter 7 Factoring 837
+Factor completely: 4u3 + 16u2 − 20u .
+Use the preliminary strategy.
+Is there a greatest common factor? 4u3 + 16u2 − 20u
+Yes, GCF = 4u. Factor it. 4u⎛
+⎝u2 + 4u − 5⎞
+Binomial, trinomial, or more than three terms?
+It is a trinomial. So “undo FOIL.” 4u(u )(u )
+Use a table like the table below to find two numbers that 4u(u − 1)(u + 5)
+multiply to −5 and add to 4.
+Factors of −5 Sum of factors
+−1, 5 −1 + 5 = 4*
+1, −5 1 + (−5) = −4
+Check.
+4u(u − 1)(u + 5)
+4u(u2 + 5u − u − 5)
+4u(u2 + 4u − 5)
+4u3 + 16u2 − 20u ✓
+TRY IT : : 7.63 Factor completely: 5x3 + 15x2 − 20x .
+TRY IT : : 7.64 Factor completely: 6y3 + 18y2 − 60y .
+Factor Trinomials using Trial and Error
+What happens when the leading coefficient is not 1 and there is no GCF? There are several methods that can be used to
+factor these trinomials. First we will use the Trial and Error method.
+Let’s factor the trinomial 3x2 + 5x + 2 .
+From our earlier work we expect this will factor into two binomials.
+3x2 + 5x + 2
+( )( )
+We know the first terms of the binomial factors will multiply to give us 3x2 . The only factors of 3x2 are 1x, 3x . We can
+place them in the binomials.
+Check. Does 1x · 3x = 3x2 ?
+We know the last terms of the binomials will multiply to 2. Since this trinomial has all positive terms, we only need to
+consider positive factors. The only factors of 2 are 1 and 2. But we now have two cases to consider as it will make a
+difference if we write 1, 2, or 2, 1.
+838 Chapter 7 Factoring
+Which factors are correct? To decide that, we multiply the inner and outer terms.
+Since the middle term of the trinomial is 5x, the factors in the first case will work. Let’s FOIL to check.
+(x + 1)(3x + 2)
+3x2 + 2x + 3x + 2
+3x2 + 5x + 2 ✓
+Our result of the factoring is:
+3x2 + 5x + 2
+(x + 1)(3x + 2)
+EXAMPLE 7.33 HOW TO FACTOR TRINOMIALS OF THE FORM ax2 + bx + c USING TRIAL AND ERROR
+Factor completely: 3y2 + 22y + 7 .
+Chapter 7 Factoring 839
+TRY IT : : 7.65 Factor completely: 2a2 + 5a + 3 .
+TRY IT : : 7.66 Factor completely: 4b2 + 5b + 1 .
+When the middle term is negative and the last term is positive, the signs in the binomials must both be negative.
+Factor completely: 6b2 − 13b + 5 .
+The trinomial is already in descending order.
+Find the factors of the first term.
+Find the factors of the last term. Consider the signs. Since the last term, 5 is positive its
+factors must both be positive or both be negative. The coefficient of the middle term is
+negative, so we use the negative factors.
+Consider all the combinations of factors.
+6b2 − 13b + 5
+Possible factors Product
+(b − 1)(6b − 5) 6b2 − 11b + 5
+(b − 5)(6b − 1) 6b2 − 31b + 5
+(2b − 1)(3b − 5) 6b2 − 13b + 5 *
+(2b − 5)(3b − 1) 6b2 − 17b + 5
+HOW TO : : FACTOR TRINOMIALS OF THE FORM ax2 + bx + c USING TRIAL AND ERROR.
+Write the trinomial in descending order of degrees.
+Find all the factor pairs of the first term.
+Find all the factor pairs of the third term.
+Test all the possible combinations of the factors until the correct product is found.
+Check by multiplying.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+840 Chapter 7 Factoring
+The correct factors are those whose product
+is the original trinomial. (2b − 1)(3b − 5)
+Check by multiplying.
+(2b − 1)(3b − 5)
+6b2 − 10b − 3b + 5
+6b2 − 13b + 5 ✓
+TRY IT : : 7.67 Factor completely: 8x2 − 14x + 3 .
+TRY IT : : 7.68 Factor completely: 10y2 − 37y + 7 .
+When we factor an expression, we always look for a greatest common factor first. If the expression does not have a
+greatest common factor, there cannot be one in its factors either. This may help us eliminate some of the possible factor
+combinations.
+Factor completely: 14x2 − 47x − 7 .
+The trinomial is already in descending order.
+Find the factors of the first term.
+Find the factors of the last term. Consider the signs. Since it is negative, one factor must
+be positive and one negative.
+Consider all the combinations of factors. We use each pair of the factors of 14x2 with each pair of factors of −7.
+Factors of 14x2 Pair with Factors of −7
+x , 14x 1 , −7
+−7 , 1
+(reverse order)
+x , 14x −1 , 7
+7 , −1
+(reverse order)
+2x, 7x 1 , −7
+−7 , 1
+(reverse order)
+2x, 7x −1 , 7
+7 , −1
+(reverse order)
+These pairings lead to the following eight combinations.
+Chapter 7 Factoring 841
+The correct factors are those whose product is the (2x − 7)(7x + 1)
+original trinomial.
+Check by multiplying.
+(2x − 7)(7x + 1)
+14x2 + 2x − 49x − 7
+14x2 − 47x − 7 ✓
+TRY IT : : 7.69 Factor completely: 8a2 − 3a − 5 .
+TRY IT : : 7.70 Factor completely: 6b2 − b − 15 .
+Factor completely: 18n2 − 37n + 15 .
+The trinomial is already in descending order. 18n2 − 37n + 15
+Find the factors of the first term.
+Find the factors of the last term. Consider the signs. Since 15 is positive and the
+coefficient of the middle term is negative, we use the negative facotrs.
+Consider all the combinations of factors.
+842 Chapter 7 Factoring
+The correct factors are those whose product is ⎛
+⎝2n − 3)(9n − 5⎞
+the original trinomial.
+Check by multiplying.
+⎛
+⎝2n − 3)(9n − 5⎞
+18n2 − 10n − 27n + 15
+18n2 − 37n + 15 ✓
+TRY IT : : 7.71 Factor completely: 18x2 − 3x − 10 .
+TRY IT : : 7.72 Factor completely: 30y2 − 53y − 21 .
+Don’t forget to look for a GCF first.
+Factor completely: 10y4 + 55y3 + 60y2 .
+10y4 + 55y3 + 60y2
+Notice the greatest common factor, and factor it first. 5y2⎛
+⎝2y2 + 11y + 12⎞
+Factor the trinomial.
+Consider all the combinations.
+The correct factors are those whose product 5y2 ⎛
+⎝y + 4⎞
+⎠⎛
+⎝2y + 3⎞
+is the original trinomial. Remember to include
+the factor 5y2.
+Check by multiplying.
+5y2 ⎛
+⎝y + 4⎞
+⎠⎛
+⎝2y + 3⎞
+5y2 ⎛
+⎝2y2 + 8y + 3y + 12⎞
+10y4 + 55y3 + 60y2 ✓
+TRY IT : : 7.73 Factor completely: 15n3 − 85n2 + 100n .
+TRY IT : : 7.74 Factor completely: 56q3 + 320q2 − 96q .
+Chapter 7 Factoring 843
+Factor Trinomials using the “ac” Method
+Another way to factor trinomials of the form ax2 + bx + c is the “ac” method. (The “ac” method is sometimes called
+the grouping method.) The “ac” method is actually an extension of the methods you used in the last section to factor
+trinomials with leading coefficient one. This method is very structured (that is step-by-step), and it always works!
+EXAMPLE 7.38 HOW TO FACTOR TRINOMIALS USING THE “AC” METHOD
+Factor: 6x2 + 7x + 2 .
+TRY IT : : 7.75 Factor: 6x2 + 13x + 2 .
+TRY IT : : 7.76 Factor: 4y2 + 8y + 3 .
+844 Chapter 7 Factoring
+When the third term of the trinomial is negative, the factors of the third term will have opposite signs.
+Factor: 8u2 − 17u − 21 .
+Is there a greatest common factor? No.
+Find a ⋅ c . a ⋅ c
+8(−21)
+−168
+Find two numbers that multiply to −168 and add to −17 . The larger factor must be negative.
+Factors of −168 Sum of factors
+1, −168 1 + (−168) = −167
+2, −84 2 + (−84) = −82
+3, −56 3 + (−56) = −53
+4, −42 4 + (−42) = −38
+6, −28 6 + (−28) = −22
+7, −24 7 + (−24) = −17*
+8, −21 8 + (−21) = −13
+HOW TO : : FACTOR TRINOMIALS OF THE FORM USING THE “AC” METHOD.
+Factor any GCF.
+Find the product ac.
+Find two numbers m and n that:
+Multiply to ac m · n = a · c
+Add to b m + n = b
+Split the middle term using m and n:
+Factor by grouping.
+Check by multiplying the factors.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Chapter 7 Factoring 845
+Split the middle term using 7u and −24u. 8u2 − 17
+↙ u
+↘ − 21
+8u2 + 7u⎤
+⎦
+⎥
+⎥ −24u − 21⎤
+⎦
+⎥
+⎥
+Factor by grouping. u(8u + 7) − 3(8u + 7)
+(8u + 7)(u − 3)
+Check by multiplying.
+(8u + 7)(u − 3)
+8u2 − 24u + 7u − 21
+8u2 − 17u − 21 ✓
+TRY IT : : 7.77 Factor: 20h2 + 13h − 15 .
+TRY IT : : 7.78 Factor: 6g2 + 19g − 20 .
+Factor: 2x2 + 6x + 5 .
+Is there a greatest common factor? No.
+Find a ⋅ c . a ⋅ c
+2(5)
+Find two numbers that multiply to 10 and add to 6.
+Factors of 10 Sum of factors
+1, 10 1 + 10 = 11
+2, 5 2 + 5 = 7
+There are no factors that multiply to 10 and add to 6. The polynomial is prime.
+TRY IT : : 7.79 Factor: 10t2 + 19t − 15 .
+TRY IT : : 7.80 Factor: 3u2 + 8u + 5 .
+Don’t forget to look for a common factor!
+Factor: 10y2 − 55y + 70 .
+846 Chapter 7 Factoring
+Is there a greatest common factor? Yes. The GCF is 5.
+Factor it. Be careful to keep the factor of 5 all the way through the solution!
+The trinomial inside the parentheses has a leading coefficient that is not 1.
+Factor the trinomial.
+Check by mulitplying all three factors.
+5⎛
+⎝2y2 − 2y − 4y + 14⎞
+5⎛
+⎝2y2 − 11y + 14⎞
+10y2 − 55y + 70 ✓
+TRY IT : : 7.81 Factor: 16x2 − 32x + 12 .
+TRY IT : : 7.82 Factor: 18w2 − 39w + 18 .
+We can now update the Preliminary Factoring Strategy, as shown in Figure 7.2 and detailed in Choose a strategy
+to factor polynomials completely (updated), to include trinomials of the form ax2 + bx + c . Remember, some
+polynomials are prime and so they cannot be factored.
+Figure 7.2
+Chapter 7 Factoring 847
+MEDIA : :
+Access these online resources for additional instruction and practice with factoring trinomials of the form
+ax2 + bx + c .
+• Factoring Trinomials, a is not 1 (https://openstax.org/l/25FactorTrinom)
+HOW TO : : CHOOSE A STRATEGY TO FACTOR POLYNOMIALS COMPLETELY (UPDATED).
+Is there a greatest common factor?
+◦ Factor it.
+Is the polynomial a binomial, trinomial, or are there more than three terms?
+◦ If it is a binomial, right now we have no method to factor it.
+◦ If it is a trinomial of the form x2 + bx + c
+Undo FOIL (x )(x ) .
+◦ If it is a trinomial of the form ax2 + bx + c
+Use Trial and Error or the “ac” method.
+◦ If it has more than three terms
+Use the grouping method.
+Check by multiplying the factors.
+Step 1.
+Step 2.
+Step 3.
+848 Chapter 7 Factoring
+Practice Makes Perfect
+Recognize a Preliminary Strategy to Factor Polynomials Completely
+In the following exercises, identify the best method to use to factor each polynomial.
+135.
+a 10q2 + 50
+b a2 − 5a − 14
+c uv + 2u + 3v + 6
+136.
+a n2 + 10n + 24
+b 8u2 + 16
+c pq + 5p + 2q + 10
+137.
+a x2 + 4x − 21
+b ab + 10b + 4a + 40
+c 6c2 + 24
+138.
+a 20x2 + 100
+b uv + 6u + 4v + 24
+c y2 − 8y + 15
+Factor Trinomials of the form ax2 + bx + c with a GCF
+In the following exercises, factor completely.
+139. 5x2 + 35x + 30 140. 12s2 + 24s + 12 141. 2z2 − 2z − 24
+142. 3u2 − 12u − 36 143. 7v2 − 63v + 56 144. 5w2 − 30w + 45
+145. p3 − 8p2 − 20p 146. q3 − 5q2 − 24q 147. 3m3 − 21m2 + 30m
+148. 11n3 − 55n2 + 44n 149. 5x4 + 10x3 − 75x2 150. 6y4 + 12y3 − 48y2
+Factor Trinomials Using Trial and Error
+In the following exercises, factor.
+151. 2t2 + 7t + 5 152. 5y2 + 16y + 11 153. 11x2 + 34x + 3
+154. 7b2 + 50b + 7 155. 4w2 − 5w + 1 156. 5x2 − 17x + 6
+157. 6p2 − 19p + 10 158. 21m2 − 29m + 10 159. 4q2 − 7q − 2
+160. 10y2 − 53y − 11 161. 4p2 + 17p − 15 162. 6u2 + 5u − 14
+163. 16x2 − 32x + 16 164. 81a2 + 153a − 18 165. 30q3 + 140q2 + 80q
+166. 5y3 + 30y2 − 35y
+Factor Trinomials using the ‘ac’ Method
+In the following exercises, factor.
+167. 5n2 + 21n + 4 168. 8w2 + 25w + 3 169. 9z2 + 15z + 4
+7.3 EXERCISES
+Chapter 7 Factoring 849
+170. 3m2 + 26m + 48 171. 4k2 − 16k + 15 172. 4q2 − 9q + 5
+173. 5s2 − 9s + 4 174. 4r2 − 20r + 25 175. 6y2 + y − 15
+176. 6p2 + p − 22 177. 2n2 − 27n − 45 178. 12z2 − 41z − 11
+179. 3x2 + 5x + 4 180. 4y2 + 15y + 6 181. 60y2 + 290y − 50
+182. 6u2 − 46u − 16 183. 48z3 − 102z2 − 45z 184. 90n3 + 42n2 − 216n
+185. 16s2 + 40s + 24 186. 24p2 + 160p + 96 187. 48y2 + 12y − 36
+188. 30x2 + 105x − 60
+Mixed Practice
+In the following exercises, factor.
+189. 12y2 − 29y + 14 190. 12x2 + 36y − 24z 191. a2 − a − 20
+192. m2 − m − 12 193. 6n2 + 5n − 4 194. 12y2 − 37y + 21
+195. 2p2 + 4p + 3 196. 3q2 + 6q + 2 197. 13z2 + 39z − 26
+198. 5r2 + 25r + 30 199. x2 + 3x − 28 200. 6u2 + 7u − 5
+201. 3p2 + 21p 202. 7x2 − 21x 203. 6r2 + 30r + 36
+204. 18m2 + 15m + 3 205. 24n2 + 20n + 4 206. 4a2 + 5a + 2
+207. x2 + 2x − 24 208. 2b2 − 7b + 4
+Everyday Math
+209. Height of a toy rocket The height of a toy rocket
+launched with an initial speed of 80 feet per second
+from the balcony of an apartment building is related
+to the number of seconds, t, since it is launched by the
+trinomial −16t2 + 80t + 96 . Completely factor the
+trinomial.
+210. Height of a beach ball The height of a beach ball
+tossed up with an initial speed of 12 feet per second
+from a height of 4 feet is related to the number of
+seconds, t, since it is tossed by the trinomial
+−16t2 + 12t + 4 . Completely factor the trinomial.
+Writing Exercises
+211. List, in order, all the steps you take when using
+the “ac” method to factor a trinomial of the form
+ax2 + bx + c.
+212. How is the “ac” method similar to the “undo FOIL”
+method? How is it different?
+213. What are the questions, in order, that you ask
+yourself as you start to factor a polynomial? What do
+you need to do as a result of the answer to each
+question?
+214. On your paper draw the chart that summarizes the
+factoring strategy. Try to do it without looking at the
+book. When you are done, look back at the book to
+finish it or verify it.
+850 Chapter 7 Factoring
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b What does this checklist tell you about your mastery of this section? What steps will you take to improve?
+Chapter 7 Factoring 851

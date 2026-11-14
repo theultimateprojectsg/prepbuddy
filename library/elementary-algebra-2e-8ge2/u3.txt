@@ -1,0 +1,459 @@
+1.4
+Multiply and Divide Integers
+Learning Objectives
+By the end of this section, you will be able to:
+Multiply integers
+Divide integers
+Simplify expressions with integers
+Evaluate variable expressions with integers
+Translate English phrases to algebraic expressions
+Use integers in applications
+BE PREPARED : : 1.4
+A more thorough introduction to the topics covered in this section can be found in the Prealgebra chapter,
+Integers.
+Multiply Integers
+Since multiplication is mathematical shorthand for repeated addition, our model can easily be applied to show
+multiplication of integers. Let’s look at this concrete model to see what patterns we notice. We will use the same examples
+that we used for addition and subtraction. Here, we will use the model just to help us discover the pattern.
+We remember that a · b means add a, b times. Here, we are using the model just to help us discover the pattern.
+The next two examples are more interesting.
+What does it mean to multiply 5 by −3 ? It means subtract 5, 3 times. Looking at subtraction as “taking away,” it means
+to take away 5, 3 times. But there is nothing to take away, so we start by adding neutral pairs on the workspace. Then we
+take away 5 three times.
+64 Chapter 1 Foundations
+In summary:
+5 · 3 = 15 −5(3) = −15
+5(−3) = −15 (−5)(−3) = 15
+Notice that for multiplication of two signed numbers, when the:
+• signs are the same, the product is positive.
+• signs are different, the product is negative.
+We’ll put this all together in the chart below.
+Multiplication of Signed Numbers
+For multiplication of two signed numbers:
+Same signs Product Example
+Two positives
+Two negatives
+Positive
+Positive
+7 · 4 = 28
+−8(−6) = 48
+Different signs Product Example
+Positive · negative
+Negative · positive
+Negative
+Negative
+7(−9) = −63
+−5 · 10 = −50
+Multiply: a −9 · 3 b −2(−5) c 4(−8) d 7 · 6.
+Chapter 1 Foundations 65
+a
+Multiply, noting that the signs are different so the product is negative.
+−9 · 3
+−27
+b
+Multiply, noting that the signs are the same so the product is positive.
+−2(−5)
+c
+Multiply, with different signs.
+4(−8)
+−32
+d
+Multiply, with same signs.
+7 · 6
+Table 1.8
+TRY IT : : 1.91 Multiply: a −6 · 8 b −4(−7) c 9(−7) d 5 · 12.
+TRY IT : : 1.92 Multiply: a −8 · 7 b −6(−9) c 7(−4) d 3 · 13.
+When we multiply a number by 1, the result is the same number. What happens when we multiply a number by −1 ?
+Let’s multiply a positive number and then a negative number by −1 to see what we get.
+−1 · 4 −1(−3)
+Multiply. −4 3
+−4 is the opposite of 4. 3 is the opposite of −3.
+Each time we multiply a number by −1, we get its opposite!
+Multiplication by −1
+−1a = −a
+Multiplying a number by −1 gives its opposite.
+Multiply: a −1 · 7 b −1(−11).
+a
+Multiply, noting that the signs are different so the product is negative.
+−1 · 7
+−7
+−7 is the opposite of 7.
+b
+Multiply, noting that the signs are the same so the product is positive.
+−1(−11)
+11 is the opposite of −11.
+Table 1.9
+66 Chapter 1 Foundations
+TRY IT : : 1.93 Multiply: a −1 · 9 b −1 · (−17).
+TRY IT : : 1.94 Multiply: a −1 · 8 b −1 · (−16).
+Divide Integers
+What about division? Division is the inverse operation of multiplication. So, 15 ÷ 3 = 5 because 5 · 3 = 15. In words,
+this expression says that 15 can be divided into three groups of five each because adding five three times gives 15. Look
+at some examples of multiplying integers, to figure out the rules for dividing integers.
+5 · 3 = 15 so 15 ÷ 3 = 5 −5(3) = −15 so −15 ÷ 3 = −5
+(−5)(−3) = 15 so 15 ÷ (−3) = −5 5(−3) = −15 so −15 ÷ (−3) = 5
+Division follows the same rules as multiplication!
+For division of two signed numbers, when the:
+• signs are the same, the quotient is positive.
+• signs are different, the quotient is negative.
+And remember that we can always check the answer of a division problem by multiplying.
+Multiplication and Division of Signed Numbers
+For multiplication and division of two signed numbers:
+• If the signs are the same, the result is positive.
+• If the signs are different, the result is negative.
+Same signs Result
+Two positives
+Two negatives
+Positive
+Positive
+If the signs are the same, the result is positive.
+Different signs Result
+Positive and negative
+Negative and positive
+Negative
+Negative
+If the signs are different, the result is negative.
+Divide: a −27 ÷ 3 b −100 ÷ (−4).
+a
+Divide. With different signs, the quotient is negative.
+−27 ÷ 3
+−9
+b
+Divide. With signs that are the same, the quotient is positive.
+−100 ÷ (−4)
+Table 1.10
+Chapter 1 Foundations 67
+TRY IT : : 1.95 Divide: a −42 ÷ 6 b −117 ÷ (−3).
+TRY IT : : 1.96 Divide: a −63 ÷ 7 b −115 ÷ (−5).
+Simplify Expressions with Integers
+What happens when there are more than two numbers in an expression? The order of operations still applies when
+negatives are included. Remember My Dear Aunt Sally?
+Let’s try some examples. We’ll simplify expressions that use all four operations with integers—addition, subtraction,
+multiplication, and division. Remember to follow the order of operations.
+Simplify: 7(−2) + 4(−7) − 6.
+7(−2) + 4(−7) − 6
+Multiply first. −14 + (−28) − 6
+Add. −42 − 6
+Subtract. −48
+Table 1.11
+TRY IT : : 1.97 Simplify: 8(−3) + 5(−7) − 4.
+TRY IT : : 1.98 Simplify: 9(−3) + 7(−8) − 1.
+Simplify: a (−2)4 b −24.
+a
+Write in expanded form.
+Multiply.
+Multiply.
+Multiply.
+(−2)4
+(−2)(−2)(−2)(−2)
+4(−2)(−2)
+−8(−2)
+b
+Write in expanded form. We are asked to find the opposite of 24.
+Multiply.
+Multiply.
+Multiply.
+−24
+−(2 · 2 · 2 · 2)
+−(4 · 2 · 2)
+−(8 · 2)
+-16
+Table 1.12
+68 Chapter 1 Foundations
+Notice the difference in parts a and b. In part a, the exponent means to raise what is in the parentheses, the (−2) to
+the 4th power. In part b, the exponent means to raise just the 2 to the 4th power and then take the opposite.
+TRY IT : : 1.99 Simplify: a (−3)4 b −34.
+TRY IT : : 1.100 Simplify: a (−7)2 b −72.
+The next example reminds us to simplify inside parentheses first.
+Simplify: 12 − 3(9 − 12).
+12 − 3(9 − 12)
+Subtract in parentheses first. 12 − 3(−3)
+Multiply. 12 − (−9)
+Subtract. 21
+Table 1.13
+TRY IT : : 1.101 Simplify: 17 − 4(8 − 11).
+TRY IT : : 1.102 Simplify: 16 − 6(7 − 13).
+Simplify: 8(−9) ÷ (−2)3.
+8(−9) ÷ (−2)3
+Exponents first. 8(−9) ÷ (−8)
+Multiply. −72 ÷ (−8)
+Divide. 9
+Table 1.14
+TRY IT : : 1.103 Simplify: 12(−9) ÷ (−3)3.
+Chapter 1 Foundations 69
+TRY IT : : 1.104 Simplify: 18(−4) ÷ (−2)3.
+Simplify: −30 ÷ 2 + (−3)(−7).
+−30 ÷ 2 + (−3)(−7)
+Multiply and divide left to right, so divide first. −15 + (−3)(−7)
+Multiply. −15 + 21
+Add. 6
+Table 1.15
+TRY IT : : 1.105 Simplify: −27 ÷ 3 + (−5)(−6).
+TRY IT : : 1.106 Simplify: −32 ÷ 4 + (−2)(−7).
+Evaluate Variable Expressions with Integers
+Remember that to evaluate an expression means to substitute a number for the variable in the expression. Now we can
+use negative numbers as well as positive numbers.
+When n = −5, evaluate: a n + 1 b −n + 1.
+a
+Simplify. −4
+b
+Simplify.
+Add. 6
+TRY IT : : 1.107 When n = −8, evaluate a n + 2 b −n + 2.
+70 Chapter 1 Foundations
+TRY IT : : 1.108 When y = −9, evaluate a y + 8 b −y + 8.
+Evaluate (x + y)2 when x = −18 and y = 24.
+Add inside parenthesis. (6)2
+Simplify. 36
+TRY IT : : 1.109 Evaluate (x + y)2 when x = −15 and y = 29.
+TRY IT : : 1.110 Evaluate (x + y)3 when x = −8 and y = 10.
+Evaluate 20 − z when a z = 12 and b z = −12.
+a
+Subtract. 8
+b
+Subtract. 32
+TRY IT : : 1.111 Evaluate: 17 − k when a k = 19 and b k = −19.
+TRY IT : : 1.112 Evaluate: −5 − b when a b = 14 and b b = −14.
+Evaluate: 2x2 + 3x + 8 when x = 4.
+Chapter 1 Foundations 71
+Substitute 4 for x. Use parentheses to show multiplication.
+Substitute.
+Evaluate exponents.
+Multiply.
+Add. 52
+TRY IT : : 1.113 Evaluate: 3x2 − 2x + 6 when x = −3.
+TRY IT : : 1.114 Evaluate: 4x2 − x − 5 when x = −2.
+Translate Phrases to Expressions with Integers
+Our earlier work translating English to algebra also applies to phrases that include both positive and negative numbers.
+Translate and simplify: the sum of 8 and −12, increased by 3.
+the sum of 8 and −12, increased
+by 3.
+Translate. ⎡
+⎣8 + (−12)⎤
+⎦ + 3
+Simplify. Be careful not to confuse the brackets with an absolute
+value sign. (−4) + 3
+Add. −1
+Table 1.16
+TRY IT : : 1.115 Translate and simplify the sum of 9 and −16, increased by 4.
+TRY IT : : 1.116 Translate and simplify the sum of −8 and −12, increased by 7.
+When we first introduced the operation symbols, we saw that the expression may be read in several ways. They are listed
+in the chart below.
+a − b
+a minus b
+the difference of a and b
+b subtracted from a
+b less than a
+72 Chapter 1 Foundations
+Be careful to get a and b in the right order!
+Translate and then simplify a the difference of 13 and −21 b subtract 24 from −19.
+a
+Translate.
+Simplify.
+the difference of 13 and − 21
+13 − (−21)
+b
+Translate. Remember, "subtract b from a means a − b .
+Simplify.
+subtract 24 from − 19
+−19 − 24
+Table 1.17
+TRY IT : : 1.117 Translate and simplify a the difference of 14 and −23 b subtract 21 from −17.
+TRY IT : : 1.118 Translate and simplify a the difference of 11 and −19 b subtract 18 from −11.
+Once again, our prior work translating English to algebra transfers to phrases that include both multiplying and dividing
+integers. Remember that the key word for multiplication is “ product” and for division is “ quotient.”
+Translate to an algebraic expression and simplify if possible: the product of −2 and 14.
+the product of −2 and 14
+Translate. (−2)(14)
+Simplify. −28
+Table 1.18
+TRY IT : : 1.119 Translate to an algebraic expression and simplify if possible: the product of −5 and 12.
+TRY IT : : 1.120 Translate to an algebraic expression and simplify if possible: the product of 8 and −13.
+Translate to an algebraic expression and simplify if possible: the quotient of −56 and −7.
+Chapter 1 Foundations 73
+the quotient of −56 and −7
+Translate. −56 ÷ (−7)
+Simplify. 8
+Table 1.19
+TRY IT : : 1.121 Translate to an algebraic expression and simplify if possible: the quotient of −63 and −9.
+TRY IT : : 1.122 Translate to an algebraic expression and simplify if possible: the quotient of −72 and −9.
+Use Integers in Applications
+We’ll outline a plan to solve applications. It’s hard to find something if we don’t know what we’re looking for or what
+to call it! So when we solve an application, we first need to determine what the problem is asking us to find. Then we’ll
+write a phrase that gives the information to find it. We’ll translate the phrase into an expression and then simplify the
+expression to get the answer. Finally, we summarize the answer in a sentence to make sure it makes sense.
+EXAMPLE 1.62 HOW TO APPLY A STRATEGY TO SOLVE APPLICATIONS WITH INTEGERS
+In the morning, the temperature in Urbana, Illinois was 11 degrees. By mid-afternoon, the temperature had dropped to
+−9 degrees. What was the difference of the morning and afternoon temperatures?
+In the morning, the temperature in Anchorage, Alaska was 15 degrees. By mid-afternoon the temperature had
+dropped to 30 degrees below zero. What was the difference in the morning and afternoon temperatures?
+The temperature in Denver was −6 degrees at lunchtime. By sunset the temperature had dropped to −15
+degrees. What was the difference in the lunchtime and sunset temperatures?
+74 Chapter 1 Foundations
+The Mustangs football team received three penalties in the third quarter. Each penalty gave them a loss of fifteen yards.
+What is the number of yards lost?
+Step 1. Read the problem. Make sure all the words and ideas are
+understood.
+Step 2. Identify what we are asked to find. the number of yards lost
+Step 3. Write a phrase that gives the information to find it. three times a 15-yard
+penalty
+Step 4. Translate the phrase to an expression. 3(−15)
+Step 5. Simplify the expression. −45
+Step 6. Answer the question with a complete sentence. The team lost 45 yards.
+Table 1.20
+The Bears played poorly and had seven penalties in the game. Each penalty resulted in a loss of 15 yards. What is
+the number of yards lost due to penalties?
+Bill uses the ATM on campus because it is convenient. However, each time he uses it he is charged a $2 fee. Last
+month he used the ATM eight times. How much was his total fee for using the ATM?
+HOW TO : : APPLY A STRATEGY TO SOLVE APPLICATIONS WITH INTEGERS.
+Read the problem. Make sure all the words and ideas are understood
+Identify what we are asked to find.
+Write a phrase that gives the information to find it.
+Translate the phrase to an expression.
+Simplify the expression.
+Answer the question with a complete sentence.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Chapter 1 Foundations 75
+Practice Makes Perfect
+Multiply Integers
+In the following exercises, multiply.
+265. −4 · 8 266. −3 · 9 267. 9(−7)
+268. 13(−5) 269. −1.6 270. −1.3
+271. −1(−14) 272. −1(−19)
+Divide Integers
+In the following exercises, divide.
+273. −24 ÷ 6 274. 35 ÷ (−7) 275. −52 ÷ (−4)
+276. −84 ÷ (−6) 277. −180 ÷ 15 278. −192 ÷ 12
+Simplify Expressions with Integers
+In the following exercises, simplify each expression.
+279. 5(−6) + 7(−2) − 3 280. 8(−4) + 5(−4) − 6 281. (−2)6
+282. (−3)5 283. −42 284. −62
+285. −3(−5)(6) 286. −4(−6)(3) 287. (8 − 11)(9 − 12)
+288. (6 − 11)(8 − 13) 289. 26 − 3(2 − 7) 290. 23 − 2(4 − 6)
+291. 65 ÷ (−5) + (−28) ÷ (−7) 292. 52 ÷ (−4) + (−32) ÷ (−8) 293. 9 − 2⎡
+⎣3 − 8(−2)⎤
+⎦
+294. 11 − 3⎡
+⎣7 − 4(−2)⎤
+⎦ 295. (−3)2 − 24 ÷ (8 − 2) 296. (−4)2 − 32 ÷ (12 − 4)
+Evaluate Variable Expressions with Integers
+In the following exercises, evaluate each expression.
+297. y + (−14) when a
+y = −33 b y = 30
+298. x + (−21) whena x = −27
+b x = 44
+299.
+a a + 3 when a = −7
+b −a + 3 when a = −7
+300.
+a d + (−9) when d = −8
+b −d + (−9) when
+d = −8
+301. m + n when
+m = −15, n = 7
+302. p + q when
+p = −9, q = 17
+303. r + s when r = −9, s = −7 304. t + u when t = −6, u = −5 305. (x + y)2 when
+x = −3, y = 14
+1.4 EXERCISES
+76 Chapter 1 Foundations
+306. (y + z)2 when
+y = −3, z = 15
+307. −2x + 17 when
+a x = 8 b x = −8
+308. −5y + 14 when
+a y = 9
+b y = −9
+309. 10 − 3m when
+a m = 5
+b m = −5
+310. 18 − 4n when
+a n = 3
+b n = −3
+311. 2w2 − 3w + 7 when
+w = −2
+312. 3u2 − 4u + 5 when u = −3 313. 9a − 2b − 8 when
+a = −6 and b = −3
+314. 7m − 4n − 2 when
+m = −4 and n = −9
+Translate English Phrases to Algebraic Expressions
+In the following exercises, translate to an algebraic expression and simplify if possible.
+315. the sum of 3 and −15,
+increased by 7
+316. the sum of −8 and −9,
+increased by 23
+317. the difference of 10 and −18
+318. subtract 11 from −25 319. the difference of −5 and
+−30
+320. subtract −6 from −13
+321. the product of −3 and 15 322. the product of −4 and 16 323. the quotient of −60 and
+−20
+324. the quotient of −40 and
+−20
+325. the quotient of −6 and the
+sum of a and b
+326. the quotient of −7 and the
+sum of m and n
+327. the product of −10 and the
+difference of p and q
+328. the product of −13 and the
+difference of c and d
+Use Integers in Applications
+In the following exercises, solve.
+329. Temperature On January 15, the high
+temperature in Anaheim, California, was 84°. That
+same day, the high temperature in Embarrass,
+Minnesota was −12°. What was the difference
+between the temperature in Anaheim and the
+temperature in Embarrass?
+330. Temperature On January 21, the high
+temperature in Palm Springs, California, was 89°,
+and the high temperature in Whitefield, New
+Hampshire was −31°. What was the difference
+between the temperature in Palm Springs and the
+temperature in Whitefield?
+331. Football On the first down, the Chargers had the
+ball on their 25-yard line. They lost 6 yards on the firstdown play, gained 10 yards on the second-down play,
+and lost 8 yards on the third-down play. What was the
+yard line at the end of the third-down play?
+332. Football On first down, the Steelers had the ball
+on their 30-yard line. They gained 9 yards on the firstdown play, lost 14 yards on the second-down play, and
+lost 2 yards on the third-down play. What was the yard
+line at the end of the third-down play?
+333. Checking Account Mayra has $124 in her
+checking account. She writes a check for $152. What is
+the new balance in her checking account?
+334. Checking Account Selina has $165 in her checking
+account. She writes a check for $207. What is the new
+balance in her checking account?
+335. Checking Account Diontre has a balance of
+−$38 in his checking account. He deposits $225 to the
+account. What is the new balance?
+336. Checking Account Reymonte has a balance of
+−$49 in his checking account. He deposits $281 to the
+account. What is the new balance?
+Chapter 1 Foundations 77
+Everyday Math
+337. Stock market Javier owns 300 shares of stock in
+one company. On Tuesday, the stock price dropped
+$12 per share. What was the total effect on Javier’s
+portfolio?
+338. Weight loss In the first week of a diet program,
+eight women lost an average of 3 pounds each. What
+was the total weight change for the eight women?
+Writing Exercises
+339. In your own words, state the rules for multiplying
+integers.
+340. In your own words, state the rules for dividing
+integers.
+341. Why is −24 ≠ (−2)4 ? 342. Why is −43 = (−4)3 ?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b On a scale of 1–10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+78 Chapter 1 Foundations

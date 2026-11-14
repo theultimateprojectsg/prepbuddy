@@ -1,0 +1,596 @@
+5.5
+Solve Mixture Applications with Systems of Equations
+Learning Objectives
+By the end of this section, you will be able to:
+Solve mixture applications
+Solve interest applications
+BE PREPARED : : 5.13 Before you get started, take this readiness quiz.
+Multiply 4.025(1,562).
+If you missed this problem, review Example 1.98.
+BE PREPARED : : 5.14 Write 8.2% as a decimal.
+If you missed this problem, review Example 1.106.
+BE PREPARED : : 5.15
+Earl’s dinner bill came to $32.50 and he wanted to leave an 18% tip. How much should the tip be?
+If you missed this problem, review Example 3.15.
+Solve Mixture Applications
+When we solved mixture applications with coins and tickets earlier, we started by creating a table so we could organize
+the information. For a coin example with nickels and dimes, the table looked like this:
+Using one variable meant that we had to relate the number of nickels and the number of dimes. We had to decide if we
+were going to let n be the number of nickels and then write the number of dimes in terms of n, or if we would let d be the
+number of dimes and write the number of nickels in terms of d.
+Now that we know how to solve systems of equations with two variables, we’ll just let n be the number of nickels and
+d be the number of dimes. We’ll write one equation based on the total value column, like we did before, and the other
+equation will come from the number column.
+For the first example, we’ll do a ticket problem where the ticket prices are in whole dollars, so we won’t need to use
+decimals just yet.
+Translate to a system of equations and solve:
+The box office at a movie theater sold 147 tickets for the evening show, and receipts totaled $1,302. How many $11 adult
+and how many $8 child tickets were sold?
+Step 1. Read the problem. We will create a table to organize the information.
+Step 2. Identify what we are looking for. We are looking for the number of adult tickets
+and the number of child tickets sold.
+648 Chapter 5 Systems of Linear Equations
+Step 3. Name what we are looking for. Let a = the number of adult tickets.
+c = the number of child tickets
+A table will help us organize the data.
+We have two types of tickets: adult and
+child.
+Write a and c for the number of tickets.
+Write the total number of tickets sold at the
+bottom of the Number column.
+Altogether 147 were sold.
+Write the value of each type of ticket in the
+Value column.
+The value of each adult ticket is $11.
+The value of each child tickets is $8.
+The number times the value gives the total
+value, so the total value of adult tickets is
+a · 11 = 11a , and the total value of child
+tickets is c · 8 = 8c.
+Altogether the total value of the tickets was
+$1,302.
+Fill in the Total Value column.
+Step 4. Translate into a system of
+equations.
+The Number column and the Total Value
+column give us the system of equations.
+We will use the elimination method to solve
+this system.
+Multiply the first equation by −8.
+Simplify and add, then solve for a.
+Substitute a = 42 into the first equation,
+then solve for c.
+Step 5. Check the answer in the problem.
+42 adult tickets at $11 per ticket makes
+$462
+105 child tickets at $8 per ticket makes
+$840.
+The total receipts are $1,302.✓
+Step 6. Answer the question. The movie theater sold 42 adult tickets and 105 child
+tickets.
+Chapter 5 Systems of Linear Equations 649
+Translate to a system of equations and solve:
+The ticket office at the zoo sold 553 tickets one day. The receipts totaled $3,936. How many $9 adult tickets and
+how many $6 child tickets were sold?
+Translate to a system of equations and solve:
+A science center sold 1,363 tickets on a busy weekend. The receipts totaled $12,146. How many $12 adult tickets
+and how many $7 child tickets were sold?
+In Example 5.46 we’ll solve a coin problem. Now that we know how to work with systems of two variables, naming the
+variables in the ‘number’ column will be easy.
+Translate to a system of equations and solve:
+Priam has a collection of nickels and quarters, with a total value of $7.30. The number of nickels is six less than three times
+the number of quarters. How many nickels and how many quarters does he have?
+Step 1. Read the problem. We will create a table to organize the information.
+Step 2. Identify what we are looking for. We are looking for the number of nickels
+and the number of quarters.
+Step 3. Name what we are looking for. Let n = the number of nickels.
+q = the number of quarters
+A table will help us organize the data.
+We have two types of coins, nickels
+and quarters.
+Write n and q for the number of each type of coin.
+Fill in the Value column with the value of each
+type of coin.
+The value of each nickel is $0.05.
+The value of each quarter is $0.25.
+The number times the value gives the total
+value, so, the total value of the nickels is
+n (0.05) = 0.05n and the total value of
+quarters is q(0.25) = 0.25q.
+Altogether the total value of the coins
+is $7.30.
+Step 4. Translate into a system of equations.
+The Total value column gives one equation.
+We also know the number of nickels is six less
+than three times the number of quarters.
+Translate to get the second equation.
+Now we have the system to solve.
+Step 5. Solve the system of equations
+We will use the substitution method.
+Substitute n = 3q − 6 into the first equation.
+Simplify and solve for q.
+650 Chapter 5 Systems of Linear Equations
+To find the number of nickels, substitute
+q = 19 into the second equation.
+Step 6. Check the answer in the problem.
+19 quarters at $ 0.25 = $ 4.75
+51nickels at $ 0.05 = $ 2.55
+Total = $ 7.30 ✓
+3 ⋅ 19 − 16 = 51 ✓
+Step 7. Answer the question. Priam has 19 quarters and 51 nickels.
+Translate to a system of equations and solve:
+Matilda has a handful of quarters and dimes, with a total value of $8.55. The number of quarters is 3 more than
+twice the number of dimes. How many dimes and how many quarters does she have?
+Translate to a system of equations and solve:
+Juan has a pocketful of nickels and dimes. The total value of the coins is $8.10. The number of dimes is 9 less than
+twice the number of nickels. How many nickels and how many dimes does Juan have?
+Some mixture applications involve combining foods or drinks. Example situations might include combining raisins and
+nuts to make a trail mix or using two types of coffee beans to make a blend.
+Translate to a system of equations and solve:
+Carson wants to make 20 pounds of trail mix using nuts and chocolate chips. His budget requires that the trail mix costs
+him $7.60 per pound. Nuts cost $9.00 per pound and chocolate chips cost $2.00 per pound. How many pounds of nuts and
+how many pounds of chocolate chips should he use?
+Step 1. Read the problem. We will create a table to organize the information.
+Step 2. Identify what we are looking for. We are looking for the number of pounds of nuts
+and the number of pounds of chocolate chips.
+Step 3. Name what we are looking for. Let n = the number of pound of nuts.
+c = the number of pounds of chips
+Chapter 5 Systems of Linear Equations 651
+Carson will mix nuts and chocolate chips
+to get trail mix.
+Write in n and c for the number of pounds
+of nuts and chocolate chips.
+There will be 20 pounds of trail mix.
+Put the price per pound of each item in
+the Value column.
+Fill in the last column using
+Number · Value = Total Value
+Step 4. Translate into a system of equations.
+We get the equations from the Number
+and Total Value columns.
+Step 5. Solve the system of equations
+We will use elimination to solve the system.
+Multiply the first equation by −2 to eliminate c.
+Simplify and add. Solve for n.
+To find the number of pounds of
+chocolate chips, substitute n = 16 into
+the first equation, then solve for c.
+c = 4
+Step 6. Check the answer in the problem.
+16 + 4 = 20 ✓
+9 · 16 + 2 · 4 = 152 ✓
+Step 7. Answer the question. Carson should mix 16 pounds of nuts with
+4 pounds of chocolate chips to create the trail mix.
+Translate to a system of equations and solve:
+Greta wants to make 5 pounds of a nut mix using peanuts and cashews. Her budget requires the mixture to cost
+her $6 per pound. Peanuts are $4 per pound and cashews are $9 per pound. How many pounds of peanuts and
+how many pounds of cashews should she use?
+Translate to a system of equations and solve:
+Sammy has most of the ingredients he needs to make a large batch of chili. The only items he lacks are beans
+and ground beef. He needs a total of 20 pounds combined of beans and ground beef and has a budget of $3 per
+pound. The price of beans is $1 per pound and the price of ground beef is $5 per pound. How many pounds of
+beans and how many pounds of ground beef should he purchase?
+Another application of mixture problems relates to concentrated cleaning supplies, other chemicals, and mixed drinks.
+The concentration is given as a percent. For example, a 20% concentrated household cleanser means that 20% of the total
+amount is cleanser, and the rest is water. To make 35 ounces of a 20% concentration, you mix 7 ounces (20% of 35) of the
+652 Chapter 5 Systems of Linear Equations
+cleanser with 28 ounces of water.
+For these kinds of mixture problems, we’ll use percent instead of value for one of the columns in our table.
+Translate to a system of equations and solve:
+Sasheena is a lab assistant at her community college. She needs to make 200 milliliters of a 40% solution of sulfuric acid
+for a lab experiment. The lab has only 25% and 50% solutions in the storeroom. How much should she mix of the 25% and
+the 50% solutions to make the 40% solution?
+Step 1. Read the problem. A figure may help us visualize the situation, then we
+will create a table to organize the information.
+Sasheena must mix some of the 25%
+solution and some of the 50% solution
+together to get 200 ml of the 40% solution.
+Step 2. Identify what we are looking for. We are looking for how much of each solution
+she needs.
+Step 3. Name what we are looking for. Let x = number of ml of 25% solution.
+y = number of ml of 50% solution
+A table will help us organize the data.
+She will mix x ml of 25% with y ml of
+50% to get 200 ml of 40% solution.
+We write the percents as decimals in
+the chart.
+We multiply the number of units times
+the concentration to get the total
+amount of sulfuric acid in each solution.
+Step 4. Translate into a system of
+equations. We get the equations from
+the Number column and the Amount
+column.
+Now we have the system.
+Step 5. Solve the system of equations.
+We will solve the system by elimination.
+Multiply the first equation by −0.5 to
+eliminate y.
+Simplify and add to solve for x.
+Chapter 5 Systems of Linear Equations 653
+To solve for y, substitute x = 80 into the
+first equation.
+Step 6. Check the answer in the problem.
+80 + 120 = 120 ✓
+0.25(80) + 0.50(120) = 80 ✓
+Yes!
+Step 7. Answer the question. Sasheena should mix 80 ml of the 25% solution
+with 120 ml of the 50% solution to get the 200 ml
+of the 40% solution.
+Translate to a system of equations and solve:
+LeBron needs 150 milliliters of a 30% solution of sulfuric acid for a lab experiment but only has access to a 25% and
+a 50% solution. How much of the 25% and how much of the 50% solution should he mix to make the 30% solution?
+Translate to a system of equations and solve:
+Anatole needs to make 250 milliliters of a 25% solution of hydrochloric acid for a lab experiment. The lab only has
+a 10% solution and a 40% solution in the storeroom. How much of the 10% and how much of the 40% solutions
+should he mix to make the 25% solution?
+Solve Interest Applications
+The formula to model interest applications is I = Prt. Interest, I, is the product of the principal, P, the rate, r, and the time,
+t. In our work here, we will calculate the interest earned in one year, so t will be 1.
+We modify the column titles in the mixture table to show the formula for interest, as you’ll see in Example 5.49.
+Translate to a system of equations and solve:
+Adnan has $40,000 to invest and hopes to earn 7.1% interest per year. He will put some of the money into a stock fund
+that earns 8% per year and the rest into bonds that earns 3% per year. How much money should he put into each fund?
+Step 1. Read the problem. A chart will help us organize the information.
+Step 2. Identify what we are looking for. We are looking for the amount to invest in each
+fund.
+Step 3. Name what we are looking for. Let s = the amount invested in stocks.
+b = the amount invested in bonds.
+654 Chapter 5 Systems of Linear Equations
+Write the interest rate as a decimal for
+each fund.
+Multiply:
+Principal · Rate · Time
+to get the Interest.
+Step 4. Translate into a system of
+equations.
+We get our system of equations from
+the Principal column and the
+Interest column.
+Step 5. Solve the system of equations
+Solve by elimination.
+Multiply the top equation by −0.03.
+Simplify and add to solve for s.
+To find b, substitute s = 32,800 into the first
+equation.
+Step 6. Check the answer in the problem. We leave the check to you.
+Step 7. Answer the question. Adnan should invest $32,800 in stock and
+$7,200 in bonds.
+Did you notice that the Principal column represents the total amount of money invested while the Interest column
+represents only the interest earned? Likewise, the first equation in our system, s + b = 40,000, represents the total amount
+of money invested and the second equation, 0.08s + 0.03b = 0.071(40,000), represents the interest earned.
+Translate to a system of equations and solve:
+Leon had $50,000 to invest and hopes to earn 6.2 % interest per year. He will put some of the money into a stock
+fund that earns 7% per year and the rest in to a savings account that earns 2% per year. How much money should
+he put into each fund?
+Translate to a system of equations and solve:
+Julius invested $7,000 into two stock investments. One stock paid 11% interest and the other stock paid 13%
+interest. He earned 12.5% interest on the total investment. How much money did he put in each stock?
+Translate to a system of equations and solve:
+Rosie owes $21,540 on her two student loans. The interest rate on her bank loan is 10.5% and the interest rate on the
+federal loan is 5.9%. The total amount of interest she paid last year was $1,669.68. What was the principal for each loan?
+Chapter 5 Systems of Linear Equations 655
+Step 1. Read the problem. A chart will help us organize the information.
+Step 2. Identify what we are looking for. We are looking for the principal of each loan.
+Step 3. Name what we are looking for. Let b = the principal for the bank loan.
+f = the principal on the federal loan
+The total loans are $21,540.
+Record the interest rates as decimals
+in the chart.
+Multiply using the formula l = Pr t to
+get the Interest.
+Step 4. Translate into a system of
+equations.
+The system of equations comes from
+the Principal column and the Interest
+column.
+Step 5. Solve the system of equations
+We will use substitution to solve.
+Solve the first equation for b.
+Substitute b = −f + 21,540 into the
+second equation.
+Simplify and solve for f.
+To find b, substitute f = 12,870 into
+the first equation.
+Step 6. Check the answer in the
+problem.
+We leave the check to you.
+Step 7. Answer the question. The principal of the bank loan is $12,870 and
+the principal for the federal loan is $8,670.
+Translate to a system of equations and solve:
+Laura owes $18,000 on her student loans. The interest rate on the bank loan is 2.5% and the interest rate on the
+federal loan is 6.9 %. The total amount of interest she paid last year was $1,066. What was the principal for each
+loan?
+656 Chapter 5 Systems of Linear Equations
+Translate to a system of equations and solve:
+Jill’s Sandwich Shoppe owes $65,200 on two business loans, one at 4.5% interest and the other at 7.2% interest.
+The total amount of interest owed last year was $3,582. What was the principal for each loan?
+MEDIA : :
+Access these online resources for additional instruction and practice with solving application problems with systems
+of linear equations.
+• Cost and Mixture Word Problems (http://www.openstax.org/l/25LinEqu1)
+• Mixture Problems (http://www.openstax.org/l/25EqMixture)
+Chapter 5 Systems of Linear Equations 657
+Practice Makes Perfect
+Solve Mixture Applications
+In the following exercises, translate to a system of equations and solve.
+239. Tickets to a Broadway show
+cost $35 for adults and $15 for
+children. The total receipts for
+1650 tickets at one performance
+were $47,150. How many adult
+and how many child tickets were
+sold?
+240. Tickets for a show are $70 for
+adults and $50 for children. One
+evening performance had a total
+of 300 tickets sold and the receipts
+totaled $17,200. How many adult
+and how many child tickets were
+sold?
+241. Tickets for a train cost $10 for
+children and $22 for adults. Josie
+paid $1,200 for a total of 72 tickets.
+How many children’s tickets and
+how many adult tickets did Josie
+buy?
+242. Tickets for a baseball game
+are $69 for Main Level seats and
+$39 for Terrace Level seats. A
+group of sixteen friends went to
+the game and spent a total of $804
+for the tickets. How many of Main
+Level and how many Terrace Level
+tickets did they buy?
+243. Tickets for a dance recital cost
+$15 for adults and $7 for children.
+The dance company sold 253
+tickets and the total receipts were
+$2,771. How many adult tickets
+and how many child tickets were
+sold?
+244. Tickets for the community fair
+cost $12 for adults and $5 dollars
+for children. On the first day of the
+fair, 312 tickets were sold for a
+total of $2,204. How many adult
+tickets and how many child tickets
+were sold?
+245. Brandon has a cup of
+quarters and dimes with a total
+value of $3.80. The number of
+quarters is four less than twice the
+number of dimes. How many
+quarters and how many dimes
+does Brandon have?
+246. Sherri saves nickels and
+dimes in a coin purse for her
+daughter. The total value of the
+coins in the purse is $0.95. The
+number of nickels is two less than
+five times the number of dimes.
+How many nickels and how many
+dimes are in the coin purse?
+247. Peter has been saving his
+loose change for several days.
+When he counted his quarters and
+dimes, he found they had a total
+value $13.10. The number of
+quarters was fifteen more than
+three times the number of dimes.
+How many quarters and how
+many dimes did Peter have?
+248. Lucinda had a pocketful of
+dimes and quarters with a value
+of $ $6.20. The number of dimes
+is eighteen more than three times
+the number of quarters. How
+many dimes and how many
+quarters does Lucinda have?
+249. A cashier has 30 bills, all of
+which are $10 or $20 bills. The
+total value of the money is $460.
+How many of each type of bill does
+the cashier have?
+250. A cashier has 54 bills, all of
+which are $10 or $20 bills. The
+total value of the money is $910.
+How many of each type of bill does
+the cashier have?
+251. Marissa wants to blend candy
+selling for $1.80 per pound with
+candy costing $1.20 per pound to
+get a mixture that costs her $1.40
+per pound to make. She wants to
+make 90 pounds of the candy
+blend. How many pounds of each
+type of candy should she use?
+252. How many pounds of nuts
+selling for $6 per pound and
+raisins selling for $3 per pound
+should Kurt combine to obtain 120
+pounds of trail mix that cost him
+$5 per pound?
+253. Hannah has to make twentyfive gallons of punch for a potluck.
+The punch is made of soda and
+fruit drink. The cost of the soda is
+$1.79 per gallon and the cost of
+the fruit drink is $2.49 per gallon.
+Hannah’s budget requires that
+the punch cost $2.21 per gallon.
+How many gallons of soda and
+how many gallons of fruit drink
+does she need?
+5.5 EXERCISES
+658 Chapter 5 Systems of Linear Equations
+254. Joseph would like to make 12
+pounds of a coffee blend at a cost
+of $6.25 per pound. He blends
+Ground Chicory at $4.40 a pound
+with Jamaican Blue Mountain at
+$8.84 per pound. How much of
+each type of coffee should he
+use?
+255. Julia and her husband own a
+coffee shop. They experimented
+with mixing a City Roast
+Columbian coffee that cost $7.80
+per pound with French Roast
+Columbian coffee that cost $8.10
+per pound to make a 20 pound
+blend. Their blend should cost
+them $7.92 per pound. How much
+of each type of coffee should they
+buy?
+256. Melody wants to sell bags of
+mixed candy at her lemonade
+stand. She will mix chocolate
+pieces that cost $4.89 per bag with
+peanut butter pieces that cost
+$3.79 per bag to get a total of
+twenty-five bags of mixed candy.
+Melody wants the bags of mixed
+candy to cost her $4.23 a bag to
+make. How many bags of
+chocolate pieces and how many
+bags of peanut butter pieces
+should she use?
+257. Jotham needs 70 liters of a
+50% alcohol solution. He has a
+30% and an 80% solution
+available. How many liters of the
+30% and how many liters of the
+80% solutions should he mix to
+make the 50% solution?
+258. Joy is preparing 15 liters of a
+25% saline solution. She only has
+40% and 10% solution in her lab.
+How many liters of the 40% and
+how many liters of the 10% should
+she mix to make the 25%
+solution?
+259. A scientist needs 65 liters of
+a 15% alcohol solution. She has
+available a 25% and a 12%
+solution. How many liters of the
+25% and how many liters of the
+12% solutions should she mix to
+make the 15% solution?
+260. A scientist needs 120 liters of
+a 20% acid solution for an
+experiment. The lab has available
+a 25% and a 10% solution. How
+many liters of the 25% and how
+many liters of the 10% solutions
+should the scientist mix to make
+the 20% solution?
+261. A 40% antifreeze solution is
+to be mixed with a 70% antifreeze
+solution to get 240 liters of a 50%
+solution. How many liters of the
+40% and how many liters of the
+70% solutions will be used?
+262. A 90% antifreeze solution is
+to be mixed with a 75% antifreeze
+solution to get 360 liters of a 85%
+solution. How many liters of the
+90% and how many liters of the
+75% solutions will be used?
+Solve Interest Applications
+In the following exercises, translate to a system of equations and solve.
+263. Hattie had $3,000 to invest
+and wants to earn 10.6% interest
+per year. She will put some of the
+money into an account that earns
+12% per year and the rest into an
+account that earns 10% per year.
+How much money should she put
+into each account?
+264. Carol invested $2,560 into two
+accounts. One account paid 8%
+interest and the other paid 6%
+interest. She earned 7.25%
+interest on the total investment.
+How much money did she put in
+each account?
+265. Sam invested $48,000, some
+at 6% interest and the rest at 10%.
+How much did he invest at each
+rate if he received $4,000 in
+interest in one year?
+266. Arnold invested $64,000,
+some at 5.5% interest and the rest
+at 9%. How much did he invest at
+each rate if he received $4,500 in
+interest in one year?
+267. After four years in college,
+Josie owes $65,800 in student
+loans. The interest rate on the
+federal loans is 4.5% and the rate
+on the private bank loans is 2%.
+The total interest she owed for
+one year was $2,878.50. What is
+the amount of each loan?
+268. Mark wants to invest $10,000
+to pay for his daughter’s wedding
+next year. He will invest some of
+the money in a short term CD that
+pays 12% interest and the rest in
+a money market savings account
+that pays 5% interest. How much
+should he invest at each rate if he
+wants to earn $1,095 in interest in
+one year?
+269. A trust fund worth $25,000 is
+invested in two different
+portfolios. This year, one portfolio
+is expected to earn 5.25% interest
+and the other is expected to earn
+4%. Plans are for the total interest
+on the fund to be $1150 in one
+year. How much money should be
+invested at each rate?
+270. A business has two loans
+totaling $85,000. One loan has a
+rate of 6% and the other has a rate
+of 4.5%. This year, the business
+expects to pay $4650 in interest on
+the two loans. How much is each
+loan?
+Chapter 5 Systems of Linear Equations 659
+Everyday Math
+In the following exercises, translate to a system of equations and solve.
+271. Laurie was completing the treasurer’s report for
+her son’s Boy Scout troop at the end of the school year.
+She didn’t remember how many boys had paid the $15
+full-year registration fee and how many had paid the
+$10 partial-year fee. She knew that the number of boys
+who paid for a full-year was ten more than the number
+who paid for a partial-year. If $250 was collected for all
+the registrations, how many boys had paid the full-year
+fee and how many had paid the partial-year fee?
+272. As the treasurer of her daughter’s Girl Scout troop,
+Laney collected money for some girls and adults to
+go to a three-day camp. Each girl paid $75 and each
+adult paid $30. The total amount of money collected for
+camp was $765. If the number of girls is three times
+the number of adults, how many girls and how many
+adults paid for camp?
+Writing Exercises
+273. Take a handful of two types of coins, and write
+a problem similar to Example 5.46 relating the total
+number of coins and their total value. Set up a system
+of equations to describe your situation and then solve
+it.
+274. In Example 5.50 we solved the system of
+equations
+⎧
+⎩
+⎨b + f = 21,540
+0.105b + 0.059 f = 1669.68 by
+substitution. Would you have used substitution or
+elimination to solve this system? Why?
+Self Check
+After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+After looking at the checklist, do you think you are well-prepared for the next section? Why or why not?
+660 Chapter 5 Systems of Linear Equations

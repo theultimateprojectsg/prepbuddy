@@ -1,0 +1,373 @@
+4.7
+Graphs of Linear Inequalities
+Learning Objectives
+BE PREPARED : : 4.15 Before you get started, take this readiness quiz.
+Solve: 4x + 3 > 23 .
+If you missed this problem, review Example 2.73.
+BE PREPARED : : 4.16 Translate from algebra to English: x < 5 .
+If you missed this problem, review Example 1.12.
+BE PREPARED : : 4.17 Evaluate 3x − 2y when x = 1 , y = −2 .
+If you missed this problem, review Example 1.55.
+Verify Solutions to an Inequality in Two Variables
+We have learned how to solve inequalities in one variable. Now, we will look at inequalities in two variables. Inequalities
+in two variables have many applications. If you ran a business, for example, you would want your revenue to be greater
+than your costs—so that your business would make a profit.
+Linear Inequality
+A linear inequality is an inequality that can be written in one of the following forms:
+Ax + By > C Ax + By ≥ C Ax + By < C Ax + By ≤ C
+where A and B are not both zero.
+Do you remember that an inequality with one variable had many solutions? The solution to the inequality x > 3 is any
+number greater than 3. We showed this on the number line by shading in the number line to the right of 3, and putting
+an open parenthesis at 3. See Figure 4.30.
+Figure 4.30
+Similarly, inequalities in two variables have many solutions. Any ordered pair (x, y) that makes the inequality true when
+we substitute in the values is a solution of the inequality.
+Solution of a Linear Inequality
+An ordered pair (x, y) is a solution of a linear inequality if the inequality is true when we substitute the values of x
+and y.
+Determine whether each ordered pair is a solution to the inequality y > x + 4 :
+a (0, 0) b (1, 6) c (2, 6) d (−5, −15) e (−8, 12)
+542 Chapter 4 Graphs
+a
+(0, 0)
+Simplify. So, (0, 0) is not a solution to y > x + 4 .
+b
+(1, 6)
+Simplify. So, (1, 6) is a solution to y > x + 4 .
+c
+(2, 6)
+Simplify. So, (2, 6) is not a solution to y > x + 4 .
+d
+(−5, −15)
+Simplify. So, (−5, −15) is not a solution to y > x + 4 .
+e
+(−8, 12)
+Simplify. So, (−8, 12) is a solution to y > x + 4 .
+Chapter 4 Graphs 543
+TRY IT : : 4.137 Determine whether each ordered pair is a solution to the inequality y > x − 3 :
+a (0, 0) b (4, 9) c (−2, 1) d (−5, −3) e (5, 1)
+TRY IT : : 4.138 Determine whether each ordered pair is a solution to the inequality y < x + 1 :
+a (0, 0) b (8, 6) c (−2, −1) d (3, 4) e (−1, −4)
+Recognize the Relation Between the Solutions of an Inequality and its Graph
+Now, we will look at how the solutions of an inequality relate to its graph.
+Let’s think about the number line in Figure 4.30 again. The point x = 3 separated that number line into two parts. On
+one side of 3 are all the numbers less than 3. On the other side of 3 all the numbers are greater than 3. See Figure 4.31.
+Figure 4.31
+The solution to x > 3 is the shaded part of the number line to the right of x = 3 .
+Similarly, the line y = x + 4 separates the plane into two regions. On one side of the line are points with y < x + 4 . On
+the other side of the line are the points with y > x + 4 . We call the line y = x + 4 a boundary line.
+Boundary Line
+The line with equation Ax + By = C is the boundary line that separates the region where Ax + By > C from the
+region where Ax + By < C .
+For an inequality in one variable, the endpoint is shown with a parenthesis or a bracket depending on whether or not a
+is included in the solution:
+Similarly, for an inequality in two variables, the boundary line is shown with a solid or dashed line to indicate whether or
+not it the line is included in the solution. This is summarized in Table 4.48
+Ax + By < C Ax + By ≤ C
+Ax + By > C Ax + By ≥ C
+Boundary line is not included in solution. Boundary line is included in solution.
+Boundary line is dashed. Boundary line is solid.
+Table 4.48
+Now, let’s take a look at what we found in Example 4.69. We’ll start by graphing the line y = x + 4 , and then we’ll plot
+the five points we tested. See Figure 4.32.
+544 Chapter 4 Graphs
+Figure 4.32
+In Example 4.69 we found that some of the points were solutions to the inequality y > x + 4 and some were not.
+Which of the points we plotted are solutions to the inequality y > x + 4 ? The points (1, 6) and (−8, 12) are solutions
+to the inequality y > x + 4 . Notice that they are both on the same side of the boundary line y = x + 4 .
+The two points (0, 0) and (−5, −15) are on the other side of the boundary line y = x + 4 , and they are not solutions
+to the inequality y > x + 4 . For those two points, y < x + 4 .
+What about the point (2, 6) ? Because 6 = 2 + 4 , the point is a solution to the equation y = x + 4 . So the point (2, 6)
+is on the boundary line.
+Let’s take another point on the left side of the boundary line and test whether or not it is a solution to the inequality
+y > x + 4 . The point (0, 10) clearly looks to be to the left of the boundary line, doesn’t it? Is it a solution to the
+inequality?
+y > x + 4
+10 >
+? 0 + 4
+10 > 4 So, ⎛
+⎝0, 10⎞
+⎠ is a solution to y > x + 4.
+Any point you choose on the left side of the boundary line is a solution to the inequality y > x + 4 . All points on the left
+are solutions.
+Similarly, all points on the right side of the boundary line, the side with (0, 0) and (−5, −15) , are not solutions to
+y > x + 4 . See Figure 4.33.
+Chapter 4 Graphs 545
+Figure 4.33
+The graph of the inequality y > x + 4 is shown in Figure 4.34 below. The line y = x + 4 divides the plane into two
+regions. The shaded side shows the solutions to the inequality y > x + 4 .
+The points on the boundary line, those where y = x + 4 , are not solutions to the inequality y > x + 4 , so the line itself
+is not part of the solution. We show that by making the line dashed, not solid.
+Figure 4.34 The graph of the inequality y > x + 4 .
+546 Chapter 4 Graphs
+The boundary line shown is y = 2x − 1 . Write the inequality shown by the graph.
+The line y = 2x − 1 is the boundary line. On one side of the line are the points with y > 2x − 1 and on the other side of
+the line are the points with y < 2x − 1 .
+Let’s test the point (0, 0) and see which inequality describes its side of the boundary line.
+At (0, 0) , which inequality is true:
+y > 2x − 1 or y < 2x − 1 ?
+y > 2x − 1 y < 2x − 1
+0 >
+? 2 · 0 − 1 0 <
+? 2 · 0 − 1
+0 > −1 True 0 < −1 False
+Since, y > 2x − 1 is true, the side of the line with (0, 0) , is the solution. The shaded region shows the solution of the
+inequality y > 2x − 1 .
+Since the boundary line is graphed with a solid line, the inequality includes the equal sign.
+The graph shows the inequality y ≥ 2x − 1 .
+We could use any point as a test point, provided it is not on the line. Why did we choose (0, 0) ? Because it’s the easiest
+to evaluate. You may want to pick a point on the other side of the boundary line and check that y < 2x − 1 .
+Chapter 4 Graphs 547
+TRY IT : : 4.139 Write the inequality shown by the graph with the boundary line y = −2x + 3 .
+TRY IT : : 4.140 Write the inequality shown by the graph with the boundary line y = 1
+2x − 4 .
+The boundary line shown is 2x + 3y = 6 . Write the inequality shown by the graph.
+548 Chapter 4 Graphs
+The line 2x + 3y = 6 is the boundary line. On one side of the line are the points with 2x + 3y > 6 and on the other side
+of the line are the points with 2x + 3y < 6 .
+Let’s test the point (0, 0) and see which inequality describes its side of the boundary line.
+At (0, 0) , which inequality is true:
+2x + 3y > 6 or 2x + 3y < 6 ?
+2x + 3y > 6 2x + 3y < 6
+2(0) + 3(0) >
+? 6 2(0) + 3(0) <
+? 6
+0 > 6 False 0 < 6 True
+So the side with (0, 0) is the side where 2x + 3y < 6 .
+(You may want to pick a point on the other side of the boundary line and check that 2x + 3y > 6 .)
+Since the boundary line is graphed as a dashed line, the inequality does not include an equal sign.
+The graph shows the solution to the inequality 2x + 3y < 6 .
+Chapter 4 Graphs 549
+Write the inequality shown by the shaded region in the graph with the boundary line x − 4y = 8 .
+Write the inequality shown by the shaded region in the graph with the boundary line 3x − y = 6 .
+Graph Linear Inequalities
+Now, we’re ready to put all this together to graph linear inequalities.
+EXAMPLE 4.72 HOW TO GRAPH LINEAR INEQUALITIES
+Graph the linear inequality y ≥ 3
+4x − 2 .
+550 Chapter 4 Graphs
+TRY IT : : 4.143 Graph the linear inequality y ≥ 5
+2x − 4 .
+TRY IT : : 4.144 Graph the linear inequality y ≤ 2
+3x − 5 .
+The steps we take to graph a linear inequality are summarized here.
+Chapter 4 Graphs 551
+Graph the linear inequality x − 2y < 5 .
+First we graph the boundary line x − 2y = 5 . The inequality is < so we draw a dashed line.
+Then we test a point. We’ll use (0, 0) again because it is easy to evaluate and it is not on the boundary line.
+Is (0, 0) a solution of x − 2y < 5 ?
+The point (0, 0) is a solution of x − 2y < 5 , so we shade in that side of the boundary line.
+HOW TO : : GRAPH A LINEAR INEQUALITY.
+Identify and graph the boundary line.
+◦ If the inequality is ≤ or ≥ , the boundary line is solid.
+◦ If the inequality is < or >, the boundary line is dashed.
+Test a point that is not on the boundary line. Is it a solution of the inequality?
+Shade in one side of the boundary line.
+◦ If the test point is a solution, shade in the side that includes the point.
+◦ If the test point is not a solution, shade in the opposite side.
+Step 1.
+Step 2.
+Step 3.
+552 Chapter 4 Graphs
+TRY IT : : 4.145 Graph the linear inequality 2x − 3y ≤ 6 .
+TRY IT : : 4.146 Graph the linear inequality 2x − y > 3 .
+What if the boundary line goes through the origin? Then we won’t be able to use (0, 0) as a test point. No problem—we’ll
+just choose some other point that is not on the boundary line.
+Graph the linear inequality y ≤ −4x .
+First we graph the boundary line y = −4x . It is in slope–intercept form, with m = −4 and b = 0 . The inequality is ≤
+so we draw a solid line.
+Now, we need a test point. We can see that the point (1, 0) is not on the boundary line.
+Is (1, 0) a solution of y ≤ −4x ?
+Chapter 4 Graphs 553
+The point (1, 0) is not a solution to y ≤ −4x , so we shade in the opposite side of the boundary line. See Figure 4.35.
+Figure 4.35
+TRY IT : : 4.147 Graph the linear inequality y > −3x .
+TRY IT : : 4.148 Graph the linear inequality y ≥ −2x .
+Some linear inequalities have only one variable. They may have an x but no y, or a y but no x. In these cases, the boundary
+line will be either a vertical or a horizontal line. Do you remember?
+x = a vertical line
+y = b horizontal line
+Graph the linear inequality y > 3 .
+First we graph the boundary line y = 3 . It is a horizontal line. The inequality is > so we draw a dashed line.
+We test the point (0, 0) .
+y > 3
+0 > 3
+(0, 0) is not a solution to y > 3 .
+So we shade the side that does not include (0, 0).
+554 Chapter 4 Graphs
+TRY IT : : 4.149 Graph the linear inequality y < 5 .
+TRY IT : : 4.150 Graph the linear inequality y ≤ −1 .
+Chapter 4 Graphs 555
+Practice Makes Perfect
+Verify Solutions to an Inequality in Two Variables
+In the following exercises, determine whether each ordered pair is a solution to the given inequality.
+504. Determine whether each
+ordered pair is a solution to the
+inequality y > x − 1 :
+a (0, 1) b (−4, −1)
+c (4, 2) d (3, 0)
+e (−2, −3)
+505. Determine whether each
+ordered pair is a solution to the
+inequality y > x − 3 :
+a (0, 0) b (2, 1)
+c (−1, −5)
+d (−6, −3) e (1, 0)
+506. Determine whether each
+ordered pair is a solution to the
+inequality y < x + 2 :
+a (0, 3) b (−3, −2)
+c (−2, 0) d (0, 0)
+e (−1, 4)
+507. Determine whether each
+ordered pair is a solution to the
+inequality y < x + 5 :
+a (−3, 0) b (1, 6)
+c (−6, −2) d (0, 1)
+e (5, −4)
+508. Determine whether each
+ordered pair is a solution to the
+inequality x + y > 4 :
+a (5, 1) b (−2, 6)
+c (3, 2) d (10, −5)
+e (0, 0)
+509. Determine whether each
+ordered pair is a solution to the
+inequality x + y > 2 :
+a (1, 1) b (4, −3)
+c (0, 0) d (−8, 12)
+e (3, 0)
+Recognize the Relation Between the Solutions of an Inequality and its Graph
+In the following exercises, write the inequality shown by the shaded region.
+510. Write the inequality shown by the graph with the
+boundary line y = 3x − 4.
+511. Write the inequality shown by the graph with the
+boundary line y = 2x − 4.
+512. Write the inequality shown by the graph with the
+boundary line y = 1
+2x + 1.
+513. Write the inequality shown by the graph with the
+boundary line y = − 1
+3x − 2.
+4.7 EXERCISES
+556 Chapter 4 Graphs
+514. Write the inequality shown by the shaded region in
+the graph with the boundary line x + y = 5.
+515. Write the inequality shown by the shaded region in
+the graph with the boundary line x + y = 3.
+516. Write the inequality shown by the shaded region in
+the graph with the boundary line 2x + y = −4.
+517. Write the inequality shown by the shaded region in
+the graph with the boundary line x + 2y = −2.
+518. Write the inequality shown by the shaded region in
+the graph with the boundary line 3x − y = 6.
+519. Write the inequality shown by the shaded region in
+the graph with the boundary line 2x − y = 4.
+520. Write the inequality shown by the shaded region
+in the graph with the boundary line 2x − 5y = 10.
+521. Write the inequality shown by the shaded region in
+the graph with the boundary line 4x − 3y = 12.
+Chapter 4 Graphs 557
+Graph Linear Inequalities
+In the following exercises, graph each linear inequality.
+522. Graph the linear inequality
+y > 2
+3x − 1 .
+523. Graph the linear inequality
+y < 3
+5x + 2 .
+524. Graph the linear inequality
+y ≤ − 1
+2x + 4 .
+525. Graph the linear inequality
+y ≥ − 1
+3x − 2 .
+526. Graph the linear inequality
+x − y ≤ 3 .
+527. Graph the linear inequality
+x − y ≥ −2 .
+528. Graph the linear inequality
+4x + y > −4 .
+529. Graph the linear inequality
+x + 5y < −5 .
+530. Graph the linear inequality
+3x + 2y ≥ −6 .
+531. Graph the linear inequality
+4x + 2y ≥ −8 .
+532. Graph the linear inequality
+y > 4x .
+533. Graph the linear inequality
+y > x .
+534. Graph the linear inequality
+y ≤ −x .
+535. Graph the linear inequality
+y ≤ −3x .
+536. Graph the linear inequality
+y ≥ −2 .
+537. Graph the linear inequality
+y < −1 .
+538. Graph the linear inequality
+y < 4 .
+539. Graph the linear inequality
+y ≥ 2 .
+540. Graph the linear inequality
+x ≤ 5 .
+541. Graph the linear inequality
+x > −2 .
+542. Graph the linear inequality
+x > −3 .
+543. Graph the linear inequality
+x ≤ 4 .
+544. Graph the linear inequality
+x − y < 4 .
+545. Graph the linear inequality
+x − y < −3 .
+546. Graph the linear inequality
+y ≥ 3
+2x .
+547. Graph the linear inequality
+y ≤ 5
+4x .
+548. Graph the linear inequality
+y > −2x + 1 .
+549. Graph the linear inequality
+y < −3x − 4 .
+550. Graph the linear inequality
+x ≤ −1 .
+551. Graph the linear inequality
+x ≥ 0 .
+Everyday Math
+552. Money. Gerry wants to have a maximum of $100
+cash at the ticket booth when his church carnival
+opens. He will have $1 bills and $5 bills. If x is the
+number of $1 bills and y is the number of $5 bills, the
+inequality x + 5y ≤ 100 models the situation.
+a Graph the inequality.
+b List three solutions to the inequality
+x + 5y ≤ 100 where both x and y are integers.
+553. Shopping. Tula has $20 to spend at the used book
+sale. Hardcover books cost $2 each and paperback
+books cost $0.50 each. If x is the number of hardcover
+books Tula can buy and y is the number of paperback
+books she can buy, the inequality 2x + 1
+2y ≤ 20
+models the situation.
+a Graph the inequality.
+b List three solutions to the inequality
+2x + 1
+2y ≤ 20 where both x and y are whole
+numbers.
+Writing Exercises
+554. Lester thinks that the solution of any inequality
+with a > sign is the region above the line and the
+solution of any inequality with a < sign is the region
+below the line. Is Lester correct? Explain why or why
+not.
+555. Explain why in some graphs of linear inequalities
+the boundary line is solid but in other graphs it is
+dashed.
+558 Chapter 4 Graphs
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b What does this checklist tell you about your mastery of this section? What steps will you take to improve?
+Chapter 4 Graphs 559

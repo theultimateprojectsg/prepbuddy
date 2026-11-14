@@ -1,0 +1,409 @@
+2.5
+Solve Equations with Fractions or Decimals
+Learning Objectives
+By the end of this section, you will be able to:
+Solve equations with fraction coefficients
+Solve equations with decimal coefficients
+BE PREPARED : : 2.13 Before you get started, take this readiness quiz.
+Multiply: 8 · 3
+8.
+If you missed this problem, review Example 1.69.
+BE PREPARED : : 2.14 Find the LCD of 5
+6 and 1
+4 .
+If you missed this problem, review Example 1.82.
+BE PREPARED : : 2.15 Multiply 4.78 by 100.
+If you missed this problem, review Example 1.98.
+Solve Equations with Fraction Coefficients
+Let’s use the general strategy for solving linear equations introduced earlier to solve the equation, 1
+8x + 1
+2 = 1
+4 .
+To isolate the x term, subtract 1
+2 from both sides.
+Simplify the left side.
+Change the constants to equivalent fractions with the LCD.
+Subtract.
+Multiply both sides by the reciprocal of 1
+8 .
+Simplify.
+This method worked fine, but many students do not feel very confident when they see all those fractions. So, we are going
+to show an alternate method to solve equations with fractions. This alternate method eliminates the fractions.
+We will apply the Multiplication Property of Equality and multiply both sides of an equation by the least common
+denominator of all the fractions in the equation. The result of this operation will be a new equation, equivalent to the first,
+but without fractions. This process is called “clearing” the equation of fractions.
+Let’s solve a similar equation, but this time use the method that eliminates the fractions.
+Chapter 2 Solving Linear Equations and Inequalities 255
+EXAMPLE 2.48 HOW TO SOLVE EQUATIONS WITH FRACTION COEFFICIENTS
+Solve: 1
+6y − 1
+3 = 5
+6 .
+TRY IT : : 2.95 Solve: 1
+4x + 1
+2 = 5
+8 .
+TRY IT : : 2.96 Solve: 1
+8x + 1
+2 = 1
+4 .
+Notice in Example 2.48, once we cleared the equation of fractions, the equation was like those we solved earlier in this
+chapter. We changed the problem to one we already knew how to solve! We then used the General Strategy for Solving
+Linear Equations.
+Solve: 6 = 1
+2v + 2
+5v − 3
+4v .
+We want to clear the fractions by multiplying both sides of the equation by the LCD of all the fractions in the equation.
+Find the LCD of all fractions in the equation.
+The LCD is 20.
+Multiply both sides of the equation by 20.
+HOW TO : : STRATEGY TO SOLVE EQUATIONS WITH FRACTION COEFFICIENTS.
+Find the least common denominator of all the fractions in the equation.
+Multiply both sides of the equation by that LCD. This clears the fractions.
+Solve using the General Strategy for Solving Linear Equations.
+Step 1.
+Step 2.
+Step 3.
+256 Chapter 2 Solving Linear Equations and Inequalities
+Distribute.
+Simplify—notice, no more fractions!
+Combine like terms.
+Divide by 3.
+Simplify.
+Check:
+Let v = 40 .
+TRY IT : : 2.97 Solve: 7 = 1
+2x + 3
+4x − 2
+3x .
+TRY IT : : 2.98 Solve: −1 = 1
+2u + 1
+4u − 2
+3u .
+In the next example, we again have variables on both sides of the equation.
+Solve: a + 3
+4 = 3
+8a − 1
+2 .
+Find the LCD of all fractions in the equation.
+The LCD is 8.
+Multiply both sides by the LCD.
+Distribute.
+Simplify—no more fractions.
+Subtract 3a from both sides.
+Simplify.
+Subtract 6 from both sides.
+Simplify.
+Divide by 5.
+Simplify.
+Chapter 2 Solving Linear Equations and Inequalities 257
+Check:
+Let a = −2 .
+TRY IT : : 2.99 Solve: x + 1
+3 = 1
+6x − 1
+2 .
+TRY IT : : 2.100 Solve: c + 3
+4 = 1
+2c − 1
+4 .
+In the next example, we start by using the Distributive Property. This step clears the fractions right away.
+Solve: −5 = 1
+4(8x + 4) .
+Distribute.
+Simplify.
+Now there are no fractions.
+Subtract 1 from both sides.
+Simplify.
+Divide by 2.
+Simplify.
+Check:
+Let x = −3 .
+TRY IT : : 2.101 Solve: −11 = 1
+2⎛
+⎝6p + 2⎞
+⎠ .
+258 Chapter 2 Solving Linear Equations and Inequalities
+TRY IT : : 2.102 Solve: 8 = 1
+3⎛
+⎝9q + 6⎞
+⎠ .
+In the next example, even after distributing, we still have fractions to clear.
+Solve: 1
+2⎛
+⎝y − 5⎞
+⎠ = 1
+4⎛
+⎝y − 1⎞
+⎠ .
+Distribute.
+Simplify.
+Multiply by the LCD, 4.
+Distribute.
+Simplify.
+Collect the variables to the left.
+Simplify.
+Collect the constants to the right.
+Simplify.
+Check:
+Let y = 9 .
+Finish the check on your own.
+TRY IT : : 2.103 Solve: 1
+5(n + 3) = 1
+4(n + 2) .
+TRY IT : : 2.104 Solve: 1
+2(m − 3) = 1
+4(m − 7) .
+Solve: 5x − 3
+4 = x
+2 .
+Chapter 2 Solving Linear Equations and Inequalities 259
+Multiply by the LCD, 4.
+Simplify.
+Collect the variables to the right.
+Simplify.
+Divide.
+Simplify.
+Check:
+Let x = 1 .
+TRY IT : : 2.105 Solve: 4y − 7
+3 = y
+6 .
+TRY IT : : 2.106 Solve: −2z − 5
+4 = z
+8 .
+Solve: a
+6 + 2 = a
+4 + 3 .
+Multiply by the LCD, 12.
+Distribute.
+Simplify.
+Collect the variables to the right.
+Simplify.
+Collect the constants to the left.
+Simplify.
+Check:
+260 Chapter 2 Solving Linear Equations and Inequalities
+Let a = −12 .
+TRY IT : : 2.107 Solve: b
+10 + 2 = b
+4 + 5 .
+TRY IT : : 2.108 Solve: c
+6 + 3 = c
+3 + 4 .
+Solve: 4q + 3
+2 + 6 = 3q + 5
+4 .
+Multiply by the LCD, 4.
+Distribute.
+Simplify.
+Collect the variables to the left.
+Simplify.
+Collect the constants to the right.
+Simplify.
+Divide by 5.
+Simplify.
+Check:
+Let q = −5 .
+Finish the check on your own.
+TRY IT : : 2.109 Solve: 3r + 5
+6 + 1 = 4r + 3
+3 .
+TRY IT : : 2.110 Solve: 2s + 3
+2 + 1 = 3s + 2
+4 .
+Chapter 2 Solving Linear Equations and Inequalities 261
+Solve Equations with Decimal Coefficients
+Some equations have decimals in them. This kind of equation will occur when we solve problems dealing with money
+or percentages. But decimals can also be expressed as fractions. For example, 0.3 = 3
+10 and 0.17 = 17
+100 . So, with an
+equation with decimals, we can use the same method we used to clear fractions—multiply both sides of the equation by
+the least common denominator.
+Solve: 0.06x + 0.02 = 0.25x − 1.5 .
+Look at the decimals and think of the equivalent fractions.
+0.06 = 6
+100 0.02 = 2
+100 0.25 = 25
+100 1.5 = 1 5
+Notice, the LCD is 100.
+By multiplying by the LCD, we will clear the decimals from the equation.
+Multiply both sides by 100.
+Distribute.
+Multiply, and now we have no more decimals.
+Collect the variables to the right.
+Simplify.
+Collect the constants to the left.
+Simplify.
+Divide by 19.
+Simplify.
+Check: Let x = 8 .
+TRY IT : : 2.111 Solve: 0.14h + 0.12 = 0.35h − 2.4 .
+TRY IT : : 2.112 Solve: 0.65k − 0.1 = 0.4k − 0.35 .
+The next example uses an equation that is typical of the money applications in the next chapter. Notice that we distribute
+the decimal before we clear all the decimals.
+Solve: 0.25x + 0.05(x + 3) = 2.85 .
+262 Chapter 2 Solving Linear Equations and Inequalities
+Distribute first.
+Combine like terms.
+To clear decimals, multiply by 100.
+Distribute.
+Subtract 15 from both sides.
+Simplify.
+Divide by 30.
+Simplify.
+Check it yourself by substituting x = 9 into the original equation.
+TRY IT : : 2.113 Solve: 0.25n + 0.05(n + 5) = 2.95 .
+TRY IT : : 2.114 Solve: 0.10d + 0.05(d − 5) = 2.15 .
+Chapter 2 Solving Linear Equations and Inequalities 263
+Practice Makes Perfect
+Solve Equations with Fraction Coefficients
+In the following exercises, solve each equation with fraction coefficients.
+318. 1
+4x − 1
+2 = − 3
+4 319. 3
+4x − 1
+2 = 1
+4 320. 5
+6y − 2
+3 = − 3
+321. 5
+6y − 1
+3 = − 7
+6 322. 1
+2a + 3
+8 = 3
+4 323. 5
+8b + 1
+2 = − 3
+324. 2 = 1
+3x − 1
+2x + 2
+3x 325. 2 = 3
+5x − 1
+3x + 2
+5x 326. 1
+4m − 4
+5m + 1
+2m = −1
+327. 5
+6n − 1
+4n − 1
+2n = −2 328. x + 1
+2 = 2
+3x − 1
+2 329. x + 3
+4 = 1
+2x − 5
+330. 1
+3w + 5
+4 = w − 1
+4 331. 3
+2z + 1
+3 = z − 2
+3 332. 1
+2x − 1
+4 = 1
+12x + 1
+333. 1
+2a − 1
+4 = 1
+6a + 1
+12 334. 1
+3b + 1
+5 = 2
+5b − 3
+5 335. 1
+3x + 2
+5 = 1
+5x − 2
+336. 1 = 1
+6(12x − 6) 337. 1 = 1
+5(15x − 10) 338. 1
+4⎛
+⎝p − 7⎞
+⎠ = 1
+3⎛
+⎝p + 5⎞
+339. 1
+5⎛
+⎝q + 3⎞
+⎠ = 1
+2⎛
+⎝q − 3⎞
+⎠ 340. 1
+2(x + 4) = 3
+4 341. 1
+3(x + 5) = 5
+342. 5q − 8
+5 = 2q
+10 343. 4m + 2
+6 = m
+3 344. 4n + 8
+4 = n
+345. 3p + 6
+3 = p
+346. u
+3 − 4 = u
+2 − 3 347. v
+10 + 1 = v
+4 − 2
+348. c
+15 + 1 = c
+10 − 1 349. d
+6 + 3 = d
+8 + 2 350. 3x + 4
+2 + 1 = 5x + 10
+351. 10y − 2
+3 + 3 = 10y + 1
+9 352. 7u − 1
+4 − 1 = 4u + 8
+5 353. 3v − 6
+2 + 5 = 11v − 4
+Solve Equations with Decimal Coefficients
+In the following exercises, solve each equation with decimal coefficients.
+354. 0.6y + 3 = 9 355. 0.4y − 4 = 2 356. 3.6 j − 2 = 5.2
+357. 2.1k + 3 = 7.2 358. 0.4x + 0.6 = 0.5x − 1.2 359. 0.7x + 0.4 = 0.6x + 2.4
+360.
+0.23x + 1.47 = 0.37x − 1.05
+361.
+0.48x + 1.56 = 0.58x − 0.64 362. 0.9x − 1.25 = 0.75x + 1.75
+363. 1.2x − 0.91 = 0.8x + 2.29 364. 0.05n + 0.10(n + 8) = 2.15 365. 0.05n + 0.10(n + 7) = 3.55
+2.5 EXERCISES
+264 Chapter 2 Solving Linear Equations and Inequalities
+366. 0.10d + 0.25(d + 5) = 4.05 367. 0.10d + 0.25(d + 7) = 5.25 368. 0.05⎛
+⎝q − 5⎞
+⎠ + 0.25q = 3.05
+369. 0.05⎛
+⎝q − 8⎞
+⎠ + 0.25q = 4.10
+Everyday Math
+370. Coins Taylor has $2.00 in dimes and pennies. The
+number of pennies is 2 more than the number of
+dimes. Solve the equation 0.10d + 0.01(d + 2) = 2
+for d , the number of dimes.
+371. Stamps Paula bought $22.82 worth of 49-cent
+stamps and 21-cent stamps. The number of 21-cent
+stamps was 8 less than the number of 49-cent stamps.
+Solve the equation 0.49s + 0.21(s − 8) = 22.82 for s,
+to find the number of 49-cent stamps Paula bought.
+Writing Exercises
+372. Explain how you find the least common
+denominator of 3
+8 , 1
+6 , and 2
+3 .
+373. If an equation has several fractions, how does
+multiplying both sides by the LCD make it easier to
+solve?
+374. If an equation has fractions only on one side, why
+do you have to multiply both sides of the equation by
+the LCD?
+375. In the equation 0.35x + 2.1 = 3.85 what is the
+LCD? How do you know?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b Overall, after looking at the checklist, do you think you are well-prepared for the next section? Why or why not?
+Chapter 2 Solving Linear Equations and Inequalities 265

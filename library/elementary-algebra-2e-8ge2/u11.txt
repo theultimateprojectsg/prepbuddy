@@ -1,0 +1,476 @@
+2.2
+Solve Equations using the Division and Multiplication Properties of
+Equality
+Learning Objectives
+By the end of this section, you will be able to:
+Solve equations using the Division and Multiplication Properties of Equality
+Solve equations that require simplification
+Translate to an equation and solve
+Translate and solve applications
+BE PREPARED : : 2.5 Before you get started, take this readiness quiz.
+Simplify: −7⎛
+⎝ 1
+−7
+⎞
+⎠.
+If you missed this problem, review Example 1.68.
+BE PREPARED : : 2.6 Evaluate 9x + 2 when x = −3 .
+If you missed this problem, review Example 1.57.
+Solve Equations Using the Division and Multiplication Properties of Equality
+You may have noticed that all of the equations we have solved so far have been of the form x + a = b or x − a = b . We
+were able to isolate the variable by adding or subtracting the constant term on the side of the equation with the variable.
+Now we will see how to solve equations that have a variable multiplied by a constant and so will require division to isolate
+the variable.
+Let’s look at our puzzle again with the envelopes and counters in Figure 2.5.
+Figure 2.5 The illustration shows a model
+of an equation with one variable multiplied
+by a constant. On the left side of the
+workspace are two instances of the
+unknown (envelope), while on the right side
+of the workspace are six counters.
+In the illustration there are two identical envelopes that contain the same number of counters. Remember, the left side
+of the workspace must equal the right side, but the counters on the left side are “hidden” in the envelopes. So how many
+counters are in each envelope?
+How do we determine the number? We have to separate the counters on the right side into two groups of the same size
+to correspond with the two envelopes on the left side. The 6 counters divided into 2 equal groups gives 3 counters in each
+group (since 6 ÷ 2 = 3 ).
+What equation models the situation shown in Figure 2.6? There are two envelopes, and each contains x counters.
+Together, the two envelopes must contain a total of 6 counters.
+218 Chapter 2 Solving Linear Equations and Inequalities
+Figure 2.6 The illustration shows a model
+of the equation 2x = 6 .
+If we divide both sides of the equation by 2, as we did with the envelopes and counters,
+we get:
+We found that each envelope contains 3 counters. Does this check? We know 2 · 3 = 6 , so it works! Three counters in
+each of two envelopes does equal six!
+This example leads to the Division Property of Equality.
+The Division Property of Equality
+For any numbers a, b, and c, and c ≠ 0 ,
+If a = b,
+then a
+c = b
+c
+When you divide both sides of an equation by any non-zero number, you still have equality.
+MANIPULATIVE MATHEMATICS
+Doing the Manipulative Mathematics activity “ Division Property of Equality” will help you develop a better
+understanding of how to solve equations by using the Division Property of Equality.
+The goal in solving an equation is to ‘undo’ the operation on the variable. In the next example, the variable is multiplied
+by 5, so we will divide both sides by 5 to ‘undo’ the multiplication.
+Solve: 5x = −27.
+To isolate x , “undo” the multiplication by 5.
+Divide to ‘undo’ the multiplication.
+Simplify.
+Check:
+Chapter 2 Solving Linear Equations and Inequalities 219
+Substitute − 27
+5 for x.
+Since this is a true statement, x = − 27
+is the solution to 5x = −27 .
+TRY IT : : 2.25 Solve: 3y = −41.
+TRY IT : : 2.26 Solve: 4z = −55.
+Consider the equation x
+4 = 3 . We want to know what number divided by 4 gives 3. So to “undo” the division, we will need
+to multiply by 4. The Multiplication Property of Equality will allow us to do this. This property says that if we start with
+two equal quantities and multiply both by the same number, the results are equal.
+The Multiplication Property of Equality
+For any numbers a, b, and c,
+If a = b,
+then ac = bc
+If you multiply both sides of an equation by the same number, you still have equality.
+Solve: y
+−7 = −14.
+Here y is divided by −7 . We must multiply by −7 to isolate y .
+Multiply both sides by −7 .
+Multiply.
+Simplify.
+Check: y
+−7 = −14
+Substitute y = 98 .
+Divide.
+TRY IT : : 2.27 Solve: a
+−7 = −42.
+TRY IT : : 2.28 Solve: b
+−6 = −24.
+220 Chapter 2 Solving Linear Equations and Inequalities
+Solve: −n = 9.
+Remember −n is equivalent to −1n .
+Divide both sides by −1 .
+Divide.
+Notice that there are two other ways to solve −n = 9 . We can also solve this equation by multiplying both
+sides by −1 and also by taking the opposite of both sides.
+Check:
+Substitute n = −9 .
+Simplify.
+TRY IT : : 2.29 Solve: −k = 8.
+TRY IT : : 2.30 Solve: −g = 3.
+Solve: 3
+4x = 12.
+Since the product of a number and its reciprocal is 1, our strategy will be to isolate x by multiplying by the reciprocal of
+4 .
+Multiply by the reciprocal of 3
+4 .
+Reciprocals multiply to 1.
+Multiply.
+Notice that we could have divided both sides of the equation 3
+4x = 12 by 3
+4 to isolate x . While this would
+work, most people would find multiplying by the reciprocal easier.
+Check:
+Substitute x = 16 .
+Chapter 2 Solving Linear Equations and Inequalities 221
+TRY IT : : 2.31 Solve: 2
+5n = 14.
+TRY IT : : 2.32 Solve: 5
+6y = 15.
+In the next example, all the variable terms are on the right side of the equation. As always, our goal in solving the equation
+is to isolate the variable.
+Solve: 8
+15 = − 4
+5x.
+Multiply by the reciprocal of − 4
+5 .
+Reciprocals multiply to 1.
+Multiply.
+Check:
+Let x = − 2
+3 .
+TRY IT : : 2.33 Solve: 9
+25 = − 4
+5 z.
+TRY IT : : 2.34 Solve: 5
+6 = − 8
+3 r.
+Solve Equations That Require Simplification
+Many equations start out more complicated than the ones we have been working with.
+With these more complicated equations the first step is to simplify both sides of the equation as much as possible. This
+usually involves combining like terms or using the distributive property.
+Solve: 14 − 23 = 12y − 4y − 5y.
+Begin by simplifying each side of the equation.
+222 Chapter 2 Solving Linear Equations and Inequalities
+Simplify each side.
+Divide both sides by 3 to isolate y .
+Divide.
+Check:
+Substitute y = −3 .
+TRY IT : : 2.35 Solve: 18 − 27 = 15c − 9c − 3c.
+TRY IT : : 2.36 Solve: 18 − 22 = 12x − x − 4x.
+Solve: −4(a − 3) − 7 = 25.
+Here we will simplify each side of the equation by using the distributive property first.
+Distribute.
+Simplify.
+Simplify.
+Divide both sides by −4 to isolate a .
+Divide.
+Check:
+Substitute a = −5 .
+TRY IT : : 2.37 Solve: −4(q − 2) − 8 = 24.
+TRY IT : : 2.38 Solve: −6(r − 2) − 12 = 30.
+Now we have covered all four properties of equality—subtraction, addition, division, and multiplication. We’ll list them all
+together here for easy reference.
+Chapter 2 Solving Linear Equations and Inequalities 223
+Properties of Equality
+Subtraction Property of Equality Addition Property of Equality
+For any real numbers a, b, and c, For any real numbers a, b, and c,
+if a = b,
+then a − c = b − c.
+if a = b,
+then a + c = b + c.
+Division Property of Equality Multiplication Property of Equality
+For any numbers a, b, and c, and c ≠ 0, For any numbers a, b, and c,
+if a = b,
+then a
+c = b
+c.
+if a = b,
+then ac = bc.
+When you add, subtract, multiply, or divide the same quantity from both sides of an equation, you still have equality.
+Translate to an Equation and Solve
+In the next few examples, we will translate sentences into equations and then solve the equations. You might want to
+review the translation table in the previous chapter.
+Translate and solve: The number 143 is the product of −11 and y.
+Begin by translating the sentence into an equation.
+Translate.
+Divide by −11 .
+Simplify.
+Check:
+143 = −11y
+143 =? −11(−13)
+143 = 143 ✓
+TRY IT : : 2.39 Translate and solve: The number 132 is the product of −12 and y.
+TRY IT : : 2.40 Translate and solve: The number 117 is the product of −13 and z.
+Translate and solve: n divided by 8 is −32 .
+224 Chapter 2 Solving Linear Equations and Inequalities
+Begin by translating the sentence into an equation.
+Translate.
+Multiple both sides by 8.
+Simplify.
+Check: Is n divided by 8 equal to −32?
+Let n = −256 . Is −256 divided by 8 equal to −32 ?
+Translate. −256
+8 =? −32
+Simplify. −32 = −32 ✓
+TRY IT : : 2.41 Translate and solve: n divided by 7 is equal to −21 .
+TRY IT : : 2.42 Translate and solve: n divided by 8 is equal to −56 .
+Translate and solve: The quotient of y and −4 is 68 .
+Begin by translating the sentence into an equation.
+Translate.
+Multiply both sides by −4 .
+Simplify.
+Check: Is the quotient of y and −4 equal to 68 ?
+Let y = −272 . Is the quotient of −272 and −4 equal to 68 ?
+Translate. −272
+−4 =? 68
+Simplify. 68 = 68 ✓
+TRY IT : : 2.43 Translate and solve: The quotient of q and −8 is 72.
+TRY IT : : 2.44 Translate and solve: The quotient of p and −9 is 81.
+Chapter 2 Solving Linear Equations and Inequalities 225
+Translate and solve: Three-fourths of p is 18.
+Begin by translating the sentence into an equation. Remember, “of” translates into multiplication.
+Translate.
+Multiply both sides by 4
+3.
+Simplify.
+Check: Is three-fourths of p equal to 18?
+Let p = 24. Is three-fourths of 24 equal to 18?
+Translate. 3
+4 · 24 =? 18
+Simplify. 18 = 18 ✓
+TRY IT : : 2.45 Translate and solve: Two-fifths of f is 16.
+TRY IT : : 2.46 Translate and solve: Three-fourths of f is 21.
+Translate and solve: The sum of three-eighths and x is one-half.
+Begin by translating the sentence into an equation.
+Translate.
+Subtract 3
+8 from each side.
+Simplify and rewrite fractions with common denominators.
+Simplify.
+Check: Is the sum of three-eighths and x equal to
+one-half?
+Let x = 1
+8. Is the sum of three-eighths and one-eighth
+equal to one-half?
+Translate. 3
+8 + 1
+8 =? 1
+226 Chapter 2 Solving Linear Equations and Inequalities
+Simplify. 4
+8 =? 1
+Simplify. 1
+2 = 1
+2 ✓
+TRY IT : : 2.47 Translate and solve: The sum of five-eighths and x is one-fourth.
+TRY IT : : 2.48 Translate and solve: The sum of three-fourths and x is five-sixths.
+Translate and Solve Applications
+To solve applications using the Division and Multiplication Properties of Equality, we will follow the same steps we used in
+the last section. We will restate the problem in just one sentence, assign a variable, and then translate the sentence into
+an equation to solve.
+Denae bought 6 pounds of grapes for $10.74. What was the cost of one pound of grapes?
+What are you asked to find? The cost of 1 pound of grapes
+Assign a variable. Let c = the cost of one pound.
+Write a sentence that gives the information to find it. The cost of 6 pounds is $10.74.
+Translate into an equation. 6c = 10.74
+Solve.
+6c
+6 = 10.74
+c = 1.79
+The grapes cost $1.79 per pound.
+Check: If one pound costs $1.79, do 6 pounds cost #10.74?
+6(1.79) =? 10.74
+10.74 = 10.74 ✓
+Table 2.3
+TRY IT : : 2.49 Translate and solve:
+Arianna bought a 24-pack of water bottles for $9.36. What was the cost of one water bottle?
+Translate and solve:
+At JB’s Bowling Alley, 6 people can play on one lane for $34.98. What is the cost for each person?
+Andreas bought a used car for $12,000. Because the car was 4-years old, its price was 3
+4 of the original price, when the
+Chapter 2 Solving Linear Equations and Inequalities 227
+car was new. What was the original price of the car?
+What are you asked to find? The original price of the car
+Assign a variable. Let p = the original price.
+Write a sentence that gives the information to find it. $12,000 is 3
+4 of the original price.
+Translate into an equation. 12,000 = 3
+4 p
+Solve.
+3(12,000) = 4
+3 · 3
+4 p
+16,000 = p
+The original cost of the car was $16,000.
+Check: Is 3
+4 of $16,000 equal to $12,000?
+4 · 16,000 =? 12,000
+12,000 = 12,000 ✓
+Table 2.4
+Translate and solve:
+The annual property tax on the Mehta’s house is $1,800, calculated as 15
+1,000 of the assessed value of the house.
+What is the assessed value of the Mehta’s house?
+Translate and solve:
+Stella planted 14 flats of flowers in 2
+3 of her garden. How many flats of flowers would she need to fill the whole
+garden?
+228 Chapter 2 Solving Linear Equations and Inequalities
+Practice Makes Perfect
+Solve Equations Using the Division and Multiplication Properties of Equality
+In the following exercises, solve each equation using the Division and Multiplication Properties of Equality and check the solution.
+77. 8x = 56 78. 7p = 63 79. −5c = 55
+80. −9x = −27 81. −809 = 15y 82. −731 = 19y
+83. −37p = −541 84. −19m = −586 85. 0.25z = 3.25
+86. 0.75a = 11.25 87. −13x = 0 88. 24x = 0
+89. x
+4 = 35 90. z
+2 = 54 91. −20 = q
+−5
+92. c
+−3 = −12 93. y
+9 = −16 94. q
+6 = −38
+95. m
+−12 = 45 96. −24 = p
+−20 97. −y = 6
+98. −u = 15 99. −v = −72 100. −x = −39
+101. 2
+3y = 48 102. 3
+5r = 75 103. − 5
+8w = 40
+104. 24 = − 3
+4x 105. − 2
+5 = 1
+10a 106. − 1
+3q = − 5
+107. − 7
+10x = − 14
+3 108. 3
+8y = − 1
+4 109. 7
+12 = − 3
+4 p
+110. 11
+18 = − 5
+6q 111. − 5
+18 = − 10
+9 u 112. − 7
+20 = − 7
+4v
+Solve Equations That Require Simplification
+In the following exercises, solve each equation requiring simplification.
+113. 100 − 16 = 4p − 10p − p 114. −18 − 7 = 5t − 9t − 6t 115. 7
+8n − 3
+4n = 9 + 2
+116. 5
+12q + 1
+2q = 25 − 3 117. 0.25d + 0.10d = 6 − 0.75 118. 0.05p − 0.01p = 2 + 0.24
+119. −10(q − 4) − 57 = 93 120. −12(d − 5) − 29 = 43 121. −10(x + 4) − 19 = 85
+122. −15(z + 9) − 11 = 75
+2.2 EXERCISES
+Chapter 2 Solving Linear Equations and Inequalities 229
+Mixed Practice
+In the following exercises, solve each equation.
+123. 9
+10x = 90 124. 5
+12y = 60 125. y + 46 = 55
+126. x + 33 = 41 127. w
+−2 = 99 128. s
+−3 = −60
+129. 27 = 6a 130. −a = 7 131. −x = 2
+132. z − 16 = −59 133. m − 41 = −14 134. 0.04r = 52.60
+135. 63.90 = 0.03p 136. −15x = −120 137. 84 = −12z
+138. 19.36 = x − 0.2x 139. c − 0.3c = 35.70 140. −y = −9
+141. −x = −8
+Translate to an Equation and Solve
+In the following exercises, translate to an equation and then solve.
+142. 187 is the product of −17
+and m.
+143. 133 is the product of −19
+and n.
+144. −184 is the product of 23
+and p.
+145. −152 is the product of 8 and
+q.
+146. u divided by 7 is equal to −49
+.
+147. r divided by 12 is equal to
+−48 .
+148. h divided by −13 is equal to
+−65 .
+149. j divided by −20 is equal to
+−80 .
+150. The quotient c and −19 is
+38.
+151. The quotient of b and −6 is
+18.
+152. The quotient of h and 26 is
+−52 .
+153. The quotient k and 22 is
+−66 .
+154. Five-sixths of y is 15. 155. Three-tenths of x is 15. 156. Four-thirds of w is 36.
+157. Five-halves of v is 50. 158. The sum of nine-tenths and g
+is two-thirds.
+159. The sum of two-fifths and f is
+one-half.
+160. The difference of p and onesixth is two-thirds.
+161. The difference of q and oneeighth is three-fourths.
+Translate and Solve Applications
+In the following exercises, translate into an equation and solve.
+162. Kindergarten Connie’s
+kindergarten class has 24
+children. She wants them to get
+into 4 equal groups. How many
+children will she put in each
+group?
+163. Balloons Ramona bought 18
+balloons for a party. She wants to
+make 3 equal bunches. How many
+balloons did she use in each
+bunch?
+164. Tickets Mollie paid $36.25 for
+5 movie tickets. What was the
+price of each ticket?
+165. Shopping Serena paid $12.96
+for a pack of 12 pairs of sport
+socks. What was the price of pair
+of sport socks?
+166. Sewing Nancy used 14 yards
+of fabric to make flags for onethird of the drill team. How much
+fabric, would Nancy need to make
+flags for the whole team?
+167. MPG John’s SUV gets 18 miles
+per gallon (mpg). This is half as
+many mpg as his wife’s hybrid car.
+How many miles per gallon does
+the hybrid car get?
+230 Chapter 2 Solving Linear Equations and Inequalities
+168. Height Aiden is 27 inches tall.
+He is 3
+8 as tall as his father. How
+tall is his father?
+169. Real estate Bea earned
+$11,700 commission for selling a
+house, calculated as 6
+100 of the
+selling price. What was the selling
+price of the house?
+Everyday Math
+170. Commission Every week Perry gets paid $150 plus
+12% of his total sales amount over $1,250. Solve the
+equation 840 = 150 + 0.12(a − 1250) for a, to find
+the total amount Perry must sell in order to be paid
+$840 one week.
+171. Stamps Travis bought $9.45 worth of 49-cent
+stamps and 21-cent stamps. The number of 21-cent
+stamps was 5 less than the number of 49-cent stamps.
+Solve the equation 0.49s + 0.21(s − 5) = 9.45 for s,
+to find the number of 49-cent stamps Travis bought.
+Writing Exercises
+172. Frida started to solve the equation −3x = 36 by
+adding 3 to both sides. Explain why Frida’s method will
+not solve the equation.
+173. Emiliano thinks x = 40 is the solution to the
+equation 1
+2x = 80 . Explain why he is wrong.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b What does this checklist tell you about your mastery of this section? What steps will you take to improve?
+Chapter 2 Solving Linear Equations and Inequalities 231

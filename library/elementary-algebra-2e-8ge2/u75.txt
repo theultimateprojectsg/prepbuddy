@@ -1,0 +1,500 @@
+689. 1 691. 693.
+695. 697. y = − 3
+4x − 2 699. y = 1
+2x − 4
+701. y = − 4
+5x − 5 703. 705.
+Chapter 5
+Be Prepared
+5.1. (a) yes (b) no 5.2. m = 3; b = − 12 5.3. (6, 0), (0, − 4)
+5.4. −15 + 5x 5.5. −2n − 6 5.6. y = 4
+5.7. x = 3y − 1 5.8. −30 + 15a 5.9. x = 2
+5.10. 11 5.11. Jon earned $22,000 and
+Ron earned $74,000 .
+5.12. 35 miles
+5.13. 6, 287.05 5.14. 0.082 5.15. $5.85
+5.16. 5.17. a > − 4 5.18. no
+Try It
+5.1. a yes b no 5.2. a no b yes 5.3. (3, 2)
+Answer Key 1287
+5.4. (2, 3) 5.5. (−2, −2) 5.6. (1, 6)
+5.7. (3, 4) 5.8. (5, −4) 5.9. (4, 2)
+5.10. (−3, 5) 5.11. (9, −1) 5.12. (4, −6)
+5.13. no solution 5.14. no solution 5.15. infinitely many solutions
+5.16. infinitely many solutions 5.17. no solution, inconsistent,
+independent
+5.18. no solution, inconsistent,
+independent
+5.19. one solution, consistent,
+independent
+5.20. one solution, consistent,
+independent
+5.21. infinitely many solutions,
+consistent, dependent
+5.22. infinitely many solutions,
+consistent, dependent
+5.23. Manny needs 3 quarts juice
+concentrate and 9 quarts water.
+5.24. Alisha needs 15 ounces of
+coffee and 3 ounces of milk.
+5.25. (6, 1) 5.26. (4, 2) 5.27. (2, 4)
+5.28. (−1, −3) 5.29. (1, −2) 5.30. (2, 6)
+5.31. (−2, −3) 5.32. (6, 2) 5.33. (6, 2)
+5.34. (8, 2) 5.35. ⎛
+⎝2, 3
+⎞
+⎠ 5.36. ⎛
+⎝− 1
+2, −2⎞
+5.37. infinitely many solutions 5.38. infinitely many solutions 5.39. no solution
+5.40. no solution 5.41. The numbers are 3 and 7. 5.42. The numbers are 2 and −8.
+5.43. The length is 12 and the
+width is 8.
+5.44. The length is 23 and the
+width is 6.
+5.45. The measure of the angles
+are 22 degrees and 68 degrees.
+5.46. The measure of the angles
+are 36 degrees and 54 degrees.
+5.47. There would need to be 160
+policies sold to make the total
+pay the same.
+5.48. Kenneth would need to sell
+1,000 suits.
+5.49. (2, −1) 5.50. (−2, 3) 5.51. (3, −1)
+5.52. (−2, 5) 5.53. (1, 1) 5.54. (−2, 4)
+5.55. (1, 3) 5.56. (4, −3) 5.57. (6, 2)
+5.58. (1, −2) 5.59. infinitely many solutions 5.60. infinitely many solutions
+5.61. no solution 5.62. no solution 5.63. The numbers are 25 and 17.
+5.64. The numbers are −25 and
+10.
+5.65. The bag of diapers costs $11
+and the can of formula costs
+$13.
+5.66. There are 105 calories in a
+banana and 5 calories in a
+strawberry.
+5.67. a Since both equations are
+in standard form, using
+elimination will be most
+convenient. b Since one
+equation is already solved for x ,
+using substitution will be most
+convenient.
+5.68. a Since one equation is
+already solved for y , using
+substitution will be most
+convenient; b Since both
+equations are in standard form,
+using elimination will be most
+convenient.
+5.69.
+⎧
+⎩
+⎨m + n = −23
+m = n − 7
+5.70.
+⎧
+⎩
+⎨m + n = −18
+m = n + 40 5.71.
+⎧
+⎩
+⎨w + h = 84,000
+h = 2w − 18,000 5.72.
+⎧
+⎩
+⎨s = 2n − 5
+s + n = 43
+5.73. Ali is 26 and Jameela is 14. 5.74. Jake is 9 and his dad is 33. 5.75. Mark burned 11 calories for
+each minute of yoga and 7
+calories for each minute of
+jumping jacks.
+5.76. Erin burned 11 calories for
+each minute on the rowing
+machine and 5 calories for each
+minute of weight lifting.
+5.77. The angle measures are 55
+degrees and 35 degrees.
+5.78. The angle measures are 5
+degrees and 85 degrees.
+5.79. The angle measures are 42
+degrees and 138 degrees.
+5.80. The angle measures are 66
+degrees and 114 degrees.
+5.81. The length is 60 feet and the
+width is 35 feet.
+5.82. The length is 60 feet and the
+width is 38 feet.
+5.83. It will take Clark 4 hours to
+catch Mitchell. 5.84. It will take Sally 11
+2 hours
+to catch up to Charlie.
+1288 Answer Key
+5.85. The rate of the boat is 11
+mph and the rate of the current
+is 1 mph.
+5.86. The speed of the canoe is 7
+mph and the speed of the current
+is 1 mph.
+5.87. The speed of the jet is 236
+mph and the speed of the wind is
+29 mph.
+5.88. The speed of the jet is 408
+mph and the speed of the wind is
+24 mph.
+5.89. There were 206 adult tickets
+sold and 347 children tickets
+sold.
+5.90. There were 521 adult tickets
+sold and 842 children tickets
+sold.
+5.91. Matilda has 13 dimes and 29
+quarters.
+5.92. Juan has 36 nickels and 63
+dimes.
+5.93. Greta should use 3 pounds
+of peanuts and 2 pounds of
+cashews.
+5.94. Sammy should purchase 10
+pounds of beans and 10 pounds
+of ground beef.
+5.95. LeBron needs 120 ml of the
+25% solution and 30 ml of the 50%
+solution.
+5.96. Anatole should mix 125 ml
+of the 10% solution and 125 ml of
+the 40% solution.
+5.97. Leon should put $42,000 in
+the stock fund and $8000 in the
+savings account.
+5.98. Julius invested $1,750 at 11%
+and $5,250 at 13%.
+5.99. The principal amount for
+the bank loan was $4,000. The
+principal amount for the federal
+loan was $14,000.
+5.100. The principal amount for
+was $41,200 at 4.5%. The principal
+amount was, $24,000 at 7.2%.
+5.101. a no b yes 5.102. a no b no
+5.103. 5.104. 5.105.
+5.106. 5.107. 5.108.
+5.109. no solution 5.110. no solution 5.111. y ≥ 3x + 1
+Answer Key 1289
+5.112. x + 4y ≤ 4 5.113.
+a ⎧
+⎩
+⎨30m + 20p ≤ 160
+2m + 3p ≤ 15
+b
+c yes d no
+5.114.
+a ⎧
+⎩
+⎨a ≥ p + 5
+a + 2p ≤ 400
+b
+c no d no
+5.115.
+a ⎧
+⎩
+⎨0.75d + 2e ≤ 25
+360d + 110e ≥ 1000
+b
+c yes d no
+5.116.
+a ⎧
+⎩
+⎨140p + 125 j ≥ 1000
+1.80p + 1.25 j ≤ 12
+b
+c yes d no
+Section Exercises
+1. a yes b no 3. a yes b no 5. a yes b no
+7. a no b yes 9. (−2, 3) 11. (1, 2)
+13. (0, 2) 15. (2, 4) 17. (2, −1)
+19. (1, 2) 21. (3, 2) 23. (1, 1)
+25. (−1, −4) 27. ( − 2, − 2) 29. (3, 3)
+31. (6, −2) 33. (3, 2) 35. (1, 3)
+37. (−3, 1) 39. no solution 41. no solution
+43. infinitely many solutions 45. infinitely many solutions 47. infinitely many solutions
+49. (2, 2) 51. 0 solutions 53. 0 solutions
+55. no solutions, inconsistent,
+independent
+57. consistent, 1 solution 59. infinitely many solutions
+61. infinitely many solutions 63. Molly needs 16 ounces of
+strawberry juice and 48 ounces of
+water.
+65. Enrique needs 8 ounces of
+nuts and 16 ounces of water.
+1290 Answer Key
+67. Leo should plant 50 tulips and
+300 daffodils.
+69. Given that it is only known
+that the slopes of both linear
+equations are the same, there are
+either no solutions (the graphs of
+the equations are parallel) or
+infinitely many.
+71. (−2, 0)
+73. (7, 6) 75. (0, 3) 77. (6, −3)
+79. (3, −1) 81. (6, 6) 83. (5, 0)
+85. (−2, 7) 87. (−5, 2) 89. (−1, 7)
+91. (−3, 5) 93. (10, 12) 95. (1
+2, 3)
+97. ⎛
+⎝1
+2, − 3
+⎞
+⎠ 99. Infinitely many solutions 101. Infinitely many solutions
+103. No solution 105. No solution 107. The numbers are 6 and 9.
+109. The numbers are −7 and
+−19.
+111. The length is 20 and the
+width is 10.
+113. The length is 34 and the
+width is 8.
+115. The measures are 16° and
+74°.
+117. The measures are 45° and
+45°.
+119. 80 cable packages would
+need to be sold.
+121. Mitchell would need to sell
+120 stoves. 123. a t = 2 hours b s = 21
+hours
+125. Answers will vary.
+127. (6, 9) 129. (−2, 1) 131. (−7, −1)
+133. (−2, −4) 135. (−1, 3) 137. (−1, 2)
+139. (−5, 9) 141. (6, 1) 143. (−2, 10)
+145. (2, 3) 147. (−7, 6) 149. (−9, 3)
+151. (9, 5) 153. (−3, 2) 155. (−2, 3)
+157. infinitely many solutions 159. infinitely many solutions 161. infinitely many solutions
+163. inconsistent, no solution 165. inconsistent, no solution 167. The numbers are 20 and 45.
+169. The numbers are 16 and
+−43.
+171. A shirt costs $16 and a
+sweater costs $33.
+173. There are 860 mg in a hot
+dog. There are 1,000 mg in a cup
+of cottage cheese.
+175. a elimination b
+substitution
+177. a substitution b
+elimination
+179. a r = 4 b c = 1
+181.
+a (8, 2)
+b
+c Answers will vary.
+183. The numbers are 6 and 9. 185. The numbers are −5 and
+−25.
+187. The numbers are 5 and 4. 189. The numbers are 2 and 3. 191. $10,000
+193. She put $15,000 into a CD
+and $35,000 in bonds.
+195. The amount of the first
+year’s loan was $30,000 and the
+amount of the second year’s loan
+was $12,000.
+197. Bethany is 16 years old and
+Alyssa is 28 years old.
+Answer Key 1291
+199. Noelle is 20 years old and
+her dad is 54 years old.
+201. The small container holds 20
+gallons and the large container
+holds 30 gallons.
+203. There were 10 calories
+burned jogging and 10 calories
+burned cycling.
+205. Notebooks are $4 and thumb
+drives are $20.
+207. The measures are 60 degrees
+and 30 degrees.
+209. The measures are 125
+degrees and 55 degrees.
+211. 94 degrees and 86 degrees 213. 72.5 degrees and 17.5
+degrees
+215. The measures are 44 degrees
+and 136 degrees.
+217. The measures are 34 degrees
+and 56 degrees.
+219. The width is 10 feet and the
+length is 25 feet.
+221. The width is 15 feet and the
+length is 15 feet.
+223. It took Sarah’s sister 12
+hours.
+225. It took Lucy’s friend 2
+hours.
+227. The canoe rate is 5 mph and
+the current rate is 1 mph.
+229. The boat rate is 6.60 mph
+and the current rate is 2.50
+mph.
+231. The jet rate is 240 mph and
+the wind speed is 28 mph.
+233. The jet rate is 415 mph and
+the wind speed is 19 mph.
+235. s = 183, a = 242 237. Answers will vary. 239. There 1120 adult tickets and
+530 child tickets sold.
+241. Josie bought 40 adult tickets
+and 32 children tickets.
+243. There were 125 adult tickets
+and 128 children tickets sold.
+245. Brandon has 12 quarters and
+8 dimes.
+247. Peter had 11 dimes and 48
+quarters.
+249. The cashier has fourteen $10
+bills and sixteen $20 bills.
+251. Marissa should use 60
+pounds of the $1.20/lb candy and
+30 pounds of the $1.80/lb candy.
+253. Hannah needs 10 gallons of
+soda and 15 gallons of fruit
+drink.
+255. Julia and her husband
+should buy 12 pounds of City
+Roast Columbian coffee and 8
+pounds of French Roast
+Columbian coffee.
+257. Jotham should mix 42 liters
+of the 30% solution and 28 liters
+of the 80% solution.
+259. The scientist should mix 15
+liters of the 25% solution and 50
+liters of the 12% solution.
+261. 160 liters of the 40% solution
+and 80 liters of the 70% solution
+will be used.
+263. Hattie should invest $900 at
+12% and $2,100 at 10%.
+265. Sam invested $28,000 at 10%
+and $20,000 at 6%.
+267. The federal loan is $62,500
+and the bank loan is $3,300.
+269. $12,000 should be invested at
+5.25% and $13,000 should be
+invested at 4%.
+271. 14 boys paid the full-year fee.
+4 boys paid the partial-year fee,
+273. Answers will vary. 275. a true b false
+277. a false b true 279. atrue bfalse 281. a true btrue
+283. 285. 287.
+1292 Answer Key
+289. 291. 293.
+295. 297. 299.
+301. 303. 305. No solution
+307. No solution 309. 311. x + 4y < 6
+Answer Key 1293
+313. −2x + 6y > 8 315.
+a ⎧
+⎩
+⎨p + l ≥ 60
+15p + 10l ≥ 800
+b
+c No d Yes
+317.
+a ⎧
+⎩
+⎨7p + 3c ≤ 500
+p ≥ 2c + 4
+b
+c Yes d No
+319.
+a ⎧
+⎩
+⎨90b + 150g ≥ 500
+0.35b + 2.50g ≤ 15
+b
+c No d Yes
+321.
+a ⎧
+⎩
+⎨7c + 11p ≥ 35
+110c + 22p ≤ 200
+b
+c Yes d No
+323.
+a ⎧
+⎩
+⎨3a + 3c < 75
+2a + 4c < 62
+b
+c No d Yes
+325. Answers will vary.
+Review Exercises
+327. a no b yes 329. (3, −3) 331. (5, 4)
+1294 Answer Key
+333. coincident lines 335. infinitely many solutions,
+consistent system, dependent
+equations
+337. no solutions, inconsistent
+system, independent equations
+339. LaVelle needs 8 ounces of
+chocolate syrup and 40 ounces of
+coffee.
+341. (−1, 2) 343. (−2, −2)
+345. no solution 347. The numbers are 22 and 33. 349. The measures are 23 degrees
+and 67 degrees.
+351. (1, 11) 353. (4, −1) 355. (−2, 5)
+357. The numbers are −37 and
+−53 .
+359. elimination 361.
+⎧
+⎩
+⎨x + y = −32
+x = 2y − 2 The numbers
+are –10 and –22
+363.
+⎧
+⎩
+⎨ j + d = 7200
+d = j + 1600 Debbie
+earned $4400 and Jim earned
+$2800
+365. Pam is 51 and Jan is 48. 367. The measures are 119
+degrees and 61 degrees.
+369. The pergola is 8 feet high
+and 12 feet wide.
+371. It will take Lenore 3 hours. 373. The rate of the boat is 10.5
+mph. The rate of the current is 1.5
+mph.
+375. Lynn bought 227 student
+tickets and 34 adult tickets.
+377. Yumi should use 4 cups of
+candies and 8 cups of nuts.
+379. Jack should put $3600 into
+savings and $8400 into the CD.
+381. a yes b no 383. 385.
+Answer Key 1295
+387. No solution 389.
+a ⎧
+⎩
+⎨b + n ≤ 40
+12b + 18n ≥ 500
+b
+c yes
+d no
+Practice Test
+391. a yes b no 393. 395. (4, −7)
+397. infinitely many solutions 399. The numbers are 40 and
+–64
+401. The measures of the angles
+are 28 degrees and 62 degrees.
+403. It will take Kathy 1
+6 of an
+hour (or 10 minutes).
+405. Liz bought 23 children’s
+tickets and 5 adult tickets.
+407.
+a ⎧
+⎩
+⎨C + 0.5L ≤ 50
+L ≥ 3C
+b
+c No
+d Yes
+1296 Answer Key

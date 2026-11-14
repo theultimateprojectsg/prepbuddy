@@ -1,0 +1,634 @@
+1.10
+Systems of Measurement
+Learning Objectives
+By the end of this section, you will be able to:
+Make unit conversions in the US system
+Use mixed units of measurement in the US system
+Make unit conversions in the metric system
+Use mixed units of measurement in the metric system
+Convert between the US and the metric systems of measurement
+Convert between Fahrenheit and Celsius temperatures
+BE PREPARED : : 1.10
+A more thorough introduction to the topics covered in this section can be found in the Prealgebra chapter, The
+Properties of Real Numbers.
+Make Unit Conversions in the U.S. System
+There are two systems of measurement commonly used around the world. Most countries use the metric system. The U.S.
+uses a different system of measurement, usually called the U.S. system. We will look at the U.S. system first.
+The U.S. system of measurement uses units of inch, foot, yard, and mile to measure length and pound and ton to measure
+weight. For capacity, the units used are cup, pint, quart, and gallons. Both the U.S. system and the metric system measure
+time in seconds, minutes, and hours.
+The equivalencies of measurements are shown in Table 1.58. The table also shows, in parentheses, the common
+abbreviations for each measurement.
+U.S. System of Measurement
+Length
+1 foot (ft.) = 12 inches (in.)
+1 yard (yd.) = 3 feet (ft.)
+1 mile (mi.) = 5,280 feet (ft.)
+Volume
+3 teaspoons (t) = 1 tablespoon (T)
+16 tablespoons (T) = 1 cup (C)
+1 cup (C) = 8 fluid ounces (fl. oz.)
+1 pint (pt.) = 2 cups (C)
+1 quart (qt.) = 2 pints (pt.)
+1 gallon (gal) = 4 quarts (qt.)
+Weight 1 pound (lb.) = 16 ounces (oz.)
+1 ton = 2000 pounds (lb.) Time
+1 minute (min) = 60 seconds (sec)
+1 hour (hr) = 60 minutes (min)
+1 day = 24 hours (hr)
+1 week (wk) = 7 days
+1 year (yr) = 365 days
+Table 1.58
+In many real-life applications, we need to convert between units of measurement, such as feet and yards, minutes and
+seconds, quarts and gallons, etc. We will use the identity property of multiplication to do these conversions. We’ll restate
+the identity property of multiplication here for easy reference.
+Identity Property of Multiplication
+For any real number a : a · 1 = a 1 · a = a
+1 is the multiplicative identity
+To use the identity property of multiplication, we write 1 in a form that will help us convert the units. For example, suppose
+Chapter 1 Foundations 165
+we want to change inches to feet. We know that 1 foot is equal to 12 inches, so we will write 1 as the fraction 1 foot
+12 inches.
+When we multiply by this fraction we do not change the value, but just change the units.
+But 12 inches
+1 foot also equals 1. How do we decide whether to multiply by 1 foot
+12 inches or 12 inches
+1 foot ? We choose the fraction
+that will make the units we want to convert from divide out. Treat the unit words like factors and “divide out” common
+units like we do common factors. If we want to convert 66 inches to feet, which multiplication will eliminate the inches?
+The inches divide out and leave only feet. The second form does not have any units that will divide out and so will not help
+us.
+EXAMPLE 1.140 HOW TO MAKE UNIT CONVERSIONS
+MaryAnne is 66 inches tall. Convert her height into feet.
+TRY IT : : 1.279 Lexie is 30 inches tall. Convert her height to feet.
+TRY IT : : 1.280 Rene bought a hose that is 18 yards long. Convert the length to feet.
+When we use the identity property of multiplication to convert units, we need to make sure the units we want to change
+from will divide out. Usually this means we want the conversion fraction to have those units in the denominator.
+HOW TO : : MAKE UNIT CONVERSIONS.
+Multiply the measurement to be converted by 1; write 1 as a fraction relating the units given
+and the units needed.
+Multiply.
+Simplify the fraction.
+Simplify.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+166 Chapter 1 Foundations
+Ndula, an elephant at the San Diego Safari Park, weighs almost 3.2 tons. Convert her weight to pounds.
+We will convert 3.2 tons into pounds. We will use the identity property of multiplication, writing 1 as the fraction
+2000 pounds
+1 ton .
+3.2 tons
+Multiply the measurement to be converted, by 1. 3.2 tons ⋅ 1
+Write 1 as a fraction relating tons and pounds. 3.2 tons ⋅ 2,000 pounds
+1 ton
+Simplify.
+Multiply. 6,400 pounds
+Ndula weighs almost 6,400 pounds.
+TRY IT : : 1.281 Arnold’s SUV weighs about 4.3 tons. Convert the weight to pounds.
+TRY IT : : 1.282 The Carnival Destiny cruise ship weighs 51,000 tons. Convert the weight to pounds.
+Sometimes, to convert from one unit to another, we may need to use several other units in between, so we will need to
+multiply several fractions.
+Juliet is going with her family to their summer home. She will be away from her boyfriend for 9 weeks. Convert the time
+to minutes.
+To convert weeks into minutes we will convert weeks into days, days into hours, and then hours into minutes. To do this
+we will multiply by conversion factors of 1.
+9 weeks
+Write 1 as 7 days
+1 week , 24 hours
+1 day , and 60 minutes
+1 hour . 9 wk
+1 ⋅ 7 days
+1 wk ⋅ 24 hr
+1 day ⋅ 60 min
+1 hr
+Divide out the common units.
+Multiply. 9 ⋅ 7 ⋅ 24 ⋅ 60 min
+1 ⋅ 1 ⋅ 1 ⋅ 1
+Multiply. 90,720 min
+Juliet and her boyfriend will be apart for 90,720 minutes (although it may seem like an eternity!).
+The distance between the earth and the moon is about 250,000 miles. Convert this length to yards.
+Chapter 1 Foundations 167
+The astronauts of Expedition 28 on the International Space Station spend 15 weeks in space. Convert the time to
+minutes.
+How many ounces are in 1 gallon?
+We will convert gallons to ounces by multiplying by several conversion factors. Refer to Table 1.58.
+1 gallon
+Multiply the measurement to be converted by 1. 1 gallon
+1 ⋅ 4 quarts
+1 gallon ⋅ 2 pints
+1 quart ⋅ 2 cups
+1 pint ⋅ 8 ounces
+1 cup
+Use conversion factors to get to the right unit.
+Simplify.
+Multiply. 1 ⋅ 4 ⋅ 2 ⋅ 2 ⋅ 8 ounces
+1 ⋅ 1 ⋅ 1 ⋅ 1 ⋅ 1
+Simplify. 128 ounces
+There are 128 ounces in a gallon.
+TRY IT : : 1.285 How many cups are in 1 gallon?
+TRY IT : : 1.286 How many teaspoons are in 1 cup?
+Use Mixed Units of Measurement in the U.S. System
+We often use mixed units of measurement in everyday situations. Suppose Joe is 5 feet 10 inches tall, stays at work for 7
+hours and 45 minutes, and then eats a 1 pound 2 ounce steak for dinner—all these measurements have mixed units.
+Performing arithmetic operations on measurements with mixed units of measures requires care. Be sure to add or
+subtract like units!
+Seymour bought three steaks for a barbecue. Their weights were 14 ounces, 1 pound 2 ounces and 1 pound 6 ounces.
+How many total pounds of steak did he buy?
+We will add the weights of the steaks to find the total weight of the steaks.
+Add the ounces. Then add the pounds.
+Convert 22 ounces to pounds and ounces. 2 pounds + 1 pound, 6 ounces
+Add the pounds. 3 pounds, 6 ounces
+Seymour bought 3 pounds 6 ounces of steak.
+168 Chapter 1 Foundations
+Laura gave birth to triplets weighing 3 pounds 3 ounces, 3 pounds 3 ounces, and 2 pounds 9 ounces. What was
+the total birth weight of the three babies?
+Stan cut two pieces of crown molding for his family room that were 8 feet 7 inches and 12 feet 11 inches. What
+was the total length of the molding?
+Anthony bought four planks of wood that were each 6 feet 4 inches long. What is the total length of the wood he
+purchased?
+We will multiply the length of one plank to find the total length.
+Multiply the inches and then the feet.
+Convert the 16 inches to feet.
+Add the feet.
+Anthony bought 25 feet and 4 inches of wood.
+Henri wants to triple his spaghetti sauce recipe that uses 1 pound 8 ounces of ground turkey. How many pounds
+of ground turkey will he need?
+Joellen wants to double a solution of 5 gallons 3 quarts. How many gallons of solution will she have in all?
+Make Unit Conversions in the Metric System
+In the metric system, units are related by powers of 10. The roots words of their names reflect this relation. For example,
+the basic unit for measuring length is a meter. One kilometer is 1,000 meters; the prefix kilo means thousand. One
+centimeter is 1
+100 of a meter, just like one cent is 1
+100 of one dollar.
+The equivalencies of measurements in the metric system are shown in Table 1.59. The common abbreviations for each
+measurement are given in parentheses.
+Chapter 1 Foundations 169
+Metric System of Measurement
+Length Mass Capacity
+1 kilometer (km) = 1,000 m
+1 hectometer (hm) = 100 m
+1 dekameter (dam) = 10 m
+1 meter (m) = 1 m
+1 decimeter (dm) = 0.1 m
+1 centimeter (cm) = 0.01 m
+1 millimeter (mm) = 0.001 m
+1 kilogram (kg) = 1,000 g
+1 hectogram (hg) = 100 g
+1 dekagram (dag) = 10 g
+1 gram (g) = 1 g
+1 decigram (dg) = 0.1 g
+1 centigram (cg) = 0.01 g
+1 milligram (mg) = 0.001 g
+1 kiloliter (kL) = 1,000 L
+1 hectoliter (hL) = 100 L
+1 dekaliter (daL) = 10 L
+1 liter (L) = 1 L
+1 deciliter (dL) = 0.1 L
+1 centiliter (cL) = 0.01 L
+1 milliliter (mL) = 0.001 L
+1 meter = 100 centimeters
+1 meter = 1,000 millimeters
+1 gram = 100 centigrams
+1 gram = 1,000 milligrams
+1 liter = 100 centiliters
+1 liter = 1,000 milliliters
+Table 1.59
+To make conversions in the metric system, we will use the same technique we did in the US system. Using the identity
+property of multiplication, we will multiply by a conversion factor of one to get to the correct units.
+Have you ever run a 5K or 10K race? The length of those races are measured in kilometers. The metric system is commonly
+used in the United States when talking about the length of a race.
+Nick ran a 10K race. How many meters did he run?
+We will convert kilometers to meters using the identity property of multiplication.
+10 kilometers
+Multiply the measurement to be converted by 1.
+Write 1 as a fraction relating kilometers and meters.
+Simplify.
+Multiply. 10,000 meters
+Nick ran 10,000 meters.
+TRY IT : : 1.291 Sandy completed her first 5K race! How many meters did she run?
+TRY IT : : 1.292 Herman bought a rug 2.5 meters in length. How many centimeters is the length?
+Eleanor’s newborn baby weighed 3,200 grams. How many kilograms did the baby weigh?
+170 Chapter 1 Foundations
+We will convert grams into kilograms.
+Multiply the measurement to be converted by 1.
+Write 1 as a function relating kilograms and grams.
+Simplify.
+Multiply. 3,200 kilograms
+1,000
+Divide. 3.2 kilograms
+The baby weighed 3.2 kilograms.
+TRY IT : : 1.293 Kari’s newborn baby weighed 2,800 grams. How many kilograms did the baby weigh?
+Anderson received a package that was marked 4,500 grams. How many kilograms did this package weigh?
+As you become familiar with the metric system you may see a pattern. Since the system is based on multiples of ten, the
+calculations involve multiplying by multiples of ten. We have learned how to simplify these calculations by just moving the
+decimal.
+To multiply by 10, 100, or 1,000, we move the decimal to the right one, two, or three places, respectively. To multiply by
+0.1, 0.01, or 0.001, we move the decimal to the left one, two, or three places, respectively.
+We can apply this pattern when we make measurement conversions in the metric system. In Example 1.147, we changed
+3,200 grams to kilograms by multiplying by 1
+1000 (or 0.001). This is the same as moving the decimal three places to the
+left.
+Convert a 350 L to kiloliters b 4.1 L to milliliters.
+a We will convert liters to kiloliters. In Table 1.59, we see that 1 kiloliter = 1,000 liters.
+350 L
+Multiply by 1, writing 1 as a fraction relating liters to kiloliters. 350 L ⋅ 1 kL
+1,000 L
+Simplify. 350 L ⋅ 1 kL
+1,000 L
+0.35 kL
+Chapter 1 Foundations 171
+b We will convert liters to milliliters. From Table 1.59 we see that 1 liter = 1,000 milliliters.
+Multiply by 1, writing 1 as a fraction relating liters to milliliters.
+Simplify.
+Move the decimal 3 units to the right.
+TRY IT : : 1.295 Convert: a 725 L to kiloliters b 6.3 L to milliliters
+TRY IT : : 1.296 Convert: a 350 hL to liters b 4.1 L to centiliters
+Use Mixed Units of Measurement in the Metric System
+Performing arithmetic operations on measurements with mixed units of measures in the metric system requires the same
+care we used in the US system. But it may be easier because of the relation of the units to the powers of 10. Make sure to
+add or subtract like units.
+Ryland is 1.6 meters tall. His younger brother is 85 centimeters tall. How much taller is Ryland than his younger brother?
+We can convert both measurements to either centimeters or meters. Since meters is the larger unit, we will subtract the
+lengths in meters. We convert 85 centimeters to meters by moving the decimal 2 places to the left.
+Write the 85 centimeters as meters.
+1.60 m
+−0.85 m_______
+0.75 m
+Table 1.60
+Ryland is 0.75 m taller than his brother.
+Mariella is 1.58 meters tall. Her daughter is 75 centimeters tall. How much taller is Mariella than her daughter?
+Write the answer in centimeters.
+The fence around Hank’s yard is 2 meters high. Hank is 96 centimeters tall. How much shorter than the fence is
+Hank? Write the answer in meters.
+Dena’s recipe for lentil soup calls for 150 milliliters of olive oil. Dena wants to triple the recipe. How many liters of olive oil
+will she need?
+172 Chapter 1 Foundations
+We will find the amount of olive oil in millileters then convert to liters.
+Triple 150 mL
+Translate to algebra. 3 · 150 mL
+Multiply. 450 mL
+Convert to liters. 450 · 0.001 L
+1 mL
+Simplify. 0.45 L
+Dena needs 0.45 liters of olive oil.
+Table 1.61
+A recipe for Alfredo sauce calls for 250 milliliters of milk. Renata is making pasta with Alfredo sauce for a big party
+and needs to multiply the recipe amounts by 8. How many liters of milk will she need?
+To make one pan of baklava, Dorothea needs 400 grams of filo pastry. If Dorothea plans to make 6 pans of baklava,
+how many kilograms of filo pastry will she need?
+Convert Between the U.S. and the Metric Systems of Measurement
+Many measurements in the United States are made in metric units. Our soda may come in 2-liter bottles, our calcium
+may come in 500-mg capsules, and we may run a 5K race. To work easily in both systems, we need to be able to convert
+between the two systems.
+Table 1.62 shows some of the most common conversions.
+Conversion Factors Between U.S. and Metric Systems
+Length Mass Capacity
+1 in. = 2.54 cm
+1 ft. = 0.305 m
+1 yd. = 0.914 m
+1 mi. = 1.61 km
+1 m = 3.28 ft.
+1 lb. = 0.45 kg
+1 oz. = 28 g
+1 kg = 2.2 lb.
+1 qt. = 0.95 L
+1 fl. oz. = 30 mL
+1 L = 1.06 qt.
+Table 1.62
+Figure 1.22 shows how inches and centimeters are related on a ruler.
+Figure 1.22 This ruler shows inches and centimeters.
+Figure 1.23 shows the ounce and milliliter markings on a measuring cup.
+Chapter 1 Foundations 173
+Figure 1.23 This measuring cup shows
+ounces and milliliters.
+Figure 1.24 shows how pounds and kilograms marked on a bathroom scale.
+Figure 1.24 This scale shows pounds and kilograms.
+We make conversions between the systems just as we do within the systems—by multiplying by unit conversion factors.
+Lee’s water bottle holds 500 mL of water. How many ounces are in the bottle? Round to the nearest tenth of an ounce.
+500 mL
+Multiply by a unit conversion factor relating mL and ounces. 500 milliliters · 1 ounce
+30 milliliters
+Simplify. 50 ounce
+Divide. 16.7 ounces.
+The water bottle has 16.7 ounces.
+Table 1.63
+TRY IT : : 1.301 How many quarts of soda are in a 2-L bottle?
+TRY IT : : 1.302 How many liters are in 4 quarts of milk?
+174 Chapter 1 Foundations
+Soleil was on a road trip and saw a sign that said the next rest stop was in 100 kilometers. How many miles until the next
+rest stop?
+100 kilometers
+Multiply by a unit conversion factor relating km and mi. 100 kilometers · 1 mile
+1.61 kilometer
+Simplify. 100 miles
+1.61
+Divide. 62 ounces.
+Soleil will travel 62 miles.
+Table 1.64
+TRY IT : : 1.303 The height of Mount Kilimanjaro is 5,895 meters. Convert the height to feet.
+The flight distance from New York City to London is 5,586 kilometers. Convert the distance to miles.
+Convert between Fahrenheit and Celsius Temperatures
+Have you ever been in a foreign country and heard the weather forecast? If the forecast is for 22°C, what does that
+mean?
+The U.S. and metric systems use different scales to measure temperature. The U.S. system uses degrees Fahrenheit,
+written °F. The metric system uses degrees Celsius, written °C. Figure 1.25 shows the relationship between the two
+systems.
+Chapter 1 Foundations 175
+Figure 1.25 The diagram shows normal body
+temperature, along with the freezing and boiling
+temperatures of water in degrees Fahrenheit and
+degrees Celsius.
+Temperature Conversion
+To convert from Fahrenheit temperature, F, to Celsius temperature, C, use the formula
+C = 5
+9(F − 32).
+To convert from Celsius temperature, C, to Fahrenheit temperature, F, use the formula
+F = 9
+5C + 32.
+Convert 50° Fahrenheit into degrees Celsius.
+We will substitute 50°F into the formula to find C.
+Simplify in parentheses.
+Multiply.
+So we found that 50°F is equivalent to 10°C.
+176 Chapter 1 Foundations
+TRY IT : : 1.305 Convert the Fahrenheit temperature to degrees Celsius: 59° Fahrenheit.
+TRY IT : : 1.306 Convert the Fahrenheit temperature to degrees Celsius: 41° Fahrenheit.
+While visiting Paris, Woody saw the temperature was 20° Celsius. Convert the temperature into degrees Fahrenheit.
+We will substitute 20°C into the formula to find F.
+Multiply.
+Add.
+So we found that 20°C is equivalent to 68°F.
+Convert the Celsius temperature to degrees Fahrenheit: the temperature in Helsinki, Finland, was 15° Celsius.
+Convert the Celsius temperature to degrees Fahrenheit: the temperature in Sydney, Australia, was 10° Celsius.
+Chapter 1 Foundations 177
+Practice Makes Perfect
+Make Unit Conversions in the U.S. System
+In the following exercises, convert the units.
+825. A park bench is 6 feet long.
+Convert the length to inches.
+826. A floor tile is 2 feet wide.
+Convert the width to inches.
+827. A ribbon is 18 inches long.
+Convert the length to feet.
+828. Carson is 45 inches tall.
+Convert his height to feet.
+829. A football field is 160 feet
+wide. Convert the width to yards.
+830. On a baseball diamond, the
+distance from home plate to first
+base is 30 yards. Convert the
+distance to feet.
+831. Ulises lives 1.5 miles from
+school. Convert the distance to
+feet.
+832. Denver, Colorado, is 5,183
+feet above sea level. Convert the
+height to miles.
+833. A killer whale weighs 4.6 tons.
+Convert the weight to pounds.
+834. Blue whales can weigh as
+much as 150 tons. Convert the
+weight to pounds.
+835. An empty bus weighs 35,000
+pounds. Convert the weight to
+tons.
+836. At take-off, an airplane
+weighs 220,000 pounds. Convert
+the weight to tons.
+837. Rocco waited 11
+2 hours for
+his appointment. Convert the time
+to seconds.
+838. Misty’s surgery lasted 21
+hours. Convert the time to
+seconds.
+839. How many teaspoons are in a
+pint?
+840. How many tablespoons are in
+a gallon?
+841. JJ’s cat, Posy, weighs 14
+pounds. Convert her weight to
+ounces.
+842. April’s dog, Beans, weighs 8
+pounds. Convert his weight to
+ounces.
+843. Crista will serve 20 cups of
+juice at her son’s party. Convert
+the volume to gallons.
+844. Lance needs 50 cups of water
+for the runners in a race. Convert
+the volume to gallons.
+845. Jon is 6 feet 4 inches tall.
+Convert his height to inches.
+846. Faye is 4 feet 10 inches tall.
+Convert her height to inches.
+847. The voyage of the Mayflower
+took 2 months and 5 days. Convert
+the time to days.
+848. Lynn’s cruise lasted 6 days
+and 18 hours. Convert the time to
+hours.
+849. Baby Preston weighed 7
+pounds 3 ounces at birth. Convert
+his weight to ounces.
+850. Baby Audrey weighted 6
+pounds 15 ounces at birth.
+Convert her weight to ounces.
+Use Mixed Units of Measurement in the U.S. System
+In the following exercises, solve.
+851. Eli caught three fish. The
+weights of the fish were 2 pounds
+4 ounces, 1 pound 11 ounces, and
+4 pounds 14 ounces. What was the
+total weight of the three fish?
+852. Judy bought 1 pound 6
+ounces of almonds, 2 pounds 3
+ounces of walnuts, and 8 ounces
+of cashews. How many pounds of
+nuts did Judy buy?
+853. One day Anya kept track of
+the number of minutes she spent
+driving. She recorded 45, 10, 8, 65,
+20, and 35. How many hours did
+Anya spend driving?
+854. Last year Eric went on 6
+business trips. The number of
+days of each was 5, 2, 8, 12, 6, and
+3. How many weeks did Eric spend
+on business trips last year?
+855. Renee attached a 6 feet 6 inch
+extension cord to her computer’s
+3 feet 8 inch power cord. What was
+the total length of the cords?
+856. Fawzi’s SUV is 6 feet 4 inches
+tall. If he puts a 2 feet 10 inch box
+on top of his SUV, what is the total
+height of the SUV and the box?
+1.10 EXERCISES
+178 Chapter 1 Foundations
+857. Leilani wants to make 8
+placemats. For each placemat she
+needs 18 inches of fabric. How
+many yards of fabric will she need
+for the 8 placemats?
+858. Mireille needs to cut 24 inches
+of ribbon for each of the 12 girls in
+her dance class. How many yards
+of ribbon will she need
+altogether?
+Make Unit Conversions in the Metric System
+In the following exercises, convert the units.
+859. Ghalib ran 5 kilometers.
+Convert the length to meters.
+860. Kitaka hiked 8 kilometers.
+Convert the length to meters.
+861. Estrella is 1.55 meters tall.
+Convert her height to
+centimeters.
+862. The width of the wading pool
+is 2.45 meters. Convert the width
+to centimeters.
+863. Mount Whitney is 3,072
+meters tall. Convert the height to
+kilometers.
+864. The depth of the Mariana
+Trench is 10,911 meters. Convert
+the depth to kilometers.
+865. June’s multivitamin contains
+1,500 milligrams of calcium.
+Convert this to grams.
+866. A typical ruby-throated
+hummingbird weights 3 grams.
+Convert this to milligrams.
+867. One stick of butter contains
+91.6 grams of fat. Convert this to
+milligrams.
+868. One serving of gourmet ice
+cream has 25 grams of fat.
+Convert this to milligrams.
+869. The maximum mass of an
+airmail letter is 2 kilograms.
+Convert this to grams.
+870. Dimitri’s daughter weighed
+3.8 kilograms at birth. Convert this
+to grams.
+871. A bottle of wine contained 750
+milliliters. Convert this to liters.
+872. A bottle of medicine
+contained 300 milliliters. Convert
+this to liters.
+Use Mixed Units of Measurement in the Metric System
+In the following exercises, solve.
+873. Matthias is 1.8 meters tall. His
+son is 89 centimeters tall. How
+much taller is Matthias than his
+son?
+874. Stavros is 1.6 meters tall. His
+sister is 95 centimeters tall. How
+much taller is Stavros than his
+sister?
+875. A typical dove weighs 345
+grams. A typical duck weighs 1.2
+kilograms. What is the difference,
+in grams, of the weights of a duck
+and a dove?
+876. Concetta had a 2-kilogram
+bag of flour. She used 180 grams
+of flour to make biscotti. How
+many kilograms of flour are left in
+the bag?
+877. Harry mailed 5 packages that
+weighed 420 grams each. What
+was the total weight of the
+packages in kilograms?
+878. One glass of orange juice
+provides 560 milligrams of
+potassium. Linda drinks one glass
+of orange juice every morning.
+How many grams of potassium
+does Linda get from her orange
+juice in 30 days?
+879. Jonas drinks 200 milliliters of
+water 8 times a day. How many
+liters of water does Jonas drink in
+a day?
+880. One serving of whole grain
+sandwich bread provides 6 grams
+of protein. How many milligrams
+of protein are provided by 7
+servings of whole grain sandwich
+bread?
+Convert Between the U.S. and the Metric Systems of Measurement
+In the following exercises, make the unit conversions. Round to the nearest tenth.
+881. Bill is 75 inches tall. Convert
+his height to centimeters.
+882. Frankie is 42 inches tall.
+Convert his height to centimeters.
+883. Marcus passed a football 24
+yards. Convert the pass length to
+meters
+Chapter 1 Foundations 179
+884. Connie bought 9 yards of
+fabric to make drapes. Convert the
+fabric length to meters.
+885. Each American throws out an
+average of 1,650 pounds of
+garbage per year. Convert this
+weight to kilograms.
+886. An average American will
+throw away 90,000 pounds of
+trash over his or her lifetime.
+Convert this weight to kilograms.
+887. A 5K run is 5 kilometers long.
+Convert this length to miles.
+888. Kathryn is 1.6 meters tall.
+Convert her height to feet.
+889. Dawn’s suitcase weighed 20
+kilograms. Convert the weight to
+pounds.
+890. Jackson’s backpack weighed
+15 kilograms. Convert the weight
+to pounds.
+891. Ozzie put 14 gallons of gas in
+his truck. Convert the volume to
+liters.
+892. Bernard bought 8 gallons of
+paint. Convert the volume to
+liters.
+Convert between Fahrenheit and Celsius Temperatures
+In the following exercises, convert the Fahrenheit temperatures to degrees Celsius. Round to the nearest tenth.
+893. 86° Fahrenheit 894. 77° Fahrenheit 895. 104° Fahrenheit
+896. 14° Fahrenheit 897. 72° Fahrenheit 898. 4° Fahrenheit
+899. 0° Fahrenheit 900. 120° Fahrenheit
+In the following exercises, convert the Celsius temperatures to degrees Fahrenheit. Round to the nearest tenth.
+901. 5° Celsius 902. 25° Celsius 903. −10° Celsius
+904. −15° Celsius 905. 22° Celsius 906. 8° Celsius
+907. 43° Celsius 908. 16° Celsius
+Everyday Math
+909. Nutrition Julian drinks one can of soda every day.
+Each can of soda contains 40 grams of sugar. How
+many kilograms of sugar does Julian get from soda in 1
+year?
+910. Reflectors The reflectors in each lane-marking
+stripe on a highway are spaced 16 yards apart. How
+many reflectors are needed for a one mile long lanemarking stripe?
+Writing Exercises
+911. Some people think that 65° to 75° Fahrenheit is
+the ideal temperature range.
+a What is your ideal temperature range? Why do
+you think so?
+b Convert your ideal temperatures from
+Fahrenheit to Celsius.
+912.
+a Did you grow up using the U.S. or the metric
+system of measurement?
+b Describe two examples in your life when you
+had to convert between the two systems of
+measurement.
+180 Chapter 1 Foundations
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b Overall, after looking at the checklist, do you think you are well-prepared for the next Chapter? Why or why not?
+Chapter 1 Foundations 181

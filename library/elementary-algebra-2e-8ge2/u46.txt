@@ -1,0 +1,426 @@
+7.4
+Factor Special Products
+Learning Objectives
+By the end of this section, you will be able to:
+Factor perfect square trinomials
+Factor differences of squares
+Factor sums and differences of cubes
+Choose method to factor a polynomial completely
+BE PREPARED : : 7.11 Before you get started, take this readiness quiz.
+Simplify: (12x)2.
+If you missed this problem, review Example 6.23.
+BE PREPARED : : 7.12 Multiply: (m + 4)2.
+If you missed this problem, review Example 6.47.
+BE PREPARED : : 7.13 Multiply: (p − 9)2.
+If you missed this problem, review Example 6.48.
+BE PREPARED : : 7.14 Multiply: (k + 3)(k − 3).
+If you missed this problem, review Example 6.52.
+The strategy for factoring we developed in the last section will guide you as you factor most binomials, trinomials,
+and polynomials with more than three terms. We have seen that some binomials and trinomials result from special
+products—squaring binomials and multiplying conjugates. If you learn to recognize these kinds of polynomials, you can
+use the special products patterns to factor them much more quickly.
+Factor Perfect Square Trinomials
+Some trinomials are perfect squares. They result from multiplying a binomial times itself. You can square a binomial by
+using FOIL, but using the Binomial Squares pattern you saw in a previous chapter saves you a step. Let’s review the
+Binomial Squares pattern by squaring a binomial using FOIL.
+The first term is the square of the first term of the binomial and the last term is the square of the last. The middle term is
+twice the product of the two terms of the binomial.
+(3x)2 + 2(3x · 4) + 42
+9x2 + 24x + 16
+The trinomial 9x2 + 24 +16 is called a perfect square trinomial. It is the square of the binomial 3x+4.
+We’ll repeat the Binomial Squares Pattern here to use as a reference in factoring.
+852 Chapter 7 Factoring
+Binomial Squares Pattern
+If a and b are real numbers,
+(a + b)2 = a2 + 2ab + b2 (a − b)2 = a2 − 2ab + b2
+When you square a binomial, the product is a perfect square trinomial. In this chapter, you are learning to factor—now,
+you will start with a perfect square trinomial and factor it into its prime factors.
+You could factor this trinomial using the methods described in the last section, since it is of the form ax2 + bx + c. But if
+you recognize that the first and last terms are squares and the trinomial fits the perfect square trinomials pattern, you
+will save yourself a lot of work.
+Here is the pattern—the reverse of the binomial squares pattern.
+Perfect Square Trinomials Pattern
+If a and b are real numbers,
+a2 + 2ab + b2 = (a + b)2 a2 − 2ab + b2 = (a − b)2
+To make use of this pattern, you have to recognize that a given trinomial fits it. Check first to see if the leading coefficient
+is a perfect square, a2 . Next check that the last term is a perfect square, b2 . Then check the middle term—is it twice the
+product, 2ab? If everything checks, you can easily write the factors.
+EXAMPLE 7.42 HOW TO FACTOR PERFECT SQUARE TRINOMIALS
+Factor: 9x2 + 12x + 4 .
+TRY IT : : 7.83 Factor: 4x2 + 12x + 9 .
+TRY IT : : 7.84 Factor: 9y2 + 24y + 16 .
+Chapter 7 Factoring 853
+The sign of the middle term determines which pattern we will use. When the middle term is negative, we use the pattern
+a2 − 2ab + b2 , which factors to (a − b)2 .
+The steps are summarized here.
+We’ll work one now where the middle term is negative.
+Factor: 81y2 − 72y + 16 .
+The first and last terms are squares. See if the middle term fits the pattern of a perfect square trinomial. The middle term
+is negative, so the binomial square would be (a − b)2 .
+Are the first and last terms perfect squares?
+Check the middle term.
+Does is match (a − b)2 ? Yes.
+Write the square of a binomial.
+Check by mulitplying.
+⎛
+⎝9y − 4⎞
+⎛
+⎝9y⎞
+2 − 2 ⋅ 9y ⋅ 4 + 42
+81y2 − 72y + 16 ✓
+TRY IT : : 7.85 Factor: 64y2 − 80y + 25 .
+HOW TO : : FACTOR PERFECT SQUARE TRINOMIALS.
+Step 1. Does the trinomial fit the pattern? a2 + 2ab + b2 a2 − 2ab + b2
+• Is the first term a perfect square? (a)2 (a)2
+Write it as a square.
+• Is the last term a perfect square? (a)2 (b)2 (a)2 (b)2
+Write it as a square.
+• Check the middle term. Is it 2ab ? (a)2 ↘ 2 · a · b↙ (b)2 (a)2 ↘ 2 · a · b↙ (b)2
+Step 2. Write the square of the binomial. (a + b)2 (a − b)2
+Step 3. Check by multiplying.
+854 Chapter 7 Factoring
+TRY IT : : 7.86 Factor: 16z2 − 72z + 81 .
+The next example will be a perfect square trinomial with two variables.
+Factor: 36x2 + 84xy + 49y2 .
+Test each term to verify the pattern.
+Factor.
+Check by mulitplying.
+⎛
+⎝6x + 7y⎞
+(6x)2 + 2 ⋅ 6x ⋅ 7y + ⎛
+⎝7y⎞
+36x2 + 84xy + 49y2 ✓
+TRY IT : : 7.87 Factor: 49x2 + 84xy + 36y2 .
+TRY IT : : 7.88 Factor: 64m2 + 112mn + 49n2 .
+Factor: 9x2 + 50x + 25 .
+Chapter 7 Factoring 855
+9x2 + 50x + 25
+Are the first and last terms perfect squares? (3x)2 (5)2
+Check the middle term—is it 2ab ? (3x)2 ↘ 2(3x)(5)
+30x
+↙ (5)2
+No! 30x ≠ 50x This does not fit the pattern!
+Factor using the “ac” method. 9x2 + 50x + 25
+Notice:
+ac
+9 · 25
+and 5 · 45 = 225
+5 + 45 = 50
+Split the middle term. 9x2 + 5x + 45x + 25
+Factor by grouping. x(9x + 5) + 5(9x + 5)
+(9x + 5)(x + 5)
+Check.
+(9x + 5)(x + 5)
+9x2 + 45x + 5x + 25
+9x2 + 50x + 25 ✓
+TRY IT : : 7.89 Factor: 16r2 + 30rs + 9s2 .
+TRY IT : : 7.90 Factor: 9u2 + 87u + 100 .
+Remember the very first step in our Strategy for Factoring Polynomials? It was to ask “is there a greatest common factor?”
+and, if there was, you factor the GCF before going any further. Perfect square trinomials may have a GCF in all three terms
+and it should be factored out first. And, sometimes, once the GCF has been factored, you will recognize a perfect square
+trinomial.
+Factor: 36x2 y − 48xy + 16y .
+856 Chapter 7 Factoring
+36x2 y − 48xy + 16y
+Is there a GCF? Yes, 4y, so factor it out. 4y⎛
+⎝9x2 − 12x + 4⎞
+Is this a perfect square trinomial?
+Verify the pattern.
+Factor. 4y(3x − 2)2
+Remember: Keep the factor 4y in the final product.
+Check.
+4y(3x − 2)2
+4y⎡
+⎣(3x)2 − 2 · 3x · 2 + 22⎤
+⎦
+4y(9x)2 − 12x + 4
+36x2 y − 48xy + 16y ✓
+TRY IT : : 7.91 Factor: 8x2 y − 24xy + 18y .
+TRY IT : : 7.92 Factor: 27p2 q + 90pq + 75q .
+Factor Differences of Squares
+The other special product you saw in the previous was the Product of Conjugates pattern. You used this to multiply two
+binomials that were conjugates. Here’s an example:
+(3x − 4)(3x + 4)
+9x2 − 16
+Remember, when you multiply conjugate binomials, the middle terms of the product add to 0. All you have left is a
+binomial, the difference of squares.
+Multiplying conjugates is the only way to get a binomial from the product of two binomials.
+Product of Conjugates Pattern
+If a and b are real numbers
+(a − b)(a + b) = a2 − b2
+The product is called a difference of squares.
+To factor, we will use the product pattern “in reverse” to factor the difference of squares. A difference of squares factors
+to a product of conjugates.
+Difference of Squares Pattern
+If a and b are real numbers,
+Chapter 7 Factoring 857
+Remember, “difference” refers to subtraction. So, to use this pattern you must make sure you have a binomial in which
+two squares are being subtracted.
+EXAMPLE 7.47 HOW TO FACTOR DIFFERENCES OF SQUARES
+Factor: x2 − 4 .
+TRY IT : : 7.93 Factor: h2 − 81 .
+TRY IT : : 7.94 Factor: k2 − 121 .
+It is important to remember that sums of squares do not factor into a product of binomials. There are no binomial factors
+that multiply together to get a sum of squares. After removing any GCF, the expression a2 + b2 is prime!
+Don’t forget that 1 is a perfect square. We’ll need to use that fact in the next example.
+HOW TO : : FACTOR DIFFERENCES OF SQUARES.
+Step 1. Does the binomial fit the pattern? a2 − b2
+• Is this a difference? ____ − ____
+• Are the first and last terms perfect squares?
+Step 2. Write them as squares. (a)2 − (b)2
+Step 3. Write the product of conjugates. (a − b)(a + b)
+Step 4. Check by multiplying.
+858 Chapter 7 Factoring
+Factor: 64y2 − 1 .
+Is this a difference? Yes.
+Are the first and last terms perfect squares?
+Yes - write them as squares.
+Factor as the product of conjugates.
+Check by multiplying.
+⎛
+⎝8y − 1⎞
+⎠⎛
+⎝8y + 1⎞
+64y2 − 1 ✓
+TRY IT : : 7.95 Factor: m2 − 1 .
+TRY IT : : 7.96 Factor: 81y2 − 1 .
+Factor: 121x2 − 49y2 .
+121x2 − 49y2
+Is this a difference of squares? Yes. (11x)2 − ⎛
+⎝7y⎞
+Factor as the product of conjugates. ⎛
+⎝11x − 7y⎞
+⎠⎛
+⎝11x + 7y⎞
+Check by multiplying.
+⎛
+⎝11x − 7y⎞
+⎠⎛
+⎝11x + 7y⎞
+121x2 − 49y2 ✓
+TRY IT : : 7.97 Factor: 196m2 − 25n2 .
+TRY IT : : 7.98 Factor: 144p2 − 9q2 .
+The binomial in the next example may look “backwards,” but it’s still the difference of squares.
+Factor: 100 − h2 .
+Chapter 7 Factoring 859
+100 − h2
+Is this a difference of squares? Yes. (10)2 − (h)2
+Factor as the product of conjugates. (10 − h)(10 + h)
+Check by multiplying.
+(10 − h)(10 + h)
+100 − h2 ✓
+Be careful not to rewrite the original expression as h2 − 100 .
+Factor h2 − 100 on your own and then notice how the result differs from (10 − h)(10 + h) .
+TRY IT : : 7.99 Factor: 144 − x2 .
+TRY IT : : 7.100 Factor: 169 − p2 .
+To completely factor the binomial in the next example, we’ll factor a difference of squares twice!
+Factor: x4 − y4 .
+x4 − y4
+Is this a difference of squares? Yes. ⎛
+⎝x2⎞
+− ⎛
+⎝y2⎞
+Factor it as the product of conjugates. ⎛
+⎝x2 − y2⎞
+⎠⎛
+⎝x2 + y2⎞
+Notice the first binomial is also a difference of squares! ⎛
+⎝(x)2 − (y)2⎞
+⎠⎛
+⎝x2 + y2⎞
+Factor it as the product of conjugates. The last (x − y)(x + y)⎛
+⎝x2 + y2⎞
+factor, the sum of squares, cannot be factored.
+Check by multiplying.
+(x − y)(x + y)⎛
+⎝x2 + y2⎞
+⎡
+⎣(x − y)(x + y)⎤
+⎦
+⎛
+⎝x2 + y2⎞
+⎛
+⎝x2 − y2⎞
+⎠⎛
+⎝x2 + y2⎞
+x4 − y4 ✓
+TRY IT : : 7.101 Factor: a4 − b4 .
+860 Chapter 7 Factoring
+TRY IT : : 7.102 Factor: x4 − 16 .
+As always, you should look for a common factor first whenever you have an expression to factor. Sometimes a common
+factor may “disguise” the difference of squares and you won’t recognize the perfect squares until you factor the GCF.
+Factor: 8x2 y − 18y .
+8x2 y − 98y
+Is there a GCF? Yes, 2y—factor it out! 2y⎛
+⎝4x2 − 49⎞
+Is the binomial a difference of squares? Yes. 2y⎛
+⎝(2x)2 − (7)2⎞
+Factor as a product of conjugates. 2y(2x − 7)(2x + 7)
+Check by multiplying.
+2y(2x − 7)(2x + 7)
+2y⎡
+⎣(2x − 7)(2x + 7)⎤
+⎦
+2y⎛
+⎝4x2 − 49⎞
+8x2 y − 98y ✓
+TRY IT : : 7.103 Factor: 7xy2 − 175x .
+TRY IT : : 7.104 Factor: 45a2 b − 80b .
+Factor: 6x2 + 96 .
+6x2 + 96
+Is there a GCF? Yes, 6—factor it out! 6⎛
+⎝x2 + 16⎞
+Is the binomial a difference of squares? No, it
+is a sum of squares. Sums of squares do not factor!
+Check by multiplying.
+6⎛
+⎝x2 + 16⎞
+6x2 + 96 ✓
+TRY IT : : 7.105 Factor: 8a2 + 200 .
+Chapter 7 Factoring 861
+TRY IT : : 7.106 Factor: 36y2 + 81 .
+Factor Sums and Differences of Cubes
+There is another special pattern for factoring, one that we did not use when we multiplied polynomials. This is the pattern
+for the sum and difference of cubes. We will write these formulas first and then check them by multiplication.
+a3 + b3 = (a + b)⎛
+⎝a2 − ab + b2⎞
+a3 − b3 = (a − b)⎛
+⎝a2 + ab + b2⎞
+We’ll check the first pattern and leave the second to you.
+Distribute.
+Multiply. a3 − a2 b + ab2 + a2 b − ab2 + b3
+Combine like terms. a3 + b3
+Sum and Difference of Cubes Pattern
+a3 + b3 = (a + b)⎛
+⎝a2 − ab + b2⎞
+a3 − b3 = (a − b)⎛
+⎝a2 + ab + b2⎞
+The two patterns look very similar, don’t they? But notice the signs in the factors. The sign of the binomial factor matches
+the sign in the original binomial. And the sign of the middle term of the trinomial factor is the opposite of the sign in the
+original binomial. If you recognize the pattern of the signs, it may help you memorize the patterns.
+The trinomial factor in the sum and difference of cubes pattern cannot be factored.
+It can be very helpful if you learn to recognize the cubes of the integers from 1 to 10, just like you have learned to
+recognize squares. We have listed the cubes of the integers from 1 to 10 in Figure 7.3.
+Figure 7.3
+EXAMPLE 7.54 HOW TO FACTOR THE SUM OR DIFFERENCE OF CUBES
+Factor: x3 + 64 .
+862 Chapter 7 Factoring
+TRY IT : : 7.107 Factor: x3 + 27 .
+TRY IT : : 7.108 Factor: y3 + 8 .
+Factor: x3 − 1000 .
+This binomial is a difference. The first and last terms are perfect cubes.
+Write the terms as cubes.
+HOW TO : : FACTOR THE SUM OR DIFFERENCE OF CUBES.
+To factor the sum or difference of cubes:
+Does the binomial fit the sum or difference of cubes pattern?
+◦ Is it a sum or difference?
+◦ Are the first and last terms perfect cubes?
+Write them as cubes.
+Use either the sum or difference of cubes pattern.
+Simplify inside the parentheses
+Check by multiplying the factors.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Chapter 7 Factoring 863
+Use the difference of cubes pattern.
+Simplify.
+Check by multiplying.
+TRY IT : : 7.109 Factor: u3 − 125 .
+TRY IT : : 7.110 Factor: v3 − 343 .
+Be careful to use the correct signs in the factors of the sum and difference of cubes.
+Factor: 512 − 125p3 .
+This binomial is a difference. The first and last terms are perfect cubes.
+Write the terms as cubes.
+Use the difference of cubes pattern.
+Simplify.
+Check by multiplying. We'll leave the check to you.
+TRY IT : : 7.111 Factor: 64 − 27x3 .
+TRY IT : : 7.112 Factor: 27 − 8y3 .
+Factor: 27u3 − 125v3 .
+864 Chapter 7 Factoring
+This binomial is a difference. The first and last terms are perfect cubes.
+Write the terms as cubes.
+Use the difference of cubes pattern.
+Simplify.
+Check by multiplying. We'll leave the check to you.
+TRY IT : : 7.113 Factor: 8x3 − 27y3 .
+TRY IT : : 7.114 Factor: 1000m3 − 125n3 .
+In the next example, we first factor out the GCF. Then we can recognize the sum of cubes.
+Factor: 5m3 + 40n3 .
+Factor the common factor.
+This binomial is a sum. The first and last terms are perfect cubes.
+Write the terms as cubes.
+Use the sum of cubes pattern.
+Simplify.
+Check. To check, you may find it easier to multiply the sum of cubes factors first, then multiply that product by 5. We’ll
+leave the multiplication for you.
+5(m + 2n)⎛
+⎝m2 − 2mn + 4n2⎞
+TRY IT : : 7.115 Factor: 500p3 + 4q3 .
+TRY IT : : 7.116 Factor: 432c3 + 686d3 .
+Chapter 7 Factoring 865
+MEDIA : :
+Access these online resources for additional instruction and practice with factoring special products.
+• Sum of Difference of Cubes (https://openstax.org/l/25SumCubes)
+• Difference of Cubes Factoring (https://openstax.org/l/25DiffCubes)
+866 Chapter 7 Factoring
+Practice Makes Perfect
+Factor Perfect Square Trinomials
+In the following exercises, factor.
+215. 16y2 + 24y + 9 216. 25v2 + 20v + 4 217. 36s2 + 84s + 49
+218. 49s2 + 154s + 121 219. 100x2 − 20x + 1 220. 64z2 − 16z + 1
+221. 25n2 − 120n + 144 222. 4p2 − 52p + 169 223. 49x2 − 28xy + 4y2
+224. 25r2 − 60rs + 36s2 225. 25n2 + 25n + 4 226. 100y2 − 20y + 1
+227. 64m2 − 16m + 1 228. 100x2 − 25x + 1 229. 10k2 + 80k + 160
+230. 64x2 − 96x + 36 231. 75u3 − 30u2 v + 3uv2 232. 90p3 + 300p2 q + 250pq2
+Factor Differences of Squares
+In the following exercises, factor.
+233. x2 − 16 234. n2 − 9 235. 25v2 − 1
+236. 169q2 − 1 237. 121x2 − 144y2 238. 49x2 − 81y2
+239. 169c2 − 36d2 240. 36p2 − 49q2 241. 4 − 49x2
+242. 121 − 25s2 243. 16z4 − 1 244. m4 − n4
+245. 5q2 − 45 246. 98r3 − 72r 247. 24p2 + 54
+248. 20b2 + 140
+Factor Sums and Differences of Cubes
+In the following exercises, factor.
+249. x3 + 125 250. n3 + 512 251. z3 − 27
+252. v3 − 216 253. 8 − 343t3 254. 125 − 27w3
+255. 8y3 − 125z3 256. 27x3 − 64y3 257. 7k3 + 56
+258. 6x3 − 48y3 259. 2 − 16y3 260. −2x3 − 16y3
+Mixed Practice
+In the following exercises, factor.
+261. 64a2 − 25 262. 121x2 − 144 263. 27q2 − 3
+7.4 EXERCISES
+Chapter 7 Factoring 867
+264. 4p2 − 100 265. 16x2 − 72x + 81 266. 36y2 + 12y + 1
+267. 8p2 + 2 268. 81x2 + 169 269. 125 − 8y3
+270. 27u3 + 1000 271. 45n2 + 60n + 20 272. 48q3 − 24q2 + 3q
+Everyday Math
+273. Landscaping Sue and Alan are planning to put a
+15 foot square swimming pool in their backyard. They
+will surround the pool with a tiled deck, the same width
+on all sides. If the width of the deck is w, the total
+area of the pool and deck is given by the trinomial
+4w2 + 60w + 225 . Factor the trinomial.
+274. Home repair The height a twelve foot ladder can
+reach up the side of a building if the ladder’s base
+is b feet from the building is the square root of the
+binomial 144 − b2 . Factor the binomial.
+Writing Exercises
+275. Why was it important to practice using the
+binomial squares pattern in the chapter on multiplying
+polynomials?
+276. How do you recognize the binomial squares
+pattern?
+277. Explain why n2 + 25 ≠ (n + 5)2 . Use algebra,
+words, or pictures.
+278. Maribel factored y2 − 30y + 81 as (y − 9)2 . Was
+she right or wrong? How do you know?
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+b On a scale of 1–10, how would you rate your mastery of this section in light of your responses on the checklist? How can you
+improve this?
+868 Chapter 7 Factoring

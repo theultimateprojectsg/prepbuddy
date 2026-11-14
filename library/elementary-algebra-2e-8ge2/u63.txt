@@ -1,0 +1,496 @@
+9.6
+Solve Equations with Square Roots
+Learning Objectives
+By the end of this section, you will be able to:
+Solve radical equations
+Use square roots in applications
+BE PREPARED : : 9.15 Before you get started, take this readiness quiz.
+Simplify: a 9 b 92 .
+If you missed this problem, review Example 9.1 and Example 1.19.
+BE PREPARED : : 9.16 Solve: 5(x + 1) − 4 = 3(2x − 7) .
+If you missed this problem, review Example 2.42.
+BE PREPARED : : 9.17 Solve: n2 − 6n + 8 = 0 .
+If you missed this problem, review Example 7.73.
+Solve Radical Equations
+In this section we will solve equations that have the variable in the radicand of a square root. Equations of this type are
+called radical equations.
+Radical Equation
+An equation in which the variable is in the radicand of a square root is called a radical equation.
+As usual, in solving these equations, what we do to one side of an equation we must do to the other side as well. Since
+squaring a quantity and taking a square root are ‘opposite’ operations, we will square both sides in order to remove the
+radical sign and solve for the variable inside.
+But remember that when we write a we mean the principal square root. So a ≥ 0 always. When we solve radical
+equations by squaring both sides we may get an algebraic solution that would make a negative. This algebraic solution
+would not be a solution to the original radical equation; it is an extraneous solution. We saw extraneous solutions when we
+solved rational equations, too.
+For the equation x + 2 = x :
+a Is x = 2 a solution? b Is x = −1 a solution?
+a Is x = 2 a solution?
+Let x = 2.
+Simplify.
+Chapter 9 Roots and Radicals 1093
+2 is a solution.
+b Is x = −1 a solution?
+Let x = −1.
+Simplify.
+−1 is not a solution.
+−1 is an extraneous solution to the equation.
+TRY IT : : 9.147 For the equation x + 6 = x :
+a Is x = −2 a solution? b Is x = 3 a solution?
+TRY IT : : 9.148 For the equation −x + 2 = x :
+a Is x = −2 a solution? b Is x = 1 a solution?
+Now we will see how to solve a radical equation. Our strategy is based on the relation between taking a square root and
+squaring.
+For a ≥ 0, ( a)2 = a
+EXAMPLE 9.75 HOW TO SOLVE RADICAL EQUATIONS
+Solve: 2x − 1 = 7 .
+1094 Chapter 9 Roots and Radicals
+TRY IT : : 9.149 Solve: 3x − 5 = 5 .
+TRY IT : : 9.150 Solve: 4x + 8 = 6 .
+Solve: 5n − 4 − 9 = 0 .
+HOW TO : : SOLVE A RADICAL EQUATION.
+Isolate the radical on one side of the equation.
+Square both sides of the equation.
+Solve the new equation.
+Check the answer.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Chapter 9 Roots and Radicals 1095
+To isolate the radical, add 9 to both sides.
+Simplify.
+Square both sides of the equation.
+Solve the new equation.
+Check the answer.
+The solution is n = 17.
+TRY IT : : 9.151 Solve: 3m + 2 − 5 = 0 .
+TRY IT : : 9.152 Solve: 10z + 1 − 2 = 0 .
+Solve: 3y + 5 + 2 = 5 .
+1096 Chapter 9 Roots and Radicals
+To isolate the radical, subtract 2 from both sides.
+Simplify.
+Square both sides of the equation.
+Solve the new equation.
+Check the answer.
+The solution is y = 4
+3 .
+TRY IT : : 9.153 Solve: 3p + 3 + 3 = 5 .
+TRY IT : : 9.154 Solve: 5q + 1 + 4 = 6 .
+When we use a radical sign, we mean the principal or positive root. If an equation has a square root equal to a negative
+number, that equation will have no solution.
+Solve: 9k − 2 + 1 = 0 .
+To isolate the radical, subtract 1 from both sides.
+Simplify.
+Since the square root is equal to a negative number, the equation has no solution.
+TRY IT : : 9.155 Solve: 2r − 3 + 5 = 0 .
+Chapter 9 Roots and Radicals 1097
+TRY IT : : 9.156 Solve: 7s − 3 + 2 = 0 .
+If one side of the equation is a binomial, we use the binomial squares formula when we square it.
+Binomial Squares
+(a + b)2 = a2 + 2ab + b2 (a − b)2 = a2 − 2ab + b2
+Don’t forget the middle term!
+Solve: p − 1 + 1 = p .
+To isolate the radical, subtract 1 from both sides.
+Simplify.
+Square both sides of the equation.
+Simplify, then solve the new equation.
+It is a quadratic equation, so get zero on one side.
+Factor the right side.
+Use the zero product property.
+Solve each equation.
+Check the answers.
+The solutions are p = 1, p = 2.
+TRY IT : : 9.157 Solve: x − 2 + 2 = x .
+TRY IT : : 9.158 Solve: y − 5 + 5 = y .
+Solve: r + 4 − r + 2 = 0 .
+1098 Chapter 9 Roots and Radicals
+r + 4 − r + 2 = 0
+Isolate the radical. r + 4 = r − 2
+Square both sides of the equation. ⎛
+⎝ r + 4⎞
+⎠2 = (r − 2)2
+Solve the new equation. r + 4 = r2 − 4r + 4
+It is a quadratic equation, so get zero on one side. 0 = r2 − 5r
+Factor the right side. 0 = r(r − 5⎞
+Use the zero product property. 0 = r 0 = r − 5
+Solve the equation. r = 0 r = 5
+Check the answer.
+The solution is r = 5 .
+r = 0 is an extraneous solution.
+TRY IT : : 9.159 Solve: m + 9 − m + 3 = 0 .
+TRY IT : : 9.160 Solve: n + 1 − n + 1 = 0 .
+When there is a coefficient in front of the radical, we must square it, too.
+Solve: 3 3x − 5 − 8 = 4 .
+Chapter 9 Roots and Radicals 1099
+3 3x − 5 − 8 = 4
+Isolate the radical. 3 3x − 5 = 12
+Square both sides of the equation. ⎛
+⎝3 3x − 5⎞
+⎠2 = (12)2
+Simplify, then solve the new equation. 9(3x − 5) = 144
+Distribute. 27x − 45 = 144
+Solve the equation. 27x = 189
+x = 7
+Check the answer.
+The solution is x = 7 .
+TRY IT : : 9.161 Solve: 2 4a + 2 − 16 = 16 .
+TRY IT : : 9.162 Solve: 3 6b + 3 − 25 = 50 .
+Solve: 4z − 3 = 3z + 2 .
+4z − 3 = 3z + 2
+The radical terms are isolated. 4z − 3 = 3z + 2
+Square both sides of the equation. ⎛
+⎝ 4z − 3⎞
+⎠2 = ⎛
+⎝ 3z + 2⎞
+⎠2
+Simplify, then solve the new equation.
+4z − 3 = 3z + 2
+z − 3 = 2
+z = 5
+Check the answer.
+We leave it to you to show that 5 checks! The solution is z = 5.
+TRY IT : : 9.163 Solve: 2x − 5 = 5x + 3 .
+1100 Chapter 9 Roots and Radicals
+TRY IT : : 9.164 Solve: 7y + 1 = 2y − 5 .
+Sometimes after squaring both sides of an equation, we still have a variable inside a radical. When that happens, we
+repeat Step 1 and Step 2 of our procedure. We isolate the radical and square both sides of the equation again.
+Solve: m + 1 = m + 9 .
+m + 1 = m + 9
+The radical on the right side is isolated. Square both sides. ( m + 1)2 = ⎛
+⎝ m + 9⎞
+⎠2
+Simplify—be very careful as you multiply! m + 2 m + 1 = m + 9
+There is still a radical in the equation.
+So we must repeat the previous steps. Isolate the radical. 2 m = 8
+Square both sides. (2 m)2 = (8)2
+Simplify, then solve the new equation. 4m = 64
+m = 16
+Check the answer.
+We leave it to you to show that m = 16 checks! The solution is m = 16.
+TRY IT : : 9.165 Solve: x + 3 = x + 5 .
+TRY IT : : 9.166 Solve: m + 5 = m + 16 .
+Solve: q − 2 + 3 = 4q + 1 .
+Chapter 9 Roots and Radicals 1101
+q − 2 + 3 = 4q + 1
+The radical on the right side is isolated.
+Square both sides.
+⎛
+⎝ q − 2 + 3⎞
+⎠2 = ⎛
+⎝ 4q + 1⎞
+⎠2
+Simplify. q − 2 + 6 q − 2 + 9 = 4q + 1
+There is still a radical in the equation. So
+we must repeat the previous steps. Isolate
+the radical.
+6 q − 2 = 3q − 6
+Square both sides. ⎛
+⎝6 q − 2⎞
+⎠2 = ⎛
+⎝3q − 6⎞
+Simplify, then solve the new equation. 36⎛
+⎝q − 2⎞
+⎠ = 9q2 − 36q + 36
+Distribute. 36q − 72 = 9q2 − 36q + 36
+It is a quadratic equation, so get zero on
+one side. 0 = 9q2 − 72q + 108
+Factor the right side. 0 = 9⎛
+⎝q2 − 8q + 12⎞
+0 = 9⎛
+⎝q − 6⎞
+⎠⎛
+⎝q − 2⎞
+Use the zero product property. q − 6 = 0 q − 2 = 0
+q = 6 q = 2
+The checks are left to you. (Both solutions
+should work.) The solutions are q = 6 and q = 2.
+TRY IT : : 9.167 Solve: y − 3 + 2 = 4y + 2 .
+TRY IT : : 9.168 Solve: n − 4 + 5 = 3n + 3 .
+Use Square Roots in Applications
+As you progress through your college courses, you’ll encounter formulas that include square roots in many disciplines.
+We have already used formulas to solve geometry applications.
+We will use our Problem Solving Strategy for Geometry Applications, with slight modifications, to give us a plan for solving
+applications with formulas from any discipline.
+1102 Chapter 9 Roots and Radicals
+We used the formula A = L · W to find the area of a rectangle with length L and width W. A square is a rectangle in which
+the length and width are equal. If we let s be the length of a side of a square, the area of the square is s2 .
+The formula A = s2 gives us the area of a square if we know the length of a side. What if we want to find the length of a
+side for a given area? Then we need to solve the equation for s.
+A = s2
+Take the square root of both sides. A = s2
+Simplify. A = s
+We can use the formula s = A to find the length of a side of a square for a given area.
+Area of a Square
+We will show an example of this in the next example.
+Mike and Lychelle want to make a square patio. They have enough concrete to pave an area of 200 square feet. Use the
+formula s = A to find the length of each side of the patio. Round your answer to the nearest tenth of a foot.
+HOW TO : : SOLVE APPLICATIONS WITH FORMULAS.
+Read the problem and make sure all the words and ideas are understood. When appropriate,
+draw a figure and label it with the given information.
+Identify what we are looking for.
+Name what we are looking for by choosing a variable to represent it.
+Translate into an equation by writing the appropriate formula or model for the situation.
+Substitute in the given information.
+Solve the equation using good algebra techniques.
+Check the answer in the problem and make sure it makes sense.
+Answer the question with a complete sentence.
+Step 1.
+Step 2.
+Step 3.
+Step 4.
+Step 5.
+Step 6.
+Step 7.
+Chapter 9 Roots and Radicals 1103
+Step 1. Read the problem. Draw a figure and
+label it with the given information.
+A = 200 square feet
+Step 2. Identify what you are looking for. The length of a side of the square patio.
+Step 3. Name what you are looking for by
+choosing a variable to represent it.
+Let s = the length of a side.
+Step 4. Translate into an equation by writing the
+appropriate formula or model for the situation.
+Substitute the given information.
+Step 5. Solve the equation using good algebra
+techniques. Round to one decimal place.
+Step 6. Check the answer in the problem and
+make sure it makes sense.
+This is close enough because we rounded the
+square root.
+Is a patio with side 14.1 feet reasonable?
+Yes.
+Step 7. Answer the question with a complete
+sentence.
+Each side of the patio should be 14.1 feet.
+Katie wants to plant a square lawn in her front yard. She has enough sod to cover an area of 370 square feet. Use
+the formula s = A to find the length of each side of her lawn. Round your answer to the nearest tenth of a foot.
+Sergio wants to make a square mosaic as an inlay for a table he is building. He has enough tile to cover an area
+of 2704 square centimeters. Use the formula s = A to find the length of each side of his mosaic. Round your
+answer to the nearest tenth of a centimeter.
+Another application of square roots has to do with gravity.
+Falling Objects
+On Earth, if an object is dropped from a height of h feet, the time in seconds it will take to reach the ground is found
+by using the formula,
+t = h
+For example, if an object is dropped from a height of 64 feet, we can find the time it takes to reach the ground by
+substituting h = 64 into the formula.
+1104 Chapter 9 Roots and Radicals
+Take the square root of 64.
+Simplify the fraction.
+It would take 2 seconds for an object dropped from a height of 64 feet to reach the ground.
+Christy dropped her sunglasses from a bridge 400 feet above a river. Use the formula t = h
+4 to find how many seconds
+it took for the sunglasses to reach the river.
+Step 1. Read the problem.
+Step 2. Identify what you are looking for. The time it takes for the sunglasses to reach
+the river.
+Step 3. Name what you are looking for by
+choosing a variable to represent it.
+Let t = time.
+Step 4. Translate into an equation by writing the
+appropriate formula or model for the situation.
+Substitute in the given information.
+Step 5. Solve the equation using good algebra
+techniques.
+Step 6. Check the answer in the problem and
+make sure it makes sense.
+5 = 5 ✓
+Does 5 seconds seem reasonable?
+Yes.
+Step 7. Answer the question with a complete
+sentence.
+It will take 5 seconds for the sunglasses to hit
+the water.
+Chapter 9 Roots and Radicals 1105
+A helicopter dropped a rescue package from a height of 1,296 feet. Use the formula t = h
+4 to find how many
+seconds it took for the package to reach the ground.
+A window washer dropped a squeegee from a platform 196 feet above the sidewalk Use the formula t = h
+4 to
+find how many seconds it took for the squeegee to reach the sidewalk.
+Police officers investigating car accidents measure the length of the skid marks on the pavement. Then they use square
+roots to determine the speed, in miles per hour, a car was going before applying the brakes.
+Skid Marks and Speed of a Car
+If the length of the skid marks is d feet, then the speed, s, of the car before the brakes were applied can be found by
+using the formula,
+s = 24d
+After a car accident, the skid marks for one car measured 190 feet. Use the formula s = 24d to find the speed of the car
+before the brakes were applied. Round your answer to the nearest tenth.
+Step 1. Read the problem.
+Step 2. Identify what we are looking for. The speed of a car.
+Step 3. Name what we are looking for. Let s = the speed.
+Step 4. Translate into an equation by writing the
+appropriate formula.
+Substitute the given information.
+Step 5. Solve the equation.
+Round to 1 decimal place.
+Step 6. Check the answer in the problem.
+67.5 ≈
+? 24(190)
+67.5 ≈
+? 4560
+67.5 ≈
+? 67.5277...
+Is 67.5 mph a reasonable speed? Yes.
+Step 7. Answer the question with a complete sentence. The speed of the car was approximately 67.5
+miles per hour.
+1106 Chapter 9 Roots and Radicals
+An accident investigator measured the skid marks of the car. The length of the skid marks was 76 feet. Use the
+formula s = 24d to find the speed of the car before the brakes were applied. Round your answer to the nearest
+tenth.
+The skid marks of a vehicle involved in an accident were 122 feet long. Use the formula s = 24d to find the
+speed of the vehicle before the brakes were applied. Round your answer to the nearest tenth.
+Chapter 9 Roots and Radicals 1107
+Practice Makes Perfect
+Solve Radical Equations
+In the following exercises, check whether the given values are solutions.
+389. For the equation
+x + 12 = x : a Is x = 4 a
+solution? b Is x = −3 a
+solution?
+390. For the equation
+−y + 20 = y : a Is y = 4 a
+solution? b Is y = −5 a
+solution?
+391. For the equation t + 6 = t
+: a Is t = −2 a solution? b Is
+t = 3 a solution?
+392. For the equation
+u + 42 = u : a Is u = −6 a
+solution? b Is u = 7 a solution?
+In the following exercises, solve.
+393. 5y + 1 = 4 394. 7z + 15 = 6 395. 5x − 6 = 8
+396. 4x − 3 = 7 397. 2m − 3 − 5 = 0 398. 2n − 1 − 3 = 0
+399. 6v − 2 − 10 = 0 400. 4u + 2 − 6 = 0 401. 5q + 3 − 4 = 0
+402. 4m + 2 + 2 = 6 403. 6n + 1 + 4 = 8 404. 2u − 3 + 2 = 0
+405. 5v − 2 + 5 = 0 406. 3z − 5 + 2 = 0 407. 2m + 1 + 4 = 0
+408.
+a u − 3 + 3 = u
+b x + 1 − x + 1 = 0
+409.
+a v − 10 + 10 = v
+b y + 4 − y + 2 = 0
+410.
+a r − 1 − r = −1
+b z + 100 − z + 10 = 0
+411.
+a s − 8 − s = −8
+b w + 25 − w + 5 = 0
+412. 3 2x − 3 − 20 = 7 413. 2 5x + 1 − 8 = 0
+414. 2 8r + 1 − 8 = 2 415. 3 7y + 1 − 10 = 8 416. 3u − 2 = 5u + 1
+417. 4v + 3 = v − 6 418. 8 + 2r = 3r + 10 419. 12c + 6 = 10 − 4c
+420.
+a a + 2 = a + 4
+b b − 2 + 1 = 3b + 2
+421.
+a r + 6 = r + 8
+b s − 3 + 2 = s + 4
+422.
+a u + 1 = u + 4
+b n − 5 + 4 = 3n + 7
+423.
+a x + 10 = x + 2
+b y − 2 + 2 = 2y + 4
+424. 2y + 4 + 6 = 0 425. 8u + 1 + 9 = 0
+426. a + 1 = a + 5 427. d − 2 = d − 20 428. 6s + 4 = 8s − 28
+9.6 EXERCISES
+1108 Chapter 9 Roots and Radicals
+429. 9p + 9 = 10p − 6
+Use Square Roots in Applications
+In the following exercises, solve. Round approximations to one decimal place.
+430. Landscaping Reed wants to
+have a square garden plot in his
+backyard. He has enough
+compost to cover an area of 75
+square feet. Use the formula
+s = A to find the length of each
+side of his garden. Round your
+answer to the nearest tenth of a
+foot.
+431. Landscaping Vince wants to
+make a square patio in his yard.
+He has enough concrete to pave
+an area of 130 square feet. Use the
+formula s = A to find the length
+of each side of his patio. Round
+your answer to the nearest tenth
+of a foot.
+432. Gravity While putting up
+holiday decorations, Renee
+dropped a light bulb from the top
+of a 64 foot tall tree. Use the
+formula t = h
+4 to find how many
+seconds it took for the light bulb
+to reach the ground.
+433. Gravity An airplane dropped
+a flare from a height of 1024 feet
+above a lake. Use the formula
+t = h
+4 to find how many seconds
+it took for the flare to reach the
+water.
+434. Gravity A hang glider
+dropped his cell phone from a
+height of 350 feet. Use the
+formula t = h
+4 to find how many
+seconds it took for the cell phone
+to reach the ground.
+435. Gravity A construction
+worker dropped a hammer while
+building the Grand Canyon
+skywalk, 4000 feet above the
+Colorado River. Use the formula
+t = h
+4 to find how many seconds
+it took for the hammer to reach
+the river.
+436. Accident investigation The
+skid marks for a car involved in
+an accident measured 54 feet. Use
+the formula s = 24d to find the
+speed of the car before the brakes
+were applied. Round your answer
+to the nearest tenth.
+437. Accident investigation The
+skid marks for a car involved in an
+accident measured 216 feet. Use
+the formula s = 24d to find the
+speed of the car before the brakes
+were applied. Round your answer
+to the nearest tenth.
+438. Accident investigation An
+accident investigator measured
+the skid marks of one of the
+vehicles involved in an accident.
+The length of the skid marks was
+175 feet. Use the formula
+s = 24d to find the speed of the
+vehicle before the brakes were
+applied. Round your answer to the
+nearest tenth.
+439. Accident investigation An
+accident investigator measured
+the skid marks of one of the
+vehicles involved in an accident.
+The length of the skid marks was
+117 feet. Use the formula
+s = 24d to find the speed of the
+vehicle before the brakes were
+applied. Round your answer to the
+nearest tenth.
+Writing Exercises
+440. Explain why an equation of the form x + 1 = 0
+has no solution.
+441.
+a Solve the equation r + 4 − r + 2 = 0 .
+b Explain why one of the “solutions” that was
+found was not actually a solution to the equation.
+Self Check
+a After completing the exercises, use this checklist to evaluate your mastery of the objectives of this section.
+Chapter 9 Roots and Radicals 1109
+b After reviewing this checklist, what will you do to become confident for all objectives?
+1110 Chapter 9 Roots and Radicals
