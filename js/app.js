@@ -707,7 +707,7 @@ let S = null; // current practice session
 let navStack = [], navPopping = false, navCur = null;
 const navKey = (v) => JSON.stringify(v || {});
 // Each screen has its own address (#/book?bookId=…), so a refresh, a bookmark or a shared link opens the same screen.
-const URL_OK = ['privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
+const URL_OK = ['practice', 'privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
 function viewUrl(v) {
   if (!v || !URL_OK.includes(v.name)) return '#/' + (v && v.name === 'parent' ? 'progress' : 'home');
   const q = new URLSearchParams();
@@ -2355,6 +2355,7 @@ function bindPracticeTiles() {
   $app.querySelectorAll('.qtile[data-mode], .plan-item[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
 }
 const gearBtn = () => `<button class="mob-gear" data-gear aria-label="${LANG === 'zh' ? '設定' : 'Settings'}">${menuIcon('settings', false, 22)}</button>`;
+const titleRow = (h1) => `<div class="ttl-row">${h1}${gearBtn()}</div>`; // main tabs: page title + Settings gear on phones
 function renderPractice() {
   const T = practiceTiles(), Z = (en, zh) => (LANG === 'zh' ? zh : en);
   const pick = (ids) => ids.map((k) => T[k] || '').join('');
@@ -2491,7 +2492,7 @@ async function renderBooks() {
   <main class="pad stack g18" data-view="books" style="flex:1">
     <div class="bks-head">
       <div class="stack" style="gap:2px"><h1 class="pagetitle" style="margin:0">Books</h1>${books.length ? `<span class="muted bk-count">${W(`${books.length} textbook${books.length === 1 ? '' : 's'}`, `${books.length} 本課本`)}</span>` : ''}</div>
-      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} Add a textbook</button>
+      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} Add a textbook</button>${gearBtn()}
     </div>
     ${books.length ? `${many ? `<div class="bk-tools"><form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form></div>` : ''}
@@ -4542,7 +4543,7 @@ async function renderProgress() {
 
   $app.innerHTML = `
   <main class="pad pgpage" data-view="progress" data-raw style="flex:1">
-    <h1 class="pagetitle">${PT('Progress', '進度')}</h1>
+    ${titleRow(`<h1 class="pagetitle">${PT('Progress', '進度')}</h1>`)}
     <section class="pg-hero">${buddySVG(r.q ? 'happy' : 'think', 60)}<div><b>${verdict}</b><span>${sub}</span></div></section>
     <div class="pg-stats">
       ${stat('flame', 'orange', D.streak, PT(D.streak === 1 ? 'day in a row' : 'days in a row', '連續練習日數'))}
@@ -5657,7 +5658,7 @@ async function renderMistakes(tab, openBook) {
   const SHOW = 4;
   $app.innerHTML = `
   <main class="pad stack g18 mkpage" data-view="mistakes" style="flex:1">
-    <h1 class="pagetitle">Mistake book</h1>
+    ${titleRow(`<h1 class="pagetitle">${LANG === 'zh' ? '錯題簿' : 'Mistake book'}</h1>`)}
     ${tab === 'todo' && todo ? `<section class="mk-hero">
       <div class="mk-hero-l">${buddySVG('happy', 64)}<div class="stack g6"><b class="mk-big">${todo} ${todo === 1 ? 'question' : 'questions'} to get right</b>
         <span class="muted">Get one right again and it moves to Mastered.${fixedWeek ? ` <b class="mk-win">${fixedWeek} fixed this week</b>` : ''}</span></div></div>
