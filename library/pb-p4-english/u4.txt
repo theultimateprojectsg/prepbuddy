@@ -19,6 +19,17 @@ Much, many, a lot of, a few, a little
 - a lot of / lots of + both: We have a lot of books. There is a lot of noise.
 - a few + countable (a small number): I have a few friends in Class 4B.
 - a little + uncountable (a small amount): Add a little salt.
+- plenty of + both (more than enough): Don't hurry, we have plenty of time. There are plenty of seats.
+
+Enough, too many, too much
+- enough = the right amount: Have we got enough chairs? There isn't enough milk for everyone.
+- too many + countable plurals (more than we want): There are too many people on the bus.
+- too much + uncountable: Don't put too much sugar in your tea.
+
+More, fewer, less
+- more + both: We need more cups. Can I have more rice?
+- fewer + countable plurals: Ann made fewer mistakes than Joe.
+- less + uncountable: Please use less water. I have less homework today.
 
 There is / There are
 - There is + singular or uncountable: There is a cat on the sofa. There is some rice in the pot.
@@ -28,6 +39,8 @@ Common mistakes
 - "How many water do you drink?" → How much water do you drink?
 - "I have many homeworks." → I have a lot of homework.
 - "There is some apples." → There are some apples.
+- "There are too much cars." → There are too many cars.
+- "I have less books than you." → I have fewer books than you.
 
 Practice passage: Making fried rice
 Ben and his dad are making fried rice for dinner. "How much rice do we need?" asks Ben. "Two bowls of rice," says Dad. Ben opens the fridge. There are some eggs, a few carrots and a little ham, but there aren't any onions. "How many eggs should I use?" "Three, please," says Dad. Ben cracks the eggs into a bowl. Dad adds a little oil to the pan and cooks the eggs first. Then he puts in the rice, the carrots and the ham. "Do we need any salt?" asks Ben. "Just a little," says Dad. Soon the kitchen is full of a lovely smell. Ben's sister comes in with a few glasses of water. "Dinner is ready!" says Ben proudly.

@@ -11,7 +11,7 @@
   "starter": true,
   "credit": "Written by PrepBuddy for Hong Kong Primary 4 (Key Stage 2 English). Free starter book. © PrepBuddy.",
   "lang": "en",
-  "pageCount": 14,
+  "pageCount": 15,
   "addedAt": "2026-11-14",
   "questionCount": 0,
   "units": [
@@ -112,6 +112,13 @@
     "chapter": 14,
     "startPage": 14,
     "endPage": 14
+   },
+   {
+    "id": "u14",
+    "title": "Unit 15: Rules, advice and suggestions (must, should, let's, would like)",
+    "chapter": 15,
+    "startPage": 15,
+    "endPage": 15
    }
   ]
  },

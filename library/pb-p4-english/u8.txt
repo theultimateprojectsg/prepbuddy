@@ -21,6 +21,10 @@ Making questions
    You like pizza. → Do you like pizza?
    She plays tennis. → Does she play tennis? (NOT "Does she plays")
    They went to Macau. → Where did they go? (NOT "Where did they went")
+4. With there is / there are / there was / there were: move is/are/was/were before there.
+   There is a park near your home. → Is there a park near your home? Yes, there is.
+   There were many people at the party. → Were there many people at the party? No, there weren't.
+   Was there any food left? Yes, there was. / No, there wasn't.
 
 Questions about the subject (who / what did the action) don't need do/does/did:
 - Who called you? Mary called me. What happened? A cup fell down.
