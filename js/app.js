@@ -2336,7 +2336,7 @@ function bindPracticeTiles() {
   { const sp = document.getElementById('ssago'); if (sp) sp.onclick = () => startReview('ssa'); }
   { const ws = document.getElementById('worksheets'); if (ws) ws.onclick = () => go({ name: 'worksheets' }); }
   { const ap = document.getElementById('allpractice'); if (ap) ap.onclick = () => go({ name: 'practice' }); }
-  $app.querySelectorAll('.qtile[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
+  $app.querySelectorAll('.qtile[data-mode], .plan-item[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
 }
 const gearBtn = () => `<button class="mob-gear" data-gear aria-label="${LANG === 'zh' ? '設定' : 'Settings'}">${menuIcon('settings', false, 22)}</button>`;
 function renderPractice() {
