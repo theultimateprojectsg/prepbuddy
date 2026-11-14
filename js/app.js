@@ -2356,6 +2356,7 @@ function renderPractice() {
 }
 function bindGear() {} // the gear is handled for every screen by the click listener below
 document.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('[data-gear]'); if (g) go({ name: 'settings' }); });
+document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('footer #usage')) go({ name: 'usage' }); }); // the footer's AI usage button, on every screen
 const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. ${local.pilot ? '' : '<button class="btn-sm quiet" id="usage" >AI usage</button>'}</footer>`;
 /* ---------- children on this device (siblings sharing a tablet) ----------
    Each child gets their own localStorage key and IndexedDB database (see KIDS near the top and store.js).
@@ -2426,7 +2427,6 @@ function kidPicker({ boot } = {}) {
 }
 function bindHomeCommon() {
   $app.querySelectorAll('[data-kidgo]').forEach((b) => (b.onclick = async () => { await kidPicker(); go({ name: 'home' }); }));
-  { const u = document.getElementById('usage'); if (u) u.onclick = () => go({ name: 'usage' }); }
 }
 
 /* ---------- Books: my textbooks, the library and uploads ---------- */
