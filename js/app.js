@@ -1813,12 +1813,12 @@ function getLesson(book, unit, fresh) {
   const key = `lesson:${book.id}:${unit.id}`;
   if (!fresh && lessonJobs.has(key)) return lessonJobs.get(key);
   const p = (async () => {
-    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length) return have; }
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && (have.v >= 2 || kindOfBook(book) !== 'language')) return have; }
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     if (!text) throw new Error('This chapter’s text is missing on this device.');
     const l = await api('learn', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
     if (!l || !Array.isArray(l.steps) || !l.steps.length) throw new Error('Buddy couldn’t put this lesson together. Please try again.');
-    delete l.usage; l.at = Date.now();
+    delete l.usage; l.at = Date.now(); l.v = 2;
     await store.set(key, l);
     return l;
   })();
@@ -2621,6 +2621,7 @@ function profileScreen({ first } = {}) {
           <div class="prof-opts two">${opt('zhLang', 'yue', C('Cantonese', '廣東話'), C('粵教中', '粵教中'))}${opt('zhLang', 'cmn', C('Putonghua', '普通話'), C('普教中: Buddy reads Chinese in Putonghua', '普教中：Buddy 用普通話朗讀'))}</div></section>
         <section class="stack g10"><b>${C('Buddy should explain in…', 'Buddy 用甚麼語言講解？')}</b>
           <div class="prof-opts">${opt('explain', 'en', C('English', '英文'), C('Even if they type in Chinese', '即使孩子用中文提問'))}${opt('explain', 'zh', C('Chinese', '中文'), C('English terms in brackets', '英文術語放在括號內'))}${opt('explain', 'mix', C('Chinese + English terms', '中文 + 英文術語'), C('Learn the English words', '同時學英文詞彙'))}</div>
+          <span class="muted" style="font-size:13px;line-height:1.5">${C('English lessons are always explained in simple English, with Chinese only for hard words.', '英文科一律用淺白英文講解，只在難字旁加中文。')}</span>
           <span class="hint" style="margin:0;text-align:left">${C('Practice questions stay in the textbook’s language.', '練習題目會保持課本的語言。')}</span></section>
         ${L.grade ? `<section class="stack g10"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
