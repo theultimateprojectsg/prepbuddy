@@ -1,5 +1,9 @@
 Unit 14: Reading notices, posters and timetables
 
+In this unit you will learn to:
+- find key information in notices, posters and timetables quickly
+- answer questions about dates, times, places and rules
+
 Notices, posters and timetables give information quickly. To answer questions, scan for the key information:
 - What is it about? (the title or heading)
 - When? (date, day, time)
@@ -52,7 +56,7 @@ Key words
 - register: put your name down to join (報名)
 - fee: money you pay (費用)
 - venue: the place where something happens (場地)
-- free of charge: you don't need to pay (免費)
+- free: you don't need to pay (免費)
 - participant: a person who joins (參加者)
 - timetable: a list of times (時間表)
 

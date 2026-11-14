@@ -1,0 +1,2729 @@
+{
+ "u0": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nYesterday my brother ________ his bike to the park.",
+   "options": [
+    "rode",
+    "ride",
+    "riding",
+    "rides"
+   ],
+   "correct_option": "A",
+   "explanation": "'Yesterday' tells us it happened in the past, so we use the simple past tense. The past tense of ride is rode.",
+   "parts": [],
+   "id": "pbu000",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nLast night we ________ at home because it was raining.",
+   "options": [
+    "are",
+    "was",
+    "were",
+    "is"
+   ],
+   "correct_option": "C",
+   "explanation": "We use 'were' with we, you and they in the past. 'Was' goes with I, he, she and it.",
+   "parts": [],
+   "id": "pbu001",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nAmy ________ her homework last night. She forgot!",
+   "options": [
+    "didn't did",
+    "doesn't do",
+    "not did",
+    "didn't do"
+   ],
+   "correct_option": "D",
+   "explanation": "Negatives in the past: didn't + the base verb. So we say 'didn't do', never 'didn't did'.",
+   "parts": [],
+   "id": "pbu002",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\n________ you visit your grandma last Sunday?",
+   "options": [
+    "Do",
+    "Did",
+    "Does",
+    "Were"
+   ],
+   "correct_option": "B",
+   "explanation": "Questions in the past use Did + subject + base verb: Did you visit…?",
+   "parts": [],
+   "id": "pbu003",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the given verb.\n\nThe baby ________ (cry) all night, so Mum was very tired.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "cried (spelling must be correct: consonant + y → change y to i and add -ed)"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "'Cry' ends in consonant + y, so change y to i and add -ed: cried.",
+   "id": "pbu004",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the given verb.\n\nTwo days ago, Ken ________ (stop) at the shop and bought some bread.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "stopped (double the p before -ed)"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "'Stop' has one vowel and one consonant at the end, so we double the p: stopped.",
+   "id": "pbu005",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Make a question for the word(s) in [square brackets].\n\nThey went to [Ocean Park] last Saturday.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "Where did they go last Saturday? (accept 'Where did they go?'; must use did + base verb 'go', not 'went'; question mark needed)"
+     ]
+    }
+   ],
+   "explanation": "We ask about a place with 'Where'. In the past we use did + base verb: Where did they go last Saturday?",
+   "id": "pbu006",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Read Ka Yan's diary and fill in the blanks with the correct form of the given verbs.\n\nLast Sunday, I (1) ________ (go) to the beach with my cousins. We (2) ________ (swim) in the sea and (3) ________ (build) a big sandcastle. At noon, we (4) ________ (have) a picnic under a tree. We (5) ________ (not see) any jellyfish, luckily!",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: went"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: swam"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: built"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: had"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(5)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: didn't see / did not see"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "A diary tells about the past, so every verb is in the simple past tense. Go, swim, build and have are irregular: went, swam, built, had. The negative is didn't + base verb: didn't see.",
+   "id": "pbu007",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "There is one mistake in each line. Find the mistake and write the correct word.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Yesterday I go to the library with Tom.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: went (the mistake is 'go'). Accept the correct word alone, or 'go → went'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "We readed some comic books there.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: read (the mistake is 'readed'). Accept the correct word alone, or 'readed → read'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Did you saw my new schoolbag?",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: see (the mistake is 'saw'). Accept the correct word alone, or 'saw → see'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "The books was very interesting.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: were (the mistake is 'was'). Accept the correct word alone, or 'was → were'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Line 1: 'Yesterday' needs the past: went. Line 2: read is irregular; its past is read (said 'red'). Line 3: after Did, use the base verb: see. Line 4: 'books' is plural, so use were.",
+   "id": "pbu008",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'A day at Tai O'.\n\nIn the afternoon, they took a small boat. \"Look! A dolphin!\" shouted Ka Ho, but it was only a big wave. Everyone laughed.\n\nWhy did everyone laugh?",
+   "options": [
+    "They saw many dolphins.",
+    "Ka Ho thought a big wave was a dolphin.",
+    "The boat was very small.",
+    "Ka Ho fell into the sea."
+   ],
+   "correct_option": "B",
+   "explanation": "Ka Ho shouted 'Look! A dolphin!' but it was only a big wave, so everyone laughed.",
+   "parts": [],
+   "id": "pbu009",
+   "checked": "human"
+  }
+ ],
+ "u1": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nMy sister ________ the piano every Sunday.",
+   "options": [
+    "plays",
+    "is play",
+    "play",
+    "playing"
+   ],
+   "correct_option": "A",
+   "explanation": "'Every Sunday' is a habit, so we use the simple present. With he/she/it we add -s: plays.",
+   "parts": [],
+   "id": "pbu100",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nLook! The children ________ in the rain.",
+   "options": [
+    "dances",
+    "is dancing",
+    "dance",
+    "are dancing"
+   ],
+   "correct_option": "D",
+   "explanation": "'Look!' tells us it is happening now, so we use the present continuous. 'The children' is plural: are dancing.",
+   "parts": [],
+   "id": "pbu101",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nTom ________ eat vegetables. He doesn't like them.",
+   "options": [
+    "not",
+    "don't",
+    "doesn't",
+    "isn't"
+   ],
+   "correct_option": "C",
+   "explanation": "With he/she/it, the negative is doesn't + base verb: Tom doesn't eat vegetables.",
+   "parts": [],
+   "id": "pbu102",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nWhich sentence is correct?",
+   "options": [
+    "She always is happy.",
+    "She is always happy.",
+    "Always she happy is.",
+    "She is happy always."
+   ],
+   "correct_option": "B",
+   "explanation": "Adverbs of frequency go after am/is/are: She is always happy.",
+   "parts": [],
+   "id": "pbu103",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the given verb.\n\nMy dad ________ (watch) the news every evening.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "watches (add -es after ch)"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "'Every evening' is a habit. Verbs ending in ch add -es with he/she/it: watches.",
+   "id": "pbu104",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the given verb.\n\nBe quiet! The baby ________ (sleep) now.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "is sleeping"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "'Now' tells us it is happening at the moment: is + verb-ing = is sleeping.",
+   "id": "pbu105",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Rewrite the sentence using the word in brackets.\n\nI go swimming on Saturdays. (usually)",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "I usually go swimming on Saturdays. (usually must come before 'go')"
+     ]
+    }
+   ],
+   "explanation": "Adverbs of frequency go before the main verb: I usually go swimming on Saturdays.",
+   "id": "pbu106",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Read Mei's message and fill in the blanks with the correct form of the given verbs.\n\nHi Grandma! It's Sunday morning. Right now, I (1) ________ (sit) in the living room. Dad (2) ________ (cook) breakfast in the kitchen. On weekdays, he (3) ________ (go) to work at seven o'clock, so he (4) ________ (not cook) breakfast. My brother never (5) ________ (get) up early!",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: am sitting"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: is cooking"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: goes"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: doesn't cook / does not cook"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(5)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: gets"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "(1) and (2) happen 'right now', so they use am/is + -ing (sitting doubles the t). (3)–(5) are habits on weekdays, so they use the simple present: goes, doesn't cook, gets.",
+   "id": "pbu107",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'Leo's school day'.\n\nToday is different. It is Saturday, and Leo is not at school. Right now, he is sitting in the living room. He is helping his grandfather to fix an old radio.\n\nWhat is Leo doing right now?",
+   "options": [
+    "He is reading the newspaper.",
+    "He is playing basketball.",
+    "He is taking the school bus.",
+    "He is helping his grandfather fix a radio."
+   ],
+   "correct_option": "D",
+   "explanation": "The passage says: 'Right now, he is sitting in the living room. He is helping his grandfather to fix an old radio.'",
+   "parts": [],
+   "id": "pbu108",
+   "checked": "human"
+  }
+ ],
+ "u2": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nLook at those dark clouds! It ________ rain.",
+   "options": [
+    "will to",
+    "is going to",
+    "going to",
+    "is go to"
+   ],
+   "correct_option": "B",
+   "explanation": "We can see the clouds, so we know it is coming: is going to + base verb.",
+   "parts": [],
+   "id": "pbu200",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\n\"I'm thirsty.\" \"I ________ get you a glass of water.\"",
+   "options": [
+    "going to",
+    "am",
+    "am going",
+    "will"
+   ],
+   "correct_option": "D",
+   "explanation": "This is an offer decided right now, so we use will: I will (I'll) get you a glass of water.",
+   "parts": [],
+   "id": "pbu201",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nWe ________ visit our cousins in Macau next weekend. We bought the ferry tickets yesterday.",
+   "options": [
+    "going",
+    "are going to",
+    "will to",
+    "is going to"
+   ],
+   "correct_option": "B",
+   "explanation": "It is a plan made before (they bought tickets), so we use going to. 'We' goes with are: are going to.",
+   "parts": [],
+   "id": "pbu202",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nI think the test ________ easy tomorrow.",
+   "options": [
+    "be",
+    "will is",
+    "will be",
+    "is going"
+   ],
+   "correct_option": "C",
+   "explanation": "'I think' + a guess about the future → will + base verb: will be.",
+   "parts": [],
+   "id": "pbu203",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the negative form of 'be going to'.\n\nShe ________ join the dance club this year. She is too busy.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "isn't going to / is not going to"
+     ]
+    }
+   ],
+   "explanation": "Negative of going to: is not (isn't) going to + base verb.",
+   "id": "pbu204",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Make a question for the word(s) in [square brackets].\n\nThey are going to have a party [next Friday].",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "When are they going to have a party? (accept 'When are they going to have the party?')"
+     ]
+    }
+   ],
+   "explanation": "We ask about time with 'When'. Move 'are' before 'they': When are they going to have a party?",
+   "id": "pbu205",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Read the email and fill in the blanks with 'will' or the correct form of 'be going to'.\n\nHi Sam,\nNext Saturday, my family (1) ________ (visit) the Science Museum. We planned it last week. My sister (2) ________ (bring) her camera. I think it (3) ________ (be) very interesting. Can you come too? I (4) ________ (ask) my mum to buy a ticket for you!\nLuke",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: are going to visit"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: is going to bring"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: will be"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: will ask (accept 'I'll ask')"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "(1) and (2) are plans made before, so we use going to. (3) is a guess with 'I think' → will be. (4) is an offer decided now → will ask.",
+   "id": "pbu206",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'Plans for the Christmas holiday'.\n\n\"My family is going to visit my grandparents in Guangzhou,\" says Amy. \"We are going to take the high-speed train.\"\n\nHow is Amy going to travel to Guangzhou?",
+   "options": [
+    "by plane",
+    "by bus",
+    "by ferry",
+    "by high-speed train"
+   ],
+   "correct_option": "D",
+   "explanation": "Amy says: 'We are going to take the high-speed train.'",
+   "parts": [],
+   "id": "pbu207",
+   "checked": "human"
+  }
+ ],
+ "u3": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nAn elephant is ________ than a horse.",
+   "options": [
+    "big",
+    "more big",
+    "bigger",
+    "biggest"
+   ],
+   "correct_option": "C",
+   "explanation": "We compare two animals, so we use the comparative. 'Big' doubles the g: bigger than.",
+   "parts": [],
+   "id": "pbu300",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nTai Mo Shan is ________ mountain in Hong Kong.",
+   "options": [
+    "the highest",
+    "most high",
+    "higher",
+    "the higher"
+   ],
+   "correct_option": "A",
+   "explanation": "We compare it with all the mountains in Hong Kong, so we use the superlative: the highest.",
+   "parts": [],
+   "id": "pbu301",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nThis storybook is ________ than that one.",
+   "options": [
+    "more interesting",
+    "interestinger",
+    "interesting",
+    "most interesting"
+   ],
+   "correct_option": "A",
+   "explanation": "'Interesting' is a long adjective, so we use more + adjective + than.",
+   "parts": [],
+   "id": "pbu302",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nMy pencil case is the same ________ yours.",
+   "options": [
+    "with",
+    "from",
+    "as",
+    "than"
+   ],
+   "correct_option": "C",
+   "explanation": "We say 'the same as'. (We say 'different from'.)",
+   "parts": [],
+   "id": "pbu303",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the given adjective.\n\nToday is ________ (hot) day of the year!",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "the hottest (double the t)"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "One day compared with all the days of the year → superlative. 'Hot' doubles the t: the hottest.",
+   "id": "pbu304",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the given adjective.\n\nMy handwriting is bad, but my brother's handwriting is ________ (bad).",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "worse"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "'Bad' is irregular: bad → worse → the worst.",
+   "id": "pbu305",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Rewrite the sentence using 'as … as'.\n\nPeter is 140 cm tall. Paul is 140 cm tall too.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "Peter is as tall as Paul. (accept 'Paul is as tall as Peter.')"
+     ]
+    }
+   ],
+   "explanation": "When two things are the same, we use as + adjective + as: Peter is as tall as Paul.",
+   "id": "pbu306",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Look at the information and fill in the blanks with the correct form of the given adjectives.\n\nPets in the shop: Hamster $80, 10 cm · Rabbit $300, 40 cm · Puppy $5,000, 50 cm\n\nThe hamster is (1) ________ (cheap) pet. The rabbit is (2) ________ (big) than the hamster. The puppy is (3) ________ (expensive) pet in the shop. The rabbit is (4) ________ (small) than the puppy.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: the cheapest"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: bigger"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: the most expensive"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: smaller"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "(1) and (3) compare one pet with all the pets → the cheapest, the most expensive. (2) and (4) compare two pets → bigger, smaller + than.",
+   "id": "pbu307",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'Choosing a pet'.\n\nLast, they see a puppy. It is the cutest animal in the shop, but it is also the most expensive. \"A puppy needs more space than a rabbit,\" says Dad. \"Our flat isn't as big as Grandma's house.\" In the end, Mia chooses the rabbit.\n\nWhy did Mia's family NOT choose the puppy?",
+   "options": [
+    "It was the smallest animal.",
+    "It was not cute.",
+    "It needs more space and their flat is small.",
+    "Mia was afraid of dogs."
+   ],
+   "correct_option": "C",
+   "explanation": "Dad says a puppy needs more space than a rabbit, and their flat isn't as big as Grandma's house.",
+   "parts": [],
+   "id": "pbu308",
+   "checked": "human"
+  }
+ ],
+ "u4": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nHow ________ apples are there in the bag?",
+   "options": [
+    "little",
+    "much",
+    "lot",
+    "many"
+   ],
+   "correct_option": "D",
+   "explanation": "Apples can be counted, so we use 'How many'.",
+   "parts": [],
+   "id": "pbu400",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nThere isn't ________ milk in the fridge.",
+   "options": [
+    "many",
+    "a few",
+    "any",
+    "some"
+   ],
+   "correct_option": "C",
+   "explanation": "In negative sentences we use 'any'. Milk is uncountable, so 'many' and 'a few' are wrong.",
+   "parts": [],
+   "id": "pbu401",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nPlease add ________ sugar to my tea. Not too much!",
+   "options": [
+    "a little",
+    "a few",
+    "many",
+    "a lot of"
+   ],
+   "correct_option": "A",
+   "explanation": "Sugar is uncountable, and we want a small amount, so we use 'a little'.",
+   "parts": [],
+   "id": "pbu402",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nThere are ________ people on the bus. I can't find a seat!",
+   "options": [
+    "too much",
+    "a little",
+    "too many",
+    "enough"
+   ],
+   "correct_option": "C",
+   "explanation": "People can be counted, and there are more than we want: too many.",
+   "parts": [],
+   "id": "pbu403",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nAnn made ________ mistakes than Joe in the test.",
+   "options": [
+    "little",
+    "less",
+    "much",
+    "fewer"
+   ],
+   "correct_option": "D",
+   "explanation": "Mistakes can be counted, so we use 'fewer'. 'Less' is for uncountable nouns like water or time.",
+   "parts": [],
+   "id": "pbu404",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the noun in brackets.\n\nThere are three ________ (box) on the table.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "boxes"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Nouns ending in x add -es: box → boxes.",
+   "id": "pbu405",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the noun in brackets.\n\nThe dentist checked all my ________ (tooth).",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "teeth"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "'Tooth' has an irregular plural: teeth.",
+   "id": "pbu406",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Fill in the blanks with the given words. Use each word once.\n\nWords: any, a few, a little, much, many\n\nBen: How (1) ________ eggs do we need?\nDad: Only three. And we need (2) ________ oil for the pan.\nBen: How (3) ________ rice should I cook?\nDad: Two bowls. Do we have (4) ________ onions?\nBen: No, but we have (5) ________ carrots.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: many"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: a little"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: much"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: any"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(5)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: a few"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Eggs, onions and carrots are countable: How many, any (question), a few. Oil and rice are uncountable: a little, How much.",
+   "id": "pbu407",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "There is one mistake in each line. Find the mistake and write the correct word.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "I have many homeworks today.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: homework (the mistake is 'homeworks'). Accept the correct word alone, or 'homeworks → homework'. Spelling and capital letters must be correct. (accept 'many homeworks → a lot of homework')"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "There is some apples on the table.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: are (the mistake is 'is'). Accept the correct word alone, or 'is → are'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "How many water do you drink every day?",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: much (the mistake is 'many'). Accept the correct word alone, or 'many → much'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "I bought two loafs of bread.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: loaves (the mistake is 'loafs'). Accept the correct word alone, or 'loafs → loaves'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Homework is uncountable (no -s). Apples are plural → there are. Water is uncountable → how much. Loaf → loaves (f → ves).",
+   "id": "pbu408",
+   "checked": "human"
+  }
+ ],
+ "u5": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nMy birthday is ________ May.",
+   "options": [
+    "on",
+    "to",
+    "in",
+    "at"
+   ],
+   "correct_option": "C",
+   "explanation": "We use 'in' with months: in May.",
+   "parts": [],
+   "id": "pbu500",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nThe cat is sleeping ________ the table. I can't see it from the top!",
+   "options": [
+    "under",
+    "on",
+    "between",
+    "in"
+   ],
+   "correct_option": "A",
+   "explanation": "We can't see it from the top, so it is below the table: under.",
+   "parts": [],
+   "id": "pbu501",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nThe school picnic is ________ Friday morning.",
+   "options": [
+    "on",
+    "by",
+    "at",
+    "in"
+   ],
+   "correct_option": "A",
+   "explanation": "We use 'on' with days, even with a part of the day: on Friday morning.",
+   "parts": [],
+   "id": "pbu502",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nThe bakery is ________ the bank and the post office.",
+   "options": [
+    "under",
+    "between",
+    "opposite",
+    "next"
+   ],
+   "correct_option": "B",
+   "explanation": "'Between' means in the middle of two things: between the bank and the post office.",
+   "parts": [],
+   "id": "pbu503",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct preposition (in, on or at).\n\nWe usually have dinner ________ seven o'clock.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "at"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "We use 'at' with clock times: at seven o'clock.",
+   "id": "pbu504",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct preposition (in, on or at).\n\nIt is cold ________ the morning but warm ________ noon.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "in … at (both needed: 'in the morning', 'at noon')"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Parts of the day use 'in': in the morning. But we say 'at noon' and 'at night'.",
+   "id": "pbu505",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Look at the map information and fill in the blanks with the correct words.\n\nOn King Street, from left to right: Bank, Bakery, Library. Across the road from the Library: Swimming Pool.\n\nThe bakery is (1) ________ the bank and the library. The swimming pool is (2) ________ the library. The bank is (3) ________ to the bakery. To go to the pool from the bank, walk along King Street, then (4) ________ the road.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: between"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: opposite"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: next"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: cross"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "The bakery is in the middle → between. Across the road → opposite. Beside → next to. To get to the other side → cross the road.",
+   "id": "pbu506",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "There is one mistake in each line. Find the mistake and write the correct word.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "I was born on 2016.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: in (the mistake is 'on'). Accept the correct word alone, or 'on → in'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "See you in Monday!",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: on (the mistake is 'in'). Accept the correct word alone, or 'in → on'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "The party is on 7 p.m.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: at (the mistake is 'on'). Accept the correct word alone, or 'on → at'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "We play football in the night.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: at (the mistake is 'in'). Accept the correct word alone, or 'in → at'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Years: in 2016. Days: on Monday. Clock times: at 7 p.m. And we say 'at night'.",
+   "id": "pbu507",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'A note from Grandma'.\n\nYour swimming bag is under your bed, and your goggles are in the drawer next to the sofa.\n\nWhere are Sam's goggles?",
+   "options": [
+    "in the drawer next to the sofa",
+    "in his swimming bag",
+    "in the fridge",
+    "under his bed"
+   ],
+   "correct_option": "A",
+   "explanation": "Grandma writes: 'your goggles are in the drawer next to the sofa'.",
+   "parts": [],
+   "id": "pbu508",
+   "checked": "human"
+  }
+ ],
+ "u6": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\n\"Is this your umbrella?\" \"Yes, it's ________.\"",
+   "options": [
+    "my",
+    "me",
+    "I",
+    "mine"
+   ],
+   "correct_option": "D",
+   "explanation": "With no noun after it, we use the possessive pronoun: mine.",
+   "parts": [],
+   "id": "pbu600",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nI like Amy. I sit next to ________ in class.",
+   "options": [
+    "herself",
+    "hers",
+    "her",
+    "she"
+   ],
+   "correct_option": "C",
+   "explanation": "After a verb or a preposition we use the object pronoun: her.",
+   "parts": [],
+   "id": "pbu601",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nThe dog is wagging ________ tail.",
+   "options": [
+    "its'",
+    "its",
+    "it's",
+    "it"
+   ],
+   "correct_option": "B",
+   "explanation": "'Its' (no apostrophe) means belonging to it. 'It's' means 'it is'.",
+   "parts": [],
+   "id": "pbu602",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\n________ is knocking at the door. Can you open it?",
+   "options": [
+    "Nobody",
+    "Everybody",
+    "Anybody",
+    "Somebody"
+   ],
+   "correct_option": "D",
+   "explanation": "We don't know who it is, but it is one person: somebody.",
+   "parts": [],
+   "id": "pbu603",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nMy little brother can tie his shoes by ________ now.",
+   "options": [
+    "himself",
+    "him",
+    "his",
+    "he"
+   ],
+   "correct_option": "A",
+   "explanation": "'By himself' means alone, without help.",
+   "parts": [],
+   "id": "pbu604",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Make a question with 'Whose' for the word(s) in [square brackets].\n\nThis is [Kevin's] cap.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "Whose cap is this? (accept 'Whose is this cap?')"
+     ]
+    }
+   ],
+   "explanation": "We ask about the owner with 'Whose': Whose cap is this?",
+   "id": "pbu605",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Rewrite the sentence correctly.\n\nMe and my friend went to the cinema.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "My friend and I went to the cinema."
+     ]
+    }
+   ],
+   "explanation": "The people doing the action need the subject pronoun I, and we put ourselves last: My friend and I went to the cinema.",
+   "id": "pbu606",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Fill in the blanks with the given words. Use each word once.\n\nWords: mine, yours, ours, theirs, his\n\nMiss Chan: Whose water bottle is this, Jenny? Is it (1) ________?\nJenny: Yes, it's (2) ________. Thank you!\nMiss Chan: And these jackets? Are they the twins' jackets?\nRicky: Yes, they're (3) ________.\nMiss Chan: What about this blue cap? Is it Kevin's?\nRicky: Yes, it's (4) ________.\nTwins: And that football is (5) ________. We share it in our class!",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: yours"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: mine"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: theirs"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: his"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(5)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: ours"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Possessive pronouns stand alone: yours (you), mine (I), theirs (they), his (he), ours (we).",
+   "id": "pbu607",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'The lost-and-found box'.\n\nMiss Chan laughed. \"Please write your names on your things next time!\"\n\nWhat does Miss Chan want the students to do next time?",
+   "options": [
+    "bring a box to school",
+    "look for their things themselves",
+    "write their names on their things",
+    "leave their jackets on the bench"
+   ],
+   "correct_option": "C",
+   "explanation": "Miss Chan says: 'Please write your names on your things next time!'",
+   "parts": [],
+   "id": "pbu608",
+   "checked": "human"
+  }
+ ],
+ "u7": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nI was tired, ________ I went to bed early.",
+   "options": [
+    "so",
+    "because",
+    "or",
+    "but"
+   ],
+   "correct_option": "A",
+   "explanation": "Going to bed early is the result, so we use 'so'.",
+   "parts": [],
+   "id": "pbu700",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nWould you like apple juice ________ orange juice?",
+   "options": [
+    "because",
+    "so",
+    "but",
+    "or"
+   ],
+   "correct_option": "D",
+   "explanation": "We give a choice with 'or'.",
+   "parts": [],
+   "id": "pbu701",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nTom doesn't like durian. I don't like durian ________.",
+   "options": [
+    "too",
+    "both",
+    "also",
+    "either"
+   ],
+   "correct_option": "D",
+   "explanation": "In negative sentences we use 'either' at the end. ('Too' is for positive sentences.)",
+   "parts": [],
+   "id": "pbu702",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\n________ Amy and Ben are in the school choir.",
+   "options": [
+    "Too",
+    "Either",
+    "Also",
+    "Both"
+   ],
+   "correct_option": "D",
+   "explanation": "'Both … and …' talks about two people together.",
+   "parts": [],
+   "id": "pbu703",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Join the sentences with 'because'.\n\nWe stayed indoors. It was raining.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "We stayed indoors because it was raining. (accept 'Because it was raining, we stayed indoors.')"
+     ]
+    }
+   ],
+   "explanation": "'Because' gives the reason: We stayed indoors because it was raining.",
+   "id": "pbu704",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Join the sentences with 'but'.\n\nThe film was long. It was exciting.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "The film was long, but it was exciting. (comma before 'but' is good but not required)"
+     ]
+    }
+   ],
+   "explanation": "'But' shows a difference: The film was long, but it was exciting.",
+   "id": "pbu705",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Read Ken's recount and fill in the blanks with the given words. Use each word once.\n\nWords: First, Next, After that, Finally, because\n\nLast Saturday, I made a cake with my mum. (1) ________, we mixed flour, eggs and sugar. (2) ________, we put the mixture into a tin. (3) ________, Mum put it in the oven for forty minutes. (4) ________, we ate the cake together. It was delicious (5) ________ we made it ourselves!",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: First"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: Next"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: After that"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: Finally"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(5)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: because"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Time connectives show the order: First, Next, After that, Finally. 'Because' gives the reason why the cake was delicious.",
+   "id": "pbu706",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "There is one mistake in each line. Find the mistake and write the correct word.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "I like swimming. My sister likes swimming either.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: too (the mistake is 'either'). Accept the correct word alone, or 'either → too'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "I was hungry, because I ate a sandwich.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: so (the mistake is 'because'). Accept the correct word alone, or 'because → so'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Both Ken or Leo play football.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: and (the mistake is 'or'). Accept the correct word alone, or 'or → and'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "We can walk but take the bus.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: or (the mistake is 'but'). Accept the correct word alone, or 'but → or'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Positive sentence → too. The sandwich is the result → so. Both … and. A choice → or.",
+   "id": "pbu707",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'The school picnic'.\n\nNext, we had lunch under the trees. While we were eating, a monkey came near us, and some children screamed. Mr Wong told us to stay calm and keep our food in our bags.\n\nWhy did some children scream?",
+   "options": [
+    "They were tired.",
+    "A monkey came near them.",
+    "It started to rain.",
+    "They lost their food."
+   ],
+   "correct_option": "B",
+   "explanation": "'While we were eating, a monkey came near us, and some children screamed.'",
+   "parts": [],
+   "id": "pbu708",
+   "checked": "human"
+  }
+ ],
+ "u8": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\n\"________ is your birthday?\" \"It's on 3rd June.\"",
+   "options": [
+    "Why",
+    "Who",
+    "Where",
+    "When"
+   ],
+   "correct_option": "D",
+   "explanation": "We ask about time or dates with 'When'.",
+   "parts": [],
+   "id": "pbu800",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\n\"________ do you go to school?\" \"By MTR.\"",
+   "options": [
+    "What",
+    "Which",
+    "Whose",
+    "How"
+   ],
+   "correct_option": "D",
+   "explanation": "We ask about the way we do something with 'How'.",
+   "parts": [],
+   "id": "pbu801",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\n________ she play the violin?",
+   "options": [
+    "Are",
+    "Do",
+    "Is",
+    "Does"
+   ],
+   "correct_option": "D",
+   "explanation": "With he/she/it we use Does + base verb: Does she play…?",
+   "parts": [],
+   "id": "pbu802",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\n\"________ is this T-shirt?\" \"It's $80.\"",
+   "options": [
+    "How much",
+    "How many",
+    "How long",
+    "How often"
+   ],
+   "correct_option": "A",
+   "explanation": "We ask about price with 'How much'.",
+   "parts": [],
+   "id": "pbu803",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\n________ there any food left after the party? Yes, there was.",
+   "options": [
+    "Was",
+    "Is",
+    "Were",
+    "Did"
+   ],
+   "correct_option": "A",
+   "explanation": "The answer is 'there was', and 'food' is uncountable, so the question is 'Was there…?'",
+   "parts": [],
+   "id": "pbu804",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Make a question for the word(s) in [square brackets].\n\nMy cousin lives [in Tsuen Wan].",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "Where does your cousin live? (must use 'does' + base verb 'live'; accept 'Where does my cousin live?')"
+     ]
+    }
+   ],
+   "explanation": "We ask about place with 'Where'. With he/she we use does + base verb: Where does your cousin live?",
+   "id": "pbu805",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Make a question for the word(s) in [square brackets].\n\nThey went to Macau [by ferry].",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "How did they go to Macau? (must use 'did' + base verb 'go')"
+     ]
+    }
+   ],
+   "explanation": "We ask about the way with 'How', and the past uses did + base verb: How did they go to Macau?",
+   "id": "pbu806",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Fill in the blanks with the given question words. Use each word once.\n\nWords: Who, Which, Why, How often, What time\n\n(1) ________ do you start work? At half past six.\n(2) ________ is your favourite place in the school? The garden.\n(3) ________ do you water the flowers? Every day.\n(4) ________ helps you in the garden? Some P6 students.\n(5) ________ do you like your job? Because I can see the students every day.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: What time"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: Which"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: How often"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: Who"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(5)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: Why"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Match the answer: a time → What time; a choice of place → Which; every day → How often; people → Who; because → Why.",
+   "id": "pbu807",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'An interview with the school caretaker'.\n\nOur class newspaper team interviewed Mr Lau, the school caretaker.\nReporter: When did you start working at our school, Mr Lau?\nMr Lau: Twelve years ago.\nReporter: What time do you start work every day?\nMr Lau: I start at half past six. I open the gates and turn on the lights.\nReporter: What is the hardest part of your job?\nMr Lau: Fixing things on rainy days. Sometimes water comes into the hall.\nReporter: Which part of the school do you like best?\nMr Lau: The garden. I planted the sunflowers myself.\nReporter: Why do you like your job?\nMr Lau: Because I can see the students every day, and they always say good morning to me.\n\nWhat is the hardest part of Mr Lau's job?",
+   "options": [
+    "saying good morning",
+    "opening the gates",
+    "fixing things on rainy days",
+    "planting sunflowers"
+   ],
+   "correct_option": "C",
+   "explanation": "Mr Lau says: 'Fixing things on rainy days.'",
+   "parts": [],
+   "id": "pbu808",
+   "checked": "human"
+  }
+ ],
+ "u9": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Read the text from 'The Mid-Autumn Lantern Walk'.\n\nThe Mid-Autumn Festival is one of the most important festivals in Hong Kong. It falls on the fifteenth day of the eighth month of the lunar calendar, when the moon is at its brightest and roundest. Families get together, eat mooncakes and fruit such as pomelos, and go outside to admire the moon.\n\nThis year, Chloe's school held a lantern walk in the park near the school. The students made their own lanterns in their Art lessons. Chloe made a rabbit lantern from paper and bamboo sticks. It took her three lessons to finish it, and she was very proud of it.\n\nOn the evening of the walk, more than two hundred students and parents came. They walked slowly along the path by the lake, holding their glowing lanterns. Some of the lanterns were shaped like stars, fish and even rockets. Chloe walked with her grandmother, who told her the story of Chang'e, the lady who flew to the moon.\n\nSuddenly, a strong wind blew, and the candle inside Chloe's lantern went out. Chloe felt disappointed. Then her grandmother took a small torch out of her bag and put it inside the lantern. \"Now your rabbit can shine all night,\" she said with a smile. Chloe hugged her grandmother. It was her favourite Mid-Autumn Festival ever.\n\nWhat is the passage mostly about?",
+   "options": [
+    "Chloe's lantern walk at the Mid-Autumn Festival",
+    "the story of Chang'e",
+    "how to make a mooncake",
+    "a strong wind in the park"
+   ],
+   "correct_option": "A",
+   "explanation": "Most of the passage tells about Chloe's school lantern walk at Mid-Autumn. The other answers are only small parts.",
+   "parts": [],
+   "id": "pbu900",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Read the text from 'The Mid-Autumn Lantern Walk'.\n\nThis year, Chloe's school held a lantern walk in the park near the school. The students made their own lanterns in their Art lessons. Chloe made a rabbit lantern from paper and bamboo sticks. It took her three lessons to finish it, and she was very proud of it.\n\nWhat did Chloe make her lantern from?",
+   "options": [
+    "paper and bamboo sticks",
+    "plastic",
+    "glass and wood",
+    "cloth and wire"
+   ],
+   "correct_option": "A",
+   "explanation": "'Chloe made a rabbit lantern from paper and bamboo sticks.'",
+   "parts": [],
+   "id": "pbu901",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'The Mid-Autumn Lantern Walk'.\n\nThis year, Chloe's school held a lantern walk in the park near the school. The students made their own lanterns in their Art lessons. Chloe made a rabbit lantern from paper and bamboo sticks. It took her three lessons to finish it, and she was very proud of it.\n\nIn 'she was very proud of it', what does 'it' refer to?",
+   "options": [
+    "Chloe's rabbit lantern",
+    "the park",
+    "the moon",
+    "the Art lesson"
+   ],
+   "correct_option": "A",
+   "explanation": "Look at the sentence before: Chloe made a rabbit lantern. 'It' is the lantern.",
+   "parts": [],
+   "id": "pbu902",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'The Mid-Autumn Lantern Walk'.\n\nOn the evening of the walk, more than two hundred students and parents came. They walked slowly along the path by the lake, holding their glowing lanterns. Some of the lanterns were shaped like stars, fish and even rockets. Chloe walked with her grandmother, who told her the story of Chang'e, the lady who flew to the moon.\n\n'They walked slowly along the path by the lake, holding their glowing lanterns.' 'Glowing' probably means ________.",
+   "options": [
+    "broken",
+    "very heavy",
+    "giving out light",
+    "made of paper"
+   ],
+   "correct_option": "C",
+   "explanation": "Lanterns at night have a light inside, so 'glowing' means giving out light.",
+   "parts": [],
+   "id": "pbu903",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the text from 'The Mid-Autumn Lantern Walk'.\n\nThe Mid-Autumn Festival is one of the most important festivals in Hong Kong. It falls on the fifteenth day of the eighth month of the lunar calendar, when the moon is at its brightest and roundest. Families get together, eat mooncakes and fruit such as pomelos, and go outside to admire the moon.\n\nThis year, Chloe's school held a lantern walk in the park near the school. The students made their own lanterns in their Art lessons. Chloe made a rabbit lantern from paper and bamboo sticks. It took her three lessons to finish it, and she was very proud of it.\n\nOn the evening of the walk, more than two hundred students and parents came. They walked slowly along the path by the lake, holding their glowing lanterns. Some of the lanterns were shaped like stars, fish and even rockets. Chloe walked with her grandmother, who told her the story of Chang'e, the lady who flew to the moon.\n\nSuddenly, a strong wind blew, and the candle inside Chloe's lantern went out. Chloe felt disappointed. Then her grandmother took a small torch out of her bag and put it inside the lantern. \"Now your rabbit can shine all night,\" she said with a smile. Chloe hugged her grandmother. It was her favourite Mid-Autumn Festival ever.\n\nWhat happened FIRST?",
+   "options": [
+    "Chloe made her lantern in Art lessons.",
+    "Chloe's candle went out.",
+    "Chloe hugged her grandmother.",
+    "Grandma put a torch in the lantern."
+   ],
+   "correct_option": "A",
+   "explanation": "The order is: Chloe made the lantern → the walk → the candle went out → Grandma put in a torch → Chloe hugged her.",
+   "parts": [],
+   "id": "pbu904",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Read the text from 'The Mid-Autumn Lantern Walk'.\n\nOn the evening of the walk, more than two hundred students and parents came. They walked slowly along the path by the lake, holding their glowing lanterns. Some of the lanterns were shaped like stars, fish and even rockets. Chloe walked with her grandmother, who told her the story of Chang'e, the lady who flew to the moon.\n\nWrite a short answer.\n\nHow many people came to the lantern walk?",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "more than two hundred (accept 'over 200'; '200' alone is not enough)"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "The passage says 'more than two hundred students and parents came'.",
+   "id": "pbu905",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Read the text from 'The Mid-Autumn Lantern Walk'.\n\nSuddenly, a strong wind blew, and the candle inside Chloe's lantern went out. Chloe felt disappointed. Then her grandmother took a small torch out of her bag and put it inside the lantern. \"Now your rabbit can shine all night,\" she said with a smile. Chloe hugged her grandmother. It was her favourite Mid-Autumn Festival ever.\n\nAnswer in a complete sentence.\n\nWhy did Chloe feel disappointed?",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "She felt disappointed because the candle in her lantern went out / the wind blew out her candle."
+     ]
+    }
+   ],
+   "explanation": "A strong wind blew and the candle inside her lantern went out, so she felt disappointed.",
+   "id": "pbu906",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Read the text from 'The Mid-Autumn Lantern Walk'.\n\nSuddenly, a strong wind blew, and the candle inside Chloe's lantern went out. Chloe felt disappointed. Then her grandmother took a small torch out of her bag and put it inside the lantern. \"Now your rabbit can shine all night,\" she said with a smile. Chloe hugged her grandmother. It was her favourite Mid-Autumn Festival ever.\n\nAnswer in a complete sentence.\n\nHow do you know Chloe loved what her grandmother did? Give one clue from the passage.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "Any one: She hugged her grandmother. / It was her favourite Mid-Autumn Festival ever."
+     ]
+    }
+   ],
+   "explanation": "The clues are that Chloe hugged her grandmother and it was her favourite Mid-Autumn Festival ever. The writer doesn't say 'she loved it', so we work it out from clues.",
+   "id": "pbu907",
+   "checked": "human"
+  }
+ ],
+ "u10": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nWhat should you write at the top of a diary entry?",
+   "options": [
+    "a subject line",
+    "your address",
+    "'Dear Sir'",
+    "the date"
+   ],
+   "correct_option": "D",
+   "explanation": "A diary entry starts with the date, e.g. Saturday, 9th November.",
+   "parts": [],
+   "id": "pbu1000",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nWhich is a good closing for an email to a friend?",
+   "options": [
+    "Best wishes,",
+    "Subject:",
+    "Yours faithfully,",
+    "Dear Ben,"
+   ],
+   "correct_option": "A",
+   "explanation": "For a friend, we end with 'Best wishes,' or 'Love,' and our name.",
+   "parts": [],
+   "id": "pbu1001",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nIn a short story, what usually comes after the beginning?",
+   "options": [
+    "the ending",
+    "the date",
+    "the subject line",
+    "a problem"
+   ],
+   "correct_option": "D",
+   "explanation": "A story goes: beginning → problem → events → ending.",
+   "parts": [],
+   "id": "pbu1002",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nWhich sentence shows a feeling?",
+   "options": [
+    "I felt so nervous before the race.",
+    "We went to the beach.",
+    "The race started at nine.",
+    "The beach was in Sai Kung."
+   ],
+   "correct_option": "A",
+   "explanation": "'I felt so nervous' tells the reader how the writer felt.",
+   "parts": [],
+   "id": "pbu1003",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nWhich of these MUST a notice have?",
+   "options": [
+    "a 'Dear Diary'",
+    "the date, time and place",
+    "the writer's feelings",
+    "a story ending"
+   ],
+   "correct_option": "B",
+   "explanation": "A notice gives information: what, when (date and time), where, who can join and how to join.",
+   "parts": [],
+   "id": "pbu1004",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Rewrite the sentence with the correct capital letters and punctuation.\n\nlast sunday i went to sai kung with my family",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "Last Sunday, I went to Sai Kung with my family. (capital L, S, I, S, K; full stop; comma after 'Last Sunday' optional)"
+     ]
+    }
+   ],
+   "explanation": "Capital letters for the start of a sentence, days, 'I' and place names. End with a full stop.",
+   "id": "pbu1005",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Write the opening line of an email to your friend Ben, thanking him for his last email and asking how he is.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 2,
+     "mark_scheme": [
+      "A friendly greeting + question + thanks, e.g. 'Hi Ben, How are you? Thanks for your last email.' (1 mark for greeting with comma, 1 mark for a correct question or thank-you sentence)"
+     ]
+    }
+   ],
+   "explanation": "A friendly email opens with a greeting (Hi Ben,) and a friendly line (How are you? Thanks for your last email.)",
+   "id": "pbu1006",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Read Tim's diary entry. There is one mistake in each line. Find the mistake and write the correct word.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Today I go to my first piano exam.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: went (the mistake is 'go'). Accept the correct word alone, or 'go → went'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Before the exam, my hands was shaking.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: were (the mistake is 'was'). Accept the correct word alone, or 'was → were'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "I play three songs for the teacher.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: played (the mistake is 'play'). Accept the correct word alone, or 'play → played'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "At the end, I feel very proud.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: felt (the mistake is 'feel'). Accept the correct word alone, or 'feel → felt'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "A diary tells what happened today, so the verbs are in the simple past: went, played, felt. 'Hands' is plural, so 'were'.",
+   "id": "pbu1007",
+   "checked": "human"
+  }
+ ],
+ "u11": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nPenguins ________ fly, but they can swim very well.",
+   "options": [
+    "can't",
+    "can",
+    "could",
+    "cans"
+   ],
+   "correct_option": "A",
+   "explanation": "Penguins are not able to fly: can't.",
+   "parts": [],
+   "id": "pbu1100",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nWhen I was three, I ________ read, but now I can.",
+   "options": [
+    "can",
+    "can't",
+    "couldn't",
+    "could"
+   ],
+   "correct_option": "C",
+   "explanation": "'When I was three' is in the past, and the sentence says I was not able to: couldn't.",
+   "parts": [],
+   "id": "pbu1101",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\n________ you open the window, please? It's very hot.",
+   "options": [
+    "Must",
+    "Should",
+    "Could",
+    "Shall"
+   ],
+   "correct_option": "C",
+   "explanation": "'Could you …, please?' is a polite request.",
+   "parts": [],
+   "id": "pbu1102",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nMy grandma can ________ three languages.",
+   "options": [
+    "speaks",
+    "speaking",
+    "to speak",
+    "speak"
+   ],
+   "correct_option": "D",
+   "explanation": "After can, use the base verb: can speak.",
+   "parts": [],
+   "id": "pbu1103",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with 'can', 'can't', 'could' or 'couldn't'.\n\nYesterday I ________ find my book, so I borrowed one from Amy.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "couldn't / could not"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "'Yesterday' is in the past, and the speaker was not able to find the book: couldn't.",
+   "id": "pbu1104",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Rewrite the request so that it is more polite. Use 'Could'.\n\nGive me your ruler.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "Could you give me your ruler, please? (accept 'Could I borrow your ruler, please?'; 'please' and '?' expected)"
+     ]
+    }
+   ],
+   "explanation": "Polite requests use Could you … , please? : Could you give me your ruler, please?",
+   "id": "pbu1105",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Read the passage and fill in the blanks with 'can', 'can't', 'could' or 'couldn't'.\n\nWhen Grandpa was young, his family was poor. He (1) ________ go to school because he had to work. He (2) ________ make kites from bamboo, and he sold them in the village. Now he goes to night school. He (3) ________ read and write English! But he still (4) ________ use a smartphone very well, so I help him.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: couldn't"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: could"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: can"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: can't"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "(1) and (2) are about the past: couldn't / could. (3) and (4) are about now: can / can't.",
+   "id": "pbu1106",
+   "checked": "human"
+  }
+ ],
+ "u12": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nThe children walked ________ in the library.",
+   "options": [
+    "quietness",
+    "quiet",
+    "quietly",
+    "quieter"
+   ],
+   "correct_option": "C",
+   "explanation": "We describe how they walked (a verb), so we need an adverb: quietly.",
+   "parts": [],
+   "id": "pbu1200",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nHe is a good singer. He sings ________.",
+   "options": [
+    "good",
+    "best",
+    "well",
+    "goodly"
+   ],
+   "correct_option": "C",
+   "explanation": "The adverb of 'good' is irregular: well.",
+   "parts": [],
+   "id": "pbu1201",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nIt is ________ to swim across the sea to Macau!",
+   "options": [
+    "impossible",
+    "dispossible",
+    "unpossible",
+    "inpossible"
+   ],
+   "correct_option": "A",
+   "explanation": "The opposite of possible is impossible (im-).",
+   "parts": [],
+   "id": "pbu1202",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nMy brother is afraid ________ the dark.",
+   "options": [
+    "in",
+    "with",
+    "at",
+    "of"
+   ],
+   "correct_option": "D",
+   "explanation": "The word partner is 'afraid of'.",
+   "parts": [],
+   "id": "pbu1203",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nAre you interested ________ science?",
+   "options": [
+    "in",
+    "on",
+    "of",
+    "at"
+   ],
+   "correct_option": "A",
+   "explanation": "The word partner is 'interested in'.",
+   "parts": [],
+   "id": "pbu1204",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Write the opposite of the word, using un-, im-, in- or dis-.\n\nagree → ________",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "disagree"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "agree → disagree.",
+   "id": "pbu1205",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with the correct form of the given word.\n\nShe finished the test ________ (easy).",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "easily (y → i + ly)"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Adjectives ending in -y change y to i and add -ly: easily.",
+   "id": "pbu1206",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "There is one mistake in each line. Find the mistake and write the correct word.",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Last sunday, my family went to the beach.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: Sunday (the mistake is 'sunday'). Accept the correct word alone, or 'sunday → Sunday'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "My little sister was afraid at the waves.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: of (the mistake is 'at'). Accept the correct word alone, or 'at → of'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "I swimmed in the sea with my dad.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: swam (the mistake is 'swimmed'). Accept the correct word alone, or 'swimmed → swam'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "We ate sandwichs under a big umbrella.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: sandwiches (the mistake is 'sandwichs'). Accept the correct word alone, or 'sandwichs → sandwiches'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    },
+    {
+     "label": "(5)",
+     "prompt": "Mum sang happy while she cooked sausages.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: happily (the mistake is 'happy'). Accept the correct word alone, or 'happy → happily'. Spelling and capital letters must be correct."
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Days need capital letters; afraid of; swim → swam; sandwich → sandwiches (-es after ch); 'sang' needs an adverb: happily.",
+   "id": "pbu1207",
+   "checked": "human"
+  }
+ ],
+ "u13": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Read the notice.\n\nSUNNY HILL PRIMARY SCHOOL\nInter-class Reading Day\nDate: Friday, 6th December\nTime: 2:00 p.m. – 3:30 p.m.\nVenue: School Library and Room 401\nWho can join: All P3 – P6 students\nActivities: book sharing, story-telling competition, book swap\nBook swap: Bring one used storybook in good condition and take home a different one.\nPrizes: The best story-teller in each level will get a $50 book voucher.\nHow to join: Give the reply slip to your English teacher by Monday, 2nd December.\nPlease note: Students must be quiet in the library. Food and drinks are not allowed.\n\nWhen is the Reading Day?",
+   "options": [
+    "Monday, 2nd December",
+    "Saturday, 7th December",
+    "every Friday",
+    "Friday, 6th December"
+   ],
+   "correct_option": "D",
+   "explanation": "The notice says: Date: Friday, 6th December. (2nd December is the deadline for the reply slip.)",
+   "parts": [],
+   "id": "pbu1300",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Read the notice.\n\nSUNNY HILL PRIMARY SCHOOL\nInter-class Reading Day\nDate: Friday, 6th December\nTime: 2:00 p.m. – 3:30 p.m.\nVenue: School Library and Room 401\nWho can join: All P3 – P6 students\nActivities: book sharing, story-telling competition, book swap\nBook swap: Bring one used storybook in good condition and take home a different one.\nPrizes: The best story-teller in each level will get a $50 book voucher.\nHow to join: Give the reply slip to your English teacher by Monday, 2nd December.\nPlease note: Students must be quiet in the library. Food and drinks are not allowed.\n\nWho can join the Reading Day?",
+   "options": [
+    "all students",
+    "P1 – P3 students",
+    "P3 – P6 students",
+    "parents only"
+   ],
+   "correct_option": "C",
+   "explanation": "'Who can join: All P3 – P6 students'.",
+   "parts": [],
+   "id": "pbu1301",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the notice.\n\nSUNNY HILL PRIMARY SCHOOL\nInter-class Reading Day\nDate: Friday, 6th December\nTime: 2:00 p.m. – 3:30 p.m.\nVenue: School Library and Room 401\nWho can join: All P3 – P6 students\nActivities: book sharing, story-telling competition, book swap\nBook swap: Bring one used storybook in good condition and take home a different one.\nPrizes: The best story-teller in each level will get a $50 book voucher.\nHow to join: Give the reply slip to your English teacher by Monday, 2nd December.\nPlease note: Students must be quiet in the library. Food and drinks are not allowed.\n\nWhich of these is NOT allowed in the library?",
+   "options": [
+    "bringing a storybook",
+    "eating and drinking",
+    "sharing books",
+    "story-telling"
+   ],
+   "correct_option": "B",
+   "explanation": "'Food and drinks are not allowed.'",
+   "parts": [],
+   "id": "pbu1302",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the timetable.\n\nHARBOUR VIEW SPORTS CENTRE – Swimming Pool\nMonday to Friday: 6:30 a.m. – 12:00 noon, 1:00 p.m. – 10:00 p.m.\nSaturday and Sunday: 6:30 a.m. – 10:00 p.m.\nClosed for cleaning: the first Tuesday of each month (all day)\nFees: Adults $17; Children (under 14) $8; Elderly (60 or above) $8\nRules: Children under 8 must swim with an adult. You must take a shower before swimming. No running beside the pool.\n\nHow much does a 65-year-old pay?",
+   "options": [
+    "$12",
+    "$0",
+    "$17",
+    "$8"
+   ],
+   "correct_option": "D",
+   "explanation": "Elderly (60 or above) pay $8.",
+   "parts": [],
+   "id": "pbu1303",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Read the timetable.\n\nHARBOUR VIEW SPORTS CENTRE – Swimming Pool\nMonday to Friday: 6:30 a.m. – 12:00 noon, 1:00 p.m. – 10:00 p.m.\nSaturday and Sunday: 6:30 a.m. – 10:00 p.m.\nClosed for cleaning: the first Tuesday of each month (all day)\nFees: Adults $17; Children (under 14) $8; Elderly (60 or above) $8\nRules: Children under 8 must swim with an adult. You must take a shower before swimming. No running beside the pool.\n\nCan you swim at 9 p.m. on a Saturday?",
+   "options": [
+    "Yes, but only children.",
+    "Yes, it is open until 10 p.m.",
+    "No, it closes at 12 noon.",
+    "No, it is closed on Saturdays."
+   ],
+   "correct_option": "B",
+   "explanation": "On Saturday and Sunday, the pool is open from 6:30 a.m. to 10:00 p.m.",
+   "parts": [],
+   "id": "pbu1304",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Read the notice.\n\nSUNNY HILL PRIMARY SCHOOL\nInter-class Reading Day\nDate: Friday, 6th December\nTime: 2:00 p.m. – 3:30 p.m.\nVenue: School Library and Room 401\nWho can join: All P3 – P6 students\nActivities: book sharing, story-telling competition, book swap\nBook swap: Bring one used storybook in good condition and take home a different one.\nPrizes: The best story-teller in each level will get a $50 book voucher.\nHow to join: Give the reply slip to your English teacher by Monday, 2nd December.\nPlease note: Students must be quiet in the library. Food and drinks are not allowed.\n\nWrite a short answer.\n\nWhat must you give to your English teacher, and by when?",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 2,
+     "mark_scheme": [
+      "the reply slip, by Monday, 2nd December (1 mark each)"
+     ]
+    }
+   ],
+   "explanation": "'How to join: Give the reply slip to your English teacher by Monday, 2nd December.'",
+   "id": "pbu1305",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Read the timetable.\n\nHARBOUR VIEW SPORTS CENTRE – Swimming Pool\nMonday to Friday: 6:30 a.m. – 12:00 noon, 1:00 p.m. – 10:00 p.m.\nSaturday and Sunday: 6:30 a.m. – 10:00 p.m.\nClosed for cleaning: the first Tuesday of each month (all day)\nFees: Adults $17; Children (under 14) $8; Elderly (60 or above) $8\nRules: Children under 8 must swim with an adult. You must take a shower before swimming. No running beside the pool.\n\nAnswer in a complete sentence.\n\nMr Chan wants to swim with his 6-year-old son. Why must he go with his son?",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "Because children under 8 must swim with an adult. (accept: his son is under 8, so he must swim with an adult)"
+     ]
+    }
+   ],
+   "explanation": "The rules say: Children under 8 must swim with an adult. His son is 6.",
+   "id": "pbu1306",
+   "checked": "human"
+  }
+ ],
+ "u14": [
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nYou ________ run in the corridor. It's dangerous.",
+   "options": [
+    "mustn't",
+    "should",
+    "must",
+    "have to"
+   ],
+   "correct_option": "A",
+   "explanation": "It is not allowed, so we use mustn't.",
+   "parts": [],
+   "id": "pbu1400",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 1,
+   "stem": "Choose the best answer.\n\nIt's Saturday, so I ________ get up early.",
+   "options": [
+    "must",
+    "have",
+    "mustn't",
+    "don't have to"
+   ],
+   "correct_option": "D",
+   "explanation": "It is not necessary (but you can), so we use don't have to.",
+   "parts": [],
+   "id": "pbu1401",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nYou look tired. You ________ go to bed early tonight.",
+   "options": [
+    "should",
+    "shall",
+    "would",
+    "mustn't"
+   ],
+   "correct_option": "A",
+   "explanation": "We give advice with 'should'.",
+   "parts": [],
+   "id": "pbu1402",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\n\"________ we go to the beach on Sunday?\" \"Yes, let's!\"",
+   "options": [
+    "Would",
+    "Shall",
+    "Do",
+    "Let's"
+   ],
+   "correct_option": "B",
+   "explanation": "We make a suggestion with 'Shall we + base verb?'",
+   "parts": [],
+   "id": "pbu1403",
+   "checked": "human"
+  },
+  {
+   "type": "mcq",
+   "level": 2,
+   "stem": "Choose the best answer.\n\nHow about ________ to the library after school?",
+   "options": [
+    "goes",
+    "going",
+    "to go",
+    "go"
+   ],
+   "correct_option": "B",
+   "explanation": "After 'How about', use verb-ing: How about going…?",
+   "parts": [],
+   "id": "pbu1404",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 2,
+   "stem": "Fill in the blank with 'would like' or 'would like to'.\n\nShe ________ visit Japan one day.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "would like to"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "Before a verb we use 'would like to': She would like to visit Japan.",
+   "id": "pbu1405",
+   "checked": "human"
+  },
+  {
+   "type": "short",
+   "level": 3,
+   "stem": "Rewrite the sentence correctly.\n\nYou must to wear a helmet when you ride a bike.",
+   "parts": [
+    {
+     "label": "",
+     "prompt": "Write your answer.",
+     "marks": 1,
+     "mark_scheme": [
+      "You must wear a helmet when you ride a bike."
+     ]
+    }
+   ],
+   "explanation": "After must, use the base verb without 'to': You must wear a helmet.",
+   "id": "pbu1406",
+   "checked": "human"
+  },
+  {
+   "type": "structured",
+   "level": 3,
+   "stem": "Read Miss Ho's notice about the class camp and fill in the blanks with the given words. Use each word once.\n\nWords: must, mustn't, don't have to, should, Let's\n\nClass 4C Camp\nYou (1) ________ bring a sleeping bag and a torch.\nYou (2) ________ bring snacks. Animals live near the camp.\nYou (3) ________ bring a towel. The camp has towels.\nIt often rains, so you (4) ________ bring a raincoat.\n(5) ________ have a great time together!",
+   "parts": [
+    {
+     "label": "(1)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: must"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(2)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: mustn't"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(3)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: don't have to"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(4)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: should"
+     ],
+     "blank": true
+    },
+    {
+     "label": "(5)",
+     "prompt": "Write the correct word.",
+     "marks": 1,
+     "mark_scheme": [
+      "Answer: Let's"
+     ],
+     "blank": true
+    }
+   ],
+   "explanation": "A rule → must; not allowed → mustn't; not necessary → don't have to; advice → should; a suggestion → Let's.",
+   "id": "pbu1407",
+   "checked": "human"
+  }
+ ]
+}

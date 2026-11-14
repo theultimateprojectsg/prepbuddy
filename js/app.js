@@ -320,6 +320,16 @@ async function refreshLibBooks() {
     const texts = await Promise.all(e.units.map(async (u) => { const r = await fetch(`library/${e.id}/${u.id}.txt`, { cache: 'no-cache' }).catch(() => null); return r && r.ok ? r.text() : null; }));
     if (texts.some((t) => t == null)) continue;
     for (let i = 0; i < e.units.length; i++) { await store.set(`text:${b.id}:${e.units[i].id}`, texts[i]); }
+    // add any new starter questions from the book's bank (keeps the student's own questions and stats)
+    const qr = await fetch(`library/${e.id}/questions.json`, { cache: 'no-cache' }).catch(() => null);
+    const bank = qr && qr.ok ? await qr.json().catch(() => ({})) : {};
+    for (const u of e.units) {
+      const add = (bank[u.id] || []).map((q) => ({ ...q, id: `${b.id}:${u.id}:${q.id}`, section: u.title, pages: q.pages || `${u.startPage}-${u.endPage}` }));
+      if (!add.length) continue;
+      const existing = await getQs(b.id, u.id); const have = new Set(existing.map((q) => q.id));
+      const fresh = add.filter((q) => !have.has(q.id));
+      if (fresh.length) await setQs(b.id, u.id, existing.concat(fresh));
+    }
     b.units = e.units.map((u) => ({ ...u })); b.pageCount = e.pageCount; b.rev = e.rev; changed = true;
   }
   if (changed) await store.set('books', books);
@@ -6361,6 +6371,9 @@ function writtenBody(q, revealed) {
     const maths = kindSync(q.id) === 'maths' && q.type !== 'essay' && /\d|calculat|work out|find|solve|show that|evaluate|simplif|expand|factori|prove|estimate|計算|求/i.test(q.parts.map((p) => `${p.prompt} ${p.mark_scheme.join(' ')}`).join(' ')), essay = q.type === 'essay';
     const parts = q.parts.map((p, k) => {
       const ink = inkOf(S.i, k, true);
+      // a one-word blank (cloze, proofreading line, verb form): a one-line box, no handwriting pad
+      if (p.blank && !essay) return `<div class="part"><label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
+      <input id="a${k}" data-k="${k}" class="blank-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer" value="${esc(ans[k])}"></div>`;
       return `<div class="part">
       <label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
       <div class="ansmode" role="radiogroup" aria-label="How to answer"><button role="radio" aria-checked="${!ink.on}" class="${ink.on ? '' : 'on'}" data-hand="${k}:0">${ICON.keys} Type</button><button role="radio" aria-checked="${ink.on}" class="${ink.on ? 'on' : ''}" data-hand="${k}:1">${ICON.pen} Write by hand</button></div>
@@ -6370,7 +6383,7 @@ function writtenBody(q, revealed) {
       <textarea id="a${k}" data-k="${k}" class="${essay ? 'essay' : ''}" placeholder="${essay ? 'Write your answer here' : maths ? 'Show your working, one step per line' : 'Type, or tap the microphone on your keyboard to speak'}">${esc(ans[k])}</textarea>
       ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}`}</div>`;
     }).join('');
-    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
+    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : q.parts.every((p) => p.blank) ? 'Check your spelling: it counts.' : 'Aim for one clear point per mark.'}</p>`}`;
     const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">I don’t know this one. Show me the answer</button><span class="hint" style="text-align:center">It goes into your Mistake book so you can try it again later.</span>'}</div>`;
     return { main, footer, bind() {
       const grab = () => {
@@ -6386,7 +6399,7 @@ function writtenBody(q, revealed) {
         local.hand = on === '1'; saveLocal();
         const y = window.scrollY; renderQuestion(); window.scrollTo(0, y);
       }));
-      $app.querySelectorAll('textarea').forEach((t) => (t.oninput = grab));
+      $app.querySelectorAll('textarea, input.blank-in').forEach((t) => (t.oninput = grab));
       document.getElementById('check').onclick = () => {
         grab();
         if (isExam()) return advance();

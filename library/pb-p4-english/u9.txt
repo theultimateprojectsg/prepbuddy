@@ -1,16 +1,11 @@
 Unit 10: Reading skills (understanding a passage)
 
-Good readers do these things when they answer reading questions:
-1. Main idea: What is the passage mostly about? Look at the title, the first sentence and the last sentence.
-2. Details: Find facts such as who, what, when, where and how many. Scan for names, numbers and key words from the question.
-3. Sequence: In what order did things happen? Look for time words like first, then, after that, finally.
-4. Reference words: What does "it", "they", "this" or "there" refer to? Look at the sentence before.
-5. Meaning from context: Guess a new word from the words around it.
-6. Inference: Work out something the writer doesn't say directly, using clues (for example, "She was shaking and holding her coat tightly" → she was cold).
-7. Fact or opinion: A fact can be checked ("The park opens at 7 a.m."). An opinion is what someone thinks ("The park is the best place in Hong Kong").
-8. Writer's purpose: Is the text to tell a story, give information, persuade, or give instructions?
+In this unit you will learn to:
+- find the main idea and details in a passage
+- work out what it and they refer to
+- guess the meaning of new words and why things happened
 
-Practice passage: The Mid-Autumn Lantern Walk
+Read first: The Mid-Autumn Lantern Walk
 The Mid-Autumn Festival is one of the most important festivals in Hong Kong. It falls on the fifteenth day of the eighth month of the lunar calendar, when the moon is at its brightest and roundest. Families get together, eat mooncakes and fruit such as pomelos, and go outside to admire the moon.
 
 This year, Chloe's school held a lantern walk in the park near the school. The students made their own lanterns in their Art lessons. Chloe made a rabbit lantern from paper and bamboo sticks. It took her three lessons to finish it, and she was very proud of it.
@@ -18,6 +13,19 @@ This year, Chloe's school held a lantern walk in the park near the school. The s
 On the evening of the walk, more than two hundred students and parents came. They walked slowly along the path by the lake, holding their glowing lanterns. Some of the lanterns were shaped like stars, fish and even rockets. Chloe walked with her grandmother, who told her the story of Chang'e, the lady who flew to the moon.
 
 Suddenly, a strong wind blew, and the candle inside Chloe's lantern went out. Chloe felt disappointed. Then her grandmother took a small torch out of her bag and put it inside the lantern. "Now your rabbit can shine all night," she said with a smile. Chloe hugged her grandmother. It was her favourite Mid-Autumn Festival ever.
+As you read, think about: What is the passage mostly about? Who is in it? What happened first, next and last?
+
+Good readers do these things when they answer reading questions:
+1. Main idea: What is the passage mostly about? Look at the title, the first sentence and the last sentence.
+2. Details: Find facts such as who, what, when, where and how many. Scan for names, numbers and key words from the question.
+3. Sequence: In what order did things happen? Look for time words like first, then, after that, finally.
+4. Reference words: What does "it", "they", "this" or "there" refer to? Look at the sentence before.
+5. Meaning from context: Guess a new word from the words around it.
+6. Inference: Work out something the writer doesn't say directly, using clues (for example, "She was shaking and holding her coat tightly" → she was cold).
+
+Challenge (for fast learners)
+- Fact or opinion? A fact can be checked: "The park opens at 7 a.m." An opinion is what someone thinks: "The park is the best place in Hong Kong."
+- Why did the writer write this? To tell a story, to give information or to give instructions?
 
 Example questions
 - What is the passage mostly about? (main idea)
@@ -28,7 +36,7 @@ Example questions
 
 Key words
 - festival: a special day people celebrate (節日)
-- lunar calendar: the calendar that follows the moon (農曆)
+- candle: a stick of wax that gives light when it burns (蠟燭)
 - mooncake: a sweet cake eaten at Mid-Autumn (月餅)
 - admire: look at something and think it is beautiful (欣賞)
 - lantern: a light inside paper or glass (燈籠)
