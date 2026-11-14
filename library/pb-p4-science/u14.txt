@@ -1,0 +1,55 @@
+Unit 15: Electric circuits
+
+In this unit you will learn to:
+- name the parts of a simple circuit
+- recognise a closed (complete) circuit
+- explain why a circuit must be complete for an appliance to work
+- use electricity safely
+
+Let's start
+Kevin connects a battery, two wires and a bulb, but the bulb does not light up. What has he done wrong? Let's find out.
+
+Parts of a simple circuit
+- Battery (cell): pushes electricity around the circuit. It has a positive end (+) and a negative end (−).
+- Wires: carry electricity. They are made of metal (usually copper) with a plastic coating.
+- Bulb: lights up when electricity flows through it. It has two contact points: the metal tip at the bottom and the metal side of its base.
+- Switch: turns the circuit on and off.
+
+Closed and open circuits
+- Electricity can only flow when there is a complete loop with no gaps, from one end of the battery, through the wires and the bulb, and back to the other end of the battery. This is a closed circuit (complete circuit). The bulb lights up.
+- If there is a gap anywhere, electricity cannot flow. This is an open circuit. The bulb does not light up.
+
+Why might a bulb not light up?
+- A wire is not touching one end of the battery.
+- Both wires touch the same contact point of the bulb, or the same end of the battery.
+- The switch is open (off).
+- The bulb is broken or the battery is flat.
+
+How a switch works
+- When the switch is closed (on), it joins the gap, the circuit is complete and the bulb lights up.
+- When the switch is open (off), there is a gap, so the electricity stops.
+Every electrical appliance (a torch, a fan, a TV) needs a complete circuit to work. The switch makes or breaks the circuit.
+
+Using electricity safely
+- Batteries for experiments are safe, but the electricity from wall sockets is very strong and can kill.
+- Never put anything into a socket.
+- Never touch switches or plugs with wet hands.
+- Do not plug too many things into one socket.
+- Never play with damaged wires.
+
+Common mix-ups
+- Thinking one wire from the battery is enough. You need a full loop back to the battery.
+- Thinking electricity is "used up" in the bulb. It flows all the way round the circuit.
+
+Challenge (for fast learners)
+- Use a battery, a bulb and wires to test which objects let electricity pass through: a coin, a rubber, a paper clip, a pencil lead, a plastic ruler. (See Unit 16.)
+- Why is a torch switch put in the circuit, not just anywhere on the case?
+
+Key words
+- circuit: a path that electricity flows around (電路)
+- closed circuit: a complete loop with no gaps (閉合電路)
+- open circuit: a circuit with a gap (斷路)
+- battery / cell: a source of electricity for a circuit (電池)
+- bulb: a part that gives out light when electricity flows (燈泡)
+- switch: a part that opens or closes a circuit (開關)
+- wire: a thin metal thread that carries electricity (電線)

@@ -1,0 +1,64 @@
+Unit 1: Thinking like a scientist (fair tests and the design cycle)
+
+In this unit you will learn to:
+- explain how scientists find out new things
+- plan a fair test: what you change, what you measure and what you keep the same
+- understand that scientific ideas can change when there is new evidence
+- use the design cycle to make and improve a product
+
+Let's start
+Kitty wants to know which paper towel soaks up the most water. She tests Brand A with a big cup of water and Brand B with a small cup. Brand A soaks up more. Is that a fair test? No! She changed two things at once, so she cannot tell which one made the difference.
+
+How scientists find things out
+Scientists do not just guess. They:
+- observe carefully (look, listen, touch, smell, measure)
+- ask a question that can be tested
+- make a prediction ("I think … because …")
+- test it, record the results in a table, and look for patterns
+- draw a conclusion and share it
+Science also needs imagination and creativity: thinking of new questions and new ways to test them.
+
+Fair tests
+In a fair test, you change only ONE thing and keep everything else the same.
+- The factor you change: the thing you test on purpose (e.g. the brand of paper towel).
+- The factor you measure: the result you look at (e.g. how much water is soaked up, in mL).
+- The factors you keep the same: everything else (the size of the towel, the amount of water, the time).
+Example: Does a toy car roll further on a smooth floor or on a carpet?
+- Change: the surface.
+- Measure: how far the car rolls (in cm).
+- Keep the same: the same car, the same ramp, the same height, the same push (let it go, do not push).
+Repeat each test a few times and find the average. One result could be a mistake.
+
+Science can change
+Long ago, many people believed the Sun moved around the Earth. Later, scientists collected new evidence with telescopes and careful measurements, and found that the Earth moves around the Sun. Good scientists change their ideas when the evidence shows they were wrong.
+
+The design cycle (engineering)
+Engineers solve problems by making things. They follow these steps:
+1. Find the need or the problem (e.g. "My pencil case keeps falling off my desk").
+2. Collect information and look at existing solutions.
+3. Think of a design that fits the limits (cost, size, materials, time).
+4. Draw a sketch of your idea with labels.
+5. Make a model with simple tools and materials.
+6. Test it and improve it. Is it useful? Does it look good?
+7. Tell others about your solution.
+Then go round the cycle again to make it even better.
+
+Common mix-ups
+- Changing more than one thing in a test. Then the test is not fair.
+- Thinking one test is enough. Repeat it to make sure.
+- Thinking a design is finished after the first try. Testing and improving is part of the design.
+
+Challenge (for fast learners)
+- Plan a fair test: "Does sugar dissolve faster in hot water or cold water?" Write what you change, what you measure and what you keep the same.
+
+Try this at home
+Drop a paper ball and a flat sheet of the same paper from the same height. Which lands first? What did you change? What did you keep the same?
+
+Key words
+- observe: look at something carefully (觀察)
+- predict: say what you think will happen (預測)
+- fair test: a test where only one thing is changed (公平測試)
+- factor: something that can change the result (因素)
+- result: what you find out from a test (結果)
+- evidence: facts that show if an idea is true (證據)
+- design cycle: the steps engineers follow to make and improve things (設計循環)

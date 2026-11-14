@@ -1,0 +1,62 @@
+Unit 14: Light, reflection and shadows
+
+In this unit you will learn to:
+- tell light sources from objects that reflect light
+- give examples of reflection
+- explain how shadows form
+- describe how shadows change during the day
+
+Let's start
+At night, the Moon shines brightly in the sky. Is the Moon a light source like the Sun? No! The Moon has no light of its own. It reflects light from the Sun.
+
+Light sources
+A light source gives out its own light.
+- Natural: the Sun, stars, fire, lightning, fireflies.
+- Man-made: torches, light bulbs, candles, screens.
+We see a light source when its light goes straight into our eyes. Never look directly at the Sun: it can damage your eyes.
+
+Reflected light
+Most things do not give out light. We see them because light from a light source bounces off them into our eyes. This bouncing is called reflection.
+- The Moon reflects sunlight.
+- A mirror reflects light very well, so we can see a clear image.
+- A still pond or a calm sea reflects the sky and trees, like a mirror.
+- Shiny surfaces (metal spoons, glass windows) reflect more light than dull ones.
+- In the dark, we cannot see anything, because there is no light to be reflected.
+
+Light travels in straight lines
+You can see this when sunlight comes through a gap in the clouds or when a torch beam shines through dust.
+
+Shadows
+- A shadow forms when an object blocks light. Light cannot bend around the object, so there is a dark area behind it.
+- Objects that light cannot pass through (wood, metal, our bodies) are opaque. They make dark shadows.
+- A shadow is always on the opposite side of the object from the light source.
+- The shape of the shadow is like the outline of the object.
+
+Shadows in sunlight change during the day
+The Sun seems to move across the sky from east to west.
+- Morning: the Sun is low in the east. Shadows are long and point towards the west.
+- Around noon: the Sun is high in the sky. Shadows are shortest.
+- Afternoon and evening: the Sun is low in the west. Shadows are long and point towards the east.
+The lower the Sun (or any light source), the longer the shadow. The higher the light, the shorter the shadow.
+Long ago, people used sundials: the position of a stick's shadow told them the time.
+
+Common mix-ups
+- Thinking the Moon is a light source.
+- Thinking a shadow points towards the Sun. It points away from the Sun.
+- Thinking a mirror is a light source. It only reflects light.
+
+Challenge (for fast learners)
+- At 4 p.m. your shadow points east. In which direction is the Sun? (West, because the shadow is on the opposite side.)
+- Why are shadows longer in winter in Hong Kong than at the same time of day in summer? (The Sun is lower in the sky in winter.)
+
+Try this at home
+On a sunny day, stand a pencil upright in some modelling clay on a piece of paper by a window. Mark the end of its shadow every hour. What do you notice?
+
+Key words
+- light source: something that gives out its own light (光源)
+- reflect / reflection: bounce light off a surface (反射)
+- mirror: a shiny surface that reflects a clear image (鏡)
+- shadow: a dark area made when an object blocks light (影子)
+- opaque: does not let light pass through (不透光)
+- block: stop something from passing (阻擋)
+- sundial: a clock that uses a shadow to show the time (日晷)

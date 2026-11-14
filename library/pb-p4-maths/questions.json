@@ -2016,12 +2016,12 @@
    "level": 1,
    "stem": "Which shape is a rhombus?",
    "options": [
-    "Shape 2",
-    "Shape 4",
     "Shape 1",
-    "Shape 3"
+    "Shape 2",
+    "Shape 3",
+    "Shape 4"
    ],
-   "correct_option": "A",
+   "correct_option": "B",
    "explanation": "Shape 2 has 4 equal sides and its opposite sides are parallel, so it is a rhombus. Shape 1 is a rectangle, Shape 3 is a trapezium and Shape 4 is a parallelogram.",
    "parts": [],
    "figure": {
@@ -2051,8 +2051,8 @@
    "level": 2,
    "stem": "Which shape has only one pair of parallel sides?",
    "options": [
-    "Shape 2",
     "Shape 1",
+    "Shape 2",
     "Shape 3",
     "Shape 4"
    ],

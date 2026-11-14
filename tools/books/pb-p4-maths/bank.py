@@ -1,5 +1,5 @@
 # P4 Maths question bank. Every answer is computed here and checked with assert.
-import json, sys, random
+import json, sys, random, re
 from fractions import Fraction as Fr
 sys.path.insert(0, '/tmp/pm')
 from figs import bar_chart, rect_shape, shapes_row, grid_map, dissect_square
@@ -30,6 +30,11 @@ def M(level, stem, correct, wrongs, expl, fig=None):
     k = pos[0] % 4; pos[0] += 1
     rnd = random.Random(len(B[cur]) * 7 + len(stem)); w = list(wrongs); rnd.shuffle(w)
     opts = w[:k] + [correct] + w[k:]
+    LBL = re.compile(r'^((Shape|Circuit|Layer) \d|[XYZ])$')
+    if sum(1 for o in [correct] + list(wrongs) if LBL.match(str(o))) >= 3:
+        # labels for a picture or table (Circuit 1-4, Shape 1-4, X/Y/Z): keep them in order, other choices last
+        opts = sorted([o for o in [correct] + list(wrongs) if LBL.match(str(o))], key=str) + [o for o in wrongs if not LBL.match(str(o))]
+        k = opts.index(correct)
     q = {'type': 'mcq', 'level': level, 'stem': stem, 'options': [str(o) for o in opts], 'correct_option': LET[k], 'explanation': expl, 'parts': []}
     if fig: q['figure'] = {'img': fig}
     add(q)

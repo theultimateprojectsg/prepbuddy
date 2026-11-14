@@ -269,6 +269,151 @@
   "rev": 1
  },
  {
+  "id": "pb-p4-science",
+  "code": "SCI-P4PB",
+  "title": "PrepBuddy P4 Science: Living Things, Materials, Earth and Space",
+  "subject": "Science",
+  "level": "P4",
+  "kind": "science",
+  "publisher": "PrepBuddy",
+  "licence": "PrepBuddy original",
+  "starter": true,
+  "credit": "Written by PrepBuddy for Hong Kong Primary 4 Science (EDB Science (Primary 1–6) Curriculum Framework, 2024: all P4 learning objectives). Free starter book. © PrepBuddy.",
+  "lang": "en",
+  "pageCount": 18,
+  "addedAt": "2026-11-14",
+  "questionCount": 141,
+  "units": [
+   {
+    "id": "u0",
+    "title": "Unit 1: Thinking like a scientist (fair tests and the design cycle)",
+    "chapter": 1,
+    "startPage": 1,
+    "endPage": 1
+   },
+   {
+    "id": "u1",
+    "title": "Unit 2: Communicable diseases",
+    "chapter": 2,
+    "startPage": 2,
+    "endPage": 2
+   },
+   {
+    "id": "u2",
+    "title": "Unit 3: Non-communicable diseases and healthy living",
+    "chapter": 3,
+    "startPage": 3,
+    "endPage": 3
+   },
+   {
+    "id": "u3",
+    "title": "Unit 4: Inside the Earth and its rocks",
+    "chapter": 4,
+    "startPage": 4,
+    "endPage": 4
+   },
+   {
+    "id": "u4",
+    "title": "Unit 5: Soil",
+    "chapter": 5,
+    "startPage": 5,
+    "endPage": 5
+   },
+   {
+    "id": "u5",
+    "title": "Unit 6: Sources of energy and saving energy",
+    "chapter": 6,
+    "startPage": 6,
+    "endPage": 6
+   },
+   {
+    "id": "u6",
+    "title": "Unit 7: Day and night, and the seasons",
+    "chapter": 7,
+    "startPage": 7,
+    "endPage": 7
+   },
+   {
+    "id": "u7",
+    "title": "Unit 8: Weather, climate and global warming",
+    "chapter": 8,
+    "startPage": 8,
+    "endPage": 8
+   },
+   {
+    "id": "u8",
+    "title": "Unit 9: How plants and animals adapt",
+    "chapter": 9,
+    "startPage": 9,
+    "endPage": 9
+   },
+   {
+    "id": "u9",
+    "title": "Unit 10: Habitats and food chains",
+    "chapter": 10,
+    "startPage": 10,
+    "endPage": 10
+   },
+   {
+    "id": "u10",
+    "title": "Unit 11: How plants reproduce",
+    "chapter": 11,
+    "startPage": 11,
+    "endPage": 11
+   },
+   {
+    "id": "u11",
+    "title": "Unit 12: Inheritance: like parent, like child",
+    "chapter": 12,
+    "startPage": 12,
+    "endPage": 12
+   },
+   {
+    "id": "u12",
+    "title": "Unit 13: Friction",
+    "chapter": 13,
+    "startPage": 13,
+    "endPage": 13
+   },
+   {
+    "id": "u13",
+    "title": "Unit 14: Light, reflection and shadows",
+    "chapter": 14,
+    "startPage": 14,
+    "endPage": 14
+   },
+   {
+    "id": "u14",
+    "title": "Unit 15: Electric circuits",
+    "chapter": 15,
+    "startPage": 15,
+    "endPage": 15
+   },
+   {
+    "id": "u15",
+    "title": "Unit 16: Metals, conductors and insulators",
+    "chapter": 16,
+    "startPage": 16,
+    "endPage": 16
+   },
+   {
+    "id": "u16",
+    "title": "Unit 17: Physical changes and chemical changes",
+    "chapter": 17,
+    "startPage": 17,
+    "endPage": 17
+   },
+   {
+    "id": "u17",
+    "title": "Unit 18: Space technology in daily life",
+    "chapter": 18,
+    "startPage": 18,
+    "endPage": 18
+   }
+  ],
+  "rev": 1
+ },
+ {
   "id": "ifec-eli-booklet-en-235b",
   "code": "FIN-65TQ",
   "title": "Equity Linked Notes (Basic)",
