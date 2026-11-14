@@ -763,7 +763,7 @@ window.addEventListener('popstate', (e) => {
 
 async function go(v) {
   try { if (window.speechSynthesis && VC.state === 'off') speechSynthesis.cancel(); } catch (e) {}
-  try { if (ttsEl) ttsEl.pause(); } catch (e) {}
+  try { if (ttsEl) { ttsSeq++; ttsEl.onended = null; ttsEl.pause(); } sayPill(null); } catch (e) {}
   if ((v.name === 'paper' || (v.name === 'pick' && v.mode === 'mock')) && !allow('mock')) return; // plan checks before leaving the screen
   { const f = { homework: 'homework', writing: 'writing', speaking: 'speaking', stars: 'stars' }[v.name]; if (f && locked(f) && !TOURING) return upsell(f, 'locked'); }
   // a screen's back button pointing at the screen we came from = a real step back
@@ -1710,7 +1710,37 @@ document.addEventListener('pointerdown', function unlockTts() {
   document.removeEventListener('pointerdown', unlockTts, true);
   try { const a = ttsPlayer(); a.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA='; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
 }, true);
-function stopSaying() { ttsSeq++; try { speechSynthesis.cancel(); } catch (e) {} if (ttsEl) { try { ttsEl.pause(); } catch (e) {} } }
+function stopSaying() { ttsSeq++; try { speechSynthesis.cancel(); } catch (e) {} if (ttsEl) { try { ttsEl.onended = null; ttsEl.pause(); } catch (e) {} } sayPill(null); }
+// While Buddy reads aloud, a pill at the bottom shows it's getting ready or reading, with a Stop button.
+let sayingText = '';
+function sayPill(state) {
+  let p = document.getElementById('sayPill');
+  if (!state) { sayingText = ''; if (p) p.remove(); return; }
+  if (!p) { p = document.createElement('button'); p.id = 'sayPill'; p.type = 'button'; p.className = 'say-pill'; p.onclick = () => stopSaying(); document.body.appendChild(p); }
+  const C = (en, zh) => (LANG === 'zh' ? zh : en);
+  p.classList.toggle('load', state === 'load');
+  p.innerHTML = `${state === 'load' ? '<span class="sp-spin" aria-hidden="true"></span>' : '<span class="sp-wave" aria-hidden="true"><i></i><i></i><i></i></span>'}<span>${state === 'load' ? C('Getting ready…', '準備中…') : C('Reading…', '朗讀中…')}</span><b>■ ${C('Stop', '停止')}</b>`;
+  p.setAttribute('aria-label', C('Stop reading', '停止朗讀'));
+}
+// Long text is read in short pieces: the first sentence starts within a second or two while the rest loads behind it.
+function speechChunks(t) {
+  const bits = String(t).match(/[^.!?。！？；;\n]+[.!?。！？；;\n]*["”’」』)）]*\s*/g) || [t];
+  const out = []; let cur = '';
+  const cap = () => (out.length ? 280 : 120);
+  const push = (x) => { x = x.trim(); if (x) out.push(x); };
+  for (let b of bits) {
+    while (b.length > 300) { // a very long sentence: break at a comma or space
+      let cut = Math.max(b.lastIndexOf(',', 280), b.lastIndexOf('，', 280), b.lastIndexOf('、', 280));
+      if (cut < 80) cut = b.lastIndexOf(' ', 280); if (cut < 80) cut = 280;
+      push(cur); cur = ''; push(b.slice(0, cut + 1)); b = b.slice(cut + 1);
+    }
+    if (cur && (cur + b).length > cap()) { push(cur); cur = ''; }
+    cur += b;
+    if (!out.length && cur.length >= 40) { push(cur); cur = ''; } // keep the first piece short so it starts fast
+  }
+  push(cur);
+  return out.length ? out : [t];
+}
 function phoneSay(text, lang, slow, teacher, my) {
   if (!window.speechSynthesis) { toast(DT('This browser can’t read aloud. Try Chrome, Edge or Safari.', '這個瀏覽器不能朗讀，請用 Chrome、Edge 或 Safari。')); return; }
   const one = () => { const u = new SpeechSynthesisUtterance(text); const v = dictVoice(lang); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = DL[lang][2]; u.rate = slow ? 0.55 : 0.8; return u; };
@@ -6133,6 +6163,7 @@ function renderQuestion() {
   S.waiting = false;
   navSession();
   const q = S.qs[S.i];
+  if (renderQuestion.last !== q) { if (renderQuestion.last && sayingText) stopSaying(); renderQuestion.last = q; } // a new question stops reading the old one
   if (S.mode === 'unit' && !S.placement && !S.review && !q.recap) { S.metered = S.metered || new Set(); if (!S.metered.has(q.id)) { S.metered.add(q.id); meter('q'); if (!choiceType(q)) meter('written'); } }
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
@@ -6168,23 +6199,35 @@ function questionSpeech(q) {
 // otherwise the phone's own. lang: 'en' | 'yue' | 'cmn' | 'zh' (= the child's Chinese, Cantonese or Putonghua); guessed if left out.
 function sayAloud(text, lang) {
   try {
-    stopSaying(); const my = ttsSeq;
     const t = plainSpeech(text); if (!t) return;
+    if (sayingText === t) return stopSaying(); // tapping 🔊 again while it reads = stop
+    stopSaying(); const my = ttsSeq;
     const zh = lang ? lang !== 'en' : (t.match(/[\u3400-\u9fff]/g) || []).length > t.length / 4;
     const L = lang === 'yue' || lang === 'cmn' ? lang : zh ? zhVoice() : 'en';
-    const phone = () => {
-      if (!window.speechSynthesis || my !== ttsSeq) return;
-      const u = new SpeechSynthesisUtterance(t), v = dictVoice(L);
+    const done = () => { if (my === ttsSeq) sayPill(null); };
+    const phone = (rest) => {
+      if (!window.speechSynthesis || my !== ttsSeq) return done();
+      const u = new SpeechSynthesisUtterance(rest), v = dictVoice(L);
       if (v) u.voice = v; u.lang = v ? v.lang : DL[L][2];
       u.rate = gradeBand() === 'p12' ? 0.85 : 0.95;
-      speechSynthesis.speak(u);
+      u.onend = done; u.onerror = done;
+      sayPill('play'); speechSynthesis.speak(u);
     };
-    (async () => {
-      const url = await ttsClip(t, L, 'normal').catch(() => null);
+    sayPill('load'); sayingText = t;
+    const parts = speechChunks(t), clips = [];
+    const clip = (i) => (i < parts.length ? (clips[i] = clips[i] || ttsClip(parts[i], L, 'normal').catch(() => null)) : null);
+    clip(0); clip(1);
+    const play = async (i) => {
       if (my !== ttsSeq) return;
-      if (url) { const a = ttsPlayer(); a.src = url; try { await a.play(); return; } catch (e) {} }
-      phone();
-    })();
+      if (i >= parts.length) return done();
+      if (i > 0) sayPill(clips[i] ? 'play' : 'load');
+      const url = await clip(i); clip(i + 1); clip(i + 2);
+      if (my !== ttsSeq) return;
+      if (!url) return phone(parts.slice(i).join(' '));
+      const a = ttsPlayer(); a.onended = () => play(i + 1); a.src = url;
+      try { await a.play(); if (my === ttsSeq) sayPill('play'); } catch (e) { a.onended = null; phone(parts.slice(i).join(' ')); }
+    };
+    play(0);
   } catch (e) {}
 }
 // A small 🔊 on each of Buddy's replies (tutor, coach, homework, lessons), for primary children.

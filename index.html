@@ -379,6 +379,12 @@ table.usage{font-size:13px}table.usage td{text-align:right;white-space:nowrap}ta
 
 .settings{max-width:720px}
 .chip.say{border:1.5px solid var(--accent-tint);background:#fff;color:var(--accent);cursor:pointer;font:inherit;font-weight:700;font-size:13px}
+.say-pill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom));z-index:60;display:flex;align-items:center;gap:10px;padding:10px 12px 10px 16px;border:none;border-radius:999px;background:var(--ink,#1b2559);color:#fff;font:600 15px/1 inherit;font-family:inherit;box-shadow:0 8px 24px rgba(20,30,80,.28);cursor:pointer;animation:spIn .2s ease-out;white-space:nowrap}
+.say-pill b{background:rgba(255,255,255,.18);padding:7px 12px;border-radius:999px;font-weight:700}
+.say-pill .sp-spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spSpin .8s linear infinite}
+.say-pill .sp-wave{display:flex;gap:3px;align-items:center;height:16px}.say-pill .sp-wave i{width:3px;height:100%;background:#ffd84d;border-radius:2px;animation:spWave .9s ease-in-out infinite}.say-pill .sp-wave i:nth-child(2){animation-delay:.15s}.say-pill .sp-wave i:nth-child(3){animation-delay:.3s}
+@keyframes spSpin{to{transform:rotate(360deg)}}@keyframes spWave{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}@keyframes spIn{from{opacity:0;transform:translate(-50%,10px)}}
+@media (min-width:1024px){.say-pill{bottom:28px}}
 .say-mini{float:right;margin:-2px -4px 0 8px;border:none;background:var(--accent-soft);border-radius:999px;width:30px;height:30px;font-size:14px;cursor:pointer;line-height:1}
 .prof-grades{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.prof-grades>.muted{width:72px;font-size:13px}
 .prof-grades .fchip{min-height:38px;padding:0 13px}
