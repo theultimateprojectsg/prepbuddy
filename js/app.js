@@ -3706,7 +3706,8 @@ async function renderBook(bookId) {
   const groups = [];
   // sections without a number (e.g. "Glossary") belong to the chapter they follow
   for (const u of book.units) { const last = groups[groups.length - 1]; const g = groupOf(u) || (last ? last.name : ''); if (last && last.name === g) last.units.push(u); else groups.push({ name: g, units: [u] }); }
-  const grouped = book.units.length > 12 && groups.length >= 2 && groups.every((g) => g.name);
+  // only fold sections into chapters when chapters really have several sections; one section each = a plain list with titles
+  const grouped = book.units.length > 12 && groups.length >= 2 && groups.every((g) => g.name) && groups.some((g) => g.units.length > 1) && groups.length < book.units.length * 0.8;
   if (!pick.open) pick.open = new Set();
   if (grouped && !pick.openSet) {
     pick.openSet = true;
