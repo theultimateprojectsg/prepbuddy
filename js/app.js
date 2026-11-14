@@ -1676,16 +1676,25 @@ function dictVoice(lang) {
 // kept on this device so each item is only fetched once. If the server has no voice set up, or there is no
 // connection, the phone's own voice is used. "teacher" = read it, pause, read it again (how HK teachers read 默書).
 let TTS_OFF = false, ttsEl = null, ttsSeq = 0;
+// The voices a family can choose from (Settings → About your child → Reading voice). Short names; the server only accepts these.
+const VOICE_OPTS = {
+  yue: [['HiuGaai', '曉佳', 'Female · clear, like a teacher', '女聲 · 清晰，似老師'], ['HiuMaan', '曉曼', 'Female · bright and lively', '女聲 · 明亮活潑'], ['WanLung', '雲龍', 'Male · calm', '男聲 · 沉穩']],
+  cmn: [['Xiaoxiao', '曉曉', 'Female · warm', '女聲 · 溫和'], ['Xiaoyi', '曉伊', 'Female · young and lively', '女聲 · 年輕活潑'], ['Yunxi', '雲希', 'Male · clear', '男聲 · 清晰']],
+  en: [['Sonia', 'Sonia', 'Female · British', '女聲 · 英式'], ['Libby', 'Libby', 'Female · British, younger', '女聲 · 英式，較年輕'], ['Ryan', 'Ryan', 'Male · British', '男聲 · 英式']],
+};
+const voicePref = (lang) => { const l = local.learner || {}, v = l.voices && l.voices[lang]; return VOICE_OPTS[lang] && VOICE_OPTS[lang].some((o) => o[0] === v) ? v : ''; };
+const ratePref = () => ((local.learner || {}).vrate === 'slower' ? 'slower' : '');
 const TTS_URL = new Map();
 async function ttsClip(text, lang, mode) {
   if (TTS_OFF) return null;
-  const k = `${lang}|${mode}|${text}`;
+  const voice = voicePref(lang), rate = ratePref();
+  const k = `${lang}|${mode}|${voice}|${rate}|${text}`;
   if (TTS_URL.has(k)) return TTS_URL.get(k);
   const key = `/tts-cache/v1/${encodeURIComponent(k)}`;
   let cache = null, blob = null;
   try { cache = await caches.open('pb-tts'); const hit = await cache.match(key); if (hit) blob = await hit.blob(); } catch (e) {}
   if (!blob) {
-    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json', 'x-access-code': local.code || '' }, body: JSON.stringify({ text, lang, mode }) }).catch(() => null);
+    const r = await fetch('/api/tts', { method: 'POST', headers: { 'content-type': 'application/json', 'x-access-code': local.code || '' }, body: JSON.stringify({ text, lang, mode, voice, rate }) }).catch(() => null);
     if (!r) return null;
     if (r.status === 501) { TTS_OFF = true; return null; }
     if (!r.ok || !/audio/.test(r.headers.get('content-type') || '')) return null;
@@ -2684,7 +2693,7 @@ const gradeName = (g) => (LANG === 'zh' ? `${g[0] === 'P' ? '小' : '中'}${'一
 function profileScreen({ first } = {}) {
   return new Promise((resolve) => {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
-    const L = { grade: gradeNow(), pace: '', medium: '', goals: [], likes: '', ...(local.learner || {}) }; L.grade = gradeNow() || '';
+    const L = { grade: gradeNow(), pace: '', medium: '', goals: [], likes: '', vrate: '', ...(local.learner || {}) }; L.grade = gradeNow() || '';
     const nav = document.getElementById('tabs'); if (first && nav) nav.style.display = 'none';
     if (first) document.body.dataset.tab = '';
     const GOALS = (g) => [['tests', C('School tests and exams', '校內測驗及考試')], ...(/^P[23]$|^S[23]$/.test(g) || g === 'P6' ? [['tsa', C('TSA', '全港性系統評估 (TSA)')]] : []),
@@ -2710,6 +2719,13 @@ function profileScreen({ first } = {}) {
           <div class="prof-opts">${opt('explain', 'en', C('English', '英文'), C('Even if they type in Chinese', '即使孩子用中文提問'))}${opt('explain', 'zh', C('Chinese', '中文'), C('English terms in brackets', '英文術語放在括號內'))}${opt('explain', 'mix', C('Chinese + English terms', '中文 + 英文術語'), C('Learn the English words', '同時學英文詞彙'))}</div>
           <span class="muted" style="font-size:13px;line-height:1.5">${C('English lessons are always explained in simple English, with Chinese only for hard words.', '英文科一律用淺白英文講解，只在難字旁加中文。')}</span>
           <span class="hint" style="margin:0;text-align:left">${C('Practice questions stay in the textbook’s language.', '練習題目會保持課本的語言。')}</span></section>
+        <section class="stack g10"><b>${C('Reading voice', '朗讀聲音')}</b>
+          <span class="muted" style="font-size:13px;line-height:1.5;margin-top:-4px">${C('For dictation, listening and “Read to me”. Tap ▶ to hear each one.', '用於默書、聆聽和「讀給我聽」。按 ▶ 試聽。')}</span>
+          ${[['yue', C('Cantonese', '廣東話')], ['cmn', C('Putonghua', '普通話')], ['en', C('English', '英文')]].map(([lg, name]) => `<div class="vc-group"><small>${name}</small><div class="vc-row">${VOICE_OPTS[lg].map(([id, zhn, en, zh], i) => {
+            const on = (L.voices && L.voices[lg] ? L.voices[lg] : VOICE_OPTS[lg][0][0]) === id;
+            return `<div class="vc-opt ${on ? 'on' : ''}"><button class="vc-pick" data-vlang="${lg}" data-voice="${id}" aria-pressed="${on}"><b>${LANG === 'zh' || lg !== 'en' ? zhn : id}</b><span>${C(en, zh)}</span></button><button class="vc-play" data-vplay="${lg}:${id}" aria-label="${C('Listen', '試聽')}">▶</button></div>`; }).join('')}</div></div>`).join('')}
+          <div class="prof-opts two">${opt('vrate', '', C('Normal speed', '正常速度'), '')}${opt('vrate', 'slower', C('A bit slower', '慢一點'), C('Good for younger children', '適合年紀較小的孩子'))}</div>
+        </section>
         ${L.grade ? `<section class="stack g10"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
         ${KIDS.list.length > 1 ? `<section class="stack g10"><label for="pnick"><b>${C('Nickname on this device', '在這部裝置上的稱呼')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
@@ -2724,11 +2740,18 @@ function profileScreen({ first } = {}) {
       const redraw = () => { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.trim().slice(0, 12); const y = window.scrollY; draw(); window.scrollTo(0, y); };
       $app.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.grade = b.dataset.g; redraw(); }));
       $app.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L[b.dataset.k] = b.dataset.v; redraw(); }));
+      $app.querySelectorAll('[data-voice]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.voices = { ...(L.voices || {}), [b.dataset.vlang]: b.dataset.voice }; redraw(); }));
+      $app.querySelectorAll('[data-vplay]').forEach((b) => (b.onclick = () => {
+        const [lg, id] = b.dataset.vplay.split(':');
+        const keep = local.learner; local.learner = { ...(keep || {}), voices: { ...((L.voices) || {}), [lg]: id }, vrate: L.vrate || '' };
+        sayAloud({ yue: '你好，我係 Buddy。今日我哋一齊溫習啦！', cmn: '你好，我是 Buddy。今天我們一起溫習吧！', en: 'Hello, I’m Buddy. Let’s practise together today!' }[lg], lg);
+        local.learner = keep;
+      }));
       $app.querySelectorAll('[data-goal]').forEach((b) => (b.onclick = () => { L.likes = likes.value; const k = b.dataset.goal; L.goals = L.goals.includes(k) ? L.goals.filter((x) => x !== k) : [...L.goals, k]; redraw(); }));
       document.getElementById('psave').onclick = () => {
         if (!L.grade) return;
         { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.replace(/[<>]/g, '').trim().slice(0, 12); }
-        local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
+        local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', voices: L.voices || {}, vrate: L.vrate || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
         delete local.needProfile; saveLocal(); track('profile'); kidMeta();
         if (first && nav) nav.style.display = '';
         if (first) $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
