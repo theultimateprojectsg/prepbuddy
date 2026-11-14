@@ -2824,6 +2824,7 @@ function profileScreen({ first } = {}) {
             const on = (L.voices && L.voices[lg] ? L.voices[lg] : VOICE_OPTS[lg][0][0]) === id;
             return `<div class="vc-opt ${on ? 'on' : ''}"><button class="vc-pick" data-vlang="${lg}" data-voice="${id}" aria-pressed="${on}"><b>${LANG === 'zh' || lg !== 'en' ? zhn : id}</b><span>${C(en, zh)}</span></button><button class="vc-play" data-vplay="${lg}:${id}" aria-label="${C('Listen', '試聽')}">▶</button></div>`; }).join('')}</div></div>`).join('')}
           <div class="prof-opts two">${opt('vrate', '', C('Normal speed', '正常速度'), '')}${opt('vrate', 'slower', C('A bit slower', '慢一點'), C('Good for younger children', '適合年紀較小的孩子'))}</div>
+          <div class="prof-opts two">${opt('autoread', '', C('Read questions only when tapped', '按「讀出題目」才朗讀'), C('Tap 🔊 Read to me', '按 🔊 讀出題目'))}${opt('autoread', 'on', C('Read each question automatically', '自動朗讀每一題'), C('Good for P1–P2', '適合小一至小二'))}</div>
         </section>
         ${L.grade ? `<section class="stack g10"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
@@ -2850,7 +2851,7 @@ function profileScreen({ first } = {}) {
       document.getElementById('psave').onclick = () => {
         if (!L.grade) return;
         { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.replace(/[<>]/g, '').trim().slice(0, 12); }
-        local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', voices: L.voices || {}, vrate: L.vrate || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
+        local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', voices: L.voices || {}, vrate: L.vrate || '', autoread: L.autoread || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
         delete local.needProfile; saveLocal(); track('profile'); kidMeta();
         if (first && nav) nav.style.display = '';
         if (first) $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
@@ -6207,8 +6208,8 @@ function renderQuestion() {
   bindCommon(q);
   body.bind && body.bind();
   { const sq = document.getElementById('sayq'); if (sq) sq.onclick = () => sayAloud(questionSpeech(q)); }
-  // P1-P2: read each new question aloud once, as a parent would
-  if (gradeBand() === 'p12' && S.phase !== 'revealed' && S.saidQ !== q.id && navigator.userActivation && navigator.userActivation.hasBeenActive) { S.saidQ = q.id; setTimeout(() => { if (S && S.qs[S.i] === q) sayAloud(questionSpeech(q)); }, 350); }
+  // Only if the parent turned it on (Settings → About your child → Reading voice): read each new question aloud once
+  if ((local.learner || {}).autoread === 'on' && S.phase !== 'revealed' && S.saidQ !== q.id && navigator.userActivation && navigator.userActivation.hasBeenActive) { S.saidQ = q.id; setTimeout(() => { if (S && S.qs[S.i] === q) sayAloud(questionSpeech(q)); }, 350); }
   startTimer();
   // After answering on a phone, stay on the answers (not the top of a long passage) so the child sees right or wrong.
   const o1 = S.phase === 'revealed' && !matchMedia('(min-width:1024px)').matches && $app.querySelector('main.qpaper .opt');
