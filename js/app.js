@@ -2337,9 +2337,13 @@ const kidSave = () => { try { localStorage.setItem(KIDS_KEY, JSON.stringify(KIDS
 function kidMeta() { KID.grade = gradeNow() || ''; KID.name = (local.name || '').trim().slice(0, 20); if (KIDS.list.length > 1 || localStorage.getItem(KIDS_KEY)) kidSave(); }
 const kidLabel = (k) => k.nick || k.name || (k.grade ? (LANG === 'zh' ? gradeName(k.grade) : k.grade) : (LANG === 'zh' ? `孩子 ${KIDS.list.indexOf(k) + 1}` : `Child ${KIDS.list.indexOf(k) + 1}`));
 const kidChip = () => `<button class="kidchip" data-kidgo aria-label="${LANG === 'zh' ? '轉換孩子' : 'Switch child'}"><span>${KID_AV[KID.av || 0]}</span><b>${esc(kidLabel(KID))}</b><span aria-hidden="true">▾</span></button>`;
+// Which child is studying is remembered for a few hours of use, not just this browser tab: phones reload pages
+// (pull-to-refresh, switching apps, home-screen apps), and asking "Who's studying?" after every reload got in the way.
+const KID_PICK = 'pb.kidPick', KID_PICK_MS = 3 * 3600e3;
+function kidPicked(id) { try { localStorage.setItem(KID_PICK, JSON.stringify({ id: id || KID.id, at: Date.now() })); } catch (e) {} }
+function kidPickFresh() { try { const p = JSON.parse(localStorage.getItem(KID_PICK) || 'null'); return !!(p && p.id === KID.id && Date.now() - p.at < KID_PICK_MS); } catch (e) { return true; } }
 function switchKid(id) {
-  KIDS.cur = id; kidSave();
-  try { sessionStorage.setItem('pb.kid', id); } catch (e) {}
+  KIDS.cur = id; kidSave(); kidPicked(id);
   location.replace(location.pathname + location.search); // back to Today for the other child
 }
 function addKid() {
@@ -2378,7 +2382,7 @@ function kidPicker({ boot } = {}) {
         <div class="kid-foot">${boot ? '' : `<button class="btn-sm" id="kidBack">${C('Back', '返回')}</button>`}${KIDS.list.length > 1 ? `<button class="btn-sm quiet" id="kidManage">${manage ? C('Done', '完成') : C('Manage children', '管理')}</button>` : ''}</div>
       </div></main>`;
       drawn = true;
-      $app.querySelectorAll('[data-kid]').forEach((b) => (b.onclick = () => { if (b.dataset.kid === KID.id) { try { sessionStorage.setItem('pb.kid', KID.id); } catch (e) {} return close(); } switchKid(b.dataset.kid); }));
+      $app.querySelectorAll('[data-kid]').forEach((b) => (b.onclick = () => { if (b.dataset.kid === KID.id) { kidPicked(); return close(); } switchKid(b.dataset.kid); }));
       $app.querySelectorAll('[data-del]').forEach((b) => (b.onclick = async () => { if (await removeKid(b.dataset.del)) { if (KIDS.list.length < 2) manage = false; } draw(); }));
       const ad = document.getElementById('kidAdd'); if (ad) ad.onclick = async () => {
         const ok = await confirmLeave({ title: C('Add another child?', '新增另一個孩子？'), body: C('They’ll start fresh with their own books and progress. You’ll set their grade next. Switch between children from the chip at the top of Today.', '新孩子會有自己的課本和進度，下一步會設定年級。可在「今日」頁頂轉換孩子。'), stay: C('Cancel', '取消'), leave: C('Add child', '新增') });
@@ -2666,7 +2670,8 @@ async function pilotGate() {
 const CONSENT_V = 1;
 async function pilotWelcome() {
   kidMeta();
-  if (KIDS.list.length > 1 && (() => { try { return sessionStorage.getItem('pb.kid') !== KID.id; } catch (e) { return false; } })()) await kidPicker({ boot: true });
+  if (KIDS.list.length > 1 && !kidPickFresh()) await kidPicker({ boot: true });
+  if (KIDS.list.length > 1) kidPicked();
   if (local.pilot && local.code && !(local.consent && local.consent.v >= CONSENT_V)) await consentScreen();
   // New families set it up during onboarding; families already using the app get a card on Today instead.
   if (profileOn() && !local.learner && (!local.toured || local.needProfile)) await profileScreen({ first: true });
@@ -3142,7 +3147,7 @@ async function pilotSync(force) {
   finally { syncing = false; }
 }
 setInterval(() => pilotSync(), 10 * 60000);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') pilotSync(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { pilotSync(); if (KIDS.list.length > 1 && kidPickFresh()) kidPicked(); } }); // keeps the choice fresh while in use; never changes which child
 
 /* ---------- back up and restore (until accounts) ----------
    Everything PrepBuddy keeps on this device in one file: progress, settings, textbooks, questions, notes,
