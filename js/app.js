@@ -2032,7 +2032,7 @@ async function renderLearn(bookId, unitId) {
     R.msgs = R.msgs.slice(-40); R.busy = false; keepPlace();
     if (view === myView) drawChat();
   };
-  const draw = () => {
+  const draw = (answered) => {
     const dots = `<div class="ln-dots">${L.steps.map((_, i) => `<i class="${i < R.k ? 'done' : i === R.k ? 'on' : ''}"></i>`).join('')}</div>`;
     let body;
     if (R.k < 0) {
@@ -2064,9 +2064,22 @@ async function renderLearn(bookId, unitId) {
     const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
     keepPlace();
     const lm = document.getElementById('lnMain'); if (!lm) return;
+    const y = window.scrollY;
     lm.innerHTML = `${R.k >= 0 && R.k < n ? dots : ''}${body}`;
     renderMath(lm);
-    window.scrollTo(0, 0);
+    if (!answered) window.scrollTo(0, 0);
+    else {
+      // After a quick-check answer: stay put, then bring the feedback and the Next button into view (phones).
+      window.scrollTo(0, y);
+      const why = lm.querySelector('.ln-why'), row = document.getElementById('next') && document.getElementById('next').closest('.rd-row');
+      const tabs = document.getElementById('tabs'), tb = tabs && getComputedStyle(tabs).display !== 'none' ? tabs.getBoundingClientRect() : null;
+      const bottom = (tb && tb.top > innerHeight / 2 ? tb.top : innerHeight) - 16;
+      if (row) {
+        let dy = row.getBoundingClientRect().bottom - bottom;
+        if (why) dy = Math.min(dy, why.getBoundingClientRect().top - 80); // never push the feedback off the top
+        if (dy > 0) window.scrollBy({ top: dy, behavior: 'smooth' });
+      }
+    }
     if (!R.busy) drawChat();
     on('askb', () => { const c = document.getElementById('lnchat'); if (c && !desk()) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); askBuddy(T('Help me with the quick check', '小測給我一點提示')); });
     on('go1', () => { R.k = 0; draw(); });
@@ -2077,7 +2090,7 @@ async function renderLearn(bookId, unitId) {
     on('kwdict', () => keyWordsDictation(book, unit, UX.words));
     on('utask', () => unitWritingTask(book, unit, UX.task));
     on('practise', () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], local.count || sessionSize()); });
-    $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => { const s = L.steps[R.k]; R.picked[R.k] = +b.dataset.opt; if (+b.dataset.opt === s.check.answer) R.right++; draw(); }));
+    $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => { const s = L.steps[R.k]; R.picked[R.k] = +b.dataset.opt; if (+b.dataset.opt === s.check.answer) R.right++; draw(true); }));
   };
   const finish = () => {
     local.learned = local.learned || {}; const first = !local.learned[`${bookId}:${unitId}`];
