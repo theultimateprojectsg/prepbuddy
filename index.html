@@ -698,6 +698,13 @@ body[data-tab] .tabs{display:flex}
 body[data-tab] .app{padding-bottom:76px}
 .tabs .brand-side{display:none}
 .tabs button[data-tabgo="settings"]{display:none}
+@media (max-width:1023.98px){
+  body:has(main.qpaper) .tabs{display:none}
+  body:has(main.qpaper) .app{padding-bottom:0}
+  .qnext-fixed{position:fixed;left:0;right:0;bottom:0;z-index:7;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(30,42,90,.08)}
+  .qnext-fixed>.btn{width:100%;max-width:560px;margin:0 auto;display:flex;justify-content:center}
+  body:has(.qnext-fixed) .sheet{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+}
 .mob-gear{flex:none;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink)}
 @media (min-width:1024px){
   body[data-tab] .tabs{top:0;bottom:0;right:auto;width:220px;border-top:none;border-right:1px solid var(--line);flex-direction:column;justify-content:flex-start;padding:24px 14px}

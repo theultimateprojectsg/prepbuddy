@@ -6136,7 +6136,10 @@ function renderQuestion() {
   // P1-P2: read each new question aloud once, as a parent would
   if (gradeBand() === 'p12' && S.phase !== 'revealed' && S.saidQ !== q.id && navigator.userActivation && navigator.userActivation.hasBeenActive) { S.saidQ = q.id; setTimeout(() => { if (S && S.qs[S.i] === q) sayAloud(questionSpeech(q)); }, 350); }
   startTimer();
-  window.scrollTo(0, 0);
+  // After answering on a phone, stay on the answers (not the top of a long passage) so the child sees right or wrong.
+  const o1 = S.phase === 'revealed' && !matchMedia('(min-width:1024px)').matches && $app.querySelector('main.qpaper .opt');
+  if (o1) window.scrollTo(0, Math.max(0, o1.getBoundingClientRect().top + window.scrollY - 150));
+  else window.scrollTo(0, 0);
 }
 /* ---------- read aloud (primary): questions and Buddy's replies, with the same free browser voices as 默書 ---------- */
 const readAloudOn = () => !!(window.speechSynthesis && isPrimaryKid());
@@ -6243,7 +6246,12 @@ const figHTML = (q, cls = 'qfig') => (q.figure && q.figure.img ? `<figure class=
 // On a laptop the answer panel sits beside the question, so Next and "Report a problem" go under the question
 // itself (where the eye already is) instead of at the bottom of the side panel.
 function liftActions() {
-  if (!matchMedia('(min-width:1024px)').matches) return;
+  if (!matchMedia('(min-width:1024px)').matches) {
+    // Phones: once answered, keep "Next" fixed at the bottom of the screen so there's no scrolling past the explanation.
+    const nx = $app.querySelector(':scope > .sheet > #next');
+    if (nx) { const bar = document.createElement('div'); bar.className = 'qnext-fixed'; bar.appendChild(nx); $app.appendChild(bar); }
+    return;
+  }
   const main = $app.querySelector(':scope > main.qpaper'), sheet = $app.querySelector(':scope > .sheet');
   if (!main || !sheet) return;
   const next = sheet.querySelector(':scope > #next'), rb = sheet.querySelector('#rbox');
