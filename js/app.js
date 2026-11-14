@@ -2555,7 +2555,7 @@ function renderSettings() {
       <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
     </section>
     ${profileOn() ? `<section class="card stack g10" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PLT('About your child', '關於你的孩子')}</b><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn-sm quiet" id="smarks">${PLT('School marks', '學校成績')}</button><button class="btn-sm quiet" id="skids">${KIDS.list.length > 1 ? PLT('Switch child', '轉換孩子') : PLT('Add a child', '新增孩子')}</button><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PLT('About your child', '關於你的孩子')}</b><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn-sm quiet" id="skids">${KIDS.list.length > 1 ? PLT('Switch child', '轉換孩子') : PLT('Add a child', '新增孩子')}</button><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></span></div>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
@@ -2597,7 +2597,6 @@ function renderSettings() {
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
   { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); }
-  { const sm = document.getElementById('smarks'); if (sm) sm.onclick = async () => { await marksScreen(); go({ name: 'settings' }); }; }
   { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings' }); }; }
   { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings' }); }; }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
@@ -2961,7 +2960,7 @@ const MARK_SUBJ = () => (isPrimaryKid()
 const marksList = () => (local.marks || []).slice().sort((a, b) => (a.when || '').localeCompare(b.when || '') || a.t - b.t);
 const marksBase = () => marksList().find((m) => m.kind === 'before') || null;
 const marksAsk = () => local.pilot && profileOn() && gradeNow() && !marksBase() && !(local.marksSkip && Date.now() - local.marksSkip < 14 * DAY);
-function marksScreen(edit) {
+function marksScreen(edit, opts = {}) {
   return new Promise((resolve) => {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
     const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
@@ -3020,19 +3019,20 @@ function marksScreen(edit) {
         } catch (err) { snap.err = err.status === 0 ? C('You seem to be offline.', '你好像離線了。') : (err.message || C('Couldn’t read the photos.', '讀取相片失敗。')); }
         snap.busy = false; draw();
       };
-      const done = () => { if (nav) nav.style.display = ''; resolve(); };
+      const done = (saved) => { if (nav) nav.style.display = ''; resolve(saved || null); };
       document.getElementById('msave').onclick = () => {
         read();
         const bad = Object.values(M.s).some((v) => !(v >= 0 && v <= 100));
         if (bad || !Object.keys(M.s).length) { const e = document.getElementById('merr'); e.hidden = false; e.textContent = bad ? C('Marks need to be between 0 and 100 (a percentage).', '分數需介乎 0 至 100（百分比）。') : C('Add at least one mark.', '請至少填寫一科分數。'); return; }
         M.t = M.t || Date.now();
         local.marks = [...(local.marks || []).filter((x) => x.id !== M.id), M]; delete local.marksSkip; saveLocal(); track('marks');
-        toast(C('Saved. Thank you!', '已儲存，謝謝！')); done();
+        toast(C('Saved. Thank you!', '已儲存，謝謝！')); done(M);
       };
       document.getElementById('mlater').onclick = () => { if (first) { local.marksSkip = Date.now(); saveLocal(); } done(); };
       const dl = document.getElementById('mdel'); if (dl) dl.onclick = () => { local.marks = (local.marks || []).filter((x) => x.id !== M.id); saveLocal(); done(); };
     };
     draw(); window.scrollTo(0, 0);
+    if (opts.snap) { const ph = document.getElementById('mphoto'); if (ph) ph.click(); } // opened from a 'Snap the paper' button: go straight to the camera
   });
 }
 // Parent dashboard card: before vs latest, per subject.
@@ -5386,14 +5386,14 @@ function testDialog(edit) {
 async function schoolTestsHTML() {
   const up = upcomingTests().slice(0, 4);
   const steps = (await Promise.all(up.map(testStep))).filter(Boolean);
-  const past = schoolTests().filter((x) => testLeft(x) < 0 && testLeft(x) >= -4 && x.score === undefined);
+  const past = schoolTests().filter((x) => testLeft(x) < 0 && testLeft(x) >= -21 && x.score === undefined); // papers often come back 1-2 weeks later
   const rows = steps.map((p) => `<div class="stx ${p.left <= 1 ? 'soon' : ''}"><button class="stx-main" data-tedit="${esc(p.x.id)}" aria-label="${SCH('Edit', '修改')} ${esc(p.x.name)}">
       <span class="stx-cal"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span>
       <span class="stx-t"><b data-raw>${esc(p.x.name)}</b><small>${leftText(p.left)} · <span data-raw>${esc(p.units.length === 1 ? cleanUnitTitle(p.units[0].title) : SCH(`${p.units.length} chapters`, `${p.units.length} 個章節`))}</span></small></span>
       <span class="stx-r"><b>${p.ready}%</b><small>${SCH('ready', '準備度')}</small></span></button></div>`).join('');
   return { steps, html: `<section class="stack g10" aria-label="${SCH('School tests', '學校測驗')}">
       <div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>
-      ${past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><span class="stx-sc"><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm primary" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('')}
+      ${past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><button class="btn-sm primary stx-snap" data-snapscore="${esc(x.id)}">📷 ${SCH('Snap the marked paper', '拍下已批改的試卷')}</button><span class="stx-sc"><span class="muted" style="font-size:13px">${SCH('or type it:', '或輸入：')}</span><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('')}
       ${rows ? `<div class="card stx-list">${rows}</div>` : `<button class="weekstrip" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s plan will count down to it, day by day.', '加入後，今日計劃會每天幫你倒數準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button>`}
     </section>` };
 }
@@ -5404,6 +5404,18 @@ function bindSchoolTests() {
   const setScore = (id, v) => { local.sched = (local.sched || []).map((x) => (x.id === id ? { ...x, score: v } : x)); saveLocal(); renderHome(); };
   $app.querySelectorAll('[data-savescore]').forEach((b) => (b.onclick = () => { const i = $app.querySelector(`[data-score="${b.dataset.savescore}"]`); const v = Math.max(0, Math.min(100, Math.round(Number(i.value)))); if (i.value === '' || !Number.isFinite(v)) return i.focus(); setScore(b.dataset.savescore, v); toast(SCH('Saved. Well done for getting it done!', '已儲存。辛苦了！')); }));
   $app.querySelectorAll('[data-skipscore]').forEach((b) => (b.onclick = () => setScore(b.dataset.skipscore, null)));
+  // Snap the marked paper: the marks form reads it (and any other papers), saves it to School results, and the score fills in here.
+  $app.querySelectorAll('[data-snapscore]').forEach((b) => (b.onclick = async () => {
+    const x = (local.sched || []).find((t) => t.id === b.dataset.snapscore); if (!x) return;
+    const M = await marksScreen(null, { snap: true });
+    if (M) {
+      const book = (await getBooks()).find((bk) => bk.id === x.b), sub = String((book && (book.subject + ' ' + book.title)) || '');
+      const key = /english|英文/i.test(sub) ? 'eng' : /math|數學/i.test(sub) ? 'math' : /chinese|中文|中國語文/i.test(sub) ? 'chi' : /science|general studies|humanities|常識|科學|人文/i.test(sub) ? 'gs' : '';
+      const v = key && M.s[key] !== undefined ? M.s[key] : Object.keys(M.s).length === 1 ? Object.values(M.s)[0] : null;
+      local.sched = (local.sched || []).map((t) => (t.id === x.id ? { ...t, score: v } : t)); saveLocal();
+    }
+    go({ name: 'home' });
+  }));
 }
 
 /* ---------- level check: a short quiz across the book when it's new ----------
