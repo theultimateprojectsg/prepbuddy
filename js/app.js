@@ -2236,7 +2236,7 @@ async function renderHome() {
   if (!books.length) {
     // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
     let starters = [];
-    try { const cat = await getCatalog(); const g = gradeNow(); starters = cat.filter((b) => b.starter && (!g || String(b.level).toUpperCase() === g)).slice(0, 3); } catch (e) {}
+    try { const cat = await getCatalog(); const g = gradeNow(); const all = cat.filter((b) => b.starter); starters = all.filter((b) => !g || String(b.level).toUpperCase() === g); if (!starters.length) starters = all; starters = starters.slice(0, 3); } catch (e) {}
     $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
     ${starters.length ? `<section class="starter-card" aria-label="${LANG === 'zh' ? '免費入門書' : 'Free starter books'}"><span class="st-tag">${LANG === 'zh' ? '免費 · PrepBuddy 編寫' : 'Free · written by PrepBuddy'}</span>
       <h2>${LANG === 'zh' ? '先試一本入門書' : 'Try a free starter book'}</h2>
@@ -2709,14 +2709,16 @@ async function pilotWelcome() {
   if (!local.toured) await startTour();
 }
 // A child with no books gets PrepBuddy's free starter books for their grade (e.g. P4 English, Maths and Science),
-// once, so they can start straight away. Books they remove later are not added back.
+// or every starter book as samples when their grade has none yet, once, so they can start straight away.
+// Books they remove later are not added back.
 async function preloadStarters() {
   if (local.preloaded) return;
   const g = gradeNow(); if (!g) return;
   if ((await getBooks()).length) { local.preloaded = Date.now(); saveLocal(); return; }
   let list = [];
-  try { list = (await getCatalog()).filter((b) => b.starter && String(b.level).toUpperCase() === g); } catch (e) { return; }
-  if (!list.length) return; // none for this grade yet: try again on a later visit
+  // the starter books for the child's grade; if there are none yet for that grade, all the starter books as samples
+  try { const all = (await getCatalog()).filter((b) => b.starter); list = all.filter((b) => String(b.level).toUpperCase() === g); if (!list.length) list = all; } catch (e) { return; }
+  if (!list.length) return;
   const C = (en, zh) => (LANG === 'zh' ? zh : en);
   const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
   let n = 0;
