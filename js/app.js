@@ -306,7 +306,24 @@ function renderStem(stem, cls = 'stem') {
 /* ---------- books ---------- */
 // Each book's subject (grouped: two maths books are one subject), kept in memory for the progress tracker.
 const BOOK_SUBJ = {};
-async function getBooks() { const bs = await store.get('books', []); bs.forEach((b) => { BOOK_SUBJ[b.id] = PG.subjectKey(b.subject, b.id); }); return bs; }
+async function getBooks() { const bs = await store.get('books', []); bs.forEach((b) => { BOOK_SUBJ[b.id] = PG.subjectKey(b.subject, b.id); }); if (!libSynced && bs.some((b) => b.library)) { libSynced = true; setTimeout(() => refreshLibBooks().catch(() => {}), 2500); } return bs; }
+// Library books we update (e.g. PrepBuddy starter books) carry "rev" in the catalog: a newer rev re-downloads the chapter
+// texts and chapter list on this device, keeping the student's questions and progress.
+let libSynced = false;
+async function refreshLibBooks() {
+  const cat = await getCatalog();
+  const books = await store.get('books', []);
+  let changed = false;
+  for (const b of books) {
+    const e = b.library && cat.find((x) => x.id === b.library);
+    if (!e || !e.rev || (b.rev || 1) >= e.rev) continue;
+    const texts = await Promise.all(e.units.map(async (u) => { const r = await fetch(`library/${e.id}/${u.id}.txt`, { cache: 'no-cache' }).catch(() => null); return r && r.ok ? r.text() : null; }));
+    if (texts.some((t) => t == null)) continue;
+    for (let i = 0; i < e.units.length; i++) { await store.set(`text:${b.id}:${e.units[i].id}`, texts[i]); }
+    b.units = e.units.map((u) => ({ ...u })); b.pageCount = e.pageCount; b.rev = e.rev; changed = true;
+  }
+  if (changed) await store.set('books', books);
+}
 // Questions that mention a figure/table/page the student can't see, or that the student reported, are never used.
 const REF = /\b(?:fig(?:ure)?s?\.?|tables?|diagrams?|photos?|images?|charts?|graphs?|pages?|pp?\.|examples?|activit(?:y|ies)|exercises?)\s*\d+[a-z]?(?:[.\-–]\d+)*\b|(?:圖|表|頁|例題|練習)\s*[0-9０-９一二三四五六七八九十]+(?:\s*[.\-．]\s*[0-9]+)*|第\s*[0-9０-９]+\s*頁/i;
 function missingRef(q) {
@@ -1813,18 +1830,40 @@ function getLesson(book, unit, fresh) {
   const key = `lesson:${book.id}:${unit.id}`;
   if (!fresh && lessonJobs.has(key)) return lessonJobs.get(key);
   const p = (async () => {
-    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && (have.v >= 2 || kindOfBook(book) !== 'language')) return have; }
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && (have.v >= 3 || kindOfBook(book) !== 'language')) return have; }
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     if (!text) throw new Error('This chapter’s text is missing on this device.');
     const l = await api('learn', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
     if (!l || !Array.isArray(l.steps) || !l.steps.length) throw new Error('Buddy couldn’t put this lesson together. Please try again.');
-    delete l.usage; l.at = Date.now(); l.v = 2;
+    delete l.usage; l.at = Date.now(); l.v = 3;
     await store.set(key, l);
     return l;
   })();
   lessonJobs.set(key, p);
   p.catch(() => lessonJobs.delete(key));
   return p;
+}
+// Starter-book extras in a chapter's text: a "Key words" list ("- word: meaning") and a "Your task" writing task.
+function unitExtras(text) {
+  const t = String(text || '').replace(/\r/g, '');
+  const kw = /(^|\n)Key words\n((?:- .+\n?)+)/.exec(t);
+  const words = kw ? kw[2].split('\n').map((l) => l.replace(/^- /, '').trim()).filter(Boolean).map((l) => { const i = l.indexOf(':'); return i > 0 ? { w: l.slice(0, i).trim(), m: l.slice(i + 1).trim() } : { w: l, m: '' }; }) : [];
+  const tk = /(^|\n)Your task\n([\s\S]+)$/.exec(t);
+  return { words: words.slice(0, 12), task: tk ? tk[2].trim().slice(0, 600) : '' };
+}
+function keyWordsDictation(book, unit, words) {
+  const src = `${book.id}:${unit.id}`;
+  const lists = local.dict || (local.dict = []);
+  let L = lists.find((x) => x.src === src);
+  if (!L) { L = { id: uid(), t: Date.now(), src, title: `${cleanUnitTitle(unit.title)} · key words`.slice(0, 60), lang: 'en', items: words.map((x) => x.w), res: {}, runs: [] }; lists.push(L); saveLocal(); }
+  go({ name: 'dictation', id: L.id, sub: 'run' });
+}
+function unitWritingTask(book, unit, task) {
+  const src = `${book.id}:${unit.id}`;
+  const list = local.wr || [];
+  let it = list.find((x) => x.src === src && !(x.drafts || []).length);
+  if (!it) { it = { id: uid(), t: Date.now(), src, kind: WR_KINDS.en_p && (isPrimaryKid() || /^P/i.test(book.level || '')) ? 'en_p' : (Object.keys(WR_KINDS).find((k) => WR_KINDS[k].lang === 'en' && !WR_KINDS[k].primary) || 'en_p'), title: `${cleanUnitTitle(unit.title)} · task`.slice(0, 60), prompt: task, work: '', drafts: [] }; local.wr = [...list, it]; wrSave(); }
+  go({ name: 'writing', id: it.id });
 }
 async function renderLearn(bookId, unitId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
@@ -1846,6 +1885,7 @@ async function renderLearn(bookId, unitId) {
     return;
   }
   if (view !== myView) return;
+  const UX = book.kind === 'language' || kindOfBook(book) === 'language' ? unitExtras(await store.get(`text:${bookId}:${unitId}`, '')) : { words: [], task: '' };
   const lsKey = `${bookId}:${unitId}`;
   const saved = (local.lessonAt || {})[lsKey];
   const R = { k: -1, picked: {}, right: 0, msgs: [], busy: false, err: null };
@@ -1917,7 +1957,9 @@ async function renderLearn(bookId, unitId) {
       body = `<section class="ln-card ln-end">${buddySVG('done', 64)}<h1>${T('Lesson done!', '完成課堂！')}</h1>
         <span class="muted">${T(`Quick checks: ${R.right} of ${L.steps.filter((s) => s.check).length} right first time`, `小測：第一次答對 ${R.right}／${L.steps.filter((s) => s.check).length} 題`)}</span>
         ${L.summary.length ? `<div class="ln-sum"><b>${T('Remember', '記住')}</b><ul>${L.summary.map((s) => `<li>${tutorMd(s).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ul></div>` : ''}
+        ${UX.words.length ? `<div class="ln-sum ln-kw"><b>${T('Key words', '重點詞彙')}</b><ul>${UX.words.map((x) => `<li><b>${esc(x.w)}</b>${x.m ? ` · ${esc(x.m)}` : ''}</li>`).join('')}</ul></div>` : ''}
         <button class="btn" id="practise">${T('Practise this chapter now', '現在練習這一章')} →</button>
+        ${UX.words.length || UX.task ? `<div class="rd-row">${UX.words.length ? `<button class="btn ghost" id="kwdict">✏️ ${T('Key words dictation', '重點詞彙默書')}</button>` : ''}${UX.task ? `<button class="btn ghost" id="utask">✍️ ${T('Do the writing task', '完成寫作任務')}</button>` : ''}</div>` : ''}
         <div class="rd-row"><button class="btn ghost" id="again">${T('Go through it again', '再上一次')}</button><button class="btn ghost" id="done">${T('Back to the chapter', '返回章節')}</button></div></section>`;
     } else {
       const s = L.steps[R.k], c = s.check, p = R.picked[R.k];
@@ -1946,6 +1988,8 @@ async function renderLearn(bookId, unitId) {
     on('next', () => { R.k++; if (R.k >= n) finish(); draw(); });
     on('again', () => { R.k = 0; R.picked = {}; R.right = 0; draw(); });
     on('done', () => go({ name: 'book', bookId }));
+    on('kwdict', () => keyWordsDictation(book, unit, UX.words));
+    on('utask', () => unitWritingTask(book, unit, UX.task));
     on('practise', () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], local.count || sessionSize()); });
     $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => { const s = L.steps[R.k]; R.picked[R.k] = +b.dataset.opt; if (+b.dataset.opt === s.check.answer) R.right++; draw(); }));
   };
@@ -3466,7 +3510,7 @@ async function addFromLibrary(entry, btn) {
     await Promise.all(Array.from({ length: Math.min(8, entry.units.length) }, async () => { while (next < entry.units.length) await one(entry.units[next++]); }));
     await store.persist();
     const books = (await store.get('books', [])).filter((b) => b.id !== id);
-    books.unshift({ id, library: entry.id, code: entry.code, title: entry.title, subject: entry.subject, level: entry.level,
+    books.unshift({ id, library: entry.id, rev: entry.rev || 1, code: entry.code, title: entry.title, subject: entry.subject, level: entry.level,
       credit: entry.credit, pageCount: entry.pageCount, addedAt: Date.now(), units: entry.units.map((u) => ({ ...u })), kind: entry.kind || guessKind(`${entry.subject || ''} ${entry.title}`, '') });
     await store.set('books', books);
     toast('Added to your textbooks');

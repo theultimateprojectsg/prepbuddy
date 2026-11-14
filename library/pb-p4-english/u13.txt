@@ -45,3 +45,15 @@ Example questions
 - Can you swim at 12:30 p.m. on a Tuesday? (No, the pool is closed from 12:00 noon to 1:00 p.m. on weekdays.)
 - What must a six-year-old do? (swim with an adult)
 - Write one rule about safety. (No running beside the pool.)
+
+Key words
+- deadline: the last day to do something (截止日期)
+- register: put your name down to join (報名)
+- fee: money you pay (費用)
+- venue: the place where something happens (場地)
+- free of charge: you don't need to pay (免費)
+- participant: a person who joins (參加者)
+- timetable: a list of times (時間表)
+
+Your task
+Write a notice for a class event, like a toy swap or a sports day (about 50 words). Include the name of the event, date, time, venue, what to bring, one rule with must, and how to register.

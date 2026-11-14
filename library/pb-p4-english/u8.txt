@@ -1,5 +1,19 @@
 Unit 9: Asking questions (question words and question forms)
 
+Read first: An interview with the school caretaker
+Our class newspaper team interviewed Mr Lau, the school caretaker.
+Reporter: When did you start working at our school, Mr Lau?
+Mr Lau: Twelve years ago.
+Reporter: What time do you start work every day?
+Mr Lau: I start at half past six. I open the gates and turn on the lights.
+Reporter: What is the hardest part of your job?
+Mr Lau: Fixing things on rainy days. Sometimes water comes into the hall.
+Reporter: Which part of the school do you like best?
+Mr Lau: The garden. I planted the sunflowers myself.
+Reporter: Why do you like your job?
+Mr Lau: Because I can see the students every day, and they always say good morning to me.
+As you read, look for question words (when, what, which, why) and how to make questions.
+
 Question words (wh- words)
 - What: things and actions: What is your favourite food? What are you doing?
 - Who: people: Who is your class teacher? Who broke the window?
@@ -42,15 +56,14 @@ Common mistakes
 - "What time the bus comes?" → What time does the bus come?
 - "Why you are sad?" → Why are you sad?
 
-Practice passage: An interview with the school caretaker
-Our class newspaper team interviewed Mr Lau, the school caretaker.
-Reporter: When did you start working at our school, Mr Lau?
-Mr Lau: Twelve years ago.
-Reporter: What time do you start work every day?
-Mr Lau: I start at half past six. I open the gates and turn on the lights.
-Reporter: What is the hardest part of your job?
-Mr Lau: Fixing things on rainy days. Sometimes water comes into the hall.
-Reporter: Which part of the school do you like best?
-Mr Lau: The garden. I planted the sunflowers myself.
-Reporter: Why do you like your job?
-Mr Lau: Because I can see the students every day, and they always say good morning to me.
+Key words
+- interview: ask someone questions to find out about them (訪問)
+- caretaker: a person who looks after a building (校工)
+- gate: a door in a wall or fence (閘門)
+- hardest: the most difficult (最困難的)
+- rainy: with a lot of rain (下雨的)
+- planted: put a plant in the ground (種植)
+- sunflower: a big yellow flower (向日葵)
+
+Your task
+Write five questions you would ask a person in your school, like a librarian or a teacher (one question for each of: who, what, when, where, why). Then write their answers.
