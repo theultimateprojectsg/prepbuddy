@@ -2319,7 +2319,8 @@ function renderPractice() {
   bindPracticeTiles(); bindGear();
   window.scrollTo(0, 0);
 }
-function bindGear() { $app.querySelectorAll('[data-gear]').forEach((b) => (b.onclick = () => go({ name: 'settings' }))); }
+function bindGear() {} // the gear is handled for every screen by the click listener below
+document.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('[data-gear]'); if (g) go({ name: 'settings' }); });
 const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. ${local.pilot ? '' : '<button class="btn-sm quiet" id="usage" >AI usage</button>'}</footer>`;
 /* ---------- children on this device (siblings sharing a tablet) ----------
    Each child gets their own localStorage key and IndexedDB database (see KIDS near the top and store.js).
@@ -2486,7 +2487,7 @@ async function renderBooks() {
 function renderSettings() {
   const zh = LANG === 'zh';
   const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" lang="${k === 'zh' ? 'zh-HK' : 'en'}" data-raw><b>${label}</b><span>${sub}</span></button>`;
-  $app.innerHTML = `
+  $app.innerHTML = `<div class="mob-only">${backTop({ name: 'home' }, 'Back')}</div>
   <main class="pad stack g18 settings" data-view="settings" style="flex:1">
     <h1 class="pagetitle">Settings</h1>
     ${planCardHTML()}
