@@ -775,6 +775,7 @@ async function go(v) {
   document.querySelectorAll('.toast').forEach((x) => x.remove());
   stopTimer();
   if (v.name === 'home') return renderHome();
+  if (v.name === 'practice') return renderPractice();
   if (v.name === 'books') return renderBooks();
   if (v.name === 'book') return renderBook(v.bookId);
   if (v.name === 'library') return renderLibrary(v.query || '');
@@ -2196,7 +2197,7 @@ async function renderHome() {
   const name = (local.name || '').trim();
   const dateText = new Date().toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div><div class="greet-r">${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}</div></div>`;
+      <div><h1 data-raw>${esc(hello)}${name ? `${LANG === 'zh' ? '，' : ', '}${esc(name)}` : ''}</h1><p data-raw>${esc(dateText)}</p></div><div class="greet-r">${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}${gearBtn()}</div></div>`;
   if (!books.length) {
     // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
     let starters = [];
@@ -2248,13 +2249,8 @@ async function renderHome() {
     <section class="stack g10" aria-label="Today's plan"><div class="sect-head"><h2>Today’s plan</h2></div><div class="plan">${items.join('')}</div></section>
     ${tests.html}
     <section class="stack g10" aria-label="Practice">
-      <div class="sect-head"><h2>Practice</h2></div>
-      <div class="quick">
-        <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
-        <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${isPrimaryKid() ? (LANG === 'zh' ? '模擬試卷' : 'Practice paper') : 'Mock paper'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
-        <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
-        <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>${isPrimaryKid() ? 'Kind feedback, then redraft' : 'DSE-style feedback, then redraft'}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>Listening · 聆聽</b><span>Listen, then answer</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>呈分試 sprint</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>${isPrimaryKid() ? 'Read aloud and answer' : 'DSE Paper 4, one-minute answers'}</span></button>
+      <div class="sect-head"><h2>Practice</h2><button class="btn-sm" id="allpractice">${LANG === 'zh' ? '所有練習' : 'All practice tools'} ›</button></div>
+      <div class="quick qshort">${(() => { const T = practiceTiles(); return ['weak', 'dictgo', 'hwgo', 'wrgo'].map((k) => T[k] || '').join(''); })()}
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
@@ -2273,7 +2269,6 @@ async function renderHome() {
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   const mr = document.getElementById('moreready'); if (mr) mr.onclick = () => go({ name: 'progress' });
   $app.querySelectorAll('.today-week .mrowb[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
-  const wsb = document.getElementById('worksheets'); if (wsb) wsb.onclick = () => go({ name: 'worksheets' });
   const mkb = document.getElementById('mistakes'); if (mkb) mkb.onclick = () => go({ name: 'mistakes' });
   const ct = document.getElementById('continue');
   if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
@@ -2281,15 +2276,50 @@ async function renderHome() {
   bindSchoolTests();
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
+  bindPracticeTiles(); bindGear();
+  window.scrollTo(0, 0);
+}
+// Every practice tool, as tiles (used on the Practice page; Today shows a few with a link to the rest).
+function practiceTiles() {
+  const t = {};
+  const html = `
+        <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
+        <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${isPrimaryKid() ? (LANG === 'zh' ? '模擬試卷' : 'Practice paper') : 'Mock paper'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
+        <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
+        <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
+        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>${isPrimaryKid() ? 'Kind feedback, then redraft' : 'DSE-style feedback, then redraft'}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>Listening · 聆聽</b><span>Listen, then answer</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>呈分試 sprint</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>${isPrimaryKid() ? 'Read aloud and answer' : 'DSE Paper 4, one-minute answers'}</span></button>
+`;
+  html.split(/(?=<button class="qtile)/).map((x) => x.trim()).filter(Boolean).forEach((x) => { const m = /data-mode="(\w+)"|id="(\w+)"/.exec(x); if (m) t[m[1] || m[2]] = x; });
+  return t;
+}
+function bindPracticeTiles() {
   { const hg = document.getElementById('hwgo'); if (hg) hg.onclick = () => go({ name: 'homework' }); }
   { const dg = document.getElementById('dictgo'); if (dg) dg.onclick = () => go({ name: 'dictation' }); }
   { const wg = document.getElementById('wrgo'); if (wg) wg.onclick = () => go({ name: 'writing' }); }
   { const sg = document.getElementById('spgo'); if (sg) sg.onclick = () => go({ name: 'speaking' }); }
   { const lg = document.getElementById('lngo'); if (lg) lg.onclick = () => go({ name: 'listening' }); }
   { const sp = document.getElementById('ssago'); if (sp) sp.onclick = () => startReview('ssa'); }
-  $app.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
+  { const ws = document.getElementById('worksheets'); if (ws) ws.onclick = () => go({ name: 'worksheets' }); }
+  { const ap = document.getElementById('allpractice'); if (ap) ap.onclick = () => go({ name: 'practice' }); }
+  $app.querySelectorAll('.qtile[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
+}
+const gearBtn = () => `<button class="mob-gear" data-gear aria-label="${LANG === 'zh' ? '設定' : 'Settings'}">${menuIcon('settings', false, 22)}</button>`;
+function renderPractice() {
+  const T = practiceTiles(), Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  const pick = (ids) => ids.map((k) => T[k] || '').join('');
+  $app.innerHTML = `
+  <main class="pad stack g18" data-view="practice" style="flex:1">
+    <div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h1 class="pagetitle" style="margin:0">${Z('Practice', '練習')}</h1><p>${Z('Every way to practise, in one place.', '所有練習方式，都在這裡。')}</p></div>${gearBtn()}</div>
+    <section class="stack g10"><div class="sect-head"><h2>${Z('From your textbooks', '按課本練習')}</h2></div><div class="quick">${pick(['weak', 'mock', 'ssago'])}</div>
+      ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
+      <span class="muted" style="font-size:13.5px">${Z('To practise one chapter, open the book in Books.', '想練習某一章，請到「課本」打開那本書。')}</span></section>
+    <section class="stack g10"><div class="sect-head"><h2>${Z('Language skills', '語文技能')}</h2></div><div class="quick">${pick(['dictgo', 'wrgo', 'lngo', 'spgo'])}</div></section>
+    <section class="stack g10"><div class="sect-head"><h2>${Z('Homework', '功課')}</h2></div><div class="quick">${pick(['hwgo'])}</div></section>
+  </main>${footerHTML()}`;
+  bindPracticeTiles(); bindGear();
   window.scrollTo(0, 0);
 }
+function bindGear() { $app.querySelectorAll('[data-gear]').forEach((b) => (b.onclick = () => go({ name: 'settings' }))); }
 const footerHTML = () => `<footer>Prototype. Your textbooks, questions and progress are saved on this device only. Questions are written by AI and checked by AI; tap "Report a problem" if one looks wrong. ${local.pilot ? '' : '<button class="btn-sm quiet" id="usage" >AI usage</button>'}</footer>`;
 /* ---------- children on this device (siblings sharing a tablet) ----------
    Each child gets their own localStorage key and IndexedDB database (see KIDS near the top and store.js).
@@ -2972,6 +3002,7 @@ async function startTour(replay) {
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#ctest', skipIfMissing: true, t: C('Chapter tests', '章節測驗') + lt('test'), d: C('Timed tests marked like a school test, with a pass mark of 80%.', '計時測驗，按學校測驗方式批改，合格分數為 80%。') },
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#paper', skipIfMissing: true, t: C('Mock papers', '模擬試卷') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
     { go: 'home', sel: 'section[aria-label="School tests"]', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates. Today’s plan counts down and focuses on what’s coming up.', '加入測驗日期，今日計劃會倒數，並集中溫習要考的內容。') },
+    { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to practise in one place: weak topics, practice papers, dictation, writing, listening, speaking and homework help.', '所有練習方式都在這裡：弱項、模擬試卷、默書、寫作、聆聽、說話和功課幫手。') },
     { go: 'homework', sel: '.hw-cap, .hw-hero', t: C('Homework help', '功課幫手') + lt('homework'), d: C('Snap a photo of your homework. Buddy reads it and guides you through each question.', '拍下功課，Buddy 會讀取題目，並引導你逐題完成。') },
     { go: 'dictation', sel: '#dnew', skipIfMissing: true, t: C('默書 · Dictation', '默書'), d: C('Snap your dictation list. Buddy reads the words aloud, you write them, then check.', '拍下默書範圍，Buddy 讀出詞語，你寫下來，然後核對。') },
     { go: 'writing', sel: '.wr-step', skipIfMissing: true, t: C('Writing', '寫作') + lt('writing'), d: C('Pick a DSE paper, write or snap your essay, and get marked against the real criteria. Then redraft.', '選擇 DSE 試卷，輸入或拍下文章，按真實準則批改，再修改。') },
@@ -2982,7 +3013,7 @@ async function startTour(replay) {
     { go: 'progress', sel: '#parentDash', skipIfMissing: true, t: C('Parent dashboard', '家長主頁') + lt('parent'), d: C('Behind a PIN that a parent sets: today, this week, and what needs attention.', '由家長設定密碼保護：今日、本週，以及需要留意的地方。') },
     { go: 'progress', sel: '#report', skipIfMissing: true, t: C('Weekly report', '每週報告'), d: C('A one-page summary to send to a parent as a link.', '一頁摘要，可以用連結傳送給家長。') },
     { go: 'stars', sel: 'section.stack', skipIfMissing: true, t: C('Stars and rewards', '星星與獎勵') + lt('stars'), d: C('Earn stars for real effort and swap them for rewards your parents choose. Rushing earns nothing!', '憑真正努力賺取星星，換取家長設定的獎勵。亂答一通不會有星星！') },
-    { go: 'settings', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, plan, stars on or off, and backups.', '你的名字、語言、計劃、開關星星，以及備份。') },
+    { go: matchMedia('(min-width:1024px)').matches ? 'settings' : 'home', sel: matchMedia('(min-width:1024px)').matches ? tab('settings') : '.mob-gear', t: C('Settings', '設定'), d: C('Your name, language, plan, stars on or off, and backups.', '你的名字、語言、計劃、開關星星，以及備份。') },
     { go: 'settings', sel: '#sfb', skipIfMissing: true, t: C('Tell us what you think', '告訴我們你的意見'), d: C('Something confusing, or a great idea? Type it here. We read every message.', '有地方令你困惑，或有好主意？在這裏輸入，我們會細閱每一個訊息。') },
     { go: 'progress', sel: '#helperFab', skipIfMissing: true, t: C('Ask Buddy any time', '隨時問 Buddy'), d: C('On any screen, tap here to ask a question, get study advice, or find your way around.', '在任何頁面按這裏，都可以發問、取得溫習建議，或問怎樣使用。') },
     { go: 'home', t: C('Now add your own textbook!', '現在加入你自己的課本！'), d: C('The sample book goes away now. Search for your textbook, then do “Find your level”. You can replay this tour in Settings.', '示範課本現在會移除。搜尋你的課本，然後做「找出你的程度」。你可以在設定中再看一次導覽。'), face: 'done', cta: C('Let’s go!', '開始吧！') },
@@ -3448,7 +3479,7 @@ function rewardEditor() {
 }
 
 /* ---------- tab bar ---------- */
-const TABS = [['home', 'Today', 'today'], ['books', 'Books', 'books'], ['mistakes', 'Mistakes', 'pen'], ['progress', 'Progress', 'chart'], ['settings', 'Settings', 'gear']];
+const TABS = [['home', 'Today', 'today'], ['books', 'Books', 'books'], ['practice', 'Practice', 'practice'], ['mistakes', 'Mistakes', 'pen'], ['progress', 'Progress', 'chart'], ['settings', 'Settings', 'gear']];
 let tabNow = null;
 function renderTabs(active = tabNow) {
   tabNow = active;
@@ -3470,11 +3501,11 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { parent: 'progress', plans: 'settings', speaking: 'home', writing: 'home', learn: 'books', dictation: 'home', homework: 'home', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'home', worksheets: 'home', usage: 'home' };
+const TAB_OF = { practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'books', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'practice', worksheets: 'practice', usage: 'home' };
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
-  if (m) return renderTabs(m.dataset.view);
+  if (m) return renderTabs(TAB_OF[m.dataset.view] || m.dataset.view);
   if (timedPaper()) return renderTabs(null);
   renderTabs((view && TAB_OF[view.name]) || 'home');
 }).observe($app, { childList: true });

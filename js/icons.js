@@ -10,6 +10,7 @@ const MENU = {
   books: (s, f) => `<rect x="4" y="4" width="4.5" height="16" rx="1.2" fill="${f}" stroke="${s}" stroke-width="2"/><rect x="10.5" y="4" width="4.5" height="16" rx="1.2" stroke="${s}" stroke-width="2"/><path d="M17 5.6l2.6-.7 2.4 14.3-2.6.7z" stroke="${s}" stroke-width="2"/>`,
   mistakes: (s, f) => `<path d="M14.5 5.5l4 4L8.5 19.5 4 20l.5-4.5z" fill="${f}" stroke="${s}" stroke-width="2"/><path d="M12.5 7.5l4 4" stroke="${s}" stroke-width="2"/><path d="M15.5 4.5l1-1a1.4 1.4 0 0 1 2 0l2 2a1.4 1.4 0 0 1 0 2l-1 1" stroke="${s}" stroke-width="2"/>`,
   settings: (s, f) => `<circle cx="12" cy="12" r="3.2" fill="${f}" stroke="${s}" stroke-width="2"/><path d="M12 2.8l1.6 2.3 2.7-.7.7 2.7 2.7.7-.7 2.7 2.3 1.5-2.3 1.6.7 2.7-2.7.7-.7 2.7-2.7-.7L12 21.2l-1.6-2.3-2.7.7-.7-2.7-2.7-.7.7-2.7L2.8 12l2.3-1.6-.7-2.7 2.7-.7.7-2.7 2.7.7z" stroke="${s}" stroke-width="1.9"/>`,
+  practice: (s, f) => `<circle cx="12" cy="12" r="8.5" fill="${f}" stroke="${s}" stroke-width="2"/><circle cx="12" cy="12" r="4.5" stroke="${s}" stroke-width="2"/><circle cx="12" cy="12" r="1.3" fill="${s}" stroke="none"/>`,
   progress: (s, f) => `<rect x="10.5" y="6" width="3" height="13" rx="1" fill="${f}" stroke="${s}" stroke-width="2"/><rect x="4.5" y="12" width="3" height="7" rx="1" stroke="${s}" stroke-width="2"/><rect x="16.5" y="9" width="3" height="10" rx="1" stroke="${s}" stroke-width="2"/><path d="M3 21h18" stroke="${s}" stroke-width="2"/>`,
 };
 export const menuIcon = (key, on, size = 22) => wrap((MENU[key] || MENU.home)(on ? NAVY : GREY, on ? Y : 'none'), size);

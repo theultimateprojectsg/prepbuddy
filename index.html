@@ -697,10 +697,14 @@ body[data-tab] .tabs{display:flex}
 .tabs button .badge{position:absolute;top:2px;left:calc(50% + 6px);background:var(--miss);color:#fff;font-size:10.5px;font-weight:700;border-radius:999px;padding:1px 6px}
 body[data-tab] .app{padding-bottom:76px}
 .tabs .brand-side{display:none}
+.tabs button[data-tabgo="settings"]{display:none}
+.mob-gear{flex:none;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink)}
 @media (min-width:1024px){
   body[data-tab] .tabs{top:0;bottom:0;right:auto;width:220px;border-top:none;border-right:1px solid var(--line);flex-direction:column;justify-content:flex-start;padding:24px 14px}
   .tabs .tabs-in{display:flex;flex-direction:column;gap:4px;flex:1}
-  .tabs button[data-tabgo="settings"]{margin-top:auto}
+  .tabs button[data-tabgo="settings"]{display:flex;margin-top:auto}
+  .mob-gear{display:none}
+  .quick.qshort>:nth-child(n+4){display:none}
   .tabs .brand-side{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;color:var(--ink);padding:0 12px 22px}
   .tabs button{flex-direction:row;gap:12px;justify-content:flex-start;padding:10px 12px;border-radius:12px;font-size:14.5px;min-height:44px}
   .tabs button.on{background:var(--accent-soft)}
