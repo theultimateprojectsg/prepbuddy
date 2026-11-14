@@ -2362,12 +2362,10 @@ async function renderBooks() {
       <div class="stack" style="gap:2px"><h1 class="pagetitle" style="margin:0">Books</h1>${books.length ? `<span class="muted bk-count">${W(`${books.length} textbook${books.length === 1 ? '' : 's'}`, `${books.length} 本課本`)}</span>` : ''}</div>
       <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} Add a textbook</button>
     </div>
-    ${books.length ? `<div class="bk-tools">
-      ${many ? `<form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
-      <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form>` : '<span style="flex:1"></span>'}
-      ${books.length > 1 ? `<div class="bk-view" role="group" aria-label="${W('Show as', '顯示方式')}">${viewBtn('grid', GRID, W('Covers', '封面'))}${viewBtn('list', LIST, W('List', '清單'))}</div>` : ''}
-    </div>
-    <div id="chips">${subjectChips(groupsAll, booksPick, books.length)}</div>
+    ${books.length ? `${many ? `<div class="bk-tools"><form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
+      <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form></div>` : ''}
+    <div class="bk-bar"><div id="chips">${subjectChips(groupsAll, booksPick, books.length)}</div>
+      ${books.length > 1 ? `<div class="bk-view" role="group" aria-label="${W('Show as', '顯示方式')}">${viewBtn('grid', GRID, W('Covers', '封面'))}${viewBtn('list', LIST, W('List', '清單'))}</div>` : ''}</div>
     <div id="shelf" aria-live="polite"></div>`
     : `<div class="card bk-empty"><span class="bk-empty-ic">${subjectIcon('', 34, null, '')}</span><b>${W('No textbooks yet', '仍未加入課本')}</b><p>${W('Add the textbooks you use at school, then practise any chapter.', '加入你在學校用的課本，就可以練習任何一章。')}</p></div>`}
   </main>`;
