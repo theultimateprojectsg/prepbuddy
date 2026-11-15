@@ -5941,16 +5941,16 @@ function testDialog(edit) {
     const lists = (local.dict || []).filter((L) => (L.lang === 'en') === (st.lang === 'en'));
     let body = '';
     if (st.kind === 'test') {
-      body = `<label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}">
-      <label for="td-s">${SCH('Subject', '科目')}</label><select id="td-s" class="input">${subjOpts(st.subj)}</select>
+      body = `<div class="td-two"><div><label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}"></div>
+      <div><label for="td-s">${SCH('Subject', '科目')}</label><select id="td-s" class="input">${subjOpts(st.subj)}</select></div></div>
       ${st.subj ? `<label for="td-b">${SCH('Textbook', '課本')}</label><select id="td-b" class="input">${bookOpts(books, st.subj, st.b)}</select>` : ''}
       ${book ? `<label>${SCH('Chapters in the test', '測驗範圍')} <span class="td-opt">${SCH('optional', '可不填')}</span></label>
         <div class="td-chs">${book.units.map((u) => `<label class="td-ch"><input type="checkbox" data-u="${esc(u.id)}" ${st.u.has(u.id) ? 'checked' : ''}><span>${esc(cleanUnitTitle(u.title))}</span></label>`).join('')}</div>
         <span class="td-hint">${SCH('Not sure? Leave them all unticked: Buddy will use everything you’ve practised so far.', '不清楚範圍？全部不剔：Buddy 會用你至今練習過的內容。')}</span>`
       : st.subj ? `<span class="td-hint">${SCH('No textbook for this subject yet. The test still counts down on Today, and you can add the book any time.', '這科未有課本。測驗仍會在「今天」倒數，你可隨時加入課本。')}</span>` : ''}`;
     } else if (st.kind === 'dict') {
-      body = `<label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}">
-      <label>${SCH('Language', '語文')}</label><div class="td-seg"><button type="button" data-lang="zh" class="${st.lang !== 'en' ? 'on' : ''}">中文</button><button type="button" data-lang="en" class="${st.lang === 'en' ? 'on' : ''}">English</button></div>
+      body = `<div class="td-two"><div><label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}"></div>
+      <div><label>${SCH('Language', '語文')}</label><div class="td-seg"><button type="button" data-lang="zh" class="${st.lang !== 'en' ? 'on' : ''}">中文</button><button type="button" data-lang="en" class="${st.lang === 'en' ? 'on' : ''}">English</button></div></div></div>
       <label for="td-l">${SCH('Word list', '詞語表')}</label><select id="td-l" class="input">${lists.map((L) => `<option value="${esc(L.id)}" ${L.id === st.L ? 'selected' : ''}>${esc(L.title)} · ${L.items.length}</option>`).join('')}<option value="" ${!st.L ? 'selected' : ''}>${SCH('Add the words after saving', '儲存後加入詞語')}</option></select>
       <span class="td-hint">${SCH('Today’s mission will have you practise this list, and readiness is your latest score on it.', '「今日任務」會讓你練習這個詞語表，準備度是你最近一次的分數。')}</span>`;
     } else {
@@ -5962,8 +5962,8 @@ function testDialog(edit) {
     box.innerHTML = `<div class="cdlg rdlg tdlg" role="dialog" aria-modal="true" aria-labelledby="td-t" data-raw>
       <div class="td-head"><b id="td-t">${edit ? SCH('Edit school test', '修改學校測驗') : SCH('Add a school test', '加入學校測驗')}</b>${edit ? `<button type="button" class="btn-sm danger td-delbtn" id="td-del"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>${SCH('Delete', '刪除')}</button>` : ''}</div>
       ${edit ? '' : `<div class="td-kinds" role="radiogroup" aria-label="${SCH('What kind of test?', '甚麼類型？')}">${kinds.map(([k, t, sub]) => `<button type="button" role="radio" aria-checked="${st.kind === k}" data-kind="${k}" class="${st.kind === k ? 'on' : ''}"><b>${t}</b><small>${sub}</small></button>`).join('')}</div>`}
-      ${body}
       <label for="td-n">${SCH('Name', '名稱')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, Term 1 exams', '例如：科學測驗、上學期考試')}" value="${esc(st.name)}">
+      ${body}
       <p class="hw-err" id="td-err" role="alert" hidden></p>
       <div class="rd-row"><button class="btn ghost" id="td-cancel">${SCH('Cancel', '取消')}</button><button class="btn" id="td-save">${SCH('Save', '儲存')}</button></div>
     </div>`;
