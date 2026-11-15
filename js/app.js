@@ -2404,9 +2404,9 @@ async function renderHome() {
     const day = new Date(testDay(nt.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
     const more = tests.steps.length - 1;
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<div class="td-test">
-      <button class="td-top" data-tedit="${esc(nt.x.id)}"><span class="td-cal">${actionIcon('test', 22)}</span><span class="td-tt"><b data-raw>${esc(nt.x.name)} · ${esc(day)}</b><small class="${nt.left <= 2 ? 'soon' : ''}">${leftText(nt.left)}</small></span><span class="td-pct"><b>${nt.ready == null ? '–' : nt.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></button>
+      <button class="td-top" data-tedit="${esc(nt.x.id)}" aria-label="${esc(nt.x.name)}, ${esc(day)}">${calTile(testDay(nt.x))}<span class="td-tt"><b data-raw>${esc(nt.x.name)}</b><small class="${nt.left <= 2 ? 'soon' : ''}">${leftText(nt.left)}</small></span><span class="td-pct"><b>${nt.ready == null ? '–' : nt.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></button>
       ${!nt.book ? `<div class="td-chl"><small class="muted" data-raw>${esc(testScope(nt))}${nt.last ? ' · ' + SCH(`${nt.last.g} of ${nt.last.n} right last time`, `上次 ${nt.last.n} 個中寫對 ${nt.last.g} 個`) : ''}</small></div>` : ''}<div class="td-chl">${nt.all ? `<small class="muted">${SCH('Everything practised so far', '至今練習過的所有內容')}</small>` : ''}${chs.slice(0, 5).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > 5 ? `<small class="muted">${Z(`+ ${chs.length - 5} more chapters`, `另有 ${chs.length - 5} 章`)}</small>` : ''}</div>
-      ${more ? `<div class="td-more">${tests.steps.slice(1).map((q) => `<button class="td-mrow" data-tedit="${esc(q.x.id)}"><span data-raw>${esc(q.x.name)}</span><small>${leftText(q.left)}</small><b>${q.ready == null ? '–' : q.ready + '%'}</b></button>`).join('')}</div>` : ''}
+      ${more ? `<div class="td-more">${tests.steps.slice(1).map((q) => `<button class="td-mrow" data-tedit="${esc(q.x.id)}">${calTile(testDay(q.x), 'sm')}<span data-raw>${esc(q.x.name)}</span><small>${leftText(q.left)}</small><b>${q.ready == null ? '–' : q.ready + '%'}</b></button>`).join('')}</div>` : ''}
       ${M.steps.some((x) => x.key === `t:${nt.x.id}`) ? `<div class="td-foot"><span>${allDone ? Z('Today’s practice counted towards it.', '今天的練習已計入。') : Z('Today’s mission includes it.', '今日任務已包括這個測驗。')}</span></div>` : ''}
     </div></section>`;
   }
@@ -4970,7 +4970,7 @@ async function renderProgress() {
   if (nt) {
     const h = nt.book ? RH.find((x) => x.b.id === nt.book.id) : null; const fc = nt.ready == null ? null : h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(nt.ready + h.rate * nt.left)) : null;
     const day = new Date(testDay(nt.x)).toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-    testCard = `<button class="pg-next" data-tedit="${esc(nt.x.id)}">${ringHTML(nt.ready || 0, tone(nt.ready || 0), nt.ready == null ? '–' : nt.ready + '%', 68)}<span class="pg-nt"><small>${PT('Next school test', '下一個學校測驗')} · ${leftText(nt.left)}</small><b>${esc(nt.x.name)} · ${esc(day)}</b><span>${esc(testScope(nt))}${nt.ready == null ? '' : ' · ' + PT(`${nt.ready}% ready now`, `現時準備度 ${nt.ready}%`)}</span>${fc != null ? `<em class="${fc >= 80 ? 'up' : ''}">${PT(`At this pace: about ${fc}% ready by the test`, `按現時進度：測驗時約 ${fc}%`)}</em>` : nt.book ? `<em>${PT('Forecast after a week of practice', '練習一星期後會有預測')}</em>` : ''}</span></button>`;
+    testCard = `<button class="pg-next" data-tedit="${esc(nt.x.id)}">${calTile(testDay(nt.x))}<span class="pg-nt"><small>${PT('Next school test', '下一個學校測驗')} · ${leftText(nt.left)}</small><b>${esc(nt.x.name)}</b><span>${esc(testScope(nt))}${nt.ready == null ? '' : ' · ' + PT(`${nt.ready}% ready now`, `現時準備度 ${nt.ready}%`)}</span>${fc != null ? `<em class="${fc >= 80 ? 'up' : ''}">${PT(`At this pace: about ${fc}% ready by the test`, `按現時進度：測驗時約 ${fc}%`)}</em>` : nt.book ? `<em>${PT('Forecast after a week of practice', '練習一星期後會有預測')}</em>` : ''}</span></button>`;
   } else testCard = `<button class="pg-next pg-next0" id="addTest2"><span class="pg-ic blue">${pIcon('target')}</span><span class="pg-nt"><b>${PT('Got a school test coming up?', '快要學校測驗？')}</b><span>${PT('Add it to see how ready you are for it, and a forecast for the test day.', '加入後，可看到準備度和測驗當日的預測。')}</span></span></button>`;
   // readiness week by week
   const lineHTML = readyLinesSVG(RH.filter((x) => x.used));
@@ -5850,6 +5850,11 @@ function bookSubjKey(b) {
   const t = String((b && (b.subject + ' ' + b.title)) || '');
   return /english|英文/i.test(t) ? 'eng' : /math|數學|algebra/i.test(t) ? 'math' : /chinese|中文|中國語文/i.test(t) ? 'chi' : /science|general studies|humanities|常識|科學|人文/i.test(t) ? 'gs' : 'other';
 }
+// A small tear-off calendar: month band, big day number, weekday. Used for school tests.
+function calTile(t, size = 'lg') {
+  const d = new Date(t), zh = LANG === 'zh';
+  return `<span class="cal-tile ${size}" aria-hidden="true"><span class="cal-m">${d.toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { month: 'short' })}</span><b class="cal-d">${d.getDate()}</b><span class="cal-w">${d.toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { weekday: 'short' })}</span></span>`;
+}
 // What the test covers, in a few words, for lists and cards.
 function testScope(p) {
   if (p.dict) return SCH(`默書 · ${p.dict.title}`, `默書 · ${p.dict.title}`);
@@ -6011,7 +6016,7 @@ async function schoolTestsHTML() {
     .sort((a, b) => a.left - b.left || (a.ready ?? 101) - (b.ready ?? 101)); // same day (e.g. exams): weakest first
   const past = schoolTests().filter((x) => testLeft(x) < 0 && testLeft(x) >= -21 && x.score === undefined); // papers often come back 1-2 weeks later
   const rows = steps.map((p) => `<div class="stx ${p.left <= 1 ? 'soon' : ''}"><button class="stx-main" data-tedit="${esc(p.x.id)}" aria-label="${SCH('Edit', '修改')} ${esc(p.x.name)}">
-      <span class="stx-cal"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span>
+      ${calTile(testDay(p.x), 'sm')}
       <span class="stx-t"><b data-raw>${esc(p.x.name)}</b><small>${leftText(p.left)} · <span data-raw>${esc(testScope(p))}</span></small></span>
       <span class="stx-r"><b>${p.ready == null ? '–' : p.ready + '%'}</b><small>${SCH('ready', '準備度')}</small></span></button></div>`).join('');
   const pastHTML = past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><button class="btn-sm primary stx-snap" data-snapscore="${esc(x.id)}">${SCH('Snap the marked paper', '拍下已批改的試卷')}</button><span class="stx-sc"><span class="muted" style="font-size:14px">${SCH('or type it:', '或輸入：')}</span><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('');

@@ -1647,6 +1647,16 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .gr-btn .gr-streak{display:flex;flex-direction:column;gap:2px}
 .gr-cta{align-self:flex-start;margin-top:4px;font-size:12.5px;font-weight:600;color:#FFFFFF;background:var(--accent);border-radius:999px;padding:4px 12px}.gr-cta.ok{color:var(--good-dark);background:var(--good-soft)}
 .gr-btn:focus-visible{outline:3px solid var(--accent-tint);outline-offset:4px;border-radius:8px}
+
+/* calendar tile for school tests */
+.cal-tile{flex:none;display:flex;flex-direction:column;align-items:center;background:#FFFFFF;border:1.5px solid #F2C9A8;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(30,42,90,.06);line-height:1}
+.cal-tile .cal-m{align-self:stretch;text-align:center;background:#E0672A;color:#FFFFFF;font-weight:700;letter-spacing:.02em}
+.cal-tile .cal-d{color:var(--ink);font-weight:700}
+.cal-tile .cal-w{color:var(--muted);font-weight:600}
+.cal-tile.lg{width:58px}.cal-tile.lg .cal-m{font-size:12px;padding:4px 0}.cal-tile.lg .cal-d{font-size:24px;padding:5px 0 2px}.cal-tile.lg .cal-w{font-size:11px;padding-bottom:6px}
+.cal-tile.sm{width:40px;border-radius:9px}.cal-tile.sm .cal-m{font-size:10px;padding:2px 0}.cal-tile.sm .cal-d{font-size:16px;padding:3px 0 3px}.cal-tile.sm .cal-w{display:none}
+.td-mrow{gap:12px}
+.td-mrow .cal-tile,.td-mrow .cal-tile span,.stx-main .cal-tile span{flex:none!important;font-weight:700}
 </style>
 </head>
 <body>
