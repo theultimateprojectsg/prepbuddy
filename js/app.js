@@ -719,7 +719,7 @@ let S = null; // current practice session
 let navStack = [], navPopping = false, navCur = null;
 const navKey = (v) => JSON.stringify(v || {});
 // Each screen has its own address (#/book?bookId=…), so a refresh, a bookmark or a shared link opens the same screen.
-const URL_OK = ['practice', 'privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
+const URL_OK = ['chapters', 'practice', 'privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
 function viewUrl(v) {
   if (!v || !URL_OK.includes(v.name)) return '#/' + (v && v.name === 'parent' ? 'progress' : 'home');
   const q = new URLSearchParams();
@@ -780,7 +780,7 @@ window.addEventListener('popstate', (e) => {
   try { go(st.v); } finally { navPopping = false; }
 });
 
-// backTo: 'practice' when a lesson / notes / flashcards was opened from the Practice tab, so Back returns there.
+// backTo: the screen a lesson / notes / flashcards was opened from (Practice → Lessons), so Back returns there.
 let backTo = null;
 async function go(v) {
   if (!['learn', 'notes', 'cards'].includes(v.name)) backTo = null;
@@ -820,6 +820,7 @@ async function go(v) {
   if (v.name === 'notes') return renderNotes(v.bookId);
   if (v.name === 'edit') return renderEdit(v.bookId);
   if (v.name === 'mistakes') return renderMistakes(v.tab || 'todo', v.book);
+  if (v.name === 'chapters') return renderChapters(v.mode === 'learn' ? 'learn' : 'practise');
   if (v.name === 'cards') return renderCards(v.bookId, v.only);
 }
 
@@ -1974,8 +1975,8 @@ function unitWritingTask(book, unit, task) {
   go({ name: 'writing', id: it.id });
 }
 // Where the Back button of a lesson / notes / flashcards goes (backTo is declared above go()).
-const leaveTo = (bookId) => (backTo === 'practice' ? go({ name: 'practice' }) : go({ name: 'book', bookId }));
-const backLabel = (book) => (backTo === 'practice' ? (LANG === 'zh' ? '練習' : 'Practice') : book);
+const leaveTo = (bookId) => (backTo ? go(backTo) : go({ name: 'book', bookId }));
+const backLabel = (book) => (backTo ? (backTo.name === 'chapters' ? (backTo.mode === 'learn' ? (LANG === 'zh' ? '課堂' : 'Lessons') : (LANG === 'zh' ? '練習題' : 'Questions')) : (LANG === 'zh' ? '練習' : 'Practice')) : book);
 async function renderLearn(bookId, unitId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   const unit = book && book.units.find((u) => u.id === unitId);
@@ -2341,7 +2342,7 @@ async function renderHome() {
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
   </main>
-  <aside class="coach${phoneQ() ? ' folded' : ''}" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
+  <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
   { const co = document.getElementById('coachOpen'); if (co) co.onclick = () => { document.getElementById('coach').classList.remove('folded'); const q = document.getElementById('coachQ'); if (q) q.focus({ preventScroll: true }); document.getElementById('coach').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
   bindHomeCommon();
   bindCoach();
@@ -2386,7 +2387,7 @@ function bindPracticeTiles() {
   { const ap = document.getElementById('allpractice'); if (ap) ap.onclick = () => go({ name: 'practice' }); }
   $app.querySelectorAll('.qtile[data-mode], .plan-item[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
 }
-const gearBtn = () => `<button class="mob-gear" data-gear aria-label="${LANG === 'zh' ? '設定' : 'Settings'}">${menuIcon('settings', false, 22)}</button>`;
+const gearBtn = () => ''; const gearBtnOld = () => `<button class="mob-gear" data-gear aria-label="${LANG === 'zh' ? '設定' : 'Settings'}">${menuIcon('settings', false, 22)}</button>`;
 const titleRow = (h1) => `<div class="ttl-row">${h1}${gearBtn()}</div>`; // main tabs: page title + Settings gear on phones
 function renderPractice() {
   const T = practiceTiles(), Z = (en, zh) => (LANG === 'zh' ? zh : en);
@@ -2394,45 +2395,55 @@ function renderPractice() {
   $app.innerHTML = `
   <main class="pad stack g18" data-view="practice" style="flex:1">
     <div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h1 class="pagetitle" style="margin:0">${Z('Practice', '練習')}</h1><p>${Z('Every way to practise, in one place.', '所有練習方式，都在這裡。')}</p></div>${gearBtn()}</div>
-    <section class="stack g10" id="pbychap"><div class="sect-head"><h2>${Z('By chapter', '按章節')}</h2></div><div id="pcbody" class="pc-body"><span class="muted">${Z('Loading your chapters…', '載入章節中…')}</span></div></section>
-    <section class="stack g10"><div class="sect-head"><h2>${Z('From your textbooks', '按課本練習')}</h2></div><div class="quick">${pick(['weak', 'mock', 'ssago'])}</div>
+    <section class="stack g10"><div class="sect-head"><h2>${Z('From your textbooks', '按課本練習')}</h2></div><div class="quick">
+      <button class="qtile" id="lessongo">${actionTile('learn', 44)}<b>${Z('Lessons', '課堂')}</b><span>${Z('Buddy teaches a chapter step by step', 'Buddy 逐步教你一章')}</span></button>
+      <button class="qtile" id="questionsgo">${actionTile('practise', 44)}<b>${Z('Practice questions', '練習題')}</b><span>${Z('Pick a chapter and practise', '選一章來練習')}</span></button>
+      <button class="qtile" id="mkgo">${actionTile('mistakes', 44)}<b>${Z('Mistake book', '錯題簿')}</b><span>${mistakeCount() ? Z(`${mistakeCount()} to get right`, `${mistakeCount()} 題要改正`) : Z('Nothing to fix right now', '暫時沒有錯題')}</span>${mistakeCount() ? `<span class="qt-badge">${mistakeCount() > 99 ? '99+' : mistakeCount()}</span>` : ''}</button>
+      ${pick(['weak', 'mock', 'ssago'])}</div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
 </section>
     <section class="stack g10"><div class="sect-head"><h2>${Z('Language skills', '語文技能')}</h2></div><div class="quick">${pick(['dictgo', 'wrgo', 'lngo', 'spgo'])}</div></section>
     <section class="stack g10"><div class="sect-head"><h2>${Z('Homework', '功課')}</h2></div><div class="quick">${pick(['hwgo'])}</div></section>
   </main>${footerHTML()}`;
   bindPracticeTiles(); bindGear();
+  document.getElementById('lessongo').onclick = () => go({ name: 'chapters', mode: 'learn' });
+  document.getElementById('questionsgo').onclick = () => go({ name: 'chapters', mode: 'practise' });
+  document.getElementById('mkgo').onclick = () => go({ name: 'mistakes' });
   window.scrollTo(0, 0);
-  practiceByChapter();
 }
-// Practice tab → By chapter: pick a book, then Learn (the lesson) or Practise (questions) any chapter, without going through Books.
-async function practiceByChapter(showAll) {
-  const box = document.getElementById('pcbody'); if (!box) return;
-  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+// Practice → Lessons / Practice questions: pick a book (remembered), then a chapter. One big button per row.
+async function renderChapters(mode, showAll) {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), learnMode = mode === 'learn';
   const books = await getBooks();
-  if (!books.length) { box.innerHTML = `<button class="weekstrip" data-pcadd><span class="wt"><b>${Z('Add a textbook', '加入課本')}</b><span>${Z('Then learn or practise it chapter by chapter', '之後便可逐章學習或練習')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>`; box.querySelector('[data-pcadd]').onclick = () => go({ name: 'library' }); return; }
+  const head = `${backTop({ name: 'practice' }, 'Practice')}<main class="pad stack g14" data-view="chapters" style="flex:1">
+    <div class="pick-head">${actionTile(learnMode ? 'learn' : 'practise', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${learnMode ? Z('Lessons', '課堂') : Z('Practice questions', '練習題')}</h1><p class="muted" style="margin:0;line-height:1.5">${learnMode ? Z('New to a chapter? Buddy teaches it step by step, with quick checks.', '新的一章？Buddy 會逐步教你，每步都有小測。') : Z('Questions from your textbook, marked as you go.', '來自課本的題目，即時批改。')}</p></div></div>`;
+  if (!books.length) { $app.innerHTML = `${head}<button class="weekstrip" id="pcadd"><span class="wt"><b>${Z('Add a textbook', '加入課本')}</b><span>${Z('Then pick a chapter here', '之後便可在這裏選章節')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button></main>`; document.getElementById('pcadd').onclick = () => go({ name: 'library' }); return; }
   const bk = books.find((b) => b.id === local.pracBook) || books[0];
   const m = await bookMastery(bk);
-  if (!document.getElementById('pcbody')) return; // left the page while loading
+  if (!view || view.name !== 'chapters') return; // left while loading
   const learned = local.learned || {};
   const list = m.chapters.filter((c) => !NOT_TEACHING.test(c.unit.title || ''));
-  let start = list.findIndex((c) => c.pct < 50); if (start < 0) start = Math.max(0, list.findIndex((c) => c.pct < 100));
-  const shown = showAll ? list : list.slice(start, start + 5);
-  const st = (c) => (c.pct > 0 ? `<span style="color:${c.pct < 60 ? 'var(--warn)' : c.pct < 80 ? 'var(--accent)' : 'var(--good)'};font-weight:600">${c.pct}% ${Z('mastered', '已掌握')}</span> · ${trStep(masteryLabel(c.pct))}` : learned[`${bk.id}:${c.unit.id}`] ? Z('Lesson done · not practised yet', '已上課 · 未練習') : Z('Not started', '未開始'));
-  box.innerHTML = `
+  const isNext = (c) => (learnMode ? !learned[`${bk.id}:${c.unit.id}`] : c.pct < 50);
+  let start = list.findIndex(isNext); if (start < 0) start = 0;
+  const shown = showAll ? list : list.slice(start, start + 6);
+  const st = (c) => (learnMode ? (learned[`${bk.id}:${c.unit.id}`] ? Z('Lesson done', '已上課') : Z('Not learned yet', '未上課'))
+    : c.pct > 0 ? `<span style="color:${c.pct < 60 ? 'var(--warn)' : c.pct < 80 ? 'var(--accent)' : 'var(--good)'};font-weight:600">${c.pct}% ${Z('mastered', '已掌握')}</span> · ${trStep(masteryLabel(c.pct))}` : Z('Not started', '未開始'));
+  $app.innerHTML = `${head}
     ${books.length > 1 ? `<div class="pc-books" role="tablist">${books.map((b) => `<button class="chip${b.id === bk.id ? ' on' : ''}" role="tab" aria-selected="${b.id === bk.id}" data-pcbook="${esc(b.id)}"><span data-raw>${esc(subjectName(b.subject, LANG) || b.title)}</span></button>`).join('')}</div>` : ''}
     <p class="pc-title muted" data-raw>${esc(bk.title)}</p>
-    <div class="pc-list">${shown.map((c) => `<div class="pc-row${!showAll && c === list[start] ? ' next' : ''}">
-      <span class="pc-t">${!showAll && c === list[start] ? `<span class="lc-up">${Z('Up next', '下一章')}</span>` : ''}<b data-raw title="${esc(cleanUnitTitle(c.unit.title))}">${esc(shortTitle(c.unit.title))}</b><small>${st(c)}</small><span class="pc-also"><button class="linkbtn" data-pcnotes="${esc(c.unit.id)}">${Z('Notes', '筆記')}</button><button class="linkbtn" data-pccards="${esc(c.unit.id)}">${Z('Flashcards', '閃卡')}</button></span></span>
-      <span class="pc-btns"><button class="btn-sm" data-pclearn="${esc(c.unit.id)}">${Z('Learn', '學習')}</button><button class="btn-sm primary" data-pcprac="${esc(c.unit.id)}">${Z('Practise', '練習')}</button></span></div>`).join('')}</div>
-    ${list.length > shown.length || showAll ? `<button class="linkbtn pc-more" data-pcall>${showAll ? Z('Show fewer', '顯示較少') : Z(`Show all ${list.length} chapters`, `顯示全部 ${list.length} 章`)}</button>` : ''}`;
-  box.querySelectorAll('[data-pcbook]').forEach((b) => (b.onclick = () => { local.pracBook = b.dataset.pcbook; saveLocal(); practiceByChapter(); }));
-  box.querySelectorAll('[data-pclearn]').forEach((b) => (b.onclick = () => { backTo = 'practice'; go({ name: 'learn', bookId: bk.id, unitId: b.dataset.pclearn }); }));
-  const oneChapter = (id, name) => { backTo = 'practice'; pick = { bookId: bk.id, ids: new Set([id]), open: new Set() }; go({ name, bookId: bk.id }); };
-  box.querySelectorAll('[data-pcnotes]').forEach((b) => (b.onclick = () => oneChapter(b.dataset.pcnotes, 'notes')));
-  box.querySelectorAll('[data-pccards]').forEach((b) => (b.onclick = () => oneChapter(b.dataset.pccards, 'cards')));
-  box.querySelectorAll('[data-pcprac]').forEach((b) => (b.onclick = () => { const u = bk.units.find((x) => x.id === b.dataset.pcprac); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
-  const more = box.querySelector('[data-pcall]'); if (more) more.onclick = () => practiceByChapter(!showAll);
+    <div class="pc-list">${shown.map((c) => `<button class="pc-row big${!showAll && c === list[start] ? ' next' : ''}" data-unit="${esc(c.unit.id)}">
+      <span class="pc-t">${!showAll && c === list[start] ? `<span class="lc-up">${Z('Up next', '下一章')}</span>` : ''}<b data-raw title="${esc(cleanUnitTitle(c.unit.title))}">${esc(shortTitle(c.unit.title))}</b><small>${st(c)}</small></span>
+      <span class="pc-go">${learnMode ? Z('Learn', '學習') : Z('Practise', '練習')} ›</span></button>`).join('')}</div>
+    ${list.length > shown.length || showAll ? `<button class="linkbtn pc-more" id="pcall">${showAll ? Z('Show fewer', '顯示較少') : Z(`Show all ${list.length} chapters`, `顯示全部 ${list.length} 章`)}</button>` : ''}
+  </main>`;
+  $app.querySelectorAll('[data-pcbook]').forEach((b) => (b.onclick = () => { local.pracBook = b.dataset.pcbook; saveLocal(); renderChapters(mode, showAll); }));
+  $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => {
+    const u = bk.units.find((x) => x.id === b.dataset.unit); if (!u) return;
+    if (learnMode) { backTo = { name: 'chapters', mode: 'learn' }; go({ name: 'learn', bookId: bk.id, unitId: u.id }); }
+    else startUnits(bk, [u], local.count || sessionSize());
+  }));
+  const more = document.getElementById('pcall'); if (more) more.onclick = () => renderChapters(mode, !showAll);
+  window.scrollTo(0, 0);
 }
 function bindGear() {} // the gear is handled for every screen by the click listener below
 document.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('[data-gear]'); if (g) go({ name: 'settings' }); });
@@ -3241,7 +3252,8 @@ async function quickTour(replay) {
     { go: 'home', sel: tab('home'), t: C('Hi, I’m Buddy! This is Today', '你好，我是 Buddy！這是「今日」'), d: C('Your home screen. Each day I plan what to do: a chapter to practise, reviews and mistakes to fix. Tap an item to start.', '你的主頁。我每天幫你計劃要做甚麼：練習哪一章、溫習和改正錯題。按一下就開始。') },
     { go: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('Your textbooks. We’ve added free PrepBuddy books to try, and you can add your own school books here.', '你的課本。我們已加入 PrepBuddy 的免費課本給你試用，你也可以在這裏加入學校課本。') },
     { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Learn or practise any chapter, plus dictation, writing, listening, speaking and homework help.', '學習或練習任何一章，還有默書、寫作、聆聽、說話和功課幫手。') },
-    { go: 'mistakes', sel: tab('mistakes'), t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here. Get it right again a day later and it’s mastered.', '答錯的題目都會放在這裏。隔一天再答對，就算掌握了。') },
+    { go: 'practice', sel: '#mkgo', skipIfMissing: true, t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here, under Practice. Get it right again a day later and it’s mastered.', '答錯的題目都會放在「練習」的錯題簿。隔一天再答對，就算掌握了。') },
+    { go: 'settings', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, backups, and the parent dashboard.', '名字、語言、備份，以及家長主頁。') },
     { go: 'progress', sel: tab('progress'), t: C('Progress', '進度'), d: C('How you’re doing each week. Parents can open the parent dashboard from here or from Settings.', '每週的學習情況。家長可以在這裏或「設定」打開家長主頁。') },
     { go: 'home', t: C('Ask me any time', '隨時問我'), d: C('Stuck on a question? Tap “Ask Buddy”. Ready? Let’s start with today’s plan.', '遇到不明白的題目？按「問 Buddy」。準備好了嗎？由今日計劃開始吧！'), cta: C('Let’s go', '開始') },
   ];
@@ -3282,13 +3294,13 @@ async function startTour(replay) {
     { go: 'dictation', sel: '#dnew', skipIfMissing: true, t: C('Dictation', '默書'), d: C('Snap your dictation list. Buddy reads the words aloud, you write them, then check.', '拍下默書範圍，Buddy 讀出詞語，你寫下來，然後核對。') },
     { go: 'writing', sel: '.wr-step', skipIfMissing: true, t: C('Writing', '寫作') + lt('writing'), d: C('Pick a DSE paper, write or snap your essay, and get marked against the real criteria. Then redraft.', '選擇 DSE 試卷，輸入或拍下文章，按真實準則批改，再修改。') },
     { go: 'speaking', sel: '.wr-step', skipIfMissing: true, t: C('Speaking', '說話') + lt('speaking'), d: C('DSE Paper 4 practice: get a topic, speak for a minute, and get feedback on your answer.', 'DSE 卷四練習：取得題目，說一分鐘，然後獲得回饋。') },
-    { go: 'mistakes', sel: tab('mistakes'), t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here by subject and chapter. Get it right a day later and it’s mastered.', '答錯的題目會按科目和章節放在這裏。隔天再答對，就算掌握了。') },
+    { go: 'practice', sel: '#mkgo', skipIfMissing: true, t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here by subject and chapter. Get it right a day later and it’s mastered.', '答錯的題目會按科目和章節放在這裏。隔天再答對，就算掌握了。') },
     { go: 'progress', sel: tab('progress'), t: C('Progress', '進度'), d: C('Time practised, scores over time, and how ready you are for each book.', '練習時間、分數變化，以及每本課本的準備程度。') },
     { go: 'progress', sel: '#goal-set, #goal-edit', skipIfMissing: true, t: C('Weekly goal', '每週目標'), d: C('Pick days and minutes a week. Reaching it earns bonus stars.', '選擇每週練習的天數和分鐘。達成可以賺額外星星。') },
     { go: 'progress', sel: '#parentDash', skipIfMissing: true, t: C('Parent dashboard', '家長主頁') + lt('parent'), d: C('Behind a PIN that a parent sets: today, this week, and what needs attention.', '由家長設定密碼保護：今日、本週，以及需要留意的地方。') },
     { go: 'progress', sel: '#report', skipIfMissing: true, t: C('Weekly report', '每週報告'), d: C('A one-page summary to send to a parent as a link.', '一頁摘要，可以用連結傳送給家長。') },
     { go: 'stars', sel: 'section.stack', skipIfMissing: true, t: C('Stars and rewards', '星星與獎勵') + lt('stars'), d: C('Earn stars for real effort and swap them for rewards your parents choose. Rushing earns nothing!', '憑真正努力賺取星星，換取家長設定的獎勵。亂答一通不會有星星！') },
-    { go: matchMedia('(min-width:1024px)').matches ? 'settings' : 'home', sel: matchMedia('(min-width:1024px)').matches ? tab('settings') : '.mob-gear', t: C('Settings', '設定'), d: C('Your name, language, plan, stars on or off, and backups.', '你的名字、語言、計劃、開關星星，以及備份。') },
+    { go: matchMedia('(min-width:1024px)').matches ? 'settings' : 'home', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, plan, stars on or off, and backups.', '你的名字、語言、計劃、開關星星，以及備份。') },
     { go: 'settings', sel: '#sfb', skipIfMissing: true, t: C('Tell us what you think', '告訴我們你的意見'), d: C('Something confusing, or a great idea? Type it here. We read every message.', '有地方令你困惑，或有好主意？在這裏輸入，我們會細閱每一個訊息。') },
     { go: 'progress', sel: '#helperFab', skipIfMissing: true, t: C('Ask Buddy any time', '隨時問 Buddy'), d: C('On any screen, tap here to ask a question, get study advice, or find your way around.', '在任何頁面按這裏，都可以發問、取得溫習建議，或問怎樣使用。') },
     { go: 'home', t: C('Now add your own textbook!', '現在加入你自己的課本！'), d: C('The sample book goes away now. Search for your textbook, then do “Find your level”. You can replay this tour in Settings.', '示範課本現在會移除。搜尋你的課本，然後做「找出你的程度」。你可以在設定中再看一次導覽。'), face: 'done', cta: C('Let’s go!', '開始吧！') },
@@ -3822,7 +3834,7 @@ function rewardEditor() {
 }
 
 /* ---------- tab bar ---------- */
-const TABS = [['home', 'Today', 'today'], ['books', 'Books', 'books'], ['practice', 'Practice', 'practice'], ['mistakes', 'Mistakes', 'pen'], ['progress', 'Progress', 'chart'], ['settings', 'Settings', 'gear']];
+const TABS = [['home', 'Today', 'today'], ['books', 'Books', 'books'], ['practice', 'Practice', 'practice'], ['progress', 'Progress', 'chart'], ['settings', 'Settings', 'gear']]; // the Mistake book is a block on Practice
 let tabNow = null;
 function renderTabs(active = tabNow) {
   tabNow = active;
@@ -3830,7 +3842,7 @@ function renderTabs(active = tabNow) {
   if (!active) { delete document.body.dataset.tab; return; }
   document.body.dataset.tab = active;
   const mk = mistakeCount();
-  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'mistakes' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>${planId() !== 'pro' ? `<button class="side-up" id="sideUp"><span class="plan-pill ${planId()}">${PL(curPlan().name, curPlan().zh)}</span><b>${PL('Upgrade', '升級')} →</b></button>` : ''}`;
+  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'practice' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : ''}</button>`).join('')}</div>${planId() !== 'pro' ? `<button class="side-up" id="sideUp"><span class="plan-pill ${planId()}">${PL(curPlan().name, curPlan().zh)}</span><b>${PL('Upgrade', '升級')} →</b></button>` : ''}`;
   bindStarChips(nav);
   { const su = nav.querySelector('#sideUp'); if (su) su.onclick = () => go({ name: 'plans' }); }
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = async () => {
@@ -3844,8 +3856,8 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'books', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'practice', worksheets: 'practice', usage: 'home' };
-const MAIN_TABS = ['home', 'books', 'practice', 'mistakes', 'progress', 'settings'];
+const TAB_OF = { mistakes: 'practice', chapters: 'practice', practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'books', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'practice', worksheets: 'practice', usage: 'home' };
+const MAIN_TABS = ['home', 'books', 'practice', 'progress', 'settings'];
 function tabFor(v) {
   if (!v) return 'home';
   if (MAIN_TABS.includes(v.name) || ['book', 'learn', 'notes', 'cards', 'paper'].includes(v.name)) return TAB_OF[v.name] || 'home';
@@ -3855,10 +3867,10 @@ function tabFor(v) {
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
-  if (m && backTo === 'practice' && m.dataset.view === 'learn') return renderTabs('practice');
+  if (m && backTo && m.dataset.view === 'learn') return renderTabs('practice');
   if (m) return renderTabs(view && !MAIN_TABS.includes(m.dataset.view) ? tabFor(view) : TAB_OF[m.dataset.view] || m.dataset.view);
   if (timedPaper()) return renderTabs(null);
-  if (backTo === 'practice' && view && ['learn', 'notes', 'cards', 'session'].includes(view.name)) return renderTabs('practice');
+  if (backTo && view && ['learn', 'notes', 'cards', 'session'].includes(view.name)) return renderTabs('practice');
   renderTabs(tabFor(view));
 }).observe($app, { childList: true });
 
@@ -4500,7 +4512,7 @@ function cardsDone() {
       ${missed ? `<button class="btn" id="redo">Go through the ${missed} I missed</button>` : ''}
       <button class="btn ${missed ? 'ghost' : ''}" id="all">Shuffle all and go again</button>
       <button class="btn ghost" id="practise">Practise questions on these chapters</button>
-      <button class="btn ghost" id="back">${backTo === 'practice' ? (LANG === 'zh' ? '返回練習' : 'Back to Practice') : 'Back to chapters'}</button>
+      <button class="btn ghost" id="back">${backTo ? (LANG === 'zh' ? '返回' : 'Back to ') + backLabel('') : 'Back to chapters'}</button>
     </div></main>`;
   const deck = [...C.firstTry, ...C.missed];
   const r = document.getElementById('redo'); if (r) r.onclick = () => { const m = shuffle([...C.missed]); const id = C.bookId; C = null; renderCards(id, m); };
@@ -5851,7 +5863,7 @@ async function renderMistakes(tab, openBook) {
   const SHOW = 4;
   $app.innerHTML = `
   <main class="pad stack g18 mkpage" data-view="mistakes" style="flex:1">
-    ${titleRow(`<h1 class="pagetitle">${LANG === 'zh' ? '錯題簿' : 'Mistake book'}</h1>`)}
+    ${backTop({ name: 'practice' }, 'Practice')}<h1 class="pagetitle">${LANG === 'zh' ? '錯題簿' : 'Mistake book'}</h1>
     ${tab === 'todo' && todo ? `<section class="mk-hero">
       <div class="mk-hero-l">${buddySVG('happy', 64)}<div class="stack g6"><b class="mk-big">${todo} ${todo === 1 ? 'question' : 'questions'} to get right</b>
         <span class="muted">Get one right again and it moves to Mastered.${fixedWeek ? ` <b class="mk-win">${fixedWeek} fixed this week</b>` : ''}</span></div></div>
@@ -6526,6 +6538,7 @@ const practiceIcon = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill
 const progressIcon = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>`;
 const tutorCTA = (label) => `<button class="tutor-cta" id="tutorOpen" type="button">${buddySVG('happy', 30)}<span>${label}</span><span aria-hidden="true" class="tc-go">›</span></button>`;
 function tutorFolded(q) {
+  return false; // Philip prefers the chat already open on practice screens
   if (!phoneQ()) return false;
   const c = chatOf(); if (c.shown || c.msgs.length) return false;
   if (S.phase !== 'revealed') return true;
