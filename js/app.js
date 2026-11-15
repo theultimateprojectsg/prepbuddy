@@ -5888,10 +5888,10 @@ function testDialog(edit) {
       if (!edit && limitOf('sched') !== UNL && upcomingTests().length >= limitOf('sched')) { box.remove(); return upsell('sched', 'limit'); }
       const rec = { id: st.id, name: st.name.trim().slice(0, 60), date: st.date, b: st.b, u: [...st.u] };
       local.sched = [...(local.sched || []).filter((x) => x.id !== st.id), rec].slice(-30); saveLocal();
-      box.remove(); if (view.name === 'home') renderHome();
+      box.remove(); if (view.name === 'home') renderHome(); else if (view.name === 'progress') renderProgress();
       toast(SCH(`Added. Today’s mission now gets you ready for ${rec.name}.`, `已加入。今日任務會幫你準備「${rec.name}」。`));
     };
-    const del = box.querySelector('#td-del'); if (del) del.onclick = () => { local.sched = (local.sched || []).filter((x) => x.id !== st.id); saveLocal(); box.remove(); if (view.name === 'home') renderHome(); };
+    const del = box.querySelector('#td-del'); if (del) del.onclick = () => { local.sched = (local.sched || []).filter((x) => x.id !== st.id); saveLocal(); box.remove(); if (view.name === 'home') renderHome(); else if (view.name === 'progress') renderProgress(); };
   };
   box.onclick = (e) => { if (e.target === box) box.remove(); };
   draw(); document.body.appendChild(box);

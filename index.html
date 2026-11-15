@@ -1624,6 +1624,11 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .pg-chips{display:flex;flex-wrap:wrap;gap:8px}.pg-chips span{font-size:13px;padding:6px 10px;border-radius:10px;background:var(--accent-soft);color:var(--accent)}.pg-chips span.warn{background:var(--miss-soft);color:var(--miss-dark)}.pg-chips:empty{display:none}
 .pg-mk{gap:0}.pg-mk>*{padding:9px 4px}
 .pg-parent{flex-wrap:wrap}.pg-parent>div{flex:1 1 220px;min-width:0}.pg-parent .pg-pbtns{flex-wrap:wrap}
+
+/* dialogs never grow past the screen: the dialog scrolls, the chapter list scrolls inside it, Save stays in reach */
+.cdlg{max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.tdlg .td-chs{max-height:min(34dvh,300px);overflow-y:auto;overscroll-behavior:auto;border:1px solid var(--line);border-radius:12px;padding:6px}
+.tdlg .rd-row{position:sticky;bottom:-22px;background:#FFFFFF;padding:10px 0 4px;margin-top:4px}
 </style>
 </head>
 <body>
