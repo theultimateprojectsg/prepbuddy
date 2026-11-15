@@ -1641,6 +1641,12 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .td-parts{display:flex;flex-direction:column;gap:8px}
 .td-part{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) auto;gap:8px;align-items:center}
 .tdlg .td-chs{flex:none;min-height:140px}
+
+/* streak strip on Today is a button: tap to practise now (or see it's done today) */
+.gr-btn{width:100%;background:none;border-left:none;border-right:none;border-bottom:none;font:inherit;color:inherit;text-align:left;cursor:pointer;padding-left:0;padding-right:0;padding-bottom:0}
+.gr-btn .gr-streak{display:flex;flex-direction:column;gap:2px}
+.gr-cta{align-self:flex-start;margin-top:4px;font-size:12.5px;font-weight:600;color:#FFFFFF;background:var(--accent);border-radius:999px;padding:4px 12px}.gr-cta.ok{color:var(--good-dark);background:var(--good-soft)}
+.gr-btn:focus-visible{outline:3px solid var(--accent-tint);outline-offset:4px;border-radius:8px}
 </style>
 </head>
 <body>
