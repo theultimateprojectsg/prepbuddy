@@ -1582,6 +1582,20 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .ms-start{margin-top:12px;min-height:52px;font-size:18px}
 .ms-done{flex-direction:row;align-items:center;gap:14px}.ms-dt{flex:1;display:flex;flex-direction:column;gap:2px}.ms-dt b{font-size:18px}.ms-dt span{font-size:14px;color:var(--muted)}.ms-dt .linkbtn{align-self:flex-start;margin-top:6px;font-size:14px;font-weight:600}
 @media (max-width:1023.98px){.today ~ #coach,#coach{display:none!important}}
+
+/* Today: how ready you are */
+.td-ready{padding:16px;display:flex;flex-direction:column;gap:14px}
+.tr-week{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;font-size:14px;color:var(--text-2);padding-bottom:12px;border-bottom:1px solid #EEF1F6}
+.tr-week b{color:var(--ink);font-size:16px}.tr-wl{font-weight:700;color:var(--ink)}
+.tr-week em,.tr-rg em{font-style:normal;font-size:12px;font-weight:600;color:var(--muted)}
+.tr-week em.up,.tr-rg em.up{color:var(--good-dark)}.tr-week em.down,.tr-rg em.down{color:var(--miss-dark)}
+.td-ready .pg-rings{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+.tr-rg{gap:6px}
+
+/* no text links: "linkbtn" actions look like small buttons, same as btn-sm */
+.linkbtn,.pc-also .linkbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:6px 14px;border:1.5px solid var(--accent-tint);border-radius:10px;background:#FFFFFF;color:var(--accent);font:600 13.5px var(--ui);text-decoration:none;cursor:pointer}
+.linkbtn:hover{background:var(--accent-soft)}
+.ms-done .linkbtn{align-self:flex-start;margin-top:6px}
 </style>
 </head>
 <body>

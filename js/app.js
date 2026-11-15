@@ -2271,6 +2271,37 @@ function installTip() {
   setTimeout(() => { const x = document.getElementById('itip-x'); if (x) x.onclick = () => { local.installTipOff = Date.now(); saveLocal(); x.closest('.itip').remove(); }; }, 0);
   return `<section class="itip" role="note"><span class="itip-i">📲</span><div><b>${LANG === 'zh' ? '把 PrepBuddy 加到主畫面' : 'Add PrepBuddy to your Home Screen'}</b><span>${LANG === 'zh' ? 'iPhone 可能會在一星期沒有使用後刪除網站的進度。在 Safari 按「分享」→「加至主畫面」，之後從主畫面圖示打開 PrepBuddy。請盡早做：主畫面的 App 會重新開始，已有的進度可用「設定 → 儲存備份檔案」轉移。' : 'iPhones can delete a website’s saved progress after a week without a visit. In Safari tap Share → Add to Home Screen, then use PrepBuddy from that icon. Do it early: the Home Screen app starts fresh, so move anything you’ve done with Settings → Save a backup file.'}</span></div><button class="itip-x" id="itip-x" aria-label="${LANG === 'zh' ? '關閉' : 'Dismiss'}">×</button></section>`;
 }
+// Today: how ready for each subject (rings, from the book's mastery) and the change since about a week ago.
+// One reading per book per day is kept in local.mhist (also used by the exam forecast).
+async function todayReadyHTML(books) {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  const t0 = dayStart(); local.mhist = local.mhist || {};
+  const rows = [];
+  for (const b of books.filter((x) => !x.demo)) {
+    const m = await bookMastery(b), pct = m.pct;
+    const h = (local.mhist[b.id] || []).filter((p) => p[0] !== t0); h.push([t0, pct]); local.mhist[b.id] = h.slice(-120);
+    // the reading closest to 7 days ago, at least 5 days old
+    const old = h.filter((p) => p[0] <= t0 - 5 * DAY).sort((x, y) => Math.abs(x[0] - (t0 - 7 * DAY)) - Math.abs(y[0] - (t0 - 7 * DAY)))[0];
+    rows.push({ b, pct, covered: Math.round(100 * (m.areas.covered || 0)), was: old ? old[1] : null, used: (local.log || []).some((e) => e.q && e.q.startsWith(b.id + ':')) });
+  }
+  saveLocal();
+  if (!rows.length) return '';
+  rows.sort((x, y) => (y.used - x.used) || (y.pct - x.pct));
+  const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
+  const r = await currentReport();
+  const wk = [];
+  if (r.q || r.pq) wk.push(`<span><b>${r.q}</b> ${Z('questions', '題')}${r.pq != null ? ` <em class="${r.q >= r.pq ? 'up' : 'down'}">${r.q >= r.pq ? '▲' : '▼'} ${Z(`from ${r.pq}`, `上週 ${r.pq}`)}</em>` : ''}</span>`);
+  if (r.a !== null) wk.push(`<span><b>${r.a}%</b> ${Z('right', '答對')}${r.pa !== null ? ` <em class="${r.a >= r.pa ? 'up' : 'down'}">${r.a === r.pa ? Z('same as last week', '與上週相同') : `${r.a > r.pa ? '▲' : '▼'} ${Math.abs(r.a - r.pa)} ${Z('from last week', '對比上週')}`}</em>` : ''}</span>`);
+  wk.push(`<span><b>${r.dp}</b>/7 ${Z('days', '日')}</span>`);
+  const ring = (x) => {
+    const lab = x.pct > 0 ? masteryLabel(x.pct) : x.covered ? Z(`Started · ${x.covered}% covered`, `已開始 · 涵蓋 ${x.covered}%`) : Z('Not started', '未開始');
+    const ch = x.was == null || !x.used ? '' : x.pct > x.was ? `<em class="up">▲ ${x.pct - x.was}% ${Z('this week', '本週')}</em>` : x.pct < x.was ? `<em class="down">▼ ${x.was - x.pct}% ${Z('this week', '本週')}</em>` : `<em>${Z('no change this week', '本週沒有變化')}</em>`;
+    return `<button class="pg-rg tr-rg" data-book="${esc(x.b.id)}">${x.pct > 0 ? ringHTML(x.pct, tone(x.pct), x.pct + '%', 68) : ringHTML(x.covered, 'cov', x.covered ? x.covered + '%' : '–', 68)}<b data-raw>${esc(x.b.subject ? subj(x.b.subject) : shortTitle(x.b.title))}</b><small>${lab}</small>${ch}</button>`;
+  };
+  return `<section class="stack g10 td-sec" aria-label="${Z('How ready you are', '準備程度')}"><div class="sect-head"><h2>${Z('How ready you are', '準備程度')}</h2><button class="btn-sm" id="moreready">${Z('See progress', '查看進度')}</button></div>
+    <div class="card td-ready"><div class="tr-week"><span class="tr-wl">${Z('This week', '本週')}</span>${wk.join('')}</div>
+    <div class="pg-rings">${rows.slice(0, 6).map(ring).join('')}</div>${rows.length > 6 ? `<p class="hint" style="margin:0">${Z(`+ ${rows.length - 6} more on Progress`, `另有 ${rows.length - 6} 本在「進度」`)}</p>` : ''}</div></section>`;
+}
 async function renderHome() {
   S = null;
   const books = await getBooks();
@@ -2348,6 +2379,7 @@ async function renderHome() {
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2>${Z('Today’s mission', '今日任務')}</h2><span>${Z(`about ${mins} min`, `約 ${mins} 分鐘`)}</span></div>
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
+  const readyHTML = await todayReadyHTML(books);
   // ---- greeting card: streak and this week's days ----
   const daysSet = new Set(local.log.map((e) => dayStart(e.t)));
   let streak = 0; for (let d = daysSet.has(t0) ? t0 : t0 - DAY; daysSet.has(d); d -= DAY) streak++;
@@ -2381,6 +2413,7 @@ async function renderHome() {
     ${tests.pastHTML}
     ${testHTML}
     ${missionHTML}
+    ${readyHTML}
   </main>
   <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
   { const co = document.getElementById('coachOpen'); if (co) co.onclick = () => { document.getElementById('coach').classList.remove('folded'); const q = document.getElementById('coachQ'); if (q) q.focus({ preventScroll: true }); document.getElementById('coach').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
