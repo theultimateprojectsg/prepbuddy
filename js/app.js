@@ -2293,7 +2293,7 @@ async function todayReadyHTML(books) {
   const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
   const r = await currentReport();
   const wk = [];
-  if (r.q || r.pq) wk.push(`<span><b>${r.q}</b> ${Z(r.q === 1 ? 'question' : 'questions', '題')}${r.pq != null ? ` <em class="${r.q >= r.pq ? 'up' : 'down'}">${r.q >= r.pq ? '▲' : '▼'} ${Z(`from ${r.pq}`, `上週 ${r.pq}`)}</em>` : ''}</span>`);
+  if (r.q || r.pq) wk.push(`<span><b>${r.q}</b> ${Z(r.q === 1 ? 'question' : 'questions', '題')}${r.pq != null ? (r.q === r.pq ? ` <em>${Z('same as last week', '與上週相同')}</em>` : ` <em class="${r.q > r.pq ? 'up' : 'down'}">${r.q > r.pq ? '▲' : '▼'} ${Z(`from ${r.pq}`, `上週 ${r.pq}`)}</em>`) : ''}</span>`);
   if (r.a !== null) wk.push(`<span><b>${r.a}%</b> ${Z('right', '答對')}${r.pa !== null ? ` <em class="${r.a >= r.pa ? 'up' : 'down'}">${r.a === r.pa ? Z('same as last week', '與上週相同') : `${r.a > r.pa ? '▲' : '▼'} ${Math.abs(r.a - r.pa)} ${Z('from last week', '對比上週')}`}</em>` : ''}</span>`);
   wk.push(`<span><b>${r.dp}</b>/7 ${Z('days', '日')}</span>`);
   const ring = (x) => {
