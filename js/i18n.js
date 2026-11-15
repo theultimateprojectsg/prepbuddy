@@ -4,7 +4,7 @@
 
 const EXACT = {
   'Parent dashboard': '家長主頁',
-  'Speaking': '說話 · Speaking',
+  'Speaking': '說話',
   'DSE Paper 4, one-minute answers': 'DSE 卷四，一分鐘回應',
   'New to this book? Find your level first': '第一次用這本書？先找出你的程度',
   'Start level check': '開始程度評估',

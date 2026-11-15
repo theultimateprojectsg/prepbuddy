@@ -2333,7 +2333,7 @@ async function renderHome() {
     ${installTip()}
     <section class="stack g10" aria-label="Today's plan"><div class="sect-head"><h2>Today’s plan</h2></div><div class="plan">${items.join('')}</div></section>
     ${tests.html}
-    <section class="stack g10 today-more" aria-label="More">
+    <section class="stack g10 today-more" aria-label="${LANG === 'zh' ? '更多' : 'More'}">
       <div class="card ropts">
         <button class="ropt" id="allpractice"><span class="ropt-i blue">${practiceIcon()}</span><span class="ropt-t"><b>${LANG === 'zh' ? '所有練習' : 'All practice tools'}</b><small>${LANG === 'zh' ? '弱項、默書、寫作、功課幫手等' : 'Weak topics, dictation, writing, homework help and more'}</small></span><span class="ropt-go" aria-hidden="true">›</span></button>
         ${ready.n ? `<button class="ropt" id="progress"><span class="ropt-i green">${progressIcon()}</span><span class="ropt-t"><b>${LANG === 'zh' ? '準備程度' : 'How ready you are'}</b><small>${LANG === 'zh' ? '每本課本的進度和本週表現' : 'Each book, and how this week is going'}</small></span><span class="ropt-go" aria-hidden="true">›</span></button>` : ''}
@@ -2370,7 +2370,7 @@ function practiceTiles() {
         <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${isPrimaryKid() ? (LANG === 'zh' ? '模擬試卷' : 'Practice paper') : 'Mock paper'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
         <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>${LANG === 'zh' ? '默書' : 'Dictation'}</b><span>I read, you write</span></button>
-        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>${LANG === 'zh' ? '寫作' : 'Writing'}</b><span>${isPrimaryKid() ? 'Kind feedback, then redraft' : 'DSE-style feedback, then redraft'}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>${LANG === 'zh' ? '聆聽' : 'Listening'}</b><span>Listen, then answer</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>${LANG === 'zh' ? '呈分試衝刺' : 'Exam sprint'}</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>${isPrimaryKid() ? 'Read aloud and answer' : 'DSE Paper 4, one-minute answers'}</span></button>
+        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>${LANG === 'zh' ? '寫作' : 'Writing'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '溫和的評語，再改寫' : 'Kind feedback, then redraft') : (LANG === 'zh' ? 'DSE 準則評語，再改寫' : 'DSE-style feedback, then redraft')}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>${LANG === 'zh' ? '聆聽' : 'Listening'}</b><span>${LANG === 'zh' ? '先聽，再作答' : 'Listen, then answer'}</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>${LANG === 'zh' ? '呈分試衝刺' : 'Exam sprint'}</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>${LANG === 'zh' ? '說話' : 'Speaking'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '朗讀再回答' : 'Read aloud and answer') : (LANG === 'zh' ? 'DSE 卷四，一分鐘回答' : 'DSE Paper 4, one-minute answers')}</span></button>
 `;
   html.split(/(?=<button class="qtile)/).map((x) => x.trim()).filter(Boolean).forEach((x) => { const m = /data-mode="(\w+)"|id="(\w+)"/.exec(x); if (m) t[m[1] || m[2]] = x; });
   return t;
@@ -2555,7 +2555,7 @@ async function renderBooks() {
   <main class="pad stack g18" data-view="books" style="flex:1">
     <div class="bks-head">
       <div class="stack" style="gap:2px"><h1 class="pagetitle" style="margin:0">Books</h1>${books.length ? `<span class="muted bk-count">${W(`${books.length} textbook${books.length === 1 ? '' : 's'}`, `${books.length} 本課本`)}</span>` : ''}</div>
-      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} <span>Add<span class="hide-sm"> a textbook</span></span></button>${gearBtn()}
+      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} <span>${LANG === 'zh' ? '加入<span class="hide-sm">課本</span>' : 'Add<span class="hide-sm"> a textbook</span>'}</span></button>${gearBtn()}
     </div>
     ${books.length ? `${many ? `<div class="bk-tools"><form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form></div>` : ''}
@@ -4978,7 +4978,7 @@ async function renderPaper(bookId, from) {
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${from === 'pick' ? 'Mock paper' : from === 'home' ? 'Home' : 'Chapters'}</span></button></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
-    <div class="pick-head">${actionTile('mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">Mock paper</h1><p class="muted" style="margin:0;line-height:1.5;font-size:16px">${isPrimaryKid() ? 'A school-style test paper' : 'A DSE-style paper'}: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here, or print it as a worksheet and enter your answers afterwards.</p></div></div>
+    <div class="pick-head">${actionTile('mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${LANG === 'zh' ? '模擬試卷' : 'Mock paper'}</h1><p class="muted" style="margin:0;line-height:1.5;font-size:16px">${LANG === 'zh' ? `${isPrimaryKid() ? '學校測驗形式的試卷' : 'DSE 模式試卷'}：<b>甲部</b>多項選擇題，然後<b>乙部</b>文字題。可以在這裏限時作答，或列印成工作紙，之後再輸入答案。` : `${isPrimaryKid() ? 'A school-style test paper' : 'A DSE-style paper'}: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here, or print it as a worksheet and enter your answers afterwards.`}</p></div></div>
     <div class="card stack g6" style="padding:14px 16px">
       <span class="muted" style="font-size:14px">Chapters</span>
       <b style="font-weight:600;line-height:1.4">${units.length === book.units.length ? `All ${book.units.length} chapters` : esc(units.map((u) => u.title).join(' · '))}</b>
@@ -6545,9 +6545,9 @@ function renderQuestion() {
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
-    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">Level ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
+    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${body.main}
-    ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '唔明？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
+    ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '不明白？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
   ${body.footer}${/class="sheet/.test(body.footer) ? '' : qSide(q)}`;
   liftActions();
