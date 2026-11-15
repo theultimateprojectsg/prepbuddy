@@ -803,7 +803,7 @@ async function go(v) {
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
   if (v.name === 'privacy') return renderPrivacy();
-  if (v.name === 'settings') return renderSettings();
+  if (v.name === 'settings') return renderSettings(v.sec);
   if (v.name === 'progress') return renderProgress();
   if (v.name === 'stars') return renderStars();
   if (v.name === 'homework') return renderHomework(v.id);
@@ -2608,14 +2608,26 @@ async function renderBooks() {
 }
 
 /* ---------- settings ---------- */
-function renderSettings() {
+// Settings: a menu of blocks; each block opens its own short page (view.sec).
+function renderSettings(sec) {
   const zh = LANG === 'zh';
   const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" lang="${k === 'zh' ? 'zh-HK' : 'en'}" data-raw><b>${label}</b><span>${sub}</span></button>`;
-  $app.innerHTML = `
-  <main class="pad stack g18 settings" data-view="settings" style="flex:1">
-    <h1 class="pagetitle">Settings</h1>
-    <h2 class="set-h">${PLT('This child', '這個孩子')}</h2>
-    <section class="card stack g10" style="padding:16px">
+  const helpHTML = `${planCardHTML()}
+    ${local.pilot ? `<section class="card stack g10" style="padding:16px">
+      <b style="font-size:16px">${PLT('Take the tour again', '再看一次導覽')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('A quick look at what PrepBuddy can do.', '快速看看 PrepBuddy 可以做甚麼。')}</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm" id="stour">${PLT('Quick tour', '快速導覽')}</button><button class="btn-sm quiet" id="stourfull">${PLT('Full tour (about 3 min)', '完整導覽（約 3 分鐘）')}</button></div>
+    </section>
+    <section class="card stack g10 fbcard" style="padding:16px">
+      <b style="font-size:16px">${PLT('Tell us what you think', '告訴我們你的意見')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('You’re in the PrepBuddy pilot. What do you like? What’s confusing or broken? Parents and students both welcome.', '你正參與 PrepBuddy 試用。你喜歡甚麼？有甚麼令你困惑或出錯？家長和學生都歡迎留言。')}</span>
+      <textarea id="sfb" class="wr-ta small" rows="4" placeholder="${PLT('Type here…', '在這裏輸入…')}"></textarea>
+      <button class="btn-sm primary" id="sfbgo" style="align-self:flex-start">${PLT('Send', '傳送')}</button>
+      <span class="hint" style="margin:0">${PLT(`Family code ${esc(local.code || '')}`, `家庭代碼 ${esc(local.code || '')}`)}</span>
+    </section>` : ''}
+`;
+  const SECS = {
+    child: [PLT('Your child', '你的孩子'), 'child', `    <section class="card stack g10" style="padding:16px">
       <label for="sname" style="font-size:16px;font-weight:700">Your name</label>
       <span class="muted" style="font-size:14px;line-height:1.5">Used to greet you and on the weekly report you send your parents.</span>
       <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
@@ -2629,75 +2641,90 @@ function renderSettings() {
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:14px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
     </section>
-    <h2 class="set-h">${PLT('Family', '家庭')}</h2>
-    <section class="card stack g10" style="padding:16px">
-      <b style="font-size:16px">${PLT('For parents', '家長專區')}</b>
-      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('The parent dashboard: this week, school results and upcoming tests, and what needs attention. Needs the parent PIN.', '家長主頁：本週情況、學校成績及考試，以及需要留意的地方。需要家長密碼。')}</span>
-      <button class="btn-sm" id="sparent" style="align-self:flex-start">${PLT('Open the parent dashboard', '打開家長主頁')}</button>
-    </section>
-    <h2 class="set-h">${PLT('This device', '這部裝置')}</h2>
-    <section class="card stack g10" style="padding:16px">
-      <b style="font-size:16px">Language</b>
+`],
+    language: [PLT('Language', '語言'), 'language', `    <section class="card stack g10" style="padding:16px">
       <span class="muted" style="font-size:14px;line-height:1.5">For PrepBuddy’s buttons and messages. Your textbooks and their questions stay in the book’s own language.</span>
       <div class="langopts" role="group" aria-label="Language">${opt('en', 'English', 'English')}${opt('zh', '中文（繁體）', 'Traditional Chinese')}</div>
     </section>
-    <section class="card stack g10" style="padding:16px">
+`],
+    backup: [BK('Backup', '備份'), 'backup', `    <section class="card stack g10" style="padding:16px">
       <b style="font-size:16px">${BK('Back up your progress', '備份你的進度')}</b>
       <span class="muted" style="font-size:14px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm primary" id="sbackup">${BK('Save a backup file', '儲存備份檔案')}</button><label class="btn-sm" style="cursor:pointer">${BK('Restore from a file', '從檔案還原')}<input type="file" id="srestore" accept="application/json,.json" hidden></label></div>
     </section>
-    <h2 class="set-h">${PLT('Help and about', '說明及關於')}</h2>
-    ${planCardHTML()}
-    ${local.pilot ? `<section class="card stack g10" style="padding:16px">
-      <b style="font-size:16px">${PLT('Take the tour again', '再看一次導覽')}</b>
-      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('A quick look at what PrepBuddy can do.', '快速看看 PrepBuddy 可以做甚麼。')}</span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm" id="stour">${PLT('Quick tour', '快速導覽')}</button><button class="btn-sm quiet" id="stourfull">${PLT('Full tour (about 3 min)', '完整導覽（約 3 分鐘）')}</button></div>
-    </section>
-    <section class="card stack g10 fbcard" style="padding:16px">
-      <b style="font-size:16px">${PLT('Tell us what you think', '告訴我們你的意見')}</b>
-      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('You’re in the PrepBuddy pilot. What do you like? What’s confusing or broken? Parents and students both welcome.', '你正參與 PrepBuddy 試用。你喜歡甚麼？有甚麼令你困惑或出錯？家長和學生都歡迎留言。')}</span>
-      <textarea id="sfb" class="wr-ta small" rows="4" placeholder="${PLT('Type here…', '在這裏輸入…')}"></textarea>
-      <button class="btn-sm primary" id="sfbgo" style="align-self:flex-start">${PLT('Send', '傳送')}</button>
-      <span class="hint" style="margin:0">${PLT(`Family code ${esc(local.code || '')}`, `家庭代碼 ${esc(local.code || '')}`)}</span>
-    </section>` : ''}
-    <section class="card stack g10" style="padding:16px">
+`],
+    help: [PLT('Help and feedback', '說明及意見'), 'help', helpHTML],
+    privacy: [PLT('Privacy and data', '私隱及資料'), 'privacy', `    <section class="card stack g10" style="padding:16px">
       <b style="font-size:16px">${PLT('Privacy', '私隱')}</b>
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('What PrepBuddy collects, where it goes, and how to see, correct or delete it.', 'PrepBuddy 收集甚麼資料、資料去向，以及如何查閱、更正或刪除。')}</span>
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('Questions are written and checked by AI. If one looks wrong, tap Report a problem on that question.', '題目由 AI 撰寫及檢查。如發現題目有錯，請在該題按「報告問題」。')}</span>
       <button class="btn-sm" data-privacy style="align-self:flex-start">${PLT('Read the privacy notice', '閱讀私隱聲明')}</button>
     </section>
-    ${!DEV ? '' : `<section class="card stack g10" style="padding:16px">
-      <b style="font-size:16px">AI usage</b>
-      <span class="muted" style="font-size:14px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
-      <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
-    </section>`}
     <section class="card stack g10 wipe-card" style="padding:16px">
       <b style="font-size:16px">${PLT('Delete everything on this device', '刪除這部裝置上的所有資料')}</b>
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('Removes every child, book, question, mark, setting and saved voice clip from this phone or computer, and the family code. PrepBuddy then starts again like new. This can’t be undone, so save a backup first if you want to keep anything.', '刪除這部手機或電腦上所有孩子、課本、題目、成績、設定、已儲存的朗讀聲音和家庭代碼，PrepBuddy 會像新的一樣重新開始。刪除後不能復原，如想保留資料，請先儲存備份。')}${local.pilot ? PLT(' Pilot activity already sent to PrepBuddy is not deleted by this: ask us and we’ll remove it.', ' 已傳送給 PrepBuddy 的試用紀錄不會因此刪除：請聯絡我們，我們會為你刪除。') : ''}</span>
       <button class="btn-sm danger" id="swipe" style="align-self:flex-start">${PLT('Delete everything', '刪除所有資料')}</button>
     </section>
-    <p class="hint" style="margin:0;line-height:1.5">Prototype. Your textbooks, questions and progress are saved on this device only.</p>
-  </main>`;
-  $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { if (b.dataset.lang === LANG) return; setLang(b.dataset.lang); go({ name: 'settings' }); }));
-  const nm = document.getElementById('sname');
-  nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
+`],
+  };
+  if (sec && SECS[sec]) {
+    const [title, icon, body] = SECS[sec];
+    $app.innerHTML = `${backTop({ name: 'settings' }, PLT('Settings', '設定'))}
+    <main class="pad stack g14 settings" data-view="settings" style="flex:1">
+      <div class="pick-head">${actionTile(icon, 52)}<h1 class="pagetitle" style="margin:0">${title}</h1></div>
+      ${body}
+    </main>`;
+  } else {
+    sec = null;
+    const sub = {
+      child: [local.name, gradeNow() ? gradeName(gradeNow()) : ''].filter(Boolean).join(' · ') || PLT('Name, grade, stars', '名字、年級、星星'),
+      parents: PLT('Dashboard and reports · PIN', '家長主頁及報告 · 密碼'),
+      language: LANG === 'zh' ? '中文（繁體）' : 'English',
+      backup: local.backupAt ? BK(`Last backup ${agoWords(local.backupAt)}`, `上次備份：${agoWords(local.backupAt)}`) : BK('No backup yet', '仍未備份'),
+      help: local.pilot ? PLT('Tour and feedback', '導覽及意見') : PLT('Plans and help', '計劃及說明'),
+      privacy: PLT('Privacy notice, delete data', '私隱聲明、刪除資料'),
+    };
+    const tile = (k, icon, title, s) => `<button class="qtile" data-sec="${k}">${actionTile(icon, 44)}<b>${title}</b><span>${s}</span></button>`;
+    const hasHelp = !!(planCardHTML().trim() || local.pilot);
+    $app.innerHTML = `
+    <main class="pad stack g18 settings" data-view="settings" style="flex:1">
+      <h1 class="pagetitle" style="margin:0">${PLT('Settings', '設定')}</h1>
+      <div class="quick">
+        ${tile('child', 'child', PLT('Your child', '你的孩子'), esc(sub.child))}
+        ${tile('parents', 'parent', PLT('For parents', '家長專區'), sub.parents)}
+        ${tile('language', 'language', PLT('Language', '語言'), sub.language)}
+        ${tile('backup', 'backup', BK('Backup', '備份'), sub.backup)}
+        ${hasHelp ? tile('help', 'help', PLT('Help and feedback', '說明及意見'), sub.help) : ''}
+        ${tile('privacy', 'privacy', PLT('Privacy and data', '私隱及資料'), sub.privacy)}
+        ${DEV ? tile('usage', 'usage', 'AI usage', 'Cost on this device') : ''}
+      </div>
+    </main>`;
+    $app.querySelectorAll('[data-sec]').forEach((b) => (b.onclick = () => {
+      const k = b.dataset.sec;
+      if (k === 'parents') return openParent();
+      if (k === 'usage') return go({ name: 'usage' });
+      go({ name: 'settings', sec: k });
+    }));
+  }
+  $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { if (b.dataset.lang === LANG) return; setLang(b.dataset.lang); go({ name: 'settings', sec }); }));
+  { const nm = document.getElementById('sname'); if (nm) nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); }; }
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
   { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); const f = document.getElementById('stourfull'); if (f) f.onclick = () => startTour('full'); }
   { const sp = document.getElementById('sparent'); if (sp) sp.onclick = () => openParent(); }
-  { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings' }); }; }
-  { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings' }); }; }
+  { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings', sec }); }; }
+  { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings', sec }); }; }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
-  document.getElementById('swipe').onclick = async () => {
+  if (document.getElementById('swipe')) document.getElementById('swipe').onclick = async () => {
     const ok = await confirmLeave({ title: PLT('Delete everything on this device?', '刪除這部裝置上的所有資料？'), body: PLT(`All ${KIDS.list.length > 1 ? `${KIDS.list.length} children’s` : 'your'} books, progress, stars and settings will be removed from this device, and you’ll need the family code again. This can’t be undone.`, `這部裝置上${KIDS.list.length > 1 ? `全部 ${KIDS.list.length} 個孩子的` : ''}課本、進度、星星和設定都會刪除，之後需要再輸入家庭代碼。刪除後不能復原。`), stay: PLT('Cancel', '取消'), leave: PLT('Delete everything', '刪除所有資料') });
     if (!ok) return;
     if (local.pin && !(await askPin(PLT('Enter the parent PIN to delete everything.', '輸入家長密碼以刪除所有資料。')))) return;
     await wipeDevice();
   };
-  document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
-  document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
+  if (document.getElementById('sbackup')) document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(sec); };
+  if (document.getElementById('srestore')) document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   { const sp = document.getElementById('splans'); if (sp) sp.onclick = () => go({ name: 'plans' }); }
-  $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(); renderTabs(); }));
-  document.getElementById('sstars').onclick = () => { if (locked('stars')) return upsell('stars', 'locked'); local.starsOn = !starsOn(); saveLocal(); renderSettings(); renderTabs(); };
+  $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(sec); renderTabs(); }));
+  if (document.getElementById('sstars')) document.getElementById('sstars').onclick = () => { if (locked('stars')) return upsell('stars', 'locked'); local.starsOn = !starsOn(); saveLocal(); renderSettings(sec); renderTabs(); };
   window.scrollTo(0, 0);
 }
 
@@ -3295,7 +3322,7 @@ async function startTour(replay) {
     { go: 'progress', sel: '#report', skipIfMissing: true, t: C('Weekly report', '每週報告'), d: C('A one-page summary to send to a parent as a link.', '一頁摘要，可以用連結傳送給家長。') },
     { go: 'stars', sel: 'section.stack', skipIfMissing: true, t: C('Stars and rewards', '星星與獎勵') + lt('stars'), d: C('Earn stars for real effort and swap them for rewards your parents choose. Rushing earns nothing!', '憑真正努力賺取星星，換取家長設定的獎勵。亂答一通不會有星星！') },
     { go: matchMedia('(min-width:1024px)').matches ? 'settings' : 'home', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, plan, stars on or off, and backups.', '你的名字、語言、計劃、開關星星，以及備份。') },
-    { go: 'settings', sel: '#sfb', skipIfMissing: true, t: C('Tell us what you think', '告訴我們你的意見'), d: C('Something confusing, or a great idea? Type it here. We read every message.', '有地方令你困惑，或有好主意？在這裏輸入，我們會細閱每一個訊息。') },
+    { go: { name: 'settings', sec: 'help' }, sel: '#sfb', skipIfMissing: true, t: C('Tell us what you think', '告訴我們你的意見'), d: C('Something confusing, or a great idea? Type it here. We read every message.', '有地方令你困惑，或有好主意？在這裏輸入，我們會細閱每一個訊息。') },
     { go: 'progress', sel: '#helperFab', skipIfMissing: true, t: C('Ask Buddy any time', '隨時問 Buddy'), d: C('On any screen, tap here to ask a question, get study advice, or find your way around.', '在任何頁面按這裏，都可以發問、取得溫習建議，或問怎樣使用。') },
     { go: 'home', t: C('Now add your own textbook!', '現在加入你自己的課本！'), d: C('The sample book goes away now. Search for your textbook, then do “Find your level”. You can replay this tour in Settings.', '示範課本現在會移除。搜尋你的課本，然後做「找出你的程度」。你可以在設定中再看一次導覽。'), face: 'done', cta: C('Let’s go!', '開始吧！') },
   ];

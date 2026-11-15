@@ -80,6 +80,14 @@ const ACT = {
   listening: ['#E8F2FD', `<path d="M4 15v-3a8 8 0 0 1 16 0v3" stroke="${NAVY}" stroke-width="2"/><rect x="3" y="14" width="5" height="7" rx="2" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><rect x="16" y="14" width="5" height="7" rx="2" fill="${Y}" stroke="${NAVY}" stroke-width="2"/>`],
   sprint: ['#FFF0E0', `<path d="M13 2.5 5 13.5h6l-1 8 8-11h-6z" fill="${Y}" stroke="${NAVY}" stroke-width="2" stroke-linejoin="round"/>`],
   level: ['#FFF6CC', `<path d="M4 20h16" stroke="${NAVY}" stroke-width="2"/><rect x="5" y="13" width="3.5" height="7" rx="1" fill="${Y}" stroke="${NAVY}" stroke-width="1.8"/><rect x="10.25" y="9" width="3.5" height="11" rx="1" stroke="${NAVY}" stroke-width="1.8"/><rect x="15.5" y="5" width="3.5" height="15" rx="1" stroke="${NAVY}" stroke-width="1.8"/>`],
+  // Settings blocks
+  child: ['#FFF0E0', `<circle cx="12" cy="8" r="4" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" stroke="${NAVY}" stroke-width="2"/>`],
+  parent: ['#EEF1FB', `<circle cx="9" cy="7.5" r="3.2" stroke="${NAVY}" stroke-width="2"/><circle cx="17" cy="10" r="2.4" fill="${Y}" stroke="${NAVY}" stroke-width="1.8"/><path d="M3 20a6 6 0 0 1 12 0M14.5 20a4 4 0 0 1 6.5-3" stroke="${NAVY}" stroke-width="2"/>`],
+  language: ['#E8F2FD', `<circle cx="12" cy="12" r="9" stroke="${NAVY}" stroke-width="2"/><path d="M3.5 9h17M3.5 15h17" stroke="${NAVY}" stroke-width="1.6"/><path d="M12 3c-2.6 2.5-3.8 5.5-3.8 9s1.2 6.5 3.8 9c2.6-2.5 3.8-5.5 3.8-9S14.6 5.5 12 3z" fill="${Y}" fill-opacity=".6" stroke="${NAVY}" stroke-width="1.8"/>`],
+  backup: ['#E5F5EE', `<path d="M7 18.5a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.5 1.5 3.8 3.8 0 0 1-.4 7.5z" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M12 16v-5.5M9.5 12.5L12 10l2.5 2.5" stroke="${NAVY}" stroke-width="2"/>`],
+  help: ['#F1E9FB', `<circle cx="12" cy="12" r="9" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6" stroke="${NAVY}" stroke-width="2"/><circle cx="12" cy="17" r="1.1" fill="${NAVY}"/>`],
+  privacy: ['#FDEEEC', `<path d="M12 3l7.5 3v5.5c0 4.5-3.2 8.3-7.5 9.5-4.3-1.2-7.5-5-7.5-9.5V6z" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M9 12l2.2 2.2L15.5 10" stroke="${NAVY}" stroke-width="2"/>`],
+  usage: ['#FFF6CC', `<path d="M4 20V10M10 20V5M16 20v-7M21 20H3" stroke="${NAVY}" stroke-width="2"/><rect x="8.6" y="5" width="2.8" height="15" fill="${Y}" stroke="none" opacity=".8"/>`],
   flashcards: ['#E5F5EE', `<rect x="3" y="6" width="13" height="15" rx="2.5" stroke="${NAVY}" stroke-width="2" transform="rotate(-8 9.5 13.5)"/><rect x="8" y="3.5" width="13" height="15" rx="2.5" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M12 9.5h5M12 12.5h3.5" stroke="${NAVY}" stroke-width="1.6"/>`],
 };
 export const actionIcon = (kind, size = 22) => wrap((ACT[kind] || ACT.practise)[1], size);
