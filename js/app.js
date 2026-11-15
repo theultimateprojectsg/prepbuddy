@@ -2558,7 +2558,7 @@ async function renderBooks() {
   $app.innerHTML = `
   <main class="pad stack g18" data-view="books" style="flex:1">
     <div class="bks-head">
-      <div class="stack" style="gap:2px"><h1 class="pagetitle" style="margin:0">Books</h1>${books.length ? `<span class="muted bk-count">${W(`${books.length} textbook${books.length === 1 ? '' : 's'}`, `${books.length} 本課本`)}</span>` : ''}</div>
+      <div class="stack" style="gap:2px"><h1 class="pagetitle" style="margin:0">Books</h1><span class="muted bk-count bk-sub">${W('All your textbooks in one place.', '你所有的課本都在這裏。')}</span></div>
       <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} <span>${LANG === 'zh' ? '加入<span class="hide-sm">課本</span>' : 'Add<span class="hide-sm"> a textbook</span>'}</span></button>${gearBtn()}
     </div>
     ${books.length ? `${many ? `<div class="bk-tools"><form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
