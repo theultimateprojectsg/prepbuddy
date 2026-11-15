@@ -2128,7 +2128,7 @@ async function renderLearn(bookId, unitId) {
 
 /* ---------- mini helper: the coach, one tap away on screens that have no chat of their own ---------- */
 const helper = { open: false };
-const SCREEN_NAME = { parent: 'Parent dashboard (for parents, PIN-protected)', plans: 'Plans and prices (Standard, Pro)', speaking: 'Speaking practice (DSE English Paper 4 one-minute individual response)', writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock paper setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
+const SCREEN_NAME = { parent: 'Parent dashboard (for parents, PIN-protected)', plans: 'Plans and prices (Standard, Pro)', speaking: 'Speaking practice (DSE English Paper 4 one-minute individual response)', writing: 'Writing practice (DSE composition with feedback and redrafts)', learn: 'Learn mode (a guided lesson teaching a chapter step by step)', dictation: '默書 dictation (the app reads words aloud, the child writes them)', homework: 'Homework help (photos of school homework)', home: 'Today', books: 'Books tab (their textbooks)', book: 'a book’s chapter page', library: 'the textbook library (adding a book)', mistakes: 'Mistake book', progress: 'Progress', settings: 'Settings', stars: 'Star shop', notes: 'revision notes', cards: 'flashcards', pick: 'choosing a book', usage: 'AI usage', paper: 'mock exam setup', edit: 'editing a book’s chapters', worksheets: 'worksheets' };
 function helperChips() {
   const v = view && view.name;
   const by = {
@@ -2368,7 +2368,7 @@ function practiceTiles() {
   const t = {};
   const html = `
         <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
-        <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${isPrimaryKid() ? (LANG === 'zh' ? '模擬試卷' : 'Practice paper') : 'Mock paper'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
+        <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${LANG === 'zh' ? '模擬考試' : 'Mock exam'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
         <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>${LANG === 'zh' ? '默書' : 'Dictation'}</b><span>I read, you write</span></button>
         <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>${LANG === 'zh' ? '寫作' : 'Writing'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '溫和的評語，再改寫' : 'Kind feedback, then redraft') : (LANG === 'zh' ? 'DSE 準則評語，再改寫' : 'DSE-style feedback, then redraft')}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>${LANG === 'zh' ? '聆聽' : 'Listening'}</b><span>${LANG === 'zh' ? '先聽，再作答' : 'Listen, then answer'}</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>${LANG === 'zh' ? '呈分試衝刺' : 'Exam sprint'}</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>${LANG === 'zh' ? '說話' : 'Speaking'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '朗讀再回答' : 'Read aloud and answer') : (LANG === 'zh' ? 'DSE 卷四，一分鐘回答' : 'DSE Paper 4, one-minute answers')}</span></button>
@@ -3278,9 +3278,9 @@ async function startTour(replay) {
     { go: { name: 'notes', bookId: DEMO_ID }, sel: '.ncard', t: C('Revision notes', '溫習筆記'), d: C('Key points, key terms and formulas for each chapter. You can print them too.', '每一章的重點、關鍵詞和公式，也可以列印。') },
     { go: { name: 'cards', bookId: DEMO_ID }, sel: '#flip, .fcard', t: C('Flashcards', '閃卡'), d: C('Quick-fire recall: read the question, think, then flip. Mark what you knew.', '快速記憶：看問題、想一想，再翻轉。記下你懂不懂。') },
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#ctest', skipIfMissing: true, t: C('Chapter tests', '章節測驗') + lt('test'), d: C('Timed tests marked like a school test, with a pass mark of 80%.', '計時測驗，按學校測驗方式批改，合格分數為 80%。') },
-    { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#paper', skipIfMissing: true, t: C('Mock papers', '模擬試卷') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
+    { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#paper', skipIfMissing: true, t: C('Mock exams', '模擬考試') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
     { go: 'home', sel: 'section[aria-label="School tests"]', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates. Today’s plan counts down and focuses on what’s coming up.', '加入測驗日期，今日計劃會倒數，並集中溫習要考的內容。') },
-    { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to practise in one place: weak topics, practice papers, dictation, writing, listening, speaking and homework help.', '所有練習方式都在這裡：弱項、模擬試卷、默書、寫作、聆聽、說話和功課幫手。') },
+    { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to practise in one place: weak topics, mock exams, dictation, writing, listening, speaking and homework help.', '所有練習方式都在這裡：弱項、模擬考試、默書、寫作、聆聽、說話和功課幫手。') },
     { go: 'homework', sel: '.hw-cap, .hw-hero', t: C('Homework help', '功課幫手') + lt('homework'), d: C('Snap a photo of your homework. Buddy reads it and guides you through each question.', '拍下功課，Buddy 會讀取題目，並引導你逐題完成。') },
     { go: 'dictation', sel: '#dnew', skipIfMissing: true, t: C('Dictation', '默書'), d: C('Snap your dictation list. Buddy reads the words aloud, you write them, then check.', '拍下默書範圍，Buddy 讀出詞語，你寫下來，然後核對。') },
     { go: 'writing', sel: '.wr-step', skipIfMissing: true, t: C('Writing', '寫作') + lt('writing'), d: C('Pick a DSE paper, write or snap your essay, and get marked against the real criteria. Then redraft.', '選擇 DSE 試卷，輸入或拍下文章，按真實準則批改，再修改。') },
@@ -3845,7 +3845,7 @@ function renderTabs(active = tabNow) {
     go({ name: b.dataset.tabgo });
   }));
 }
-// The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
+// The menu shows on every screen except timed papers (mock exams, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
 const TAB_OF = { mistakes: 'practice', chapters: 'practice', practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'books', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'practice', worksheets: 'practice', usage: 'home' };
 const MAIN_TABS = ['home', 'books', 'practice', 'progress', 'settings'];
@@ -4307,7 +4307,7 @@ async function renderBook(bookId) {
         <button class="mw" id="ctest" ${n ? '' : 'disabled'}>${lockTag('test')}${actionTile('test', 40)}<b>Chapter test</b><span>Timed, like a school test</span></button>
         <button class="mw" id="notes" ${n ? '' : 'disabled'}>${actionTile('notes', 40)}<b>Notes</b><span>Key points to revise</span></button>
         <button class="mw" id="cards" ${n ? '' : 'disabled'}>${actionTile('flashcards', 40)}<b>Flashcards</b><span>Quick-fire recall</span></button>
-        <button class="mw" id="paper">${lockTag('mock')}${actionTile('mock', 40)}<b>Mock paper</b><span>DSE-style or worksheet</span></button>
+        <button class="mw" id="paper">${lockTag('mock')}${actionTile('mock', 40)}<b>Mock exam</b><span>DSE-style or worksheet</span></button>
       </div>
     </div>
   </div>
@@ -4824,13 +4824,13 @@ function goalCardHTML(D) {
 
 function testsCardHTML(D) {
   const list = D.tests;
-  const KIND = { paper: [PT('Mock paper', '模擬試卷'), 'blue'], test: [PT('Chapter test', '章節測驗'), 'purple'], mini: [PT('Mini mock', '小型模擬'), 'orange'] };
+  const KIND = { paper: [PT('Mock exam', '模擬考試'), 'blue'], test: [PT('Chapter test', '章節測驗'), 'purple'], mini: [PT('Mini mock', '小型模擬'), 'orange'] };
   const fmt = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
   const row = (x) => { const p = x.m ? Math.round(100 * x.g / x.m) : 0, k = KIND[x.kind] || KIND.paper, pass = x.kind === 'test' ? p >= 80 : null;
     return `<div class="pg-test"><span class="pg-ic ${k[1]}">${pIcon(x.kind === 'test' ? 'check' : 'pencil', 18)}</span><div class="pg-tt"><small>${k[0]} · ${fmt(x.t)}</small><b data-raw>${esc(String(x.title || '').replace(/^(Chapter test|章節測驗) · /, ''))}</b><span>${x.g} / ${x.m} ${PT('marks', '分')} · ${x.min} ${PT('min', '分鐘')}${x.nt ? PT(' · no time limit', ' · 不限時') : x.x ? PT(` · +${x.x} min extra`, ` · 加時 ${x.x} 分鐘`) : ''}</span></div><b class="pg-tp ${p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low'}">${p}%${pass === null ? '' : `<small>${pass ? PT('Passed', '合格') : PT('Not yet', '未合格')}</small>`}</b></div>`; };
-  return `<section class="pgcard"><h2>${pIcon('pencil', 18)} ${PT('Tests and mock papers', '測驗及模擬試卷')}</h2>
+  return `<section class="pgcard"><h2>${pIcon('pencil', 18)} ${PT('Tests and mock exams', '測驗及模擬考試')}</h2>
     ${list.length ? `<div class="pg-tests">${list.slice(0, 4).map(row).join('')}${list.length > 4 ? `<div hidden>${list.slice(4, 20).map(row).join('')}</div><button class="btn-sm quiet" data-tests-more>${PT(`Show ${Math.min(16, list.length - 4)} more`, `顯示多 ${Math.min(16, list.length - 4)} 個`)}</button>` : ''}</div>`
-      : `<p class="pg-empty">${PT('Chapter tests and mock papers you finish show up here, with your score and time.', '完成的章節測驗和模擬試卷會在這裡顯示分數和用時。')}</p>`}
+      : `<p class="pg-empty">${PT('Chapter tests and mock exams you finish show up here, with your score and time.', '完成的章節測驗和模擬考試會在這裡顯示分數和用時。')}</p>`}
   </section>`;
 }
 
@@ -5002,9 +5002,9 @@ async function renderPaper(bookId, from) {
   const suggested = paperMinutes(a, b);
   const mins = paperSet.t === 0 ? 0 : (paperSet.t || suggested);
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${from === 'pick' ? 'Mock paper' : from === 'home' ? 'Home' : 'Chapters'}</span></button></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${from === 'pick' ? 'Mock exam' : from === 'home' ? 'Home' : 'Chapters'}</span></button></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
-    <div class="pick-head">${actionTile('mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${LANG === 'zh' ? '模擬試卷' : 'Mock paper'}</h1><p class="muted" style="margin:0;line-height:1.5;font-size:16px">${LANG === 'zh' ? `${isPrimaryKid() ? '學校測驗形式的試卷' : 'DSE 模式試卷'}：<b>甲部</b>多項選擇題，然後<b>乙部</b>文字題。可以在這裏限時作答，或列印成工作紙，之後再輸入答案。` : `${isPrimaryKid() ? 'A school-style test paper' : 'A DSE-style paper'}: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here, or print it as a worksheet and enter your answers afterwards.`}</p></div></div>
+    <div class="pick-head">${actionTile('mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${LANG === 'zh' ? '模擬考試' : 'Mock exam'}</h1><p class="muted" style="margin:0;line-height:1.5;font-size:16px">${LANG === 'zh' ? `${isPrimaryKid() ? '學校測驗形式的試卷' : 'DSE 模式試卷'}：<b>甲部</b>多項選擇題，然後<b>乙部</b>文字題。可以在這裏限時作答，或列印成工作紙，之後再輸入答案。` : `${isPrimaryKid() ? 'A school-style test paper' : 'A DSE-style paper'}: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here, or print it as a worksheet and enter your answers afterwards.`}</p></div></div>
     <div class="card stack g6" style="padding:14px 16px">
       <span class="muted" style="font-size:14px">Chapters</span>
       <b style="font-weight:600;line-height:1.4">${units.length === book.units.length ? `All ${book.units.length} chapters` : esc(units.map((u) => u.title).join(' · '))}</b>
@@ -5023,7 +5023,7 @@ async function renderPaper(bookId, from) {
     </div>
   </main>
   <div class="sheet sticky">
-    <button class="btn" id="sit" ${a + b ? '' : 'disabled'}>Start mock paper · ${mins ? mins + ' min' : 'no time limit'}</button>
+    <button class="btn" id="sit" ${a + b ? '' : 'disabled'}>Start mock exam · ${mins ? mins + ' min' : 'no time limit'}</button>
     <button class="btn ghost" id="print" ${a + b ? '' : 'disabled'}>Print as a worksheet</button>
   </div>`;
   document.getElementById('back').onclick = () => go(from === 'pick' ? { name: 'pick', mode: 'mock' } : from === 'home' ? { name: 'home' } : { name: 'book', bookId });
@@ -5133,11 +5133,11 @@ function startDse(book, paper, mins) {
   const dl = mins ? Date.now() + mins * 60 * 1000 : null; // 0 = no time limit
   if (!paper.live) {
     const qs = [...paper.A, ...paper.B];
-    S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs, target: qs.length, sectionA: paper.A.length, deadline: dl });
+    S = newSession({ mode: 'dse', title: 'DSE-style mock exam', book, qs, target: qs.length, sectionA: paper.A.length, deadline: dl });
   } else {
     // Section A fills up first; written questions wait in bQueue until Section A is complete.
     const full = paper.A.length >= paper.nA;
-    S = newSession({ mode: 'dse', title: 'DSE-style mock paper', book, qs: full ? [...paper.A, ...paper.B] : [...paper.A], bQueue: full ? [] : [...paper.B],
+    S = newSession({ mode: 'dse', title: 'DSE-style mock exam', book, qs: full ? [...paper.A, ...paper.B] : [...paper.A], bQueue: full ? [] : [...paper.B],
       target: paper.nA + paper.nB, sectionA: paper.nA, deadline: dl,
       fill: { units: paper.units, nA: paper.nA, nB: paper.nB, rounds: 0 } });
     pumpPaper(S);
@@ -5216,7 +5216,7 @@ async function renderWorksheets() {
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Pick the worksheet you did. Check the code at the bottom of the page. Enter what you wrote on paper, and PrepBuddy marks it.</p>
     ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:14px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:14px"><span data-raw>${esc((b.subject ? subj(b.subject) : b.title))}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
       <div style="display:flex;gap:14px;margin-top:8px"><button class="btn-sm" data-ws="${ws.code}">${ws.score ? 'Mark again' : 'Enter answers'}</button><button class="btn-sm quiet" data-reprint="${ws.code}">Print again</button></div></div>`; }).join('')}</div>`
-      : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.</p></div>'}
+      : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No printed worksheets yet. Open a textbook, choose Mock exam, then Print as a worksheet.</p></div>'}
   </main>`;
   document.getElementById('back').onclick = () => goBack({ name: 'home' });
   const open = async (code) => { const ws = await store.get('ws:' + code, null); return [ws, ws && books.find((b) => b.id === ws.bookId)]; };
@@ -5350,7 +5350,7 @@ const TIERS = {
     pitch: ['', ''], has: [['Practice questions from your textbooks, written answers marked by AI', '課本練習題，文字答案由 AI 批改'], ['Learn mode lessons with Buddy, and Buddy hints on every question', '學習模式課堂，每條題目都有 Buddy 提示'], ['Mistake book, reviews, notes, flashcards and dictation', '錯題簿、溫習、筆記、溫習卡和默書'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
   pro: { name: 'Pro', zh: 'Pro', price: 298, year: 2980, best: true, tag: ['A private tutor, for less than one lesson a month', '私人導師，每月比一堂補習更便宜'],
     lim: { books: UNL, q: UNL, written: UNL, lesson: UNL, buddy: UNL, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: UNL, writing: UNL, speaking: UNL, mock: UNL, voice: 1, forecast: 1, parent: 1 },
-    pitch: ['Everything in Standard, plus:', '標準計劃的全部功能，再加上：'], has: [['Practice papers (school tests and exams) and printable worksheets', '模擬試卷（校內考試、呈分試或 DSE）和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['A parent dashboard: today, this week, tests and what needs attention', '家長主頁：今日、本週、測驗和需要留意的地方']] },
+    pitch: ['Everything in Standard, plus:', '標準計劃的全部功能，再加上：'], has: [['Mock exams (school tests and exams) and printable worksheets', '模擬考試（校內考試、呈分試或 DSE）和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['A parent dashboard: today, this week, tests and what needs attention', '家長主頁：今日、本週、測驗和需要留意的地方']] },
 };
 // No free plan (decided 14 Nov 2026): families start with a free trial; bursaries and vouchers cover families who can't pay.
 // 'free' stays defined only so an old preview setting on a device still works.
@@ -5371,7 +5371,7 @@ const FEAT = {
   report: { per: 'flag', en: ['Full parent report'], zh: ['完整家長報告'], d: ['Chapter scores, how ready for each subject, trends, tests and thinking skills.', '各章分數、各科準備程度、趨勢、測驗和思考能力。'] },
   writing: { per: 'week', en: ['Writing marked (DSE criteria)', 'a week'], zh: ['寫作批改（DSE 準則）', '篇／週'], d: ['DSE-style feedback on your essays with estimated bands, then redraft and see what improved.', '按 DSE 準則批改文章，估計等級，再修改並看到進步。'] },
   speaking: { per: 'week', en: ['Speaking answers marked', 'a week'], zh: ['說話回應評分', '次／週'], d: ['Answer DSE Paper 4 questions out loud and get marked on the four speaking domains.', '大聲回答 DSE 卷四題目，按四個說話範疇評分。'] },
-  mock: { per: 'week', en: ['DSE mock papers and worksheets', 'a week'], zh: ['DSE 模擬試卷和工作紙', '份／週'], d: ['Full DSE-style papers, timed like the real exam, or printed as worksheets.', '完整 DSE 模式試卷，像真實考試限時，或列印成工作紙。'] },
+  mock: { per: 'week', en: ['DSE mock exams and worksheets', 'a week'], zh: ['DSE 模擬考試和工作紙', '份／週'], d: ['Full DSE-style papers, timed like the real exam, or printed as worksheets.', '完整 DSE 模式試卷，像真實考試限時，或列印成工作紙。'] },
   voice: { per: 'flag', en: ['Talk to Buddy (voice)'], zh: ['與 Buddy 對話（語音）'], d: ['Ask Buddy out loud in English or Cantonese and hear the answer.', '用英文或廣東話問 Buddy，並聽到回答。'] },
   parent: { per: 'flag', en: ['Parent dashboard'], zh: ['家長主頁'], d: ['A PIN-protected dashboard for parents: today’s practice, the week, school tests coming up, each subject and what needs attention.', '家長專用、有密碼保護的主頁：今日練習、本週情況、即將來臨的測驗、各科進度和需要留意的地方。'] },
   forecast: { per: 'flag', en: ['Exam forecast'], zh: ['考試預測'], d: ['See where each subject is heading by your exam date, at your current pace.', '按現時進度，預測考試時各科的準備程度。'] },
@@ -5542,7 +5542,7 @@ async function renderParent() {
   for (const e of log.slice(-300)) { const s = sessions[sessions.length - 1]; if (s && e.t - s.end < 20 * 60000 && s.b === String(e.q).split(':')[0]) { s.end = e.t; s.n++; s.g += e.g || 0; s.m += e.m || 0; } else sessions.push({ start: e.t, end: e.t, n: 1, g: e.g || 0, m: e.m || 0, b: String(e.q).split(':')[0] }); }
   const bookName = (id) => { const b = books.find((x) => x.id === id); return b ? (b.subject ? subj_(b.subject) : b.title) : ''; };
   sessions.slice(-12).forEach((s) => feed.push({ t: s.end, ic: 'bars', tx: PD(`Practised ${bookName(s.b)}: ${s.n} question${s.n > 1 ? 's' : ''}, ${s.m ? Math.round(100 * s.g / s.m) : 0}% of marks`, `練習 ${bookName(s.b)}：${s.n} 題，得分率 ${s.m ? Math.round(100 * s.g / s.m) : 0}%`) }));
-  (local.tests || []).slice(-8).forEach((x) => feed.push({ t: x.t, ic: 'pencil', tx: PD(`${x.kind === 'test' ? 'Chapter test' : 'Mock paper'}: ${x.m ? Math.round(100 * x.g / x.m) : 0}%`, `${x.kind === 'test' ? '章節測驗' : '模擬試卷'}：${x.m ? Math.round(100 * x.g / x.m) : 0}%`) + ` · ${x.title || ''}` }));
+  (local.tests || []).slice(-8).forEach((x) => feed.push({ t: x.t, ic: 'pencil', tx: PD(`${x.kind === 'test' ? 'Chapter test' : 'Mock exam'}: ${x.m ? Math.round(100 * x.g / x.m) : 0}%`, `${x.kind === 'test' ? '章節測驗' : '模擬考試'}：${x.m ? Math.round(100 * x.g / x.m) : 0}%`) + ` · ${x.title || ''}` }));
   Object.entries(local.learned || {}).forEach(([k, t]) => { const [bid, uid_] = k.split(':'); const b = books.find((x) => x.id === bid); const u = b && b.units.find((x) => x.id === uid_); if (u) feed.push({ t, ic: 'book', tx: PD(`Finished a lesson: ${cleanUnitTitle(u.title)}`, `完成一課：${cleanUnitTitle(u.title)}`) }); });
   (local.wr || []).forEach((w) => w.drafts.forEach((d, i) => feed.push({ t: d.t, ic: 'pencil', tx: PD(`Writing marked (draft ${i + 1}): ${lvShow(wrLevel(d.fb, w.kind))}`, `寫作批改（第 ${i + 1} 稿）：${lvShow(wrLevel(d.fb, w.kind))}`) + ` · ${w.title}` })));
   (local.sp || []).forEach((x) => x.tries.forEach((t) => feed.push({ t: t.t, ic: 'send', tx: PD(`Speaking answer marked: ${lvShow(spLevel(t.fb, x))}`, `說話回應評分：${lvShow(spLevel(t.fb, x))}`) + ` · ${x.task.title}` })));
@@ -5984,7 +5984,7 @@ async function renderListening() {
   const nw = document.getElementById('lnNew'); if (nw) nw.onclick = () => { Object.assign(x, { item: null, picks: {}, plays: 0, done: false }); renderListening(); };
 }
 
-/* ---------- choose a textbook for weak topics / mock paper ---------- */
+/* ---------- choose a textbook for weak topics / mock exam ---------- */
 const isWeak = (q) => { const st = local.stats[q.id]; return !!st && st.last < 1; };
 async function renderPick(mode) {
   const books = await getBooks();
@@ -6010,7 +6010,7 @@ async function renderPick(mode) {
     rows.unshift(row('', 'All my textbooks', ok ? `${n} question${n === 1 ? '' : 's'} to work on` : 'Answer a few questions first', ok));
   }
   const anyReady = !weakMode || books.some((b) => ready(b.id)) || ready('');
-  const title = weakMode ? 'Weak topics' : 'Mock paper';
+  const title = weakMode ? 'Weak topics' : 'Mock exam';
   const intro = weakMode
     ? `The questions you didn’t get fully right, mixed together so you can fix them.${anyReady ? ' Choose a textbook.' : ''}`
     : 'A DSE-style paper: Section A multiple choice, then Section B written questions, timed. Choose a textbook, then the chapters and length.';
@@ -7252,7 +7252,7 @@ function renderSummary() {
   const missedIdx = qs.map((q, k) => k).filter((k) => (S.got[k] || 0) < marksOf(qs[k]));
   const drillable = missedIdx.filter((k) => canDrill(qs[k])).slice(0, 10); // drill up to 10 missed ideas
   const unitRef = S.units ? { book: S.book, units: S.units } : null;
-  // Timed tests and mock papers count towards mastery (per chapter, only when finished).
+  // Timed tests and mock exams count towards mastery (per chapter, only when finished).
   // Every finished test is also kept for the Progress page and the parent report (kind, title, score, time used).
   if (((S.mode === 'dse' && !S.ws) || S.mode === 'mock') && !S.endedEarly && !S.recorded) {
     S.recorded = true;
