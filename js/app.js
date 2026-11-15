@@ -2303,7 +2303,7 @@ async function todayReadyHTML(books) {
   };
   return `<section class="stack g10 td-sec" aria-label="${Z('How ready you are', '準備程度')}"><div class="sect-head"><h2>${Z('How ready you are', '準備程度')}</h2><button class="btn-sm" id="moreready">${Z('See progress', '查看進度')}</button></div>
     <div class="card td-ready"><div class="tr-week"><span class="tr-wl">${Z('This week', '本週')}</span>${wk.join('')}</div>
-    <div class="pg-rings">${rows.slice(0, 6).map(ring).join('')}</div>${rows.length > 6 ? `<p class="hint" style="margin:0">${Z(`+ ${rows.length - 6} more on Progress`, `另有 ${rows.length - 6} 本在「進度」`)}</p>` : ''}</div></section>`;
+    <div class="pg-rings">${rows.slice(0, 6).map(ring).join('')}</div>${rows.length > 6 ? `<p class="hint" style="margin:0">${Z(`+ ${rows.length - 6} more on Progress`, `另有 ${rows.length - 6} 本在「進度」`)}</p>` : ''}${readyHowHTML()}</div></section>`;
 }
 // "How does Today's mission work?": a short fold-out on the mission card.
 function missionHowHTML() {
@@ -2324,6 +2324,21 @@ function missionHowHTML() {
       <li>${Z('Things you forget come back sooner; things you remember come back later.', '忘記了的會較快再出現，記得的會遲些才出現。')}</li>
       <li>${Z('A step ticks itself off when it’s done (for practice, after 3 questions). The list stays the same all day, but adding a school test updates it straight away.', '完成後步驟會自動打剔（練習的話，做完 3 題）。清單全日不變，但加入學校測驗後會即時更新。')}</li>
     </ul></div></details>`;
+}
+// "How is 'how ready' worked out?": a short fold-out under the readiness rings (Today and Progress).
+function readyHowHTML() {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  const rows = [[30, Z('Passed timed chapter tests', '通過限時章節測驗'), Z('80% or more, on two different days.', '取得 80% 或以上，並在兩個不同日子通過。')],
+    [15, Z('Covered every part', '涵蓋每個部分'), Z('Right answers from every part of the chapter, not just one bit.', '章節每個部分都有答對的題目，不只是其中一部分。')],
+    [15, Z('Accurate in practice', '練習準確'), Z('Your latest scores, once you’ve done enough questions in the chapter.', '你最近的分數（要做夠該章的題目數量）。')],
+    [15, Z('Deep understanding', '深入理解'), Z('Right on harder “apply” and “analyse” questions, and full marks on written answers.', '答對較難的「應用」和「分析」題，以及文字題取得滿分。')],
+    [15, Z('Remembered over time', '長久記得'), Z('Right again in reviews, days later.', '幾天後溫習時仍然答對。')],
+    [10, Z('Mistakes fixed', '改正錯題'), Z('Few mistakes left to fix in the chapter.', '該章剩下要改正的錯題很少。')]];
+  return `<details class="ms-how rd-how"><summary>${Z('How is this worked out?', '這是怎樣計算的？')}</summary><div>
+    <p>${Z('Each chapter scores up to 100 points from six things:', '每一章最多 100 分，由六部分組成：')}</p>
+    <div class="rd-rows">${rows.map(([n, t, d]) => `<div><b class="rd-n">${n}</b><span><b>${t}</b>${d}</span></div>`).join('')}</div>
+    <p><b>${Z('Two limits keep it honest:', '兩個限制，確保分數真實：')}</b> ${Z('a chapter stays at 70% or below until you pass a timed chapter test, and only goes above 95% after passes on two different days.', '未通過限時章節測驗前，該章最多 70%；要在兩個不同日子通過，才可以超過 95%。')}</p>
+    <p>${Z('A subject’s ring is the average of its chapters, with bigger chapters counting more.', '科目的圓環是各章的平均分，較長的章節佔比較大。')}</p></div></details>`;
 }
 async function renderHome() {
   S = null;
@@ -5062,7 +5077,7 @@ async function renderProgress() {
     ${explainHTML}
     <div class="pg-grid">
       <div class="pg-c">
-        ${RH.length ? `<section class="pgcard"><h2>${pIcon('ring', 18)} ${PT('Am I ready?', '我準備好了嗎？')}</h2><div class="pg-rings">${ringRow}</div>${testCard}</section>` : ''}
+        ${RH.length ? `<section class="pgcard"><h2>${pIcon('ring', 18)} ${PT('Am I ready?', '我準備好了嗎？')}</h2><div class="pg-rings">${ringRow}</div>${testCard}${readyHowHTML()}</section>` : ''}
         ${goalCardHTML(D)}
         <section class="pgcard"><h2>${pIcon('target', 18)} ${PT('What to work on', '要加強的地方')}</h2><div class="pg-acts">${acts.join('')}</div></section>
         ${beyondHTML}
