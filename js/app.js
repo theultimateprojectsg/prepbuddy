@@ -4230,12 +4230,12 @@ async function renderBook(bookId) {
   const lstat = (u) => (lkey(u) ? `✓ Learned ${new Date(lkey(u)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })}` : 'Not learned yet · about 5 min');
   const plWeak = (u) => { const r = ((pl || {}).u || {})[u.id]; return r && r[1] && r[0] / r[1] < 0.4; };
   const nextU = book.units.find((u) => pick.ids.has(u.id) && !lkey(u)) || book.units.find((u) => plWeak(u) && !lkey(u)) || book.units.find((u) => !lkey(u)) || book.units[0];
-  const lrow = (u, cls = '') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}">${cls === 'next' ? '<span class="lc-up">Up next</span>' : ''}<span class="lc-t"><b data-raw>${esc(shortTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
+  const lrow = (u, cls = '', tag = 'Up next') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}">${cls === 'next' ? `<span class="lc-up">${tag}</span>` : ''}<span class="lc-t"><b data-raw>${esc(shortTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
   const nLearned = book.units.filter(lkey).length;
   const learnHTML = `<section class="learn-card" aria-label="Learn">
       <div class="lc-head"><span class="lc-ic">${actionIcon('learn', 24)}</span><div><h2>Learn${book.units.length > 1 ? ` <small>${nLearned} of ${book.units.length} learned</small>` : ''}</h2><p>New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.</p></div></div>
       ${book.units.length <= 4 ? `<div class="lc-list">${book.units.map((u) => lrow(u)).join('')}</div>`
-        : `<div class="lc-list">${lrow(nextU, 'next')}</div>
+        : `<div class="lc-list" id="lclist">${lrow(nextU, 'next')}</div>
         <label class="lc-pick"><span>Or choose a chapter</span><select id="learnpick"><option value="">Choose…</option>${book.units.map((u) => `<option value="${esc(u.id)}">${lkey(u) ? '✓ ' : ''}${esc(cleanTitle(u.title))}</option>`).join('')}</select></label>`}
     </section>`;
   const stat = (v, label) => `<span><b>${v}</b> ${label}</span>`;
@@ -4346,10 +4346,18 @@ async function renderBook(bookId) {
   document.getElementById('ctest').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); if (units.length) startChapterTest(book, units); };
   document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
   document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
-  $app.querySelectorAll('[data-learn]').forEach((b) => (b.onclick = () => go({ name: 'learn', bookId, unitId: b.dataset.learn })));
+  const bindLearn = () => $app.querySelectorAll('[data-learn]').forEach((b) => (b.onclick = () => go({ name: 'learn', bookId, unitId: b.dataset.learn })));
+  bindLearn();
   { const pg = document.getElementById('plGo'); if (pg) pg.onclick = () => startPlacement(book); }
   { const ps = document.getElementById('plSkip'); if (ps) ps.onclick = () => { local.plHide = { ...(local.plHide || {}), [book.id]: 1 }; saveLocal(); keep(); }; }
-  { const lp = document.getElementById('learnpick'); if (lp) lp.onchange = () => { if (lp.value) go({ name: 'learn', bookId, unitId: lp.value }); }; }
+  { const lp = document.getElementById('learnpick'); if (lp) lp.onchange = () => {
+    // picking a chapter shows it in the card above; the child then presses Start lesson
+    const u = book.units.find((x) => x.id === lp.value) || nextU, box = document.getElementById('lclist');
+    if (!box) return;
+    box.innerHTML = lrow(u, 'next', lp.value ? 'Your choice' : 'Up next');
+    bindLearn();
+    const r = box.querySelector('.lc-row'); if (r) { r.classList.remove('flash'); void r.offsetWidth; r.classList.add('flash'); }
+  }; }
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
   window.scrollTo(0, 0);
   if (bookFocus) {

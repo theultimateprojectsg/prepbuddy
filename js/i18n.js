@@ -13,6 +13,7 @@ const EXACT = {
   'Find your level': '找出你的程度',
   'Level check': '程度評估',
   'Up next': '下一章',
+  'Your choice': '你選的章節',
   'Learn': '學習',
   'New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.': '第一次讀這一章？Buddy 會一步一步教你，每步都有小測。學完再在下面練習。',
   'Not learned yet · about 5 min': '未學 · 約 5 分鐘',
