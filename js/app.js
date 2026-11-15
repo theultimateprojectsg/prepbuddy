@@ -2611,7 +2611,7 @@ async function renderBooks() {
 function renderSettings() {
   const zh = LANG === 'zh';
   const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" lang="${k === 'zh' ? 'zh-HK' : 'en'}" data-raw><b>${label}</b><span>${sub}</span></button>`;
-  $app.innerHTML = `<div class="mob-only">${backTop({ name: 'home' }, 'Back')}</div>
+  $app.innerHTML = `
   <main class="pad stack g18 settings" data-view="settings" style="flex:1">
     <h1 class="pagetitle">Settings</h1>
     <h2 class="set-h">${PLT('This child', '這個孩子')}</h2>
