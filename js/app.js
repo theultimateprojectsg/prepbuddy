@@ -2983,6 +2983,8 @@ function profileScreen({ first } = {}) {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
     const L = { grade: gradeNow(), pace: '', medium: '', goals: [], likes: '', vrate: '', ...(local.learner || {}) }; L.grade = gradeNow() || '';
     // First run sets everything up front: the child's name, the details below, and stars on or off.
+    // First run: four short pages (basics, school, reading aloud, goals) instead of one long one.
+    let step = 1; const STEPS = 4;
     let nameV = local.name || '', starsV = starsOn(), starsSet = local.starsOn != null; // stars default on for primary grades
     const keep = () => { const n = document.getElementById('pname'); if (n) nameV = n.value; const lk = document.getElementById('plikes'); if (lk) L.likes = lk.value; };
     const nav = document.getElementById('tabs'); if (first && nav) nav.style.display = 'none';
@@ -2995,27 +2997,27 @@ function profileScreen({ first } = {}) {
       L.goals = L.goals.filter((x) => GOALS(L.grade).some(([k]) => k === x));
       if (first && !starsSet) starsV = /^P/.test(L.grade || '');
       $app.innerHTML = `<main class="pad ${first ? 'pilotgate' : 'stack g18'}" data-raw style="flex:1">
-      <div class="${first ? 'pg-box cs-box' : 'stack g18'} prof-box${drawn ? ' noanim' : ''}">
+      <div class="${first ? 'pg-box cs-box compact' : 'stack g18'} prof-box${drawn ? ' noanim' : ''}">
         <div class="cs-head">${buddySVG('happy', 64)}<div>${first ? `<span class="pg-tag">${local.pilot && !local.needProfile ? C('Step 2 of 3 · for parents', '第 2 步，共 3 步 · 家長專用') : C('For parents', '家長專用')}</span>` : ''}<h1 class="${first ? '' : 'pagetitle'}" style="margin:6px 0 0">${C('About your child', '關於你的孩子')}</h1></div></div>
-        <p style="margin:0;line-height:1.5;color:var(--text-2)">${C('Buddy uses this to talk, explain and set questions at the right level for your child. It stays on this device.', 'Buddy 會按這些資料，用適合孩子程度的方式講解和出題。資料只保存在這部裝置。')}</p>
-        ${first ? `<section class="stack g10"><label for="pname"><b>${C('What’s your child’s name?', '孩子叫甚麼名字？')}</b></label>
+        <p data-st="1" style="margin:0;line-height:1.5;color:var(--text-2)">${C('Buddy uses this to talk, explain and set questions at the right level for your child. It stays on this device.', 'Buddy 會按這些資料，用適合孩子程度的方式講解和出題。資料只保存在這部裝置。')}</p>
+        ${first ? `<section class="stack g10" data-st="1"><label for="pname"><b>${C('What’s your child’s name?', '孩子叫甚麼名字？')}</b></label>
           <input id="pname" class="input" autocomplete="given-name" maxlength="30" placeholder="${C('e.g. Ka Yan', '例如：嘉欣')}" value="${esc(nameV)}">
           <span class="hint" style="margin:0;text-align:left">${C('Buddy uses it to greet them. A first name or nickname is enough.', 'Buddy 會用來打招呼。名字或小名都可以。')}</span></section>` : ''}
-        <section class="stack g10"><b>${C('Which grade are they in?', '孩子讀幾年級？')}</b>
+        <section class="stack g10" data-st="1"><b>${C('Which grade are they in?', '孩子讀幾年級？')}</b>
           <div class="prof-grades"><span class="muted">${C('Primary', '小學')}</span>${GRADE_LIST.slice(0, 6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div>
           <div class="prof-grades"><span class="muted">${C('Secondary', '中學')}</span>${GRADE_LIST.slice(6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div></section>
         ${`
-        <section class="stack g10"><b>${C('How are they doing at school?', '孩子在學校的情況？')}</b>
+        <section class="stack g10" data-st="2"><b>${C('How are they doing at school?', '孩子在學校的情況？')}</b>
           <div class="prof-opts">${opt('pace', 'support', C('Needs extra help', '需要多些幫助'), C('Smaller steps, easier start', '由淺入深，循序漸進'))}${opt('pace', 'ontrack', C('About right', '跟得上'), C('Keeping up with the class', '跟上班中進度'))}${opt('pace', 'ahead', C('Ahead', '超前'), C('Ready for harder work', '可以挑戰較深的題目'))}</div></section>
-        <section class="stack g10"><b>${C('Their school mostly teaches in…', '學校主要用甚麼語言教學？')}</b>
+        <section class="stack g10" data-st="2"><b>${C('Their school mostly teaches in…', '學校主要用甚麼語言教學？')}</b>
           <div class="prof-opts two">${opt('medium', 'cmi', C('Chinese', '中文'), C('Cantonese / Chinese', '廣東話／中文'))}${opt('medium', 'emi', C('English', '英文'), C('English-medium school', '英文中學／小學'))}</div></section>
-        <section class="stack g10"><b>${C('Chinese lessons are taught in…', '中文科用甚麼語言教？')}</b>
+        <section class="stack g10" data-st="2"><b>${C('Chinese lessons are taught in…', '中文科用甚麼語言教？')}</b>
           <div class="prof-opts two">${opt('zhLang', 'yue', C('Cantonese', '廣東話'), C('粵教中', '粵教中'))}${opt('zhLang', 'cmn', C('Putonghua', '普通話'), C('Chinese taught in Putonghua: Buddy reads Chinese in Putonghua', '普教中：Buddy 用普通話朗讀'))}</div></section>
-        <section class="stack g10"><b>${C('Buddy should explain in…', 'Buddy 用甚麼語言講解？')}</b>
+        <section class="stack g10" data-st="2"><b>${C('Buddy should explain in…', 'Buddy 用甚麼語言講解？')}</b>
           <div class="prof-opts">${opt('explain', 'en', C('English', '英文'), C('Even if they type in Chinese', '即使孩子用中文提問'))}${opt('explain', 'zh', C('Chinese', '中文'), C('English terms in brackets', '英文術語放在括號內'))}${opt('explain', 'mix', C('Chinese + English terms', '中文 + 英文術語'), C('Learn the English words', '同時學英文詞彙'))}</div>
           <span class="muted" style="font-size:14px;line-height:1.5">${C('English lessons are always explained in simple English, with Chinese only for hard words.', '英文科一律用淺白英文講解，只在難字旁加中文。')}</span>
           <span class="hint" style="margin:0;text-align:left">${C('Practice questions stay in the textbook’s language.', '練習題目會保持課本的語言。')}</span></section>
-        <section class="stack g10"><b>${C('Reading voice', '朗讀聲音')}</b>
+        <section class="stack g10" data-st="3"><b>${C('Reading voice', '朗讀聲音')}</b>
           <span class="muted" style="font-size:14px;line-height:1.5;margin-top:-4px">${C('For dictation, listening and reading questions aloud (🔊). Tap ▶ to hear each one.', '用於默書、聆聽和朗讀題目（🔊）。按 ▶ 試聽。')}</span>
           ${[['yue', C('Cantonese', '廣東話')], ['cmn', C('Putonghua', '普通話')], ['en', C('English', '英文')]].map(([lg, name]) => `<div class="vc-group"><small>${name}</small><div class="vc-row">${VOICE_OPTS[lg].map(([id, zhn, en, zh], i) => {
             const on = (L.voices && L.voices[lg] ? L.voices[lg] : VOICE_OPTS[lg][0][0]) === id;
@@ -3023,20 +3025,30 @@ function profileScreen({ first } = {}) {
           <div class="prof-opts two">${opt('vrate', '', C('Normal speed', '正常速度'), '')}${opt('vrate', 'slower', C('A bit slower', '慢一點'), C('Good for younger children', '適合年紀較小的孩子'))}</div>
           <div class="prof-opts two">${opt('autoread', '', C('Read questions only when tapped', '按 🔊 才朗讀題目'), C('Tap 🔊 on a question', '在題目按 🔊'))}${opt('autoread', 'on', C('Read each question automatically', '自動朗讀每一題'), C('Good for P1–P2', '適合小一至小二'))}</div>
         </section>
-        ${L.grade ? `<section class="stack g10"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
+        ${L.grade ? `<section class="stack g10" data-st="4"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
         `}
-        ${KIDS.list.length > 1 ? `<section class="stack g10"><label for="pnick"><b>${C('Nickname on this device', '在這部裝置上的稱呼')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
+        ${KIDS.list.length > 1 ? `<section class="stack g10" data-st="1"><label for="pnick"><b>${C('Nickname on this device', '在這部裝置上的稱呼')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
           <input id="pnick" class="input" maxlength="12" placeholder="${C('e.g. Big brother, Kid 2', '例如：哥哥、妹妹')}" value="${esc(KID.nick || '')}">
           <span class="hint" style="margin:0;text-align:left">${C('Only shown on this device to tell your children apart. Not sent to Buddy.', '只在這部裝置上用來分辨孩子，不會傳送給 Buddy。')}</span></section>` : ''}
-        ${`        <section class="stack g10"><label for="plikes"><b>${C('What do they love?', '孩子喜歡甚麼？')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
+        ${`        <section class="stack g10" data-st="4"><label for="plikes"><b>${C('What do they love?', '孩子喜歡甚麼？')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
           <input id="plikes" class="input" maxlength="80" placeholder="${C('e.g. football, dinosaurs, drawing', '例如：足球、恐龍、畫畫')}" value="${esc(L.likes || '')}">
           <span class="hint" style="margin:0;text-align:left">${C('Buddy may use these in examples. Please don’t enter their name or school.', 'Buddy 或會用這些例子講解。請勿輸入孩子的名字或學校。')}</span></section>`}
-        ${first && cap('stars') ? `<section class="stack g10"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b>${C('Stars and rewards', '星星及獎勵')}</b>
+        ${first && cap('stars') ? `<section class="stack g10" data-st="1"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b>${C('Stars and rewards', '星星及獎勵')}</b>
           <button class="switch ${starsV ? 'on' : ''}" id="pstars" role="switch" aria-checked="${starsV}" aria-label="${C('Stars and rewards', '星星及獎勵')}"><i></i></button></div>
           <span class="muted" style="font-size:14px;line-height:1.5">${C('Your child earns stars for practising and spends them on rewards you choose. You can change this later in Settings.', '孩子練習可賺取星星，再換取你設定的獎勵。之後可在「設定」更改。')}</span></section>` : ''}
         <div style="display:flex;gap:10px;flex-wrap:wrap">${first ? '' : `<button class="btn-sm" id="pcancel">${C('Cancel', '取消')}</button>`}<button class="btn" id="psave" ${L.grade ? '' : 'disabled'} style="${first ? '' : 'width:auto;padding:12px 24px'}">${first ? C('Continue', '繼續') : C('Save', '儲存')}</button></div>
       </div></main>`;
+      if (first) {
+        $app.querySelectorAll('.prof-box [data-st]').forEach((el) => { if (+el.dataset.st !== step) el.hidden = true; });
+        const h = $app.querySelector('.cs-head h1');
+        if (h) h.textContent = [C('About your child', '關於你的孩子'), C('At school', '學校'), C('Reading aloud', '朗讀'), C('Goals and interests', '目標及興趣')][step - 1];
+        const sv = document.getElementById('psave');
+        sv.textContent = step < STEPS ? C('Next', '下一步') : C('Done', '完成');
+        sv.insertAdjacentHTML('beforebegin', step > 1 ? `<button class="btn-sm" id="pback">${C('Back', '上一步')}</button>` : '');
+        sv.parentElement.insertAdjacentHTML('beforebegin', `<div class="prof-dots" aria-label="${C(`Page ${step} of ${STEPS}`, `第 ${step} 頁，共 ${STEPS} 頁`)}">${Array.from({ length: STEPS }, (_, k) => `<i class="${k < step ? 'on' : ''}"></i>`).join('')}<span>${step > 1 ? C('Optional · you can skip', '可略過') : ''}</span></div>`);
+        const pb = document.getElementById('pback'); if (pb) pb.onclick = () => { keep(); step--; draw(); window.scrollTo(0, 0); };
+      }
       const likes = document.getElementById('plikes') || { value: L.likes || '' };
       const redraw = () => { keep(); const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.trim().slice(0, 12); const y = window.scrollY; draw(); window.scrollTo(0, y); };
       $app.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.grade = b.dataset.g; redraw(); }));
@@ -3052,6 +3064,7 @@ function profileScreen({ first } = {}) {
       { const ps = document.getElementById('pstars'); if (ps) ps.onclick = () => { starsV = !starsV; starsSet = true; redraw(); }; }
       document.getElementById('psave').onclick = () => {
         if (!L.grade) return;
+        if (first && step < STEPS) { keep(); step++; draw(); window.scrollTo(0, 0); return; }
         if (first) { keep(); local.name = nameV.replace(/[<>]/g, '').trim().slice(0, 30); if (cap('stars')) local.starsOn = starsV; }
         { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.replace(/[<>]/g, '').trim().slice(0, 12); }
         local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', voices: L.voices || {}, vrate: L.vrate || '', autoread: L.autoread || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };

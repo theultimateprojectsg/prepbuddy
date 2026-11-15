@@ -1522,6 +1522,27 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 /* Buddy's floating button is special: round, unlike the other buttons */
 .helper-fab,.helper-fab.on{border-radius:999px;background:var(--ink);border-color:var(--ink);color:#FFFFFF}
 .helper-fab.on{box-shadow:0 0 0 3px #FFFFFF,0 0 0 5px var(--ink)}
+.prof-dots{display:flex;align-items:center;gap:6px}.prof-dots i{width:24px;height:6px;border-radius:3px;background:var(--line)}.prof-dots i.on{background:var(--ink)}.prof-dots span{margin-left:auto;font-size:12px;color:var(--muted)}
+#pback{min-height:48px;flex:none}
+.prof-box.compact #psave{flex:1;width:auto}
+.prof-box.compact div:has(> #psave){flex-wrap:nowrap!important}
+@media (max-width:520px){.prof-box.compact [data-st='2'] .hint{display:none}}
+.prof-box [data-st][hidden]{display:none!important}
+/* first-run pages: fit each on about one phone screen */
+@media (max-width:520px){
+  .prof-box.compact .prof-opts:not(.two){grid-template-columns:repeat(3,minmax(0,1fr))}
+  .prof-box.compact .prof-opts:not(.two) .langopt>span{display:none}
+  .prof-box.compact .prof-opts .langopt{padding:10px;min-height:0}
+  .prof-box.compact .prof-opts .langopt b{font-size:14px}
+  .prof-box.compact .prof-opts .langopt>span{font-size:12px}
+  .prof-box.compact .vc-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .prof-box.compact .vc-opt{flex-direction:column}
+  .prof-box.compact .vc-pick{padding:8px 10px}
+  .prof-box.compact .vc-pick b{font-size:14px}
+  .prof-box.compact .vc-pick span{font-size:11px;line-height:1.3}
+  .prof-box.compact .vc-play{width:auto;height:32px;border-left:0;border-top:1px solid var(--line)}
+  .prof-box.compact section.stack.g10{gap:8px}
+}
 </style>
 </head>
 <body>
