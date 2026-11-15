@@ -2888,7 +2888,7 @@ async function pilotWelcome() {
   // New families set it up during onboarding; families already using the app get a card on Today instead.
   if (profileOn() && !local.learner && (!local.toured || local.needProfile)) await profileScreen({ first: true });
   await preloadStarters();
-  if (!local.toured) await startTour();
+  if (!local.toured) await startTour('full'); // new families get the full guided tour; the quick one is in Settings
 }
 // A child with no books gets PrepBuddy's free starter books for their grade (e.g. P4 English, Maths and Science),
 // or every starter book as samples when their grade has none yet, once, so they can start straight away.
