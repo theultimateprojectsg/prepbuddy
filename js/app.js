@@ -2145,6 +2145,16 @@ function helperWanted() {
   if (document.getElementById('tutor') || $app.querySelector('#quit, #hwchat, #lnchat') || timedPaper()) return false;
   return !!$app.querySelector('main[data-view]');
 }
+// Phones: the floating Buddy sits just above any bar stuck to the bottom (the book page's Start bar), never on top of it.
+let fabRO = null;
+function fabLift(fab) {
+  const bar = matchMedia('(max-width:1023.98px)').matches && $app.querySelector('.sheet.sticky');
+  if (fabRO) { fabRO.disconnect(); fabRO = null; }
+  if (!bar) { fab.style.bottom = ''; return; }
+  const set = () => { fab.style.bottom = `${Math.round(bar.getBoundingClientRect().height) + 78 + 10}px`; };
+  set();
+  try { fabRO = new ResizeObserver(set); fabRO.observe(bar); } catch (e) {}
+}
 function helperSync() {
   let fab = document.getElementById('helperFab');
   const want = helperWanted();
@@ -2157,17 +2167,8 @@ function helperSync() {
     fab.onclick = () => (helper.open ? helperClose() : helperOpen());
     document.body.appendChild(fab);
   }
-  // Phones: Buddy sits in the page header next to Settings, so it never covers a button. Desktop: floating.
-  const host = matchMedia('(max-width:1023.98px)').matches && $app.querySelector('.ttl-row, .bks-head, main[data-view="practice"] > .greet, .topbar');
-  if (host) {
-    if (fab.parentElement !== host) {
-      const g = host.querySelector(':scope > .mob-gear');
-      host.insertBefore(fab, g || null);
-      const prev = fab.previousElementSibling; // something already pushed to the right (Print, …): sit beside it
-      fab.style.marginLeft = prev && prev.tagName === 'BUTTON' && getComputedStyle(prev).marginLeft !== '0px' && prev !== host.firstElementChild ? '8px' : 'auto';
-    }
-    fab.classList.add('inhead');
-  } else if (fab.parentElement !== document.body) { document.body.appendChild(fab); fab.classList.remove('inhead'); fab.style.marginLeft = ''; }
+  if (fab.parentElement !== document.body) { document.body.appendChild(fab); fab.classList.remove('inhead'); fab.style.marginLeft = ''; }
+  fabLift(fab);
   fab.classList.toggle('on', helper.open);
 }
 function helperOpen() {
