@@ -1460,6 +1460,37 @@ footer .btn-sm{min-height:28px;padding:2px 10px;font-size:12px;vertical-align:mi
 .cs-item[open] .cs-more{transform:rotate(90deg)}
 .cs-item>p{margin:0;padding:0 14px 12px 60px}
 .pg-conf{z-index:1}.pilotgate .pg-box{position:relative;z-index:2}
+/* book covers: light, with the subject colour as the spine, icon and progress bar */
+.bookcover.light{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:0 1px 2px rgba(30,42,90,.06);padding-left:20px}
+.bookcover.light::before{left:0;width:8px;top:-1px;bottom:-1px;background:var(--cc);border-radius:6px 0 0 6px}
+.bookcover.light .c-ic{display:none}.bookcover.light .c-sub{padding-right:0;color:var(--muted);opacity:1;white-space:normal;line-height:1.25;font-weight:600}
+.bookcover.light .c-title{color:var(--ink);font-weight:700}
+.bookcover.light .c-ch{color:var(--muted);opacity:1}
+.bookcover.light .c-meter{background:#EEF1F6}.bookcover.light .c-meter i{background:var(--cc)}
+.bookcover.light .c-new{background:var(--accent-soft);color:var(--accent)}
+.bookcover.light .c-foot b{color:var(--ink)}
+/* Today: the rest is one tap away */
+.today-more .ropts{padding:0}
+.ropt-i.green{background:var(--good-soft);color:var(--good-dark)}
+.coach .coach-cta{display:none}
+@media (max-width:1023.98px){.coach.folded>*{display:none}.coach.folded>.coach-cta{display:flex}.coach.folded{background:none;border:none;box-shadow:none;padding:0}}
+/* book page: the Up next lesson gets the full width for its title */
+.lc-row.next{display:grid;grid-template-columns:1fr auto;column-gap:12px;row-gap:6px;align-items:center}
+.lc-row.next .lc-up{grid-column:1/-1;justify-self:start}
+/* Practice: Notes and Flashcards are proper tap targets */
+.pc-also{gap:6px;margin-top:6px;margin-left:-8px}
+.pc-also .linkbtn{font-size:13.5px;padding:6px 8px;min-height:32px;border-radius:8px;text-decoration:none;color:var(--accent);font-weight:600}
+.pc-also .linkbtn:hover{background:var(--accent-soft)}
+/* Mistake book: the chapter row opens; Redo is inside */
+.mk-list>.mk-redo{display:inline-flex;margin:10px 14px 6px}
+.mk-count{background:var(--accent-soft);color:var(--accent)}
+/* Settings groups */
+.set-h{margin:10px 0 -6px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.gs-empty .gs-lead{font-size:14px;color:var(--muted)}
+.lc-head h2{color:var(--ink)}.lc-head h2 small{color:var(--accent)}
+.ring{--c:var(--warn)}.ring.mid{--c:var(--accent)}.ring.good{--c:var(--good)}
+.mk-empty>svg{flex:none;width:64px;height:64px}
+.pd-k b.low,.pd-pct.low,.pg-ch b.low,.pg-fc b.low,.pg-tp.low{color:var(--warn)}.pd-bar i.low,.pg-bar.low i{background:var(--warn)}.pg-ring.low .val{stroke:var(--warn)}
 </style>
 </head>
 <body>

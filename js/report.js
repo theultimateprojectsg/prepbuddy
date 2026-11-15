@@ -289,6 +289,8 @@ export function strongerHTML(gs, zh, cls = 'rp-card', kid = false) {
         : T('Levels appear after about 10 questions in a subject, and a trend after about 3 weeks.', '每科完成約 10 題後會顯示程度，約 3 星期後顯示走勢。'))
       : up ? T(`Getting stronger in ${up} of ${ready.length} subject${ready.length > 1 ? 's' : ''}${kid ? '. Keep it up!' : ', even as the questions get harder.'}`, `${ready.length} 科中有 ${up} 科在進步${kid ? '，繼續加油！' : '，即使題目愈來愈難。'}`)
       : T('Holding steady so far. Steady practice on the weakest chapters is what moves the level up.', '目前保持穩定。多練習最弱的章節，程度就會提升。');
+    // nothing to show yet (the child's own Progress page): one short line instead of a card of dashes
+    if (kid && !started) return `<section class="${cls} gs-card gs-empty"><div class="rp-card-head"><h2>${ri('up')} ${T('Your levels', '你的程度')}</h2></div><p class="gs-lead" style="margin:0">${T('Your level in each subject shows after about 10 questions.', '每科完成約 10 題後會顯示你的程度。')}</p></section>`;
     const rows = gs.s.map(([name, lvl, st, ch, since, line, books, , n, wk, next]) => `<div class="gs-row"><div class="gs-name"><b>${esc(name)}</b><small>${st !== 'building' && since ? T(`since ${mon(since)}`, `自 ${mon(since)}`) : st === 'building' && lvl != null ? T('starting level', '初步程度') : ''}</small></div>
         ${spark(line)}<div class="gs-lvl"><b>${f1(lvl)}</b><small>${T('level', '程度')}</small></div>${st === 'building' ? early(n, wk) : chip(st, ch)}</div>
         ${next && next[0] ? (kid && next[1] ? `<button class="gs-next" data-unit="${esc(next[1])}">→ ${esc(next[0])}</button>` : `<p class="gs-next">→ ${T('Next', '下一步')}: ${esc(next[0])}</p>`) : ''}

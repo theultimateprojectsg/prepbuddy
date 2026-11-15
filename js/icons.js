@@ -34,7 +34,7 @@ const OTHER = (c) => `<rect x="4" y="4" width="4.5" height="16" rx="1.2" fill="$
 const SUBJ_ZH = { science: '科學', biology: '生物', chemistry: '化學', physics: '物理', maths: '數學', economics: '經濟', english: '英文', chinese: '中文', history: '歷史', geography: '地理', finance: '理財' };
 // The subject's name to show: in Chinese when the app is in Chinese and the subject is one we know.
 export function subjectName(subject, lang) {
-  if (lang !== 'zh' || !subject) return subject || '';
+  if (lang !== 'zh' || !subject) return /^\s*english\s*$/i.test(subject || '') ? 'English Language' : subject || ''; // one name for one subject
   const k = subjectKey(subject);
   return (k && SUBJ_ZH[k]) || subject;
 }

@@ -449,6 +449,15 @@ async function bookMastery(book) {
   return { pct, chapters, areas };
 }
 const cleanUnitTitle = (t) => String(t).replace(/\s*\*+\s*$/, '');
+// Where space is tight: "Unit 1: Multiplication (2-digit and 3-digit numbers × 2-digit numbers)" → "Unit 1 · Multiplication".
+// The full title stays on the chapter's own pages.
+function shortTitle(t) {
+  let x = cleanUnitTitle(t).replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+  const m = x.match(/^((?:unit|chapter|ch\.?|topic|lesson|module)\s*[\dA-Za-z.]+)\s*[:.\-–]\s*(.+)$/i);
+  if (m) x = `${m[1]} · ${m[2]}`;
+  if (x.length > 40) { x = x.slice(0, 40); x = x.slice(0, Math.max(x.lastIndexOf(' '), 24)).replace(/[\s,;:·–-]+$/, '') + '…'; }
+  return x;
+}
 // The next-step text mixes our words with a chapter title; translate just our words.
 function trStep(t) {
   if (LANG !== 'zh') return t;
@@ -1796,7 +1805,7 @@ async function renderDictation(id, sub) {
     ${lists.length ? `<div class="hw-list">${lists.slice().reverse().map((x) => { const m = missed(x), last = (x.runs || []).slice(-1)[0];
       return `<div class="dl-item"><button class="dl-main" data-run="${x.id}"><span class="hw-ic">✏️</span><span class="hw-it"><b>${esc(x.title)}</b><small>${DL[x.lang][LANG === 'zh' ? 0 : 1]} · ${x.items.length} ${DT('items', '項')}${last ? ` · ${DT('last', '上次')} ${last.g}/${last.n}` : ''}${m ? ` · <span class="dl-miss">${DT(`${m} to practise`, `${m} 個要再練`)}</span>` : ''}</small></span><span class="dl-go">▶</span></button>
         <button class="btn-sm quiet" data-edit="${x.id}">${DT('Edit', '修改')}</button></div>`; }).join('')}</div>`
-      : `<p class="muted" style="margin:0">${DT('No lists yet.', '還沒有默書。')}</p>`}
+      : `<div class="card mk-empty">${buddySVG('think', 64)}<div class="stack g6"><b>${DT('No dictation lists yet', '還沒有默書')}</b><span class="muted">${DT('Snap or type this week’s spelling list. I’ll read each word aloud, you write it, then we check together.', '拍下或輸入這星期的默書範圍。我會逐個讀出，你寫下來，然後一起核對。')}</span></div></div>`}
   </main>`;
   document.getElementById('dnew').onclick = () => go({ name: 'dictation', id: 'new' });
   $app.querySelectorAll('[data-run]').forEach((b) => (b.onclick = () => go({ name: 'dictation', id: b.dataset.run, sub: 'run' })));
@@ -1975,7 +1984,7 @@ async function renderLearn(bookId, unitId) {
   meter('lesson');
   const myView = view, zh = LANG === 'zh';
   const T = (en, z) => (zh ? z : en);
-  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel(T('Chapter', '章節'))}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(cleanUnitTitle(unit.title))}</span></div>
+  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel(T('Chapter', '章節'))}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(shortTitle(unit.title))}</span></div>
     <main class="pad stack g18 learnpage" data-view="learn" style="flex:1;align-items:center;justify-content:center;text-align:center">
       ${buddySVG('think', 64)}<b style="font-size:18px">${T('Getting your lesson ready…', '正在準備你的課堂…')}</b><span class="muted">${T('Buddy is reading the chapter and planning how to teach it. This takes about half a minute the first time.', 'Buddy 正在閱讀這一章並準備教學，第一次大約需要半分鐘。')}</span><div class="spinner" aria-hidden="true"></div></main>`;
   document.getElementById('back').onclick = () => leaveTo(bookId);
@@ -2306,12 +2315,12 @@ async function renderHome() {
   const tests = await schoolTestsHTML();
   tests.steps.filter((p) => p.left <= 14).slice(0, 2).forEach((p, k) => items.push(`<button class="plan-item" data-tstep="${k}"><span class="pi-icon pi-test">${actionIcon(p.step.icon, 24)}</span><span class="pi-text"><b data-raw>${esc(p.step.t)}</b><span class="sub"><span data-raw>${esc(p.x.name)}</span> ${leftText(p.left)} · ${p.step.s}</span></span><span class="go">${p.step.go}</span></button>`));
   { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
-    if (nb) items.push(`<button class="plan-item" data-lv="${esc(nb.id)}"><span class="pi-icon pi-continue">${actionIcon('level', 24)}</span><span class="pi-text"><b>Find your level</b><span class="sub"><span data-raw>${esc(nb.title)}</span> · about 5 min</span></span><span class="go">Start</span></button>`); }
+    if (nb) items.push(`<button class="plan-item" data-lv="${esc(nb.id)}"><span class="pi-icon pi-continue">${actionIcon('level', 24)}</span><span class="pi-text"><b>Find your level</b><span class="sub"><span data-raw>${esc(nb.subject ? subj(nb.subject) : shortTitle(nb.title))}</span> · about 5 min</span></span><span class="go">Start</span></button>`); }
   if (last) {
     const qs = await getQs(last.book.id, last.unit.id); const sc = scoreOf(qs);
-    items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b data-raw>${esc(last.unit.title)}</b><span class="sub">Keep going${sc !== null ? ` · scored ${sc}%` : ''}</span></span><span class="go">Practise</span></button>`);
+    items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b data-raw>${esc(shortTitle(last.unit.title))}</b><span class="sub">Keep going${sc !== null ? ` · scored ${sc}%` : ''}</span></span><span class="go">Practise</span></button>`);
   } else {
-    items.push(`<button class="plan-item" data-book="${esc(books[0].id)}"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b>Practise your first chapter</b><span class="sub" data-raw>${esc(books[0].title)}</span></span><span class="go">Choose</span></button>`);
+    items.push(`<button class="plan-item" data-book="${esc(books[0].id)}"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b>Practise your first chapter</b><span class="sub" data-raw>${esc(books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title))}</span></span><span class="go">Choose</span></button>`);
   }
   if (!due.length && Object.keys(local.stats).length) items.push(`<div class="plan-item done"><span class="pi-icon pi-review">${actionIcon('review', 24)}</span><span class="pi-text"><b>Reviews done</b><span class="sub">${nextAt < Infinity ? `Next review ${whenText(nextAt)}` : ''}</span></span><span class="go">✓</span></div>`);
   const r = await currentReport();
@@ -2324,18 +2333,16 @@ async function renderHome() {
     ${installTip()}
     <section class="stack g10" aria-label="Today's plan"><div class="sect-head"><h2>Today’s plan</h2></div><div class="plan">${items.join('')}</div></section>
     ${tests.html}
-    <section class="stack g10" aria-label="Practice">
-      <div class="sect-head"><h2>Practice</h2><button class="btn-sm" id="allpractice">${LANG === 'zh' ? '所有練習' : 'All practice tools'} ›</button></div>
-      <div class="quick qshort">${(() => { const T = practiceTiles(); return ['weak', 'dictgo', 'hwgo', 'wrgo'].map((k) => T[k] || '').join(''); })()}
+    <section class="stack g10 today-more" aria-label="More">
+      <div class="card ropts">
+        <button class="ropt" id="allpractice"><span class="ropt-i blue">${practiceIcon()}</span><span class="ropt-t"><b>${LANG === 'zh' ? '所有練習' : 'All practice tools'}</b><small>${LANG === 'zh' ? '弱項、默書、寫作、功課幫手等' : 'Weak topics, dictation, writing, homework help and more'}</small></span><span class="ropt-go" aria-hidden="true">›</span></button>
+        ${ready.n ? `<button class="ropt" id="progress"><span class="ropt-i green">${progressIcon()}</span><span class="ropt-t"><b>${LANG === 'zh' ? '準備程度' : 'How ready you are'}</b><small>${LANG === 'zh' ? '每本課本的進度和本週表現' : 'Each book, and how this week is going'}</small></span><span class="ropt-go" aria-hidden="true">›</span></button>` : ''}
       </div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
     </section>
-    ${ready.n ? `<section class="stack g10" aria-label="How ready you are">
-      <div class="sect-head"><h2>How ready you are</h2><button class="btn-sm" id="progress">See progress</button></div>
-      <div class="card stack g6 today-week">${ready.html}${ready.more ? `<button class="btn-sm quiet" id="moreready" style="align-self:flex-start;margin-top:4px">See all ${ready.n} books</button>` : ''}</div>
-    </section>` : ''}
   </main>
-  <aside class="coach" id="coach" aria-label="Study coach">${coachHTML()}</aside>${footerHTML()}`;
+  <aside class="coach${phoneQ() ? ' folded' : ''}" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
+  { const co = document.getElementById('coachOpen'); if (co) co.onclick = () => { document.getElementById('coach').classList.remove('folded'); const q = document.getElementById('coachQ'); if (q) q.focus({ preventScroll: true }); document.getElementById('coach').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
   bindHomeCommon();
   bindCoach();
   { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
@@ -2416,7 +2423,7 @@ async function practiceByChapter(showAll) {
     ${books.length > 1 ? `<div class="pc-books" role="tablist">${books.map((b) => `<button class="chip${b.id === bk.id ? ' on' : ''}" role="tab" aria-selected="${b.id === bk.id}" data-pcbook="${esc(b.id)}"><span data-raw>${esc(subjectName(b.subject, LANG) || b.title)}</span></button>`).join('')}</div>` : ''}
     <p class="pc-title muted" data-raw>${esc(bk.title)}</p>
     <div class="pc-list">${shown.map((c) => `<div class="pc-row${!showAll && c === list[start] ? ' next' : ''}">
-      <span class="pc-t">${!showAll && c === list[start] ? `<span class="lc-up">${Z('Up next', '下一章')}</span>` : ''}<b data-raw>${esc(cleanUnitTitle(c.unit.title))}</b><small>${st(c)}</small><span class="pc-also"><button class="linkbtn" data-pcnotes="${esc(c.unit.id)}">${Z('Notes', '筆記')}</button><button class="linkbtn" data-pccards="${esc(c.unit.id)}">${Z('Flashcards', '閃卡')}</button></span></span>
+      <span class="pc-t">${!showAll && c === list[start] ? `<span class="lc-up">${Z('Up next', '下一章')}</span>` : ''}<b data-raw title="${esc(cleanUnitTitle(c.unit.title))}">${esc(shortTitle(c.unit.title))}</b><small>${st(c)}</small><span class="pc-also"><button class="linkbtn" data-pcnotes="${esc(c.unit.id)}">${Z('Notes', '筆記')}</button><button class="linkbtn" data-pccards="${esc(c.unit.id)}">${Z('Flashcards', '閃卡')}</button></span></span>
       <span class="pc-btns"><button class="btn-sm" data-pclearn="${esc(c.unit.id)}">${Z('Learn', '學習')}</button><button class="btn-sm primary" data-pcprac="${esc(c.unit.id)}">${Z('Practise', '練習')}</button></span></div>`).join('')}</div>
     ${list.length > shown.length || showAll ? `<button class="linkbtn pc-more" data-pcall>${showAll ? Z('Show fewer', '顯示較少') : Z(`Show all ${list.length} chapters`, `顯示全部 ${list.length} 章`)}</button>` : ''}`;
   box.querySelectorAll('[data-pcbook]').forEach((b) => (b.onclick = () => { local.pracBook = b.dataset.pcbook; saveLocal(); practiceByChapter(); }));
@@ -2505,7 +2512,7 @@ function bindHomeCommon() {
 
 /* ---------- Books: my textbooks, the library and uploads ---------- */
 // Books are grouped by subject. With lots of books, subject buttons and a search box narrow the list.
-const subjectOf = (b) => String(b.subject || '').trim() || (b.library ? 'Other' : 'My uploads');
+const subjectOf = (b) => subj(String(b.subject || '').trim()) || (b.library ? 'Other' : 'My uploads');
 const LAST_GROUPS = ['Other', 'My uploads'];
 function groupBySubject(items, subj) {
   const map = new Map();
@@ -2560,8 +2567,8 @@ async function renderBooks() {
   // A cover in the subject's colour. A book not started yet says "New" instead of a discouraging 0%.
   const prog = ({ sc, t }) => (sc || t ? `<b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span>` : `<span class="c-new">${W('New', '新')}</span>`);
   const recentTag = (b) => (b.id === recentId ? `<span class="c-recent">${W('Last used', '最近使用')}</span>` : '');
-  const cover = (it) => { const { b, sc } = it; return `<button class="bookcover" data-book="${esc(b.id)}" style="background:${coverColour(b)}" aria-label="${esc(b.title)}, ${sc}%">
-      ${recentTag(b)}<span class="c-ic">${subjectIcon(b.subject, 20, '#FFFFFF', b.title)}</span>
+  const cover = (it) => { const { b, sc } = it; return `<button class="bookcover light" data-book="${esc(b.id)}" style="--cc:${coverColour(b)}" aria-label="${esc(b.title)}">
+      ${recentTag(b)}<span class="c-ic">${subjectIcon(b.subject, 20, null, b.title)}</span>
       <span class="c-sub" data-raw>${esc(b.subject ? subj(b.subject) : (b.library ? '' : W('My upload', '我上載的')))}</span>
       <span class="c-title" data-raw>${esc(b.title)}</span>
       <span class="c-foot"><span class="c-ch">${chN(b.units.length)}</span>${prog(it)}</span>
@@ -2603,12 +2610,7 @@ function renderSettings() {
   $app.innerHTML = `<div class="mob-only">${backTop({ name: 'home' }, 'Back')}</div>
   <main class="pad stack g18 settings" data-view="settings" style="flex:1">
     <h1 class="pagetitle">Settings</h1>
-    ${planCardHTML()}
-    <section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">Language</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">For PrepBuddy’s buttons and messages. Your textbooks and their questions stay in the book’s own language.</span>
-      <div class="langopts" role="group" aria-label="Language">${opt('en', 'English', 'English')}${opt('zh', '中文（繁體）', 'Traditional Chinese')}</div>
-    </section>
+    <h2 class="set-h">${PLT('This child', '這個孩子')}</h2>
     <section class="card stack g10" style="padding:16px">
       <label for="sname" style="font-size:15px;font-weight:700">Your name</label>
       <span class="muted" style="font-size:13.5px;line-height:1.5">Used to greet you and on the weekly report you send your parents.</span>
@@ -2623,6 +2625,25 @@ function renderSettings() {
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:13.5px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
     </section>
+    <h2 class="set-h">${PLT('Family', '家庭')}</h2>
+    <section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">${PLT('For parents', '家長專區')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('The parent dashboard: this week, school results and upcoming tests, and what needs attention. Needs the parent PIN.', '家長主頁：本週情況、學校成績及考試，以及需要留意的地方。需要家長密碼。')}</span>
+      <button class="btn-sm" id="sparent" style="align-self:flex-start">${PLT('Open the parent dashboard', '打開家長主頁')}</button>
+    </section>
+    <h2 class="set-h">${PLT('This device', '這部裝置')}</h2>
+    <section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">Language</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">For PrepBuddy’s buttons and messages. Your textbooks and their questions stay in the book’s own language.</span>
+      <div class="langopts" role="group" aria-label="Language">${opt('en', 'English', 'English')}${opt('zh', '中文（繁體）', 'Traditional Chinese')}</div>
+    </section>
+    <section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">${BK('Back up your progress', '備份你的進度')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm primary" id="sbackup">${BK('Save a backup file', '儲存備份檔案')}</button><label class="btn-sm" style="cursor:pointer">${BK('Restore from a file', '從檔案還原')}<input type="file" id="srestore" accept="application/json,.json" hidden></label></div>
+    </section>
+    <h2 class="set-h">${PLT('Help and about', '說明及關於')}</h2>
+    ${planCardHTML()}
     ${local.pilot ? `<section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">${PLT('Take the tour again', '再看一次導覽')}</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('A quick look at what PrepBuddy can do.', '快速看看 PrepBuddy 可以做甚麼。')}</span>
@@ -2636,25 +2657,15 @@ function renderSettings() {
       <span class="hint" style="margin:0">${PLT(`Family code ${esc(local.code || '')}`, `家庭代碼 ${esc(local.code || '')}`)}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">${PLT('For parents', '家長專區')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('The parent dashboard: this week, school results and upcoming tests, and what needs attention. Needs the parent PIN.', '家長主頁：本週情況、學校成績及考試，以及需要留意的地方。需要家長密碼。')}</span>
-      <button class="btn-sm" id="sparent" style="align-self:flex-start">${PLT('Open the parent dashboard', '打開家長主頁')}</button>
-    </section>
-    <section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">${BK('Back up your progress', '備份你的進度')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm primary" id="sbackup">${BK('Save a backup file', '儲存備份檔案')}</button><label class="btn-sm" style="cursor:pointer">${BK('Restore from a file', '從檔案還原')}<input type="file" id="srestore" accept="application/json,.json" hidden></label></div>
+      <b style="font-size:15px">${PLT('Privacy', '私隱')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('What PrepBuddy collects, where it goes, and how to see, correct or delete it.', 'PrepBuddy 收集甚麼資料、資料去向，以及如何查閱、更正或刪除。')}</span>
+      <button class="btn-sm" data-privacy style="align-self:flex-start">${PLT('Read the privacy notice', '閱讀私隱聲明')}</button>
     </section>
     ${!DEV ? '' : `<section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">AI usage</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
       <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
     </section>`}
-    <section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">${PLT('Privacy', '私隱')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('What PrepBuddy collects, where it goes, and how to see, correct or delete it.', 'PrepBuddy 收集甚麼資料、資料去向，以及如何查閱、更正或刪除。')}</span>
-      <button class="btn-sm" data-privacy style="align-self:flex-start">${PLT('Read the privacy notice', '閱讀私隱聲明')}</button>
-    </section>
     <section class="card stack g10 wipe-card" style="padding:16px">
       <b style="font-size:15px">${PLT('Delete everything on this device', '刪除這部裝置上的所有資料')}</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('Removes every child, book, question, mark, setting and saved voice clip from this phone or computer, and the family code. PrepBuddy then starts again like new. This can’t be undone, so save a backup first if you want to keep anything.', '刪除這部手機或電腦上所有孩子、課本、題目、成績、設定、已儲存的朗讀聲音和家庭代碼，PrepBuddy 會像新的一樣重新開始。刪除後不能復原，如想保留資料，請先儲存備份。')}${local.pilot ? PLT(' Pilot activity already sent to PrepBuddy is not deleted by this: ask us and we’ll remove it.', ' 已傳送給 PrepBuddy 的試用紀錄不會因此刪除：請聯絡我們，我們會為你刪除。') : ''}</span>
@@ -4220,7 +4231,7 @@ async function renderBook(bookId) {
   const lstat = (u) => (lkey(u) ? `✓ Learned ${new Date(lkey(u)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })}` : 'Not learned yet · about 5 min');
   const plWeak = (u) => { const r = ((pl || {}).u || {})[u.id]; return r && r[1] && r[0] / r[1] < 0.4; };
   const nextU = book.units.find((u) => pick.ids.has(u.id) && !lkey(u)) || book.units.find((u) => plWeak(u) && !lkey(u)) || book.units.find((u) => !lkey(u)) || book.units[0];
-  const lrow = (u, cls = '') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}">${cls === 'next' ? '<span class="lc-up">Up next</span>' : ''}<span class="lc-t"><b data-raw>${esc(cleanTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
+  const lrow = (u, cls = '') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}">${cls === 'next' ? '<span class="lc-up">Up next</span>' : ''}<span class="lc-t"><b data-raw>${esc(shortTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
   const nLearned = book.units.filter(lkey).length;
   const learnHTML = `<section class="learn-card" aria-label="Learn">
       <div class="lc-head"><span class="lc-ic">${actionIcon('learn', 24)}</span><div><h2>Learn${book.units.length > 1 ? ` <small>${nLearned} of ${book.units.length} learned</small>` : ''}</h2><p>New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.</p></div></div>
@@ -4392,7 +4403,7 @@ function notesHTML(u, n) {
 async function renderNotes(bookId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   if (!book) return go({ name: 'home' });
-  const units = paperUnits(book), myView = view;
+  const units = await studyUnits(book), myView = view;
   $app.innerHTML = `
   <div class="topbar noprint"><button class="backbtn" id="back">${ICON.back}<span>${backLabel('Chapters')}</span></button><span style="font-weight:600;font-size:15px;flex:1">Revision notes</span><button class="btn-sm" id="printn">Print</button></div>
   <main class="stack g18 notes" style="flex:1;padding:4px 20px 24px">
@@ -4428,7 +4439,7 @@ let C = null; // the flashcard session
 async function renderCards(bookId, only) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   if (!book) return go({ name: 'home' });
-  const units = paperUnits(book), myView = view;
+  const units = await studyUnits(book), myView = view;
   if (!only) {
     $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel('Chapters')}</span></button></div>
     <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
@@ -4687,7 +4698,7 @@ async function renderProgress() {
   const longest = r.days.indexOf(Math.max(...r.days));
   const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
   const chLabel = (p) => (p >= 80 ? PT('Strong', '強') : p >= 60 ? PT('Getting there', '漸入佳境') : PT('Needs work', '需加強'));
-  const chName = (c) => cleanUnitTitle(c.unit.title);
+  const chName = (c) => shortTitle(c.unit.title);
 
   // what to do next: each one is something to tap
   const acts = [];
@@ -4946,6 +4957,13 @@ const isMcqLike = choiceType;
 let paperSet = { a: 10, b: 2 };
 let paperJob = null;
 
+// Notes and flashcards: the chapters ticked on the book page, or else just the chapter to work on next
+// (not all 18 at once: a 108-card deck, and one AI request per chapter the first time).
+async function studyUnits(book) {
+  if (pick.bookId === book.id && pick.ids.size) return book.units.filter((u) => pick.ids.has(u.id));
+  try { const m = await bookMastery(book); const c = m.chapters.find((x) => x.pct > 0 && x.pct < 80) || m.chapters.find((x) => x.pct < 80); if (c) return [c.unit]; } catch (e) {}
+  return book.units.slice(0, 1);
+}
 function paperUnits(book) {
   return pick.bookId === book.id && pick.ids.size ? book.units.filter((u) => pick.ids.has(u.id)) : book.units;
 }
@@ -4958,9 +4976,9 @@ async function renderPaper(bookId, from) {
   const suggested = paperMinutes(a, b);
   const mins = paperSet.t === 0 ? 0 : (paperSet.t || suggested);
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${from === 'pick' ? 'Mock paper' : from === 'home' ? 'Home' : 'Chapters'}</span></button><span style="font-weight:600;font-size:15px">Mock paper or worksheet</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${from === 'pick' ? 'Mock paper' : from === 'home' ? 'Home' : 'Chapters'}</span></button></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
-    <p style="margin:0;line-height:1.5;color:var(--text-2)">A DSE-style paper: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here and get it marked, or print it and enter your answers in the app afterwards to get them marked.</p>
+    <div class="pick-head">${actionTile('mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">Mock paper</h1><p class="muted" style="margin:0;line-height:1.5;font-size:15px">${isPrimaryKid() ? 'A school-style test paper' : 'A DSE-style paper'}: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here, or print it as a worksheet and enter your answers afterwards.</p></div></div>
     <div class="card stack g6" style="padding:14px 16px">
       <span class="muted" style="font-size:13px">Chapters</span>
       <b style="font-weight:600;line-height:1.4">${units.length === book.units.length ? `All ${book.units.length} chapters` : esc(units.map((u) => u.title).join(' · '))}</b>
@@ -5797,7 +5815,7 @@ async function renderMistakes(tab, openBook) {
   // A question is listed as one short line; tap it to see your answer, the right answer and the explanation.
   const line = (x) => {
     const q = x.q, m = x.m;
-    const ask = choiceType(q) ? q.stem : [writtenStem(q), ...(q.parts || []).map((p) => p.prompt)].filter(Boolean).join(' ');
+    const ask = choiceType(q) ? q.stem : [writtenStem(q), ...(q.parts || []).map((p) => p.prompt).filter((t) => !GENERIC_ASK.test(t || ''))].filter(Boolean).join(' ');
     return `<details class="mq ${m.n > 1 ? 'often' : ''}"><summary>
         <span class="mq-dot" aria-hidden="true"></span>
         <span class="mq-text" data-raw>${esc(String(ask || '').replace(/\s*\n+\s*/g, ' '))}</span>
@@ -5815,20 +5833,20 @@ async function renderMistakes(tab, openBook) {
   const sname = (bk) => (bk.subject ? subj(bk.subject) : bk.title);
   const chRow = ({ g, gi }) => { const often = g.items.filter((i) => i.m.n > 1).length; return `<details class="mk-ch"><summary>
       <span class="mk-count ${tab === 'done' ? 'ok' : ''}">${g.items.length}</span>
-      <span class="mk-gt"><b data-raw>${esc(g.unit ? cleanUnitTitle(g.unit.title) : '')}</b><span class="muted">${often ? `${often} ${zh ? '題錯了多次' : 'missed more than once'} · ` : ''}${zh ? '最近' : 'latest'} ${esc(agoText(Math.max(...g.items.map((i) => (tab === 'done' ? i.m.doneAt || i.m.t : i.m.t)))))}</span></span>
-      ${tab === 'todo' ? `<button class="btn-sm primary" data-redo="${gi}">${zh ? '重做' : 'Redo'}</button>` : ''}<span class="mq-chev" aria-hidden="true">›</span></summary>
-      <div class="mk-list">${g.items.map(line).join('')}</div></details>`; };
+      <span class="mk-gt"><b data-raw>${esc(g.unit ? shortTitle(g.unit.title) : '')}</b><span class="muted">${often ? `${often} ${zh ? '題錯了多次' : 'missed more than once'} · ` : ''}${zh ? '最近' : 'latest'} ${esc(agoText(Math.max(...g.items.map((i) => (tab === 'done' ? i.m.doneAt || i.m.t : i.m.t)))))}</span></span>
+      <span class="mq-chev" aria-hidden="true">›</span></summary>
+      <div class="mk-list">${tab === 'todo' ? `<button class="btn-sm primary mk-redo" data-redo="${gi}">${zh ? `重做這 ${g.items.length} 題` : `Redo these ${g.items.length}`}</button>` : ''}${g.items.map(line).join('')}</div></details>`; };
   const mkBody = open
     ? `${subjects.length > 1 ? `<button class="mk-backsub" data-mkopen="">${ICON.back} ${zh ? '所有科目' : 'All subjects'}</button>` : ''}
       <section class="mk-sub-open"><div class="mk-ghead">${subjectTile(open.book.subject, 44, open.book.title)}<div class="mk-gt"><b data-raw>${esc(sname(open.book))}</b>${sname(open.book) !== open.book.title ? `<span class="muted" data-raw>${esc(open.book.title)}</span>` : ''}</div>
-        ${tab === 'todo' ? `<button class="btn-sm" data-redobook="${esc(open.book.id)}">${zh ? `全部重做（${Math.min(open.n, 30)}）` : `Redo all ${Math.min(open.n, 30)}`}</button>` : ''}</div>
+        ${tab === 'todo' && subjects.length > 1 ? `<button class="btn-sm" data-redobook="${esc(open.book.id)}">${zh ? `全部重做（${Math.min(open.n, 30)}）` : `Redo all ${Math.min(open.n, 30)}`}</button>` : ''}</div>
       <p class="mk-tip muted">${zh ? '按章節查看題目、你的答案和解釋。' : 'Tap a chapter to see the questions, your answer and the explanation.'}</p>
       <div class="mk-chs">${open.chs.map(chRow).join('')}</div></section>`
     : `<div class="mk-subs">${subjects.map((x) => `<button class="mk-sub" data-mkopen="${esc(x.book.id)}">
         <span class="mk-sub-top">${subjectTile(x.book.subject, 40, x.book.title)}<span class="mk-gt"><b data-raw>${esc(sname(x.book))}</b>${sname(x.book) !== x.book.title ? `<span class="muted" data-raw>${esc(x.book.title)}</span>` : ''}</span></span>
         <span class="mk-sub-n"><b class="${tab === 'done' ? 'ok' : ''}">${x.n}</b><span>${tab === 'done' ? (zh ? '已掌握' : 'mastered') : (zh ? '題待改正' : 'to get right')} · ${zh ? `${x.chs.length} 個章節` : `${x.chs.length} chapter${x.chs.length > 1 ? 's' : ''}`}</span></span>
         ${x.often && tab === 'todo' ? `<span class="mk-sub-often">${zh ? `${x.often} 題錯了多次` : `${x.often} missed more than once`}</span>` : ''}
-        <span class="mk-sub-most muted" data-raw>${zh ? '最多：' : 'Most in: '}${esc(cleanUnitTitle((x.chs[0].g.unit || {}).title || ''))}</span>
+        <span class="mk-sub-most muted" data-raw>${zh ? '最多：' : 'Most in: '}${esc(shortTitle((x.chs[0].g.unit || {}).title || ''))}</span>
         <span class="mk-sub-go">${zh ? '查看' : 'Open'} ›</span></button>`).join('')}</div>`;
   const SHOW = 4;
   $app.innerHTML = `
@@ -6504,6 +6522,8 @@ const preTutorHTML = (q) => `<div class="tutor pre" id="tutor">${tutorHTML(q)}</
 // Phones: Buddy starts folded into one button, so the question comes first. It opens when tapped, and on its own
 // after a wrong answer. Laptops keep it in the side panel.
 const phoneQ = () => !matchMedia('(min-width:1024px)').matches;
+const practiceIcon = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>`;
+const progressIcon = () => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>`;
 const tutorCTA = (label) => `<button class="tutor-cta" id="tutorOpen" type="button">${buddySVG('happy', 30)}<span>${label}</span><span aria-hidden="true" class="tc-go">›</span></button>`;
 function tutorFolded(q) {
   if (!phoneQ()) return false;
