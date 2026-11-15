@@ -2448,7 +2448,7 @@ async function removeKid(id) {
   const ok = await confirmLeave({ title: LANG === 'zh' ? `移除 ${kidLabel(k)}？` : `Remove ${kidLabel(k)}?`,
     body: LANG === 'zh' ? '這個孩子在這部裝置上的課本、進度和星星都會刪除，不能復原。' : 'Their books, progress and stars on this device will be deleted. This can’t be undone.',
     stay: LANG === 'zh' ? '取消' : 'Cancel', leave: LANG === 'zh' ? '移除' : 'Remove' });
-  if (!ok || !(await askPin('remove'))) return false;
+  if (!ok || !(await askPin(LANG === 'zh' ? '輸入家長密碼以移除這個孩子。' : 'Enter the parent PIN to remove this child.'))) return false;
   try { localStorage.removeItem(k.key); } catch (e) {}
   try { indexedDB.deleteDatabase(k.db); } catch (e) {}
   KIDS.list = KIDS.list.filter((x) => x.id !== id); kidSave();
@@ -3368,32 +3368,100 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
    essays, homework. Restore replaces what is on the device with the file's contents. Speaking recordings stay
    behind (too big); their marks and feedback are included. */
 const BK = (en, zh) => (LANG === 'zh' ? zh : en);
+// Backups hold every child on this device (books, questions, progress, settings), but never the parent PIN.
+const BK_SKIP = ['pin', 'pinAt', 'pinLock'];
+const bkLocal = (l) => { const o = { ...l }; BK_SKIP.forEach((k) => delete o[k]); return o; };
+const idbKeep = (k, v) => !String(k).startsWith('spaud:') && v !== null && v !== undefined && !(typeof Blob !== 'undefined' && v instanceof Blob);
+function idbOpen(name) {
+  return new Promise((resolve, reject) => { try { const r = indexedDB.open(name, 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); } catch (e) { reject(e); } });
+}
+// everything in another child's database (the current child's goes through store, which caches it)
+async function idbAll(name) {
+  const db = await idbOpen(name);
+  try {
+    return await new Promise((resolve, reject) => {
+      const t = db.transaction('kv', 'readonly'), st = t.objectStore('kv'), kr = st.getAllKeys(), vr = st.getAll();
+      t.oncomplete = () => { const o = {}; kr.result.forEach((k, i) => { if (idbKeep(k, vr.result[i])) o[k] = vr.result[i]; }); resolve(o); };
+      t.onerror = t.onabort = () => reject(t.error);
+    });
+  } finally { db.close(); }
+}
+// one transaction: either every value is written or none is
+async function idbPutAll(name, entries) {
+  const db = await idbOpen(name);
+  try {
+    await new Promise((resolve, reject) => {
+      const t = db.transaction('kv', 'readwrite'), st = t.objectStore('kv');
+      st.clear(); for (const [k, v] of Object.entries(entries)) st.put(v, k);
+      t.oncomplete = resolve; t.onerror = t.onabort = () => reject(t.error || new Error('write failed'));
+    });
+  } finally { db.close(); }
+}
+const idbDrop = (name) => new Promise((r) => { try { const q = indexedDB.deleteDatabase(name); q.onsuccess = q.onerror = q.onblocked = () => r(); } catch (e) { r(); } });
 async function backupFile() {
-  const ks = (await store.keys('')).filter((k) => !String(k).startsWith('spaud:'));
-  const vals = await store.getMany(ks, null);
-  const db = {};
-  ks.forEach((k, i) => { const v = vals[i]; if (v !== null && v !== undefined && !(typeof Blob !== 'undefined' && v instanceof Blob)) db[k] = v; });
-  local.backupAt = Date.now(); saveLocal();
-  const data = { app: 'prepbuddy', v: 1, at: new Date().toISOString(), ui: (() => { try { return localStorage.getItem('prepbuddy.ui'); } catch (e) { return null; } })(), local, db };
+  const children = [];
+  for (const k of KIDS.list) {
+    let l, db;
+    if (k.id === KID.id) {
+      local.backupAt = Date.now(); saveLocal(); l = local;
+      const ks = await store.keys(''), vals = await store.getMany(ks, null); db = {};
+      ks.forEach((key, i) => { if (idbKeep(key, vals[i])) db[key] = vals[i]; });
+    } else {
+      try { l = JSON.parse(localStorage.getItem(k.key)) || {}; } catch (e) { l = {}; }
+      try { db = await idbAll(k.db); } catch (e) { db = {}; }
+    }
+    children.push({ meta: { name: k.name || '', nick: k.nick || '', grade: k.grade || '', av: k.av || 0, cur: k.id === KID.id }, local: bkLocal(l), db });
+  }
+  const data = { app: 'prepbuddy', v: 2, at: new Date().toISOString(), ui: (() => { try { return localStorage.getItem('prepbuddy.ui'); } catch (e) { return null; } })(), children };
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-  const name = `PrepBuddy backup ${(local.name || '').trim() ? local.name.trim() + ' ' : ''}${ymd(Date.now())}.json`;
+  const who = KIDS.list.length > 1 ? `${KIDS.list.length} children ` : (local.name || '').trim() ? local.name.trim() + ' ' : '';
+  const name = `PrepBuddy backup ${who}${ymd(Date.now())}.json`;
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   return blob.size;
 }
 async function restoreFile(file) {
+  const bad = () => new Error(BK('That file isn’t a PrepBuddy backup, or it is damaged.', '這個檔案不是 PrepBuddy 備份，或者已損壞。'));
   let data;
-  try { data = JSON.parse(await file.text()); } catch (e) { throw new Error(BK('That file isn’t a PrepBuddy backup.', '這個檔案不是 PrepBuddy 備份。')); }
-  if (!data || data.app !== 'prepbuddy' || !data.local || !data.db) throw new Error(BK('That file isn’t a PrepBuddy backup.', '這個檔案不是 PrepBuddy 備份。'));
-  const ok = await confirmLeave({ title: BK('Replace everything on this device?', '取代這部裝置上的所有資料？'),
-    body: BK(`This backup is from ${new Date(data.at).toLocaleString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}${data.local.name ? ` (${data.local.name})` : ''}. Progress on this device now will be replaced by it.`, `這個備份建立於 ${new Date(data.at).toLocaleString('zh-HK')}${data.local.name ? `（${data.local.name}）` : ''}。這部裝置現有的進度會被取代。`),
+  try { data = JSON.parse(await file.text()); } catch (e) { throw bad(); }
+  if (!data || data.app !== 'prepbuddy' || isNaN(Date.parse(data.at))) throw bad();
+  // v1 files (before November 2026) hold one child: they replace the child using the app now
+  const whole = data.v >= 2;
+  const children = whole ? data.children : [{ meta: null, local: data.local, db: data.db }];
+  const okChild = (c) => c && c.local && typeof c.local === 'object' && c.local.stats && typeof c.local.stats === 'object' && Array.isArray(c.local.log) && c.db && typeof c.db === 'object' && !Array.isArray(c.db);
+  if (!Array.isArray(children) || !children.length || children.length > 6 || !children.every(okChild)) throw bad();
+  const when = new Date(data.at).toLocaleString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const names = children.map((c) => (c.meta && (c.meta.nick || c.meta.name)) || c.local.name || '').filter(Boolean).join(', ');
+  const ok = await confirmLeave({ title: whole ? BK('Replace everything on this device?', '取代這部裝置上的所有資料？') : BK(`Replace ${kidLabel(KID)}’s progress?`, `取代${kidLabel(KID)}的進度？`),
+    body: BK(`This backup is from ${when}${names ? ` (${names})` : ''}. ${whole ? 'Every child’s books and progress on this device now' : 'This child’s books and progress on this device now'} will be replaced by it.`,
+      `這個備份來自 ${when}${names ? `（${names}）` : ''}。${whole ? '這部裝置上所有孩子現在的課本和進度' : '這個孩子現在的課本和進度'}會被備份取代。`),
     stay: BK('Cancel', '取消'), leave: BK('Restore', '還原') });
   if (!ok) return false;
-  for (const k of await store.keys('')) await store.del(k);
-  for (const [k, v] of Object.entries(data.db)) await store.set(k, v);
-  try { localStorage.setItem(LKEY, JSON.stringify(data.local)); if (data.ui) localStorage.setItem('prepbuddy.ui', data.ui); } catch (e) {}
-  await store.persist();
-  location.reload();
+  if (local.pin && !(await askPin(BK('Enter the parent PIN to restore a backup.', '輸入家長密碼以還原備份。')))) return false;
+  // Write the backup into new storage first; only when all of it is saved does the old data go.
+  const stamp = Date.now().toString(36), keep = {}, dflt = {};
+  ['pin', 'pinAt'].forEach((k) => { if (local[k] !== undefined) keep[k] = local[k]; });
+  KID_SHARED.forEach((k) => { if (local[k] !== undefined) dflt[k] = local[k]; }); // family code, consent… when the backup has none
+  const made = children.map((c, i) => { const id = `k${stamp}${i}`; return { id, key: `prepbuddy.v2:${id}`, db: `prepbuddy:${id}`, av: c.meta ? c.meta.av || 0 : KID.av || 0, name: (c.meta && c.meta.name) || (c.local.name || '').slice(0, 20), nick: (c.meta && c.meta.nick) || (whole ? '' : KID.nick || ''), grade: (c.meta && c.meta.grade) || '' }; });
+  const undo = async () => { for (const m of made) { try { localStorage.removeItem(m.key); } catch (e) {} await idbDrop(m.db); } };
+  try {
+    for (let i = 0; i < made.length; i++) {
+      await idbPutAll(made[i].db, children[i].db);
+      localStorage.setItem(made[i].key, JSON.stringify({ ...dflt, ...bkLocal(children[i].local), ...keep }));
+    }
+  } catch (e) {
+    await undo();
+    throw new Error(BK('Couldn’t restore: this device may be out of storage space. Nothing was changed.', '未能還原：這部裝置的儲存空間可能不足。資料沒有改變。'));
+  }
+  const old = whole ? KIDS.list.slice() : [KID];
+  const curIdx = Math.max(0, children.findIndex((c) => c.meta && c.meta.cur));
+  if (whole) { KIDS.list = made; KIDS.cur = made[curIdx].id; } else { KIDS.list = KIDS.list.map((k) => (k.id === KID.id ? made[0] : k)); KIDS.cur = made[0].id; }
+  kidSave(); kidPicked(KIDS.cur);
+  WIPING = true; // the old child's data is about to go: nothing may write it back
+  await store.close();
+  for (const k of old) { try { localStorage.removeItem(k.key); } catch (e) {} await idbDrop(k.db); }
+  try { if (data.ui) localStorage.setItem('prepbuddy.ui', data.ui); } catch (e) {}
+  location.replace(location.pathname + location.search);
   return true;
 }
 
@@ -5166,8 +5234,10 @@ async function startUnits(book, units, count = sessionSize(), opts = {}) {
   pools.forEach((p) => qs.push(...p.slice(0, quota)));
   if (qs.length < count) pools.forEach((p) => qs.push(...p.slice(quota)));   // top up from chapters that have more
   qs = shuffle(qs.slice(0, count));
+  // unused questions each chapter still has after this session: spares are only written when that runs low
+  const bankLeft = {}; units.forEach((u, i) => { bankLeft[u.id] = pools[i].filter((q) => !qs.includes(q)).length; });
   const title = k === 1 ? units[0].title : `${k} chapters`;
-  S = newSession({ mode: 'unit', title: opts.title || title, book, units, qs, target: count, pending: 0, types, count, diff, placement: !!opts.placement });
+  S = newSession({ mode: 'unit', title: opts.title || title, book, units, qs, target: count, pending: 0, types, count, diff, placement: !!opts.placement, bankLeft });
   topUp(S);
   if (S.qs.length) renderQuestion(); else renderWaiting();
 }
@@ -5582,8 +5652,15 @@ function topUp(sess) {
   if (!sess.units || sess.error) return;
   const coming = [...(sess.jobs || [])].filter((j) => !j.done).reduce((n, j) => n + Math.max(0, j.want - j.made), 0);
   let need = sess.target - sess.qs.length - coming;
-  const spare = sess.spared ? 0 : Math.max(1, Math.ceil(SPARE / sess.units.length));
+  const spareN = sess.spared ? 0 : Math.max(1, Math.ceil(SPARE / sess.units.length));
+  // no spares for a chapter whose bank still has a full session of unused questions (saves AI cost, and keeps
+  // the hand-checked starter books from filling up with AI-written questions)
+  const spareOf = (u) => (sess.bankLeft && (sess.bankLeft[u.id] || 0) >= Math.ceil((sess.count || sess.target) / sess.units.length) ? 0 : spareN);
+  const spare = sess.units.reduce((n, u) => n + spareOf(u), 0);
   if (need <= 0 && !spare) return;
+  // the bank covers this session: next session's questions are written once they're halfway through, not
+  // the moment they start (a child who stops after two questions shouldn't cost a batch of AI questions)
+  if (need <= 0 && (sess.i || 0) < Math.floor(sess.target / 2)) return;
   need = Math.max(0, need);
   sess.spared = true;
   // spread across the chosen chapters, starting with the ones that have given fewest questions so far
@@ -5593,6 +5670,7 @@ function topUp(sess) {
   let left = need;
   for (const u of order) {
     const want = Math.min(per, left); left -= want;
+    const spare = spareOf(u);
     if (want + spare <= 0) continue;
     // a job already making questions for this session keeps what it still owes, plus the new ones
     const j = jobs.get(`${sess.book.id}:${u.id}:${sess.types}${sess.diff && sess.diff !== 'auto' ? ':' + sess.diff : ''}`);
@@ -6713,7 +6791,42 @@ function partsGot(q) {
 
 // Ask the AI to mark a written answer. The result pre-ticks the mark-scheme points;
 // the student can still change a tick if they disagree.
+// Short fill-in answers ("Answer: 1081", "cried (spelling…)", "Answer: no. …") are checked on the device:
+// no AI call, instant and free. Only full marks, or a plain number that's simply a different number, are decided
+// here; anything else (a sentence, units, another wording) still goes to the AI marker.
+const normAns = (t) => { let x = String(t || '').toLowerCase().replace(/[‘’'"“”]/g, '').replace(/\s+/g, ' ').trim().replace(/[.!?。]+$/, '').trim();
+  if (/^\d{1,3}([ ,]\d{3})+(\.\d+)?$/.test(x)) x = x.replace(/[\s,]/g, ''); return x; }; // 10 810 / 10,810 → 10810
+const isNum = (x) => /^-?\d+(\.\d+)?$/.test(x);
+function acceptedOf(line) {
+  let t = String(line || '').trim().replace(/^answer\s*:\s*/i, '');
+  const acc = [];
+  const am = t.match(/\baccept\s+(.+?)\s*\)?\s*$/i);
+  if (am && !/with or without|unit|any |either/i.test(am[1])) am[1].split(/\s+or\s+|\s*,\s*|\s+\/\s+/).forEach((a) => acc.push(a));
+  t = t.split(' (')[0].split(/\.\s+/)[0];
+  t.split(/\s+\/\s+/).forEach((a) => acc.push(a));
+  if (am && /without the unit/i.test(am[1])) { const n = t.match(/^-?[\d.]+/); if (n) acc.push(n[0]); }
+  if (/^[tf]$/i.test(t.trim())) acc.push(/^t$/i.test(t.trim()) ? 'true' : 'false');
+  const out = [...new Set(acc.map(normAns).filter(Boolean))];
+  return out.length && out.every((a) => a.split(' ').length <= 4 && !/\b(mark|accept|must|any)\b/.test(a)) ? out : null;
+}
+function localMark(q, answers) {
+  if (q.type === 'essay' || !q.parts || !q.parts.length) return null;
+  if (!q.parts.every((p) => p.blank && p.marks === 1 && (p.mark_scheme || []).length === 1)) return null;
+  const parts = [];
+  for (let k = 0; k < q.parts.length; k++) {
+    const acc = acceptedOf(q.parts[k].mark_scheme[0]); const a = normAns(answers[k]);
+    if (!acc || !a) return null;
+    if (acc.includes(a)) parts.push({ awarded: [0], feedback: 'Correct.' });
+    else if (isNum(a) && acc.every(isNum)) parts.push({ awarded: [], feedback: 'Not quite. Check your working and try a similar one.' });
+    else return null;
+  }
+  return { parts, tip: '', local: true };
+}
 async function markAnswer(sess, idx) {
+  // Mark as pending straight away: the screen redraw that follows the tap must not start a second marking.
+  sess.marks = sess.marks || {};
+  if (sess.marks[idx] && sess.marks[idx].pending) return;
+  sess.marks[idx] = { pending: true };
   await null; // never re-render in the middle of drawing a screen
   const q = sess.qs[idx];
   const answers = sess.answers[idx] || q.parts.map(() => '');
@@ -6725,12 +6838,14 @@ async function markAnswer(sess, idx) {
   } else {
     sess.marks[idx] = { pending: true };
     try {
+      const lm = !inks.some(Boolean) && localMark(q, answers);
+      if (lm) { sess.marks[idx] = lm; throw 'done'; }
       const [bookId, unitId] = qUnit(q.id);
       const text = await store.get(`text:${bookId}:${unitId}`, '');
       if (!text) throw new Error('missing text');
       sess.marks[idx] = await api('mark', { title: q.section, text, question: qForServer(q), figure: figB64(q), answers, inks: inks.some(Boolean) ? inks.map((x) => (x ? x.split(',')[1] : null)) : undefined, kind: await kindOfId(q.id), lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
     } catch (e) {
-      sess.marks[idx] = { error: e.status === 0 ? 'You seem to be offline, so the AI could not mark this.' : 'The AI marker is not available right now.' };
+      if (e !== 'done') sess.marks[idx] = { error: e.status === 0 ? 'You seem to be offline, so the AI could not mark this.' : 'The AI marker is not available right now.' };
     }
   }
   const m = sess.marks[idx];
@@ -6817,6 +6932,7 @@ function writtenBody(q, revealed) {
   }).join('');
   const got = partsGot(q);
   const note = m.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(m.error)} Tick the points you made instead.</p>`
+    : m.local ? '<p class="hint" style="margin:0">Checked against the answer. Think it got one wrong? Tap a point to change it.</p>'
     : ai ? '<p class="hint" style="margin:0">Marked by AI. Think it got one wrong? Tap a point to change it.</p>' : '';
   const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} marks</span>
     ${m.tip ? `<p class="tipline"><b>Tip:</b> <span data-raw>${esc(m.tip)}</span></p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
