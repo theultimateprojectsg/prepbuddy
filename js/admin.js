@@ -534,6 +534,9 @@ function weeklyMsg(f, lang) {
     });
     if (up.length) lines.push(T('  (Level = how hard the questions they get 2 in 3 right are, so it rises even when % stays the same.)', '  （程度＝孩子能答對約三分之二的題目難度，所以即使得分率不變，程度也會上升。）'));
     if (r && r.q && r.next && (r.u === 'zh') === zh) lines.push(T(`• Next: ${r.next}`, `• 下一步：${r.next}`)); // written in the app's language
+    // no school marks from before PrepBuddy yet, a week after starting: a gentle reminder to the parent (not the child)
+    if (!(sn.marks || []).some((m) => m.kind === 'before') && sn.first && Date.now() - sn.first > 7 * 864e5)
+      lines.push(T(`• Could you add ${who === 'Your child' ? 'your child' : who}’s school marks from before PrepBuddy? Settings → Parent dashboard → School results (1 minute). It lets us both see if practice is helping.`, `• 可否填寫${who}使用 PrepBuddy 前的學校成績？設定 → 家長主頁 → 學校成績（約 1 分鐘），讓我們一起看看練習有沒有幫助。`));
     const t = LINKS && LINKS[`${f.code}/${sn.device}`];
     if (t) lines.push(T(`Full report: ${location.origin}/r/${t}`, `完整報告：${location.origin}/r/${t}`));
     return `*${who}${grade}*\n${lines.join('\n')}`;

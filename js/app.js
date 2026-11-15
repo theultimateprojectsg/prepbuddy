@@ -2377,7 +2377,6 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--STRIP-->', strip)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${!(profileOn() && !local.learner && !local.profSkip) && marksAsk() ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '填寫孩子最近的學校成績' : 'Add your child’s latest school marks'}</b><span>${LANG === 'zh' ? '之後便可看到 PrepBuddy 幫了多少。家長填寫，約 1 分鐘。' : 'So you can see how much PrepBuddy helps over time. About 1 minute, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="marksAsk">${LANG === 'zh' ? '填寫' : 'Add marks'}</button><button class="btn-sm quiet" id="marksLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
     ${tests.pastHTML}
     ${testHTML}
@@ -2388,8 +2387,6 @@ async function renderHome() {
   bindHomeCommon();
   bindCoach();
   { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
-  { const ma = document.getElementById('marksAsk'); if (ma) ma.onclick = async () => { await marksScreen(); go({ name: 'home' }); }; }
-  { const ml = document.getElementById('marksLater'); if (ml) ml.onclick = () => { local.marksSkip = Date.now(); saveLocal(); go({ name: 'home' }); }; }
   { const pl = document.getElementById('profLater'); if (pl) pl.onclick = () => { local.profSkip = Date.now(); saveLocal(); go({ name: 'home' }); }; }
   const pr = document.getElementById('progress'); if (pr) pr.onclick = () => go({ name: 'progress' });
   const mr = document.getElementById('moreready'); if (mr) mr.onclick = () => go({ name: 'progress' });
@@ -2928,7 +2925,11 @@ async function pilotWelcome() {
   if (KIDS.list.length > 1) kidPicked();
   if (!(local.consent && local.consent.v >= CONSENT_V)) await consentScreen(); // every family, before anything is sent to the AI
   // New families set it up during onboarding; families already using the app get a card on Today instead.
-  if (profileOn() && !local.learner && (!local.toured || local.needProfile)) await profileScreen({ first: true });
+  if (profileOn() && !local.learner && (!local.toured || local.needProfile)) {
+    await profileScreen({ first: true });
+    // while a parent is holding the device: school marks from before PrepBuddy (optional, can be skipped)
+    if (marksAsk()) await marksScreen(null, { setup: true });
+  }
   await preloadStarters();
   if (!local.toured) await startTour('full'); // new families get the full guided tour; the quick one is in Settings
 }
@@ -3190,10 +3191,11 @@ function marksScreen(edit, opts = {}) {
     let drawn = false;
     const draw = () => {
       $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1"><div class="pg-box cs-box prof-box marks-box${drawn ? ' noanim' : ''}">
-        <div class="cs-head">${buddySVG('happy', 56)}<div><span class="cs-tag">${C('For parents', '家長專用')}</span>
+        <div class="cs-head">${buddySVG('happy', 56)}<div><span class="cs-tag">${opts.setup ? C('Last step · for parents · optional', '最後一步 · 家長專用 · 可選填') : C('For parents', '家長專用')}</span>
           <h1 style="margin:6px 0 0">${M.kind === 'before' ? C('School marks before PrepBuddy', '使用 PrepBuddy 前的學校成績') : C('Latest school marks', '最新學校成績')}</h1></div></div>
         <p class="pg-lead" style="text-align:left">${M.kind === 'before'
           ? C('From the last school test or exam before your child started PrepBuddy. Later you’ll add the next results, so you (and we) can see if it’s helping. Leave out any subject you don’t have.', '請填寫孩子開始使用 PrepBuddy 前最近一次測驗或考試的分數。之後再填下一次的成績，便可看到是否有幫助。沒有的科目可留空。')
+          + (opts.setup ? C(' No marks to hand? Skip for now and add them later from the Parent dashboard in Settings.', '手上沒有成績？可暫時略過，之後在「設定」的家長主頁再填寫。') : '')
           : C('From the most recent school test or exam. Leave out any subject you don’t have.', '請填寫最近一次學校測驗或考試的分數。沒有的科目可留空。')}</p>
         <section class="mk-snap">
           <label class="mk-snapbtn${snap.busy ? ' busy' : ''}"><span class="mk-cam" aria-hidden="true">${actionIcon('homework', 22)}</span><span><b>${snap.busy ? C('Reading the papers…', '正在讀取試卷…') : C('Snap the marked papers', '拍下已批改的試卷')}</b><small>${C('Photo of the front page of each paper, where the total is. We fill in the marks for you.', '拍下每份試卷有總分的首頁，我們會為你填上分數。')}</small></span><input id="mphoto" type="file" accept="image/*" multiple hidden ${snap.busy ? 'disabled' : ''}></label>
@@ -3209,7 +3211,7 @@ function marksScreen(edit, opts = {}) {
           <label class="mk-row"><input id="moth" class="input" maxlength="20" placeholder="${C('Another subject (optional)', '其他科目（可選填）')}" value="${esc(M.other || '')}"><input class="input" type="number" inputmode="numeric" min="0" max="100" data-m="other" value="${M.s.other ?? ''}" placeholder="–"></label>
           <span class="hint" style="margin:0;text-align:left">${C('Not out of 100? Work it out as a percentage, e.g. 45 out of 60 = 75.', '滿分不是 100？請換算成百分比，例如 60 分中得 45 分 = 75。')}</span></section>
         <p class="hw-err" id="merr" hidden></p>
-        <div class="prof-btns"><button class="btn" id="msave">${C('Save', '儲存')}</button><button class="btn-sm quiet" id="mlater">${first ? C('Later', '稍後') : C('Cancel', '取消')}</button>${edit ? `<button class="btn-sm quiet" id="mdel">${C('Delete', '刪除')}</button>` : ''}</div>
+        <div class="prof-btns"><button class="btn" id="msave">${C('Save', '儲存')}</button><button class="${opts.setup ? 'btn ghost' : 'btn-sm quiet'}" id="mlater">${opts.setup ? C('Skip for now', '暫時略過') : first ? C('Later', '稍後') : C('Cancel', '取消')}</button>${edit ? `<button class="btn-sm quiet" id="mdel">${C('Delete', '刪除')}</button>` : ''}</div>
         <p class="hint" style="margin:0">${C('Only the marks and the month are shared with the PrepBuddy pilot team, to measure whether the app helps. Not the school or any comments.', '只會把分數和月份分享給 PrepBuddy 試用團隊，用來衡量成效，不包括學校名稱或評語。')}</p>
       </div></main>`;
       drawn = true;
