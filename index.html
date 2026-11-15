@@ -1520,7 +1520,8 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 @keyframes lcflash{from{box-shadow:0 0 0 3px var(--accent)}to{box-shadow:0 0 0 0 transparent}}.lc-row.flash{animation:lcflash .9s ease-out}
 .bk-tip{margin:6px 0 0;padding:10px 12px;border-radius:10px;background:var(--accent-soft,#EEF1FB);color:var(--ink);font-size:14px;font-weight:600}
 /* Buddy's floating button is special: round, unlike the other buttons */
-.helper-fab{border-radius:999px}
+.helper-fab,.helper-fab.on{border-radius:999px;background:var(--ink);border-color:var(--ink);color:#FFFFFF}
+.helper-fab.on{box-shadow:0 0 0 3px #FFFFFF,0 0 0 5px var(--ink)}
 </style>
 </head>
 <body>
