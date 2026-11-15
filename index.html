@@ -780,11 +780,11 @@ body[data-tab] .app{padding-bottom:76px}
 .rlist .card{padding:0;overflow:hidden}
 .rrow{display:flex;gap:12px;align-items:center;padding:11px 14px 11px 12px;border-bottom:1px solid #EEF0F2;font-size:14px;line-height:1.4;border-left:4px solid var(--miss)}
 .rrow:last-child{border-bottom:none}
-.rrow.right{border-left-color:var(--good)}.rrow.part{border-left-color:#E5C33C}
+.rrow.right{border-left-color:var(--good)}.rrow.half{border-left-color:#E5C33C}
 .rnum{flex:none;width:30px;font-size:12.5px;font-weight:700;color:var(--muted-2)}
 .rtext{flex:1;min-width:0}
 .rmark{flex:none;min-width:42px;text-align:center;padding:3px 8px;border-radius:8px;font-size:13px;font-weight:700;background:var(--miss-soft);color:var(--miss-dark)}
-.rrow.right .rmark{background:var(--good-soft);color:var(--good-dark)}.rrow.part .rmark{background:var(--hl-soft);color:#8A6A00}
+.rrow.right .rmark{background:var(--good-soft);color:var(--good-dark)}.rrow.half .rmark{background:var(--hl-soft);color:#8A6A00}
 @media (min-width:1024px){
   .app:has(.results){max-width:1200px}
   .results{display:grid;grid-template-columns:400px minmax(0,1fr);gap:24px;align-items:start}
@@ -1413,6 +1413,30 @@ footer .btn-sm{min-height:28px;padding:2px 10px;font-size:12px;vertical-align:mi
 .lock-tag,.plan-pill,.tr-lock,.dl-tag,.bk-lv,.bgroup h2 small,.bookchips button b,.pp-flag,.say-pill b,.bookcover .c-recent{border-radius:8px}
 .say-pill{border-radius:12px}
 .bks-head{align-items:flex-start}.bks-head #addbook{margin-top:0}
+
+/* ---------- Design pass (UI review, 15 Nov 2026) ---------- */
+:root{--warn:#B4531A;--warn-soft:#FDF1E7}
+/* one main-button colour: navy. Yellow is for highlights and stars only, green for right answers */
+.plan-item .go{background:var(--accent);color:#fff}
+.plan-item.done .go{background:var(--good-soft);color:var(--good-dark)}
+/* the Learn card on a book page: navy, like the rest of the app */
+.learn-card{background:var(--accent-soft);border:1px solid var(--accent-tint)}
+.lc-row{border-color:var(--line)}
+.lc-up{color:var(--accent);background:var(--accent-tint)}
+.lc-go.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.lc-row.done .lc-t small{color:var(--good-dark)}
+/* percentages: grey before starting, amber while low, navy, then green. Red only means a wrong answer */
+.m-pill{color:var(--warn)}.m-pill.zero{color:var(--muted)}
+.bar.warn i{background:var(--warn)}
+/* Buddy in the page header on phones (never floating over buttons) */
+.helper-fab.inhead{position:static;flex:none;width:40px;height:40px;padding:0;gap:0;justify-content:center;border:1px solid var(--line);box-shadow:none;background:#fff;transform:none}
+.helper-fab.inhead>span{display:none}
+.helper-fab.inhead .buddy,.helper-fab.inhead svg{width:30px;height:30px}
+.helper-fab.inhead.on{background:var(--accent-soft);border-color:var(--accent-tint);color:var(--ink)}
+.helper-fab.inhead + .mob-gear{margin-left:8px}
+.ttl-row,.topbar{flex-wrap:nowrap}
+.bks-head{flex-wrap:nowrap}
+@media (max-width:520px){.hide-sm{display:none}}
 </style>
 </head>
 <body>

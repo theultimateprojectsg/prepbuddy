@@ -58,6 +58,9 @@ function loadLocal() {
   try { return JSON.parse(localStorage.getItem(LKEY)) || {}; } catch (e) { return {}; }
 }
 const local = Object.assign({ stats: {}, reports: [], code: '', usage: {}, log: [], name: '', types: 'mix', mistakes: {} }, loadLocal());
+// Test-only things (plan preview, AI usage, library books that aren't starter books) show only with ?dev=1
+// (remembered on this device; ?dev=0 turns it off). Families never see them.
+const DEV = (() => { try { const m = location.search.match(/[?&]dev=([01])\b/); if (m) localStorage.setItem('pb.dev', m[1]); return localStorage.getItem('pb.dev') === '1'; } catch (e) { return false; } })();
 let WIPING = false; // set while 'Delete everything on this device' runs, so nothing is written back
 function saveLocal() { if (WIPING) return; try { localStorage.setItem(LKEY, JSON.stringify(local)); } catch (e) {} }
 
@@ -737,7 +740,10 @@ function goBack(fallback) {
   if (navStack.length > 1) { try { history.back(); return; } catch (e) {} }
   go(fallback || { name: 'home' });
 }
-const backTop = (fb, label) => `<div class="topbar pagetop"><button class="backbtn" data-goback='${esc(JSON.stringify(fb))}'>${ICON.back}<span>${esc(label === 'Back' ? (LANG === 'zh' ? '返回' : 'Back') : label)}</span></button></div>`;
+// The Back button names the screen it returns to: the one they came from, or the fallback when opened from a link.
+const VIEW_NAME = { home: ['Today', '今日'], practice: ['Practice', '練習'], books: ['Books', '課本'], book: ['Book', '課本'], mistakes: ['Mistakes', '錯題'], progress: ['Progress', '進度'], settings: ['Settings', '設定'], library: ['Library', '課本庫'], stars: ['Star shop', '星星商店'], parent: ['Parent', '家長'] };
+const backName = (fb, label) => { const prev = navStack.length > 1 ? navStack[navStack.length - 2] : fb; const nm = prev && VIEW_NAME[prev.name]; return nm ? nm[LANG === 'zh' ? 1 : 0] : label === 'Back' ? (LANG === 'zh' ? '返回' : 'Back') : label; };
+const backTop = (fb, label) => `<div class="topbar pagetop"><button class="backbtn" data-goback='${esc(JSON.stringify(fb))}'>${ICON.back}<span>${esc(backName(fb, label))}</span></button></div>`;
 document.addEventListener('input', (e) => { const w = e.target.closest && e.target.closest('.cdlg-wrap'); if (w) w.dataset.dirty = '1'; }, true);
 document.addEventListener('click', (e) => {
   const w = e.target;
@@ -2141,6 +2147,17 @@ function helperSync() {
     fab.onclick = () => (helper.open ? helperClose() : helperOpen());
     document.body.appendChild(fab);
   }
+  // Phones: Buddy sits in the page header next to Settings, so it never covers a button. Desktop: floating.
+  const host = matchMedia('(max-width:1023.98px)').matches && $app.querySelector('.ttl-row, .bks-head, main[data-view="practice"] > .greet, .topbar');
+  if (host) {
+    if (fab.parentElement !== host) {
+      const g = host.querySelector(':scope > .mob-gear');
+      host.insertBefore(fab, g || null);
+      const prev = fab.previousElementSibling; // something already pushed to the right (Print, …): sit beside it
+      fab.style.marginLeft = prev && prev.tagName === 'BUTTON' && getComputedStyle(prev).marginLeft !== '0px' && prev !== host.firstElementChild ? '8px' : 'auto';
+    }
+    fab.classList.add('inhead');
+  } else if (fab.parentElement !== document.body) { document.body.appendChild(fab); fab.classList.remove('inhead'); fab.style.marginLeft = ''; }
   fab.classList.toggle('on', helper.open);
 }
 function helperOpen() {
@@ -2394,7 +2411,7 @@ async function practiceByChapter(showAll) {
   const list = m.chapters.filter((c) => !NOT_TEACHING.test(c.unit.title || ''));
   let start = list.findIndex((c) => c.pct < 50); if (start < 0) start = Math.max(0, list.findIndex((c) => c.pct < 100));
   const shown = showAll ? list : list.slice(start, start + 5);
-  const st = (c) => (c.pct > 0 ? `<span style="color:${c.pct < 60 ? 'var(--miss)' : c.pct < 80 ? 'var(--accent)' : 'var(--good)'};font-weight:600">${c.pct}%</span> · ${trStep(masteryLabel(c.pct))}` : learned[`${bk.id}:${c.unit.id}`] ? Z('Lesson done · not practised yet', '已上課 · 未練習') : Z('Not started', '未開始'));
+  const st = (c) => (c.pct > 0 ? `<span style="color:${c.pct < 60 ? 'var(--warn)' : c.pct < 80 ? 'var(--accent)' : 'var(--good)'};font-weight:600">${c.pct}%</span> · ${trStep(masteryLabel(c.pct))}` : learned[`${bk.id}:${c.unit.id}`] ? Z('Lesson done · not practised yet', '已上課 · 未練習') : Z('Not started', '未開始'));
   box.innerHTML = `
     ${books.length > 1 ? `<div class="pc-books" role="tablist">${books.map((b) => `<button class="chip${b.id === bk.id ? ' on' : ''}" role="tab" aria-selected="${b.id === bk.id}" data-pcbook="${esc(b.id)}"><span data-raw>${esc(subjectName(b.subject, LANG) || b.title)}</span></button>`).join('')}</div>` : ''}
     <p class="pc-title muted" data-raw>${esc(bk.title)}</p>
@@ -2414,7 +2431,7 @@ function bindGear() {} // the gear is handled for every screen by the click list
 document.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('[data-gear]'); if (g) go({ name: 'settings' }); });
 document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('footer #usage')) go({ name: 'usage' }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-privacy]'); if (!b) return; e.preventDefault(); if (document.querySelector('main.pilotgate')) privacyOverlay(); else go({ name: 'privacy' }); }); // Settings, footer and the consent step // the footer's AI usage button, on every screen
-const footerHTML = () => `<footer>${LANG === 'zh' ? '孩子的課本、題目和進度保存在這部裝置。題目由 AI 撰寫及檢查；如發現錯誤，請按「報告問題」。' : 'Your child’s textbooks, questions and progress are saved on this device. Questions are written and checked by AI; tap "Report a problem" if one looks wrong.'} <button class="btn-sm quiet" data-privacy>${LANG === 'zh' ? '私隱聲明' : 'Privacy notice'}</button>${local.pilot ? '' : '<button class="btn-sm quiet" id="usage" >AI usage</button>'}</footer>`;
+const footerHTML = () => `<footer>${LANG === 'zh' ? '孩子的課本、題目和進度保存在這部裝置。題目由 AI 撰寫及檢查；如發現錯誤，請按「報告問題」。' : 'Your child’s textbooks, questions and progress are saved on this device. Questions are written and checked by AI; tap "Report a problem" if one looks wrong.'} <button class="btn-sm quiet" data-privacy>${LANG === 'zh' ? '私隱聲明' : 'Privacy notice'}</button>${DEV ? '<button class="btn-sm quiet" id="usage" >AI usage</button>' : ''}</footer>`;
 /* ---------- children on this device (siblings sharing a tablet) ----------
    Each child gets their own localStorage key and IndexedDB database (see KIDS near the top and store.js).
    Switching child reloads the app, so every screen starts clean with that child's books and progress.
@@ -2531,7 +2548,7 @@ async function renderBooks() {
   <main class="pad stack g18" data-view="books" style="flex:1">
     <div class="bks-head">
       <div class="stack" style="gap:2px"><h1 class="pagetitle" style="margin:0">Books</h1>${books.length ? `<span class="muted bk-count">${W(`${books.length} textbook${books.length === 1 ? '' : 's'}`, `${books.length} 本課本`)}</span>` : ''}</div>
-      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} Add a textbook</button>${gearBtn()}
+      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} Add<span class="hide-sm">&nbsp;a textbook</span></button>${gearBtn()}
     </div>
     ${books.length ? `${many ? `<div class="bk-tools"><form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form></div>` : ''}
@@ -2628,7 +2645,7 @@ function renderSettings() {
       <span class="muted" style="font-size:13.5px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm primary" id="sbackup">${BK('Save a backup file', '儲存備份檔案')}</button><label class="btn-sm" style="cursor:pointer">${BK('Restore from a file', '從檔案還原')}<input type="file" id="srestore" accept="application/json,.json" hidden></label></div>
     </section>
-    ${local.pilot ? '' : `<section class="card stack g10" style="padding:16px">
+    ${!DEV ? '' : `<section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">AI usage</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
       <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
@@ -2662,7 +2679,7 @@ function renderSettings() {
   };
   document.getElementById('sbackup').onclick = async (e) => { e.target.disabled = true; try { const n = await backupFile(); toast(BK(`Backup saved (${Math.max(1, Math.round(n / 1024))} KB). Keep the file somewhere safe.`, `備份已儲存（${Math.max(1, Math.round(n / 1024))} KB），請妥善保存檔案。`)); } catch (err) { toast(BK('Couldn’t make the backup.', '未能建立備份。')); } renderSettings(); };
   document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
-  document.getElementById('splans').onclick = () => go({ name: 'plans' });
+  { const sp = document.getElementById('splans'); if (sp) sp.onclick = () => go({ name: 'plans' }); }
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(); renderTabs(); }));
   document.getElementById('sstars').onclick = () => { if (locked('stars')) return upsell('stars', 'locked'); local.starsOn = !starsOn(); saveLocal(); renderSettings(); renderTabs(); };
   window.scrollTo(0, 0);
@@ -3795,14 +3812,21 @@ function renderTabs(active = tabNow) {
 // The menu shows on every screen except timed papers (mock papers, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
 const TAB_OF = { practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'books', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'practice', worksheets: 'practice', usage: 'home' };
+const MAIN_TABS = ['home', 'books', 'practice', 'mistakes', 'progress', 'settings'];
+function tabFor(v) {
+  if (!v) return 'home';
+  if (MAIN_TABS.includes(v.name) || ['book', 'learn', 'notes', 'cards', 'paper'].includes(v.name)) return TAB_OF[v.name] || 'home';
+  for (let i = navStack.length - 2; i >= 0; i--) { const t = TAB_OF[navStack[i].name]; if (t && MAIN_TABS.includes(navStack[i].name)) return t; }
+  return TAB_OF[v.name] || 'home';
+}
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
   if (m && backTo === 'practice' && m.dataset.view === 'learn') return renderTabs('practice');
-  if (m) return renderTabs(TAB_OF[m.dataset.view] || m.dataset.view);
+  if (m) return renderTabs(view && !MAIN_TABS.includes(m.dataset.view) ? tabFor(view) : TAB_OF[m.dataset.view] || m.dataset.view);
   if (timedPaper()) return renderTabs(null);
   if (backTo === 'practice' && view && ['learn', 'notes', 'cards', 'session'].includes(view.name)) return renderTabs('practice');
-  renderTabs((view && TAB_OF[view.name]) || 'home');
+  renderTabs(tabFor(view));
 }).observe($app, { childList: true });
 
 /* ---------- library (books uploaded once by the admin) ---------- */
@@ -3820,6 +3844,7 @@ const normCode = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 async function renderLibrary(query) {
   let list;
   try { list = await getCatalog(); } catch (e) { toast(e.message); return go({ name: 'home' }); }
+  if (!DEV) list = list.filter((b) => b.starter); // families see PrepBuddy's own books; other library books are for testing
   const mine = new Set((await getBooks()).map((b) => b.id));
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Books</span></button><span style="font-weight:600;font-size:15px">Textbook library</span></div>
@@ -4115,7 +4140,7 @@ async function renderBook(bookId) {
     if (!pick.open.size) pick.open.add(groups[0].name);
   }
   const cleanTitle = (t) => String(t).replace(/\s*\*+\s*$/, '');
-  const pctColour = (sc) => (sc < 60 ? 'var(--miss)' : sc < 80 ? 'var(--accent)' : 'var(--good)');
+  const pctColour = (sc) => (!sc ? 'var(--muted)' : sc < 60 ? 'var(--warn)' : sc < 80 ? 'var(--accent)' : 'var(--good)');
   // A book with only a few chapters gets bigger chapter cards, one per line, with progress.
   const few = book.units.length <= 8;
   const richRow = (u) => {
@@ -4490,7 +4515,7 @@ async function readyRowsHTML(limit = Infinity) {
   const books = await getBooks(), rows = [];
   for (const b of books) {
     const m = await bookMastery(b);
-    rows.push({ b, pct: m.pct, html: `<button class="mrowb" data-book="${esc(b.id)}">${subjectTile(b.subject, 36, b.title)}<span class="mt"><b data-raw>${esc(b.subject ? subj(b.subject) : b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : ''}">${m.pct}%</span></button>` });
+    rows.push({ b, pct: m.pct, html: `<button class="mrowb" data-book="${esc(b.id)}">${subjectTile(b.subject, 36, b.title)}<span class="mt"><b data-raw>${esc(b.subject ? subj(b.subject) : b.title)}</b><span class="bar ${m.pct < 60 ? 'warn' : m.pct < 80 ? 'mid' : ''}"><i style="width:${m.pct}%"></i></span></span><span class="m-pill ${m.pct >= 80 ? 'good' : m.pct >= 60 ? 'mid' : m.pct ? '' : 'zero'}">${m.pct}%</span></button>` });
   }
   // On Today, the books you've made most progress in come first.
   if (limit < Infinity) rows.sort((x, y) => y.pct - x.pct);
@@ -5391,12 +5416,14 @@ function renderPlans(hi) {
 }
 // Settings: the plan card with today's and this week's allowance.
 function planCardHTML() {
+  // pilot families: everything is free, so no plans or prices (they're shown with ?dev=1 for testing)
+  if (local.pilot && !DEV) return `<section class="card stack g6 plancard" style="padding:16px"><b style="font-size:15px">${PL('Free during the pilot', '試用期間免費')}</b><span class="muted" style="font-size:13.5px;line-height:1.5">${PL('Everything is included while you help us test PrepBuddy. Thank you!', '在你幫我們試用 PrepBuddy 期間，所有功能都可以免費使用。謝謝你！')}</span></section>`;
   const P = curPlan(), id = planId();
   const meters = ['q', 'written', 'buddy', 'lesson', 'homework', 'writing', 'speaking', 'mock'].filter((f) => limitOf(f) !== UNL && limitOf(f) > 0).map((f) => { const lim = limitOf(f), u = Math.min(lim, usedOf(f)); return `<div class="pm"><span>${PL(FEAT[f].en[0], FEAT[f].zh[0])}</span><span class="pm-bar"><i style="width:${(u / lim) * 100}%" class="${u >= lim ? 'full' : ''}"></i></span><b>${u}/${lim}</b><small>${FEAT[f].per === 'day' ? PL('today', '今日') : PL('this week', '本週')}</small></div>`; }).join('');
   return `<section class="card stack g10 plancard" style="padding:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PL('Your plan', '你的計劃')}: <span class="plan-pill ${id}">${PL(P.name, P.zh)}</span></b><button class="btn-sm ${id === 'pro' ? '' : 'primary'}" id="splans">${id === 'pro' ? PL('See plans', '查看計劃') : PL('Upgrade', '升級')}</button></div>
     ${meters ? `<div class="pms">${meters}</div>` : `<span class="muted" style="font-size:13.5px">${PL('Everything unlimited.', '全部無限使用。')}</span>`}
-    ${local.planLock ? '' : `<div class="pv"><span class="muted">${PL('Testing: preview a plan on this device', '測試中：在這部裝置預覽計劃')}</span><div class="seg">${PLAN_ORDER.map((p) => `<button class="${p === id ? 'on' : ''}" data-pv="${p}">${PL(TIERS[p].name, TIERS[p].zh)}</button>`).join('')}</div></div>`}
+    ${local.planLock || !DEV ? '' : `<div class="pv"><span class="muted">${PL('Testing: preview a plan on this device', '測試中：在這部裝置預覽計劃')}</span><div class="seg">${PLAN_ORDER.map((p) => `<button class="${p === id ? 'on' : ''}" data-pv="${p}">${PL(TIERS[p].name, TIERS[p].zh)}</button>`).join('')}</div></div>`}
   </section>`;
 }
 
@@ -7132,8 +7159,9 @@ function renderSummary() {
   const pct = total ? Math.round(100 * got / total) : 0;
   const list = qs.map((q, k) => {
     const g = S.got[k] || 0, m = marksOf(q), full = g === m;
-    const label = choiceType(q) ? q.stem : ((q.parts[0] && q.parts[0].prompt) || q.stem);
-    const st = full ? 'right' : g ? 'part' : 'miss';
+    const plain = (t) => String(t || '').replace(/^\|.*$/gm, ' ').replace(/\\[dt]?frac\{([^}]*)\}\{([^}]*)\}/g, '$1/$2').replace(/\\times/g, '×').replace(/\\div/g, '÷').replace(/[$\\]/g, '').replace(/\s+/g, ' ').trim();
+    const label = plain(q.stem) || plain(q.parts && q.parts[0] && q.parts[0].prompt);
+    const st = full ? 'right' : g ? 'half' : 'miss';
     return `<div class="rrow ${st}"><span class="rnum">Q${k + 1}</span><span class="rtext" data-raw>${esc(String(label).slice(0, 110))}${String(label).length > 110 ? '…' : ''}</span><span class="rmark">${g}/${m}</span></div>`;
   }).join('');
   const missed = qs.filter((q, k) => (S.got[k] || 0) < marksOf(q));
