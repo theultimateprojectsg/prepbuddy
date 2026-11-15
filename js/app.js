@@ -5960,13 +5960,12 @@ function testDialog(edit) {
       <span class="td-hint">${SCH('Each subject uses its textbook, and everything you’ve practised in it so far. Buddy plans the soonest and weakest first.', '每科會用相關課本及至今練習過的內容。Buddy 會先安排最近和最弱的科目。')}</span>`;
     }
     box.innerHTML = `<div class="cdlg rdlg tdlg" role="dialog" aria-modal="true" aria-labelledby="td-t" data-raw>
-      <b id="td-t">${edit ? SCH('Edit school test', '修改學校測驗') : SCH('Add a school test', '加入學校測驗')}</b>
+      <div class="td-head"><b id="td-t">${edit ? SCH('Edit school test', '修改學校測驗') : SCH('Add a school test', '加入學校測驗')}</b>${edit ? `<button type="button" class="btn-sm danger td-delbtn" id="td-del"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>${SCH('Delete', '刪除')}</button>` : ''}</div>
       ${edit ? '' : `<div class="td-kinds" role="radiogroup" aria-label="${SCH('What kind of test?', '甚麼類型？')}">${kinds.map(([k, t, sub]) => `<button type="button" role="radio" aria-checked="${st.kind === k}" data-kind="${k}" class="${st.kind === k ? 'on' : ''}"><b>${t}</b><small>${sub}</small></button>`).join('')}</div>`}
       ${body}
       <label for="td-n">${SCH('Name', '名稱')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, Term 1 exams', '例如：科學測驗、上學期考試')}" value="${esc(st.name)}">
       <p class="hw-err" id="td-err" role="alert" hidden></p>
       <div class="rd-row"><button class="btn ghost" id="td-cancel">${SCH('Cancel', '取消')}</button><button class="btn" id="td-save">${SCH('Save', '儲存')}</button></div>
-      ${edit ? `<button class="btn-sm danger" id="td-del" style="align-self:center">${st.kind === 'exam' ? SCH('Delete these exams', '刪除這些考試') : SCH('Delete this test', '刪除這個測驗')}</button>` : ''}
     </div>`;
     box.querySelector('.cdlg').scrollTop = keep;
     const $ = (q) => box.querySelector(q);
@@ -6008,7 +6007,12 @@ function testDialog(edit) {
       if (st.kind === 'dict' && !st.L) { box.remove(); toast(SCH('Saved. Now add the words for your 默書.', '已儲存。請加入默書詞語。')); return go({ name: 'dictation', id: 'new' }); }
       done(SCH(`Added. Today’s mission now gets you ready for ${name}.`, `已加入。今日任務會幫你準備「${name}」。`));
     };
-    const del = $('#td-del'); if (del) del.onclick = () => { local.sched = (local.sched || []).filter((x) => x.id !== st.id && !(group && x.grp === edit.grp)); saveLocal(); done(); };
+    // delete sits at the top; a second tap confirms
+    const del = $('#td-del'); if (del) del.onclick = () => {
+      if (!del.dataset.sure) { del.dataset.sure = '1'; del.lastChild.textContent = st.kind === 'exam' ? SCH('Tap again to delete all subjects', '再按一次刪除所有科目') : SCH('Tap again to delete', '再按一次刪除'); del.classList.add('sure'); return; }
+      local.sched = (local.sched || []).filter((x) => x.id !== st.id && !(group && x.grp === edit.grp)); saveLocal();
+      done(SCH(`Deleted ${st.kind === 'exam' ? st.name || 'the exams' : st.name || 'the test'}.`, `已刪除「${st.name}」。`));
+    };
   };
   box.onclick = (e) => { if (e.target === box) box.remove(); };
   draw(); document.body.appendChild(box);
