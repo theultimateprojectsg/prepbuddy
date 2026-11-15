@@ -1138,7 +1138,7 @@ async function renderHomework(id) {
       ${hwState.error ? `<p class="hw-err" role="alert">${esc(hwState.error)}</p>` : ''}
     </section>
     ${list.length ? `<section class="stack g10"><h2 class="st-h">${HW('Recent homework', '最近的功課')}</h2>
-      <div class="hw-list">${list.slice().reverse().map((x) => `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">📝</span><span class="hw-it"><b>${esc(x.title || HW('Homework', '功課'))}</b><small>${esc([x.subject, x.level].filter(Boolean).join(' · '))}${x.subject || x.level ? ' · ' : ''}${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.questions.length} ${HW('questions', '題')}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div></section>` : ''}
+      <div class="hw-list">${list.slice().reverse().map((x) => `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('homework', 22)}</span><span class="hw-it"><b>${esc(x.title || HW('Homework', '功課'))}</b><small>${esc([x.subject, x.level].filter(Boolean).join(' · '))}${x.subject || x.level ? ' · ' : ''}${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.questions.length} ${HW('questions', '題')}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div></section>` : ''}
   </main>`;
   const add = async (files) => {
     hwState.error = null;
@@ -1176,11 +1176,11 @@ async function renderHomeworkChat(hw) {
   const draw = () => {
     const msgs = hw.msgs;
     $app.innerHTML = `
-    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${HW('Homework', '功課')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(hw.title || '')}</span></div>
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${HW('Homework', '功課')}</span></button><span style="font-weight:600;font-size:16px" data-raw>${esc(hw.title || '')}</span></div>
     <main class="hwchat" data-view="homework" data-raw style="flex:1">
       <section class="hw-qs">
         ${photos.length ? `<div class="hw-thumbs small">${photos.map((p, i) => `<button class="hw-th" data-zoom="${i}" aria-label="${HW(`Open photo ${i + 1}`, `打開相片 ${i + 1}`)}"><img src="${p}" alt=""></button>`).join('')}</div>` : ''}
-        ${hw.note ? `<p class="hint" style="margin:0">⚠️ ${esc(hw.note)}</p>` : ''}
+        ${hw.note ? `<p class="hint" style="margin:0">${esc(hw.note)}</p>` : ''}
         <div class="hw-qlist">${hw.questions.map((q, i) => `<div class="hw-q ${hw.cur === i ? 'on' : ''}"><div class="hw-qt"><b>${esc(q.label || String(i + 1))}</b><div class="hw-qx">${tutorMd(q.text)}</div>${q.student_answer ? `<small>${HW('Your answer', '你的答案')}: ${esc(q.student_answer)}</small>` : ''}</div>
           <button class="btn-sm ${hw.cur === i ? 'primary' : ''}" data-help="${i}">${HW('Help me', '幫我')}</button></div>`).join('')}</div>
       </section>
@@ -1312,8 +1312,8 @@ async function renderWriting(id, sub) {
     ${k ? `<section class="card wr-step"><h2 class="st-h">2 · ${WT('The task (question)', '題目')}</h2>
       <textarea id="wrPrompt" class="wr-ta small" rows="6" placeholder="${k.primary ? WT('Type your school’s writing task here, take a photo of it, or let Buddy write one for you.', '在這裏輸入學校的寫作題目，或拍下題目，或讓 Buddy 幫你出題。') : WT('Paste or type your school’s writing task here, take a photo of it, or let Buddy write a DSE-style one.', '在這裏貼上或輸入學校的寫作題目，或拍下題目，或讓 Buddy 出一條 DSE 式題目。')}">${esc(s.prompt)}</textarea>
       <div class="wr-row">
-        <button class="btn ghost" id="wrTaskPhoto" ${s.busy ? 'disabled' : ''}>📷 ${WT('Photo of the task', '拍下題目')}</button>
-        <div class="wr-gen"><input id="wrTopic" class="tinput" placeholder="${k.primary ? WT('Topic (optional), e.g. my pet', '題材（可留空），例如：我的寵物') : WT('Topic (optional), e.g. social media', '題材（可留空），例如：社交媒體')}" value="${esc(s.topic)}"><button class="btn ghost" id="wrGen" ${s.busy ? 'disabled' : ''}>✨ ${WT('Write me a task', '幫我出題')}</button></div>
+        <button class="btn ghost" id="wrTaskPhoto" ${s.busy ? 'disabled' : ''}>${WT('Photo of the task', '拍下題目')}</button>
+        <div class="wr-gen"><input id="wrTopic" class="tinput" placeholder="${k.primary ? WT('Topic (optional), e.g. my pet', '題材（可留空），例如：我的寵物') : WT('Topic (optional), e.g. social media', '題材（可留空），例如：社交媒體')}" value="${esc(s.topic)}"><button class="btn ghost" id="wrGen" ${s.busy ? 'disabled' : ''}>${WT('Write me a task', '幫我出題')}</button></div>
       </div>
       ${s.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(s.busy)}</p>` : ''}
       ${s.error ? `<p class="hw-err" role="alert">${esc(s.error)}</p>` : ''}
@@ -1321,7 +1321,7 @@ async function renderWriting(id, sub) {
       <p class="hint" style="margin:0">${WT('No task? You can still start: Buddy will judge it as a general piece of this type.', '沒有題目？也可以開始，Buddy 會按這類文章的一般要求批改。')}</p>
     </section>` : ''}
     ${list.length ? `<section class="stack g10"><h2 class="st-h">${WT('Your writing', '你的文章')}</h2>
-      <div class="hw-list">${list.slice().reverse().map((x) => { const d = x.drafts[x.drafts.length - 1], lv = d && wrLevel(d.fb, x.kind); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">✍️</span><span class="hw-it"><b>${esc(x.title)}</b><small>${LANG === 'zh' ? WR_KINDS[x.kind].zh : WR_KINDS[x.kind].en} · ${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.drafts.length ? WT(`${x.drafts.length} draft${x.drafts.length > 1 ? 's' : ''} marked`, `已批改 ${x.drafts.length} 稿`) : WT('Not marked yet', '未批改')}</small></span>${lv ? `<span class="wr-lv sm" title="${WT('Estimated level', '估計等級')}">${lvShow(lv)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
+      <div class="hw-list">${list.slice().reverse().map((x) => { const d = x.drafts[x.drafts.length - 1], lv = d && wrLevel(d.fb, x.kind); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('writing', 22)}</span><span class="hw-it"><b>${esc(x.title)}</b><small>${LANG === 'zh' ? WR_KINDS[x.kind].zh : WR_KINDS[x.kind].en} · ${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.drafts.length ? WT(`${x.drafts.length} draft${x.drafts.length > 1 ? 's' : ''} marked`, `已批改 ${x.drafts.length} 稿`) : WT('Not marked yet', '未批改')}</small></span>${lv ? `<span class="wr-lv sm" title="${WT('Estimated level', '估計等級')}">${lvShow(lv)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
   </main>`;
   $app.querySelectorAll('[data-kind]').forEach((b) => (b.onclick = () => { s.kind = b.dataset.kind; s.error = null; renderWriting(); }));
   $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => { const x = list.find((y) => y.id === b.dataset.open); go({ name: 'writing', id: b.dataset.open, sub: x && x.drafts.length && !x.work ? 'fb' : undefined }); }));
@@ -1355,15 +1355,15 @@ function renderWritingEditor(it) {
   const draw = () => {
     const c = wrCount(it.work, k.lang);
     $app.innerHTML = `
-    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${WT('Writing', '寫作')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${n ? WT(`Draft ${n + 1}`, `第 ${n + 1} 稿`) : WT('Draft 1', '第 1 稿')}</span></div>
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${WT('Writing', '寫作')}</span></button><span style="font-weight:600;font-size:16px" data-raw>${n ? WT(`Draft ${n + 1}`, `第 ${n + 1} 稿`) : WT('Draft 1', '第 1 稿')}</span></div>
     <main class="pad stack g14 wrpage" data-view="writing" data-raw style="flex:1">
       <details class="card wr-task" ${it.prompt && !n ? 'open' : ''}><summary><b>${WT('Task', '題目')}</b> · ${LANG === 'zh' ? k.zh : k.en}</summary><div class="wr-ptext">${it.prompt ? esc(it.prompt).replace(/\n/g, '<br>') : `<span class="muted">${WT('No task given.', '沒有題目。')}</span>`}</div></details>
-      ${n ? `<div class="wr-tip">💡 ${WT('Redraft: work on the 3 fixes first.', '修改稿：先處理三個要改的地方。')} <button class="btn-sm quiet" id="seeFb">${WT('See feedback', '看評語')}</button>
+      ${n ? `<div class="wr-tip">${WT('Redraft: work on the 3 fixes first.', '修改稿：先處理三個要改的地方。')} <button class="btn-sm quiet" id="seeFb">${WT('See feedback', '看評語')}</button>
         <ol>${it.drafts[n - 1].fb.fixes.map((f) => `<li>${esc(f.issue)}</li>`).join('')}</ol></div>` : ''}
       <section class="card wr-ed">
         <textarea id="wrText" class="wr-ta" lang="${k.lang === 'zh' ? 'zh-HK' : 'en'}" spellcheck="false" placeholder="${k.lang === 'zh' ? '在這裏寫你的文章…' : k.primary ? 'Write here…' : 'Write your essay here…'}">${esc(it.work)}</textarea>
         <div class="wr-bar"><span class="wr-count ${c >= k.words * 0.9 ? 'ok' : ''}" id="wrCount">${c} / ~${k.words} ${k.lang === 'zh' ? '字' : WT('words', '字')}</span>
-          <button class="btn-sm" id="wrPhoto" ${st.busy ? 'disabled' : ''}>📷 ${WT('Photo of handwritten pages', '拍下手寫稿')}</button></div>
+          <button class="btn-sm" id="wrPhoto" ${st.busy ? 'disabled' : ''}>${WT('Photo of handwritten pages', '拍下手寫稿')}</button></div>
         ${st.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(st.busy)}</p>` : ''}
         ${st.error ? `<p class="hw-err" role="alert">${esc(st.error)}</p>` : ''}
         <p class="hint" style="margin:0">${WT('Writing on paper? Photograph the pages: Buddy types it out exactly as you wrote it (mistakes too). Check the reading before you ask for feedback.', '在紙上寫？拍下每一頁，Buddy 會照你寫的打出來（錯字也會保留）。取得評語前請先核對。')}</p>
@@ -1428,7 +1428,7 @@ function renderWritingFeedback(it, at) {
   const zh = k.lang === 'zh';
   const L = (en, zht) => (zh ? zht : en); // feedback language follows the essay, not the app
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${WT('Writing', '寫作')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(it.title)}</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${WT('Writing', '寫作')}</span></button><span style="font-weight:600;font-size:16px" data-raw>${esc(it.title)}</span></div>
   <main class="pad stack g14 wrpage" data-view="writing" data-raw style="flex:1">
     ${it.drafts.length > 1 ? `<div class="wr-drafts" role="tablist">${it.drafts.map((x, j) => `<button role="tab" class="${j === i ? 'on' : ''}" aria-selected="${j === i}" data-d="${j}">${WT(`Draft ${j + 1}`, `第 ${j + 1} 稿`)}${wrLevel(x.fb, it.kind) ? ` · ${lvShow(wrLevel(x.fb, it.kind))}` : ''}</button>`).join('')}</div>` : ''}
     <section class="card wr-score">
@@ -1438,12 +1438,12 @@ function renderWritingFeedback(it, at) {
       <p class="wr-note">${k.primary ? WT('Buddy’s marking for your grade, not an official school mark: use it to see what to improve.', 'Buddy 按你的年級批改，並非學校正式分數，用來找出要改進的地方。') : WT('Estimate from AI marking against the HKDSE criteria. Not an official HKEAA mark: use it to see what to improve.', '按 HKDSE 評分準則的 AI 估計，並非考評局正式分數，用來找出要改進的地方。')} · ${fb.count} ${zh ? '字' : WT('words', '字')}</p>
     </section>
     ${prev && (fb.improved.length || fb.still_to_do.length) ? `<section class="card wr-box better"><h2>${L('What got better', '進步了的地方')}</h2>${fb.improved.length ? `<ul>${fb.improved.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}${fb.still_to_do.length ? `<h3>${L('Still to work on', '仍要改進')}</h3><ul>${fb.still_to_do.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</section>` : ''}
-    <section class="card wr-box good"><h2>👍 ${L('What you did well', '做得好的地方')}</h2><ul>${fb.strengths.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
-    <section class="card wr-box fix"><h2>🎯 ${L('Fix these first', '最先要改的三點')}</h2><ol class="wr-fixes">${fb.fixes.map((f) => `<li><b>${esc(f.issue)}</b>${f.quote ? `<q>${esc(f.quote)}</q>` : ''}<span>${esc(f.how)}</span></li>`).join('')}</ol></section>
-    ${fb.corrections.length ? `<section class="card wr-box"><button class="wr-tog" id="togCorr" aria-expanded="${!!o[it.id + ':corr']}"><h2>✏️ ${L(`Language corrections (${fb.corrections.length})`, `語文修正（${fb.corrections.length} 處）`)}</h2><span>${o[it.id + ':corr'] ? WT('Hide', '隱藏') : WT('Show', '顯示')}</span></button>
+    <section class="card wr-box good"><h2>${L('What you did well', '做得好的地方')}</h2><ul>${fb.strengths.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+    <section class="card wr-box fix"><h2>${L('Fix these first', '最先要改的三點')}</h2><ol class="wr-fixes">${fb.fixes.map((f) => `<li><b>${esc(f.issue)}</b>${f.quote ? `<q>${esc(f.quote)}</q>` : ''}<span>${esc(f.how)}</span></li>`).join('')}</ol></section>
+    ${fb.corrections.length ? `<section class="card wr-box"><button class="wr-tog" id="togCorr" aria-expanded="${!!o[it.id + ':corr']}"><h2>${L(`Language corrections (${fb.corrections.length})`, `語文修正（${fb.corrections.length} 處）`)}</h2><span>${o[it.id + ':corr'] ? WT('Hide', '隱藏') : WT('Show', '顯示')}</span></button>
       ${o[it.id + ':corr'] ? `<ol class="wr-corr">${fb.corrections.map((c) => `<li><s>${esc(c.quote)}</s> → <b>${esc(c.fix)}</b>${c.why ? `<small>${esc(c.why)}</small>` : ''}</li>`).join('')}</ol>` : ''}</section>` : ''}
-    ${fb.next_step ? `<div class="wr-tip">➡️ ${esc(fb.next_step)}</div>` : ''}
-    <section class="card wr-box"><button class="wr-tog" id="togEssay" aria-expanded="${showEssay}"><h2>📄 ${WT(`Your draft ${i + 1}`, `你的第 ${i + 1} 稿`)}</h2><span>${showEssay ? WT('Hide', '隱藏') : WT('Show', '顯示')}</span></button>
+    ${fb.next_step ? `<div class="wr-tip">${esc(fb.next_step)}</div>` : ''}
+    <section class="card wr-box"><button class="wr-tog" id="togEssay" aria-expanded="${showEssay}"><h2>${WT(`Your draft ${i + 1}`, `你的第 ${i + 1} 稿`)}</h2><span>${showEssay ? WT('Hide', '隱藏') : WT('Show', '顯示')}</span></button>
       ${showEssay ? `<div class="wr-essay">${wrMarked(d.text, fb.corrections)}</div>` : ''}</section>
     <div class="wr-acts">
       <button class="btn" id="redraft">${it.work ? WT('Continue my redraft', '繼續修改稿') : WT(`Redraft it (draft ${it.drafts.length + 1})`, `修改（第 ${it.drafts.length + 1} 稿）`)}</button>
@@ -1489,12 +1489,12 @@ async function renderSpeaking(id, sub, qi) {
       <span>${SPK('Read a topic, prepare like the exam, then answer the examiner’s question out loud. Buddy marks it by the four speaking domains and shows you how to do better.', '閱讀題目、像考試一樣準備，然後大聲回答考官的問題。Buddy 會按四個說話範疇評分，並教你怎樣做得更好。')}</span>`}</div></section>
     ${SREC ? '' : `<p class="hw-err" role="alert">${SPK('This browser can’t turn speech into text. Please use Chrome, Edge or Safari.', '這個瀏覽器不能把說話轉成文字，請使用 Chrome、Edge 或 Safari。')}</p>`}
     <section class="card wr-step"><h2 class="st-h">${SPK('New topic', '新題目')}</h2>
-      <div class="wr-gen"><input id="spTopic" class="tinput" placeholder="${isPrimaryKid() ? SPK('Topic (optional), e.g. my school', '題材（可留空），例如：我的學校') : SPK('Topic (optional), e.g. online learning', '題材（可留空），例如：網上學習')}" value="${esc(spx.topic)}"><button class="btn" id="spNew" ${spx.busy ? 'disabled' : ''}>✨ ${isPrimaryKid() ? SPK('Give me a topic', '給我一條題目') : SPK('Give me a DSE-style topic', '給我一條 DSE 式題目')}</button></div>
+      <div class="wr-gen"><input id="spTopic" class="tinput" placeholder="${isPrimaryKid() ? SPK('Topic (optional), e.g. my school', '題材（可留空），例如：我的學校') : SPK('Topic (optional), e.g. online learning', '題材（可留空），例如：網上學習')}" value="${esc(spx.topic)}"><button class="btn" id="spNew" ${spx.busy ? 'disabled' : ''}> ${isPrimaryKid() ? SPK('Give me a topic', '給我一條題目') : SPK('Give me a DSE-style topic', '給我一條 DSE 式題目')}</button></div>
       ${spx.busy ? `<p class="muted wr-busy"><span class="spinner sm" aria-hidden="true"></span>${esc(spx.busy)}</p>` : ''}
       ${spx.error ? `<p class="hw-err" role="alert">${esc(spx.error)}</p>` : ''}
     </section>
     ${list.length ? `<section class="stack g10"><h2 class="st-h">${SPK('Your topics', '你的題目')}</h2>
-      <div class="hw-list">${list.slice().reverse().map((x) => { const best = x.tries.reduce((b, t) => { const l = spLevel(t.fb, x); return l && (!b || l > b) ? l : b; }, null); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">🎤</span><span class="hw-it"><b>${esc(x.task.title)}</b><small>${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.tries.length ? SPK(`${x.tries.length} answer${x.tries.length > 1 ? 's' : ''}`, `已回答 ${x.tries.length} 次`) : SPK('Not answered yet', '未回答')}</small></span>${best ? `<span class="wr-lv sm">${lvShow(best)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
+      <div class="hw-list">${list.slice().reverse().map((x) => { const best = x.tries.reduce((b, t) => { const l = spLevel(t.fb, x); return l && (!b || l > b) ? l : b; }, null); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('speaking', 22)}</span><span class="hw-it"><b>${esc(x.task.title)}</b><small>${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.tries.length ? SPK(`${x.tries.length} answer${x.tries.length > 1 ? 's' : ''}`, `已回答 ${x.tries.length} 次`) : SPK('Not answered yet', '未回答')}</small></span>${best ? `<span class="wr-lv sm">${lvShow(best)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
   </main>`;
   const tp = document.getElementById('spTopic'); tp.oninput = () => (spx.topic = tp.value);
   $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => go({ name: 'speaking', id: b.dataset.open })));
@@ -1513,7 +1513,7 @@ function renderSpeakingTask(it) {
   const T = it.task;
   const prepLeft = () => Math.max(0, Math.round(((it.prepEnd || 0) - Date.now()) / 1000));
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Speaking', '說話')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(T.title)}</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Speaking', '說話')}</span></button><span style="font-weight:600;font-size:16px" data-raw>${esc(T.title)}</span></div>
   <main class="pad sppage" data-view="speaking" data-raw style="flex:1">
     <div class="sp-col stack g14">
       <section class="card sp-text"><small class="ln-step">${T.primary ? SPK('Read this aloud', '大聲朗讀') : SPK('Read this', '閱讀')}</small><h2>${esc(T.title)}</h2><div>${esc(T.text).replace(/\n/g, '<br>')}</div></section>
@@ -1556,7 +1556,7 @@ function renderSpeakingRec(it, qi) {
   const draw = () => {
     const left = R.state === 'rec' ? Math.max(0, 60 - (Date.now() - R.start) / 1000) : 60;
     $app.innerHTML = `
-    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Topic', '題目')}</span></button><span style="font-weight:600;font-size:15px">${SPK('Individual response', '個人回應')}</span></div>
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Topic', '題目')}</span></button><span style="font-weight:600;font-size:16px">${SPK('Individual response', '個人回應')}</span></div>
     <main class="pad stack g18 sprec" data-view="speaking" data-raw style="flex:1">
       <section class="sp-exq"><span class="sp-ex">${buddySVG(R.state === 'rec' ? 'listen' : 'happy', 52)}<small>${SPK('Examiner', '考官')}</small></span><div><p>${esc(q)}</p><button class="btn-sm quiet" id="spSay">🔊 ${SPK('Hear it again', '再聽一次')}</button></div></section>
       <section class="sp-ring ${R.state}"><svg viewBox="0 0 120 120" width="170" height="170" aria-hidden="true"><circle cx="60" cy="60" r="52" class="rbg"/><circle cx="60" cy="60" r="52" class="rfg" id="spArc" style="stroke-dashoffset:${326.7 * (1 - left / 60)}"/></svg>
@@ -1650,7 +1650,7 @@ async function renderSpeakingFb(it, qi) {
   const pace = pk ? (wpm < 50 ? ['slow', 'A bit slow: try to keep going without long stops'] : wpm > 160 ? ['fast', 'Quite fast: slow down so every word is clear'] : ['ok', 'Good pace']) : wpm < 90 ? ['slow', 'A bit slow: aim for 110–150 words a minute'] : wpm > 170 ? ['fast', 'Quite fast: slow down a little so every word is clear'] : ['ok', 'Good pace'];
   const markFill = (s) => esc(s).replace(/\b(um+|uh+|erm*|ah+|hmm+|you know|i mean)\b/gi, '<mark class="sp-fill">$1</mark>');
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Topic', '題目')}</span></button><span style="font-weight:600;font-size:15px">${SPK('Feedback', '評語')}</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${SPK('Topic', '題目')}</span></button><span style="font-weight:600;font-size:16px">${SPK('Feedback', '評語')}</span></div>
   <main class="pad stack g14 wrpage" data-view="speaking" data-raw style="flex:1">
     <section class="card sp-exq small"><span class="sp-ex">${buddySVG('happy', 40)}</span><div><p>${esc(it.task.questions[qi])}</p></div></section>
     <section class="card wr-score">
@@ -1665,11 +1665,11 @@ async function renderSpeakingFb(it, qi) {
       ${url ? `<audio controls src="${url}" class="sp-audio"></audio>` : ''}
     </section>
     <section class="card wr-box"><h2>📝 What I heard</h2><p class="sp-trx">${markFill(t.tr)}</p></section>
-    <section class="card wr-box good"><h2>👍 What you did well</h2><ul>${fb.strengths.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
-    <section class="card wr-box fix"><h2>🎯 Fix these first</h2><ol class="wr-fixes">${fb.fixes.map((f) => `<li><b>${esc(f.issue)}</b>${f.quote ? `<q>${esc(f.quote)}</q>` : ''}<span>${esc(f.how)}</span></li>`).join('')}</ol></section>
-    ${fb.phrases.length ? `<section class="card wr-box"><h2>💬 Useful phrases for next time</h2><div class="sp-phr">${fb.phrases.map((p) => `<button class="sp-ph" data-say="${esc(p)}">🔊 ${esc(p)}</button>`).join('')}</div></section>` : ''}
-    ${fb.sample ? `<section class="card wr-box"><button class="wr-tog" id="togSample" aria-expanded="false"><h2>🌟 One way to answer</h2><span>Show</span></button><div class="sp-sample" hidden><p>${esc(fb.sample)}</p><button class="btn-sm" id="saySample">🔊 Listen</button></div></section>` : ''}
-    ${fb.next_step ? `<div class="wr-tip">➡️ ${esc(fb.next_step)}</div>` : ''}
+    <section class="card wr-box good"><h2>What you did well</h2><ul>${fb.strengths.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+    <section class="card wr-box fix"><h2>Fix these first</h2><ol class="wr-fixes">${fb.fixes.map((f) => `<li><b>${esc(f.issue)}</b>${f.quote ? `<q>${esc(f.quote)}</q>` : ''}<span>${esc(f.how)}</span></li>`).join('')}</ol></section>
+    ${fb.phrases.length ? `<section class="card wr-box"><h2>Useful phrases for next time</h2><div class="sp-phr">${fb.phrases.map((p) => `<button class="sp-ph" data-say="${esc(p)}">🔊 ${esc(p)}</button>`).join('')}</div></section>` : ''}
+    ${fb.sample ? `<section class="card wr-box"><button class="wr-tog" id="togSample" aria-expanded="false"><h2>One way to answer</h2><span>Show</span></button><div class="sp-sample" hidden><p>${esc(fb.sample)}</p><button class="btn-sm" id="saySample">🔊 Listen</button></div></section>` : ''}
+    ${fb.next_step ? `<div class="wr-tip">${esc(fb.next_step)}</div>` : ''}
     <div class="wr-acts"><button class="btn" id="again">🎤 Try this question again</button><button class="btn ghost" id="nextq">${qi + 1 < it.task.questions.length ? 'Next question' : 'Back to the topic'}</button></div>
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'speaking', id: it.id });
@@ -1803,7 +1803,7 @@ async function renderDictation(id, sub) {
       <span>${DT('Add this week’s dictation or spelling list. I read each one aloud in Cantonese, Putonghua or English. Write it down, then check. Words you miss come back next time.', '加入今個星期的默書或串字。我會用粵語、普通話或英文逐個讀出來，你寫低再對答案。寫錯的會在下次再出現。')}</span></div></section>
     <button class="btn" id="dnew">+ ${DT('Add a dictation list', '加入默書')}</button>
     ${lists.length ? `<div class="hw-list">${lists.slice().reverse().map((x) => { const m = missed(x), last = (x.runs || []).slice(-1)[0];
-      return `<div class="dl-item"><button class="dl-main" data-run="${x.id}"><span class="hw-ic">✏️</span><span class="hw-it"><b>${esc(x.title)}</b><small>${DL[x.lang][LANG === 'zh' ? 0 : 1]} · ${x.items.length} ${DT('items', '項')}${last ? ` · ${DT('last', '上次')} ${last.g}/${last.n}` : ''}${m ? ` · <span class="dl-miss">${DT(`${m} to practise`, `${m} 個要再練`)}</span>` : ''}</small></span><span class="dl-go">▶</span></button>
+      return `<div class="dl-item"><button class="dl-main" data-run="${x.id}"><span class="hw-ic">${actionIcon('dictation', 22)}</span><span class="hw-it"><b>${esc(x.title)}</b><small>${DL[x.lang][LANG === 'zh' ? 0 : 1]} · ${x.items.length} ${DT('items', '項')}${last ? ` · ${DT('last', '上次')} ${last.g}/${last.n}` : ''}${m ? ` · <span class="dl-miss">${DT(`${m} to practise`, `${m} 個要再練`)}</span>` : ''}</small></span><span class="dl-go">▶</span></button>
         <button class="btn-sm quiet" data-edit="${x.id}">${DT('Edit', '修改')}</button></div>`; }).join('')}</div>`
       : `<div class="card mk-empty">${buddySVG('think', 64)}<div class="stack g6"><b>${DT('No dictation lists yet', '還沒有默書')}</b><span class="muted">${DT('Snap or type this week’s spelling list. I’ll read each word aloud, you write it, then we check together.', '拍下或輸入這星期的默書範圍。我會逐個讀出，你寫下來，然後一起核對。')}</span></div></div>`}
   </main>`;
@@ -1816,14 +1816,14 @@ function editDictation(L) {
   const st = { title: L ? L.title : '', lang: L ? L.lang : (LANG === 'zh' ? zhVoice() : 'en'), text: L ? L.items.join('\n') : '', busy: false, err: '' };
   const draw = () => {
     $app.innerHTML = `
-    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button><span style="font-weight:600;font-size:15px">${L ? DT('Edit list', '修改默書') : DT('New list', '新默書')}</span></div>
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button><span style="font-weight:600;font-size:16px">${L ? DT('Edit list', '修改默書') : DT('New list', '新默書')}</span></div>
     <main class="pad stack g14 dictpage" data-view="dictation" data-raw style="flex:1">
       <label class="dl-lab" for="dtitle">${DT('Name', '名稱')}</label>
       <input id="dtitle" class="input" maxlength="60" placeholder="${DT('e.g. Chinese Lesson 5 or Spelling Unit 3', '例如：中文默書 第五課')}" value="${esc(st.title)}">
       <span class="dl-lab">${DT('Read aloud in', '朗讀語言')}</span>
       <div class="seg" role="radiogroup">${Object.entries(DL).map(([k, v]) => `<button role="radio" aria-checked="${st.lang === k}" class="${st.lang === k ? 'on' : ''}" data-lang="${k}">${LANG === 'zh' ? v[0] : v[1]}</button>`).join('')}</div>
       <div class="dl-row"><label class="dl-lab" for="ditems">${DT('Words or sentences, one per line', '詞語或句子，每行一個')}</label>
-        <label class="btn-sm" style="cursor:pointer">📷 ${DT('Read from a photo', '從相片讀取')}<input type="file" accept="image/*" id="dphoto" hidden></label></div>
+        <label class="btn-sm" style="cursor:pointer">${DT('Read from a photo', '從相片讀取')}<input type="file" accept="image/*" id="dphoto" hidden></label></div>
       <textarea id="ditems" class="input dl-ta" rows="10" placeholder="${DT('膝蓋\n醫治\n康復\n…', '膝蓋\n醫治\n康復\n…')}">${esc(st.text)}</textarea>
       ${st.busy ? `<p class="muted" style="margin:0">${DT('Reading the list…', '正在讀取…')}</p>` : ''}${st.err ? `<p class="hw-err">${esc(st.err)}</p>` : ''}
       <div class="rd-row">${L ? `<button class="btn ghost" id="ddel">${DT('Delete', '刪除')}</button>` : `<span></span>`}<button class="btn" id="dsave">${DT('Save', '儲存')}</button></div>
@@ -1902,7 +1902,7 @@ function runDictation(L) {
       <div class="seg dl-mode" role="radiogroup" aria-label="${DT('How to answer', '作答方式')}"><button role="radio" class="${R.mode === 'paper' ? 'on' : ''}" data-mode="paper">${DT('Write on paper', '寫在紙上')}</button><button role="radio" class="${R.mode === 'type' ? 'on' : ''}" data-mode="type">${DT('Type it', '打字')}</button></div>
       <section class="dl-play">
         <button class="dl-big" id="play" aria-label="${DT('Read it aloud', '朗讀')}">🔊</button>
-        <div class="dl-ctrls"><button class="btn-sm" id="again1">${DT('Again', '再聽一次')}</button><button class="btn-sm" id="slow">🐢 ${DT('Slowly', '慢一點')}</button></div>
+        <div class="dl-ctrls"><button class="btn-sm" id="again1">${DT('Again', '再聽一次')}</button><button class="btn-sm" id="slow">${DT('Slowly', '慢一點')}</button></div>
         ${L.res[i] && L.res[i].due ? `<span class="dl-tag">${DT('You missed this last time', '上次寫錯了')}</span>` : ''}
         <p class="hint" id="novoice" hidden>${DT('No voice for this language on this device. A parent can read it out instead:', '這部機沒有這種語言的聲音，請家長讀出來：')} <b>${esc(text)}</b></p>
       </section>
@@ -1984,7 +1984,7 @@ async function renderLearn(bookId, unitId) {
   meter('lesson');
   const myView = view, zh = LANG === 'zh';
   const T = (en, z) => (zh ? z : en);
-  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel(T('Chapter', '章節'))}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(shortTitle(unit.title))}</span></div>
+  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel(T('Chapter', '章節'))}</span></button><span style="font-weight:600;font-size:16px" data-raw>${esc(shortTitle(unit.title))}</span></div>
     <main class="pad stack g18 learnpage" data-view="learn" style="flex:1;align-items:center;justify-content:center;text-align:center">
       ${buddySVG('think', 64)}<b style="font-size:18px">${T('Getting your lesson ready…', '正在準備你的課堂…')}</b><span class="muted">${T('Buddy is reading the chapter and planning how to teach it. This takes about half a minute the first time.', 'Buddy 正在閱讀這一章並準備教學，第一次大約需要半分鐘。')}</span><div class="spinner" aria-hidden="true"></div></main>`;
   document.getElementById('back').onclick = () => leaveTo(bookId);
@@ -2070,7 +2070,7 @@ async function renderLearn(bookId, unitId) {
         ${L.summary.length ? `<div class="ln-sum"><b>${T('Remember', '記住')}</b><ul>${L.summary.map((s) => `<li>${tutorMd(s).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ul></div>` : ''}
         ${UX.words.length ? `<div class="ln-sum ln-kw"><b>${T('Key words', '重點詞彙')}</b><ul>${UX.words.map((x) => `<li><b>${esc(x.w)}</b>${x.m ? ` · ${esc(x.m)}` : ''}</li>`).join('')}</ul></div>` : ''}
         <button class="btn" id="practise">${T('Practise this chapter now', '現在練習這一章')} →</button>
-        ${UX.words.length || UX.task ? `<div class="rd-row">${UX.words.length ? `<button class="btn ghost" id="kwdict">✏️ ${T('Key words dictation', '重點詞彙默書')}</button>` : ''}${UX.task ? `<button class="btn ghost" id="utask">✍️ ${T('Do the writing task', '完成寫作任務')}</button>` : ''}</div>` : ''}
+        ${UX.words.length || UX.task ? `<div class="rd-row">${UX.words.length ? `<button class="btn ghost" id="kwdict">${T('Key words dictation', '重點詞彙默書')}</button>` : ''}${UX.task ? `<button class="btn ghost" id="utask">✍️ ${T('Do the writing task', '完成寫作任務')}</button>` : ''}</div>` : ''}
         <div class="rd-row"><button class="btn ghost" id="again">${T('Go through it again', '再上一次')}</button><button class="btn ghost" id="done">${T('Back to the chapter', '返回章節')}</button></div></section>`;
     } else {
       const s = L.steps[R.k], c = s.check, p = R.picked[R.k];
@@ -2555,7 +2555,7 @@ async function renderBooks() {
   <main class="pad stack g18" data-view="books" style="flex:1">
     <div class="bks-head">
       <div class="stack" style="gap:2px"><h1 class="pagetitle" style="margin:0">Books</h1>${books.length ? `<span class="muted bk-count">${W(`${books.length} textbook${books.length === 1 ? '' : 's'}`, `${books.length} 本課本`)}</span>` : ''}</div>
-      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} Add<span class="hide-sm">&nbsp;a textbook</span></button>${gearBtn()}
+      <button class="btn small" id="addbook" style="width:auto;padding:10px 16px;display:inline-flex;gap:6px;align-items:center">${ICON.plus} <span>Add<span class="hide-sm"> a textbook</span></span></button>${gearBtn()}
     </div>
     ${books.length ? `${many ? `<div class="bk-tools"><form id="find" class="searchbox light" role="search"><span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
       <input id="q" type="search" placeholder="Find in my textbooks" aria-label="Find in my textbooks" autocomplete="off"></form></div>` : ''}
@@ -2612,63 +2612,63 @@ function renderSettings() {
     <h1 class="pagetitle">Settings</h1>
     <h2 class="set-h">${PLT('This child', '這個孩子')}</h2>
     <section class="card stack g10" style="padding:16px">
-      <label for="sname" style="font-size:15px;font-weight:700">Your name</label>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">Used to greet you and on the weekly report you send your parents.</span>
+      <label for="sname" style="font-size:16px;font-weight:700">Your name</label>
+      <span class="muted" style="font-size:14px;line-height:1.5">Used to greet you and on the weekly report you send your parents.</span>
       <input id="sname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(local.name || '')}">
     </section>
     ${profileOn() ? `<section class="card stack g10" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PLT('About your child', '關於你的孩子')}</b><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn-sm quiet" id="skids">${KIDS.list.length > 1 ? PLT('Switch child', '轉換孩子') : PLT('Add a child', '新增孩子')}</button><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></span></div>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">${PLT('About your child', '關於你的孩子')}</b><span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn-sm quiet" id="skids">${KIDS.list.length > 1 ? PLT('Switch child', '轉換孩子') : PLT('Add a child', '新增孩子')}</button><button class="btn-sm" id="sprof">${gradeNow() ? PLT('Edit', '修改') : PLT('Set up', '設定')}</button></span></div>
+      <span class="muted" style="font-size:14px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Standard</span>' : ''}</b>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Standard</span>' : ''}</b>
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
+      <span class="muted" style="font-size:14px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
     </section>
     <h2 class="set-h">${PLT('Family', '家庭')}</h2>
     <section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">${PLT('For parents', '家長專區')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('The parent dashboard: this week, school results and upcoming tests, and what needs attention. Needs the parent PIN.', '家長主頁：本週情況、學校成績及考試，以及需要留意的地方。需要家長密碼。')}</span>
+      <b style="font-size:16px">${PLT('For parents', '家長專區')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('The parent dashboard: this week, school results and upcoming tests, and what needs attention. Needs the parent PIN.', '家長主頁：本週情況、學校成績及考試，以及需要留意的地方。需要家長密碼。')}</span>
       <button class="btn-sm" id="sparent" style="align-self:flex-start">${PLT('Open the parent dashboard', '打開家長主頁')}</button>
     </section>
     <h2 class="set-h">${PLT('This device', '這部裝置')}</h2>
     <section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">Language</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">For PrepBuddy’s buttons and messages. Your textbooks and their questions stay in the book’s own language.</span>
+      <b style="font-size:16px">Language</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">For PrepBuddy’s buttons and messages. Your textbooks and their questions stay in the book’s own language.</span>
       <div class="langopts" role="group" aria-label="Language">${opt('en', 'English', 'English')}${opt('zh', '中文（繁體）', 'Traditional Chinese')}</div>
     </section>
     <section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">${BK('Back up your progress', '備份你的進度')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
+      <b style="font-size:16px">${BK('Back up your progress', '備份你的進度')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm primary" id="sbackup">${BK('Save a backup file', '儲存備份檔案')}</button><label class="btn-sm" style="cursor:pointer">${BK('Restore from a file', '從檔案還原')}<input type="file" id="srestore" accept="application/json,.json" hidden></label></div>
     </section>
     <h2 class="set-h">${PLT('Help and about', '說明及關於')}</h2>
     ${planCardHTML()}
     ${local.pilot ? `<section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">${PLT('Take the tour again', '再看一次導覽')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('A quick look at what PrepBuddy can do.', '快速看看 PrepBuddy 可以做甚麼。')}</span>
+      <b style="font-size:16px">${PLT('Take the tour again', '再看一次導覽')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('A quick look at what PrepBuddy can do.', '快速看看 PrepBuddy 可以做甚麼。')}</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm" id="stour">${PLT('Quick tour', '快速導覽')}</button><button class="btn-sm quiet" id="stourfull">${PLT('Full tour (about 3 min)', '完整導覽（約 3 分鐘）')}</button></div>
     </section>
     <section class="card stack g10 fbcard" style="padding:16px">
-      <b style="font-size:15px">${PLT('Tell us what you think', '告訴我們你的意見')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('You’re in the PrepBuddy pilot. What do you like? What’s confusing or broken? Parents and students both welcome.', '你正參與 PrepBuddy 試用。你喜歡甚麼？有甚麼令你困惑或出錯？家長和學生都歡迎留言。')}</span>
+      <b style="font-size:16px">${PLT('Tell us what you think', '告訴我們你的意見')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('You’re in the PrepBuddy pilot. What do you like? What’s confusing or broken? Parents and students both welcome.', '你正參與 PrepBuddy 試用。你喜歡甚麼？有甚麼令你困惑或出錯？家長和學生都歡迎留言。')}</span>
       <textarea id="sfb" class="wr-ta small" rows="4" placeholder="${PLT('Type here…', '在這裏輸入…')}"></textarea>
       <button class="btn-sm primary" id="sfbgo" style="align-self:flex-start">${PLT('Send', '傳送')}</button>
       <span class="hint" style="margin:0">${PLT(`Family code ${esc(local.code || '')}`, `家庭代碼 ${esc(local.code || '')}`)}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">${PLT('Privacy', '私隱')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('What PrepBuddy collects, where it goes, and how to see, correct or delete it.', 'PrepBuddy 收集甚麼資料、資料去向，以及如何查閱、更正或刪除。')}</span>
+      <b style="font-size:16px">${PLT('Privacy', '私隱')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('What PrepBuddy collects, where it goes, and how to see, correct or delete it.', 'PrepBuddy 收集甚麼資料、資料去向，以及如何查閱、更正或刪除。')}</span>
       <button class="btn-sm" data-privacy style="align-self:flex-start">${PLT('Read the privacy notice', '閱讀私隱聲明')}</button>
     </section>
     ${!DEV ? '' : `<section class="card stack g10" style="padding:16px">
-      <b style="font-size:15px">AI usage</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
+      <b style="font-size:16px">AI usage</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">How much the AI has been used on this device for questions, marking, the tutor and the coach, and what it cost.</span>
       <button class="btn-sm" id="susage" style="align-self:flex-start">See AI usage</button>
     </section>`}
     <section class="card stack g10 wipe-card" style="padding:16px">
-      <b style="font-size:15px">${PLT('Delete everything on this device', '刪除這部裝置上的所有資料')}</b>
-      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('Removes every child, book, question, mark, setting and saved voice clip from this phone or computer, and the family code. PrepBuddy then starts again like new. This can’t be undone, so save a backup first if you want to keep anything.', '刪除這部手機或電腦上所有孩子、課本、題目、成績、設定、已儲存的朗讀聲音和家庭代碼，PrepBuddy 會像新的一樣重新開始。刪除後不能復原，如想保留資料，請先儲存備份。')}${local.pilot ? PLT(' Pilot activity already sent to PrepBuddy is not deleted by this: ask us and we’ll remove it.', ' 已傳送給 PrepBuddy 的試用紀錄不會因此刪除：請聯絡我們，我們會為你刪除。') : ''}</span>
+      <b style="font-size:16px">${PLT('Delete everything on this device', '刪除這部裝置上的所有資料')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('Removes every child, book, question, mark, setting and saved voice clip from this phone or computer, and the family code. PrepBuddy then starts again like new. This can’t be undone, so save a backup first if you want to keep anything.', '刪除這部手機或電腦上所有孩子、課本、題目、成績、設定、已儲存的朗讀聲音和家庭代碼，PrepBuddy 會像新的一樣重新開始。刪除後不能復原，如想保留資料，請先儲存備份。')}${local.pilot ? PLT(' Pilot activity already sent to PrepBuddy is not deleted by this: ask us and we’ll remove it.', ' 已傳送給 PrepBuddy 的試用紀錄不會因此刪除：請聯絡我們，我們會為你刪除。') : ''}</span>
       <button class="btn-sm danger" id="swipe" style="align-self:flex-start">${PLT('Delete everything', '刪除所有資料')}</button>
     </section>
     <p class="hint" style="margin:0;line-height:1.5">Prototype. Your textbooks, questions and progress are saved on this device only.</p>
@@ -2974,10 +2974,10 @@ function profileScreen({ first } = {}) {
           <div class="prof-opts two">${opt('zhLang', 'yue', C('Cantonese', '廣東話'), C('粵教中', '粵教中'))}${opt('zhLang', 'cmn', C('Putonghua', '普通話'), C('Chinese taught in Putonghua: Buddy reads Chinese in Putonghua', '普教中：Buddy 用普通話朗讀'))}</div></section>
         <section class="stack g10"><b>${C('Buddy should explain in…', 'Buddy 用甚麼語言講解？')}</b>
           <div class="prof-opts">${opt('explain', 'en', C('English', '英文'), C('Even if they type in Chinese', '即使孩子用中文提問'))}${opt('explain', 'zh', C('Chinese', '中文'), C('English terms in brackets', '英文術語放在括號內'))}${opt('explain', 'mix', C('Chinese + English terms', '中文 + 英文術語'), C('Learn the English words', '同時學英文詞彙'))}</div>
-          <span class="muted" style="font-size:13px;line-height:1.5">${C('English lessons are always explained in simple English, with Chinese only for hard words.', '英文科一律用淺白英文講解，只在難字旁加中文。')}</span>
+          <span class="muted" style="font-size:14px;line-height:1.5">${C('English lessons are always explained in simple English, with Chinese only for hard words.', '英文科一律用淺白英文講解，只在難字旁加中文。')}</span>
           <span class="hint" style="margin:0;text-align:left">${C('Practice questions stay in the textbook’s language.', '練習題目會保持課本的語言。')}</span></section>
         <section class="stack g10"><b>${C('Reading voice', '朗讀聲音')}</b>
-          <span class="muted" style="font-size:13px;line-height:1.5;margin-top:-4px">${C('For dictation, listening and reading questions aloud (🔊). Tap ▶ to hear each one.', '用於默書、聆聽和朗讀題目（🔊）。按 ▶ 試聽。')}</span>
+          <span class="muted" style="font-size:14px;line-height:1.5;margin-top:-4px">${C('For dictation, listening and reading questions aloud (🔊). Tap ▶ to hear each one.', '用於默書、聆聽和朗讀題目（🔊）。按 ▶ 試聽。')}</span>
           ${[['yue', C('Cantonese', '廣東話')], ['cmn', C('Putonghua', '普通話')], ['en', C('English', '英文')]].map(([lg, name]) => `<div class="vc-group"><small>${name}</small><div class="vc-row">${VOICE_OPTS[lg].map(([id, zhn, en, zh], i) => {
             const on = (L.voices && L.voices[lg] ? L.voices[lg] : VOICE_OPTS[lg][0][0]) === id;
             return `<div class="vc-opt ${on ? 'on' : ''}"><button class="vc-pick" data-vlang="${lg}" data-voice="${id}" aria-pressed="${on}"><b>${LANG === 'zh' || lg !== 'en' ? zhn : id}</b><span>${C(en, zh)}</span></button><button class="vc-play" data-vplay="${lg}:${id}" aria-label="${C('Listen', '試聽')}">▶</button></div>`; }).join('')}</div></div>`).join('')}
@@ -3097,7 +3097,7 @@ function marksScreen(edit, opts = {}) {
           ? C('From the last school test or exam before your child started PrepBuddy. Later you’ll add the next results, so you (and we) can see if it’s helping. Leave out any subject you don’t have.', '請填寫孩子開始使用 PrepBuddy 前最近一次測驗或考試的分數。之後再填下一次的成績，便可看到是否有幫助。沒有的科目可留空。')
           : C('From the most recent school test or exam. Leave out any subject you don’t have.', '請填寫最近一次學校測驗或考試的分數。沒有的科目可留空。')}</p>
         <section class="mk-snap">
-          <label class="mk-snapbtn${snap.busy ? ' busy' : ''}"><span class="mk-cam" aria-hidden="true">📷</span><span><b>${snap.busy ? C('Reading the papers…', '正在讀取試卷…') : C('Snap the marked papers', '拍下已批改的試卷')}</b><small>${C('Photo of the front page of each paper, where the total is. We fill in the marks for you.', '拍下每份試卷有總分的首頁，我們會為你填上分數。')}</small></span><input id="mphoto" type="file" accept="image/*" multiple hidden ${snap.busy ? 'disabled' : ''}></label>
+          <label class="mk-snapbtn${snap.busy ? ' busy' : ''}"><span class="mk-cam" aria-hidden="true">${actionIcon('homework', 22)}</span><span><b>${snap.busy ? C('Reading the papers…', '正在讀取試卷…') : C('Snap the marked papers', '拍下已批改的試卷')}</b><small>${C('Photo of the front page of each paper, where the total is. We fill in the marks for you.', '拍下每份試卷有總分的首頁，我們會為你填上分數。')}</small></span><input id="mphoto" type="file" accept="image/*" multiple hidden ${snap.busy ? 'disabled' : ''}></label>
           ${snap.read.length ? `<div class="mk-read"><b>${C('Read from your photos. Please check:', '從相片讀到的分數，請核對：')}</b><ul>${snap.read.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
           ${snap.err ? `<p class="hw-err" style="margin:0">${esc(snap.err)}</p>` : ''}
           <span class="hint" style="margin:0;text-align:left">${C('Photos are only used to read the marks, then thrown away. Or type the marks below.', '相片只用來讀取分數，之後不會保存。你也可以在下面自行輸入。')}</span>
@@ -3880,7 +3880,7 @@ async function renderLibrary(query) {
   if (!DEV) list = list.filter((b) => b.starter); // families see PrepBuddy's own books; other library books are for testing
   const mine = new Set((await getBooks()).map((b) => b.id));
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Books</span></button><span style="font-weight:600;font-size:15px">Textbook library</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Books</span></button><span style="font-weight:600;font-size:16px">Textbook library</span></div>
   <main class="stack g14" data-view="books" style="flex:1;padding:4px 20px 24px">
     <form id="find" class="searchbox light" role="search">
       <span aria-hidden="true" style="color:var(--muted);display:flex">${ICON.search}</span>
@@ -3916,8 +3916,8 @@ async function renderLibrary(query) {
     return `<div class="card libcard">
           <div class="cover" aria-hidden="true" style="background:${subjectColour(b.subject, b.title)}1F">${subjectIcon(b.subject, 30, null, b.title)}</div>
           <div class="stack g6" style="flex:1;min-width:0">
-            ${b.starter ? `<span class="st-badge">${LANG === 'zh' ? '免費入門書 · PrepBuddy 編寫' : 'Free starter book · by PrepBuddy'}</span>` : ''}<b style="font-size:15px;line-height:1.35" data-raw>${esc(b.title)}</b>
-            <span class="muted" style="font-size:13px" data-raw>${esc([subj(b.subject), b.level, b.publisher].filter(Boolean).join(' · '))}</span>
+            ${b.starter ? `<span class="st-badge">${LANG === 'zh' ? '免費入門書 · PrepBuddy 編寫' : 'Free starter book · by PrepBuddy'}</span>` : ''}<b style="font-size:16px;line-height:1.35" data-raw>${esc(b.title)}</b>
+            <span class="muted" style="font-size:14px" data-raw>${esc([subj(b.subject), b.level, b.publisher].filter(Boolean).join(' · '))}</span>
             <span class="muted" style="font-size:12px">${b.units.length} chapter${b.units.length === 1 ? '' : 's'} · ${b.questionCount ? b.questionCount + ' questions ready · ' : ''}code <span style="white-space:nowrap">${esc(b.code)}</span></span>
             ${added
               ? `<button class="btn ghost small" data-open="${esc(b.id)}">${ICON.check} Added · open</button>`
@@ -4074,12 +4074,12 @@ async function renderEdit(bookId, openSplit) {
     </div>`;
   };
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button><span style="font-weight:600;font-size:15px">Edit chapters</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button><span style="font-weight:600;font-size:16px">Edit chapters</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Fix chapter names, merge or split chapters, or hide parts that aren’t for revising (like answers or the index). Your questions and progress are kept.</p>
     ${pages ? '' : `<p class="hint" style="margin:0">${book.library ? 'Library books can be renamed, merged or hidden.' : 'Splitting needs the book uploaded again (books uploaded before today can still be renamed, merged or hidden).'}</p>`}
     <div class="card stack">${book.units.map(row).join('')}</div>
-    ${hidden.length ? `<p style="margin:6px 0 0;font-size:15px;font-weight:600">Hidden (${hidden.length})</p>
+    ${hidden.length ? `<p style="margin:6px 0 0;font-size:16px;font-weight:600">Hidden (${hidden.length})</p>
       <div class="card stack">${hidden.map((u) => `<div class="erow hiddenrow"><span data-raw>${esc(u.title)}</span><span class="muted epages">${u.startPage ? `pp. ${u.startPage}–${u.endPage}` : ''}</span><div class="eacts"><button class="btn-sm" data-show="${esc(u.id)}">Show</button></div></div>`).join('')}</div>` : ''}
   </main>
   <div class="sheet sticky"><button class="btn" id="done">Done</button></div>`;
@@ -4260,7 +4260,7 @@ async function renderBook(bookId) {
     ${learnHTML}
     <h2 class="bk-sec"><span class="bk-sec-ic">${actionIcon('practise', 22)}</span>Practise</h2>
     <div class="chtools">
-      <p style="margin:0;font-size:15px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters to practise <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
+      <p style="margin:0;font-size:16px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters to practise <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
       ${book.units.length > 1 ? `<button class="btn-sm" id="all" >${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
       ${book.units.length > 12 ? `<label class="chsearch"><span aria-hidden="true">${ICON.search}</span><input id="chsearch" type="search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>` : ''}
     </div>
@@ -4273,7 +4273,7 @@ async function renderBook(bookId) {
   <aside class="bk-side">
     ${masteryCard(bm)}
   <div class="sheet sticky setup ${n ? 'armed' : ''} ${pick.opts ? 'expanded' : ''}">
-    <div class="setup-head"><p style="margin:0;font-size:15px;font-weight:600">2. Set up your practice${n ? ` <span class="muted" style="font-weight:500">· ${n} chapter${n > 1 ? 's' : ''} ticked</span>` : ''}</p>${n ? `<button class="btn-sm setup-more" id="opts" aria-expanded="${!!pick.opts}">${pick.opts ? 'Fewer options' : 'More options'}</button>` : ''}</div>
+    <div class="setup-head"><p style="margin:0;font-size:16px;font-weight:600">2. Set up your practice${n ? ` <span class="muted" style="font-weight:500">· ${n} chapter${n > 1 ? 's' : ''} ticked</span>` : ''}</p>${n ? `<button class="btn-sm setup-more" id="opts" aria-expanded="${!!pick.opts}">${pick.opts ? 'Fewer options' : 'More options'}</button>` : ''}</div>
     <div class="setup-row">
       <span id="types-label">Questions</span>
       <div class="seg" role="radiogroup" aria-labelledby="types-label">
@@ -4405,7 +4405,7 @@ async function renderNotes(bookId) {
   if (!book) return go({ name: 'home' });
   const units = await studyUnits(book), myView = view;
   $app.innerHTML = `
-  <div class="topbar noprint"><button class="backbtn" id="back">${ICON.back}<span>${backLabel('Chapters')}</span></button><span style="font-weight:600;font-size:15px;flex:1">Revision notes</span><button class="btn-sm" id="printn">Print</button></div>
+  <div class="topbar noprint"><button class="backbtn" id="back">${ICON.back}<span>${backLabel('Chapters')}</span></button><span style="font-weight:600;font-size:16px;flex:1">Revision notes</span><button class="btn-sm" id="printn">Print</button></div>
   <main class="stack g18 notes" style="flex:1;padding:4px 20px 24px">
     ${units.map((u) => `<section class="ncard" id="n-${esc(u.id)}"><h2 class="ntitle" data-raw>${esc(u.title)}</h2><div class="nwait"><div class="spinner small" aria-hidden="true"></div><span>Writing notes from your textbook…</span></div></section>`).join('')}
     <p class="hint" style="margin:0;line-height:1.5">Written by AI from your textbook. If something looks wrong, check it against the book.</p>
@@ -4494,7 +4494,7 @@ function drawCard() {
 function cardsDone() {
   const missed = C.missed.length;
   $app.innerHTML = `<main class="pad stack g22" style="flex:1">
-    <div class="stack g6"><span class="muted" style="font-size:13px">Flashcards · done</span><span class="score">${C.firstTry.size} / ${C.total}</span><span style="font-size:15px;font-weight:600;color:var(--good)">known first time</span></div>
+    <div class="stack g6"><span class="muted" style="font-size:14px">Flashcards · done</span><span class="score">${C.firstTry.size} / ${C.total}</span><span style="font-size:16px;font-weight:600;color:var(--good)">known first time</span></div>
     ${missed ? `<p style="margin:0;line-height:1.5;color:var(--text-2)">${missed} card${missed > 1 ? 's' : ''} needed another go. Going through them again helps them stick.</p>` : '<p style="margin:0;line-height:1.5;color:var(--text-2)">You knew every card first time.</p>'}
     <div class="stack g10">
       ${missed ? `<button class="btn" id="redo">Go through the ${missed} I missed</button>` : ''}
@@ -4883,7 +4883,7 @@ function renderUsage() {
   const rows = steps.map(([k, name]) => { const r = u[k] || {}; return `<tr><th scope="row">${name}</th><td>${fmt(r.calls)}</td><td>${fmt(r.input)}</td><td>${fmt(r.cache_write)}</td><td>${fmt(r.cache_read)}</td><td>${fmt(r.output)}</td><td><b>${usd(r.usd)}</b></td></tr>`; }).join('');
   const made = u.made || 0;
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Settings</span></button><span style="font-weight:600;font-size:15px">AI usage on this device</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Settings</span></button><span style="font-weight:600;font-size:16px">AI usage on this device</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p style="margin:0;line-height:1.5;color:var(--text-2)">Tokens used since you last reset. Reading PDFs happens on your device and uses no tokens.</p>
     <div style="overflow-x:auto"><table class="data usage">
@@ -4891,8 +4891,8 @@ function renderUsage() {
       ${rows}
       <tr><th scope="row">Total</th><td>${fmt(tot.calls)}</td><td>${fmt(tot.input)}</td><td>${fmt(tot.cache_write)}</td><td>${fmt(tot.cache_read)}</td><td>${fmt(tot.output)}</td><td><b>${usd(tot.usd)}</b></td></tr>
     </table></div>
-    <p style="margin:0;font-size:15px;line-height:1.5">Estimated cost: <b>${usd(tot.usd)}</b>${made ? (LANG === 'zh' ? ` · 每條題目約 ${usd((tot.usd - ['mark', 'explain', 'notes'].reduce((x, k) => x + ((u[k] || {}).usd || 0), 0)) / made)}` : ` · about ${usd((tot.usd - ['mark', 'explain', 'notes'].reduce((x, k) => x + ((u[k] || {}).usd || 0), 0)) / made)} per question made`) : ''}${(u.mark || {}).requests ? ` · ${usd(u.mark.usd / u.mark.requests)} per answer marked` : ''}</p>
-    <p class="muted" style="margin:0;font-size:13px;line-height:1.5">Questions that passed checking: <b>${fmt(made)}</b>${made ? `<br>${LANG === 'zh' ? `每條題目：輸入 ${fmt(Math.round((tot.input + tot.cache_write) / made))} · 快取讀取 ${fmt(Math.round(tot.cache_read / made))} · 輸出 ${fmt(Math.round(tot.output / made))}` : `Per question: ${fmt(Math.round((tot.input + tot.cache_write) / made))} input · ${fmt(Math.round(tot.cache_read / made))} cache read · ${fmt(Math.round(tot.output / made))} output`}` : ''}.<br>
+    <p style="margin:0;font-size:16px;line-height:1.5">Estimated cost: <b>${usd(tot.usd)}</b>${made ? (LANG === 'zh' ? ` · 每條題目約 ${usd((tot.usd - ['mark', 'explain', 'notes'].reduce((x, k) => x + ((u[k] || {}).usd || 0), 0)) / made)}` : ` · about ${usd((tot.usd - ['mark', 'explain', 'notes'].reduce((x, k) => x + ((u[k] || {}).usd || 0), 0)) / made)} per question made`) : ''}${(u.mark || {}).requests ? ` · ${usd(u.mark.usd / u.mark.requests)} per answer marked` : ''}</p>
+    <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Questions that passed checking: <b>${fmt(made)}</b>${made ? `<br>${LANG === 'zh' ? `每條題目：輸入 ${fmt(Math.round((tot.input + tot.cache_write) / made))} · 快取讀取 ${fmt(Math.round(tot.cache_read / made))} · 輸出 ${fmt(Math.round(tot.output / made))}` : `Per question: ${fmt(Math.round((tot.input + tot.cache_write) / made))} input · ${fmt(Math.round(tot.cache_read / made))} cache read · ${fmt(Math.round(tot.output / made))} output`}` : ''}.<br>
     <span>Costs are estimates from Claude's published prices; your bill on console.anthropic.com is the exact figure. Older entries made before this update have no cost recorded.</span></p>
     <button class="btn ghost" id="reset">Reset the counter</button>
   </main>`;
@@ -4910,7 +4910,7 @@ async function confirmRemove(book) {
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Back</span></button></div>
   <main class="pad stack g18" style="flex:1;padding-top:4px">
-    <h1 class="display" style="margin:0;font-size:24px;line-height:1.25">Remove this textbook?</h1>
+    <h1 class="display" style="margin:0;font-size:22px;line-height:1.25">Remove this textbook?</h1>
     <p style="margin:0;font-size:16px;line-height:1.5;font-weight:600" data-raw>${esc(book.title)}</p>
     <div class="card stack g8" style="padding:14px 16px;border-color:#F3C9B1;background:#FFF8F3">
       <b style="color:var(--miss-dark)">This deletes from this device:</b>
@@ -4978,14 +4978,14 @@ async function renderPaper(bookId, from) {
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${from === 'pick' ? 'Mock paper' : from === 'home' ? 'Home' : 'Chapters'}</span></button></div>
   <main class="stack g18" style="flex:1;padding:4px 20px 24px">
-    <div class="pick-head">${actionTile('mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">Mock paper</h1><p class="muted" style="margin:0;line-height:1.5;font-size:15px">${isPrimaryKid() ? 'A school-style test paper' : 'A DSE-style paper'}: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here, or print it as a worksheet and enter your answers afterwards.</p></div></div>
+    <div class="pick-head">${actionTile('mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">Mock paper</h1><p class="muted" style="margin:0;line-height:1.5;font-size:16px">${isPrimaryKid() ? 'A school-style test paper' : 'A DSE-style paper'}: <b>Section A</b> multiple choice, then <b>Section B</b> written questions. Sit it timed here, or print it as a worksheet and enter your answers afterwards.</p></div></div>
     <div class="card stack g6" style="padding:14px 16px">
-      <span class="muted" style="font-size:13px">Chapters</span>
+      <span class="muted" style="font-size:14px">Chapters</span>
       <b style="font-weight:600;line-height:1.4">${units.length === book.units.length ? `All ${book.units.length} chapters` : esc(units.map((u) => u.title).join(' · '))}</b>
       <button class="btn-sm" id="change" style="align-self:flex-start">Change chapters</button>
     </div>
     <div class="stack g10">
-      <span style="font-size:15px;font-weight:600">Length</span>
+      <span style="font-size:16px;font-weight:600">Length</span>
       <div class="chips-row">${PAPER_PRESETS.map(([k, l, pa, pb]) => `<button class="choice ${pa === a && pb === b ? 'on' : ''}" data-preset="${k}"><b>${l}</b><span>${pa} MCQ · ${pb} written · ${paperMinutes(pa, pb)} min</span></button>`).join('')}</div>
     </div>
     <div class="card stack g14" style="padding:14px 16px">
@@ -4993,7 +4993,7 @@ async function renderPaper(bookId, from) {
       <div class="setup-row"><span>Section B · Written</span><div class="stepper"><button data-step="b:-1" aria-label="Fewer written questions" ${b <= 0 ? 'disabled' : ''}>−</button><output>${b}</output><button data-step="b:1" aria-label="More written questions" ${b >= 10 ? 'disabled' : ''}>+</button></div></div>
       <div class="setup-row"><span>Time allowed</span><div class="stepper"><button data-time="-5" aria-label="Less time" ${!mins || mins <= 5 ? 'disabled' : ''}>−</button><output>${mins ? mins + ' min' : 'No limit'}</output><button data-time="5" aria-label="More time" ${!mins || mins >= 180 ? 'disabled' : ''}>+</button></div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><label class="tm-none"><input type="checkbox" id="notime" ${mins ? '' : 'checked'}> No time limit</label>
-      <span class="muted" style="font-size:13px">${mins && mins !== suggested ? `Suggested: ${suggested} min · <button class="linkbtn" id="tsug">use it</button>` : mins ? 'Suggested time, at about exam pace' : ''}</span></div>
+      <span class="muted" style="font-size:14px">${mins && mins !== suggested ? `Suggested: ${suggested} min · <button class="linkbtn" id="tsug">use it</button>` : mins ? 'Suggested time, at about exam pace' : ''}</span></div>
     </div>
   </main>
   <div class="sheet sticky">
@@ -5148,9 +5148,9 @@ async function renderPrint(book, units, paper, mins, existing) {
   const draw = () => {
     const who = (local.name || '').trim();
     $app.innerHTML = `
-  <div class="noprint topbar"><button class="backbtn" id="back">${ICON.back}<span>Back</span></button><span style="font-weight:600;font-size:15px">Worksheet ${ws.code}</span></div>
+  <div class="noprint topbar"><button class="backbtn" id="back">${ICON.back}<span>Back</span></button><span style="font-weight:600;font-size:16px">Worksheet ${ws.code}</span></div>
   <div class="noprint stack g10" style="padding:0 20px 16px">
-    <label for="wsname" style="font-size:13px;font-weight:600;color:var(--muted)">Name on every page</label>
+    <label for="wsname" style="font-size:14px;font-weight:600;color:var(--muted)">Name on every page</label>
     <input id="wsname" class="input" autocomplete="given-name" placeholder="e.g. Ka Yan" value="${esc(who)}">
     <button class="btn" id="doprint" ${who ? '' : 'disabled'}>Print or save as PDF</button>
     <span class="hint">${who ? 'There is no answer key on the paper. When you finish, open PrepBuddy, tap <b>Mark a printed worksheet</b> and enter your answers to get them marked.' : 'Add your name first. It is printed on every page.'}</span>
@@ -5185,10 +5185,10 @@ async function renderWorksheets() {
   for (const c of local.worksheets || []) { const ws = await store.get('ws:' + c, null); if (ws && books.some((b) => b.id === ws.bookId)) list.push(ws); }
   const when = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button><span style="font-weight:600;font-size:15px">Printed worksheets</span></div>
+  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button><span style="font-weight:600;font-size:16px">Printed worksheets</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
     <p class="muted" style="margin:0;font-size:14px;line-height:1.5">Pick the worksheet you did. Check the code at the bottom of the page. Enter what you wrote on paper, and PrepBuddy marks it.</p>
-    ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:13px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:13px"><span data-raw>${esc((b.subject ? subj(b.subject) : b.title))}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
+    ${list.length ? `<div class="card stack">${list.map((ws) => { const b = books.find((x) => x.id === ws.bookId); return `<div class="row wsrow"><div class="top"><span><b style="font-weight:600">${ws.code}</b> <span class="muted" style="font-size:14px">· ${when(ws.at)}</span><br><span class="muted" style="font-size:14px"><span data-raw>${esc((b.subject ? subj(b.subject) : b.title))}</span> · ${ws.A.length + ws.B.length} questions${ws.score ? ` · Marked: ${ws.score}` : ''}</span></span></div>
       <div style="display:flex;gap:14px;margin-top:8px"><button class="btn-sm" data-ws="${ws.code}">${ws.score ? 'Mark again' : 'Enter answers'}</button><button class="btn-sm quiet" data-reprint="${ws.code}">Print again</button></div></div>`; }).join('')}</div>`
       : '<div class="card" style="padding:18px 16px"><p style="margin:0;line-height:1.5;color:var(--text-2)">No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.</p></div>'}
   </main>`;
@@ -5457,12 +5457,12 @@ function renderPlans(hi) {
 // Settings: the plan card with today's and this week's allowance.
 function planCardHTML() {
   // pilot families: everything is free, so no plans or prices (they're shown with ?dev=1 for testing)
-  if (local.pilot && !DEV) return `<section class="card stack g6 plancard" style="padding:16px"><b style="font-size:15px">${PL('Free during the pilot', '試用期間免費')}</b><span class="muted" style="font-size:13.5px;line-height:1.5">${PL('Everything is included while you help us test PrepBuddy. Thank you!', '在你幫我們試用 PrepBuddy 期間，所有功能都可以免費使用。謝謝你！')}</span></section>`;
+  if (local.pilot && !DEV) return `<section class="card stack g6 plancard" style="padding:16px"><b style="font-size:16px">${PL('Free during the pilot', '試用期間免費')}</b><span class="muted" style="font-size:14px;line-height:1.5">${PL('Everything is included while you help us test PrepBuddy. Thank you!', '在你幫我們試用 PrepBuddy 期間，所有功能都可以免費使用。謝謝你！')}</span></section>`;
   const P = curPlan(), id = planId();
   const meters = ['q', 'written', 'buddy', 'lesson', 'homework', 'writing', 'speaking', 'mock'].filter((f) => limitOf(f) !== UNL && limitOf(f) > 0).map((f) => { const lim = limitOf(f), u = Math.min(lim, usedOf(f)); return `<div class="pm"><span>${PL(FEAT[f].en[0], FEAT[f].zh[0])}</span><span class="pm-bar"><i style="width:${(u / lim) * 100}%" class="${u >= lim ? 'full' : ''}"></i></span><b>${u}/${lim}</b><small>${FEAT[f].per === 'day' ? PL('today', '今日') : PL('this week', '本週')}</small></div>`; }).join('');
   return `<section class="card stack g10 plancard" style="padding:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:15px">${PL('Your plan', '你的計劃')}: <span class="plan-pill ${id}">${PL(P.name, P.zh)}</span></b><button class="btn-sm ${id === 'pro' ? '' : 'primary'}" id="splans">${id === 'pro' ? PL('See plans', '查看計劃') : PL('Upgrade', '升級')}</button></div>
-    ${meters ? `<div class="pms">${meters}</div>` : `<span class="muted" style="font-size:13.5px">${PL('Everything unlimited.', '全部無限使用。')}</span>`}
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">${PL('Your plan', '你的計劃')}: <span class="plan-pill ${id}">${PL(P.name, P.zh)}</span></b><button class="btn-sm ${id === 'pro' ? '' : 'primary'}" id="splans">${id === 'pro' ? PL('See plans', '查看計劃') : PL('Upgrade', '升級')}</button></div>
+    ${meters ? `<div class="pms">${meters}</div>` : `<span class="muted" style="font-size:14px">${PL('Everything unlimited.', '全部無限使用。')}</span>`}
     ${local.planLock || !DEV ? '' : `<div class="pv"><span class="muted">${PL('Testing: preview a plan on this device', '測試中：在這部裝置預覽計劃')}</span><div class="seg">${PLAN_ORDER.map((p) => `<button class="${p === id ? 'on' : ''}" data-pv="${p}">${PL(TIERS[p].name, TIERS[p].zh)}</button>`).join('')}</div></div>`}
   </section>`;
 }
@@ -5536,7 +5536,7 @@ async function renderParent() {
   $app.innerHTML = `
   ${backTop({name:'progress'}, 'Progress')}
   <main class="pad stack g14 parentpage" data-view="parent" data-raw style="flex:1">
-    <div class="pd-top"><span class="muted" style="font-size:13.5px">${PD('Updates as your child practises', '孩子練習時會即時更新')}</span>
+    <div class="pd-top"><span class="muted" style="font-size:14px">${PD('Updates as your child practises', '孩子練習時會即時更新')}</span>
       <div class="pd-acts"><button class="btn-sm" id="pdReport">${pIcon('send', 16)} ${PD('Send as weekly report', '傳送每週報告')}</button><button class="btn-sm quiet" id="pdLock">🔒 ${PD('Lock', '鎖上')}</button></div></div>
     <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: marksCard() + feedCard })}</div>
     <p class="hint" style="margin:0;text-align:center">${PD('Same as the weekly report, kept up to date. With PrepBuddy accounts (coming soon) it will open on your own phone.', '與每週報告相同，但會即時更新。推出 PrepBuddy 帳戶後，可在你自己的手機查看。')}</p>
@@ -5633,7 +5633,7 @@ async function schoolTestsHTML() {
       <span class="stx-r"><b>${p.ready}%</b><small>${SCH('ready', '準備度')}</small></span></button></div>`).join('');
   return { steps, html: `<section class="stack g10" aria-label="${SCH('School tests', '學校測驗')}">
       <div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>
-      ${past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><button class="btn-sm primary stx-snap" data-snapscore="${esc(x.id)}">📷 ${SCH('Snap the marked paper', '拍下已批改的試卷')}</button><span class="stx-sc"><span class="muted" style="font-size:13px">${SCH('or type it:', '或輸入：')}</span><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('')}
+      ${past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><button class="btn-sm primary stx-snap" data-snapscore="${esc(x.id)}">${SCH('Snap the marked paper', '拍下已批改的試卷')}</button><span class="stx-sc"><span class="muted" style="font-size:14px">${SCH('or type it:', '或輸入：')}</span><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('')}
       ${rows ? `<div class="card stx-list">${rows}</div>` : `<button class="weekstrip" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s plan will count down to it, day by day.', '加入後，今日計劃會每天幫你倒數準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button>`}
     </section>` };
 }
@@ -5694,7 +5694,7 @@ function renderPlacementResult() {
   const weak = rows.filter((r) => r.st[0] === 'weak');
   const first = (weak[0] || rows.slice().sort((x, y) => x.a - y.a)[0] || {}).u;
   $app.innerHTML = `
-  <div class="topbar"><span style="font-weight:600;font-size:15px;padding-left:4px">${LV('Level check', '程度評估')}</span></div>
+  <div class="topbar"><span style="font-weight:600;font-size:16px;padding-left:4px">${LV('Level check', '程度評估')}</span></div>
   <main class="pad stack g18 plres" data-view="placement" style="flex:1">
     <section class="pl-hero">${buddySVG('done', 72)}<div><h1>${LV('Here’s your starting point', '這是你的起點')}</h1>
       <p>${LV(`You got ${g} of ${m}. From now on, each chapter’s questions start at the right level for you.`, `你答對了 ${g}／${m} 題。之後每一章的題目都會由適合你的程度開始。`)}</p></div></section>
@@ -5972,7 +5972,7 @@ async function renderPick(mode) {
   const ready = (id) => !weakMode || (inBook(id).length >= 4 && triedIn(id) >= 3);
   const row = (id, title, sub, ok, subject, name) => `<button class="row pickrow" ${ok ? `data-pick="${esc(id)}"` : 'disabled aria-disabled="true"'}>
       <div class="top"><span style="display:flex;gap:12px;align-items:center;min-width:0">${id ? subjectTile(subject, 40, name) : `<span class="stile" style="width:40px;height:40px;background:#EEF1FB">${menuIcon('books', true, 24)}</span>`}
-        <span style="min-width:0"><b style="font-weight:600" ${id ? 'data-raw' : ''}>${esc(title)}</b><br><span class="muted" style="font-size:13px">${sub}</span></span></span>
+        <span style="min-width:0"><b style="font-weight:600" ${id ? 'data-raw' : ''}>${esc(title)}</b><br><span class="muted" style="font-size:14px">${sub}</span></span></span>
       ${ok ? `<span class="go-arrow" aria-hidden="true">›</span>` : ''}</div></button>`;
   const rows = books.map((b) => {
     if (!weakMode) return row(b.id, b.title, `${b.units.length} chapter${b.units.length === 1 ? '' : 's'}`, true, b.subject, b.title);
@@ -5991,10 +5991,10 @@ async function renderPick(mode) {
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button></div>
   <main class="pad stack g18 pickpage" style="flex:1">
-    <div class="pick-head">${actionTile(weakMode ? 'weak' : 'mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${title}</h1><p class="muted" style="margin:0;line-height:1.5;font-size:15px">${intro}</p></div></div>
+    <div class="pick-head">${actionTile(weakMode ? 'weak' : 'mock', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${title}</h1><p class="muted" style="margin:0;line-height:1.5;font-size:16px">${intro}</p></div></div>
     ${anyReady ? `<div class="card stack">${rows.join('')}</div>` : `<div class="card pick-empty">
       ${buddySVG('think', 84)}
-      <div class="stack g6"><b style="font-size:17px">No weak topics yet</b><span class="muted" style="line-height:1.5">As you practise, the questions you find hard collect here so you can come back and fix them.</span></div>
+      <div class="stack g6"><b style="font-size:18px">No weak topics yet</b><span class="muted" style="line-height:1.5">As you practise, the questions you find hard collect here so you can come back and fix them.</span></div>
       <button class="btn" id="practise" style="width:auto;padding:12px 22px">Practise a chapter</button></div>`}
   </main>`;
   document.getElementById('back').onclick = () => goBack({ name: 'home' });
@@ -6377,10 +6377,10 @@ function renderWaiting() {
 function renderAccess(onOk, msg) {
   $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Back</span></button></div>
   <main class="pad stack g14" style="flex:1">
-    <h1 class="display" style="margin:0;font-size:24px">Enter your access code</h1>
+    <h1 class="display" style="margin:0;font-size:22px">Enter your access code</h1>
     <p style="margin:0;line-height:1.5;color:var(--text-2)">PrepBuddy is in testing. You need a code to make new questions. Ask the person who invited you.</p>
     ${msg ? `<p style="margin:0;color:var(--miss-dark);font-weight:600">${esc(msg)}</p>` : ''}
-    <label for="code" style="font-size:13px;font-weight:600;color:var(--muted)">Access code</label>
+    <label for="code" style="font-size:14px;font-weight:600;color:var(--muted)">Access code</label>
     <input id="code" class="input" autocomplete="off" autocapitalize="off" spellcheck="false" value="">
     <button class="btn" id="ok">Continue</button>
   </main>`;
@@ -6545,7 +6545,7 @@ function renderQuestion() {
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
-    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
+    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">Level ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '唔明？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
