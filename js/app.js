@@ -2359,18 +2359,19 @@ async function renderHome() {
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></div>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
-  let testHTML = `<button class="linkbtn td-addtest" id="addTest3">+ ${Z('Add a school test', '加入學校測驗')}</button>`;
+  const testHead = `<div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>`;
+  let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s mission will get you ready, day by day.', '加入後，今日任務會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
   if (nt) {
     const m = await bookMastery(nt.book), chs = m.chapters.filter((c) => nt.x.u.includes(c.unit.id));
     const lab = (c) => (!c.done ? [Z('Not started', '未開始'), 'none'] : c.pct >= 75 ? [Z('Ready', '準備好'), 'ok'] : c.pct >= 40 ? [Z('Getting there', '漸入佳境'), 'mid'] : [Z('Needs work', '要加強'), 'low']);
     const day = new Date(testDay(nt.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
     const more = tests.steps.length - 1;
-    testHTML = `<section class="td-test" aria-label="${Z('Next school test', '下一個學校測驗')}">
+    testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<div class="td-test">
       <button class="td-top" data-tedit="${esc(nt.x.id)}"><span class="td-cal">${actionIcon('test', 22)}</span><span class="td-tt"><b data-raw>${esc(nt.x.name)} · ${esc(day)}</b><small class="${nt.left <= 2 ? 'soon' : ''}">${leftText(nt.left)}</small></span><span class="td-pct"><b>${nt.ready}%</b><small>${Z('ready', '準備度')}</small></span></button>
       <div class="td-chl">${chs.slice(0, 5).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > 5 ? `<small class="muted">${Z(`+ ${chs.length - 5} more chapters`, `另有 ${chs.length - 5} 章`)}</small>` : ''}</div>
       ${more ? `<div class="td-more">${tests.steps.slice(1).map((q) => `<button class="td-mrow" data-tedit="${esc(q.x.id)}"><span data-raw>${esc(q.x.name)}</span><small>${leftText(q.left)}</small><b>${q.ready}%</b></button>`).join('')}</div>` : ''}
-      <div class="td-foot"><span>${M.steps.some((x) => x.key === `t:${nt.x.id}`) ? (allDone ? Z('Today’s practice counted towards it.', '今天的練習已計入。') : Z('Today’s mission includes it.', '今日任務已包括這個測驗。')) : ''}</span><button class="linkbtn" id="addTest3">+ ${Z('Add a test', '加入測驗')}</button></div>
-    </section>`;
+      ${M.steps.some((x) => x.key === `t:${nt.x.id}`) ? `<div class="td-foot"><span>${allDone ? Z('Today’s practice counted towards it.', '今天的練習已計入。') : Z('Today’s mission includes it.', '今日任務已包括這個測驗。')}</span></div>` : ''}
+    </div></section>`;
   }
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
@@ -2400,7 +2401,6 @@ async function renderHome() {
   bindSchoolTests();
   { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('button.ms-row'); if (r) r.click(); }; }
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => go({ name: 'practice' }); }
-  $app.querySelectorAll('#addTest3').forEach((b) => (b.onclick = () => testDialog()));
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
   bindPracticeTiles(); bindGear();
@@ -3376,7 +3376,7 @@ async function startTour(replay) {
     { go: { name: 'cards', bookId: DEMO_ID }, sel: '#flip, .fcard', t: C('Flashcards', '閃卡'), d: C('Quick-fire recall: read the question, think, then flip. Mark what you knew.', '快速記憶：看問題、想一想，再翻轉。記下你懂不懂。') },
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#ctest', skipIfMissing: true, t: C('Chapter tests', '章節測驗') + lt('test'), d: C('Timed tests marked like a school test, with a pass mark of 80%.', '計時測驗，按學校測驗方式批改，合格分數為 80%。') },
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#paper', skipIfMissing: true, t: C('Mock exams', '模擬考試') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
-    { go: 'home', sel: '.td-test, .td-addtest', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates and chapters. The next test shows here with how ready you are for each chapter, and Today’s mission works on it first.', '加入測驗日期和範圍。下一個測驗會在這裏顯示每章的準備度，今日任務也會優先溫習。') },
+    { go: 'home', sel: '.td-sec', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates and chapters. The next test shows here with how ready you are for each chapter, and Today’s mission works on it first.', '加入測驗日期和範圍。下一個測驗會在這裏顯示每章的準備度，今日任務也會優先溫習。') },
     { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to study in one place. You choose a book, then the chapters.', '所有學習方式都在這裏。先選課本，再選章節。') },
     { go: 'practice', sel: 'main[data-view="practice"] .quick', skipIfMissing: true, t: C('Study tools', '學習工具'), d: C('Homework help, lessons, revision notes, flashcards, practice questions, mock exams, weak topics and the Mistake book.', '功課幫手、課堂、溫習筆記、閃卡、練習題、模擬考試、弱項和錯題簿。') },
     { go: 'homework', sel: '.hw-cap, .hw-hero', t: C('Homework help', '功課幫手') + lt('homework'), d: C('Snap a photo of your homework. Buddy reads it and guides you through each question.', '拍下功課，Buddy 會讀取題目，並引導你逐題完成。') },
