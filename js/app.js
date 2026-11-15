@@ -2305,6 +2305,26 @@ async function todayReadyHTML(books) {
     <div class="card td-ready"><div class="tr-week"><span class="tr-wl">${Z('This week', '本週')}</span>${wk.join('')}</div>
     <div class="pg-rings">${rows.slice(0, 6).map(ring).join('')}</div>${rows.length > 6 ? `<p class="hint" style="margin:0">${Z(`+ ${rows.length - 6} more on Progress`, `另有 ${rows.length - 6} 本在「進度」`)}</p>` : ''}</div></section>`;
 }
+// "How does Today's mission work?": a short fold-out on the mission card.
+function missionHowHTML() {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  return `<details class="ms-how"><summary>${Z('How does this work?', '這是怎樣運作的？')}</summary><div>
+    <p>${Z('Each morning Buddy picks up to 3 steps for today, most important first:', '每天早上，Buddy 會按重要程度，為你選最多 3 個步驟：')}</p>
+    <ol>
+      <li><b>${Z('A school test in the next 2 weeks.', '兩星期內的學校測驗。')}</b> ${Z('Learn any chapter you haven’t started, then practise your weakest one, then mix them all. A practice test the day before, and a warm-up on the day.', '先學還未開始的章節，再練最弱的一章，然後混合練習。考試前一天做模擬測驗，當天做熱身。')}</li>
+      <li><b>${Z('Mistakes to fix.', '要改正的錯題。')}</b> ${Z('Questions you didn’t get fully right.', '未完全答對的題目。')}</li>
+      <li><b>${Z('Reviews due.', '到期的溫習。')}</b> ${Z('Questions from before, just as you’re about to forget them.', '以前做過的題目，在你快要忘記時再出現。')}</li>
+      <li><b>${Z('A new book.', '新的課本。')}</b> ${Z('A 5-minute level check, so questions start at the right level.', '5 分鐘程度評估，讓題目由合適的難度開始。')}</li>
+      <li><b>${Z('Keep going.', '繼續學習。')}</b> ${Z('The chapter you were working on.', '你正在學的章節。')}</li>
+    </ol>
+    <p><b>${Z('How it adapts to you', '它如何配合你')}</b></p>
+    <ul>
+      <li>${Z('Get questions right and they get harder; get them wrong and they get easier, chapter by chapter.', '答對了，題目會變難；答錯了，題目會變易，每章分開計算。')}</li>
+      <li>${Z('Your weakest chapter changes as you improve, so tomorrow’s steps follow today’s results.', '你進步後，最弱的章節也會改變，所以明天的步驟會跟隨今天的表現。')}</li>
+      <li>${Z('Things you forget come back sooner; things you remember come back later.', '忘記了的會較快再出現，記得的會遲些才出現。')}</li>
+      <li>${Z('A step ticks itself off when it’s done (for practice, after 3 questions). The list stays the same all day, but adding a school test updates it straight away.', '完成後步驟會自動打剔（練習的話，做完 3 題）。清單全日不變，但加入學校測驗後會即時更新。')}</li>
+    </ul></div></details>`;
+}
 async function renderHome() {
   S = null;
   const books = await getBooks();
@@ -2379,9 +2399,10 @@ async function renderHome() {
     ? `<div class="ms-row done"><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
     : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('NEXT', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
   const missionHTML = allDone
-    ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Mission done!', '任務完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${Z('Do a bit more', '再做多一點')} ›</button></div></section>`
+    ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Mission done!', '任務完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2>${Z('Today’s mission', '今日任務')}</h2><span>${Z(`about ${mins} min`, `約 ${mins} 分鐘`)}</span></div>
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
+      ${missionHowHTML()}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
   const readyHTML = await todayReadyHTML(books);
   // ---- greeting card: streak and this week's days ----
