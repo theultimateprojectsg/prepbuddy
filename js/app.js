@@ -2688,7 +2688,7 @@ function renderSettings(sec) {
     const hasHelp = !!(planCardHTML().trim() || local.pilot);
     $app.innerHTML = `
     <main class="pad stack g18 settings" data-view="settings" style="flex:1">
-      <h1 class="pagetitle" style="margin:0">${PLT('Settings', '設定')}</h1>
+      <div class="greet"><h1 class="pagetitle" style="margin:0">${PLT('Settings', '設定')}</h1><p>${PLT('Set up PrepBuddy for your child and family.', '為孩子和家庭設定 PrepBuddy。')}</p></div>
       <div class="quick">
         ${tile('child', 'child', PLT('Your child', '你的孩子'), esc(sub.child))}
         ${tile('parents', 'parent', PLT('For parents', '家長專區'), sub.parents)}
