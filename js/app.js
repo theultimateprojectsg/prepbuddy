@@ -799,7 +799,7 @@ async function go(v) {
   if (v.name === 'home') return renderHome();
   if (v.name === 'practice') return renderPractice();
   if (v.name === 'books') return renderBooks();
-  if (v.name === 'book') return renderBook(v.bookId);
+  if (v.name === 'book') { bookFocus = v.focus || null; return renderBook(v.bookId); }
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
   if (v.name === 'privacy') return renderPrivacy();
@@ -2397,7 +2397,7 @@ function renderPractice() {
     <div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h1 class="pagetitle" style="margin:0">${Z('Practice', '練習')}</h1><p>${Z('Every way to practise, in one place.', '所有練習方式，都在這裡。')}</p></div>${gearBtn()}</div>
     <section class="stack g10"><div class="sect-head"><h2>${Z('From your textbooks', '按課本練習')}</h2></div><div class="quick">
       <button class="qtile" id="lessongo">${actionTile('learn', 44)}<b>${Z('Lessons', '課堂')}</b><span>${Z('Buddy teaches a chapter step by step', 'Buddy 逐步教你一章')}</span></button>
-      <button class="qtile" id="questionsgo">${actionTile('practise', 44)}<b>${Z('Practice questions', '練習題')}</b><span>${Z('Pick a chapter and practise', '選一章來練習')}</span></button>
+      <button class="qtile" id="questionsgo">${actionTile('practise', 44)}<b>${Z('Practice questions', '練習題')}</b><span>${Z('Pick a book, then chapters', '選課本，再選章節')}</span></button>
       <button class="qtile" id="mkgo">${actionTile('mistakes', 44)}<b>${Z('Mistake book', '錯題簿')}</b><span>${mistakeCount() ? Z(`${mistakeCount()} to get right`, `${mistakeCount()} 題要改正`) : Z('Nothing to fix right now', '暫時沒有錯題')}</span>${mistakeCount() ? `<span class="qt-badge">${mistakeCount() > 99 ? '99+' : mistakeCount()}</span>` : ''}</button>
       ${pick(['weak', 'mock', 'ssago'])}</div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
@@ -2406,43 +2406,28 @@ function renderPractice() {
     <section class="stack g10"><div class="sect-head"><h2>${Z('Homework', '功課')}</h2></div><div class="quick">${pick(['hwgo'])}</div></section>
   </main>${footerHTML()}`;
   bindPracticeTiles(); bindGear();
-  document.getElementById('lessongo').onclick = () => go({ name: 'chapters', mode: 'learn' });
-  document.getElementById('questionsgo').onclick = () => go({ name: 'chapters', mode: 'practise' });
+  // one book: straight to its page; several: ask which book first
+  const toBook = async (mode) => { const bs = await getBooks(); if (bs.length === 1) go({ name: 'book', bookId: bs[0].id, focus: mode === 'learn' ? 'learn' : 'practise' }); else go({ name: 'chapters', mode }); };
+  document.getElementById('lessongo').onclick = () => toBook('learn');
+  document.getElementById('questionsgo').onclick = () => toBook('practise');
   document.getElementById('mkgo').onclick = () => go({ name: 'mistakes' });
   window.scrollTo(0, 0);
 }
-// Practice → Lessons / Practice questions: pick a book (remembered), then a chapter. One big button per row.
-async function renderChapters(mode, showAll) {
-  const Z = (en, zh) => (LANG === 'zh' ? zh : en), learnMode = mode === 'learn';
+// Practice → Lessons / Practice questions: which book? Then that book's page opens at its lessons or its chapter list.
+async function renderChapters(mode) {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), learnMode = mode === 'learn', focus = learnMode ? 'learn' : 'practise';
   const books = await getBooks();
-  const head = `${backTop({ name: 'practice' }, 'Practice')}<main class="pad stack g14" data-view="chapters" style="flex:1">
-    <div class="pick-head">${actionTile(learnMode ? 'learn' : 'practise', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${learnMode ? Z('Lessons', '課堂') : Z('Practice questions', '練習題')}</h1><p class="muted" style="margin:0;line-height:1.5">${learnMode ? Z('New to a chapter? Buddy teaches it step by step, with quick checks.', '新的一章？Buddy 會逐步教你，每步都有小測。') : Z('Questions from your textbook, marked as you go.', '來自課本的題目，即時批改。')}</p></div></div>`;
-  if (!books.length) { $app.innerHTML = `${head}<button class="weekstrip" id="pcadd"><span class="wt"><b>${Z('Add a textbook', '加入課本')}</b><span>${Z('Then pick a chapter here', '之後便可在這裏選章節')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button></main>`; document.getElementById('pcadd').onclick = () => go({ name: 'library' }); return; }
-  const bk = books.find((b) => b.id === local.pracBook) || books[0];
-  const m = await bookMastery(bk);
-  if (!view || view.name !== 'chapters') return; // left while loading
-  const learned = local.learned || {};
-  const list = m.chapters.filter((c) => !NOT_TEACHING.test(c.unit.title || ''));
-  const isNext = (c) => (learnMode ? !learned[`${bk.id}:${c.unit.id}`] : c.pct < 50);
-  let start = list.findIndex(isNext); if (start < 0) start = 0;
-  const shown = showAll ? list : list.slice(start, start + 6);
-  const st = (c) => (learnMode ? (learned[`${bk.id}:${c.unit.id}`] ? Z('Lesson done', '已上課') : Z('Not learned yet', '未上課'))
-    : c.pct > 0 ? `<span style="color:${c.pct < 60 ? 'var(--warn)' : c.pct < 80 ? 'var(--accent)' : 'var(--good)'};font-weight:600">${c.pct}% ${Z('mastered', '已掌握')}</span> · ${trStep(masteryLabel(c.pct))}` : Z('Not started', '未開始'));
-  $app.innerHTML = `${head}
-    ${books.length > 1 ? `<div class="pc-books" role="tablist">${books.map((b) => `<button class="chip${b.id === bk.id ? ' on' : ''}" role="tab" aria-selected="${b.id === bk.id}" data-pcbook="${esc(b.id)}"><span data-raw>${esc(subjectName(b.subject, LANG) || b.title)}</span></button>`).join('')}</div>` : ''}
-    <p class="pc-title muted" data-raw>${esc(bk.title)}</p>
-    <div class="pc-list">${shown.map((c) => `<button class="pc-row big${!showAll && c === list[start] ? ' next' : ''}" data-unit="${esc(c.unit.id)}">
-      <span class="pc-t">${!showAll && c === list[start] ? `<span class="lc-up">${Z('Up next', '下一章')}</span>` : ''}<b data-raw title="${esc(cleanUnitTitle(c.unit.title))}">${esc(shortTitle(c.unit.title))}</b><small>${st(c)}</small></span>
-      <span class="pc-go">${learnMode ? Z('Learn', '學習') : Z('Practise', '練習')} ›</span></button>`).join('')}</div>
-    ${list.length > shown.length || showAll ? `<button class="linkbtn pc-more" id="pcall">${showAll ? Z('Show fewer', '顯示較少') : Z(`Show all ${list.length} chapters`, `顯示全部 ${list.length} 章`)}</button>` : ''}
+  if (books.length === 1) return go({ name: 'book', bookId: books[0].id, focus });
+  if (!view || view.name !== 'chapters') return;
+  $app.innerHTML = `${backTop({ name: 'practice' }, 'Practice')}<main class="pad stack g14" data-view="chapters" style="flex:1">
+    <div class="pick-head">${actionTile(learnMode ? 'learn' : 'practise', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${learnMode ? Z('Lessons', '課堂') : Z('Practice questions', '練習題')}</h1><p class="muted" style="margin:0;line-height:1.5">${Z('Which book?', '選哪一本課本？')}</p></div></div>
+    ${books.length ? `<div class="pc-list">${(await Promise.all(books.map(async (b) => { let pct = 0; try { pct = (await bookMastery(b)).pct; } catch (e) {} return `<button class="pc-row big" data-bk="${esc(b.id)}">
+      ${subjectTile(b.subject, 44, b.title)}<span class="pc-t"><b data-raw>${esc(b.subject ? subj(b.subject) : shortTitle(b.title))}</b><small data-raw>${esc(b.title)}${pct ? ` · ${pct}% ${Z('mastered', '已掌握')}` : ''}</small></span>
+      <span class="pc-chev" aria-hidden="true">›</span></button>`; }))).join('')}</div>`
+    : `<button class="weekstrip" id="pcadd"><span class="wt"><b>${Z('Add a textbook', '加入課本')}</b><span>${Z('Then pick it here', '之後便可在這裏選擇')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>`}
   </main>`;
-  $app.querySelectorAll('[data-pcbook]').forEach((b) => (b.onclick = () => { local.pracBook = b.dataset.pcbook; saveLocal(); renderChapters(mode, showAll); }));
-  $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => {
-    const u = bk.units.find((x) => x.id === b.dataset.unit); if (!u) return;
-    if (learnMode) { backTo = { name: 'chapters', mode: 'learn' }; go({ name: 'learn', bookId: bk.id, unitId: u.id }); }
-    else startUnits(bk, [u], local.count || sessionSize());
-  }));
-  const more = document.getElementById('pcall'); if (more) more.onclick = () => renderChapters(mode, !showAll);
+  $app.querySelectorAll('[data-bk]').forEach((b) => (b.onclick = () => { local.pracBook = b.dataset.bk; saveLocal(); go({ name: 'book', bookId: b.dataset.bk, focus }); }));
+  { const a = document.getElementById('pcadd'); if (a) a.onclick = () => go({ name: 'library' }); }
   window.scrollTo(0, 0);
 }
 function bindGear() {} // the gear is handled for every screen by the click listener below
@@ -4155,6 +4140,8 @@ async function renderEdit(bookId, openSplit) {
 /* ---------- book: chapter list ---------- */
 let pick = { bookId: null, ids: new Set() }; // chapters ticked on the book screen
 
+// Opened from Practice → Lessons / Practice questions: scroll straight to that part of the book page (once).
+let bookFocus = null;
 async function renderBook(bookId) {
   backTo = null;
   const book = (await getBooks()).find((b) => b.id === bookId);
@@ -4270,7 +4257,7 @@ async function renderBook(bookId) {
     <div class="bk-head-d">${head}</div>
     ${plHTML}
     ${learnHTML}
-    <h2 class="bk-sec"><span class="bk-sec-ic">${actionIcon('practise', 22)}</span>Practise</h2>
+    <h2 class="bk-sec" id="bk-practise"><span class="bk-sec-ic">${actionIcon('practise', 22)}</span>Practise</h2>
     <div class="chtools">
       <p style="margin:0;font-size:16px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters to practise <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
       ${book.units.length > 1 ? `<button class="btn-sm" id="all" >${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
@@ -4365,6 +4352,10 @@ async function renderBook(bookId) {
   { const lp = document.getElementById('learnpick'); if (lp) lp.onchange = () => { if (lp.value) go({ name: 'learn', bookId, unitId: lp.value }); }; }
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
   window.scrollTo(0, 0);
+  if (bookFocus) {
+    const el = $app.querySelector(bookFocus === 'learn' ? 'section.learn-card' : '#bk-practise'); bookFocus = null;
+    if (el) requestAnimationFrame(() => window.scrollTo(0, Math.max(0, el.getBoundingClientRect().top + window.scrollY - 76)));
+  }
 }
 
 // As soon as chapters are ticked, the first batch of questions (and the quick-look cards) starts being made,
