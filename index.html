@@ -1545,6 +1545,43 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 }
 .bk-sub{margin-top:2px;font-size:14px;color:var(--muted)}
 .pg-greet{margin-bottom:16px}
+/* ---------- Today (Nov 2026): greeting with streak, next school test, today's mission ---------- */
+.gr-row{display:flex;align-items:center;gap:12px;width:100%}
+.today .gr-hero{flex-direction:column;align-items:stretch}
+.gr-strip{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(30,42,90,.10)}
+.gr-streak{font-size:14px;font-weight:700;color:#8A3A10;white-space:nowrap}
+.gr-week{display:flex;gap:4px}
+.gr-week i{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.85);border:1px solid var(--line);box-sizing:border-box}
+.gr-week i.on{background:var(--accent);border-color:var(--accent);color:#FFFFFF}.gr-week i svg{width:12px;height:12px}
+.gr-week i.today:not(.on){border:2px dashed var(--accent)}
+@media (max-width:359.98px){.gr-week i{width:19px;height:19px;font-size:10px}.gr-week{gap:3px}}
+.td-addtest{align-self:flex-start;font-size:14px;font-weight:600}
+.td-test{display:flex;flex-direction:column;gap:12px;padding:16px;background:#FFFFFF;border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(30,42,90,.06)}
+.td-top{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.td-cal{flex:none;width:44px;height:44px;border-radius:12px;background:#FDF1E7;display:flex;align-items:center;justify-content:center}
+.td-tt{flex:1;min-width:0;display:flex;flex-direction:column}.td-tt b{font-size:16px;font-weight:600}.td-tt small{font-size:14px;font-weight:600;color:var(--warn)}
+.td-pct{flex:none;display:flex;flex-direction:column;align-items:flex-end}.td-pct b{font-size:22px;font-weight:700;line-height:1.1}.td-pct small{font-size:12px;color:var(--muted)}
+.td-chl{display:flex;flex-direction:column;gap:10px}
+.td-chr>div{display:flex;justify-content:space-between;gap:8px;font-size:14px}.td-chr>div span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-chr>div b{flex:none;font-weight:600}.td-chr b.ok{color:#18966A}.td-chr b.mid,.td-chr b.low{color:var(--warn)}.td-chr b.none{color:var(--muted)}
+.td-chr i{display:block;height:6px;border-radius:3px;background:var(--accent-soft);margin-top:4px;overflow:hidden}.td-chr s{display:block;height:6px;border-radius:3px;text-decoration:none}
+.td-chr s.ok{background:#18966A}.td-chr s.mid{background:#E0A43A}.td-chr s.low{background:var(--warn)}.td-chr s.none{background:transparent}
+.td-more{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.td-mrow{display:flex;align-items:center;gap:8px;padding:10px 0;background:none;border:0;border-bottom:1px solid var(--line);font:inherit;font-size:14px;color:var(--ink);text-align:left;cursor:pointer}
+.td-mrow span{flex:1;min-width:0;font-weight:600}.td-mrow small{color:var(--muted)}.td-mrow b{min-width:40px;text-align:right}
+.td-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;color:var(--muted)}.td-foot .linkbtn{font-size:14px;font-weight:600;flex:none}
+.ms-card{display:flex;flex-direction:column;padding:16px;background:#FFFFFF;border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(30,42,90,.06)}
+.ms-head{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:8px}.ms-head h2{margin:0;font-size:20px}.ms-head span{font-size:14px;color:var(--muted)}
+.ms-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;background:none;border:0;border-top:1px solid var(--line);font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.ms-row .pi-icon{flex:none;width:40px;height:40px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center}
+.ms-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ms-t b{font-size:16px;font-weight:600}.ms-t small{font-size:14px;color:var(--muted)}
+.ms-row.done{cursor:default}.ms-row.done .ms-t b{color:var(--muted);text-decoration:line-through}.ms-row.done .pi-icon{opacity:.6}
+.ms-tick{flex:none;width:28px;height:28px;border-radius:50%;background:#18966A;color:#FFFFFF;display:flex;align-items:center;justify-content:center}.ms-tick svg{width:16px;height:16px}
+.ms-next{flex:none;font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:4px 8px}
+.ms-ring{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box}
+.ms-start{margin-top:12px;min-height:52px;font-size:18px}
+.ms-done{flex-direction:row;align-items:center;gap:14px}.ms-dt{flex:1;display:flex;flex-direction:column;gap:2px}.ms-dt b{font-size:18px}.ms-dt span{font-size:14px;color:var(--muted)}.ms-dt .linkbtn{align-self:flex-start;margin-top:6px;font-size:14px;font-weight:600}
+@media (max-width:1023.98px){.today ~ #coach,#coach{display:none!important}}
 </style>
 </head>
 <body>
