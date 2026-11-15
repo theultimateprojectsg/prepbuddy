@@ -748,14 +748,16 @@ document.addEventListener('click', (e) => {
   }
 }, true);
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-goback]'); if (b) { e.preventDefault(); goBack(JSON.parse(b.dataset.goback)); } });
+let navLeaving = false; // go() stepping back in history after the student already confirmed leaving: don't ask again
 window.addEventListener('popstate', (e) => {
+  const leaving = navLeaving; navLeaving = false;
   if (document.querySelector('main.pilotgate')) { try { history.pushState(history.state, '', location.href); } catch (er) {} return; } // the code and consent screens can't be skipped with Back
   const was = navCur;
   const dlg = [...document.querySelectorAll('.cdlg-wrap')].pop();
   if (dlg) { if (was) navSet(was, true); dlg.dispatchEvent(new MouseEvent('click', { bubbles: true })); return; }
   if (helper.open) { if (was) navSet(was, true); helperClose(); return; }
   const q = inSession();
-  if (q && !(e.state && e.state.session)) { if (was) navSet(was, true); q.click(); return; }
+  if (q && !leaving && !(e.state && e.state.session)) { if (was) navSet(was, true); q.click(); return; }
   const st = e.state && e.state.v ? e.state : { v: urlView() || { name: 'home' }, d: navStack.length }; // typed or pasted address: open it
   navCur = st;
   navStack = navStack.slice(0, st.d || 0); navStack[st.d || 0] = st.v;
@@ -763,13 +765,16 @@ window.addEventListener('popstate', (e) => {
   try { go(st.v); } finally { navPopping = false; }
 });
 
+// backTo: 'practice' when a lesson / notes / flashcards was opened from the Practice tab, so Back returns there.
+let backTo = null;
 async function go(v) {
+  if (!['learn', 'notes', 'cards'].includes(v.name)) backTo = null;
   try { if (window.speechSynthesis && VC.state === 'off') speechSynthesis.cancel(); } catch (e) {}
   try { if (ttsEl) { ttsSeq++; ttsEl.onended = null; ttsEl.pause(); } sayPill(null); } catch (e) {}
   if ((v.name === 'paper' || (v.name === 'pick' && v.mode === 'mock')) && !allow('mock')) return; // plan checks before leaving the screen
   { const f = { homework: 'homework', writing: 'writing', speaking: 'speaking', stars: 'stars' }[v.name]; if (f && locked(f) && !TOURING) return upsell(f, 'locked'); }
   // a screen's back button pointing at the screen we came from = a real step back
-  if (!navPopping && navStack.length >= 2 && navKey(navStack[navStack.length - 2]) === navKey(v) && !(history.state && history.state.session)) { try { history.back(); return; } catch (e) {} }
+  if (!navPopping && navStack.length >= 2 && navKey(navStack[navStack.length - 2]) === navKey(v) && !(history.state && history.state.session)) { try { navLeaving = true; history.back(); return; } catch (e) { navLeaving = false; } }
   navPush(v);
   view = v;
   track('screen:' + v.name);
@@ -1953,6 +1958,9 @@ function unitWritingTask(book, unit, task) {
   if (!it) { it = { id: uid(), t: Date.now(), src, kind: WR_KINDS.en_p && (isPrimaryKid() || /^P/i.test(book.level || '')) ? 'en_p' : (Object.keys(WR_KINDS).find((k) => WR_KINDS[k].lang === 'en' && !WR_KINDS[k].primary) || 'en_p'), title: `${cleanUnitTitle(unit.title)} · task`.slice(0, 60), prompt: task, work: '', drafts: [] }; local.wr = [...list, it]; wrSave(); }
   go({ name: 'writing', id: it.id });
 }
+// Where the Back button of a lesson / notes / flashcards goes (backTo is declared above go()).
+const leaveTo = (bookId) => (backTo === 'practice' ? go({ name: 'practice' }) : go({ name: 'book', bookId }));
+const backLabel = (book) => (backTo === 'practice' ? (LANG === 'zh' ? '練習' : 'Practice') : book);
 async function renderLearn(bookId, unitId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   const unit = book && book.units.find((u) => u.id === unitId);
@@ -1961,10 +1969,10 @@ async function renderLearn(bookId, unitId) {
   meter('lesson');
   const myView = view, zh = LANG === 'zh';
   const T = (en, z) => (zh ? z : en);
-  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${T('Chapter', '章節')}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(cleanUnitTitle(unit.title))}</span></div>
+  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel(T('Chapter', '章節'))}</span></button><span style="font-weight:600;font-size:15px" data-raw>${esc(cleanUnitTitle(unit.title))}</span></div>
     <main class="pad stack g18 learnpage" data-view="learn" style="flex:1;align-items:center;justify-content:center;text-align:center">
       ${buddySVG('think', 64)}<b style="font-size:18px">${T('Getting your lesson ready…', '正在準備你的課堂…')}</b><span class="muted">${T('Buddy is reading the chapter and planning how to teach it. This takes about half a minute the first time.', 'Buddy 正在閱讀這一章並準備教學，第一次大約需要半分鐘。')}</span><div class="spinner" aria-hidden="true"></div></main>`;
-  document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+  document.getElementById('back').onclick = () => leaveTo(bookId);
   let L;
   try { L = await getLesson(book, unit); } catch (e) {
     if (view !== myView) return;
@@ -2088,7 +2096,7 @@ async function renderLearn(bookId, unitId) {
     on('prev', () => { R.k--; draw(); });
     on('next', () => { R.k++; if (R.k >= n) finish(); draw(); });
     on('again', () => { R.k = 0; R.picked = {}; R.right = 0; draw(); });
-    on('done', () => go({ name: 'book', bookId }));
+    on('done', () => leaveTo(bookId));
     on('kwdict', () => keyWordsDictation(book, unit, UX.words));
     on('utask', () => unitWritingTask(book, unit, UX.task));
     on('practise', () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], local.count || sessionSize()); });
@@ -2391,11 +2399,14 @@ async function practiceByChapter(showAll) {
     ${books.length > 1 ? `<div class="pc-books" role="tablist">${books.map((b) => `<button class="chip${b.id === bk.id ? ' on' : ''}" role="tab" aria-selected="${b.id === bk.id}" data-pcbook="${esc(b.id)}"><span data-raw>${esc(subjectName(b.subject, LANG) || b.title)}</span></button>`).join('')}</div>` : ''}
     <p class="pc-title muted" data-raw>${esc(bk.title)}</p>
     <div class="pc-list">${shown.map((c) => `<div class="pc-row${!showAll && c === list[start] ? ' next' : ''}">
-      <span class="pc-t">${!showAll && c === list[start] ? `<span class="lc-up">${Z('Up next', '下一章')}</span>` : ''}<b data-raw>${esc(cleanUnitTitle(c.unit.title))}</b><small>${st(c)}</small></span>
+      <span class="pc-t">${!showAll && c === list[start] ? `<span class="lc-up">${Z('Up next', '下一章')}</span>` : ''}<b data-raw>${esc(cleanUnitTitle(c.unit.title))}</b><small>${st(c)}</small><span class="pc-also"><button class="linkbtn" data-pcnotes="${esc(c.unit.id)}">${Z('Notes', '筆記')}</button><button class="linkbtn" data-pccards="${esc(c.unit.id)}">${Z('Flashcards', '閃卡')}</button></span></span>
       <span class="pc-btns"><button class="btn-sm" data-pclearn="${esc(c.unit.id)}">${Z('Learn', '學習')}</button><button class="btn-sm primary" data-pcprac="${esc(c.unit.id)}">${Z('Practise', '練習')}</button></span></div>`).join('')}</div>
     ${list.length > shown.length || showAll ? `<button class="linkbtn pc-more" data-pcall>${showAll ? Z('Show fewer', '顯示較少') : Z(`Show all ${list.length} chapters`, `顯示全部 ${list.length} 章`)}</button>` : ''}`;
   box.querySelectorAll('[data-pcbook]').forEach((b) => (b.onclick = () => { local.pracBook = b.dataset.pcbook; saveLocal(); practiceByChapter(); }));
-  box.querySelectorAll('[data-pclearn]').forEach((b) => (b.onclick = () => go({ name: 'learn', bookId: bk.id, unitId: b.dataset.pclearn })));
+  box.querySelectorAll('[data-pclearn]').forEach((b) => (b.onclick = () => { backTo = 'practice'; go({ name: 'learn', bookId: bk.id, unitId: b.dataset.pclearn }); }));
+  const oneChapter = (id, name) => { backTo = 'practice'; pick = { bookId: bk.id, ids: new Set([id]), open: new Set() }; go({ name, bookId: bk.id }); };
+  box.querySelectorAll('[data-pcnotes]').forEach((b) => (b.onclick = () => oneChapter(b.dataset.pcnotes, 'notes')));
+  box.querySelectorAll('[data-pccards]').forEach((b) => (b.onclick = () => oneChapter(b.dataset.pccards, 'cards')));
   box.querySelectorAll('[data-pcprac]').forEach((b) => (b.onclick = () => { const u = bk.units.find((x) => x.id === b.dataset.pcprac); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
   const more = box.querySelector('[data-pcall]'); if (more) more.onclick = () => practiceByChapter(!showAll);
 }
@@ -2608,6 +2619,11 @@ function renderSettings() {
       <span class="hint" style="margin:0">${PLT(`Family code ${esc(local.code || '')}`, `家庭代碼 ${esc(local.code || '')}`)}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
+      <b style="font-size:15px">${PLT('For parents', '家長專區')}</b>
+      <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('The parent dashboard: this week, school results and upcoming tests, and what needs attention. Needs the parent PIN.', '家長主頁：本週情況、學校成績及考試，以及需要留意的地方。需要家長密碼。')}</span>
+      <button class="btn-sm" id="sparent" style="align-self:flex-start">${PLT('Open the parent dashboard', '打開家長主頁')}</button>
+    </section>
+    <section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">${BK('Back up your progress', '備份你的進度')}</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${BK('Everything is saved on this device only. Save a backup file to keep it safe, or to move to a new phone or computer.', '所有資料只儲存在這部裝置。儲存備份檔案以策安全，或轉用新手機或電腦時使用。')} <b>${local.backupAt ? BK(`Last backup: ${agoWords(local.backupAt)}.`, `上次備份：${agoWords(local.backupAt)}。`) : BK('No backup yet.', '仍未備份。')}</b></span>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm primary" id="sbackup">${BK('Save a backup file', '儲存備份檔案')}</button><label class="btn-sm" style="cursor:pointer">${BK('Restore from a file', '從檔案還原')}<input type="file" id="srestore" accept="application/json,.json" hidden></label></div>
@@ -2634,6 +2650,7 @@ function renderSettings() {
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
   { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); }
+  { const sp = document.getElementById('sparent'); if (sp) sp.onclick = () => openParent(); }
   { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings' }); }; }
   { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings' }); }; }
   { const fb = document.getElementById('sfbgo'); if (fb) fb.onclick = async () => { const t = document.getElementById('sfb'); if (!t.value.trim()) return t.focus(); fb.disabled = true; try { await pilotPost({ step: 'feedback', code: local.code, device: local.device, text: t.value, screen: 'settings', name: local.name || '' }); t.value = ''; toast(PLT('Thank you! We read every message.', '謝謝！每則訊息我們都會細看。')); } catch (e) { toast(PLT('Couldn’t send. Try again in a moment.', '未能傳送，請稍後再試。')); } fb.disabled = false; }; }
@@ -3713,8 +3730,10 @@ const TAB_OF = { practice: 'practice', listening: 'practice', parent: 'progress'
 const timedPaper = () => !!(S && $app.querySelector('#quit') && (S.mode === 'dse' || S.deadline) && !S.review);
 new MutationObserver(() => {
   const m = $app.querySelector('main[data-view]');
+  if (m && backTo === 'practice' && m.dataset.view === 'learn') return renderTabs('practice');
   if (m) return renderTabs(TAB_OF[m.dataset.view] || m.dataset.view);
   if (timedPaper()) return renderTabs(null);
+  if (backTo === 'practice' && view && ['learn', 'notes', 'cards', 'session'].includes(view.name)) return renderTabs('practice');
   renderTabs((view && TAB_OF[view.name]) || 'home');
 }).observe($app, { childList: true });
 
@@ -3999,6 +4018,7 @@ async function renderEdit(bookId, openSplit) {
 let pick = { bookId: null, ids: new Set() }; // chapters ticked on the book screen
 
 async function renderBook(bookId) {
+  backTo = null;
   const book = (await getBooks()).find((b) => b.id === bookId);
   if (!book) return go({ name: 'home' });
   if (pick.bookId !== bookId) pick = { bookId, ids: new Set(book.units.length === 1 ? [book.units[0].id] : []), open: new Set() };
@@ -4259,7 +4279,7 @@ async function renderNotes(bookId) {
   if (!book) return go({ name: 'home' });
   const units = paperUnits(book), myView = view;
   $app.innerHTML = `
-  <div class="topbar noprint"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button><span style="font-weight:600;font-size:15px;flex:1">Revision notes</span><button class="btn-sm" id="printn">Print</button></div>
+  <div class="topbar noprint"><button class="backbtn" id="back">${ICON.back}<span>${backLabel('Chapters')}</span></button><span style="font-weight:600;font-size:15px;flex:1">Revision notes</span><button class="btn-sm" id="printn">Print</button></div>
   <main class="stack g18 notes" style="flex:1;padding:4px 20px 24px">
     ${units.map((u) => `<section class="ncard" id="n-${esc(u.id)}"><h2 class="ntitle" data-raw>${esc(u.title)}</h2><div class="nwait"><div class="spinner small" aria-hidden="true"></div><span>Writing notes from your textbook…</span></div></section>`).join('')}
     <p class="hint" style="margin:0;line-height:1.5">Written by AI from your textbook. If something looks wrong, check it against the book.</p>
@@ -4268,7 +4288,7 @@ async function renderNotes(bookId) {
     <button class="btn" id="tocards">${ICON.cards} Practise with flashcards</button>
     <span class="hint" style="text-align:center">Notes are saved on this device, so they open instantly next time.</span>
   </div>`;
-  document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+  document.getElementById('back').onclick = () => leaveTo(bookId);
   document.getElementById('printn').onclick = () => window.print();
   document.getElementById('tocards').onclick = () => go({ name: 'cards', bookId });
   const fill = (u, fresh) => {
@@ -4295,11 +4315,11 @@ async function renderCards(bookId, only) {
   if (!book) return go({ name: 'home' });
   const units = paperUnits(book), myView = view;
   if (!only) {
-    $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Chapters</span></button></div>
+    $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel('Chapters')}</span></button></div>
     <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
       <div class="spinner" aria-hidden="true"></div><h1 class="display" style="margin:0;font-size:22px">Making your flashcards</h1>
       <p class="muted" id="cw" style="margin:0;line-height:1.5;max-width:320px">Written from your textbook. The first time takes about 20–40 seconds per chapter.</p></main>`;
-    document.getElementById('back').onclick = () => go({ name: 'book', bookId });
+    document.getElementById('back').onclick = () => leaveTo(bookId);
     const res = await Promise.allSettled(units.map((u) => getNotes(book, u).then((n) => n.flashcards.map((c) => ({ ...c, unit: u.title })))));
     if (view !== myView) return;
     const deck = res.filter((r) => r.status === 'fulfilled').flatMap((r) => r.value);
@@ -4343,7 +4363,7 @@ function drawCard() {
   };
   const a = document.getElementById('again'); if (a) a.onclick = () => k(false);
   const n = document.getElementById('know'); if (n) n.onclick = () => k(true);
-  document.getElementById('quit').onclick = async () => { if (await confirmLeave(leaveText('cards'))) go({ name: 'book', bookId: C.bookId }); };
+  document.getElementById('quit').onclick = async () => { if (await confirmLeave(leaveText('cards'))) leaveTo(C.bookId); };
 }
 function cardsDone() {
   const missed = C.missed.length;
@@ -4354,13 +4374,13 @@ function cardsDone() {
       ${missed ? `<button class="btn" id="redo">Go through the ${missed} I missed</button>` : ''}
       <button class="btn ${missed ? 'ghost' : ''}" id="all">Shuffle all and go again</button>
       <button class="btn ghost" id="practise">Practise questions on these chapters</button>
-      <button class="btn ghost" id="back">Back to chapters</button>
+      <button class="btn ghost" id="back">${backTo === 'practice' ? (LANG === 'zh' ? '返回練習' : 'Back to Practice') : 'Back to chapters'}</button>
     </div></main>`;
   const deck = [...C.firstTry, ...C.missed];
   const r = document.getElementById('redo'); if (r) r.onclick = () => { const m = shuffle([...C.missed]); const id = C.bookId; C = null; renderCards(id, m); };
   document.getElementById('all').onclick = () => { const id = C.bookId; renderCards(id, shuffle(deck)); };
   document.getElementById('practise').onclick = async () => { const b = (await getBooks()).find((x) => x.id === C.bookId); startUnits(b, paperUnits(b), local.count || sessionSize()); };
-  document.getElementById('back').onclick = () => go({ name: 'book', bookId: C.bookId });
+  document.getElementById('back').onclick = () => leaveTo(C.bookId);
 }
 
 /* ---------- my progress + report for parents ---------- */
