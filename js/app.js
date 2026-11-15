@@ -2362,14 +2362,42 @@ function renderPractice() {
   $app.innerHTML = `
   <main class="pad stack g18" data-view="practice" style="flex:1">
     <div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h1 class="pagetitle" style="margin:0">${Z('Practice', '練習')}</h1><p>${Z('Every way to practise, in one place.', '所有練習方式，都在這裡。')}</p></div>${gearBtn()}</div>
+    <section class="stack g10" id="pbychap"><div class="sect-head"><h2>${Z('By chapter', '按章節')}</h2></div><div id="pcbody" class="pc-body"><span class="muted">${Z('Loading your chapters…', '載入章節中…')}</span></div></section>
     <section class="stack g10"><div class="sect-head"><h2>${Z('From your textbooks', '按課本練習')}</h2></div><div class="quick">${pick(['weak', 'mock', 'ssago'])}</div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
-      <span class="muted" style="font-size:13.5px">${Z('To practise one chapter, open the book in Books.', '想練習某一章，請到「課本」打開那本書。')}</span></section>
+</section>
     <section class="stack g10"><div class="sect-head"><h2>${Z('Language skills', '語文技能')}</h2></div><div class="quick">${pick(['dictgo', 'wrgo', 'lngo', 'spgo'])}</div></section>
     <section class="stack g10"><div class="sect-head"><h2>${Z('Homework', '功課')}</h2></div><div class="quick">${pick(['hwgo'])}</div></section>
   </main>${footerHTML()}`;
   bindPracticeTiles(); bindGear();
   window.scrollTo(0, 0);
+  practiceByChapter();
+}
+// Practice tab → By chapter: pick a book, then Learn (the lesson) or Practise (questions) any chapter, without going through Books.
+async function practiceByChapter(showAll) {
+  const box = document.getElementById('pcbody'); if (!box) return;
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  const books = await getBooks();
+  if (!books.length) { box.innerHTML = `<button class="weekstrip" data-pcadd><span class="wt"><b>${Z('Add a textbook', '加入課本')}</b><span>${Z('Then learn or practise it chapter by chapter', '之後便可逐章學習或練習')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>`; box.querySelector('[data-pcadd]').onclick = () => go({ name: 'library' }); return; }
+  const bk = books.find((b) => b.id === local.pracBook) || books[0];
+  const m = await bookMastery(bk);
+  if (!document.getElementById('pcbody')) return; // left the page while loading
+  const learned = local.learned || {};
+  const list = m.chapters.filter((c) => !NOT_TEACHING.test(c.unit.title || ''));
+  let start = list.findIndex((c) => c.pct < 50); if (start < 0) start = Math.max(0, list.findIndex((c) => c.pct < 100));
+  const shown = showAll ? list : list.slice(start, start + 5);
+  const st = (c) => (c.pct > 0 ? `<span style="color:${c.pct < 60 ? 'var(--miss)' : c.pct < 80 ? 'var(--accent)' : 'var(--good)'};font-weight:600">${c.pct}%</span> · ${trStep(masteryLabel(c.pct))}` : learned[`${bk.id}:${c.unit.id}`] ? Z('Lesson done · not practised yet', '已上課 · 未練習') : Z('Not started', '未開始'));
+  box.innerHTML = `
+    ${books.length > 1 ? `<div class="pc-books" role="tablist">${books.map((b) => `<button class="chip${b.id === bk.id ? ' on' : ''}" role="tab" aria-selected="${b.id === bk.id}" data-pcbook="${esc(b.id)}"><span data-raw>${esc(subjectName(b.subject, LANG) || b.title)}</span></button>`).join('')}</div>` : ''}
+    <p class="pc-title muted" data-raw>${esc(bk.title)}</p>
+    <div class="pc-list">${shown.map((c) => `<div class="pc-row${!showAll && c === list[start] ? ' next' : ''}">
+      <span class="pc-t">${!showAll && c === list[start] ? `<span class="lc-up">${Z('Up next', '下一章')}</span>` : ''}<b data-raw>${esc(cleanUnitTitle(c.unit.title))}</b><small>${st(c)}</small></span>
+      <span class="pc-btns"><button class="btn-sm" data-pclearn="${esc(c.unit.id)}">${Z('Learn', '學習')}</button><button class="btn-sm primary" data-pcprac="${esc(c.unit.id)}">${Z('Practise', '練習')}</button></span></div>`).join('')}</div>
+    ${list.length > shown.length || showAll ? `<button class="linkbtn pc-more" data-pcall>${showAll ? Z('Show fewer', '顯示較少') : Z(`Show all ${list.length} chapters`, `顯示全部 ${list.length} 章`)}</button>` : ''}`;
+  box.querySelectorAll('[data-pcbook]').forEach((b) => (b.onclick = () => { local.pracBook = b.dataset.pcbook; saveLocal(); practiceByChapter(); }));
+  box.querySelectorAll('[data-pclearn]').forEach((b) => (b.onclick = () => go({ name: 'learn', bookId: bk.id, unitId: b.dataset.pclearn })));
+  box.querySelectorAll('[data-pcprac]').forEach((b) => (b.onclick = () => { const u = bk.units.find((x) => x.id === b.dataset.pcprac); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
+  const more = box.querySelector('[data-pcall]'); if (more) more.onclick = () => practiceByChapter(!showAll);
 }
 function bindGear() {} // the gear is handled for every screen by the click listener below
 document.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('[data-gear]'); if (g) go({ name: 'settings' }); });
