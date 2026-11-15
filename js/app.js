@@ -2441,7 +2441,8 @@ function bindGear() {} // the gear is handled for every screen by the click list
 document.addEventListener('click', (e) => { const g = e.target.closest && e.target.closest('[data-gear]'); if (g) go({ name: 'settings' }); });
 document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('footer #usage')) go({ name: 'usage' }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-privacy]'); if (!b) return; e.preventDefault(); if (document.querySelector('main.pilotgate')) privacyOverlay(); else go({ name: 'privacy' }); }); // Settings, footer and the consent step // the footer's AI usage button, on every screen
-const footerHTML = () => `<footer>${LANG === 'zh' ? '孩子的課本、題目和進度保存在這部裝置。題目由 AI 撰寫及檢查；如發現錯誤，請按「報告問題」。' : 'Your child’s textbooks, questions and progress are saved on this device. Questions are written and checked by AI; tap "Report a problem" if one looks wrong.'} <button class="btn-sm quiet" data-privacy>${LANG === 'zh' ? '私隱聲明' : 'Privacy notice'}</button>${DEV ? '<button class="btn-sm quiet" id="usage" >AI usage</button>' : ''}</footer>`;
+// The privacy / AI note lives in Settings → Privacy (it used to sit under every tab page).
+const footerHTML = () => '';
 /* ---------- children on this device (siblings sharing a tablet) ----------
    Each child gets their own localStorage key and IndexedDB database (see KIDS near the top and store.js).
    Switching child reloads the app, so every screen starts clean with that child's books and progress.
@@ -2662,6 +2663,7 @@ function renderSettings() {
     <section class="card stack g10" style="padding:16px">
       <b style="font-size:16px">${PLT('Privacy', '私隱')}</b>
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('What PrepBuddy collects, where it goes, and how to see, correct or delete it.', 'PrepBuddy 收集甚麼資料、資料去向，以及如何查閱、更正或刪除。')}</span>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('Questions are written and checked by AI. If one looks wrong, tap Report a problem on that question.', '題目由 AI 撰寫及檢查。如發現題目有錯，請在該題按「報告問題」。')}</span>
       <button class="btn-sm" data-privacy style="align-self:flex-start">${PLT('Read the privacy notice', '閱讀私隱聲明')}</button>
     </section>
     ${!DEV ? '' : `<section class="card stack g10" style="padding:16px">
