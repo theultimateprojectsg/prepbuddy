@@ -4921,9 +4921,11 @@ const LINE_COLS = ['#26357A', '#18966A', '#C2620F', '#7A4FC2', '#C2357A', '#0E74
 function readyLinesSVG(rows) {
   rows = rows.filter((x) => x.weeks.filter((v) => v != null).length >= 2).slice(0, 6);
   if (!rows.length) return `<p class="pg-empty">${PT('Practise for two weeks to see how ready you are, week by week.', '練習兩星期後，就會看到每週的準備程度。')}</p>`;
-  const W = 560, H = 190, L = 36, B = 24, x = (k) => L + k * (W - 8 - L) / 5, y = (p) => H - B - (p / 100) * (H - B - 10);
+  // the scale fits the data (0-20%, 0-40%, … 0-100%), so small early numbers still show their climb
+  const top = Math.min(100, Math.max(20, Math.ceil(Math.max(...rows.flatMap((r) => r.weeks.filter((v) => v != null))) * 1.15 / 20) * 20));
+  const W = 560, H = 190, L = 36, B = 24, x = (k) => L + k * (W - 8 - L) / 5, y = (p) => H - B - (p / top) * (H - B - 10);
   const lab = [PT('5 wks ago', '5 週前'), '4', '3', '2', PT('Last wk', '上週'), PT('This wk', '本週')];
-  let g = [0, 25, 50, 75, 100].map((v) => `<line x1="${L}" x2="${W - 8}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#EEF1F6"/><text x="${L - 8}" y="${(y(v) + 4).toFixed(1)}" font-size="11" fill="#5A6380" text-anchor="end">${v}%</text>`).join('');
+  let g = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * top)).map((v) => `<line x1="${L}" x2="${W - 8}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#EEF1F6"/><text x="${L - 8}" y="${(y(v) + 4).toFixed(1)}" font-size="11" fill="#5A6380" text-anchor="end">${v}%</text>`).join('');
   g += lab.map((t, k) => `<text x="${x(k).toFixed(1)}" y="${H - 6}" font-size="11" fill="#5A6380" text-anchor="middle">${t}</text>`).join('');
   rows.forEach((r, i) => { const pts = r.weeks.map((v, k) => (v == null ? null : `${x(k).toFixed(1)},${y(v).toFixed(1)}`)).filter(Boolean); const c = LINE_COLS[i];
     g += `<polyline points="${pts.join(' ')}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
