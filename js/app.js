@@ -3265,7 +3265,7 @@ function coachTour(steps, done) {
       tip.classList.add('out');
       if (x.run || x.go) { hole.style.display = 'none'; dim.style.display = 'block'; }
       if (x.run) await x.run();
-      else if (x.go) { const v = typeof x.go === 'string' ? { name: x.go } : x.go; if (view.name !== v.name || (v.bookId && view.bookId !== v.bookId) || x.fresh) await go(v); }
+      else if (x.go) { const v = typeof x.go === 'string' ? { name: x.go } : x.go; if (view.name !== v.name || (v.bookId && view.bookId !== v.bookId) || (v.sec || '') !== (view.sec || '') || x.fresh) await go(v); }
       el = x.sel ? await waitFor(x.sel, x.skipIfMissing ? 700 : 2500) : null;
       if (!alive || my !== gen) return;
       if (!el && x.skipIfMissing) { k += dir; if (k < 0) k = 0; if (k >= steps.length) return finish('done'); return show(dir); }
@@ -3335,18 +3335,19 @@ async function startTour(replay) {
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#ctest', skipIfMissing: true, t: C('Chapter tests', '章節測驗') + lt('test'), d: C('Timed tests marked like a school test, with a pass mark of 80%.', '計時測驗，按學校測驗方式批改，合格分數為 80%。') },
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#paper', skipIfMissing: true, t: C('Mock exams', '模擬考試') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
     { go: 'home', sel: 'section[aria-label="School tests"]', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates. Today’s plan counts down and focuses on what’s coming up.', '加入測驗日期，今日計劃會倒數，並集中溫習要考的內容。') },
-    { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to practise in one place: weak topics, mock exams, dictation, writing, listening, speaking and homework help.', '所有練習方式都在這裡：弱項、模擬考試、默書、寫作、聆聽、說話和功課幫手。') },
+    { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to study in one place. You choose a book, then the chapters.', '所有學習方式都在這裏。先選課本，再選章節。') },
+    { go: 'practice', sel: 'main[data-view="practice"] .quick', skipIfMissing: true, t: C('Study tools', '學習工具'), d: C('Homework help, lessons, revision notes, flashcards, practice questions, mock exams, weak topics and the Mistake book.', '功課幫手、課堂、溫習筆記、閃卡、練習題、模擬考試、弱項和錯題簿。') },
     { go: 'homework', sel: '.hw-cap, .hw-hero', t: C('Homework help', '功課幫手') + lt('homework'), d: C('Snap a photo of your homework. Buddy reads it and guides you through each question.', '拍下功課，Buddy 會讀取題目，並引導你逐題完成。') },
     { go: 'dictation', sel: '#dnew', skipIfMissing: true, t: C('Dictation', '默書'), d: C('Snap your dictation list. Buddy reads the words aloud, you write them, then check.', '拍下默書範圍，Buddy 讀出詞語，你寫下來，然後核對。') },
     { go: 'writing', sel: '.wr-step', skipIfMissing: true, t: C('Writing', '寫作') + lt('writing'), d: C('Pick a DSE paper, write or snap your essay, and get marked against the real criteria. Then redraft.', '選擇 DSE 試卷，輸入或拍下文章，按真實準則批改，再修改。') },
     { go: 'speaking', sel: '.wr-step', skipIfMissing: true, t: C('Speaking', '說話') + lt('speaking'), d: C('DSE Paper 4 practice: get a topic, speak for a minute, and get feedback on your answer.', 'DSE 卷四練習：取得題目，說一分鐘，然後獲得回饋。') },
-    { go: 'practice', sel: '#mkgo', skipIfMissing: true, t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here by subject and chapter. Get it right a day later and it’s mastered.', '答錯的題目會按科目和章節放在這裏。隔天再答對，就算掌握了。') },
+    { go: 'practice', sel: '#mkgo', skipIfMissing: true, t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here, in Practice, by subject and chapter. The number shows how many are left. Get one right a day later and it’s mastered.', '答錯的題目會按科目和章節放在「練習」的錯題簿，數字顯示還有多少題。隔天再答對，就算掌握了。') },
     { go: 'progress', sel: tab('progress'), t: C('Progress', '進度'), d: C('Time practised, scores over time, and how ready you are for each book.', '練習時間、分數變化，以及每本課本的準備程度。') },
     { go: 'progress', sel: '#goal-set, #goal-edit', skipIfMissing: true, t: C('Weekly goal', '每週目標'), d: C('Pick days and minutes a week. Reaching it earns bonus stars.', '選擇每週練習的天數和分鐘。達成可以賺額外星星。') },
     { go: 'progress', sel: '#parentDash', skipIfMissing: true, t: C('Parent dashboard', '家長主頁') + lt('parent'), d: C('Behind a PIN that a parent sets: today, this week, and what needs attention.', '由家長設定密碼保護：今日、本週，以及需要留意的地方。') },
     { go: 'progress', sel: '#report', skipIfMissing: true, t: C('Weekly report', '每週報告'), d: C('A one-page summary to send to a parent as a link.', '一頁摘要，可以用連結傳送給家長。') },
     { go: 'stars', sel: 'section.stack', skipIfMissing: true, t: C('Stars and rewards', '星星與獎勵') + lt('stars'), d: C('Earn stars for real effort and swap them for rewards your parents choose. Rushing earns nothing!', '憑真正努力賺取星星，換取家長設定的獎勵。亂答一通不會有星星！') },
-    { go: matchMedia('(min-width:1024px)').matches ? 'settings' : 'home', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, plan, stars on or off, and backups.', '你的名字、語言、計劃、開關星星，以及備份。') },
+    { go: 'settings', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your child’s details and stars, the parent area, language, backup, help and privacy, each behind its own button.', '孩子的資料和星星、家長專區、語言、備份、說明及私隱，各有自己的按鈕。') },
     { go: { name: 'settings', sec: 'help' }, sel: '#sfb', skipIfMissing: true, t: C('Tell us what you think', '告訴我們你的意見'), d: C('Something confusing, or a great idea? Type it here. We read every message.', '有地方令你困惑，或有好主意？在這裏輸入，我們會細閱每一個訊息。') },
     { go: 'progress', sel: '#helperFab', skipIfMissing: true, t: C('Ask Buddy any time', '隨時問 Buddy'), d: C('On any screen, tap here to ask a question, get study advice, or find your way around.', '在任何頁面按這裏，都可以發問、取得溫習建議，或問怎樣使用。') },
     { go: 'home', t: C('Now add your own textbook!', '現在加入你自己的課本！'), d: C('The sample book goes away now. Search for your textbook, then do “Find your level”. You can replay this tour in Settings.', '示範課本現在會移除。搜尋你的課本，然後做「找出你的程度」。你可以在設定中再看一次導覽。'), face: 'done', cta: C('Let’s go!', '開始吧！') },
