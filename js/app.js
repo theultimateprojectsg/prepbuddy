@@ -1225,7 +1225,7 @@ const WR_KINDS = {
   zh_practical: { lang: 'zh', en: '中文 · 實用寫作', zh: '中文 · 實用寫作', sub: ['卷二甲部，按字數上限', '卷二甲部，按字數上限'], words: 550, crit: ['內容', '行文組織'], w: [3, 2] },
   // Primary: length follows the child's grade (same table as the server, lib/fns/writing.js).
   en_p: { lang: 'en', primary: true, en: 'English writing', zh: '英文寫作', get sub() { const [a, b] = pLen('en'); return [`Guided writing, about ${a}-${b} words`, `引導寫作，約 ${a}-${b} 字`]; }, get words() { return pLen('en')[1]; }, get min() { return Math.max(12, Math.round(pLen('en')[0] * 0.6)); }, crit: ['Content', 'Language', 'Organisation'], w: [1, 1, 1] },
-  zh_p: { lang: 'zh', primary: true, en: '中文寫作', zh: '中文寫作', get sub() { const [a, b] = pLen('zh'); return [`看題目寫作，約 ${a}-${b} 字`, `看題目寫作，約 ${a}-${b} 字`]; }, get words() { return pLen('zh')[1]; }, get min() { return Math.max(30, Math.round(pLen('zh')[0] * 0.6)); }, crit: ['內容', '表達', '結構', '標點字體'], w: [4, 3, 2, 1] },
+  zh_p: { lang: 'zh', primary: true, en: 'Chinese writing', zh: '中文寫作', get sub() { const [a, b] = pLen('zh'); return [`Write to a topic in Chinese, about ${a}-${b} characters`, `看題目寫作，約 ${a}-${b} 字`]; }, get words() { return pLen('zh')[1]; }, get min() { return Math.max(30, Math.round(pLen('zh')[0] * 0.6)); }, crit: ['內容', '表達', '結構', '標點字體'], w: [4, 3, 2, 1] },
 };
 const P_LEN = { en: { p12: [20, 60], p34: [60, 120], p56: [120, 200] }, zh: { p12: [60, 150], p34: [200, 350], p56: [350, 600] } };
 function pLen(lang) { const b = gradeBand(); return P_LEN[lang][b && b[0] === 'p' ? b : 'p34']; }
@@ -1778,9 +1778,9 @@ async function renderDictation(id, sub) {
   $app.innerHTML = `
   ${backTop({name:'home'}, 'Today')}
   <main class="pad stack g18 dictpage" data-view="dictation" data-raw style="flex:1">
-    <h1 class="pagetitle">${DT('默書 · Dictation', '默書')}</h1>
+    <h1 class="pagetitle">${DT('Dictation', '默書')}</h1>
     <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${DT('I read the words, you write them.', '我讀，你寫。')}</b>
-      <span>${DT('Add this week’s 默書 or spelling list. I read each one aloud in Cantonese, Putonghua or English. Write it down, then check. Words you miss come back next time.', '加入今個星期的默書或串字。我會用粵語、普通話或英文逐個讀出來，你寫低再對答案。寫錯的會在下次再出現。')}</span></div></section>
+      <span>${DT('Add this week’s dictation or spelling list. I read each one aloud in Cantonese, Putonghua or English. Write it down, then check. Words you miss come back next time.', '加入今個星期的默書或串字。我會用粵語、普通話或英文逐個讀出來，你寫低再對答案。寫錯的會在下次再出現。')}</span></div></section>
     <button class="btn" id="dnew">+ ${DT('Add a dictation list', '加入默書')}</button>
     ${lists.length ? `<div class="hw-list">${lists.slice().reverse().map((x) => { const m = missed(x), last = (x.runs || []).slice(-1)[0];
       return `<div class="dl-item"><button class="dl-main" data-run="${x.id}"><span class="hw-ic">✏️</span><span class="hw-it"><b>${esc(x.title)}</b><small>${DL[x.lang][LANG === 'zh' ? 0 : 1]} · ${x.items.length} ${DT('items', '項')}${last ? ` · ${DT('last', '上次')} ${last.g}/${last.n}` : ''}${m ? ` · <span class="dl-miss">${DT(`${m} to practise`, `${m} 個要再練`)}</span>` : ''}</small></span><span class="dl-go">▶</span></button>
@@ -1799,7 +1799,7 @@ function editDictation(L) {
     <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button><span style="font-weight:600;font-size:15px">${L ? DT('Edit list', '修改默書') : DT('New list', '新默書')}</span></div>
     <main class="pad stack g14 dictpage" data-view="dictation" data-raw style="flex:1">
       <label class="dl-lab" for="dtitle">${DT('Name', '名稱')}</label>
-      <input id="dtitle" class="input" maxlength="60" placeholder="${DT('e.g. 中文默書 第五課 or Spelling Unit 3', '例如：中文默書 第五課')}" value="${esc(st.title)}">
+      <input id="dtitle" class="input" maxlength="60" placeholder="${DT('e.g. Chinese Lesson 5 or Spelling Unit 3', '例如：中文默書 第五課')}" value="${esc(st.title)}">
       <span class="dl-lab">${DT('Read aloud in', '朗讀語言')}</span>
       <div class="seg" role="radiogroup">${Object.entries(DL).map(([k, v]) => `<button role="radio" aria-checked="${st.lang === k}" class="${st.lang === k ? 'on' : ''}" data-lang="${k}">${LANG === 'zh' ? v[0] : v[1]}</button>`).join('')}</div>
       <div class="dl-row"><label class="dl-lab" for="ditems">${DT('Words or sentences, one per line', '詞語或句子，每行一個')}</label>
@@ -2337,8 +2337,8 @@ function practiceTiles() {
         <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
         <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${isPrimaryKid() ? (LANG === 'zh' ? '模擬試卷' : 'Practice paper') : 'Mock paper'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
         <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
-        <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>默書 · Dictation</b><span>I read, you write</span></button>
-        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>Writing · 寫作</b><span>${isPrimaryKid() ? 'Kind feedback, then redraft' : 'DSE-style feedback, then redraft'}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>Listening · 聆聽</b><span>Listen, then answer</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>呈分試 sprint</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>${isPrimaryKid() ? 'Read aloud and answer' : 'DSE Paper 4, one-minute answers'}</span></button>
+        <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>${LANG === 'zh' ? '默書' : 'Dictation'}</b><span>I read, you write</span></button>
+        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>${LANG === 'zh' ? '寫作' : 'Writing'}</b><span>${isPrimaryKid() ? 'Kind feedback, then redraft' : 'DSE-style feedback, then redraft'}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>${LANG === 'zh' ? '聆聽' : 'Listening'}</b><span>Listen, then answer</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>${LANG === 'zh' ? '呈分試衝刺' : 'Exam sprint'}</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>Speaking</b><span>${isPrimaryKid() ? 'Read aloud and answer' : 'DSE Paper 4, one-minute answers'}</span></button>
 `;
   html.split(/(?=<button class="qtile)/).map((x) => x.trim()).filter(Boolean).forEach((x) => { const m = /data-mode="(\w+)"|id="(\w+)"/.exec(x); if (m) t[m[1] || m[2]] = x; });
   return t;
@@ -2876,7 +2876,7 @@ function profileScreen({ first } = {}) {
     const nav = document.getElementById('tabs'); if (first && nav) nav.style.display = 'none';
     if (first) document.body.dataset.tab = '';
     const GOALS = (g) => [['tests', C('School tests and exams', '校內測驗及考試')], ...(/^P[23]$|^S[23]$/.test(g) || g === 'P6' ? [['tsa', C('TSA', '全港性系統評估 (TSA)')]] : []),
-      ...(/^P[456]$/.test(g) ? [['ssa', C('呈分試 (counts for secondary places)', '呈分試')]] : []), ...(/^S[3-6]$/.test(g) ? [['dse', 'HKDSE']] : []), ['habits', C('A regular study habit', '建立溫習習慣')]];
+      ...(/^P[456]$/.test(g) ? [['ssa', C('Exams that count for secondary places (P5–P6)', '呈分試')]] : []), ...(/^S[3-6]$/.test(g) ? [['dse', 'HKDSE']] : []), ['habits', C('A regular study habit', '建立溫習習慣')]];
     const opt = (k, v, t, sub) => `<button class="langopt ${L[k] === v ? 'on' : ''}" data-k="${k}" data-v="${v}" aria-pressed="${L[k] === v}"><b>${t}</b>${sub ? `<span>${sub}</span>` : ''}</button>`;
     let drawn = false;
     const draw = () => {
@@ -2893,7 +2893,7 @@ function profileScreen({ first } = {}) {
         <section class="stack g10"><b>${C('Their school mostly teaches in…', '學校主要用甚麼語言教學？')}</b>
           <div class="prof-opts two">${opt('medium', 'cmi', C('Chinese', '中文'), C('Cantonese / Chinese', '廣東話／中文'))}${opt('medium', 'emi', C('English', '英文'), C('English-medium school', '英文中學／小學'))}</div></section>
         <section class="stack g10"><b>${C('Chinese lessons are taught in…', '中文科用甚麼語言教？')}</b>
-          <div class="prof-opts two">${opt('zhLang', 'yue', C('Cantonese', '廣東話'), C('粵教中', '粵教中'))}${opt('zhLang', 'cmn', C('Putonghua', '普通話'), C('普教中: Buddy reads Chinese in Putonghua', '普教中：Buddy 用普通話朗讀'))}</div></section>
+          <div class="prof-opts two">${opt('zhLang', 'yue', C('Cantonese', '廣東話'), C('粵教中', '粵教中'))}${opt('zhLang', 'cmn', C('Putonghua', '普通話'), C('Chinese taught in Putonghua: Buddy reads Chinese in Putonghua', '普教中：Buddy 用普通話朗讀'))}</div></section>
         <section class="stack g10"><b>${C('Buddy should explain in…', 'Buddy 用甚麼語言講解？')}</b>
           <div class="prof-opts">${opt('explain', 'en', C('English', '英文'), C('Even if they type in Chinese', '即使孩子用中文提問'))}${opt('explain', 'zh', C('Chinese', '中文'), C('English terms in brackets', '英文術語放在括號內'))}${opt('explain', 'mix', C('Chinese + English terms', '中文 + 英文術語'), C('Learn the English words', '同時學英文詞彙'))}</div>
           <span class="muted" style="font-size:13px;line-height:1.5">${C('English lessons are always explained in simple English, with Chinese only for hard words.', '英文科一律用淺白英文講解，只在難字旁加中文。')}</span>
@@ -2909,7 +2909,7 @@ function profileScreen({ first } = {}) {
         ${L.grade ? `<section class="stack g10"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
         ${KIDS.list.length > 1 ? `<section class="stack g10"><label for="pnick"><b>${C('Nickname on this device', '在這部裝置上的稱呼')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
-          <input id="pnick" class="input" maxlength="12" placeholder="${C('e.g. 哥哥, Kid 2', '例如：哥哥、妹妹')}" value="${esc(KID.nick || '')}">
+          <input id="pnick" class="input" maxlength="12" placeholder="${C('e.g. Big brother, Kid 2', '例如：哥哥、妹妹')}" value="${esc(KID.nick || '')}">
           <span class="hint" style="margin:0;text-align:left">${C('Only shown on this device to tell your children apart. Not sent to Buddy.', '只在這部裝置上用來分辨孩子，不會傳送給 Buddy。')}</span></section>` : ''}
         <section class="stack g10"><label for="plikes"><b>${C('What do they love?', '孩子喜歡甚麼？')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
           <input id="plikes" class="input" maxlength="80" placeholder="${C('e.g. football, dinosaurs, drawing', '例如：足球、恐龍、畫畫')}" value="${esc(L.likes || '')}">
@@ -3184,7 +3184,7 @@ async function startTour(replay) {
     { go: 'home', sel: 'section[aria-label="School tests"]', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates. Today’s plan counts down and focuses on what’s coming up.', '加入測驗日期，今日計劃會倒數，並集中溫習要考的內容。') },
     { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to practise in one place: weak topics, practice papers, dictation, writing, listening, speaking and homework help.', '所有練習方式都在這裡：弱項、模擬試卷、默書、寫作、聆聽、說話和功課幫手。') },
     { go: 'homework', sel: '.hw-cap, .hw-hero', t: C('Homework help', '功課幫手') + lt('homework'), d: C('Snap a photo of your homework. Buddy reads it and guides you through each question.', '拍下功課，Buddy 會讀取題目，並引導你逐題完成。') },
-    { go: 'dictation', sel: '#dnew', skipIfMissing: true, t: C('默書 · Dictation', '默書'), d: C('Snap your dictation list. Buddy reads the words aloud, you write them, then check.', '拍下默書範圍，Buddy 讀出詞語，你寫下來，然後核對。') },
+    { go: 'dictation', sel: '#dnew', skipIfMissing: true, t: C('Dictation', '默書'), d: C('Snap your dictation list. Buddy reads the words aloud, you write them, then check.', '拍下默書範圍，Buddy 讀出詞語，你寫下來，然後核對。') },
     { go: 'writing', sel: '.wr-step', skipIfMissing: true, t: C('Writing', '寫作') + lt('writing'), d: C('Pick a DSE paper, write or snap your essay, and get marked against the real criteria. Then redraft.', '選擇 DSE 試卷，輸入或拍下文章，按真實準則批改，再修改。') },
     { go: 'speaking', sel: '.wr-step', skipIfMissing: true, t: C('Speaking', '說話') + lt('speaking'), d: C('DSE Paper 4 practice: get a topic, speak for a minute, and get feedback on your answer.', 'DSE 卷四練習：取得題目，說一分鐘，然後獲得回饋。') },
     { go: 'mistakes', sel: tab('mistakes'), t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here by subject and chapter. Get it right a day later and it’s mastered.', '答錯的題目會按科目和章節放在這裏。隔天再答對，就算掌握了。') },
@@ -5135,13 +5135,13 @@ const UNL = Infinity;
 const TIERS = {
   free: { name: 'Free', zh: '免費', price: 0, year: 0, tag: ['Practise and fix mistakes. Free forever.', '練習、改正錯誤，永久免費。'],
     lim: { books: 1, q: 20, written: 3, lesson: 2, buddy: 10, hardDiff: 0, stars: 0, coach: 0, report: 0, test: 0, sched: 0, homework: 0, writing: 0, speaking: 0, mock: 0, voice: 0, forecast: 0, parent: 0 },
-    pitch: ['', ''], has: [['Practice questions from your textbooks: multiple choice, plus 3 written a day', '課本練習題：選擇題，另每日 3 條文字題'], ['Learn mode lessons with Buddy', '學習模式課堂，有 Buddy 陪你'], ['Buddy hints on every question', '每條題目都有 Buddy 提示'], ['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Easy and Medium difficulty', '容易和中等難度'], ['Weekly activity report for parents', '家長每週練習報告']] },
+    pitch: ['', ''], has: [['Practice questions from your textbooks: multiple choice, plus 3 written a day', '課本練習題：選擇題，另每日 3 條文字題'], ['Learn mode lessons with Buddy', '學習模式課堂，有 Buddy 陪你'], ['Buddy hints on every question', '每條題目都有 Buddy 提示'], ['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and dictation', '筆記、溫習卡和默書'], ['Easy and Medium difficulty', '容易和中等難度'], ['Weekly activity report for parents', '家長每週練習報告']] },
   plus: { name: 'Standard', zh: '標準', price: 218, year: 2180, tag: ['Exam-ready at school', '應付校內考試'],
     lim: { books: 3, q: 80, written: UNL, lesson: 10, buddy: 60, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: 10, writing: 2, speaking: 2, mock: 0, voice: 0, forecast: 0, parent: 0 },
-    pitch: ['', ''], has: [['Practice questions from your textbooks, written answers marked by AI', '課本練習題，文字答案由 AI 批改'], ['Learn mode lessons with Buddy, and Buddy hints on every question', '學習模式課堂，每條題目都有 Buddy 提示'], ['Mistake book, reviews, notes, flashcards and 默書', '錯題簿、溫習、筆記、溫習卡和默書'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
+    pitch: ['', ''], has: [['Practice questions from your textbooks, written answers marked by AI', '課本練習題，文字答案由 AI 批改'], ['Learn mode lessons with Buddy, and Buddy hints on every question', '學習模式課堂，每條題目都有 Buddy 提示'], ['Mistake book, reviews, notes, flashcards and dictation', '錯題簿、溫習、筆記、溫習卡和默書'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
   pro: { name: 'Pro', zh: 'Pro', price: 298, year: 2980, best: true, tag: ['A private tutor, for less than one lesson a month', '私人導師，每月比一堂補習更便宜'],
     lim: { books: UNL, q: UNL, written: UNL, lesson: UNL, buddy: UNL, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: UNL, writing: UNL, speaking: UNL, mock: UNL, voice: 1, forecast: 1, parent: 1 },
-    pitch: ['Everything in Standard, plus:', '標準計劃的全部功能，再加上：'], has: [['Practice papers (school tests, 呈分試 or DSE) and printable worksheets', '模擬試卷（校內考試、呈分試或 DSE）和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['A parent dashboard: today, this week, tests and what needs attention', '家長主頁：今日、本週、測驗和需要留意的地方']] },
+    pitch: ['Everything in Standard, plus:', '標準計劃的全部功能，再加上：'], has: [['Practice papers (school tests and exams) and printable worksheets', '模擬試卷（校內考試、呈分試或 DSE）和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['A parent dashboard: today, this week, tests and what needs attention', '家長主頁：今日、本週、測驗和需要留意的地方']] },
 };
 // No free plan (decided 14 Nov 2026): families start with a free trial; bursaries and vouchers cover families who can't pay.
 // 'free' stays defined only so an old preview setting on a device still works.
@@ -5167,7 +5167,7 @@ const FEAT = {
   parent: { per: 'flag', en: ['Parent dashboard'], zh: ['家長主頁'], d: ['A PIN-protected dashboard for parents: today’s practice, the week, school tests coming up, each subject and what needs attention.', '家長專用、有密碼保護的主頁：今日練習、本週情況、即將來臨的測驗、各科進度和需要留意的地方。'] },
   forecast: { per: 'flag', en: ['Exam forecast'], zh: ['考試預測'], d: ['See where each subject is heading by your exam date, at your current pace.', '按現時進度，預測考試時各科的準備程度。'] },
 };
-const ALWAYS = [['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and 默書 dictation', '筆記、溫習卡和默書'], ['Weekly activity report', '每週練習報告']];
+const ALWAYS = [['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and dictation', '筆記、溫習卡和默書'], ['Weekly activity report', '每週練習報告']];
 const cap = (f) => !!limitOf(f);
 (() => { try { const m = location.search.match(/[?&]plan=(free|plus|pro)\b/); if (m) { local.planPreview = m[1]; saveLocal(); } } catch (e) {} })();
 const planId = () => (local.planLock ? local.plan : local.planPreview || local.plan) || 'pro'; // testing: Pro unless previewing
@@ -5408,7 +5408,7 @@ function testDialog(edit) {
     const book = books.find((b) => b.id === st.b);
     box.innerHTML = `<div class="cdlg rdlg tdlg" role="dialog" aria-modal="true" aria-labelledby="td-t" data-raw>
       <b id="td-t">${edit ? SCH('Edit school test', '修改學校測驗') : SCH('Add a school test', '加入學校測驗')}</b>
-      <label for="td-n">${SCH('What test?', '甚麼測驗？')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, 中文默書, Maths quiz', '例如：科學測驗、中文默書、數學小測')}" value="${esc(st.name)}">
+      <label for="td-n">${SCH('What test?', '甚麼測驗？')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, Chinese dictation, Maths quiz', '例如：科學測驗、中文默書、數學小測')}" value="${esc(st.name)}">
       <label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}">
       <label for="td-b">${SCH('Textbook', '課本')}</label><select id="td-b" class="input">${books.map((b) => `<option value="${esc(b.id)}" ${b.id === st.b ? 'selected' : ''}>${esc(b.title)}</option>`).join('')}</select>
       <label>${SCH('Chapters in the test', '測驗範圍')}</label>
