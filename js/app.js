@@ -2399,15 +2399,22 @@ async function renderHome() {
   const testHead = `<div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>`;
   let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s mission will get you ready, day by day.', '加入後，今日任務會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
   if (nt) {
-    const m = nt.book ? await bookMastery(nt.book) : null, chs = m ? m.chapters.filter((c) => nt.units.some((u) => u.id === c.unit.id)) : [];
+    // every test on the soonest date shares one calendar, each with its own readiness and chapters
     const lab = (c) => (!c.done ? [Z('Not started', '未開始'), 'none'] : c.pct >= 75 ? [Z('Ready', '準備好'), 'ok'] : c.pct >= 40 ? [Z('Getting there', '漸入佳境'), 'mid'] : [Z('Needs work', '要加強'), 'low']);
     const day = new Date(testDay(nt.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-    const more = tests.steps.length - 1;
+    const same = tests.steps.filter((q) => testDay(q.x) === testDay(nt.x)), later = tests.steps.filter((q) => testDay(q.x) !== testDay(nt.x));
+    const detail = async (p) => {
+      const m = p.book ? await bookMastery(p.book) : null, chs = m ? m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : [];
+      return `<div class="td-one"><button class="td-oh" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><span class="td-pct"><b>${p.ready == null ? '–' : p.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></button>
+        <div class="td-chl">${!p.book ? `<small class="muted" data-raw>${esc(testScope(p))}${p.last ? ' · ' + SCH(`${p.last.g} of ${p.last.n} right last time`, `上次 ${p.last.n} 個中寫對 ${p.last.g} 個`) : ''}</small>` : ''}${p.all ? `<small class="muted">${SCH('Everything practised so far', '至今練習過的所有內容')}</small>` : ''}${chs.slice(0, same.length > 1 ? 3 : 5).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > (same.length > 1 ? 3 : 5) ? `<small class="muted">${Z(`+ ${chs.length - (same.length > 1 ? 3 : 5)} more chapters`, `另有 ${chs.length - (same.length > 1 ? 3 : 5)} 章`)}</small>` : ''}</div></div>`;
+    };
+    const parts = (await Promise.all(same.map(detail))).join('');
+    const inMission = same.some((p) => M.steps.some((x) => x.key === `t:${p.x.id}`));
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<div class="td-test">
-      <button class="td-top" data-tedit="${esc(nt.x.id)}" aria-label="${esc(nt.x.name)}, ${esc(day)}">${calTile(testDay(nt.x))}<span class="td-tt"><b data-raw>${esc(nt.x.name)}</b><small class="${nt.left <= 2 ? 'soon' : ''}">${leftText(nt.left)}</small></span><span class="td-pct"><b>${nt.ready == null ? '–' : nt.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></button>
-      ${!nt.book ? `<div class="td-chl"><small class="muted" data-raw>${esc(testScope(nt))}${nt.last ? ' · ' + SCH(`${nt.last.g} of ${nt.last.n} right last time`, `上次 ${nt.last.n} 個中寫對 ${nt.last.g} 個`) : ''}</small></div>` : ''}<div class="td-chl">${nt.all ? `<small class="muted">${SCH('Everything practised so far', '至今練習過的所有內容')}</small>` : ''}${chs.slice(0, 5).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > 5 ? `<small class="muted">${Z(`+ ${chs.length - 5} more chapters`, `另有 ${chs.length - 5} 章`)}</small>` : ''}</div>
-      ${more ? `<div class="td-more"><span class="td-more-h">${Z('Also coming up', '其他即將來臨')}</span>${tests.steps.slice(1).map((q) => `<button class="td-mrow" data-tedit="${esc(q.x.id)}">${calTile(testDay(q.x), 'sm')}<span data-raw>${esc(q.x.name)}</span><small>${leftText(q.left)}</small><b>${q.ready == null ? '–' : q.ready + '%'}</b></button>`).join('')}</div>` : ''}
-      ${M.steps.some((x) => x.key === `t:${nt.x.id}`) ? `<div class="td-foot"><span>${allDone ? Z('Today’s practice counted towards it.', '今天的練習已計入。') : Z('Today’s mission includes it.', '今日任務已包括這個測驗。')}</span></div>` : ''}
+      <div class="td-day">${calTile(testDay(nt.x))}<span class="td-tt"><b>${same.length > 1 ? Z(`${same.length} tests on ${day}`, `${day} 有 ${same.length} 個測驗`) : esc(day)}</b><small class="${nt.left <= 2 ? 'soon' : ''}">${leftText(nt.left)}</small></span></div>
+      ${parts}
+      ${later.length ? `<div class="td-more"><span class="td-more-h">${Z('Also coming up', '其他即將來臨')}</span>${later.map((q) => `<button class="td-mrow" data-tedit="${esc(q.x.id)}">${calTile(testDay(q.x), 'sm')}<span data-raw>${esc(q.x.name)}</span><small>${leftText(q.left)}</small><b>${q.ready == null ? '–' : q.ready + '%'}</b></button>`).join('')}</div>` : ''}
+      ${inMission ? `<div class="td-foot"><span>${allDone ? Z('Today’s practice counted towards it.', '今天的練習已計入。') : Z('Today’s mission includes it.', '今日任務已包括這個測驗。')}</span></div>` : ''}
     </div></section>`;
   }
   $app.innerHTML = `
