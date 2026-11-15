@@ -1400,6 +1400,19 @@ footer .btn-sm{min-height:28px;padding:2px 10px;font-size:12px;vertical-align:mi
 .vc-pick{flex:1;min-width:0;text-align:left;background:none;border:0;padding:10px 12px;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:2px}.vc-pick b{font-size:15px}.vc-pick span{font-size:12.5px;color:var(--text-2,#4a5170)}
 .vc-play{flex:none;width:44px;border:0;border-left:1px solid var(--line,#d7dbe8);background:none;font-size:15px;cursor:pointer;color:var(--ink,#25336b)}
 .pp-trial{margin:0;text-align:center;font-weight:600;color:var(--ink)}
+
+/* ---------- One button shape everywhere ----------
+   Buttons, chips and tags are rectangles with softly rounded corners: 12px for full-size buttons and text boxes,
+   10px for small buttons and chips, 8px for tags and icon buttons. Only things that should be round stay
+   round: the on/off switch, avatars, progress rings, dots and badges. Kept last so it wins over older rules. */
+.btn,.btn.small,.input,.langopt,.dl-big{border-radius:12px}
+.btn-sm,.backbtn,.mob-gear,.today .greet-r .mob-gear,.vtalk,.starchip,.kidchip,.fchip,.tchip,.bookchips button,.pc-books .chip,
+.langbtn,.wr-drafts button,.sp-ph,.pa-btns .btn-sm.primary,.stx-past .stx-snap,.vov-lang,.pg-lang,.helper-fab,.plan-item .go,.st-go,.dl-go{border-radius:10px}
+.pg-lang button{border-radius:7px}
+.chip,.say-mini,.helper-x,.helper-big,.bk-stats span,.c-new.on-light,.bookcover .c-new,.mk-sub-often,.rcounts span,.st-tag,.st-badge,
+.lock-tag,.plan-pill,.tr-lock,.dl-tag,.bk-lv,.bgroup h2 small,.bookchips button b,.pp-flag,.say-pill b,.bookcover .c-recent{border-radius:8px}
+.say-pill{border-radius:12px}
+.bks-head{align-items:flex-start}.bks-head #addbook{margin-top:0}
 </style>
 </head>
 <body>
