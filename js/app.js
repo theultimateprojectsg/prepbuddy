@@ -2392,7 +2392,7 @@ async function renderHome() {
   const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0 }));
   const nOn = wk.filter((x) => x.on).length, gw = goalWeek();
   const doneToday = daysSet.has(t0);
-  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('Practise now ›', '立即練習 ›')}</small></span>
+  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small></span>
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
@@ -2435,7 +2435,11 @@ async function renderHome() {
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   { const sg = document.getElementById('streakGo'); if (sg) sg.onclick = () => {
     if (doneToday) return toast(Z(`You’ve practised today ✓ Come back tomorrow to make it ${streak + 1} days in a row.`, `今天已練習 ✓ 明天再來，就連續 ${streak + 1} 日了。`));
-    const first = $app.querySelector('button.ms-row'); if (first) first.click(); else go({ name: 'practice' });
+    // take them to Today's mission (and light it up) so they choose the step, rather than jumping into one
+    const card = $app.querySelector('.ms-card'); if (!card) return go({ name: 'practice' });
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.remove('ms-flash'); void card.offsetWidth; card.classList.add('ms-flash');
+    const first = card.querySelector('button.ms-row'); if (first) setTimeout(() => first.focus({ preventScroll: true }), 450);
   }; }
   bindSchoolTests();
   { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('button.ms-row'); if (r) r.click(); }; }
