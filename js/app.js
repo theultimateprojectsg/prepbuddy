@@ -799,7 +799,7 @@ async function go(v) {
   if (v.name === 'home') return renderHome();
   if (v.name === 'practice') return renderPractice();
   if (v.name === 'books') return renderBooks();
-  if (v.name === 'book') { bookFocus = v.focus || null; return renderBook(v.bookId); }
+  if (v.name === 'book') { bookFocus = v.focus || null; bookTool = ['notes', 'cards'].includes(v.focus) ? { bookId: v.bookId, tool: v.focus } : null; return renderBook(v.bookId); }
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
   if (v.name === 'privacy') return renderPrivacy();
@@ -820,7 +820,7 @@ async function go(v) {
   if (v.name === 'notes') return renderNotes(v.bookId);
   if (v.name === 'edit') return renderEdit(v.bookId);
   if (v.name === 'mistakes') return renderMistakes(v.tab || 'todo', v.book);
-  if (v.name === 'chapters') return renderChapters(v.mode === 'learn' ? 'learn' : 'practise');
+  if (v.name === 'chapters') return renderChapters(['learn', 'notes', 'cards'].includes(v.mode) ? v.mode : 'practise');
   if (v.name === 'cards') return renderCards(v.bookId, v.only);
 }
 
@@ -1976,7 +1976,7 @@ function unitWritingTask(book, unit, task) {
 }
 // Where the Back button of a lesson / notes / flashcards goes (backTo is declared above go()).
 const leaveTo = (bookId) => (backTo ? go(backTo) : go({ name: 'book', bookId }));
-const backLabel = (book) => (backTo ? (backTo.name === 'chapters' ? (backTo.mode === 'learn' ? (LANG === 'zh' ? '課堂' : 'Lessons') : (LANG === 'zh' ? '練習題' : 'Questions')) : (LANG === 'zh' ? '練習' : 'Practice')) : book);
+const backLabel = (book) => (backTo && backTo.name !== 'book' ? (backTo.name === 'chapters' ? ({ learn: LANG === 'zh' ? '課堂' : 'Lessons', notes: LANG === 'zh' ? '筆記' : 'Notes', cards: LANG === 'zh' ? '閃卡' : 'Flashcards' }[backTo.mode] || (LANG === 'zh' ? '練習題' : 'Questions')) : (LANG === 'zh' ? '練習' : 'Practice')) : book);
 async function renderLearn(bookId, unitId) {
   const book = (await getBooks()).find((b) => b.id === bookId);
   const unit = book && book.units.find((u) => u.id === unitId);
@@ -2399,6 +2399,8 @@ function renderPractice() {
       <button class="qtile" id="lessongo">${actionTile('learn', 44)}<b>${Z('Lessons', '課堂')}</b><span>${Z('Buddy teaches a chapter step by step', 'Buddy 逐步教你一章')}</span></button>
       <button class="qtile" id="questionsgo">${actionTile('practise', 44)}<b>${Z('Practice questions', '練習題')}</b><span>${Z('Pick a book, then chapters', '選課本，再選章節')}</span></button>
       <button class="qtile" id="mkgo">${actionTile('mistakes', 44)}<b>${Z('Mistake book', '錯題簿')}</b><span>${mistakeCount() ? Z(`${mistakeCount()} to get right`, `${mistakeCount()} 題要改正`) : Z('Nothing to fix right now', '暫時沒有錯題')}</span>${mistakeCount() ? `<span class="qt-badge">${mistakeCount() > 99 ? '99+' : mistakeCount()}</span>` : ''}</button>
+      <button class="qtile" id="notesgo">${actionTile('notes', 44)}<b>${Z('Revision notes', '溫習筆記')}</b><span>${Z('Key points for each chapter', '每一章的重點')}</span></button>
+      <button class="qtile" id="cardsgo">${actionTile('flashcards', 44)}<b>${Z('Flashcards', '閃卡')}</b><span>${Z('Quick-fire recall', '快速記憶')}</span></button>
       ${pick(['weak', 'mock', 'ssago'])}</div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
 </section>
@@ -2407,20 +2409,23 @@ function renderPractice() {
   </main>${footerHTML()}`;
   bindPracticeTiles(); bindGear();
   // one book: straight to its page; several: ask which book first
-  const toBook = async (mode) => { const bs = await getBooks(); if (bs.length === 1) go({ name: 'book', bookId: bs[0].id, focus: mode === 'learn' ? 'learn' : 'practise' }); else go({ name: 'chapters', mode }); };
+  const toBook = async (mode) => { const bs = await getBooks(); if (bs.length === 1) go({ name: 'book', bookId: bs[0].id, focus: mode }); else go({ name: 'chapters', mode }); };
   document.getElementById('lessongo').onclick = () => toBook('learn');
   document.getElementById('questionsgo').onclick = () => toBook('practise');
   document.getElementById('mkgo').onclick = () => go({ name: 'mistakes' });
+  document.getElementById('notesgo').onclick = () => toBook('notes');
+  document.getElementById('cardsgo').onclick = () => toBook('cards');
   window.scrollTo(0, 0);
 }
 // Practice → Lessons / Practice questions: which book? Then that book's page opens at its lessons or its chapter list.
 async function renderChapters(mode) {
-  const Z = (en, zh) => (LANG === 'zh' ? zh : en), learnMode = mode === 'learn', focus = learnMode ? 'learn' : 'practise';
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), learnMode = mode === 'learn', focus = ['learn', 'notes', 'cards'].includes(mode) ? mode : 'practise';
+  const head = { learn: [Z('Lessons', '課堂'), 'learn'], notes: [Z('Revision notes', '溫習筆記'), 'notes'], cards: [Z('Flashcards', '閃卡'), 'flashcards'] }[mode] || [Z('Practice questions', '練習題'), 'practise'];
   const books = await getBooks();
   if (books.length === 1) return go({ name: 'book', bookId: books[0].id, focus });
   if (!view || view.name !== 'chapters') return;
   $app.innerHTML = `${backTop({ name: 'practice' }, 'Practice')}<main class="pad stack g14" data-view="chapters" style="flex:1">
-    <div class="pick-head">${actionTile(learnMode ? 'learn' : 'practise', 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${learnMode ? Z('Lessons', '課堂') : Z('Practice questions', '練習題')}</h1><p class="muted" style="margin:0;line-height:1.5">${Z('Which book?', '選哪一本課本？')}</p></div></div>
+    <div class="pick-head">${actionTile(head[1], 52)}<div class="stack g6"><h1 class="pagetitle" style="margin:0">${head[0]}</h1><p class="muted" style="margin:0;line-height:1.5">${Z('Which book?', '選哪一本課本？')}</p></div></div>
     ${books.length ? `<div class="pc-list">${(await Promise.all(books.map(async (b) => { let pct = 0; try { pct = (await bookMastery(b)).pct; } catch (e) {} return `<button class="pc-row big" data-bk="${esc(b.id)}">
       ${subjectTile(b.subject, 44, b.title)}<span class="pc-t"><b data-raw>${esc(b.subject ? subj(b.subject) : shortTitle(b.title))}</b><small data-raw>${esc(b.title)}${pct ? ` · ${pct}% ${Z('mastered', '已掌握')}` : ''}</small></span>
       <span class="pc-chev" aria-hidden="true">›</span></button>`; }))).join('')}</div>`
@@ -4142,6 +4147,8 @@ let pick = { bookId: null, ids: new Set() }; // chapters ticked on the book scre
 
 // Opened from Practice → Lessons / Practice questions: scroll straight to that part of the book page (once).
 let bookFocus = null;
+// Opened from Practice → Revision notes / Flashcards: the main button opens those instead of starting questions.
+let bookTool = null;
 async function renderBook(bookId) {
   backTo = null;
   const book = (await getBooks()).find((b) => b.id === bookId);
@@ -4359,6 +4366,13 @@ async function renderBook(bookId) {
     const r = box.querySelector('.lc-row'); if (r) { r.classList.remove('flash'); void r.offsetWidth; r.classList.add('flash'); }
   }; }
   document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
+  if (bookTool && bookTool.bookId === bookId) {
+    const isN = bookTool.tool === 'notes', zh = LANG === 'zh', g = document.getElementById('go'), nT = pick.ids.size;
+    const what = isN ? (zh ? '溫習筆記' : 'revision notes') : (zh ? '閃卡' : 'flashcards');
+    const h = $app.querySelector('.chtools'); if (h) h.insertAdjacentHTML('afterend', `<p class="bk-tip">${zh ? `剔選你想溫習的章節，然後按「打開${what}」。` : `Tick the chapters you want, then tap Open ${what}.`}</p>`);
+    const sh = $app.querySelector('.setup-head p'); if (sh) sh.innerHTML = `${zh ? '2. 打開' + what : '2. Open ' + what}${nT ? ` <span class="muted" style="font-weight:500">· ${nT} ${zh ? '章' : nT > 1 ? 'chapters' : 'chapter'}</span>` : ''}`;
+    if (g) { g.textContent = nT ? (zh ? `打開${what}` : `Open ${what}`) : (zh ? '先剔選至少一章' : 'Tick at least one chapter'); g.onclick = () => { document.getElementById(isN ? 'notes' : 'cards').click(); backTo = { name: 'book', bookId, focus: bookTool.tool }; }; }
+  }
   window.scrollTo(0, 0);
   if (bookFocus) {
     const el = $app.querySelector(bookFocus === 'learn' ? 'section.learn-card' : '#bk-practise'); bookFocus = null;
