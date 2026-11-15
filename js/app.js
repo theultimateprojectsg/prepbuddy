@@ -2626,7 +2626,7 @@ function renderSettings() {
     ${local.pilot ? `<section class="card stack g10" style="padding:16px">
       <b style="font-size:15px">${PLT('Take the tour again', '再看一次導覽')}</b>
       <span class="muted" style="font-size:13.5px;line-height:1.5">${PLT('A quick look at what PrepBuddy can do.', '快速看看 PrepBuddy 可以做甚麼。')}</span>
-      <button class="btn-sm" id="stour" style="align-self:flex-start">${PLT('Start the tour', '開始導覽')}</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm" id="stour">${PLT('Quick tour', '快速導覽')}</button><button class="btn-sm quiet" id="stourfull">${PLT('Full tour (about 3 min)', '完整導覽（約 3 分鐘）')}</button></div>
     </section>
     <section class="card stack g10 fbcard" style="padding:16px">
       <b style="font-size:15px">${PLT('Tell us what you think', '告訴我們你的意見')}</b>
@@ -2666,7 +2666,7 @@ function renderSettings() {
   const nm = document.getElementById('sname');
   nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); };
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
-  { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); }
+  { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); const f = document.getElementById('stourfull'); if (f) f.onclick = () => startTour('full'); }
   { const sp = document.getElementById('sparent'); if (sp) sp.onclick = () => openParent(); }
   { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings' }); }; }
   { const pf = document.getElementById('sprof'); if (pf) pf.onclick = async () => { await profileScreen(); go({ name: 'settings' }); }; }
@@ -2874,8 +2874,11 @@ async function preloadStarters() {
   if (nav) nav.style.display = '';
   $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
   local.preloaded = Date.now(); saveLocal();
-  if ((await getBooks()).length) toast(C(`${list.length} free starter book${list.length > 1 ? 's' : ''} added`, `已加入 ${list.length} 本免費入門書`));
+  if ((await getBooks()).length && local.toured) toast(C(`${list.length} free starter book${list.length > 1 ? 's' : ''} added`, `已加入 ${list.length} 本免費入門書`));
 }
+// Line icons for the consent summary (the same style as the rest of the app, not emoji).
+const csv = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const CS_ICON = { device: csv('<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>'), chart: csv('<path d="M5 20V11M12 20V5M19 20v-6"/>'), ai: csv('<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/>'), never: csv('<circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/>'), control: csv('<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.4 2.4 4.6-5"/>') };
 function consentScreen() {
   return new Promise((resolve) => {
     const nav = document.getElementById('tabs'); if (nav) nav.style.display = 'none';
@@ -2883,17 +2886,18 @@ function consentScreen() {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
     const pilot = !!(local.pilot && local.code);
     const items = [
-      ['📱', C('Stays on this device', '保存在這部裝置'), C('Your child’s answers, textbooks, essays, recordings and progress are saved in this browser.', '孩子的答案、課本、文章、錄音和進度都保存在這個瀏覽器內。')],
-      pilot ? ['📊', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('For the pilot: first name (if entered), how much your child practised and how much was right, features used, book titles, school marks you choose to enter, and app errors. Only the PrepBuddy team can see it. If you give us your WhatsApp number, we use it to send you a short weekly update with a link to your child’s report.', '試用期間：名字（如有填寫）、練習了多少及答對多少、用過的功能、書名、你選擇填寫的學校成績及程式錯誤。只有 PrepBuddy 團隊可以查看。如你提供 WhatsApp 號碼，我們會用來每週傳送簡短進度更新及孩子報告的連結。')] : null,
-      ['🤖', C('The AI reads what it needs', 'AI 只會讀取需要的內容'), C('To write questions and mark answers, textbook text and your child’s answers, photos and essays are sent to our AI provider, Anthropic, outside Hong Kong. Never your child’s name. It isn’t used to train their AI and is deleted within 30 days.', '為了出題和批改，課文以及孩子的答案、相片和文章會傳送到香港以外的 AI 服務供應商 Anthropic，但不包括孩子的名字。這些內容不會用來訓練他們的 AI，並會在 30 天內刪除。')],
-      ['🚫', C('What we never ask for', '我們不會收集'), C('Full name, school, address, ID or payment details. Please remind your child not to type personal details into answers or chats.', '全名、學校、地址、身份證或付款資料。請提醒孩子不要在答案或對話中輸入個人資料。')],
-      ['✋', C('You’re in control', '由你決定'), pilot ? C('Delete everything on this device any time in Settings. Ask us to see, correct or delete your family’s data, or leave the pilot. Pilot data is deleted within 3 months after the pilot ends.', '你可隨時在「設定」刪除這部裝置上的所有資料，亦可要求我們查閱、更正或刪除你家庭的資料，或退出試用。試用結束後 3 個月內會刪除試用資料。') : C('Delete everything on this device any time in Settings, or ask us to see or correct your data.', '你可隨時在「設定」刪除這部裝置上的所有資料，或要求我們查閱或更正你的資料。')],
+      ['device', C('Stays on this device', '保存在這部裝置'), C('Your child’s answers, textbooks, essays, recordings and progress are saved in this browser.', '孩子的答案、課本、文章、錄音和進度都保存在這個瀏覽器內。')],
+      pilot ? ['chart', C('A short summary comes to us', '一份簡短摘要會傳送給我們'), C('For the pilot: first name (if entered), how much your child practised and how much was right, features used, book titles, school marks you choose to enter, and app errors. Only the PrepBuddy team can see it. If you give us your WhatsApp number, we use it to send you a short weekly update with a link to your child’s report.', '試用期間：名字（如有填寫）、練習了多少及答對多少、用過的功能、書名、你選擇填寫的學校成績及程式錯誤。只有 PrepBuddy 團隊可以查看。如你提供 WhatsApp 號碼，我們會用來每週傳送簡短進度更新及孩子報告的連結。')] : null,
+      ['ai', C('The AI reads what it needs', 'AI 只會讀取需要的內容'), C('To write questions and mark answers, textbook text and your child’s answers, photos and essays are sent to our AI provider, Anthropic, outside Hong Kong. Never your child’s name. It isn’t used to train their AI and is deleted within 30 days.', '為了出題和批改，課文以及孩子的答案、相片和文章會傳送到香港以外的 AI 服務供應商 Anthropic，但不包括孩子的名字。這些內容不會用來訓練他們的 AI，並會在 30 天內刪除。')],
+      ['never', C('What we never ask for', '我們不會收集'), C('Full name, school, address, ID or payment details. Please remind your child not to type personal details into answers or chats.', '全名、學校、地址、身份證或付款資料。請提醒孩子不要在答案或對話中輸入個人資料。')],
+      ['control', C('You’re in control', '由你決定'), pilot ? C('Delete everything on this device any time in Settings. Ask us to see, correct or delete your family’s data, or leave the pilot. Pilot data is deleted within 3 months after the pilot ends.', '你可隨時在「設定」刪除這部裝置上的所有資料，亦可要求我們查閱、更正或刪除你家庭的資料，或退出試用。試用結束後 3 個月內會刪除試用資料。') : C('Delete everything on this device any time in Settings, or ask us to see or correct your data.', '你可隨時在「設定」刪除這部裝置上的所有資料，或要求我們查閱或更正你的資料。')],
     ].filter(Boolean);
     $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
       <div class="pg-box cs-box">
         <div class="cs-head">${buddySVG('listen', 64)}<div><span class="pg-tag">${profileOn() ? C('Step 1 of 3 · for parents', '第 1 步，共 3 步 · 家長專用') : C('Step 1 of 2 · for parents', '第 1 步，共 2 步 · 家長專用')}</span><h1>${C('Before we start', '開始之前')}</h1></div></div>
         <p>${C('Please ask a parent or guardian to read this and agree. It takes a minute.', '請家長或監護人閱讀並同意以下內容，只需一分鐘。')}</p>
-        <div class="cs-list">${items.map(([i, h, t]) => `<div class="cs-item"><span>${i}</span><div><b>${h}</b><p>${t}</p></div></div>`).join('')}</div>
+        <div class="cs-list">${items.map(([i, h, t]) => `<details class="cs-item"><summary><span class="cs-ic" aria-hidden="true">${CS_ICON[i]}</span><b>${h}</b><span class="cs-more" aria-hidden="true">›</span></summary><p>${t}</p></details>`).join('')}</div>
+        <p class="hint" style="margin:0;text-align:left">${C('Tap each line to read more.', '按每一行可看詳情。')}</p>
         <div class="cs-foot"><label class="cs-agree"><input type="checkbox" id="cs-ok"><span>${C('I’m this child’s parent or guardian and I agree to the ', '我是這名孩子的家長或監護人，並同意')}<button type="button" class="linkbtn" data-privacy>${C('privacy notice', '私隱聲明')}</button>${pilot ? C(', including my child taking part in the PrepBuddy pilot.', '，包括讓孩子參加 PrepBuddy 試用計劃。') : C('.', '。')}</span></label>
         <button class="btn" id="cs-go" disabled>${C('Agree and continue', '同意並繼續')}</button></div>
         <p class="hint"><button type="button" class="linkbtn" data-privacy>${C('Read the full privacy notice', '閱讀完整私隱聲明')}</button> · ${pilot ? C('Questions? Ask the person who invited you.', '有疑問？請聯絡邀請你的人。') : C('You can read it again any time in Settings.', '你可隨時在「設定」再次閱讀。')}</p>
@@ -2950,6 +2954,7 @@ function profileScreen({ first } = {}) {
         <section class="stack g10"><b>${C('Which grade are they in?', '孩子讀幾年級？')}</b>
           <div class="prof-grades"><span class="muted">${C('Primary', '小學')}</span>${GRADE_LIST.slice(0, 6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div>
           <div class="prof-grades"><span class="muted">${C('Secondary', '中學')}</span>${GRADE_LIST.slice(6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div></section>
+        ${first ? `<p class="hint" style="margin:0;text-align:left">${C('That’s all for now. You can tell Buddy more (school language, reading voice, goals) later in Settings → About your child.', '暫時就這些。之後可以在「設定 → 關於孩子」告訴 Buddy 更多（學校語言、朗讀聲音、目標）。')}</p>` : `
         <section class="stack g10"><b>${C('How are they doing at school?', '孩子在學校的情況？')}</b>
           <div class="prof-opts">${opt('pace', 'support', C('Needs extra help', '需要多些幫助'), C('Smaller steps, easier start', '由淺入深，循序漸進'))}${opt('pace', 'ontrack', C('About right', '跟得上'), C('Keeping up with the class', '跟上班中進度'))}${opt('pace', 'ahead', C('Ahead', '超前'), C('Ready for harder work', '可以挑戰較深的題目'))}</div></section>
         <section class="stack g10"><b>${C('Their school mostly teaches in…', '學校主要用甚麼語言教學？')}</b>
@@ -2970,15 +2975,16 @@ function profileScreen({ first } = {}) {
         </section>
         ${L.grade ? `<section class="stack g10"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
+        `}
         ${KIDS.list.length > 1 ? `<section class="stack g10"><label for="pnick"><b>${C('Nickname on this device', '在這部裝置上的稱呼')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
           <input id="pnick" class="input" maxlength="12" placeholder="${C('e.g. Big brother, Kid 2', '例如：哥哥、妹妹')}" value="${esc(KID.nick || '')}">
           <span class="hint" style="margin:0;text-align:left">${C('Only shown on this device to tell your children apart. Not sent to Buddy.', '只在這部裝置上用來分辨孩子，不會傳送給 Buddy。')}</span></section>` : ''}
-        <section class="stack g10"><label for="plikes"><b>${C('What do they love?', '孩子喜歡甚麼？')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
+        ${first ? '' : `        <section class="stack g10"><label for="plikes"><b>${C('What do they love?', '孩子喜歡甚麼？')}</b> <span class="muted">${C('(optional)', '（可選填）')}</span></label>
           <input id="plikes" class="input" maxlength="80" placeholder="${C('e.g. football, dinosaurs, drawing', '例如：足球、恐龍、畫畫')}" value="${esc(L.likes || '')}">
-          <span class="hint" style="margin:0;text-align:left">${C('Buddy may use these in examples. Please don’t enter their name or school.', 'Buddy 或會用這些例子講解。請勿輸入孩子的名字或學校。')}</span></section>
+          <span class="hint" style="margin:0;text-align:left">${C('Buddy may use these in examples. Please don’t enter their name or school.', 'Buddy 或會用這些例子講解。請勿輸入孩子的名字或學校。')}</span></section>`}
         <div style="display:flex;gap:10px;flex-wrap:wrap">${first ? '' : `<button class="btn-sm" id="pcancel">${C('Cancel', '取消')}</button>`}<button class="btn" id="psave" ${L.grade ? '' : 'disabled'} style="${first ? '' : 'width:auto;padding:12px 24px'}">${first ? C('Continue', '繼續') : C('Save', '儲存')}</button></div>
       </div></main>`;
-      const likes = document.getElementById('plikes');
+      const likes = document.getElementById('plikes') || { value: L.likes || '' };
       const redraw = () => { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.trim().slice(0, 12); const y = window.scrollY; draw(); window.scrollTo(0, y); };
       $app.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.grade = b.dataset.g; redraw(); }));
       $app.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L[b.dataset.k] = b.dataset.v; redraw(); }));
@@ -3216,8 +3222,24 @@ function coachTour(steps, done) {
     show(1);
   });
 }
+// First run (and 'Quick tour' in Settings): six stops on the real screens, with the starter books, in under a minute.
+async function quickTour(replay) {
+  const C = (en, zh) => (LANG === 'zh' ? zh : en);
+  const tab = (k) => `[data-tabgo="${k}"]`;
+  const steps = [
+    { go: 'home', sel: tab('home'), t: C('Hi, I’m Buddy! This is Today', '你好，我是 Buddy！這是「今日」'), d: C('Your home screen. Each day I plan what to do: a chapter to practise, reviews and mistakes to fix. Tap an item to start.', '你的主頁。我每天幫你計劃要做甚麼：練習哪一章、溫習和改正錯題。按一下就開始。') },
+    { go: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('Your textbooks. We’ve added free PrepBuddy books to try, and you can add your own school books here.', '你的課本。我們已加入 PrepBuddy 的免費課本給你試用，你也可以在這裏加入學校課本。') },
+    { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Learn or practise any chapter, plus dictation, writing, listening, speaking and homework help.', '學習或練習任何一章，還有默書、寫作、聆聽、說話和功課幫手。') },
+    { go: 'mistakes', sel: tab('mistakes'), t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here. Get it right again a day later and it’s mastered.', '答錯的題目都會放在這裏。隔一天再答對，就算掌握了。') },
+    { go: 'progress', sel: tab('progress'), t: C('Progress', '進度'), d: C('How you’re doing each week. Parents can open the parent dashboard from here or from Settings.', '每週的學習情況。家長可以在這裏或「設定」打開家長主頁。') },
+    { go: 'home', t: C('Ask me any time', '隨時問我'), d: C('Stuck on a question? Tap “Ask Buddy”. Ready? Let’s start with today’s plan.', '遇到不明白的題目？按「問 Buddy」。準備好了嗎？由今日計劃開始吧！'), cta: C('Let’s go', '開始') },
+  ];
+  await coachTour(steps, (how, k) => { local.toured = Date.now(); saveLocal(); track(replay ? 'tour_replay' : how === 'done' ? 'tour_done' : `tour_skip:${k}`); });
+  go({ name: 'home' });
+}
 // The full tour, on the real screens, using a small sample book (removed at the end) so every feature can be shown.
 async function startTour(replay) {
+  if (replay !== 'full') return quickTour(replay);
   const C = (en, zh) => (LANG === 'zh' ? zh : en);
   const lt = (f) => (locked(f) ? ` <span class="tr-lock">🔒 ${TIERS[nextPlanFor(f)].name}</span>` : '');
   const tab = (k) => `[data-tabgo="${k}"]`;
