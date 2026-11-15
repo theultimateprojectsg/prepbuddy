@@ -993,7 +993,10 @@ async function coachSnapshot() {
   const up = upcomingTests();
   if (up.length) {
     lines.push('', 'SCHOOL TESTS coming up (plan around these first):');
-    for (const x of up) { const b = books.find((y) => y.id === x.b); const bi = books.indexOf(b); if (!b) continue;
+    for (const x of up) { const b = books.find((y) => y.id === x.b); const bi = books.indexOf(b);
+      if (x.kind === 'dict') { const L = (local.dict || []).find((d) => d.id === x.L); lines.push(`- ${x.name} (dictation) on ${x.date} (${testLeft(x)} day(s) away)${L ? `, word list "${L.title}"${(L.runs || []).length ? `, last score ${L.runs[L.runs.length - 1].g}/${L.runs[L.runs.length - 1].n}` : ', not practised yet'}` : ', words not added yet'}.`); continue; }
+      if (!b) { lines.push(`- ${x.name} on ${x.date} (${testLeft(x)} day(s) away): ${tSubjName(x.subj) || 'a subject'} with no textbook in the app yet.`); continue; }
+      if (!(x.u || []).length) { lines.push(`- ${x.name} on ${x.date} (${testLeft(x)} day(s) away): ${b.title}, everything practised so far.`); continue; }
       lines.push(`- ${x.name} on ${x.date} (${testLeft(x)} day(s) away): ${b.title}, chapters ${x.u.map((id) => { const u = b.units.find((v) => v.id === id); return u ? `[B${bi + 1}.C${b.units.indexOf(u) + 1}] ${u.title}` : ''; }).filter(Boolean).join('; ')}.`); }
   }
   const done = schoolTests().filter((x) => typeof x.score === 'number').slice(-5);
@@ -2346,7 +2349,7 @@ async function renderHome() {
   // ---- Today's mission: up to 3 steps in order, fixed for the day, ticked off as they get done ----
   const cands = []; // { key, icon, t, s, attr, chk }
   { const p = tests.steps.find((q) => q.left <= 14);
-    if (p) { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.step.u ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: p.units.map((u) => u.id) } }); } }
+    if (p) { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
   if (mk) cands.push({ key: 'mk', icon: 'mistakes', t: Z(`Fix ${mk} mistake${mk > 1 ? 's' : ''}`, `改正 ${mk} 題錯題`), s: Z('Questions you didn’t get fully right', '未完全答對的題目'), attr: 'id="mistakes"', chk: { y: 'mk', n: mk } });
   if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Review ${due.length} question${due.length > 1 ? 's' : ''}`, `複習 ${due.length} 題`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
   { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
@@ -2363,6 +2366,7 @@ async function renderHome() {
     if (c.y === 'mk') return mistakeCount() < c.n;
     if (c.y === 'rv') return !due.length;
     if (c.y === 'learn') return !!(local.learned || {})[`${c.b}:${c.u}`];
+    if (c.y === 'dict') { const L = (local.dict || []).find((d) => d.id === c.L); return !!(L && (L.runs || []).some((r) => r.t >= M.at)); }
     if (c.y === 'lv') return !!(local.placement || {})[c.b] || bookAnswered(c.b);
     if (c.y === 'log') return local.log.filter((e) => e.t >= M.at && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length >= 3;
     return false;
@@ -2394,14 +2398,14 @@ async function renderHome() {
   const testHead = `<div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>`;
   let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s mission will get you ready, day by day.', '加入後，今日任務會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
   if (nt) {
-    const m = await bookMastery(nt.book), chs = m.chapters.filter((c) => nt.x.u.includes(c.unit.id));
+    const m = nt.book ? await bookMastery(nt.book) : null, chs = m ? m.chapters.filter((c) => nt.units.some((u) => u.id === c.unit.id)) : [];
     const lab = (c) => (!c.done ? [Z('Not started', '未開始'), 'none'] : c.pct >= 75 ? [Z('Ready', '準備好'), 'ok'] : c.pct >= 40 ? [Z('Getting there', '漸入佳境'), 'mid'] : [Z('Needs work', '要加強'), 'low']);
     const day = new Date(testDay(nt.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
     const more = tests.steps.length - 1;
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<div class="td-test">
-      <button class="td-top" data-tedit="${esc(nt.x.id)}"><span class="td-cal">${actionIcon('test', 22)}</span><span class="td-tt"><b data-raw>${esc(nt.x.name)} · ${esc(day)}</b><small class="${nt.left <= 2 ? 'soon' : ''}">${leftText(nt.left)}</small></span><span class="td-pct"><b>${nt.ready}%</b><small>${Z('ready', '準備度')}</small></span></button>
-      <div class="td-chl">${chs.slice(0, 5).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > 5 ? `<small class="muted">${Z(`+ ${chs.length - 5} more chapters`, `另有 ${chs.length - 5} 章`)}</small>` : ''}</div>
-      ${more ? `<div class="td-more">${tests.steps.slice(1).map((q) => `<button class="td-mrow" data-tedit="${esc(q.x.id)}"><span data-raw>${esc(q.x.name)}</span><small>${leftText(q.left)}</small><b>${q.ready}%</b></button>`).join('')}</div>` : ''}
+      <button class="td-top" data-tedit="${esc(nt.x.id)}"><span class="td-cal">${actionIcon('test', 22)}</span><span class="td-tt"><b data-raw>${esc(nt.x.name)} · ${esc(day)}</b><small class="${nt.left <= 2 ? 'soon' : ''}">${leftText(nt.left)}</small></span><span class="td-pct"><b>${nt.ready == null ? '–' : nt.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></button>
+      ${!nt.book ? `<div class="td-chl"><small class="muted" data-raw>${esc(testScope(nt))}${nt.last ? ' · ' + SCH(`${nt.last.g} of ${nt.last.n} right last time`, `上次 ${nt.last.n} 個中寫對 ${nt.last.g} 個`) : ''}</small></div>` : ''}<div class="td-chl">${nt.all ? `<small class="muted">${SCH('Everything practised so far', '至今練習過的所有內容')}</small>` : ''}${chs.slice(0, 5).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > 5 ? `<small class="muted">${Z(`+ ${chs.length - 5} more chapters`, `另有 ${chs.length - 5} 章`)}</small>` : ''}</div>
+      ${more ? `<div class="td-more">${tests.steps.slice(1).map((q) => `<button class="td-mrow" data-tedit="${esc(q.x.id)}"><span data-raw>${esc(q.x.name)}</span><small>${leftText(q.left)}</small><b>${q.ready == null ? '–' : q.ready + '%'}</b></button>`).join('')}</div>` : ''}
       ${M.steps.some((x) => x.key === `t:${nt.x.id}`) ? `<div class="td-foot"><span>${allDone ? Z('Today’s practice counted towards it.', '今天的練習已計入。') : Z('Today’s mission includes it.', '今日任務已包括這個測驗。')}</span></div>` : ''}
     </div></section>`;
   }
@@ -4959,9 +4963,9 @@ async function renderProgress() {
   const tests = await schoolTestsHTML(); const nt = tests.steps[0];
   let testCard = '';
   if (nt) {
-    const h = RH.find((x) => x.b.id === nt.book.id); const fc = h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(nt.ready + h.rate * nt.left)) : null;
+    const h = nt.book ? RH.find((x) => x.b.id === nt.book.id) : null; const fc = nt.ready == null ? null : h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(nt.ready + h.rate * nt.left)) : null;
     const day = new Date(testDay(nt.x)).toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-    testCard = `<button class="pg-next" data-tedit="${esc(nt.x.id)}">${ringHTML(nt.ready, tone(nt.ready), nt.ready + '%', 68)}<span class="pg-nt"><small>${PT('Next school test', '下一個學校測驗')} · ${leftText(nt.left)}</small><b>${esc(nt.x.name)} · ${esc(day)}</b><span>${esc(nt.units.length === 1 ? cleanUnitTitle(nt.units[0].title) : nt.units.slice(0, 3).map((u) => shortTitle(u.title)).join(', '))} · ${PT(`${nt.ready}% ready now`, `現時準備度 ${nt.ready}%`)}</span>${fc != null ? `<em class="${fc >= 80 ? 'up' : ''}">${PT(`At this pace: about ${fc}% ready by the test`, `按現時進度：測驗時約 ${fc}%`)}</em>` : `<em>${PT('Forecast after a week of practice', '練習一星期後會有預測')}</em>`}</span></button>`;
+    testCard = `<button class="pg-next" data-tedit="${esc(nt.x.id)}">${ringHTML(nt.ready || 0, tone(nt.ready || 0), nt.ready == null ? '–' : nt.ready + '%', 68)}<span class="pg-nt"><small>${PT('Next school test', '下一個學校測驗')} · ${leftText(nt.left)}</small><b>${esc(nt.x.name)} · ${esc(day)}</b><span>${esc(testScope(nt))}${nt.ready == null ? '' : ' · ' + PT(`${nt.ready}% ready now`, `現時準備度 ${nt.ready}%`)}</span>${fc != null ? `<em class="${fc >= 80 ? 'up' : ''}">${PT(`At this pace: about ${fc}% ready by the test`, `按現時進度：測驗時約 ${fc}%`)}</em>` : nt.book ? `<em>${PT('Forecast after a week of practice', '練習一星期後會有預測')}</em>` : ''}</span></button>`;
   } else testCard = `<button class="pg-next pg-next0" id="addTest2"><span class="pg-ic blue">${pIcon('target')}</span><span class="pg-nt"><b>${PT('Got a school test coming up?', '快要學校測驗？')}</b><span>${PT('Add it to see how ready you are for it, and a forecast for the test day.', '加入後，可看到準備度和測驗當日的預測。')}</span></span></button>`;
   // readiness week by week
   const lineHTML = readyLinesSVG(RH.filter((x) => x.used));
@@ -5634,7 +5638,7 @@ const weekStart = (t = Date.now()) => { const d = new Date(dayStart(t)); const k
 function usedOf(f) {
   const per = FEAT[f].per;
   if (f === 'books') return 0; // checked against the shelf when adding
-  if (f === 'sched') return upcomingTests().length;
+  if (f === 'sched') return new Set(upcomingTests().map((x) => x.grp || x.id)).size;
   const u = (local.meter || {})[f]; if (!u) return 0;
   return u.p === (per === 'day' ? dayStart() : weekStart()) ? u.n : 0;
 }
@@ -5803,7 +5807,7 @@ async function renderParent() {
     <div class="rp-today"><div class="${todayMin ? '' : 'warn'}"><b>${todayMin}</b><span>${PD('minutes', '分鐘')}</span></div><div><b>${today.length}</b><span>${PD('questions', '題目')}</span></div><div><b>${tm ? Math.round(100 * tg / tm) + '%' : '–'}</b><span>${PD('marks scored', '得分率')}</span></div></div>
     ${!today.length ? `<p style="font-size:14px;color:#B4531A">${PD('No practice yet today.', '今日仍未練習。')}</p>` : ''}</section>`;
   const testsCard = tests.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('target', 18)} ${PD('School tests coming up', '即將來臨的學校測驗')}</h2><span>${PD('and today’s plan for each', '及每個測驗的今日計劃')}</span></div>
-    <div class="rp-up">${tests.map((p) => `<div><span class="rp-cal ${p.left <= 1 ? 'soon' : ''}"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span><span class="rp-ut"><b>${esc(p.x.name)}</b><small>${leftText(p.left)} · ${esc(p.step.t)}</small></span><b class="${tone(p.ready)}">${p.ready}%</b></div>`).join('')}</div></section>` : '';
+    <div class="rp-up">${tests.map((p) => `<div><span class="rp-cal ${p.left <= 1 ? 'soon' : ''}"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span><span class="rp-ut"><b>${esc(p.x.name)}</b><small>${leftText(p.left)} · ${esc(p.step.t)}</small></span><b class="${tone(p.ready || 0)}">${p.ready == null ? '–' : p.ready + '%'}</b></div>`).join('')}</div></section>` : '';
   const feedCard = `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('bars', 18)} ${PD('Recent activity', '最近活動')}</h2><span>${PD('newest first', '最新在前')}</span></div>
     ${feed.length ? `<ol class="rp-feed">${feed.slice(0, 12).map((f) => `<li><span class="rp-fi">${pIcon(f.ic, 14)}</span><span>${esc(f.tx)}<small>${agoWords(f.t)}</small></span></li>`).join('')}</ol>` : `<p style="font-size:14px;color:var(--muted)">${PD('Activity will show here as your child studies.', '孩子溫習時，活動會在這裏顯示。')}</p>`}</section>`;
   const fixCard = mk || due ? `<section class="rp-call weak"><h3>${PD('To do', '待處理')}</h3><p>${[mk ? PD(`${mk} mistake${mk > 1 ? 's' : ''} to fix`, `${mk} 題錯題待改正`) : '', due ? PD(`${due} review${due > 1 ? 's' : ''} due`, `${due} 題待溫習`) : ''].filter(Boolean).join(' · ')}</p></section>` : '';
@@ -5834,14 +5838,44 @@ function schoolTests() { return (local.sched || []).slice().sort((a, b) => testD
 const upcomingTests = () => schoolTests().filter((x) => testLeft(x) >= 0);
 const leftText = (n) => (n === 0 ? SCH('today', '今天') : n === 1 ? SCH('tomorrow', '明天') : SCH(`in ${n} days`, `${n} 天後`));
 // What to do today for one test: the step, plus a function that starts it.
+// Subjects a school test can be for, and which subject a textbook belongs to.
+const TEST_SUBJ = () => [['chi', '中文', 'Chinese'], ['eng', '英文', 'English'], ['math', '數學', 'Maths'], isPrimaryKid() ? ['gs', '常識', 'General Studies'] : ['gs', '科學／人文', 'Science / Humanities'], ['other', '其他', 'Other subject']];
+const tSubjName = (k) => { const x = TEST_SUBJ().find((s) => s[0] === k); return x ? (LANG === 'zh' ? x[1] : x[2]) : ''; };
+function bookSubjKey(b) {
+  const t = String((b && (b.subject + ' ' + b.title)) || '');
+  return /english|英文/i.test(t) ? 'eng' : /math|數學|algebra/i.test(t) ? 'math' : /chinese|中文|中國語文/i.test(t) ? 'chi' : /science|general studies|humanities|常識|科學|人文/i.test(t) ? 'gs' : 'other';
+}
+// What the test covers, in a few words, for lists and cards.
+function testScope(p) {
+  if (p.dict) return SCH(`默書 · ${p.dict.title}`, `默書 · ${p.dict.title}`);
+  if ((p.x.kind || 'test') === 'dict') return SCH('默書 · words not added yet', '默書 · 未加入詞語');
+  if (!p.book) return SCH(`${tSubjName(p.x.subj) || 'Subject'} · no textbook in the app yet`, `${tSubjName(p.x.subj) || '科目'} · 未加入課本`);
+  if (p.all) return SCH('Everything practised so far', '至今練習過的所有內容');
+  return p.units.length === 1 ? cleanUnitTitle(p.units[0].title) : SCH(`${p.units.length} chapters`, `${p.units.length} 個章節`);
+}
 async function testStep(x) {
-  const book = (await getBooks()).find((b) => b.id === x.b);
-  if (!book) return null;
-  const units = book.units.filter((u) => x.u.includes(u.id));
-  if (!units.length) return null;
   const left = testLeft(x);
+  if ((x.kind || 'test') === 'dict') {
+    // 默書: readiness is the latest score on its word list
+    const L = (local.dict || []).find((d) => d.id === x.L) || null;
+    const last = L && (L.runs || []).length ? L.runs[L.runs.length - 1] : null;
+    const ready = last && last.n ? Math.round(100 * last.g / last.n) : 0;
+    const step = !L ? { icon: 'learn', t: SCH('Add your 默書 words', '加入默書詞語'), s: SCH('Type them in or snap the list, then practise', '輸入或拍下詞語表，然後練習'), go: SCH('Add', '加入'), run: () => go({ name: 'dictation', id: 'new' }) }
+      : { icon: 'practise', t: SCH(`Practise 默書: ${L.title}`, `練習默書：${L.title}`), s: last ? SCH(`${last.g} of ${last.n} right last time`, `上次 ${last.n} 個中寫對 ${last.g} 個`) : SCH('Not tried yet', '未試過'), go: SCH('Practise', '練習'), run: () => go({ name: 'dictation', id: L.id, sub: 'run' }) };
+    return { x, book: null, units: [], left, ready, step, dict: L, last };
+  }
+  const book = x.b ? (await getBooks()).find((b) => b.id === x.b) : null;
+  if (!book) {
+    const step = { icon: 'learn', t: SCH(`Add your ${tSubjName(x.subj) || ''} textbook`.replace('  ', ' '), `加入${tSubjName(x.subj)}課本`), s: SCH('Then Buddy can get you ready for this test', '加入後，Buddy 便可幫你準備這個測驗'), go: SCH('Add', '加入'), run: () => go({ name: 'library' }) };
+    return { x, book: null, units: [], left, ready: null, step };
+  }
   const m = await bookMastery(book);
-  const chs = m.chapters.filter((c) => x.u.includes(c.unit.id));
+  const all = !(x.u && x.u.length);
+  // "everything so far": the chapters already practised (or the first one, if none yet)
+  let chs = all ? m.chapters.filter((c) => c.done) : m.chapters.filter((c) => x.u.includes(c.unit.id));
+  if (!chs.length) chs = m.chapters.slice(0, 1);
+  if (!chs.length) return null;
+  const units = chs.map((c) => c.unit);
   const ready = Math.round(chs.reduce((t, c) => t + c.pct, 0) / chs.length);
   const learned = (u) => !!(local.learned || {})[`${book.id}:${u.id}`];
   const weakest = chs.slice().sort((a, b) => a.pct - b.pct)[0];
@@ -5855,43 +5889,112 @@ async function testStep(x) {
     else if (weakest.pct < 75) step = { icon: 'practise', t: SCH(`Practise: ${name(weakest.unit)}`, `練習：${name(weakest.unit)}`), s: SCH(`Your weakest test chapter, ${weakest.pct}% so far`, `最弱的考試章節，目前 ${weakest.pct}%`), go: SCH('Practise', '練習'), run: () => { pick = { bookId: book.id, ids: new Set([weakest.unit.id]) }; startUnits(book, [weakest.unit], 10); } };
     else step = { icon: 'review', t: SCH('Mixed practice on all test chapters', '所有考試章節混合練習'), s: SCH('You’re in good shape: keep it fresh', '準備得不錯，保持手感'), go: SCH('Practise', '練習'), run: () => startUnits(book, units, 10) };
   }
-  return { x, book, units, left, ready, step };
+  return { x, book, units, left, ready, step, all };
 }
+// Add or edit a school test. Three kinds: a test or quiz (one subject, textbook and chapters optional),
+// 默書 (a word list), or exams (several subjects, each with its own date; saved as one record per subject sharing grp).
 function testDialog(edit) {
   if (!allow('sched')) return;
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
-  const st = { id: edit ? edit.id : uid(), name: edit ? edit.name : '', date: edit ? edit.date : ymd(Date.now() + 7 * DAY), b: edit ? edit.b : null, u: new Set(edit ? edit.u : []) };
+  const group = edit && edit.grp ? (local.sched || []).filter((x) => x.grp === edit.grp).sort((a, b) => testDay(a) - testDay(b)) : null;
+  const wk = ymd(Date.now() + 7 * DAY);
+  const st = {
+    kind: edit ? (edit.grp ? 'exam' : edit.kind || 'test') : 'test',
+    id: edit ? edit.id : uid(), name: edit ? (edit.grp ? edit.gname || '' : edit.name) : '', named: !!edit,
+    date: edit ? edit.date : wk, subj: edit ? edit.subj || '' : '', b: edit ? edit.b || null : null, u: new Set(edit && edit.u ? edit.u : []),
+    lang: edit && edit.lang ? edit.lang : 'zh', L: edit ? edit.L || '' : '',
+    parts: group ? group.map((x) => ({ id: x.id, subj: x.subj || '', date: x.date, b: x.b || '', score: x.score })) : [{ id: uid(), subj: '', date: wk, b: '' }],
+  };
+  const autoName = () => {
+    if (st.kind === 'dict') return SCH(`${st.lang === 'en' ? 'English' : 'Chinese'} 默書`, `${st.lang === 'en' ? '英文' : '中文'}默書`);
+    if (st.kind === 'exam') return SCH('Exams', '考試');
+    return st.subj && st.subj !== 'other' ? SCH(`${tSubjName(st.subj)} test`, `${tSubjName(st.subj)}測驗`) : '';
+  };
+  const subjOpts = (cur) => `<option value="">${SCH('Choose a subject', '選擇科目')}</option>` + TEST_SUBJ().map(([k, z, e]) => `<option value="${k}" ${k === cur ? 'selected' : ''}>${LANG === 'zh' ? z : e}</option>`).join('');
+  const bookOpts = (books, subjK, cur) => {
+    const mine = books.filter((b) => !subjK || subjK === 'other' || bookSubjKey(b) === subjK);
+    const list = mine.length ? mine : books;
+    return list.map((b) => `<option value="${esc(b.id)}" ${b.id === cur ? 'selected' : ''}>${esc(b.title)}</option>`).join('') + `<option value="" ${!cur ? 'selected' : ''}>${SCH('No textbook in the app for this', '這科未有課本')}</option>`;
+  };
+  const pickBook = (books, subjK) => { const m = books.filter((b) => subjK && bookSubjKey(b) === subjK); return m.length ? m[0].id : ''; };
   const draw = async () => {
-    const books = await getBooks();
-    if (!st.b && books.length) st.b = books[0].id;
+    const books = (await getBooks()).filter((b) => !b.demo);
+    const keep = box.querySelector('.cdlg') ? box.querySelector('.cdlg').scrollTop : 0;
+    if (!st.named) st.name = autoName();
     const book = books.find((b) => b.id === st.b);
+    if (!st.subj && book && st.kind === 'test') st.subj = bookSubjKey(book);
+    const kinds = [['test', SCH('Test or quiz', '測驗或小測'), SCH('One subject', '一個科目')], ['dict', '默書', SCH('Dictation', '默寫詞語')], ['exam', SCH('Exams', '考試'), SCH('Several subjects', '多個科目')]];
+    const lists = (local.dict || []).filter((L) => (L.lang === 'en') === (st.lang === 'en'));
+    let body = '';
+    if (st.kind === 'test') {
+      body = `<label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}">
+      <label for="td-s">${SCH('Subject', '科目')}</label><select id="td-s" class="input">${subjOpts(st.subj)}</select>
+      ${st.subj ? `<label for="td-b">${SCH('Textbook', '課本')}</label><select id="td-b" class="input">${bookOpts(books, st.subj, st.b)}</select>` : ''}
+      ${book ? `<label>${SCH('Chapters in the test', '測驗範圍')} <span class="td-opt">${SCH('optional', '可不填')}</span></label>
+        <div class="td-chs">${book.units.map((u) => `<label class="td-ch"><input type="checkbox" data-u="${esc(u.id)}" ${st.u.has(u.id) ? 'checked' : ''}><span>${esc(cleanUnitTitle(u.title))}</span></label>`).join('')}</div>
+        <span class="td-hint">${SCH('Not sure? Leave them all unticked: Buddy will use everything you’ve practised so far.', '不清楚範圍？全部不剔：Buddy 會用你至今練習過的內容。')}</span>`
+      : st.subj ? `<span class="td-hint">${SCH('No textbook for this subject yet. The test still counts down on Today, and you can add the book any time.', '這科未有課本。測驗仍會在「今天」倒數，你可隨時加入課本。')}</span>` : ''}`;
+    } else if (st.kind === 'dict') {
+      body = `<label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}">
+      <label>${SCH('Language', '語文')}</label><div class="td-seg"><button type="button" data-lang="zh" class="${st.lang !== 'en' ? 'on' : ''}">中文</button><button type="button" data-lang="en" class="${st.lang === 'en' ? 'on' : ''}">English</button></div>
+      <label for="td-l">${SCH('Word list', '詞語表')}</label><select id="td-l" class="input">${lists.map((L) => `<option value="${esc(L.id)}" ${L.id === st.L ? 'selected' : ''}>${esc(L.title)} · ${L.items.length}</option>`).join('')}<option value="" ${!st.L ? 'selected' : ''}>${SCH('Add the words after saving', '儲存後加入詞語')}</option></select>
+      <span class="td-hint">${SCH('Today’s mission will have you practise this list, and readiness is your latest score on it.', '「今日任務」會讓你練習這個詞語表，準備度是你最近一次的分數。')}</span>`;
+    } else {
+      body = `<label>${SCH('Subjects and dates', '科目及日期')}</label>
+      <div class="td-parts">${st.parts.map((pt, i) => `<div class="td-part"><select class="input" data-ps="${i}" aria-label="${SCH('Subject', '科目')}">${subjOpts(pt.subj)}</select><input class="input" type="date" data-pd="${i}" min="${ymd(Date.now())}" value="${esc(pt.date)}" aria-label="${SCH('Date', '日期')}">${st.parts.length > 1 ? `<button type="button" class="btn-sm quiet" data-px="${i}" aria-label="${SCH('Remove', '移除')}">✕</button>` : ''}</div>`).join('')}</div>
+      <button type="button" class="btn-sm" id="td-addp" style="align-self:flex-start">+ ${SCH('Add a subject', '加入科目')}</button>
+      <span class="td-hint">${SCH('Each subject uses its textbook, and everything you’ve practised in it so far. Buddy plans the soonest and weakest first.', '每科會用相關課本及至今練習過的內容。Buddy 會先安排最近和最弱的科目。')}</span>`;
+    }
     box.innerHTML = `<div class="cdlg rdlg tdlg" role="dialog" aria-modal="true" aria-labelledby="td-t" data-raw>
       <b id="td-t">${edit ? SCH('Edit school test', '修改學校測驗') : SCH('Add a school test', '加入學校測驗')}</b>
-      <label for="td-n">${SCH('What test?', '甚麼測驗？')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, Chinese dictation, Maths quiz', '例如：科學測驗、中文默書、數學小測')}" value="${esc(st.name)}">
-      <label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}">
-      <label for="td-b">${SCH('Textbook', '課本')}</label><select id="td-b" class="input">${books.map((b) => `<option value="${esc(b.id)}" ${b.id === st.b ? 'selected' : ''}>${esc(b.title)}</option>`).join('')}</select>
-      <label>${SCH('Chapters in the test', '測驗範圍')}</label>
-      <div class="td-chs">${book ? book.units.map((u) => `<label class="td-ch"><input type="checkbox" data-u="${esc(u.id)}" ${st.u.has(u.id) ? 'checked' : ''}><span>${esc(cleanUnitTitle(u.title))}</span></label>`).join('') : ''}</div>
+      ${edit ? '' : `<div class="td-kinds" role="radiogroup" aria-label="${SCH('What kind of test?', '甚麼類型？')}">${kinds.map(([k, t, sub]) => `<button type="button" role="radio" aria-checked="${st.kind === k}" data-kind="${k}" class="${st.kind === k ? 'on' : ''}"><b>${t}</b><small>${sub}</small></button>`).join('')}</div>`}
+      ${body}
+      <label for="td-n">${SCH('Name', '名稱')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, Term 1 exams', '例如：科學測驗、上學期考試')}" value="${esc(st.name)}">
       <p class="hw-err" id="td-err" role="alert" hidden></p>
       <div class="rd-row"><button class="btn ghost" id="td-cancel">${SCH('Cancel', '取消')}</button><button class="btn" id="td-save">${SCH('Save', '儲存')}</button></div>
-      ${edit ? `<button class="btn-sm quiet" id="td-del" style="align-self:center">${SCH('Delete this test', '刪除這個測驗')}</button>` : ''}
+      ${edit ? `<button class="btn-sm danger" id="td-del" style="align-self:center">${st.kind === 'exam' ? SCH('Delete these exams', '刪除這些考試') : SCH('Delete this test', '刪除這個測驗')}</button>` : ''}
     </div>`;
-    const n = box.querySelector('#td-n'), d = box.querySelector('#td-d');
-    n.oninput = () => (st.name = n.value); d.oninput = () => (st.date = d.value);
-    box.querySelector('#td-b').onchange = (e) => { st.b = e.target.value; st.u = new Set(); draw(); };
+    box.querySelector('.cdlg').scrollTop = keep;
+    const $ = (q) => box.querySelector(q);
+    $('#td-n').oninput = (e) => { st.name = e.target.value; st.named = !!st.name.trim(); };
+    box.querySelectorAll('[data-kind]').forEach((b) => (b.onclick = () => { st.kind = b.dataset.kind; draw(); }));
+    if ($('#td-d')) $('#td-d').oninput = (e) => (st.date = e.target.value);
+    if ($('#td-s')) $('#td-s').onchange = (e) => { st.subj = e.target.value; st.b = pickBook(books, st.subj) || null; st.u = new Set(); draw(); };
+    if ($('#td-b')) $('#td-b').onchange = (e) => { st.b = e.target.value || null; st.u = new Set(); draw(); };
     box.querySelectorAll('[data-u]').forEach((c) => (c.onchange = () => (c.checked ? st.u.add(c.dataset.u) : st.u.delete(c.dataset.u))));
-    box.querySelector('#td-cancel').onclick = () => box.remove();
-    box.querySelector('#td-save').onclick = () => {
-      const err = box.querySelector('#td-err');
-      const bad = !st.name.trim() ? SCH('Give the test a name.', '請輸入測驗名稱。') : !st.date || testLeft(st) < 0 ? SCH('Pick a date from today on.', '請選擇今天或之後的日期。') : !st.u.size ? SCH('Tick at least one chapter.', '請剔選最少一個章節。') : '';
+    box.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { st.lang = b.dataset.lang; st.L = ''; draw(); }));
+    if ($('#td-l')) $('#td-l').onchange = (e) => (st.L = e.target.value);
+    box.querySelectorAll('[data-ps]').forEach((x) => (x.onchange = () => { const pt = st.parts[+x.dataset.ps]; pt.subj = x.value; pt.b = pickBook(books, pt.subj); }));
+    box.querySelectorAll('[data-pd]').forEach((x) => (x.oninput = () => (st.parts[+x.dataset.pd].date = x.value)));
+    box.querySelectorAll('[data-px]').forEach((x) => (x.onclick = () => { st.parts.splice(+x.dataset.px, 1); draw(); }));
+    if ($('#td-addp')) $('#td-addp').onclick = () => { const last = st.parts[st.parts.length - 1]; st.parts.push({ id: uid(), subj: '', date: last ? last.date : wk, b: '' }); draw(); };
+    $('#td-cancel').onclick = () => box.remove();
+    const done = (msg) => { box.remove(); if (view.name === 'home') renderHome(); else if (view.name === 'progress') renderProgress(); if (msg) toast(msg); };
+    $('#td-save').onclick = () => {
+      const err = $('#td-err'); const name = st.name.trim().slice(0, 60);
+      const past = (d) => !d || testLeft({ date: d }) < 0;
+      const bad = !name ? SCH('Give it a name.', '請輸入名稱。')
+        : st.kind === 'exam' ? (st.parts.some((pt) => !pt.subj) ? SCH('Choose a subject for each row.', '請為每一行選擇科目。') : st.parts.some((pt) => past(pt.date)) ? SCH('Pick dates from today on.', '請選擇今天或之後的日期。') : '')
+        : past(st.date) ? SCH('Pick a date from today on.', '請選擇今天或之後的日期。')
+        : st.kind === 'test' && !st.subj ? SCH('Choose the subject.', '請選擇科目。') : '';
       if (bad) { err.textContent = bad; err.hidden = false; return; }
-      if (!edit && limitOf('sched') !== UNL && upcomingTests().length >= limitOf('sched')) { box.remove(); return upsell('sched', 'limit'); }
-      const rec = { id: st.id, name: st.name.trim().slice(0, 60), date: st.date, b: st.b, u: [...st.u] };
-      local.sched = [...(local.sched || []).filter((x) => x.id !== st.id), rec].slice(-30); saveLocal();
-      box.remove(); if (view.name === 'home') renderHome(); else if (view.name === 'progress') renderProgress();
-      toast(SCH(`Added. Today’s mission now gets you ready for ${rec.name}.`, `已加入。今日任務會幫你準備「${rec.name}」。`));
+      const groups = (xs) => new Set(xs.map((x) => x.grp || x.id)).size;
+      if (!edit && limitOf('sched') !== UNL && groups(upcomingTests()) >= limitOf('sched')) { box.remove(); return upsell('sched', 'limit'); }
+      let others = (local.sched || []).filter((x) => x.id !== st.id && !(group && x.grp === edit.grp));
+      let recs;
+      if (st.kind === 'exam') {
+        const grp = group ? edit.grp : uid();
+        recs = st.parts.map((pt) => ({ id: pt.id, kind: 'test', grp, gname: name, name: `${name} · ${tSubjName(pt.subj)}`.slice(0, 60), date: pt.date, subj: pt.subj, b: pt.b || null, u: [], ...(typeof pt.score === 'number' ? { score: pt.score } : {}) }));
+      } else if (st.kind === 'dict') recs = [{ id: st.id, kind: 'dict', name, date: st.date, subj: st.lang === 'en' ? 'eng' : 'chi', lang: st.lang, L: st.L || null }];
+      else recs = [{ id: st.id, kind: 'test', name, date: st.date, subj: st.subj, b: st.b || null, u: [...st.u] }];
+      if (edit && typeof edit.score === 'number' && !group) recs[0].score = edit.score;
+      local.sched = [...others, ...recs].slice(-40);
+      if (recs.some((r) => testLeft(r) <= 14)) local.mission = null; // rebuild today's mission so it includes the new test
+      saveLocal();
+      if (st.kind === 'dict' && !st.L) { box.remove(); toast(SCH('Saved. Now add the words for your 默書.', '已儲存。請加入默書詞語。')); return go({ name: 'dictation', id: 'new' }); }
+      done(SCH(`Added. Today’s mission now gets you ready for ${name}.`, `已加入。今日任務會幫你準備「${name}」。`));
     };
-    const del = box.querySelector('#td-del'); if (del) del.onclick = () => { local.sched = (local.sched || []).filter((x) => x.id !== st.id); saveLocal(); box.remove(); if (view.name === 'home') renderHome(); else if (view.name === 'progress') renderProgress(); };
+    const del = $('#td-del'); if (del) del.onclick = () => { local.sched = (local.sched || []).filter((x) => x.id !== st.id && !(group && x.grp === edit.grp)); saveLocal(); done(); };
   };
   box.onclick = (e) => { if (e.target === box) box.remove(); };
   draw(); document.body.appendChild(box);
@@ -5899,12 +6002,13 @@ function testDialog(edit) {
 // Today: a "School tests" section, and how-did-it-go for tests just passed.
 async function schoolTestsHTML() {
   const up = upcomingTests().slice(0, 4);
-  const steps = (await Promise.all(up.map(testStep))).filter(Boolean);
+  const steps = (await Promise.all(up.map(testStep))).filter(Boolean)
+    .sort((a, b) => a.left - b.left || (a.ready ?? 101) - (b.ready ?? 101)); // same day (e.g. exams): weakest first
   const past = schoolTests().filter((x) => testLeft(x) < 0 && testLeft(x) >= -21 && x.score === undefined); // papers often come back 1-2 weeks later
   const rows = steps.map((p) => `<div class="stx ${p.left <= 1 ? 'soon' : ''}"><button class="stx-main" data-tedit="${esc(p.x.id)}" aria-label="${SCH('Edit', '修改')} ${esc(p.x.name)}">
       <span class="stx-cal"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span>
-      <span class="stx-t"><b data-raw>${esc(p.x.name)}</b><small>${leftText(p.left)} · <span data-raw>${esc(p.units.length === 1 ? cleanUnitTitle(p.units[0].title) : SCH(`${p.units.length} chapters`, `${p.units.length} 個章節`))}</span></small></span>
-      <span class="stx-r"><b>${p.ready}%</b><small>${SCH('ready', '準備度')}</small></span></button></div>`).join('');
+      <span class="stx-t"><b data-raw>${esc(p.x.name)}</b><small>${leftText(p.left)} · <span data-raw>${esc(testScope(p))}</span></small></span>
+      <span class="stx-r"><b>${p.ready == null ? '–' : p.ready + '%'}</b><small>${SCH('ready', '準備度')}</small></span></button></div>`).join('');
   const pastHTML = past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><button class="btn-sm primary stx-snap" data-snapscore="${esc(x.id)}">${SCH('Snap the marked paper', '拍下已批改的試卷')}</button><span class="stx-sc"><span class="muted" style="font-size:14px">${SCH('or type it:', '或輸入：')}</span><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('');
   return { steps, pastHTML, html: `<section class="stack g10" aria-label="${SCH('School tests', '學校測驗')}">
       <div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>
@@ -5925,7 +6029,7 @@ function bindSchoolTests() {
     const M = await marksScreen(null, { snap: true });
     if (M) {
       const book = (await getBooks()).find((bk) => bk.id === x.b), sub = String((book && (book.subject + ' ' + book.title)) || '');
-      const key = /english|英文/i.test(sub) ? 'eng' : /math|數學/i.test(sub) ? 'math' : /chinese|中文|中國語文/i.test(sub) ? 'chi' : /science|general studies|humanities|常識|科學|人文/i.test(sub) ? 'gs' : '';
+      const key = x.subj && x.subj !== 'other' ? x.subj : /english|英文/i.test(sub) ? 'eng' : /math|數學/i.test(sub) ? 'math' : /chinese|中文|中國語文/i.test(sub) ? 'chi' : /science|general studies|humanities|常識|科學|人文/i.test(sub) ? 'gs' : '';
       const v = key && M.s[key] !== undefined ? M.s[key] : Object.keys(M.s).length === 1 ? Object.values(M.s)[0] : null;
       local.sched = (local.sched || []).map((t) => (t.id === x.id ? { ...t, score: v } : t)); saveLocal();
     }

@@ -1629,6 +1629,18 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .cdlg{max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .tdlg .td-chs{max-height:min(34dvh,300px);overflow-y:auto;overscroll-behavior:auto;border:1px solid var(--line);border-radius:12px;padding:6px}
 .tdlg .rd-row{position:sticky;bottom:-22px;background:#FFFFFF;padding:10px 0 4px;margin-top:4px}
+
+/* add a school test: kind picker, optional label, segmented language, exam rows */
+.td-kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 2px}
+.td-kinds button{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:#FFFFFF;border-radius:12px;padding:10px;font:inherit;color:var(--ink);cursor:pointer;min-height:58px}
+.td-kinds button b{font-size:14px}.td-kinds button small{font-size:12px;color:var(--muted)}
+.td-kinds button.on{border-color:var(--accent);background:var(--accent-soft)}
+.td-opt{font-weight:500;color:var(--muted-2,#7A829C);font-size:12.5px}
+.td-hint{font-size:13px!important;line-height:1.45;color:var(--muted)!important}
+.td-seg{display:flex;gap:8px}.td-seg button{flex:1;min-height:44px;border:1.5px solid var(--line);background:#FFFFFF;border-radius:12px;font:600 15px var(--ui);color:var(--ink);cursor:pointer}.td-seg button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-dark)}
+.td-parts{display:flex;flex-direction:column;gap:8px}
+.td-part{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) auto;gap:8px;align-items:center}
+.tdlg .td-chs{flex:none;min-height:140px}
 </style>
 </head>
 <body>
