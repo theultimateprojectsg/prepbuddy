@@ -2301,14 +2301,16 @@ async function todayReadyHTML(books) {
     const ch = x.was == null || !x.used ? '' : x.pct > x.was ? `<em class="up">▲ ${x.pct - x.was}% ${Z('this week', '本週')}</em>` : x.pct < x.was ? `<em class="down">▼ ${x.was - x.pct}% ${Z('this week', '本週')}</em>` : `<em>${Z('no change this week', '本週沒有變化')}</em>`;
     return `<button class="pg-rg tr-rg" data-book="${esc(x.b.id)}">${x.pct > 0 ? ringHTML(x.pct, tone(x.pct), x.pct + '%', 68) : ringHTML(x.covered, 'cov', x.covered ? x.covered + '%' : '–', 68)}<b data-raw>${esc(x.b.subject ? subj(x.b.subject) : shortTitle(x.b.title))}</b><small>${lab}</small>${ch}</button>`;
   };
-  return `<section class="stack g10 td-sec" aria-label="${Z('How ready you are', '準備程度')}"><div class="sect-head"><h2>${Z('How ready you are', '準備程度')}</h2><button class="btn-sm" id="moreready">${Z('See progress', '查看進度')}</button></div>
+  return `<section class="stack g10 td-sec" aria-label="${Z('How ready you are', '準備程度')}"><div class="sect-head"><h2 class="h-info">${Z('How ready you are', '準備程度')}${infoBtn('howReady', Z('How is this worked out?', '這是怎樣計算的？'))}</h2><button class="btn-sm" id="moreready">${Z('See progress', '查看進度')}</button></div>
     <div class="card td-ready"><div class="tr-week"><span class="tr-wl">${Z('This week', '本週')}</span>${wk.join('')}</div>
     <div class="pg-rings">${rows.slice(0, 6).map(ring).join('')}</div>${rows.length > 6 ? `<p class="hint" style="margin:0">${Z(`+ ${rows.length - 6} more on Progress`, `另有 ${rows.length - 6} 本在「進度」`)}</p>` : ''}${readyHowHTML()}</div></section>`;
 }
+// A small round "i" button beside a heading; it opens the explainer with that id (see the click handler near the end).
+const infoBtn = (id, label) => `<button type="button" class="info-btn" data-how="${id}" aria-controls="${id}" aria-expanded="false" aria-label="${esc(label)}" title="${esc(label)}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.2" fill="currentColor" stroke="none"/></svg></button>`;
 // "How does Today's mission work?": a short fold-out on the mission card.
-function missionHowHTML() {
+function missionHowHTML(id = 'howMission') {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
-  return `<details class="ms-how"><summary>${Z('How does this work?', '這是怎樣運作的？')}</summary><div>
+  return `<details class="ms-how how-panel" id="${id}"><summary>${Z('How does this work?', '這是怎樣運作的？')}</summary><div>
     <p>${Z('Each morning Buddy picks up to 3 steps for today, most important first:', '每天早上，Buddy 會按重要程度，為你選最多 3 個步驟：')}</p>
     <ol>
       <li><b>${Z('A school test in the next 2 weeks.', '兩星期內的學校測驗。')}</b> ${Z('Learn any chapter you haven’t started, then practise your weakest one, then mix them all. A practice test the day before, and a warm-up on the day.', '先學還未開始的章節，再練最弱的一章，然後混合練習。考試前一天做模擬測驗，當天做熱身。')}</li>
@@ -2326,7 +2328,7 @@ function missionHowHTML() {
     </ul></div></details>`;
 }
 // "How is 'how ready' worked out?": a short fold-out under the readiness rings (Today and Progress).
-function readyHowHTML() {
+function readyHowHTML(id = 'howReady') {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
   const rows = [[30, Z('Passed timed chapter tests', '通過限時章節測驗'), Z('80% or more, on two different days.', '取得 80% 或以上，並在兩個不同日子通過。')],
     [15, Z('Covered every part', '涵蓋每個部分'), Z('Right answers from every part of the chapter, not just one bit.', '章節每個部分都有答對的題目，不只是其中一部分。')],
@@ -2334,7 +2336,7 @@ function readyHowHTML() {
     [15, Z('Deep understanding', '深入理解'), Z('Right on harder “apply” and “analyse” questions, and full marks on written answers.', '答對較難的「應用」和「分析」題，以及文字題取得滿分。')],
     [15, Z('Remembered over time', '長久記得'), Z('Right again in reviews, days later.', '幾天後溫習時仍然答對。')],
     [10, Z('Mistakes fixed', '改正錯題'), Z('Few mistakes left to fix in the chapter.', '該章剩下要改正的錯題很少。')]];
-  return `<details class="ms-how rd-how"><summary>${Z('How is this worked out?', '這是怎樣計算的？')}</summary><div>
+  return `<details class="ms-how rd-how how-panel" id="${id}"><summary>${Z('How is this worked out?', '這是怎樣計算的？')}</summary><div>
     <p>${Z('Each chapter scores up to 100 points from six things:', '每一章最多 100 分，由六部分組成：')}</p>
     <div class="rd-rows">${rows.map(([n, t, d]) => `<div><b class="rd-n">${n}</b><span><b>${t}</b>${d}</span></div>`).join('')}</div>
     <p><b>${Z('Two limits keep it honest:', '兩個限制，確保分數真實：')}</b> ${Z('a chapter stays at 70% or below until you pass a timed chapter test, and only goes above 95% after passes on two different days.', '未通過限時章節測驗前，該章最多 70%；要在兩個不同日子通過，才可以超過 95%。')}</p>
@@ -2414,8 +2416,8 @@ async function renderHome() {
     ? `<div class="ms-row done"><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
     : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('NEXT', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
   const missionHTML = allDone
-    ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Mission done!', '任務完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
-    : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2>${Z('Today’s mission', '今日任務')}</h2><span>${Z(`about ${mins} min`, `約 ${mins} 分鐘`)}</span></div>
+    ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
+    : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span>${Z(`about ${mins} min`, `約 ${mins} 分鐘`)}</span></div>
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
       ${missionHowHTML()}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
@@ -5077,7 +5079,7 @@ async function renderProgress() {
     ${explainHTML}
     <div class="pg-grid">
       <div class="pg-c">
-        ${RH.length ? `<section class="pgcard"><h2>${pIcon('ring', 18)} ${PT('Am I ready?', '我準備好了嗎？')}</h2><div class="pg-rings">${ringRow}</div>${testCard}${readyHowHTML()}</section>` : ''}
+        ${RH.length ? `<section class="pgcard"><h2 class="h-info">${pIcon('ring', 18)} ${PT('Am I ready?', '我準備好了嗎？')}${infoBtn('howReadyP', PT('How is this worked out?', '這是怎樣計算的？'))}</h2><div class="pg-rings">${ringRow}</div>${testCard}${readyHowHTML('howReadyP')}</section>` : ''}
         ${goalCardHTML(D)}
         <section class="pgcard"><h2>${pIcon('target', 18)} ${PT('What to work on', '要加強的地方')}</h2><div class="pg-acts">${acts.join('')}</div></section>
         ${beyondHTML}
@@ -7863,6 +7865,13 @@ async function refreshOldQuestions() {
   local.qrules = QRULES; saveLocal();
 }
 getBooks().then(pruneMistakes).catch(() => {});
+// "i" buttons open and close their explainer
+document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('[data-how]'); if (!b) return;
+  const d = document.getElementById(b.dataset.how); if (!d) return;
+  d.open = !d.open; b.setAttribute('aria-expanded', String(d.open)); b.classList.toggle('on', d.open);
+  if (d.open) setTimeout(() => d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 30);
+});
 flushReports().catch(() => {});
 pilotGate().then(async () => { if ((await getBooks()).some((b) => b.demo)) await removeDemo(); }).then(() => pilotWelcome()).then(() => refreshOldQuestions().catch(() => {})).finally(async () => {
   let v = urlView() || { name: 'home' };

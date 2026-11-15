@@ -1692,6 +1692,16 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .rd-n{flex:none;width:34px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:13px}
 .rd-rows span{display:flex;flex-direction:column;gap:1px;font-size:13.5px}.rd-rows span b{font-size:14px}
 .rd-how{margin-top:4px}
+
+/* info "i" buttons: explainers open from a small button by the heading, not a pill */
+.h-info{display:inline-flex;align-items:center;gap:6px}
+.info-btn{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent-tint);background:#FFFFFF;color:var(--accent);display:inline-grid;place-items:center;padding:0;cursor:pointer;vertical-align:middle}
+.info-btn:hover,.info-btn.on{background:var(--accent-soft);border-color:var(--accent)}
+.info-btn::before{content:'';position:absolute;inset:-7px}.info-btn{position:relative}
+.how-panel>summary{display:none!important}
+.how-panel{border-top:none;padding-top:0;margin-top:0}
+.how-panel[open]{margin-top:10px;padding:12px 14px;background:#F7F8FB;border-radius:12px}
+.how-panel>div{padding:0!important}
 </style>
 </head>
 <body>
