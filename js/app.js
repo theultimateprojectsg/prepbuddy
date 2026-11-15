@@ -4799,7 +4799,7 @@ async function renderProgress() {
 
   $app.innerHTML = `
   <main class="pad pgpage" data-view="progress" data-raw style="flex:1">
-    ${titleRow(`<h1 class="pagetitle">${PT('Progress', '進度')}</h1>`)}
+    <div class="greet pg-greet"><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, week by week.', '你每週的學習情況。')}</p></div>
     <section class="pg-hero">${buddySVG(r.q ? 'happy' : 'think', 60)}<div><b>${verdict}</b><span>${sub}</span></div></section>
     <div class="pg-stats">
       ${stat('flame', 'orange', D.streak, PT(D.streak === 1 ? 'day in a row' : 'days in a row', '連續練習日數'))}
