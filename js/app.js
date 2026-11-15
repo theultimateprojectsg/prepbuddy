@@ -444,7 +444,7 @@ async function bookMastery(book) {
   ]);
   const chapters = book.units.map((u, i) => ({ unit: u, ...chapterMastery(book, u, (lists[i] || []).filter((q) => !blocked(q)), texts[i] || '', ntextOf(`${book.id}:${u.id}`, texts[i] || '')) }));
   const w = chapters.reduce((t, c) => t + c.weight, 0) || 1;
-  const pct = Math.round(chapters.reduce((t, c) => t + c.pct * c.weight, 0) / w);
+  const raw = chapters.reduce((t, c) => t + c.pct * c.weight, 0) / w, pct = raw > 0 ? Math.max(1, Math.round(raw)) : 0; // started = at least 1%
   const areas = Object.fromEntries(AREAS.map(([k]) => [k, chapters.reduce((t, c) => t + c.score[k] * c.weight, 0) / w]));
   return { pct, chapters, areas };
 }
@@ -2309,7 +2309,7 @@ async function renderHome() {
     if (nb) items.push(`<button class="plan-item" data-lv="${esc(nb.id)}"><span class="pi-icon pi-continue">${actionIcon('level', 24)}</span><span class="pi-text"><b>Find your level</b><span class="sub"><span data-raw>${esc(nb.title)}</span> · about 5 min</span></span><span class="go">Start</span></button>`); }
   if (last) {
     const qs = await getQs(last.book.id, last.unit.id); const sc = scoreOf(qs);
-    items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b data-raw>${esc(last.unit.title)}</b><span class="sub">Keep going${sc !== null ? ` · ${sc}% so far` : ''}</span></span><span class="go">Practise</span></button>`);
+    items.push(`<button class="plan-item" id="continue"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b data-raw>${esc(last.unit.title)}</b><span class="sub">Keep going${sc !== null ? ` · scored ${sc}%` : ''}</span></span><span class="go">Practise</span></button>`);
   } else {
     items.push(`<button class="plan-item" data-book="${esc(books[0].id)}"><span class="pi-icon pi-continue">${actionIcon('practise', 24)}</span><span class="pi-text"><b>Practise your first chapter</b><span class="sub" data-raw>${esc(books[0].title)}</span></span><span class="go">Choose</span></button>`);
   }
@@ -2411,7 +2411,7 @@ async function practiceByChapter(showAll) {
   const list = m.chapters.filter((c) => !NOT_TEACHING.test(c.unit.title || ''));
   let start = list.findIndex((c) => c.pct < 50); if (start < 0) start = Math.max(0, list.findIndex((c) => c.pct < 100));
   const shown = showAll ? list : list.slice(start, start + 5);
-  const st = (c) => (c.pct > 0 ? `<span style="color:${c.pct < 60 ? 'var(--warn)' : c.pct < 80 ? 'var(--accent)' : 'var(--good)'};font-weight:600">${c.pct}%</span> · ${trStep(masteryLabel(c.pct))}` : learned[`${bk.id}:${c.unit.id}`] ? Z('Lesson done · not practised yet', '已上課 · 未練習') : Z('Not started', '未開始'));
+  const st = (c) => (c.pct > 0 ? `<span style="color:${c.pct < 60 ? 'var(--warn)' : c.pct < 80 ? 'var(--accent)' : 'var(--good)'};font-weight:600">${c.pct}% ${Z('mastered', '已掌握')}</span> · ${trStep(masteryLabel(c.pct))}` : learned[`${bk.id}:${c.unit.id}`] ? Z('Lesson done · not practised yet', '已上課 · 未練習') : Z('Not started', '未開始'));
   box.innerHTML = `
     ${books.length > 1 ? `<div class="pc-books" role="tablist">${books.map((b) => `<button class="chip${b.id === bk.id ? ' on' : ''}" role="tab" aria-selected="${b.id === bk.id}" data-pcbook="${esc(b.id)}"><span data-raw>${esc(subjectName(b.subject, LANG) || b.title)}</span></button>`).join('')}</div>` : ''}
     <p class="pc-title muted" data-raw>${esc(bk.title)}</p>
@@ -4700,7 +4700,7 @@ async function renderProgress() {
         </section>
         <section class="pgcard"><h2>${pIcon('target', 18)} ${PT('What to do next', '下一步')}</h2><div class="pg-acts">${acts.join('')}</div></section>
         ${D.chapters.length ? `<section class="pgcard"><h2>${pIcon('book', 18)} ${PT('Chapters this week', '本週練習的章節')}</h2>
-          <div class="pg-chs">${D.chapters.slice(0, 8).map((c) => `<div class="pg-ch"><div class="pg-ch-top"><span>${esc(chName(c))}</span><b class="${tone(c.a)}">${c.a}%</b></div><div class="pg-bar ${tone(c.a)}"><i style="width:${c.a}%"></i></div><small>${chLabel(c.a)} · ${PT(`${c.n} answered`, `${c.n} 題`)}${c.was === null ? '' : c.a === c.was ? ` · ${PT('same as last week', '與上週相同')}` : ` · ${c.a > c.was ? '↑' : '↓'} ${PT(`from ${c.was}%`, `上週 ${c.was}%`)}`}</small></div>`).join('')}</div></section>` : ''}
+          <div class="pg-chs">${D.chapters.slice(0, 8).map((c) => `<div class="pg-ch"><div class="pg-ch-top"><span>${esc(chName(c))}</span><b class="${tone(c.a)}">${c.a}%</b></div><div class="pg-bar ${tone(c.a)}"><i style="width:${c.a}%"></i></div><small>${PT('Scored', '得分')} · ${chLabel(c.a)} · ${PT(`${c.n} answered`, `${c.n} 題`)}${c.was === null ? '' : c.a === c.was ? ` · ${PT('same as last week', '與上週相同')}` : ` · ${c.a > c.was ? '↑' : '↓'} ${PT(`from ${c.was}%`, `上週 ${c.was}%`)}`}</small></div>`).join('')}</div></section>` : ''}
       </div>
       <div class="pg-c">
         ${gsHTML}
@@ -6479,6 +6479,20 @@ const preTutorOK = (q) => S.phase !== 'revealed' && !isExam();
 // Laptops show it in the right-hand panel next to the question (every type); phones have it under the question.
 const preTutorInSide = (q) => preTutorOK(q) && matchMedia('(min-width:1024px)').matches;
 const preTutorHTML = (q) => `<div class="tutor pre" id="tutor">${tutorHTML(q)}</div>`;
+// Phones: Buddy starts folded into one button, so the question comes first. It opens when tapped, and on its own
+// after a wrong answer. Laptops keep it in the side panel.
+const phoneQ = () => !matchMedia('(min-width:1024px)').matches;
+const tutorCTA = (label) => `<button class="tutor-cta" id="tutorOpen" type="button">${buddySVG('happy', 30)}<span>${label}</span><span aria-hidden="true" class="tc-go">›</span></button>`;
+function tutorFolded(q) {
+  if (!phoneQ()) return false;
+  const c = chatOf(); if (c.shown || c.msgs.length) return false;
+  if (S.phase !== 'revealed') return true;
+  return choiceType(q) ? S.answers[S.i] === q.correct_option : partsGot(q) === marksOf(q); // right answers: folded
+}
+function bindTutorCTA(q, cls) {
+  const b = document.getElementById('tutorOpen'); if (!b) return;
+  b.onclick = () => { chatOf().shown = true; const d = document.createElement('div'); d.className = cls; d.id = 'tutor'; d.innerHTML = tutorHTML(q); b.replaceWith(d); bindTutor(q); const i = d.querySelector('input, textarea'); d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+}
 
 function renderQuestion() {
   S.waiting = false;
@@ -6491,7 +6505,7 @@ function renderQuestion() {
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
     <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip">Level ${q.level} · ${LEVEL[q.level]}</span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${body.main}
-    ${preTutorOK(q) && !preTutorInSide(q) ? preTutorHTML(q) : ''}
+    ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '唔明？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
   ${body.footer}${/class="sheet/.test(body.footer) ? '' : qSide(q)}`;
   liftActions();
@@ -6641,7 +6655,7 @@ function liftActions() {
 function feedbackBits(q) {
   return `<p class="expl">${esc(q.explanation)}</p>
     ${q.source_quote ? `<p class="src">${esc(q.section || 'Textbook')}${q.pages ? `, pp. ${esc(q.pages)}` : ''}: “${esc(q.source_quote)}”</p>` : ''}
-    <div class="tutor" id="tutor">${tutorHTML(q)}</div>
+    ${tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '問 Buddy 關於這題' : 'Ask Buddy about this question') : `<div class="tutor" id="tutor">${tutorHTML(q)}</div>`}
     <div class="rbox" id="rbox">${(local.reports || []).includes(q.id) ? '<p class="rdone">You reported this question. We’ll check it.</p>' : '<div style="display:flex;justify-content:flex-end"><button class="btn-sm quiet" id="report">Report a problem</button></div>'}</div>`;
 }
 const REPORT_REASONS = [['wrong_answer', 'The answer is wrong'], ['unclear', 'The question doesn’t make sense'], ['missing_figure', 'It needs a diagram or table I can’t see'], ['off_topic', 'It’s not from my textbook'], ['typo', 'Spelling or formatting mistake'], ['other', 'Something else']];
@@ -6888,17 +6902,17 @@ async function markAnswer(sess, idx) {
 
 function writtenBody(q, revealed) {
   const ans = S.answers[S.i] || q.parts.map(() => '');
-  const stem = figHTML(q) + (q.stem ? renderStem(writtenStem(q)) : '');
+  const stem = figHTML(q) + (q.stem ? renderStem(writtenStem(q), 'q') : ''); // the question is the biggest text on the screen
   if (!revealed) {
     // The maths keypad and "show your working" only for questions that involve working something out.
     const maths = kindSync(q.id) === 'maths' && q.type !== 'essay' && /\d|calculat|work out|find|solve|show that|evaluate|simplif|expand|factori|prove|estimate|計算|求/i.test(q.parts.map((p) => `${p.prompt} ${p.mark_scheme.join(' ')}`).join(' ')), essay = q.type === 'essay';
     const parts = q.parts.map((p, k) => {
       const ink = inkOf(S.i, k, true);
       // a one-word blank (cloze, proofreading line, verb form): a one-line box, no handwriting pad
-      if (p.blank && !essay) return `<div class="part"><label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
+      if (p.blank && !essay) return `<div class="part"><label class="ph${GENERIC_ASK.test(p.prompt) ? ' generic' : ''}" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
       <input id="a${k}" data-k="${k}" class="blank-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer" value="${esc(ans[k])}"></div>`;
       return `<div class="part">
-      <label class="ph" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
+      <label class="ph${GENERIC_ASK.test(p.prompt) ? ' generic' : ''}" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
       <div class="ansmode" role="radiogroup" aria-label="How to answer"><button role="radio" aria-checked="${!ink.on}" class="${ink.on ? '' : 'on'}" data-hand="${k}:0">${ICON.keys} Type</button><button role="radio" aria-checked="${ink.on}" class="${ink.on ? 'on' : ''}" data-hand="${k}:1">${ICON.pen} Write by hand</button></div>
       ${ink.on ? `<div class="inkpad"><canvas id="ink${k}" data-k="${k}" aria-label="Writing area: write your answer with your finger or a stylus"></canvas>
           <div class="inktools"><button data-undo="${k}">Undo</button><button data-clear="${k}">Clear</button><button data-more="${k}">More space</button></div></div>`
@@ -6906,7 +6920,7 @@ function writtenBody(q, revealed) {
       <textarea id="a${k}" data-k="${k}" class="${essay ? 'essay' : ''}" placeholder="${essay ? 'Write your answer here' : maths ? 'Show your working, one step per line' : 'Type, or tap the microphone on your keyboard to speak'}">${esc(ans[k])}</textarea>
       ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}`}</div>`;
     }).join('');
-    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint">${q.parts.every((p) => p.blank) ? (kindSync(q.id) === 'maths' ? 'Write just the answer. Units like cm² can be typed as cm2.' : 'Check your spelling: it counts.') : maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
+    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint ahint">${q.parts.every((p) => p.blank) ? (kindSync(q.id) === 'maths' ? 'Write just the answer. Units like cm² can be typed as cm2.' : 'Check your spelling: it counts.') : maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
     const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">I don’t know this one. Show me the answer</button><span class="hint" style="text-align:center">It goes into your Mistake book so you can try it again later.</span>'}</div>`;
     return { main, footer, bind() {
       const grab = () => {
@@ -6952,7 +6966,7 @@ function writtenBody(q, revealed) {
     return `<div class="part">
       <div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
       ${yoursHTML(k, ans[k], pm)}
-      ${pm ? `<div class="marker ${got === p.marks ? 'full' : ''}"><b>${got} / ${p.marks}</b> ${esc(pm.feedback)}</div>` : ''}
+      ${pm ? `<div class="marker ${got === p.marks ? 'full' : ''}">${q.parts.length > 1 ? `<b>${got} / ${p.marks}</b> ` : ''}${esc(pm.feedback)}</div>` : ''}
       <span class="hint" style="font-weight:600">${ai ? 'Mark scheme (ticked = points you earned):' : m.skipped ? 'Mark scheme:' : `Tick each point your answer makes${p.mark_scheme.length > p.marks ? ` (max ${p.marks})` : ''}:`}</span>
       ${p.mark_scheme.map((pt, j) => `<button class="point ${ticks[k][j] ? 'on' : ''}" data-k="${k}" data-j="${j}" aria-pressed="${ticks[k][j]}"><span class="box">${ticks[k][j] ? ICON.check : ''}</span><span>${esc(pt.replace(/\s*\(1\)\s*$/, ''))}</span></button>`).join('')}
     </div>`;
@@ -6963,11 +6977,12 @@ function writtenBody(q, revealed) {
     : ai ? '<p class="hint" style="margin:0">Marked by AI. Think it got one wrong? Tap a point to change it.</p>' : '';
   const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} marks</span>
     ${m.tip ? `<p class="tipline"><b>Tip:</b> <span data-raw>${esc(m.tip)}</span></p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
-  return { main: `${stem}${note}${partHtml}`, footer, bind() {
+  return { main: `${stem}${partHtml}${note}`, footer, bind() {
     $app.querySelectorAll('.point').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, j = +b.dataset.j; ticks[k][j] = !ticks[k][j]; const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }));
   } };
 }
 
+const GENERIC_ASK = /^(write|show) (your|the)\b/i; // "Write your answer.": an instruction, not the question
 const wordCount = (t) => { const x = String(t || '').trim(); if (!x) return 0; const cjk = (x.match(/[㐀-鿿]/g) || []).length; return cjk > 20 ? cjk : x.split(/\s+/).length; };
 const kindSync = (qid) => bookKinds.get(String(qid || '').split(':')[0]) || 'science';
 const MATH_KEYS = ['²', '³', '√', 'π', '×', '÷', '±', '≤', '≥', '≠', '≈', '°', 'θ', '½', '⁻¹', '(', ')', 'sin', 'cos', 'tan', 'log'];
@@ -7127,7 +7142,7 @@ function bindCommon(q) {
     }
     advance();
   };
-  bindTutor(q);
+  bindTutor(q); bindTutorCTA(q, S.phase === 'revealed' ? 'tutor' : 'tutor pre');
   bindReport(q);
 }
 
@@ -7232,7 +7247,7 @@ function renderSummary() {
           qs.length ? row('redo', I.redo, 'violet', Z('Redo this set', '重做這一組'), Z('The same questions, shuffled', '同樣的題目，次序打亂')) : '',
           row('home', S.book ? I.book : I.home, 'grey', S.book ? Z('Back to chapters', '返回章節') : Z('Back to home', '返回主頁'), S.book ? Z('Pick another chapter or activity', '選擇其他章節或活動') : Z('See today’s plan', '查看今日計劃')),
         ].filter(Boolean).join('');
-        return `${prim}${rows ? `<div class="ropts card">${rows}</div>` : ''}`;
+        return `${prim}${rows ? `<details class="rmore"><summary>${Z('More options', '其他選擇')}</summary><div class="ropts card">${rows}</div></details>` : ''}`;
       })()}
     </div>
     </div>

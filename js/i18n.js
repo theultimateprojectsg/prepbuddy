@@ -634,7 +634,7 @@ const PATTERNS = [
   [/^Review (\d+) questions?$/, '溫習 $1 條題目'],
   [/^About (\d+) min · keeps what you learned fresh$/, '約 $1 分鐘 · 幫你記牢所學'],
   [/^Fix (\d+) mistakes?$/, '改正 $1 條錯題'],
-  [/^Keep going · (\d+)% so far$/, '繼續努力 · 目前 $1%'],
+  [/^Keep going · scored (\d+)%$/, '繼續努力 · 得分 $1%'],
   [/^Next review (tomorrow|in (\d+) days|in about a week|in (\d+) weeks)$/, (m, w, d, wk) => `下次溫習：${w === 'tomorrow' ? '明天' : d ? `${d} 日後` : wk ? `${wk} 星期後` : '約一星期後'}`],
   [/^(\d+)% to go\. Here’s what will get you there:$/, '還差 $1%。這樣做可以達標：'],
   [/^Review (\d+) questions? in (.+)$/, '溫習「$2」的 $1 條題目'],
