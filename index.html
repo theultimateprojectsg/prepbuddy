@@ -1886,85 +1886,55 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 @media (hover:hover){.covergrid .bookcover.tb:hover{transform:translateY(-3px) rotate(-.4deg)}}
 @media (max-width:600px){.covergrid:has(.tb){grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}.covergrid .bookcover.tb{aspect-ratio:auto;min-height:230px;padding:12px 12px 12px 30px;gap:10px}.bookcover.tb .tb-label{flex:none}.bookcover.tb .c-title{font-size:14px!important;-webkit-line-clamp:7}.bookcover.tb .c-sub{font-size:12px}.bookcover.tb .tb-label{padding:10px}}
 
-/* ---- Streak fire: hotter the longer the streak (fire-1 … fire-4) ---- */
-.gr-sk{display:flex;align-items:center;gap:10px}
-.gr-sk .fl{display:inline-flex;width:30px;height:38px;flex:none;transform-origin:50% 90%;animation:flk 1.6s ease-in-out infinite;filter:drop-shadow(0 2px 6px rgba(255,120,30,.35))}
-.gr-sk .fl svg{width:100%;height:100%;overflow:visible}
-.gr-sk .fl .fl-i{transform-origin:50% 90%;animation:flk2 1.1s ease-in-out infinite}
-.gr-sk-n{display:flex;align-items:baseline;gap:6px;color:#8A3A10}
-.gr-sk-n b{font-size:28px;line-height:1;font-weight:800;background:linear-gradient(180deg,#FF9F1C,#E8431C);-webkit-background-clip:text;background-clip:text;color:transparent}
-.gr-sk-n span{font-size:15px;font-weight:700;white-space:nowrap}
-@keyframes flk{0%,100%{transform:scale(1,1) rotate(-1.5deg)}25%{transform:scale(1.04,.96) rotate(1.5deg)}50%{transform:scale(.97,1.06) rotate(-.5deg)}75%{transform:scale(1.03,.98) rotate(1deg)}}
-@keyframes flk2{0%,100%{transform:scale(1)}50%{transform:scale(.9,1.12)}}
-/* bigger flame as the streak grows */
-.fire-2 .gr-sk .fl{width:36px;height:46px}
-.fire-3 .gr-sk .fl{width:42px;height:54px;filter:drop-shadow(0 0 10px rgba(255,120,30,.55))}
-.fire-4 .gr-sk .fl{width:48px;height:62px;filter:drop-shadow(0 0 16px rgba(255,90,20,.7));animation-duration:1.1s}
-.fire-3 .gr-sk-n b{font-size:32px}.fire-4 .gr-sk-n b{font-size:38px}
-/* practised days in the week glow orange while a streak is alive */
-.gr-strip:not(.fire-0) .gr-week i.on{background:linear-gradient(160deg,#FFB547,#F0561F);border-color:#F0561F;box-shadow:0 2px 8px rgba(240,86,31,.35)}
-/* the card warms up */
-.today .gr-hero.fire-1{background-image:radial-gradient(100% 70% at 8% 115%,rgba(255,160,70,.14),transparent 60%),radial-gradient(120% 160% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 50%),linear-gradient(135deg,#EEF1FB 0%,#EEF1FB 60%,#FFF8E1 100%)!important}
-.today .gr-hero.fire-2{background-image:radial-gradient(120% 90% at 10% 115%,rgba(255,150,60,.26),transparent 60%),radial-gradient(120% 160% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 50%),linear-gradient(135deg,#F3F1F4 0%,#FFF1DC 100%)!important;border-color:#F7D9B5!important}
-.today .gr-hero.fire-3{border-color:#F5C48F!important;background-image:radial-gradient(120% 100% at 10% 110%,rgba(255,130,40,.32),transparent 62%),linear-gradient(120deg,#FFF6E8,#FFE7C7)!important}
-.today .gr-hero.fire-4{border-color:#F0A060!important;background-image:radial-gradient(130% 110% at 15% 115%,rgba(255,100,30,.42),transparent 62%),linear-gradient(120deg,#FFEFD9,#FFD9A8)!important;animation:heat 3s ease-in-out infinite;box-shadow:0 0 0 1px rgba(240,86,31,.25),0 8px 28px rgba(240,86,31,.18)}
-@keyframes heat{0%,100%{box-shadow:0 0 0 1px rgba(240,86,31,.25),0 8px 28px rgba(240,86,31,.14)}50%{box-shadow:0 0 0 1px rgba(240,86,31,.4),0 10px 36px rgba(240,86,31,.3)}}
-/* embers drifting up from the bottom of the card (7+ days) */
-.gr-embers{position:absolute!important;inset:0;pointer-events:none;overflow:hidden;z-index:0;border-radius:inherit}
-.gr-embers i{position:absolute;bottom:-8px;left:var(--x);width:5px;height:5px;border-radius:50%;background:#FF9F1C;box-shadow:0 0 6px 2px rgba(255,140,30,.6);opacity:0;animation:ember var(--s) linear var(--d) infinite}
-.gr-embers i:nth-child(3n){background:#FFD166;width:4px;height:4px}.gr-embers i:nth-child(4n){background:#F0561F}
-@keyframes ember{0%{transform:translate(0,0) scale(1);opacity:0}10%{opacity:.9}70%{opacity:.6}100%{transform:translate(18px,-170px) scale(.3);opacity:0}}
-.today .gr-hero>*:not(.gr-embers):not(.gr-flames):not(.gr-levelup):not(.dev-streak){position:relative;z-index:1}
-@media (prefers-reduced-motion:reduce){.gr-sk .fl,.gr-sk .fl .fl-i,.today .gr-hero.fire-4,.gr-embers i{animation:none!important}.gr-embers{display:none}}
-@media (max-width:600px){.gr-sk .fl{width:24px;height:30px}.fire-3 .gr-sk .fl,.fire-4 .gr-sk .fl{width:32px;height:42px}.gr-sk-n b{font-size:22px!important}.gr-sk-n span{font-size:13px}.gr-sk{gap:6px}}
-
 /* TEMPORARY streak test counter (remove later) */
 .dev-streak{position:absolute!important;top:auto;bottom:10px;right:14px;z-index:5!important;display:flex;align-items:center;gap:6px;background:#1E2A5A;color:#FFFFFF;border-radius:999px;padding:4px 6px 4px 12px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .dev-streak b{font-weight:700;margin-right:2px}.dev-streak output{min-width:22px;text-align:center;font-weight:800;font-size:14px}
 .dev-streak button{border:0;background:#FFFFFF;color:#1E2A5A;border-radius:999px;min-width:28px;height:26px;font-weight:800;font-size:15px;cursor:pointer;padding:0 8px;font-family:inherit}
 .dev-streak button[data-dstk="0"]{font-size:12px;font-weight:700}
 
-/* ---- Streak fire, part 2: flames along the edge, fired-up Buddy, level-up moment ---- */
-.gr-flames{position:absolute!important;left:0;right:0;bottom:-2px;height:70px;display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none;z-index:0!important;opacity:.85;overflow:hidden;border-radius:0 0 inherit inherit}
-.gr-flames i{flex:1 1 0;height:calc(var(--h) * 100%);margin:0 -6px;transform-origin:50% 100%;animation:tongue 1.3s ease-in-out var(--d) infinite alternate;mix-blend-mode:multiply;opacity:.9}
-.gr-flames i svg{width:100%;height:100%;display:block}
-@keyframes tongue{0%{transform:scaleY(.75) skewX(-4deg)}50%{transform:scaleY(1.08) skewX(3deg)}100%{transform:scaleY(.9) skewX(-2deg)}}
-.fire-2 .gr-flames{height:26px;opacity:.55}.fire-3 .gr-flames{height:46px;opacity:.75}.fire-4 .gr-flames{height:72px;opacity:.9}
-.fire-4 .gr-flames i{animation-duration:.9s}
-/* fire-4: a flickering flame outline round the whole card */
-.today .gr-hero.fire-4::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:3px;pointer-events:none;z-index:2;
-  background:conic-gradient(from var(--fa,0deg),#F0441F,#FF9F1C,#FFE27A,#FF9F1C,#F0441F,#FF6A1C,#FFD166,#F0441F);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:fspin 3s linear infinite;filter:blur(.4px)}
-@property --fa{syntax:'<angle>';inherits:false;initial-value:0deg}
-@keyframes fspin{to{--fa:360deg}}
-/* Buddy button + on-fire animations */
-.gr-budbtn{position:relative;display:inline-flex;border:0;background:none;padding:0;cursor:pointer;vertical-align:middle;-webkit-tap-highlight-color:transparent}
-.gr-bud-in .gr-budbtn{margin-left:2px}
-.bud-fire .bf-o,.bud-fire .bf-i{transform-box:fill-box;transform-origin:50% 100%;animation:flk 1.4s ease-in-out infinite}
-.bud-fire .bf-i{animation:flk2 1s ease-in-out infinite}
-.gr-budbtn .bud-f2{animation:bsway 2.4s ease-in-out infinite}
-.gr-budbtn .bud-f3{animation:bbob 1.6s ease-in-out infinite}
-.gr-budbtn .bud-f4{animation:bbob 1.1s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(255,120,30,.6))}
-@keyframes bsway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-@keyframes bbob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
-.gr-budbtn.hop svg{animation:bhop .7s cubic-bezier(.3,1.6,.5,1) 2!important}
-@keyframes bhop{0%{transform:translateY(0) scale(1)}35%{transform:translateY(-14px) scale(1.12) rotate(-8deg)}70%{transform:translateY(0) scale(.95,1.05)}100%{transform:translateY(0) scale(1)}}
-.bud-say{position:absolute;left:50%;top:calc(100% + 8px);transform:translate(-50%,6px) scale(.9);background:#1E2A5A;color:#FFFFFF;font-size:13px;font-weight:700;white-space:nowrap;padding:6px 10px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:6;font-family:var(--ui)}
-.bud-say::after{content:"";position:absolute;left:50%;bottom:100%;margin-left:-6px;border:6px solid transparent;border-bottom-color:#1E2A5A}
-.gr-budbtn.hop .bud-say{opacity:1;transform:translate(-50%,0) scale(1)}
-.gr-buddy .bud-say{left:auto;right:0;transform:translate(0,6px) scale(.9)}.gr-buddy .gr-budbtn.hop .bud-say{transform:none}
-.gr-buddy .bud-say::after{left:auto;right:22px}
-/* level up: a burst and a banner over the card, once per new fire level */
-.gr-levelup{position:absolute!important;inset:0;z-index:7!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:radial-gradient(circle at 50% 55%,rgba(255,159,28,.55),rgba(255,236,200,.85) 60%);border-radius:inherit;animation:luin 3.2s ease forwards;pointer-events:none}
-.gr-levelup b{font-size:40px;font-weight:900;color:#E8431C;text-shadow:0 2px 0 #FFE27A,0 6px 24px rgba(240,68,31,.45);animation:lupop .6s cubic-bezier(.3,1.7,.5,1) both}
-.gr-levelup small{font-size:16px;font-weight:700;color:#8A3A10}
-.lu-burst{position:absolute;left:50%;top:50%;width:0;height:0}
-.lu-burst i{position:absolute;width:10px;height:10px;border-radius:50%;background:#FF9F1C;box-shadow:0 0 10px #FF9F1C;transform:rotate(var(--a)) translateX(0);animation:luray 1.1s ease-out forwards}
-.lu-burst i:nth-child(odd){background:#FFD166}
-@keyframes luray{to{transform:rotate(var(--a)) translateX(180px);opacity:0}}
-@keyframes lupop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
-@keyframes luin{0%{opacity:0}10%{opacity:1}80%{opacity:1}100%{opacity:0;visibility:hidden}}
-@media (prefers-reduced-motion:reduce){.gr-flames i,.bud-fire *,.gr-budbtn svg,.today .gr-hero.fire-4::before,.lu-burst i{animation:none!important}.gr-levelup{animation:luin 3.2s steps(1) forwards}}
+
+/* ---- Streak, Duolingo-style: one bold flame + number, joined week days, next badge, a celebration once a day ---- */
+.sk-flame{display:inline-flex;flex:none;width:34px;height:42px}
+.sk-flame svg{width:100%;height:100%;overflow:visible}
+.sk-flame.lit svg{animation:skidle 2.4s ease-in-out infinite;transform-origin:50% 90%;filter:drop-shadow(0 3px 6px rgba(255,120,30,.3))}
+.sk-flame.risk svg{animation:skrisk 1s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes skidle{0%,100%{transform:scale(1)}50%{transform:scale(1.06,.97)}}
+@keyframes skrisk{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(0)}}
+.gr-sk{display:flex;align-items:center;gap:10px}
+.gr-sk-n{display:flex;flex-direction:column;line-height:1}
+.gr-sk-n b{font-size:30px;font-weight:800;color:#F2661E;letter-spacing:-.01em}
+.gr-sk-n b.off{color:#9AA3B5}
+.gr-sk-n span{font-size:13px;font-weight:700;color:#8A3A10;margin-top:3px;white-space:nowrap}
+.gr-sk-n span.off{color:var(--muted)}
+.sk-next{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.sk-next .bar{flex:1 1 auto;max-width:160px;height:8px;border-radius:999px;background:rgba(30,42,90,.10);overflow:hidden}
+.sk-next .bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#FFB547,#F2661E)}
+.sk-next .medal{flex:none;display:inline-flex}
+/* week: done days are orange with a flame, and days in a row join up with a band */
+.gr-week i{position:relative}
+.gr-week i.on{background:#FF9A2E!important;border-color:#FF9A2E!important;color:#FFFFFF!important;box-shadow:none!important}
+.gr-week i.on svg{width:60%!important;height:60%!important}
+.gr-week i.jr::after{content:"";position:absolute;left:100%;top:50%;height:46%;transform:translateY(-50%);width:calc(var(--gap,8px) + 4px);margin-left:-2px;background:#FF9A2E;z-index:-1}
+.gr-week i.today:not(.on){border:2px dashed #FF9A2E!important;color:#F2661E!important}
+.today .gr-week{--gap:8px}.gr-week{--gap:4px}
+/* celebration (once a day, after the first practice) */
+.skc-wrap{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:#FFF8EC;animation:skcin .25s ease}
+.skc{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:24px;max-width:420px;width:100%}
+.skc .big{width:120px;height:150px;animation:skpop .7s cubic-bezier(.3,1.6,.5,1) both}
+.skc .big svg{width:100%;height:100%;overflow:visible;animation:skidle 2.4s ease-in-out .7s infinite;transform-origin:50% 90%;filter:drop-shadow(0 8px 18px rgba(255,120,30,.4))}
+.skc .num{font-size:72px;font-weight:900;line-height:1;color:#F2661E;font-variant-numeric:tabular-nums}
+.skc .lab{font-size:22px;font-weight:800;color:#8A3A10;margin-top:-4px}
+.skc p{margin:4px 0 6px;font-size:16px;color:var(--ink);line-height:1.45}
+.skc .gr-week{display:flex;gap:10px;--gap:10px;margin:6px 0 10px}
+.skc .gr-week i{width:38px;height:38px;font-size:13px}
+.skc .btn{min-width:220px}
+.skc .sk-next{justify-content:center;width:100%}.skc .sk-next .bar{max-width:200px}
+.skc .spark{position:absolute;width:8px;height:8px;border-radius:50%;background:#FFB547;opacity:0;animation:skspark 1.2s ease-out .45s forwards}
+@keyframes skpop{0%{transform:scale(.2) translateY(30px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes skcin{from{opacity:0}to{opacity:1}}
+@keyframes skspark{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+@media (prefers-reduced-motion:reduce){.sk-flame svg,.skc .big,.skc .big svg,.skc .spark{animation:none!important}}
+@media (max-width:600px){.sk-flame{width:26px;height:32px}.gr-sk-n b{font-size:22px}.sk-next{display:none}.skc .num{font-size:60px}}
 </style>
 </head>
 <body>

@@ -2578,22 +2578,37 @@ async function renderHome() {
     : streak ? Z(`Keep your ${streak}-day streak going: one short mission today is all it takes.`, `保持連續 ${streak} 日的紀錄：今天只需完成一個小任務。`)
     : nOn ? Z(`You practised ${nOn} day${nOn === 1 ? '' : 's'} this week. Do today’s mission and start a new streak 🔥`, `本週已練習 ${nOn} 日。完成今日任務，開始新的連續紀錄 🔥`)
     : Z('Every streak starts with day one. Finish today’s mission to light your first 🔥', '每個連續紀錄都由第一日開始。完成今日任務，點燃你的第一團火 🔥');
-  // The streak burns hotter the longer it runs: 1-2 days a small flame, 3-6 a bigger one, 7-13 embers rise, 14+ the card blazes.
-  const fire = !streak ? 0 : streak < 3 ? 1 : streak < 7 ? 2 : streak < 14 ? 3 : 4;
-  const flame = `<span class="fl" aria-hidden="true"><svg viewBox="0 0 40 52"><defs><radialGradient id="flg" cx="50%" cy="78%" r="70%"><stop offset="0" stop-color="#FFE27A"/><stop offset=".45" stop-color="#FF9F1C"/><stop offset="1" stop-color="#F0441F"/></radialGradient></defs><path class="fl-o" d="M20 2c3 9 14 15 14 29a14 14 0 0 1-28 0c0-7 4-11 7-15 0 5 2 8 5 9-2-8 0-15 2-23z" fill="url(#flg)"/><path class="fl-i" d="M20 22c2 5 8 8 8 15a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-5 0-8 1-12z" fill="#FFF3B0"/></svg></span>`;
-  const embers = fire >= 3 ? `<span class="gr-embers" aria-hidden="true">${Array.from({ length: fire === 4 ? 14 : 8 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 5) * 0.7}s;--s:${3 + (i % 4)}s"></i>`).join('')}</span>` : '';
+  // Streak, the way Duolingo and others show it: one bold flame and the number. The flame is lit once today's
+  // practice is done, grey until then (and wobbles in the evening when the streak is at risk). Days in a row join up.
+  const lit = doneToday || (devStreak !== null && streak > 0);
+  const risk = !lit && streak > 0 && hr >= 18;
+  const flameSVG = (on) => `<svg viewBox="0 0 40 50" aria-hidden="true"><defs><linearGradient id="skg${on ? 1 : 0}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${on ? '#F0441F' : '#AEB5C4'}"/><stop offset=".6" stop-color="${on ? '#FF9A2E' : '#C9CFDB'}"/><stop offset="1" stop-color="${on ? '#FFC94D' : '#DCE1EA'}"/></linearGradient></defs><path d="M20 1c3 9 15 15 15 30a15 15 0 0 1-30 0c0-7 4-12 7-16 0 5 2 8 5 9-2-8 0-15 3-23z" fill="url(#skg${on ? 1 : 0})"/><path d="M20 24c2 5 8 8 8 14a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-4 0-8 1-11z" fill="${on ? '#FFF1B8' : '#F1F3F7'}"/></svg>`;
+  // which days of this week to colour (the test counter fills the last N days so you can preview it)
+  const wkOn = wk.map((x, k) => (devStreak !== null ? mon + k * DAY <= t0 && mon + k * DAY > t0 - streak * DAY : x.on));
+  const weekHTML = (cls = '') => `<span class="gr-week ${cls}" aria-label="${Z(`${wkOn.filter(Boolean).length} day(s) this week`, `本週 ${wkOn.filter(Boolean).length} 日`)}">${wk.map((x, k) => `<i class="${wkOn[k] ? 'on' : ''} ${wkOn[k] && wkOn[k + 1] ? 'jr' : ''} ${x.today ? 'today' : ''}">${wkOn[k] ? flameSVG(true).replace(/skg1/g, 'skw' + k) : DN[k]}</i>`).join('')}</span>`;
+  // the next badge to aim for
+  const MIL = [3, 7, 14, 30, 50, 100, 200, 365];
+  const nextM = MIL.find((m) => m > streak) || streak + 100, prevM = [...MIL].reverse().find((m) => m <= streak) || 0;
+  const medal = `<svg class="medal" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l2 5-3 2zM17 2h-4l-2 5 3 2z" fill="#6E8BE0"/><circle cx="12" cy="15" r="7" fill="#FFC531" stroke="#E09B00" stroke-width="1.5"/><path d="M12 11.5l1.1 2.2 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3z" fill="#FFF6D6"/></svg>`;
+  const nextHTML = `<span class="sk-next">${medal}<span>${Z(`${nextM - streak} more day${nextM - streak === 1 ? '' : 's'} to your ${nextM}-day badge`, `再 ${nextM - streak} 日得到 ${nextM} 日徽章`)}</span><span class="bar"><i style="width:${Math.round(((streak - prevM) / (nextM - prevM)) * 100)}%"></i></span></span>`;
   const devBox = `<span class="dev-streak" role="group" aria-label="Test streak"><b>Test streak</b><button type="button" data-dstk="-1" aria-label="One less">−</button><output>${streak}</output><button type="button" data-dstk="1" aria-label="One more">+</button><button type="button" data-dstk="0">Reset</button></span>`;
-  // a row of flame tongues along the card's edge (3+ days), taller and wider as the streak grows
-  const tongue = '<svg viewBox="0 0 40 52" preserveAspectRatio="none"><path d="M20 2c3 9 14 15 14 29a14 14 0 0 1-28 0c0-7 4-11 7-15 0 5 2 8 5 9-2-8 0-15 2-23z" fill="url(#flg2)"/></svg>';
-  const flames = fire >= 2 ? `<span class="gr-flames" aria-hidden="true"><svg width="0" height="0" style="position:absolute"><defs><linearGradient id="flg2" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#F0441F"/><stop offset=".55" stop-color="#FF9F1C"/><stop offset="1" stop-color="#FFE27A"/></linearGradient></defs></svg>${Array.from({ length: fire === 2 ? 14 : fire === 3 ? 22 : 30 }, (_, i) => `<i style="--i:${i};--h:${0.55 + ((i * 53) % 45) / 100};--d:${((i * 0.37) % 1.3).toFixed(2)}s">${tongue}</i>`).join('')}</span>` : '';
-  const budMsg = [Z('Let’s light the first flame today!', '今天點燃第一團火吧！'), Z(`${streak} day${streak === 1 ? '' : 's'}! Your fire is lit 🔥`, `${streak} 日！火點著了 🔥`), Z(`${streak} days! You’re warming up!`, `${streak} 日！越來越熱了！`), Z(`${streak} days! You’re on fire!`, `${streak} 日！你火力全開！`), Z(`${streak} days! Unstoppable! 🔥🔥`, `${streak} 日！勢不可擋！🔥🔥`)][fire];
-  const bud = (n) => `<button type="button" class="gr-budbtn" data-budtap aria-label="${esc(budMsg)}">${fire ? buddyFire(fire, n) : buddySVG('happy', n)}<span class="bud-say" role="status">${esc(budMsg)}</span></button>`;
-  // level-up moment the first time each fire level is reached
-  const seenFire = typeof local.fireSeen === 'number' ? local.fireSeen : fire;
-  const levelUp = fire > seenFire && fire >= 2 ? `<span class="gr-levelup" aria-live="polite"><span class="lu-burst">${Array.from({ length: 16 }, (_, i) => `<i style="--a:${i * 22.5}deg"></i>`).join('')}</span><b>${[, , Z('Warming up!', '熱身中！'), Z('On fire!', '火力全開！'), Z('Unstoppable!', '勢不可擋！')][fire]}</b><small>${Z(`${streak} days in a row`, `連續 ${streak} 日`)}</small></span>` : '';
-  if (local.fireSeen !== fire) { local.fireSeen = fire; saveLocal(); }
-  const strip = `${embers}${flames}${levelUp}${devBox}<button class="gr-strip gr-btn fire-${fire}" id="streakGo"><span class="gr-streak">${streak ? `<span class="gr-sk">${flame}<span class="gr-sk-n"><b>${streak}</b><span>${Z(`day${streak === 1 ? '' : 's'} in a row`, '日連續')}</span></span></span>` : Z('Start a streak today', '今天開始連續練習')}${gw && gw.met ? `<small class="gr-goal">${Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`)}</small>` : !gw && nOn ? `<small class="gr-goal">${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small>` : ''}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
-    <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
+  const label = streak ? Z(`day streak`, '日連續') : Z('Start a streak today', '今天開始連續練習');
+  const strip = `${devBox}<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span>${nextHTML}</span>
+    ${weekHTML()}</button>`;
+  // Celebration, once a day, the first time Today opens after practising (like Duolingo's streak screen)
+  const celebrate = (n) => {
+    const box = document.createElement('div'); box.className = 'skc-wrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+    const msg = n === 1 ? Z('Your streak has started! Practise tomorrow to keep it going.', '你的連續紀錄開始了！明天再練習，繼續保持。')
+      : MIL.includes(n) ? Z(`You reached ${n} days in a row. That earns a badge!`, `你已連續 ${n} 日，得到一個徽章！`) : Z(`${n} days in a row. Come back tomorrow for day ${n + 1}!`, `已連續 ${n} 日。明天回來挑戰第 ${n + 1} 日！`);
+    const sparks = Array.from({ length: 14 }, (_, i) => `<i class="spark" style="--dx:${Math.round(Math.cos(i * 0.45) * 130)}px;--dy:${Math.round(Math.sin(i * 0.45) * 110 - 30)}px;left:50%;top:150px"></i>`).join('');
+    box.innerHTML = `<div class="skc" style="position:relative">${sparks}<span class="big">${flameSVG(true).replace(/skg1/g, 'skbig')}</span><span class="num" id="skcN">${Math.max(0, n - 1)}</span><span class="lab">${Z('day streak!', '日連續！')}</span><p>${msg}</p>${weekHTML()}${n < nextM ? nextHTML : ''}<button class="btn" id="skcOk">${Z('Keep it up!', '繼續加油！')}</button></div>`;
+    document.body.appendChild(box);
+    setTimeout(() => { const el = box.querySelector('#skcN'); if (el) el.textContent = n; el && el.animate && el.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,1.6,.5,1)' }); }, 650);
+    const close = () => box.remove(); box.querySelector('#skcOk').onclick = close; box.onclick = (e) => { if (e.target === box) close(); };
+    box.querySelector('#skcOk').focus();
+  };
+  if (doneToday && devStreak === null && local.skSeen !== t0) { local.skSeen = t0; saveLocal(); setTimeout(() => celebrate(streak), 400); }
+  window.__skCelebrate = () => celebrate(streak);
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
   const testHead = `<div class="sect-head"><h2 class="h-info">${SCH('School tests', '學校測驗')}${infoBtn('howTests', SCH('How do school tests work?', '學校測驗是怎樣運作的？'))}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>${testsHowHTML()}`;
@@ -2632,7 +2647,7 @@ async function renderHome() {
   }
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
-    ${head.replace('<!--BUD46-->', bud(46)).replace('<!--BUD64-->', bud(64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero fire-${fire}"`)}
+    ${head.replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
     ${lessonHTML}
@@ -2674,9 +2689,7 @@ async function renderHome() {
     delete local.lessonAt[lessonLeft.key]; saveLocal(); renderHome(); }; }
   { const sg2 = document.getElementById('slipGo'); if (sg2 && slip) sg2.onclick = () => { pick = { bookId: slip.b.id, ids: new Set([slip.u.id]) }; startUnits(slip.b, [slip.u], 10); }; }
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
-  $app.querySelectorAll('[data-budtap]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('hop'), 2600); }));
-  { const lu = $app.querySelector('.gr-levelup'); if (lu) setTimeout(() => lu.remove(), 3200); }
-  $app.querySelectorAll('[data-dstk]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); const d = +b.dataset.dstk; try { const cur = +(localStorage.getItem('prepbuddy.devStreak') ?? (document.querySelector('.dev-streak output') || {}).textContent ?? 0) || 0; if (d === 0) localStorage.removeItem('prepbuddy.devStreak'); else localStorage.setItem('prepbuddy.devStreak', String(Math.max(0, cur + d))); } catch (er) {} renderHome(); }));
+  $app.querySelectorAll('[data-dstk]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); const d = +b.dataset.dstk; try { const cur = +(localStorage.getItem('prepbuddy.devStreak') ?? (document.querySelector('.dev-streak output') || {}).textContent ?? 0) || 0; if (d === 0) localStorage.removeItem('prepbuddy.devStreak'); else localStorage.setItem('prepbuddy.devStreak', String(Math.max(0, cur + d))); } catch (er) {} Promise.resolve(renderHome()).then(() => { if (d === 1 && window.__skCelebrate) window.__skCelebrate(); }); }));
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
