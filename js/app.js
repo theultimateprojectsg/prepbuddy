@@ -5,7 +5,7 @@ import { buildReport, encodeReport, headline, weekTone, minutesOf, skillsHTML, R
 import * as PG from './progress.js';
 import { initLang, setLang, watch, LANG, LOCALE, setTranslator } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
-import { logoSVG, buddySVG, buddyFace } from './buddy.js';
+import { logoSVG, buddySVG, buddyFace, buddyFire } from './buddy.js';
 import { PRIVACY, PRIVACY_UPDATED } from './privacy.js';
 import { menuIcon, subjectIcon, subjectTile, subjectColour, actionIcon, actionTile, subjectName } from './icons.js';
 const subj = (s) => subjectName(s, LANG);
@@ -2410,7 +2410,7 @@ async function renderHome() {
     : hr < 12 ? 'A little practice now, a lot easier later.' : hr < 18 ? 'Ready for a quick practice?' : 'Ten minutes before bed goes a long way.';
   // Phones: an app bar (logo · child · stars · settings) above a friendly greeting card with Buddy. Computers: the plain greeting.
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}<span class="gr-bud-in" aria-hidden="true">${buddySVG('happy', 46)}</span></h1><p data-raw>${esc(dateText)}</p><span class="gr-sub">${esc(cheer)}</span></div><span class="gr-buddy" aria-hidden="true">${buddySVG('happy', 64)}</span></div><!--STRIP--></div>
+      <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}<span class="gr-bud-in" aria-hidden="true"><!--BUD46--></span></h1><p data-raw>${esc(dateText)}</p><span class="gr-sub">${esc(cheer)}</span></div><span class="gr-buddy" aria-hidden="true"><!--BUD64--></span></div><!--STRIP--></div>
       <div class="greet-r"><span class="gr-brand">${logoSVG(26)}<b>PrepBuddy</b></span>${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}${gearBtn()}</div></div>`;
   if (!books.length) {
     // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
@@ -2583,7 +2583,16 @@ async function renderHome() {
   const flame = `<span class="fl" aria-hidden="true"><svg viewBox="0 0 40 52"><defs><radialGradient id="flg" cx="50%" cy="78%" r="70%"><stop offset="0" stop-color="#FFE27A"/><stop offset=".45" stop-color="#FF9F1C"/><stop offset="1" stop-color="#F0441F"/></radialGradient></defs><path class="fl-o" d="M20 2c3 9 14 15 14 29a14 14 0 0 1-28 0c0-7 4-11 7-15 0 5 2 8 5 9-2-8 0-15 2-23z" fill="url(#flg)"/><path class="fl-i" d="M20 22c2 5 8 8 8 15a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-5 0-8 1-12z" fill="#FFF3B0"/></svg></span>`;
   const embers = fire >= 3 ? `<span class="gr-embers" aria-hidden="true">${Array.from({ length: fire === 4 ? 14 : 8 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 5) * 0.7}s;--s:${3 + (i % 4)}s"></i>`).join('')}</span>` : '';
   const devBox = `<span class="dev-streak" role="group" aria-label="Test streak"><b>Test streak</b><button type="button" data-dstk="-1" aria-label="One less">−</button><output>${streak}</output><button type="button" data-dstk="1" aria-label="One more">+</button><button type="button" data-dstk="0">Reset</button></span>`;
-  const strip = `${embers}${devBox}<button class="gr-strip gr-btn fire-${fire}" id="streakGo"><span class="gr-streak">${streak ? `<span class="gr-sk">${flame}<span class="gr-sk-n"><b>${streak}</b><span>${Z(`day${streak === 1 ? '' : 's'} in a row`, '日連續')}</span></span></span>` : Z('Start a streak today', '今天開始連續練習')}${gw && gw.met ? `<small class="gr-goal">${Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`)}</small>` : !gw && nOn ? `<small class="gr-goal">${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small>` : ''}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
+  // a row of flame tongues along the card's edge (3+ days), taller and wider as the streak grows
+  const tongue = '<svg viewBox="0 0 40 52" preserveAspectRatio="none"><path d="M20 2c3 9 14 15 14 29a14 14 0 0 1-28 0c0-7 4-11 7-15 0 5 2 8 5 9-2-8 0-15 2-23z" fill="url(#flg2)"/></svg>';
+  const flames = fire >= 2 ? `<span class="gr-flames" aria-hidden="true"><svg width="0" height="0" style="position:absolute"><defs><linearGradient id="flg2" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#F0441F"/><stop offset=".55" stop-color="#FF9F1C"/><stop offset="1" stop-color="#FFE27A"/></linearGradient></defs></svg>${Array.from({ length: fire === 2 ? 14 : fire === 3 ? 22 : 30 }, (_, i) => `<i style="--i:${i};--h:${0.55 + ((i * 53) % 45) / 100};--d:${((i * 0.37) % 1.3).toFixed(2)}s">${tongue}</i>`).join('')}</span>` : '';
+  const budMsg = [Z('Let’s light the first flame today!', '今天點燃第一團火吧！'), Z(`${streak} day${streak === 1 ? '' : 's'}! Your fire is lit 🔥`, `${streak} 日！火點著了 🔥`), Z(`${streak} days! You’re warming up!`, `${streak} 日！越來越熱了！`), Z(`${streak} days! You’re on fire!`, `${streak} 日！你火力全開！`), Z(`${streak} days! Unstoppable! 🔥🔥`, `${streak} 日！勢不可擋！🔥🔥`)][fire];
+  const bud = (n) => `<button type="button" class="gr-budbtn" data-budtap aria-label="${esc(budMsg)}">${fire ? buddyFire(fire, n) : buddySVG('happy', n)}<span class="bud-say" role="status">${esc(budMsg)}</span></button>`;
+  // level-up moment the first time each fire level is reached
+  const seenFire = typeof local.fireSeen === 'number' ? local.fireSeen : fire;
+  const levelUp = fire > seenFire && fire >= 2 ? `<span class="gr-levelup" aria-live="polite"><span class="lu-burst">${Array.from({ length: 16 }, (_, i) => `<i style="--a:${i * 22.5}deg"></i>`).join('')}</span><b>${[, , Z('Warming up!', '熱身中！'), Z('On fire!', '火力全開！'), Z('Unstoppable!', '勢不可擋！')][fire]}</b><small>${Z(`${streak} days in a row`, `連續 ${streak} 日`)}</small></span>` : '';
+  if (local.fireSeen !== fire) { local.fireSeen = fire; saveLocal(); }
+  const strip = `${embers}${flames}${levelUp}${devBox}<button class="gr-strip gr-btn fire-${fire}" id="streakGo"><span class="gr-streak">${streak ? `<span class="gr-sk">${flame}<span class="gr-sk-n"><b>${streak}</b><span>${Z(`day${streak === 1 ? '' : 's'} in a row`, '日連續')}</span></span></span>` : Z('Start a streak today', '今天開始連續練習')}${gw && gw.met ? `<small class="gr-goal">${Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`)}</small>` : !gw && nOn ? `<small class="gr-goal">${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small>` : ''}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
@@ -2623,7 +2632,7 @@ async function renderHome() {
   }
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
-    ${head.replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero fire-${fire}"`)}
+    ${head.replace('<!--BUD46-->', bud(46)).replace('<!--BUD64-->', bud(64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero fire-${fire}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
     ${lessonHTML}
@@ -2665,6 +2674,8 @@ async function renderHome() {
     delete local.lessonAt[lessonLeft.key]; saveLocal(); renderHome(); }; }
   { const sg2 = document.getElementById('slipGo'); if (sg2 && slip) sg2.onclick = () => { pick = { bookId: slip.b.id, ids: new Set([slip.u.id]) }; startUnits(slip.b, [slip.u], 10); }; }
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
+  $app.querySelectorAll('[data-budtap]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); b.classList.remove('hop'); void b.offsetWidth; b.classList.add('hop'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('hop'), 2600); }));
+  { const lu = $app.querySelector('.gr-levelup'); if (lu) setTimeout(() => lu.remove(), 3200); }
   $app.querySelectorAll('[data-dstk]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); const d = +b.dataset.dstk; try { const cur = +(localStorage.getItem('prepbuddy.devStreak') ?? (document.querySelector('.dev-streak output') || {}).textContent ?? 0) || 0; if (d === 0) localStorage.removeItem('prepbuddy.devStreak'); else localStorage.setItem('prepbuddy.devStreak', String(Math.max(0, cur + d))); } catch (er) {} renderHome(); }));
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }

@@ -22,3 +22,17 @@ export function buddySVG(kind = 'happy', size = 40, label = '') {
   const a = label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"';
   return `<svg class="buddy" width="${size}" height="${size}" viewBox="0 0 100 100" ${a} focusable="false">${buddyFace(kind)}</svg>`;
 }
+
+// Buddy on a streak: gets more fired up the longer it runs (tier 1-4). Flame hair replaces the leaf; sunglasses from tier 3.
+const FLAME = (sc, y) => `<g transform="translate(50 ${y}) scale(${sc}) translate(-20 -46)"><path class="bf-o" d="M20 2c3 9 14 15 14 29a14 14 0 0 1-28 0c0-7 4-11 7-15 0 5 2 8 5 9-2-8 0-15 2-23z" fill="url(#bfg)"/><path class="bf-i" d="M20 22c2 5 8 8 8 15a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-5 0-8 1-12z" fill="#FFF3B0"/></g>`;
+const FBODY = '<circle cx="50" cy="52" r="34" fill="#FFE066"/><path d="M26 72 L17 92 L40 83 Z" fill="#FFE066"/>';
+const SHADES = '<path d="M24 43 H76" stroke="#1E2A5A" stroke-width="3.5" stroke-linecap="round"/><path d="M26 43 h20 q0 12 -10 12 q-10 0 -10 -12z M54 43 h20 q0 12 -10 12 q-10 0 -10 -12z" fill="#1E2A5A"/><path d="M30 46 l5 -2 M58 46 l5 -2" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>';
+const FIRE_FACES = {
+  1: FLAME(0.42, 22) + FBODY + CHEEKS + EYES.replace(/cy="47"/g, 'cy="49"').replace(/cy="43.5"/g, 'cy="45.5"') + '<path d="M42 63 Q50 71 58 63" fill="none" stroke="#26357A" stroke-width="4.5" stroke-linecap="round"/>',
+  2: FLAME(0.6, 24) + FBODY + '<ellipse cx="29" cy="62" rx="6" ry="3.8" fill="#FF8F8F" opacity="0.8"/><ellipse cx="71" cy="62" rx="6" ry="3.8" fill="#FF8F8F" opacity="0.8"/><path d="M31 51 Q38 41 45 51 M55 51 Q62 41 69 51" fill="none" stroke="#26357A" stroke-width="4.5" stroke-linecap="round"/><path d="M40 60 Q50 74 60 60 Z" fill="#26357A"/>',
+  3: FLAME(0.8, 26) + FBODY + '<ellipse cx="29" cy="63" rx="6" ry="3.8" fill="#FF8F8F" opacity="0.8"/><ellipse cx="71" cy="63" rx="6" ry="3.8" fill="#FF8F8F" opacity="0.8"/>' + SHADES + '<path d="M38 62 Q50 76 62 62 Z" fill="#26357A"/><path d="M44 64 h12" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>',
+  4: FLAME(1.05, 28) + FBODY + '<ellipse cx="28" cy="63" rx="6.5" ry="4" fill="#FF7A7A" opacity="0.85"/><ellipse cx="72" cy="63" rx="6.5" ry="4" fill="#FF7A7A" opacity="0.85"/>' + SHADES + '<path d="M36 61 Q50 80 64 61 Z" fill="#26357A"/><path d="M42 63 h16" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/><path d="M8 34 l2 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 Z M88 30 l1.8 -5 l1.8 5 l5 1.8 l-5 1.8 l-1.8 5 l-1.8 -5 l-5 -1.8 Z" fill="#FF9F1C"/>',
+};
+export function buddyFire(tier = 1, size = 40) {
+  return `<svg class="buddy bud-fire bud-f${tier}" width="${size}" height="${size}" viewBox="0 -14 100 114" aria-hidden="true" focusable="false" style="overflow:visible"><defs><radialGradient id="bfg" cx="50%" cy="78%" r="70%"><stop offset="0" stop-color="#FFE27A"/><stop offset=".45" stop-color="#FF9F1C"/><stop offset="1" stop-color="#F0441F"/></radialGradient></defs>${FIRE_FACES[Math.min(4, Math.max(1, tier))]}</svg>`;
+}
