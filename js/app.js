@@ -1059,14 +1059,14 @@ const COACH_CHIPS = ['How am I doing?', 'What should I work on this week?', 'Whi
 const coach = { busy: false, error: null };
 function coachHTML() {
   if (locked('coach')) return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div><b>${PL('Study coach', '溫習教練')} <span class="lock-tag inl">🔒 Standard</span></b><span>${PL('Plans your day from your scores and mistakes', '按你的分數和錯題計劃每天溫習')}</span></div></div>
-    <div class="coach-msgs coach-demo"><div class="tmsg me nomath">${PL('What should I work on today?', '我今天應該溫習甚麼？')}</div><div class="tmsg ai">${PL('Your weakest chapter is <b>Forces</b> (52%). Let’s do 10 questions on it, then fix the 3 mistakes from Monday. About 15 minutes.', '你最弱的章節是<b>力</b>（52%）。先做 10 題，再改正星期一的 3 題錯題，大約 15 分鐘。')}</div><div class="coach-acts"><span class="btn-sm primary">▶ ${PL('Start 10 questions', '開始 10 題')}</span></div></div>
+    <div class="coach-msgs coach-demo"><div class="tmsg me nomath tmsg-ui">${PL('What should I work on today?', '我今天應該溫習甚麼？')}</div><div class="tmsg ai tmsg-ui">${PL('Your weakest chapter is <b>Forces</b> (52%). Let’s do 10 questions on it, then fix the 3 mistakes from Monday. About 15 minutes.', '你最弱的章節是<b>力</b>（52%）。先做 10 題，再改正星期一的 3 題錯題，大約 15 分鐘。')}</div><div class="coach-acts"><span class="btn-sm primary">▶ ${PL('Start 10 questions', '開始 10 題')}</span></div></div>
     <div class="coach-lock"><span>${PL('Upgrade to Standard for a coach that sees your progress and plans every day.', '升級至標準計劃，教練會按你的進度每天幫你計劃。')}</span><button class="btn" id="coachUp">${PL('See Plus', '查看 Plus')}</button></div>`;
   const msgs = local.coach || [];
   return `<div class="coach-head"><span class="coach-ic buddy-ic" aria-hidden="true">${buddySVG('happy', 46)}</span><div>${helper.open ? '<b>Ask Buddy</b><span>About the app or your studies</span>' : '<b>Ask Buddy</b><span>Your study coach: sees your scores, mistakes and reviews</span>'}</div>
       <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
       ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk${locked('voice') ? ' 🔒' : ''}</button>`}</span></div>
     ${voiceOn('coach') ? voicePanelHTML() + (coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : '') : `<div class="coach-msgs" id="coachMsgs">
-      <div class="tmsg ai">${helper.open ? `Need help? Ask me anything about PrepBuddy or your studies.` : `Hi${local.name ? ` ${esc(local.name)}` : ''}! ${coach.brief ? esc(coach.brief) + ' ' : ''}Ask me how you’re doing, what to focus on, or for a study plan.`}</div>
+      <div class="tmsg ai tmsg-ui">${helper.open ? `Need help? Ask me anything about PrepBuddy or your studies.` : `Hi${local.name ? ` ${esc(local.name)}` : ''}! ${coach.brief ? esc(coach.brief) + ' ' : ''}Ask me how you’re doing, what to focus on, or for a study plan.`}</div>
       ${msgs.map((m, k) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>${m.picked ? `<div class="coach-picked" data-raw>✓ ${esc(m.picked)}</div>` : ''}${m.btns && k === msgs.length - 1 && !coach.busy ? `<div class="coach-acts">${m.btns.map((b, j) => `<button class="${j ? 'btn-sm' : 'btn-sm primary'}" data-cact="${j}" data-raw>${j ? '' : '▶ '}${esc(b.label)}</button>`).join('')}</div>` : ''}`).join('')}
       ${coach.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
       ${coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : ''}
@@ -1464,7 +1464,7 @@ function renderWritingFeedback(it, at) {
     <section class="card wr-box fix"><h2>${L('Fix these first', '最先要改的三點')}</h2><ol class="wr-fixes">${fb.fixes.map((f) => `<li><b>${esc(f.issue)}</b>${f.quote ? `<q>${esc(f.quote)}</q>` : ''}<span>${esc(f.how)}</span></li>`).join('')}</ol></section>
     ${fb.corrections.length ? `<section class="card wr-box"><button class="wr-tog" id="togCorr" aria-expanded="${!!o[it.id + ':corr']}"><h2>${L(`Language corrections (${fb.corrections.length})`, `語文修正（${fb.corrections.length} 處）`)}</h2><span>${o[it.id + ':corr'] ? WT('Hide', '隱藏') : WT('Show', '顯示')}</span></button>
       ${o[it.id + ':corr'] ? `<ol class="wr-corr">${fb.corrections.map((c) => `<li><s>${esc(c.quote)}</s> → <b>${esc(c.fix)}</b>${c.why ? `<small>${esc(c.why)}</small>` : ''}</li>`).join('')}</ol>` : ''}</section>` : ''}
-    ${fb.next_step ? `<div class="wr-tip">${esc(fb.next_step)}</div>` : ''}
+    ${fb.next_step ? `<div class="wr-tip" data-keep>${esc(fb.next_step)}</div>` : ''}
     <section class="card wr-box"><button class="wr-tog" id="togEssay" aria-expanded="${showEssay}"><h2>${WT(`Your draft ${i + 1}`, `你的第 ${i + 1} 稿`)}</h2><span>${showEssay ? WT('Hide', '隱藏') : WT('Show', '顯示')}</span></button>
       ${showEssay ? `<div class="wr-essay">${wrMarked(d.text, fb.corrections)}</div>` : ''}</section>
     <div class="wr-acts">
@@ -1691,7 +1691,7 @@ async function renderSpeakingFb(it, qi) {
     <section class="card wr-box fix"><h2>Fix these first</h2><ol class="wr-fixes">${fb.fixes.map((f) => `<li><b>${esc(f.issue)}</b>${f.quote ? `<q>${esc(f.quote)}</q>` : ''}<span>${esc(f.how)}</span></li>`).join('')}</ol></section>
     ${fb.phrases.length ? `<section class="card wr-box"><h2>Useful phrases for next time</h2><div class="sp-phr">${fb.phrases.map((p) => `<button class="sp-ph" data-say="${esc(p)}">🔊 ${esc(p)}</button>`).join('')}</div></section>` : ''}
     ${fb.sample ? `<section class="card wr-box"><button class="wr-tog" id="togSample" aria-expanded="false"><h2>One way to answer</h2><span>Show</span></button><div class="sp-sample" hidden><p>${esc(fb.sample)}</p><button class="btn-sm" id="saySample">🔊 Listen</button></div></section>` : ''}
-    ${fb.next_step ? `<div class="wr-tip">${esc(fb.next_step)}</div>` : ''}
+    ${fb.next_step ? `<div class="wr-tip" data-keep>${esc(fb.next_step)}</div>` : ''}
     <div class="wr-acts"><button class="btn" id="again">🎤 Try this question again</button><button class="btn ghost" id="nextq">${qi + 1 < it.task.questions.length ? 'Next question' : 'Back to the topic'}</button></div>
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'speaking', id: it.id });
@@ -1828,7 +1828,7 @@ async function renderDictation(id, sub) {
       <span>${DT('Add this week’s dictation or spelling list. I read each one aloud in Cantonese, Putonghua, English, French or Japanese. Write it down, then check. Words you miss come back next time.', '加入今個星期的默書或串字。我會用粵語、普通話、英文、法文或日文逐個讀出來，你寫低再對答案。寫錯的會在下次再出現。')}</span></div></section>
     <button class="btn" id="dnew">+ ${DT('Add a dictation list', '加入默書')}</button>
     ${lists.length ? `<div class="hw-list">${lists.slice().reverse().map((x) => { const m = missed(x), last = (x.runs || []).slice(-1)[0];
-      return `<div class="dl-item"><button class="dl-main" data-run="${x.id}"><span class="hw-ic">${actionIcon('dictation', 22)}</span><span class="hw-it"><b>${esc(x.title)}</b><small>${DL[x.lang][LANG === 'zh' ? 0 : 1]} · ${x.items.length} ${DT('items', '項')}${last ? ` · ${DT('last', '上次')} ${last.g}/${last.n}` : ''}${m ? ` · <span class="dl-miss">${DT(`${m} to practise`, `${m} 個要再練`)}</span>` : ''}</small></span><span class="dl-go">▶</span></button>
+      return `<div class="dl-item"><button class="dl-main" data-run="${x.id}"><span class="hw-ic">${actionIcon('dictation', 22)}</span><span class="hw-it"><b data-keep>${esc(x.title)}</b><small>${DL[x.lang][LANG === 'zh' ? 0 : 1]} · ${x.items.length} ${DT('items', '項')}${last ? ` · ${DT('last', '上次')} ${last.g}/${last.n}` : ''}${m ? ` · <span class="dl-miss">${DT(`${m} to practise`, `${m} 個要再練`)}</span>` : ''}</small></span><span class="dl-go">▶</span></button>
         <button class="btn-sm quiet" data-edit="${x.id}">${DT('Edit', '修改')}</button></div>`; }).join('')}</div>`
       : `<div class="card mk-empty">${buddySVG('think', 64)}<div class="stack g6"><b>${DT('No dictation lists yet', '還沒有默書')}</b><span class="muted">${DT('Snap or type this week’s spelling list. I’ll read each word aloud, you write it, then we check together.', '拍下或輸入這星期的默書範圍。我會逐個讀出，你寫下來，然後一起核對。')}</span></div></div>`}
   </main>`;
@@ -1963,12 +1963,14 @@ function getLesson(book, unit, fresh) {
   const key = `lesson:${book.id}:${unit.id}`;
   if (!fresh && lessonJobs.has(key)) return lessonJobs.get(key);
   const p = (async () => {
-    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && (have.v >= 3 || kindOfBook(book) !== 'language')) return have; }
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
+    const lg = langOf(text);
+    // A lesson saved in another language than the chapter's (e.g. English for a Japanese book) is written again.
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && (have.v >= 3 || kindOfBook(book) !== 'language') && (have.lang === lg || (!have.lang && lg !== 'fr' && lg !== 'ja'))) return have; }
     if (!text) throw new Error('This chapter’s text is missing on this device.');
-    const l = await api('learn', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
+    const l = await api('learn', { title: unit.title, text, kind: kindOfBook(book), lang: lg });
     if (!l || !Array.isArray(l.steps) || !l.steps.length) throw new Error('Buddy couldn’t put this lesson together. Please try again.');
-    delete l.usage; l.at = Date.now(); l.v = 3;
+    delete l.usage; l.at = Date.now(); l.v = 3; l.lang = lg;
     await store.set(key, l);
     return l;
   })();
@@ -2103,10 +2105,10 @@ async function renderLearn(bookId, unitId) {
         <small class="ln-step">${T(`Step ${R.k + 1} of ${n}`, `第 ${R.k + 1}／${n} 步`)}</small>
         <h2>${esc(s.heading)}</h2>
         <div class="ln-x">${tutorMd(s.explain)}</div>
-        ${s.example ? `<div class="ln-ex"><b>${T('Example', '例子')}</b>${tutorMd(s.example)}</div>` : ''}
+        ${s.example ? `<div class="ln-ex"><b>${T('Example', '例子')}</b><div data-keep>${tutorMd(s.example)}</div></div>` : ''}
         ${c ? `<div class="ln-check"><b>${T('Quick check', '小測')}</b><div class="ln-q">${tutorMd(c.question)}</div>
           <div class="ln-opts">${c.options.map((o, i) => `<button class="ln-opt ${p !== undefined ? (i === c.answer ? 'ok' : i === p ? 'no' : '') : ''}" data-opt="${i}" ${p !== undefined ? 'disabled' : ''}><span>${'ABCD'[i]}</span>${tutorMd(o).replace(/^<p>|<\/p>$/g, '')}</button>`).join('')}</div>
-          ${p !== undefined ? `<p class="ln-why ${p === c.answer ? 'ok' : 'no'}"><b>${p === c.answer ? T('Yes! ', '答對了！') : T('Not quite. ', '差一點。')}</b>${esc(c.why)}</p>` : ''}</div>` : ''}
+          ${p !== undefined ? `<p class="ln-why ${p === c.answer ? 'ok' : 'no'}"><b>${p === c.answer ? T('Yes! ', '答對了！') : T('Not quite. ', '差一點。')}</b><span data-keep>${esc(c.why)}</span></p>` : ''}</div>` : ''}
         <div class="rd-row"><button class="btn ghost" id="prev">${T('Back', '上一步')}</button><button class="btn" id="next" ${c && p === undefined ? 'disabled' : ''}>${R.k === n - 1 ? T('Finish', '完成') : T('Next', '下一步')} →</button></div>
         ${c && p === undefined ? `<span class="hint" style="text-align:center">${T('Answer the quick check to go on.', '先回答小測再繼續。')} <button class="linkbtn" id="askb">${T('Stuck? Ask Buddy for a hint', '不明白？問 Buddy 拿提示')}</button></span>` : ''}
       </section>`;
@@ -2922,7 +2924,7 @@ function renderAbout() {
 
 function renderSettings(sec) {
   const zh = LANG === 'zh';
-  const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" lang="${{ zh: 'zh-HK', fr: 'fr', ja: 'ja' }[k] || 'en'}" data-raw><b>${label}</b><span>${sub}</span></button>`;
+  const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" data-raw><b lang="${{ zh: 'zh-HK', fr: 'fr', ja: 'ja' }[k] || 'en'}">${label}</b><span>${sub}</span></button>`;
   const helpHTML = `${planCardHTML()}
     ${local.pilot ? `<section class="card stack g10" style="padding:16px">
       <b style="font-size:16px">${PLT('Take the tour again', '再看一次導覽')}</b>
@@ -3062,12 +3064,17 @@ async function wipeDevice() {
 // and a full-screen sheet over the consent step (which can't be left).
 let privLang = null;
 function privacyBody() {
-  const L = privLang || (LANG === 'zh' ? 'zh' : 'en'), P = PRIVACY[L];
-  return `<div class="priv" lang="${L === 'zh' ? 'zh-HK' : 'en'}">
-    <div class="priv-head"><h1>${P.title}</h1><div class="priv-lang" role="group" aria-label="Language">${[['en', 'English'], ['zh', '繁體中文']].map(([k, n]) => `<button class="chip${k === L ? ' on' : ''}" data-privlang="${k}">${n}</button>`).join('')}</div></div>
+  // French and Japanese: the English notice, translated on screen like the rest of the app, with a note that the English is official.
+  const fj = LANG === 'fr' || LANG === 'ja', L = privLang === 'orig' ? 'en' : (privLang || (LANG === 'zh' ? 'zh' : 'en')), auto = fj && L === 'en', P = PRIVACY[L];
+  const langs = [['en', fj ? (LANG === 'fr' ? 'Français' : '日本語') : 'English'], ['zh', '繁體中文'], ...(fj ? [['orig', 'English']] : [])];
+  const cur = privLang === 'orig' ? 'orig' : L;
+  const PP = privLang === 'orig' ? PRIVACY.en : P;
+  return `<div class="priv" ${auto && privLang !== 'orig' ? '' : `lang="${L === 'zh' ? 'zh-HK' : 'en'}"`}>
+    <div class="priv-head"><h1>${PP.title}</h1><div class="priv-lang" role="group" aria-label="Language" lang="en">${langs.map(([k, n]) => `<button class="chip${k === cur ? ' on' : ''}" data-privlang="${k}">${n}</button>`).join('')}</div></div>
+    ${auto && privLang !== 'orig' ? `<p class="priv-upd" lang="${LANG}">${LANG === 'fr' ? 'Traduction automatique. La version anglaise fait foi.' : '自動翻訳です。正式な内容は英語版をご確認ください。'}</p>` : ''}
     <p class="priv-upd">${L === 'zh' ? '最後更新：' : 'Last updated: '}${PRIVACY_UPDATED[L]}</p>
-    <p>${P.intro}</p>
-    ${P.sections.map(([h, b]) => `<section><h2>${h}</h2>${b}</section>`).join('')}
+    <p>${PP.intro}</p>
+    ${PP.sections.map(([h, b]) => `<section><h2>${h}</h2>${b}</section>`).join('')}
   </div>`;
 }
 function bindPrivLang(root, redraw) { root.querySelectorAll('[data-privlang]').forEach((b) => (b.onclick = () => { privLang = b.dataset.privlang; redraw(); })); }
@@ -3092,7 +3099,13 @@ function privacyOverlay() {
    During the pilot each family gets its own code. The app asks for it once, then uses it for the AI. Each device
    sends a short summary of how PrepBuddy is being used (days, questions, scores, which features, errors) so the
    admin page can see what's working; nothing is sent when the pilot is off. */
-const PLT = (en, zh) => (LANG === 'zh' ? zh : en);
+// The welcome screen shows before the family code is entered, so screen translation (which needs the code) can't help
+// there yet: its lines are written out for French and Japanese.
+const GATE = {
+  fr: { 'Yay, you made it!': 'Youpi, te voilà !', 'So excited you’re here!': 'Trop content que tu sois là !', 'Ready to learn together?': 'On apprend ensemble ?', 'Private pilot · you’re one of the first!': 'Pilote privé · tu fais partie des premiers !', 'Welcome to PrepBuddy!': 'Bienvenue sur PrepBuddy !', 'We’re so happy your family is joining us. Pop in the family code we sent you and let’s get started.': 'Nous sommes ravis que votre famille nous rejoigne. Saisissez le code famille que nous vous avons envoyé pour commencer.', 'e.g. CHAN27-K4QF9X': 'ex. CHAN27-K4QF9X', 'Let’s go!': 'C’est parti !', 'No code? Ask the person who invited you.': 'Pas de code ? Demandez à la personne qui vous a invités.', 'Ooh, typing…': 'Oh, tu écris…', 'Hmm, let’s try that again': 'Hmm, on réessaie', 'Buddy can’t wait to start learning with you.': 'Buddy a hâte d’apprendre avec toi.', 'Getting your desk ready…': 'On prépare ton bureau…', 'You’re in!': 'C’est bon, tu es inscrit !' },
+  ja: { 'Yay, you made it!': 'ようこそ！', 'So excited you’re here!': '来てくれてうれしいな！', 'Ready to learn together?': 'いっしょに勉強しよう！', 'Private pilot · you’re one of the first!': '限定テスト版・最初のご家族です！', 'Welcome to PrepBuddy!': 'PrepBuddy へようこそ！', 'We’re so happy your family is joining us. Pop in the family code we sent you and let’s get started.': 'ご参加ありがとうございます。お送りしたファミリーコードを入力して、はじめましょう。', 'e.g. CHAN27-K4QF9X': '例：CHAN27-K4QF9X', 'Let’s go!': 'はじめる！', 'No code? Ask the person who invited you.': 'コードがない場合は、招待してくれた方にお問い合わせください。', 'Ooh, typing…': '入力中…', 'Hmm, let’s try that again': 'もう一度ためしてみよう', 'Buddy can’t wait to start learning with you.': 'Buddy はいっしょに勉強するのを楽しみにしています。', 'Getting your desk ready…': '準備しています…', 'You’re in!': '準備完了！' },
+};
+const PLT = (en, zh) => (LANG === 'zh' ? zh : (GATE[LANG] && GATE[LANG][en]) || en);
 local.device = local.device || uid();
 let TOURING = false;
 function track(name) {
@@ -3130,7 +3143,7 @@ async function pilotGate() {
     const sparkles = Array.from({ length: 14 }, (_, i) => `<i style="left:${(i * 37 + 7) % 100}%;top:${(i * 53 + 11) % 100}%;animation-delay:${(i % 7) * 0.45}s;font-size:${10 + (i % 4) * 5}px">${['✦', '★', '•', '✧'][i % 4]}</i>`).join('');
     $app.innerHTML = `<main class="pad pilotgate" data-raw style="flex:1">
       <div class="pg-sky" aria-hidden="true">${sparkles}</div>
-      <div class="pg-lang" role="group" aria-label="Language / 語言"><button data-gl="en" class="${LANG === 'en' ? 'on' : ''}" aria-pressed="${LANG === 'en'}" lang="en">English</button><button data-gl="zh" class="${LANG === 'zh' ? 'on' : ''}" aria-pressed="${LANG === 'zh'}" lang="zh-HK">中文</button></div>
+      <div class="pg-lang" role="group" aria-label="Language / 語言"><button data-gl="en" class="${LANG === 'en' ? 'on' : ''}" aria-pressed="${LANG === 'en'}" lang="en">English</button><button data-gl="zh" class="${LANG === 'zh' ? 'on' : ''}" aria-pressed="${LANG === 'zh'}" lang="zh-HK">中文</button><button data-gl="fr" class="${LANG === 'fr' ? 'on' : ''}" aria-pressed="${LANG === 'fr'}" lang="fr">FR</button><button data-gl="ja" class="${LANG === 'ja' ? 'on' : ''}" aria-pressed="${LANG === 'ja'}" lang="ja">日本語</button></div>
       <div class="pg-box" id="pgbox">
         <div class="pg-buddy" aria-hidden="true"><div class="pg-say" id="pgsay">${SAY[0]}</div><div class="pg-bob" id="pgbob">${buddySVG('happy', 96)}</div><div class="pg-shadow"></div></div>
         <span class="pg-tag">${PLT('Private pilot · you’re one of the first!', '小規模試用 · 你是首批家庭之一！')}</span>
@@ -4806,12 +4819,14 @@ function getNotes(book, unit, fresh) {
   const key = `notes:${book.id}:${unit.id}`;
   if (!fresh && notesJobs.has(key)) return notesJobs.get(key);
   const p = (async () => {
-    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.sections)) return have; }
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
+    const lg = langOf(text);
+    // Notes saved before a chapter's language was recognised (French, Japanese) are written again in that language.
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.sections) && (have.lang === lg || (!have.lang && lg !== 'fr' && lg !== 'ja'))) return have; }
     if (!text) throw new Error('This chapter’s text is missing on this device.');
-    const n = await api('notes', { title: unit.title, text, kind: kindOfBook(book), lang: langOf(text) });
+    const n = await api('notes', { title: unit.title, text, kind: kindOfBook(book), lang: lg });
     delete n.usage;
-    n.at = Date.now();
+    n.at = Date.now(); n.lang = lg;
     await store.set(key, n);
     return n;
   })();

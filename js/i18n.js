@@ -715,26 +715,27 @@ function saveAuto() {
 const NUM = /\d+(?:[.,:]\d+)?/g;
 const toTemplate = (t) => { const nums = []; const k = t.replace(NUM, (m) => `{${nums.push(m) - 1}}`); return [k, nums]; };
 const fill = (tpl, nums) => tpl.replace(/\{(\d+)\}/g, (m, i) => (nums[+i] !== undefined ? nums[+i] : m));
-let translator = null, timer = 0, busy = false, coolUntil = 0;
+let translator = null, timer = 0, busy = false, coolUntil = 0, fails = 0;
+const MISS = new Map(); // strings the AI skipped: asked again at most twice
 const PEND = new Set();
 // app.js supplies the call to the server (it holds the access code).
 export function setTranslator(fn) { translator = fn; }
 function queue(k) {
-  if (!translator || PEND.has(k) || PEND.size > 400) return;
+  if (!translator || PEND.has(k) || PEND.size > 400 || (MISS.get(k) || 0) >= 2) return;
   PEND.add(k); clearTimeout(timer); timer = setTimeout(flush, 350);
 }
 async function flush() {
   if (busy || !PEND.size || Date.now() < coolUntil) { if (PEND.size && !busy) timer = setTimeout(flush, Math.max(500, coolUntil - Date.now())); return; }
   busy = true;
-  const lang = LANG, batch = [...PEND].slice(0, 60);
+  const lang = LANG, batch = [...PEND].slice(0, 40);
   try {
     const out = await translator(lang, batch);
     if (lang === LANG) {
-      batch.forEach((k, i) => { const v = out[i]; if (typeof v === 'string' && v.trim()) { AUTO[k] = v; VALS.add(v.trim()); } PEND.delete(k); });
-      saveAuto();
+      batch.forEach((k, i) => { const v = out[i]; if (typeof v === 'string' && v.trim()) { AUTO[k] = v; VALS.add(v.trim()); PEND.delete(k); } else { PEND.delete(k); MISS.set(k, (MISS.get(k) || 0) + 1); } });
+      saveAuto(); fails = 0;
       translateTree(document.body);
     }
-  } catch (e) { batch.forEach((k) => PEND.delete(k)); coolUntil = Date.now() + 30000; }
+  } catch (e) { batch.forEach((k) => PEND.delete(k)); fails++; coolUntil = Date.now() + Math.min(60000, 3000 * fails); try { console.warn('[PrepBuddy] screen translation failed', e && e.message); } catch (e2) {} }
   busy = false;
   if (PEND.size) timer = setTimeout(flush, 50);
 }
@@ -766,7 +767,7 @@ const ATTRS = ['placeholder', 'aria-label', 'title'];
 const RAW = '.stemblock, [data-raw], .point > span:last-child, .marker, .fml, .terms, .stem, p.q, .pstem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
 // French and Japanese: whole screens marked data-raw (they carry their own Chinese) are still translated, so only real
 // content is kept as written: questions, the textbook, lessons, Buddy's replies, the child's writing and word lists.
-const RAW_FJ = RAW.replace('[data-raw], ', '') + ', [data-keep], [lang]:not(html), .tmsg:not(.tmsg-ui), .ln-x, .ln-ex, .ln-q, .ln-opt, .ln-why, .ln-sum li, .ln-card h1, .ln-card h2, .ln-script, .nbody, .ntitle, .ffront, .fback, .wtext, .readtxt, .rtext, .mq-text, .improve, .etitle, .sp-q, .sp-qt, .sp-sample, .sp-trx, .sp-phr, .sp-ex, .sp-exq, .wr-essay, .wr-ptext, .wr-corr, .wr-fixes, .wr-crit, .wr-tip, .wr-sum, .wr-note, .dl-item, .dl-big, .dl-q, .dl-miss, .hw-qt, .hw-qx, .hw-qs, .katex, code, input, select';
+const RAW_FJ = RAW.replace('[data-raw], ', '').replace(', table.data', '') + ', [data-keep], [lang]:not(html), .tmsg:not(.tmsg-ui), .ln-x, .ln-q, .ln-opt, .ln-sum li, .ln-card h1, .ln-card h2, .ln-script, .nbody, .ntitle, .ffront, .fback, .wtext, .readtxt, .rtext, .mq-text, .improve, .etitle, .sp-ex p, .sp-sample p, .sp-trx, .sp-phr, .wr-essay, .wr-ptext, .wr-corr, .wr-fixes, .wr-crit p, .wr-sum, .hw-qx, .katex, code, input, select, table.data td';
 const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(SEED[LANG] ? RAW_FJ : RAW)); };
 export function translateTree(root) {
   if (LANG === 'en' || !root) return;
