@@ -5483,8 +5483,76 @@ async function renderProgress() {
   const timedCard = tAcc != null && pAcc != null ? `<div class="pv-card"><b class="pv-ct h-info">${PT('Under test conditions', '考試狀態下')}${ib('howTmP', PT('How is this worked out?', '這是怎樣計算的？'))}</b>${how('howTmP', PT('How is this worked out?', '這是怎樣計算的？'), `<p>${PT('Practice is your score on normal practice over the last 60 days. Timed tests is your score on timed chapter tests and papers over the same 60 days.', '練習是過去 60 日一般練習的得分。限時測驗是同一期間限時章節測驗和試卷的得分。')}</p><p>${PT('A drop of 8% or more under time usually means working too slowly or panicking, not missing knowledge. Timed practice fixes it.', '限時下跌 8% 或以上，通常是太慢或緊張，而不是不懂。多做限時練習就能改善。')}</p>`)}<div class="pv-pair"><span>${PT('Practice', '練習')} <b>${pAcc}%</b></span><span>${PT('Timed tests', '限時測驗')} <b class="${pAcc - tAcc >= 8 ? 'mid' : 'good'}">${tAcc}%</b></span></div>
     <p class="pv-sm">${pAcc - tAcc >= 8 ? PT(`${pAcc - tAcc}% lower when timed. One timed chapter test a week builds exam stamina.`, `限時下低 ${pAcc - tAcc}%。每星期做一次限時章節測驗，可以增強考試耐力。`) : PT('Holds up well under time pressure.', '在時間壓力下表現穩定。')}</p>
     ${pAcc - tAcc >= 8 && shown[0] ? btn(PT('Take a timed chapter test', '做限時章節測驗'), () => go({ name: 'book', bookId: shown[0].b.id }), 'pv-btn soft') : ''}</div>` : '';
+
+  // ---------- headline numbers + charts ----------
+  const WK = 7 * DAY, mon0 = (() => { const d = new Date(t0); const k = (d.getDay() + 6) % 7; return t0 - k * DAY; })(); // Monday this week
+  // a daily snapshot of the headline numbers, so their trend lines build up over time
+  const used = RH.filter((x) => x.used);
+  const testSoon = new Set(tests.steps.filter((p) => p.book && p.left <= 30).map((p) => p.book.id));
+  const wOf = (x) => (testSoon.has(x.b.id) ? 2 : 1);
+  const overall = used.length ? Math.round(used.reduce((a, x) => a + x.pct * wOf(x), 0) / used.reduce((a, x) => a + wOf(x), 0)) : 0;
+  let chDone = 0, chAll = 0; for (const x of (used.length ? used : RH)) { const m = MB.get(x.b.id); chAll += m.chapters.length; chDone += m.chapters.filter((c) => c.pct >= 80).length; }
+  local.kpi = (local.kpi || []).filter((k) => k.d !== t0).concat([{ d: t0, r: overall, c: chDone, m: D.longTerm }]).slice(-180);
+  const kAt = (t, f) => { const k = local.kpi.filter((x) => x.d <= t).pop(); return k ? k[f] : null; };
+  const weekly = (f) => Array.from({ length: 12 }, (_, i) => kAt(t0 - (11 - i) * WK, f)).filter((v) => v != null);
+  // readiness can also be rebuilt from each book's own history, so its line works from day one
+  const rdLine = Array.from({ length: 12 }, (_, i) => { const t = t0 - (11 - i) * WK; const pts = used.map((x) => { const p = (local.mhist[x.b.id] || []).filter((h) => h[0] <= t).pop(); return p ? [p[1], wOf(x)] : null; }).filter(Boolean);
+    return pts.length ? Math.round(pts.reduce((a, p) => a + p[0] * p[1], 0) / pts.reduce((a, p) => a + p[1], 0)) : null; }).filter((v) => v != null);
+  const dayMap = new Map(); local.log.forEach((e) => { const d = dayStart(e.t); dayMap.set(d, (dayMap.get(d) || 0) + 1); });
+  const days28 = Array.from({ length: 28 }, (_, i) => t0 - i * DAY).filter((d) => dayMap.has(d)).length;
+  const consLine = Array.from({ length: 12 }, (_, i) => { const end = t0 - (11 - i) * WK; return Array.from({ length: 7 }, (_, k) => end - k * DAY).filter((d) => dayMap.has(d)).length; });
+  const ago = (line, n = 4) => (line.length > n ? line[line.length - 1 - n] : null);
+  const delta = (now2, was, unit = '') => (was == null ? '' : now2 > was ? `<small class="up">▲ ${now2 - was}${unit} ${PT('in 4 weeks', '（4 星期）')}</small>` : now2 < was ? `<small class="down">▼ ${was - now2}${unit} ${PT('in 4 weeks', '（4 星期）')}</small>` : `<small>${PT('no change in 4 weeks', '4 星期沒有變化')}</small>`);
+  const kspark = (pts) => { if (!pts || pts.length < 2) return ''; const lo = Math.min(...pts), hi = Math.max(...pts), W = 120, H = 34;
+    return `<svg class="pv-kspark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts.map((v, i) => `${(2 + i * (W - 4) / (pts.length - 1)).toFixed(1)},${(H - 3 - ((v - lo) / ((hi - lo) || 1)) * (H - 6)).toFixed(1)}`).join(' ')}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`; };
+  const cLine = weekly('c'), mLine = weekly('m');
+  const kpi = (v, lab, sub, line, id, t) => `<div class="pv-kpi"><div class="pv-kpi-t"><span class="h-info">${lab}${ib(id, t)}</span></div><b>${v}</b>${sub}${kspark(line)}</div>`;
+  const kpiHTML = `<section class="pv-kpis" aria-label="${PT('Headline numbers', '主要數字')}">
+    ${kpi(`${overall}%`, PT('Overall readiness', '整體準備度'), delta(overall, ago(rdLine), '%'), rdLine, 'howK1', PT('What is overall readiness?', '甚麼是整體準備度？'))}
+    ${kpi(`${chDone}<small>/${chAll}</small>`, PT('Chapters mastered', '已掌握的章節'), delta(chDone, ago(cLine)), cLine, 'howK2', PT('What counts as mastered?', '怎樣才算掌握？'))}
+    ${kpi(String(D.longTerm), PT('In long-term memory', '長期記憶'), delta(D.longTerm, ago(mLine)), mLine, 'howK3', PT('What is long-term memory?', '甚麼是長期記憶？'))}
+    ${kpi(`${days28}<small>/28</small>`, PT('Days practised', '練習日數'), `<small>${PT('in the last 4 weeks', '過去 4 星期')}</small>`, consLine, 'howK4', PT('Why consistency?', '為甚麼看持續性？'))}
+    ${how('howK1', PT('What is overall readiness?', '甚麼是整體準備度？'), `<p>${PT('One number for how prepared you are across all your subjects: the readiness of each textbook you practise, averaged, with subjects that have a test in the next 30 days counting double.', '所有科目準備程度的一個數字：每本有練習的課本的準備度平均，30 日內有測驗的科目計雙倍。')}</p><p>${PT('The line shows it week by week over the last 12 weeks.', '線圖顯示過去 12 星期每週的變化。')}</p>`)}
+    ${how('howK2', PT('What counts as mastered?', '怎樣才算掌握？'), `<p>${PT('A chapter counts as mastered at 80% readiness or more. That needs a timed chapter test passed on 2 different days, plus covering the chapter, harder questions right and things remembered in reviews.', '準備度達 80% 或以上的章節就算掌握。這需要在兩日通過限時章節測驗，並涵蓋全章、答對較難的題目和溫習時記得。')}</p><p>${PT('Out of all the chapters in the textbooks you practise.', '分母是你有練習的課本的所有章節。')}</p>`)}
+    ${how('howK3', PT('What is long-term memory?', '甚麼是長期記憶？'), `<p>${PT('Questions you got right again a week or more after first getting them right. Reviews bring questions back after 1, 3, 7, 14 and 30 days; reaching the 7-day step means it has stuck.', '答對後一星期或更久仍再次答對的題目。溫習會在 1、3、7、14、30 日後再出題；到了 7 日那一步，就代表記住了。')}</p><p>${PT('This only grows if reviews are done, so it shows real learning, not cramming.', '只有做溫習才會增加，所以反映的是真正學會，而不是臨急抱佛腳。')}</p>`)}
+    ${how('howK4', PT('Why consistency?', '為甚麼看持續性？'), `<p>${PT('Days with any practice in the last 4 weeks. The line shows days per week over 12 weeks.', '過去 4 星期有練習的日數。線圖顯示 12 星期內每星期的日數。')}</p><p>${PT('A little most days beats a lot once a week: memory works best with short, spaced practice.', '每天少少，勝過一星期一次做很多：短時間、分散的練習最能幫助記憶。')}</p>`)}
+  </section>`;
+
+  // practice calendar: the last 12 weeks, one square a day, shaded by questions answered
+  const calStart = mon0 - 11 * WK, shade = (n) => (!n ? 0 : n < 10 ? 1 : n < 20 ? 2 : n < 40 ? 3 : 4);
+  const calCols = Array.from({ length: 12 }, (_, w) => `<div class="pv-calc">${Array.from({ length: 7 }, (_, d) => { const t = calStart + w * WK + d * DAY, n = dayMap.get(t) || 0, fut = t > t0;
+    return `<i class="${fut ? 'fut' : 's' + shade(n)}" title="${new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}: ${n} ${PT('questions', '題')}"></i>`; }).join('')}</div>`).join('');
+  const dl = zh ? ['一', '', '三', '', '五', '', '日'] : ['Mon', '', 'Wed', '', 'Fri', '', 'Sun'];
+  const calCard = `<div class="pv-card pv-calcard"><b class="pv-ct h-info">${PT('Practice calendar', '練習日曆')}${ib('howCal', PT('How to read this', '怎樣看這個圖'))}</b><p class="pv-sm">${PT('The last 12 weeks. Darker means more questions that day.', '過去 12 星期，顏色越深，當天做的題目越多。')}</p>
+    <div class="pv-cal"><div class="pv-cald">${dl.map((x) => `<span>${x}</span>`).join('')}</div>${calCols}</div>
+    <div class="pv-callg"><span>${PT('Less', '少')}</span><i class="s0"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><span>${PT('More', '多')}</span></div>
+    ${how('howCal', PT('How to read this', '怎樣看這個圖'), `<p>${PT('Each square is a day, each column a week (Monday at the top). The colour shows how many questions were answered that day: none, under 10, 10–19, 20–39, 40 or more.', '每格是一日，每直行是一星期（星期一在最上）。顏色代表當天答了多少題：沒有、少於 10、10–19、20–39、40 或以上。')}</p><p>${PT('Look for gaps: missed weekends or a quiet week before a test are easy to spot here.', '留意空白：漏了的週末或測驗前很少練習的一星期，在這裡一看便知。')}</p>`)}</div>`;
+
+  // taking on harder questions: the mix of question levels answered each week (last 8 weeks)
+  const mixW = Array.from({ length: 8 }, (_, i) => { const end = t0 + DAY - (7 - i) * WK, start = end - WK; const c = [0, 0, 0, 0]; local.log.forEach((e) => { if (e.t >= start && e.t < end) c[Math.max(1, Math.min(4, e.l || 2)) - 1]++; }); return { c, n: c.reduce((a, b) => a + b, 0), start }; });
+  const mixCard = mixW.some((w) => w.n) ? `<div class="pv-card"><b class="pv-ct h-info">${PT('Taking on harder questions', '挑戰較難的題目')}${ib('howMix', PT('How to read this', '怎樣看這個圖'))}</b><p class="pv-sm">${PT('The mix of question levels each week. More dark blue means harder questions.', '每星期各級題目的比例，深藍色越多代表題目越難。')}</p>
+    <div class="pv-mix">${mixW.map((w) => `<div class="pv-mixc" title="${w.n} ${PT('questions', '題')}">${w.n ? [3, 2, 1, 0].map((k) => (w.c[k] ? `<i class="l${k + 1}" style="height:${(100 * w.c[k] / w.n).toFixed(1)}%"></i>` : '')).join('') : '<i class="l0" style="height:100%"></i>'}</div>`).join('')}</div>
+    <div class="pv-mixx">${mixW.map((w, i) => `<span>${i === 7 ? PT('This wk', '本週') : i === 0 ? PT('8 wks ago', '8 週前') : ''}</span>`).join('')}</div>
+    <div class="pv-callg">${[1, 2, 3, 4].map((k) => `<i class="l${k}"></i><span>${[PT('Remember', '記憶'), PT('Understand', '理解'), PT('Use it', '應用'), PT('Think it through', '深入思考')][k - 1]}</span>`).join('')}</div>
+    ${how('howMix', PT('How to read this', '怎樣看這個圖'), `<p>${PT('Every question has a level from 1 (remember a fact) to 4 (think it through). Each bar is one week of answers, split by level.', '每題都有 1（記憶事實）至 4（深入思考）的級別。每條棒是一星期的答題，按級別分開。')}</p><p>${PT('The app gives harder questions as you get them right, so the dark part growing over the weeks is proof of progress, even when % right stays the same.', '你答對了，程序就會出較難的題目。所以深色部分逐週增加，就是進步的證明，即使答對率沒有變。')}</p>`)}</div>` : '';
+
+  // the mistake book over time: open mistakes at the end of each week, and fixed vs new that week
+  const firstWrong = new Map(); local.log.forEach((e) => { if (e.g < e.m && !firstWrong.has(e.q)) firstWrong.set(e.q, e.t); });
+  const MKE = Object.entries(local.mistakes || {}).map(([id, m]) => ({ made: Math.min(firstWrong.get(id) || m.t, m.t), done: m.done ? m.doneAt || m.t : null }));
+  const mkW = Array.from({ length: 8 }, (_, i) => { const end = t0 + DAY - (7 - i) * WK, start = end - WK;
+    return { open: MKE.filter((x) => x.made < end && (!x.done || x.done >= end)).length, fixed: MKE.filter((x) => x.done && x.done >= start && x.done < end).length, made: MKE.filter((x) => x.made >= start && x.made < end).length }; });
+  const mkMax = Math.max(1, ...mkW.map((w) => Math.max(w.open, w.fixed, w.made)));
+  const mkCard = MKE.length ? (() => { const W = 300, H = 120, x = (i) => 14 + i * (W - 28) / 7, y = (v) => H - 18 - v / mkMax * (H - 30);
+    const bars = mkW.map((w, i) => `<rect x="${(x(i) - 9).toFixed(1)}" y="${y(w.fixed).toFixed(1)}" width="8" height="${(H - 18 - y(w.fixed)).toFixed(1)}" rx="2" fill="#18966A"/><rect x="${(x(i) + 1).toFixed(1)}" y="${y(w.made).toFixed(1)}" width="8" height="${(H - 18 - y(w.made)).toFixed(1)}" rx="2" fill="#F0A35E"/>`).join('');
+    const line = `<polyline points="${mkW.map((w, i) => `${x(i).toFixed(1)},${y(w.open).toFixed(1)}`).join(' ')}" fill="none" stroke="#26357A" stroke-width="2.5" stroke-linejoin="round"/>${mkW.map((w, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(w.open).toFixed(1)}" r="3" fill="#26357A"/>`).join('')}`;
+    const a = mkW[0].open, b = mkW[7].open;
+    return `<div class="pv-card"><b class="pv-ct h-info">${PT('Mistake book over time', '錯題簿的變化')}${ib('howMk', PT('How to read this', '怎樣看這個圖'))}</b>
+      <p class="pv-sm">${b < a ? PT(`Down from ${a} to ${b} open mistakes in 8 weeks: gaps are closing.`, `8 星期內未改正的錯題由 ${a} 減至 ${b}，漏洞正在補上。`) : b > a ? PT(`Up from ${a} to ${b} open mistakes in 8 weeks. Fixing a few each day turns it around.`, `8 星期內未改正的錯題由 ${a} 增至 ${b}。每天改正幾題就能扭轉。`) : PT(`${b} open mistakes, about the same as 8 weeks ago.`, `未改正的錯題 ${b} 題，和 8 星期前差不多。`)}</p>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${PT('Open mistakes each week, with mistakes fixed and new', '每星期未改正的錯題，以及改正和新增的錯題')}"><line x1="0" y1="${H - 18}" x2="${W}" y2="${H - 18}" stroke="#E6EAF2"/>${bars}${line}<text x="4" y="${H - 4}" font-size="10" fill="#5A6380">${PT('8 wks ago', '8 週前')}</text><text x="${W - 4}" y="${H - 4}" font-size="10" fill="#5A6380" text-anchor="end">${PT('This wk', '本週')}</text></svg>
+      <div class="pv-callg"><i style="background:#26357A;border-radius:50%"></i><span>${PT('Open', '未改正')}</span><i style="background:#18966A"></i><span>${PT('Fixed', '已改正')}</span><i style="background:#F0A35E"></i><span>${PT('New', '新錯題')}</span></div>
+      ${how('howMk', PT('How to read this', '怎樣看這個圖'), `<p>${PT('The blue line is how many mistakes were still open (not yet got right) at the end of each week. Green bars are mistakes fixed that week; orange bars are new mistakes that week.', '藍線是每星期結束時仍未改正的錯題數。綠色棒是當星期改正的錯題，橙色棒是當星期新增的錯題。')}</p><p>${PT('Every wrong answer goes into the mistake book; getting it fully right later fixes it. A falling blue line means the gaps are closing.', '每題答錯都會放進錯題簿；之後完全答對就算改正。藍線下降，代表漏洞正在補上。')}</p>`)}</div>`; })() : '';
   const sec4 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('Proof that practice is paying off', '練習有沒有效果')}</span></div>
-    <div class="pv-grid3">${levelCard}${readyCard}${marksCard}${growCard}${memCard}${timedCard}</div></section>`;
+    <div class="pv-grid3">${levelCard}${readyCard}${mixCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div></section>`;
 
   // ---------- 5. Effort and habits ----------
   const mins = r.days.reduce((a, m) => a + m, 0), hmOf = (m) => (m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : PT(`${m} min`, `${m} 分鐘`));
@@ -5512,7 +5580,7 @@ async function renderProgress() {
       ${fixedW || newW ? tileE(PT(`${fixedW} fixed`, `改正 ${fixedW} 題`), PT(`vs ${newW} new mistakes`, `新錯題 ${newW} 題`), `<small class="${fixedW >= newW ? 'up' : 'down'}">${fixedW >= newW ? PT('Fixing faster than making', '改正比犯錯快') : PT('More new than fixed', '新錯題比改正多')}</small>`) : ''}
       ${bands.length >= 2 ? tileE(`${fmtH(bands[0][0])}–${fmtH(bands[0][0] + 2)}`, PT('your best time', '你最好的時段'), `<small>${PT('Scores highest here', '這段時間分數最高')}</small>`) : ''}</div>
     ${BY.length ? `<div class="pv-chips">${BY.map((x) => `<span data-raw>${esc(x.k)}: ${esc(x.v)}${x.c ? ` (${esc(x.c)})` : ''}</span>`).join('')}${starsOn() ? `<span>${PT('Stars to spend', '可用星星')}: ${starState().bal}</span>` : ''}</div>` : ''}
-    ${goalCardHTML(D)}</section>`;
+    ${calCard}${goalCardHTML(D)}</section>`;
 
   // the one-line summary at the top
   const rising = lv.filter((x) => x[2] === 'rising').map((x) => x[0]);
@@ -5527,7 +5595,7 @@ async function renderProgress() {
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(PT('Weekly report', '每週報告'), () => reportDialog(), 'pv-btn quiet')}${btn(`${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}`, () => openParent(), 'pv-btn quiet')}</div></div>
     <section class="pv-hero">${buddySVG(local.log.length ? 'happy' : 'think', 56)}<div><b data-raw>${esc(head)}</b>${sub2 ? `<span data-raw>${esc(sub2)}</span>` : ''}</div></section>
-    ${sec1}${sec2}${sec3}${sec4}${sec5}
+    ${kpiHTML}${sec1}${sec2}${sec3}${sec4}${sec5}
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
