@@ -605,7 +605,10 @@ main.qpaper{background:#FFFFFF;background-image:linear-gradient(90deg,transparen
 }
 /* computers: the same friendly greeting card as on phones (Buddy, a cheer line and the streak strip), a bit larger */
 @media (min-width:1024px){
-  .today .greet{align-items:flex-start!important;gap:16px!important}
+  .today .greet{align-items:flex-start!important;gap:16px!important;position:relative}
+  /* the Star shop (and child / settings buttons) sit in the card's top-right corner, so the card runs full width */
+  .today .greet>.greet-r{position:absolute;top:18px;right:22px;z-index:2}
+  .today .gr-row{padding-right:150px}
   .today .gr-hero{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:22px 26px;border-radius:22px;overflow:hidden;
     background:radial-gradient(120% 160% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 50%),linear-gradient(135deg,#EEF1FB 0%,#EEF1FB 60%,#FFF8E1 100%);border:1px solid #DCE2EE}
   .today .gr-hero::after{content:"";position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.55)}
