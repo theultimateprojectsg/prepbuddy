@@ -7888,14 +7888,14 @@ function renderSummary() {
       const ZZ = (en, zh) => (LANG === 'zh' ? zh : en), lines = [];
       if (choiceType(q) && Array.isArray(q.options)) {
         const L = q.correct_option, oi = 'ABCD'.indexOf(L), mine = S.answers && S.answers[k];
-        if (oi >= 0) lines.push(`<span><b>${ZZ('Answer', '答案')}: ${L}.</b> ${esc(plain(q.options[oi]))}</span>`);
-        if (mine && mine !== L && 'ABCD'.indexOf(mine) >= 0) lines.push(`<span class="rfx-mine">${ZZ('You chose', '你選了')} ${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}</span>`);
+        if (oi >= 0) lines.push(`<span><b>${ZZ('Answer', '答案')}</b><b data-keep>: ${L}.</b> <span data-keep>${esc(plain(q.options[oi]))}</span></span>`);
+        if (mine && mine !== L && 'ABCD'.indexOf(mine) >= 0) lines.push(`<span class="rfx-mine"><span>${ZZ('You chose', '你選了')}</span><span data-keep> ${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}</span></span>`);
       } else if (Array.isArray(q.parts)) {
         const pts = q.parts.filter((p) => Array.isArray(p.mark_scheme) && p.mark_scheme.length);
-        if (pts.length) lines.push(`<b>${ZZ('Marks were for', '得分要點')}:</b><ul>${pts.map((p) => p.mark_scheme.slice(0, 4).map((x) => `<li>${pts.length > 1 && p.label ? `(${esc(String(p.label).replace(/[()]/g, ''))}) ` : ''}${esc(plain(x))}</li>`).join('')).join('')}</ul>`);
+        if (pts.length) lines.push(`<b>${ZZ('Marks were for', '得分要點')}</b><ul data-keep>${pts.map((p) => p.mark_scheme.slice(0, 4).map((x) => `<li>${pts.length > 1 && p.label ? `(${esc(String(p.label).replace(/[()]/g, ''))}) ` : ''}${esc(plain(x))}</li>`).join('')).join('')}</ul>`);
       }
-      if (q.explanation) lines.push(`<span class="rfx-why">${esc(plain(q.explanation))}</span>`);
-      if (lines.length) fix = `<div class="rfix" data-keep>${lines.join('')}</div>`;
+      if (q.explanation) lines.push(`<span class="rfx-why" data-keep>${esc(plain(q.explanation))}</span>`);
+      if (lines.length) fix = `<div class="rfix">${lines.join('')}</div>`;
     }
     return `<div class="rrow ${st}"><span class="rnum">Q${k + 1}</span><span class="rtext" data-raw>${esc(String(label).slice(0, 110))}${String(label).length > 110 ? '…' : ''}</span><span class="rmark">${g}/${m}</span>${fix}</div>`;
   }).join('');

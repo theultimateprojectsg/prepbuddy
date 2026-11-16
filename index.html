@@ -1780,11 +1780,7 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
   /* results: on very wide screens the answers sit in two columns */
   .results{grid-template-columns:clamp(380px,26%,460px) minmax(0,1fr)}
   /* reading text never runs into very long lines */
-  .ln-x,.ln-ex,.rsg-why,.about p,.rfix{max-width:90ch}
-}
-@media (min-width:2000px){
-  .rlist .card{display:grid;grid-template-columns:1fr 1fr;align-items:start}
-  .rlist .rrow{border-bottom:1px solid #EEF1F6}
+  .ln-x,.ln-ex,.rsg-why,.about p{max-width:90ch}
 }
 @media (min-width:1024px){
   .pp-cards{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))!important}
@@ -1803,6 +1799,7 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
   .bookpage .mw-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 }
 @media (min-width:1600px) and (max-width:2199px){.bookpage .gbody,.bookpage .gbody.flat{grid-template-columns:1fr 1fr!important}}
+.rrow>.rfix{flex:0 0 calc(100% - 36px);max-width:none}
 </style>
 </head>
 <body>
