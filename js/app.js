@@ -2485,8 +2485,44 @@ async function renderHome() {
       const name = cand.b.subject ? subj(cand.b.subject) : shortTitle(cand.b.title), slipping = old && m.pct < old[1];
       if (weak) { slip = { b: cand.b, u: weak.unit };
         slipHTML = `<div class="td-slip"><span class="pg-ic orange">${pIcon('alert', 18)}</span><span class="td-slt"><b>${Z(`${esc(name)} hasn’t been practised for ${cand.days} days${slipping ? ' and is slipping' : ''}`, `${esc(name)}已經 ${cand.days} 日沒有練習${slipping ? '，而且有退步' : ''}`)}</b><small>${Z(`A short set on ${esc(shortTitle(weak.unit.title))} brings it back.`, `做一組「${esc(shortTitle(weak.unit.title))}」就能追回。`)}</small></span><button class="btn-sm primary" id="slipGo">${Z('Practise', '練習')}</button></div>`; } } }
+  // "Also for tonight": the three most useful extra jobs for this child today, in the Practice-page tile style.
+  // Scored from what's coming up and what's unfinished; the plain Homework / Dictation / Writing tiles fill any gaps.
+  const quick = (() => {
+    const c = [], now = Date.now(), dayAgo = (t) => Math.floor((dayStart(now) - dayStart(t)) / DAY);
+    const short = (x, n = 34) => { x = String(x || '').trim(); return x.length > n ? x.slice(0, n - 1) + '…' : x; };
+    // a dictation coming up
+    for (const x of (local.sched || []).filter((x) => x.kind === 'dict')) {
+      const left = testLeft(x); if (left < 0 || left > 7) continue;
+      const L = (local.dict || []).find((d) => d.id === x.L);
+      c.push({ k: 'dict', score: 100 - left * 6, icon: 'dictation', t: L ? Z(`Dictation: ${short(L.title, 24)}`, `默書：${short(L.title, 16)}`) : Z('Add your dictation words', '加入默書詞語'),
+        s: Z(`School dictation ${leftText(left)}`, `學校默書${leftText(left)}`), run: () => go(L ? { name: 'dictation', id: L.id, sub: 'run' } : { name: 'dictation', id: 'new' }) });
+    }
+    // a word list with words still wrong last time
+    for (const L of local.dict || []) {
+      const r = (L.runs || [])[(L.runs || []).length - 1]; if (!r || r.g >= r.n || dayAgo(r.t) < 1 || c.some((q) => q.k === 'dict')) continue;
+      c.push({ k: 'dict', score: 45, icon: 'dictation', t: Z(`Dictation: ${short(L.title, 24)}`, `默書：${short(L.title, 16)}`), s: Z(`${r.n - r.g} word${r.n - r.g === 1 ? '' : 's'} to get right`, `還有 ${r.n - r.g} 個詞語要寫對`), run: () => go({ name: 'dictation', id: L.id, sub: 'run' }) });
+      break;
+    }
+    // writing: unfinished piece, or feedback waiting for a redraft
+    { const w = (local.wr || []).filter((x) => dayAgo(x.drafts.length ? x.drafts[x.drafts.length - 1].t : x.t) <= 10).sort((a, b) => b.t - a.t)[0];
+      if (w && !w.drafts.length) c.push({ k: 'wr', score: 60, icon: 'writing', t: Z('Finish your writing', '完成你的寫作'), s: short(w.title), run: () => go({ name: 'writing', id: w.id }) });
+      else if (w && w.drafts.length === 1) c.push({ k: 'wr', score: 50, icon: 'writing', t: Z('Redraft your writing', '修改你的寫作'), s: Z(`Use Buddy’s feedback: ${short(w.title, 22)}`, `按 Buddy 的評語修改：${short(w.title, 14)}`), run: () => go({ name: 'writing', id: w.id }) }); }
+    // a writing or composition test coming up
+    { const x = (local.sched || []).find((x) => x.kind !== 'dict' && /writ|compos|essay|作文|寫作/i.test(x.name || '') && testLeft(x) >= 0 && testLeft(x) <= 10);
+      if (x && !c.some((q) => q.k === 'wr')) c.push({ k: 'wr', score: 80 - testLeft(x) * 4, icon: 'writing', t: Z('Practise writing', '練習寫作'), s: Z(`${short(x.name, 22)} ${leftText(testLeft(x))}`, `${short(x.name, 14)}${leftText(testLeft(x))}`), run: () => go({ name: 'writing' }) }); }
+    // homework snapped today or yesterday
+    { const h = (local.hw || []).filter((h) => dayAgo(h.t) <= 1).sort((a, b) => b.t - a.t)[0];
+      if (h) c.push({ k: 'hw', score: 55, icon: 'homework', t: Z('Back to your homework', '繼續你的功課'), s: short(h.title || Z('Homework', '功課')), run: () => go({ name: 'homework', id: h.id }) }); }
+    // mistakes piling up
+    { const n = mistakeCount(); if (n >= 3) c.push({ k: 'mk', score: 30 + Math.min(n, 20), icon: 'mistakes', t: Z(`Fix ${n} mistakes`, `改正 ${n} 個錯題`), s: Z('Questions you got wrong before', '之前答錯的題目'), run: () => go({ name: 'pick', mode: 'weak' }) }); }
+    // defaults
+    c.push({ k: 'hw', score: 20, icon: 'homework', t: Z('Homework help', '功課輔導'), s: Z('Snap a photo, get hints', '拍照，得到提示'), run: () => go({ name: 'homework' }) });
+    c.push({ k: 'dict', score: 15, icon: 'dictation', t: Z('Dictation', '默書'), s: Z('I read, you write', '我讀，你寫'), run: () => go({ name: 'dictation' }) });
+    c.push({ k: 'wr', score: 10, icon: 'writing', t: Z('Writing', '寫作'), s: Z('Kind feedback, then redraft', '溫和的評語，再改寫'), run: () => go({ name: 'writing' }) });
+    const seen = new Set(); return c.sort((a, b) => b.score - a.score).filter((q) => !seen.has(q.k) && seen.add(q.k)).slice(0, 3);
+  })();
   const quickHTML = `<section class="stack g10 td-sec" aria-label="${Z('Other things to do', '其他功課')}"><div class="sect-head"><h2>${Z('Also for tonight', '今晚也可以')}</h2></div>
-    <div class="td-quick quick">${(() => { const T = practiceTiles(); return ['hwgo', 'dictgo', 'wrgo'].map((k) => T[k] || '').join(''); })()}</div></section>`;
+    <div class="td-quick quick">${quick.map((q, i) => `<button class="qtile hwtile" data-tq="${i}">${actionTile(q.icon, 44)}<b>${esc(q.t)}</b><span>${esc(q.s)}</span></button>`).join('')}</div></section>`;
   // Buddy's daily brief for the coach panel (built from the numbers, no AI call)
   { const p = tests.steps.find((q) => q.left <= 14);
     const first = steps.find((x) => !x.done && x.now);
@@ -2596,6 +2632,7 @@ async function renderHome() {
     delete local.lessonAt[lessonLeft.key]; saveLocal(); renderHome(); }; }
   { const sg2 = document.getElementById('slipGo'); if (sg2 && slip) sg2.onclick = () => { pick = { bookId: slip.b.id, ids: new Set([slip.u.id]) }; startUnits(slip.b, [slip.u], 10); }; }
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
+  $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
