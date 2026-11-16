@@ -1048,7 +1048,7 @@ function coachHTML() {
       <span style="margin-left:auto;display:flex;gap:6px">${msgs.length && !coach.busy && !voiceOn('coach') ? '<button class="btn-sm quiet" id="coachClear">Clear</button>' : ''}
       ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk${locked('voice') ? ' 🔒' : ''}</button>`}</span></div>
     ${voiceOn('coach') ? voicePanelHTML() + (coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : '') : `<div class="coach-msgs" id="coachMsgs">
-      <div class="tmsg ai">${helper.open ? `Need help? Ask me anything about PrepBuddy or your studies.` : `Hi${local.name ? ` ${esc(local.name)}` : ''}! Ask me how you’re doing, what to focus on, or for a study plan.`}</div>
+      <div class="tmsg ai">${helper.open ? `Need help? Ask me anything about PrepBuddy or your studies.` : `Hi${local.name ? ` ${esc(local.name)}` : ''}! ${coach.brief ? esc(coach.brief) + ' ' : ''}Ask me how you’re doing, what to focus on, or for a study plan.`}</div>
       ${msgs.map((m, k) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>${m.picked ? `<div class="coach-picked" data-raw>✓ ${esc(m.picked)}</div>` : ''}${m.btns && k === msgs.length - 1 && !coach.busy ? `<div class="coach-acts">${m.btns.map((b, j) => `<button class="${j ? 'btn-sm' : 'btn-sm primary'}" data-cact="${j}" data-raw>${j ? '' : '▶ '}${esc(b.label)}</button>`).join('')}</div>` : ''}`).join('')}
       ${coach.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
       ${coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : ''}
@@ -2395,7 +2395,8 @@ async function renderHome() {
   { const p = tests.steps.find((q) => q.left <= 14);
     if (p) { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
   if (mk) cands.push({ key: 'mk', icon: 'mistakes', t: Z(`Fix ${mk} mistake${mk > 1 ? 's' : ''}`, `改正 ${mk} 題錯題`), s: Z('Questions you didn’t get fully right', '未完全答對的題目'), attr: 'id="mistakes"', chk: { y: 'mk', n: mk } });
-  if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Review ${due.length} question${due.length > 1 ? 's' : ''}`, `複習 ${due.length} 題`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
+  if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Review 10 questions now', '先複習 10 題'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
+  else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Review ${due.length} question${due.length > 1 ? 's' : ''}`, `複習 ${due.length} 題`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
   { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
     if (nb) cands.push({ key: `lv:${nb.id}`, icon: 'level', t: Z('Find your level', '找出你的程度'), s: Z(`${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · about 5 min`, `${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · 約 5 分鐘`), attr: `data-lv="${esc(nb.id)}"`, chk: { y: 'lv', b: nb.id } }); }
   if (last) {
@@ -2403,12 +2404,13 @@ async function renderHome() {
     cands.push({ key: `u:${last.book.id}:${last.unit.id}`, icon: 'practise', t: shortTitle(last.unit.title), s: Z(`Keep going${sc !== null ? ` · scored ${sc}%` : ''}`, `繼續${sc !== null ? ` · 得分 ${sc}%` : ''}`), attr: 'id="continue"', chk: { y: 'log', b: last.book.id, us: [last.unit.id] } });
   } else cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z('Practise your first chapter', '練習第一章'), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-book="${esc(books[0].id)}"`, chk: { y: 'log', b: books[0].id, us: null } });
   const t0 = dayStart();
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length) { local.mission = { d: t0, at: Date.now(), steps: cands.slice(0, 3).map(({ key, icon, t, s, chk, attr }) => ({ key, icon, t, s, chk, attr })) }; saveLocal(); }
+  const nSteps = local.mtime === 5 ? 1 : local.mtime === 15 ? 2 : 3;
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length) { local.mission = { d: t0, at: Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr }) => ({ key, icon, t, s, chk, attr })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
     if (c.y === 'mk') return mistakeCount() < c.n;
-    if (c.y === 'rv') return !due.length;
+    if (c.y === 'rv') return c.n ? due.length <= Math.max(0, c.n - 10) : !due.length;
     if (c.y === 'learn') return !!(local.learned || {})[`${c.b}:${c.u}`];
     if (c.y === 'dict') { const L = (local.dict || []).find((d) => d.id === c.L); return !!(L && (L.runs || []).some((r) => r.t >= M.at)); }
     if (c.y === 'lv') return !!(local.placement || {})[c.b] || bookAnswered(c.b);
@@ -2427,9 +2429,39 @@ async function renderHome() {
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
     if (p) { const m = await bookMastery(p.book); const ch = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)).sort((a, b) => a.pct - b.pct)[0];
       if (ch && ch.pct < 90) extra = { label: Z(`Extra for ${p.x.name}: ${shortTitle(ch.unit.title)} (${ch.pct}%)`, `為「${p.x.name}」加練：${shortTitle(ch.unit.title)}（${ch.pct}%）`), run: () => { pick = { bookId: p.book.id, ids: new Set([ch.unit.id]) }; startUnits(p.book, [ch.unit], 10); } }; } }
+  // yesterday's win: one encouraging line
+  let winHTML = '';
+  { const y0 = t0 - DAY, ys = local.log.filter((e) => e.t >= y0 && e.t < t0), right = ys.filter((e) => e.m && e.g >= e.m).length;
+    const passed = (local.tests || []).filter((x) => x.t >= y0 && x.t < t0 && x.m && x.g / x.m >= 0.8).length;
+    const dl = (local.dict || []).flatMap((L) => (L.runs || []).filter((r) => r.t >= y0 && r.t < t0).map((r) => r.n ? Math.round(100 * r.g / r.n) : 0));
+    const bits = [];
+    if (ys.length) bits.push(Z(`${ys.length} question${ys.length > 1 ? 's' : ''}, ${right} fully right`, `${ys.length} 題，全對 ${right} 題`));
+    if (passed) bits.push(Z(`passed ${passed > 1 ? passed + ' chapter tests' : 'a chapter test'}`, `通過 ${passed} 個章節測驗`));
+    if (dl.length) bits.push(Z(`默書 ${Math.max(...dl)}%`, `默書 ${Math.max(...dl)}%`));
+    if (bits.length) winHTML = `<div class="td-win"><span aria-hidden="true">🎉</span><span><b>${Z('Yesterday', '昨天')}</b> · ${bits.join(' · ')}</span></div>`; }
+  // a subject left alone for 5+ days
+  let slipHTML = '', slip = null;
+  { const lastAt = {}; for (const e of local.log) { const bid = String(e.q).split(':')[0]; if (!lastAt[bid] || e.t > lastAt[bid]) lastAt[bid] = e.t; }
+    const cand = books.filter((b) => !b.demo && lastAt[b.id]).map((b) => ({ b, days: Math.round((t0 - dayStart(lastAt[b.id])) / DAY) })).filter((x) => x.days >= 5).sort((a, b) => b.days - a.days)[0];
+    if (cand) {
+      const m = await bookMastery(cand.b), h = (local.mhist || {})[cand.b.id] || [], old = h.filter((p) => p[0] <= t0 - 5 * DAY).pop();
+      const weak = m.chapters.filter((c) => c.done).sort((a, b) => a.pct - b.pct)[0];
+      const name = cand.b.subject ? subj(cand.b.subject) : shortTitle(cand.b.title), slipping = old && m.pct < old[1];
+      if (weak) { slip = { b: cand.b, u: weak.unit };
+        slipHTML = `<div class="td-slip"><span class="pg-ic orange">${pIcon('alert', 18)}</span><span class="td-slt"><b>${Z(`${esc(name)} hasn’t been practised for ${cand.days} days${slipping ? ' and is slipping' : ''}`, `${esc(name)}已經 ${cand.days} 日沒有練習${slipping ? '，而且有退步' : ''}`)}</b><small>${Z(`A short set on ${esc(shortTitle(weak.unit.title))} brings it back.`, `做一組「${esc(shortTitle(weak.unit.title))}」就能追回。`)}</small></span><button class="btn-sm primary" id="slipGo">${Z('Practise', '練習')}</button></div>`; } } }
+  const quickHTML = `<section class="stack g10 td-sec" aria-label="${Z('Other things to do', '其他功課')}"><div class="sect-head"><h2>${Z('Also for tonight', '今晚也可以')}</h2></div>
+    <div class="td-quick"><button class="td-q" data-qgo="homework">${pIcon('pencil', 20)}<span><b>${Z('Snap homework', '拍功課')}</b><small>${Z('Buddy helps you through it', 'Buddy 一步步教你')}</small></span></button>
+    <button class="td-q" data-qgo="dictation">${pIcon('memory', 20)}<span><b>${Z('Practise 默書', '練習默書')}</b><small>${Z('Your word lists', '你的詞語表')}</small></span></button>
+    <button class="td-q" data-qgo="writing">${pIcon('book', 20)}<span><b>${Z('Write', '寫作')}</b><small>${Z('Marked, then redraft', '批改後再修改')}</small></span></button></div></section>`;
+  // Buddy's daily brief for the coach panel (built from the numbers, no AI call)
+  { const p = tests.steps.find((q) => q.left <= 14);
+    const first = steps.find((x) => !x.done && x.now);
+    coach.brief = p ? Z(`${p.x.name} is ${leftText(p.left)}${p.ready != null ? ` and you’re ${p.ready}% ready` : ''}.${first ? ` Today: ${first.now.t}.` : ''}`, `「${p.x.name}」${leftText(p.left)}${p.ready != null ? `，你現時準備度 ${p.ready}%` : ''}。${first ? `今天：${first.now.t}。` : ''}`)
+      : first ? Z(`Today: ${first.now.t}.`, `今天：${first.now.t}。`) : Z('Today’s mission is done. Nice work!', '今日任務完成，做得好！'); }
   const missionHTML = allDone
     ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span>${Z(`about ${mins} min`, `約 ${mins} 分鐘`)}</span></div>
+      <div class="ms-time" role="radiogroup" aria-label="${Z('How much time do you have?', '你有多少時間？')}"><span>${Z('Time today:', '今天有：')}</span>${[5, 15, 30].map((n) => `<button type="button" role="radio" aria-checked="${(local.mtime || 30) === n}" class="${(local.mtime || 30) === n ? 'on' : ''}" data-mtime="${n}">${Z(`${n} min`, `${n} 分鐘`)}</button>`).join('')}</div>
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
       ${missionHowHTML()}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
@@ -2442,7 +2474,7 @@ async function renderHome() {
   const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0 }));
   const nOn = wk.filter((x) => x.on).length, gw = goalWeek();
   const doneToday = daysSet.has(t0);
-  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small></span>
+  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}<small class="gr-goal">${gw ? Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`) : Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small></span>
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
@@ -2454,8 +2486,17 @@ async function renderHome() {
     const CH = 3;
     const detail = async (p) => {
       const m = p.book ? await bookMastery(p.book) : null, chs = m ? m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : [];
+      let plan = '';
+      if (p.book && chs.length && p.left >= 1 && p.ready != null) {
+        const need = 80 - p.ready, weak = chs.filter((c) => c.pct < 80).sort((a, b) => a.pct - b.pct).slice(0, 2).map((c) => shortTitle(c.unit.title));
+        const dd = new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        // rough guide: a 10-question set moves its chapter about 8 points; the test's readiness is the average of its chapters
+        const perDay = Math.max(1, Math.min(4, Math.ceil(Math.ceil(need * chs.length / 8) / Math.max(1, p.left))));
+        plan = need <= 0 ? `<p class="td-plan ok">${Z('On track for 80%. A set every few days keeps it fresh.', '已達 80% 準備度。每隔幾天練一次，保持手感。')}</p>`
+          : `<p class="td-plan">${Z(`To be 80% ready by ${dd}: about <b>${perDay} set${perDay > 1 ? 's' : ''} a day</b>${weak.length ? ` on ${weak.map(esc).join(' and ')}` : ''}.`, `要在${dd}前達到 80%：每天約 <b>${perDay} 組練習</b>${weak.length ? `，集中在${weak.map(esc).join('和')}` : ''}。`)}</p>`;
+      }
       return `<div class="td-one"><button class="td-oh" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><span class="td-pct"><b>${p.ready == null ? '–' : p.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></button>
-        <div class="td-chl">${!p.book ? `<small class="muted" data-raw>${esc(testScope(p))}${p.last ? ' · ' + SCH(`${p.last.g} of ${p.last.n} right last time`, `上次 ${p.last.n} 個中寫對 ${p.last.g} 個`) : ''}</small>` : ''}${p.all ? `<small class="muted">${SCH('Everything practised so far', '至今練習過的所有內容')}</small>` : ''}${chs.slice(0, CH).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > CH ? `<small class="muted">${Z(`+ ${chs.length - CH} more chapters`, `另有 ${chs.length - CH} 章`)}</small>` : ''}</div></div>`;
+        <div class="td-chl">${!p.book ? `<small class="muted" data-raw>${esc(testScope(p))}${p.last ? ' · ' + SCH(`${p.last.g} of ${p.last.n} right last time`, `上次 ${p.last.n} 個中寫對 ${p.last.g} 個`) : ''}</small>` : ''}${p.all ? `<small class="muted">${SCH('Everything practised so far', '至今練習過的所有內容')}</small>` : ''}${chs.slice(0, CH).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > CH ? `<small class="muted">${Z(`+ ${chs.length - CH} more chapters`, `另有 ${chs.length - CH} 章`)}</small>` : ''}</div>${plan}</div>`;
     };
     const dates = [...new Set(tests.steps.map((q) => testDay(q.x)))];
     const cards = [];
@@ -2476,9 +2517,12 @@ async function renderHome() {
     ${head.replace('<!--STRIP-->', strip)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
+    ${winHTML}
+    ${slipHTML}
     ${missionHTML}
     ${tests.pastHTML}
     ${testHTML}
+    ${quickHTML}
     ${readyHTML}
   </main>
   <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
@@ -2504,6 +2548,9 @@ async function renderHome() {
   }; }
   bindSchoolTests();
   { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('button.ms-row'); if (r) r.click(); }; }
+  $app.querySelectorAll('[data-mtime]').forEach((b) => (b.onclick = () => { local.mtime = +b.dataset.mtime; local.mission = null; saveLocal(); renderHome(); }));
+  { const sg2 = document.getElementById('slipGo'); if (sg2 && slip) sg2.onclick = () => { pick = { bookId: slip.b.id, ids: new Set([slip.u.id]) }; startUnits(slip.b, [slip.u], 10); }; }
+  $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
@@ -2532,7 +2579,7 @@ function bindPracticeTiles() {
   { const sp = document.getElementById('ssago'); if (sp) sp.onclick = () => startReview('ssa'); }
   { const ws = document.getElementById('worksheets'); if (ws) ws.onclick = () => go({ name: 'worksheets' }); }
   { const ap = document.getElementById('allpractice'); if (ap) ap.onclick = () => go({ name: 'practice' }); }
-  $app.querySelectorAll('.qtile[data-mode], .plan-item[data-mode], .ms-row[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced') : go({ name: 'pick', mode: b.dataset.mode }))));
+  $app.querySelectorAll('.qtile[data-mode], .plan-item[data-mode], .ms-row[data-mode]').forEach((b) => (b.onclick = () => (b.dataset.mode === 'spaced' ? startReview('spaced', null, +b.dataset.cap || 15) : go({ name: 'pick', mode: b.dataset.mode }))));
 }
 const gearBtn = () => ''; const gearBtnOld = () => `<button class="mob-gear" data-gear aria-label="${LANG === 'zh' ? '設定' : 'Settings'}">${menuIcon('settings', false, 22)}</button>`;
 const titleRow = (h1) => `<div class="ttl-row">${h1}${gearBtn()}</div>`; // main tabs: page title + Settings gear on phones
@@ -6464,13 +6511,13 @@ async function renderPick(mode) {
     : go({ name: 'paper', bookId: b.dataset.pick, from: 'pick' }))));
 }
 
-async function startReview(mode, bookId = null) {
+async function startReview(mode, bookId = null, cap = 15) {
   if (mode === 'ssa') return startSprint();
   const items = (await allQuestions()).filter((x) => !bookId || x.book.id === bookId);
   if (items.length < 4) return toast('Practise a chapter first, then come back here.');
   let pick;
   if (mode === 'spaced') {
-    pick = (await dueItems()).slice(0, 15).map((x) => shuffleOptions(x.q));
+    pick = (await dueItems()).slice(0, cap).map((x) => shuffleOptions(x.q));
     if (!pick.length) return toast('Nothing to review today.');
     S = newSession({ mode: 'spaced', title: 'Spaced review', qs: shuffle(pick), target: pick.length });
     return renderQuestion();
