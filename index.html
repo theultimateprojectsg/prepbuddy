@@ -2115,6 +2115,25 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .pv-ins .pv-op+.pv-btn.soft{margin-top:6px}
 .pv-didg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:10px}
 .pv-didg div{background:#F6F7FB;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}.pv-didg b{font-size:24px}.pv-didg span{font-size:13px;color:var(--text-2);line-height:1.35}
+
+/* Progress headline tiles v2: coloured icon, number, and a small picture */
+.pv-kpi{gap:8px;padding:14px 16px;position:relative;overflow:hidden}
+.pv-kpi::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--kc,#26357A)}
+.pv-kpi.k-ring{--kc:#26357A;--kt:#EEF1FB}.pv-kpi.k-book{--kc:#18966A;--kt:#E5F5EE}.pv-kpi.k-brain{--kc:#7A5AC8;--kt:#F1ECFB}.pv-kpi.k-cal{--kc:#F2661E;--kt:#FFF1E6}
+.pv-ktrack{width:120px;height:10px;border-radius:999px;background:#E6EAF4;overflow:hidden}.pv-ktrack i{display:block;height:100%;border-radius:999px;background:var(--kc);min-width:4px}
+.pv-kpi-t{display:flex;align-items:center;gap:8px}
+.pv-kic{width:32px;height:32px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:var(--kt);color:var(--kc);flex:none}
+.pv-kpi-m{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.pv-kpi-v{display:flex;flex-direction:column;gap:2px;min-width:0}.pv-kpi-v b{font-size:32px;line-height:1.1;color:var(--ink)}
+.pv-kvis{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.pv-kring{color:var(--kc)}.pv-kpi .pv-kspark{margin-top:0}.pv-kpi .pv-kspark polyline{stroke:var(--kc)}
+.pv-kbar{display:flex;gap:3px;flex-wrap:wrap;max-width:120px;justify-content:flex-end}.pv-kbar i{width:10px;height:18px;border-radius:3px;background:#E6EAF4}.pv-kbar i.on{background:var(--kc)}
+.pv-kdots{display:grid;grid-template-columns:repeat(7,10px);gap:3px}.pv-kdots i{width:10px;height:10px;border-radius:3px;background:#EEF1F6}.pv-kdots i.on{background:var(--kc)}.pv-kdots i.today{outline:1.5px solid var(--kc);outline-offset:1px}
+.pv-hero{background:linear-gradient(120deg,#EEF1FB 0%,#FFF8E1 100%);border-color:#E3E2D6}
+@media (max-width:600px){.pv-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pv-kpi.k-ring .pv-kpi-m{flex-direction:row!important;align-items:flex-end!important;justify-content:space-between}
+  .pv-kpi{padding:12px}.pv-kpi-t{flex-direction:column;align-items:flex-start;gap:6px}.pv-kpi-t span{font-size:12.5px;line-height:1.25}
+  .pv-kpi-m{flex-direction:column;align-items:flex-start;gap:8px}.pv-kpi-v b{font-size:26px}.pv-kvis{align-items:flex-start}
+  .pv-kring{width:48px;height:48px}.pv-kpi .pv-kspark{width:100%;max-width:120px}.pv-kdots{grid-template-columns:repeat(7,9px)}.pv-kdots i{width:9px;height:9px}}
 </style>
 </head>
 <body>
