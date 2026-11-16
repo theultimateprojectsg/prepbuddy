@@ -2600,7 +2600,7 @@ async function renderHome() {
     const box = document.createElement('div'); box.className = 'skc-wrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
     const msg = n === 1 ? Z('Your streak has started! Practise tomorrow to keep it going.', '你的連續紀錄開始了！明天再練習，繼續保持。')
       : MIL.includes(n) ? Z(`You reached ${n} days in a row. That earns a badge!`, `你已連續 ${n} 日，得到一個徽章！`) : Z(`${n} days in a row. Come back tomorrow for day ${n + 1}!`, `已連續 ${n} 日。明天回來挑戰第 ${n + 1} 日！`);
-    const sparks = Array.from({ length: 14 }, (_, i) => `<i class="spark" style="--dx:${Math.round(Math.cos(i * 0.45) * 130)}px;--dy:${Math.round(Math.sin(i * 0.45) * 110 - 30)}px;left:50%;top:150px"></i>`).join('');
+    const sparks = Array.from({ length: 14 }, (_, i) => `<i class="spark" style="--dx:${Math.round(Math.cos(i * 0.45) * 130)}px;--dy:${Math.round(Math.sin(i * 0.45) * 110 - 30)}px;left:50%;top:110px"></i>`).join('');
     box.innerHTML = `<div class="skc" style="position:relative">${sparks}<span class="big">${flameSVG(true).replace(/skg1/g, 'skbig')}</span><span class="num" id="skcN">${Math.max(0, n - 1)}</span><span class="lab">${Z('day streak!', '日連續！')}</span><p>${msg}</p>${weekHTML()}${n < nextM ? nextHTML : ''}<button class="btn" id="skcOk">${Z('Keep it up!', '繼續加油！')}</button></div>`;
     document.body.appendChild(box);
     setTimeout(() => { const el = box.querySelector('#skcN'); if (el) el.textContent = n; el && el.animate && el.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,1.6,.5,1)' }); }, 650);

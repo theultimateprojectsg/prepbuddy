@@ -1939,6 +1939,14 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 /* streak number with "day streak" beside it */
 .gr-sk-n{flex-direction:row!important;align-items:baseline;gap:7px}
 .gr-sk-n span{margin-top:0!important;font-size:15px}
+
+/* streak celebration as a lightbox, not full screen */
+.skc-wrap{background:rgba(20,28,60,.45)!important;padding:16px}
+.skc{background:linear-gradient(180deg,#FFF6E6 0%,#FFFFFF 55%);border-radius:24px;box-shadow:0 20px 60px rgba(20,28,60,.25);max-width:400px!important;padding:28px 24px 24px!important;overflow:hidden;animation:skbox .3s cubic-bezier(.3,1.4,.5,1)}
+.skc .big{width:96px!important;height:120px!important}
+.skc .num{font-size:60px!important}
+.skc .btn{width:100%;min-width:0!important}
+@keyframes skbox{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
 </style>
 </head>
 <body>
