@@ -2385,7 +2385,7 @@ async function renderHome() {
     : hr < 12 ? 'A little practice now, a lot easier later.' : hr < 18 ? 'Ready for a quick practice?' : 'Ten minutes before bed goes a long way.';
   // Phones: an app bar (logo · child · stars · settings) above a friendly greeting card with Buddy. Computers: the plain greeting.
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}</h1><p data-raw>${esc(dateText)}</p><span class="gr-sub">${esc(cheer)}</span></div><span class="gr-buddy" aria-hidden="true">${buddySVG('happy', 64)}</span></div><!--STRIP--></div>
+      <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}<span class="gr-bud-in" aria-hidden="true">${buddySVG('happy', 46)}</span></h1><p data-raw>${esc(dateText)}</p><span class="gr-sub">${esc(cheer)}</span></div><span class="gr-buddy" aria-hidden="true">${buddySVG('happy', 64)}</span></div><!--STRIP--></div>
       <div class="greet-r"><span class="gr-brand">${logoSVG(26)}<b>PrepBuddy</b></span>${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}${gearBtn()}</div></div>`;
   if (!books.length) {
     // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
@@ -2510,7 +2510,13 @@ async function renderHome() {
   const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0 }));
   const nOn = wk.filter((x) => x.on).length, gw = goalWeek();
   const doneToday = daysSet.has(t0);
-  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}<small class="gr-goal">${gw ? Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`) : Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small></span>
+  // a line of encouragement for the streak (computers; phones show the "See today's mission" button instead)
+  const encHTML = doneToday
+    ? (streak >= 2 ? Z(`${streak} days in a row. Brilliant! Come back tomorrow for day ${streak + 1}.`, `已連續 ${streak} 日，太棒了！明天回來挑戰第 ${streak + 1} 日。`) : Z('Great start! Come back tomorrow and it becomes a streak.', '好開始！明天再來，就開始連續練習了。'))
+    : streak ? Z(`Keep your ${streak}-day streak going: one short mission today is all it takes.`, `保持連續 ${streak} 日的紀錄：今天只需完成一個小任務。`)
+    : nOn ? Z(`You practised ${nOn} day${nOn === 1 ? '' : 's'} this week. Do today’s mission and start a new streak 🔥`, `本週已練習 ${nOn} 日。完成今日任務，開始新的連續紀錄 🔥`)
+    : Z('Every streak starts with day one. Finish today’s mission to light your first 🔥', '每個連續紀錄都由第一日開始。完成今日任務，點燃你的第一團火 🔥');
+  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}<small class="gr-goal">${gw ? Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`) : Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];

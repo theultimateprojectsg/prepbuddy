@@ -584,7 +584,7 @@ main.qpaper{background:#FFFFFF;background-image:linear-gradient(90deg,transparen
 .greet h1{margin:0;font-size:28px;font-weight:700;line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
 .greet p{margin:4px 0 0;color:var(--muted);font-size:14px}
 .greet-r{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap}
-.gr-brand,.gr-buddy,.gr-sub{display:none}
+.gr-brand,.gr-buddy,.gr-sub,.gr-enc,.gr-bud-in{display:none}
 @media (max-width:1023.98px){
   /* phones: child, stars and settings in one row at the top; the greeting below at full width */
   .today .greet{flex-direction:column-reverse;align-items:stretch!important;gap:16px!important}
@@ -609,6 +609,20 @@ main.qpaper{background:#FFFFFF;background-image:linear-gradient(90deg,transparen
   /* the Star shop (and child / settings buttons) sit in the card's top-right corner, so the card runs full width */
   .today .greet>.greet-r{position:absolute;top:18px;right:22px;z-index:2}
   .today .gr-row{padding-right:150px}
+  /* Buddy sits right after the child's name, bobbing */
+  .today .gr-buddy{display:none!important}
+  .today .gr-text h1{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .today .gr-bud-in{display:inline-flex;animation:grbob 3.2s ease-in-out infinite}
+  /* streak: the message and encouragement on the left, the week as large day tiles across the rest */
+  .today .gr-strip{display:grid;grid-template-columns:minmax(220px,0.9fr) minmax(0,1.4fr);align-items:center;gap:20px;margin-top:16px;padding-top:16px}
+  .today .gr-streak{font-size:17px;white-space:normal;gap:4px}
+  .today .gr-cta{display:none}
+  .today .gr-goal{font-size:13px}
+  .today .gr-enc{display:block;font-size:14px;font-weight:500;line-height:1.45;color:var(--ink);opacity:.85;margin-top:2px}
+  .today .gr-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+  .today .gr-week i{width:auto;height:auto;aspect-ratio:1;max-width:52px;width:100%;justify-self:center;font-size:15px;font-weight:700;border-width:1.5px}
+  .today .gr-week i svg{width:20px;height:20px}
+  .today .gr-week i.today:not(.on){border-width:2.5px}
   .today .gr-hero{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:22px 26px;border-radius:22px;overflow:hidden;
     background:radial-gradient(120% 160% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 50%),linear-gradient(135deg,#EEF1FB 0%,#EEF1FB 60%,#FFF8E1 100%);border:1px solid #DCE2EE}
   .today .gr-hero::after{content:"";position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.55)}
