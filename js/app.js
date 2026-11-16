@@ -719,7 +719,7 @@ let S = null; // current practice session
 let navStack = [], navPopping = false, navCur = null;
 const navKey = (v) => JSON.stringify(v || {});
 // Each screen has its own address (#/book?bookId=…), so a refresh, a bookmark or a shared link opens the same screen.
-const URL_OK = ['chapters', 'practice', 'privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
+const URL_OK = ['about', 'chapters', 'practice', 'privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
 function viewUrl(v) {
   if (!v || !URL_OK.includes(v.name)) return '#/' + (v && v.name === 'parent' ? 'progress' : 'home');
   const q = new URLSearchParams();
@@ -802,6 +802,7 @@ async function go(v) {
   if (v.name === 'book') { bookFocus = v.focus || null; bookTool = ['notes', 'cards'].includes(v.focus) ? { bookId: v.bookId, tool: v.focus } : null; return renderBook(v.bookId); }
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
+  if (v.name === 'about') return renderAbout();
   if (v.name === 'privacy') return renderPrivacy();
   if (v.name === 'settings') return renderSettings(v.sec);
   if (v.name === 'progress') return renderProgress();
@@ -2802,6 +2803,85 @@ async function renderBooks() {
 
 /* ---------- settings ---------- */
 // Settings: a menu of blocks; each block opens its own short page (view.sec).
+/* ---------- Why PrepBuddy (from Settings): what it does that a tutor, a learning centre or a workbook can't ----------
+   Every claim here is something the app does today. Things not built yet sit under "Coming next". */
+function renderAbout() {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  const Y = '<span class="ab-y" aria-label="yes">✓</span>', N = '<span class="ab-n" aria-label="no">✕</span>', P = (t) => `<span class="ab-p">${t}</span>`;
+  const rows = [
+    [Z('Uses your child’s own school textbook', '用孩子自己的課本'), Y, P(Z('Sometimes', '有時')), P(Z('Own materials', '自家教材')), N],
+    [Z('There every day, whenever your child is free', '每天隨時可用'), Y, P(Z('1–2 hours a week', '每週 1–2 小時')), P(Z('Fixed class times', '固定上課時間')), Y],
+    [Z('Marks every answer straight away, and explains it', '每題即時批改並解釋'), Y, P(Z('In the lesson', '上堂時')), P(Z('In class', '課堂上')), P(Z('Answer key', '答案頁'))],
+    [Z('Adjusts difficulty chapter by chapter', '按每章調整難度'), Y, P(Z('A good one does', '好的導師會')), P(Z('Class pace', '跟全班進度')), N],
+    [Z('Keeps every mistake and brings it back until it’s right', '記住每題錯題，直到改正'), Y, P(Z('Partly', '部分')), N, N],
+    [Z('Brings topics back just before they’re forgotten', '在快要忘記前安排溫習'), Y, N, N, N],
+    [Z('Plans each day around school test dates', '按學校測驗日期安排每天'), Y, P(Z('Sometimes', '有時')), N, N],
+    [Z('Shows parents progress every week', '每週向家長報告進度'), Y, P(Z('A quick chat', '口頭交代')), P(Z('Each term', '每學期')), N],
+    [Z('A real person who knows your child', '一位認識孩子的真人'), N, Y, Y, N],
+    [Z('Typical cost each month', '每月大約費用'), `<b>HK$218–298</b><small>${Z('all subjects', '所有科目')}</small>`, `<b>HK$800–1,600+</b><small>${Z('per subject, 1 hr a week', '每科，每週 1 小時')}</small>`, `<b>HK$800–2,400+</b><small>${Z('per subject', '每科')}</small>`, `<b>${Z('Low', '低')}</b><small>${Z('per book', '每本')}</small>`],
+  ];
+  const qa = [
+    [Z('What exactly is PrepBuddy?', 'PrepBuddy 究竟是甚麼？'),
+      Z('A study coach on your phone or laptop, built from your child’s own textbooks. Add a book and Buddy turns every chapter into lessons, practice questions, chapter tests, mock exams, revision notes and flashcards, then marks every answer and decides what your child should do next.', '一個放在手機或電腦上的溫習教練，以孩子自己的課本為基礎。加入課本後，Buddy 會把每一章變成課堂、練習題、章節測驗、模擬試、筆記和溫習卡，批改每一題，並決定孩子下一步應該做甚麼。')],
+    [Z('Does it really know my child, or is it just random questions?', '它真的了解我的孩子嗎？還是只是隨機出題？'),
+      Z('It keeps a record of every answer and uses it. For each chapter it knows how far your child has got, how hard a question they can handle, which mistakes are still open, what they’re about to forget, and whether they passed a timed test. It also notices habits: how often hints were needed, whether a set was rushed, and when they usually study. Questions get harder as they improve and easier when they struggle, chapter by chapter.', '它會記錄每一個答案並加以運用。每一章它都知道孩子學到哪裡、能應付多難的題目、還有哪些錯題未改正、哪些快要忘記，以及有否通過限時測驗。它也會留意習慣：需要提示的次數、有否趕急完成、通常甚麼時候溫習。孩子進步，題目會變難；遇到困難，題目會變易，每章分開計算。')],
+    [Z('How does it decide what my child does each day?', '它怎樣決定孩子每天做甚麼？'),
+      Z('Each morning Buddy sets “Today’s mission”: up to three steps, most important first. A school test coming up comes first (learn what’s not started, then the weakest chapter, a practice test the day before). Then mistakes to fix, reviews that are due, a level check for a new book, and finally carrying on where they left off. Your child just taps Start.', '每天早上 Buddy 會定好「今日任務」：最多三個步驟，最重要的先做。即將來臨的學校測驗最優先（先學未開始的章節，再練最弱的一章，考試前一天做模擬測驗）。然後是改正錯題、到期的溫習、新課本的程度評估，最後是繼續上次的進度。孩子只需按「開始」。')],
+    [Z('My child has a test next week. Can it help?', '孩子下星期有測驗，它可以幫忙嗎？'),
+      Z('Yes. Add the test (a quiz, 默書 or a whole exam period) with its date and chapters. PrepBuddy shows how ready your child is for that test, chapter by chapter, tells them how much to do each day to be ready in time, and builds every day’s mission around it. Afterwards, snap the marked paper and the result is saved.', '可以。加入測驗（小測、默書或整個考試期）、日期及範圍。PrepBuddy 會逐章顯示孩子對該測驗的準備程度，告訴他們每天要做多少才能及時準備好，並以此安排每天的任務。考完後，拍下已批改的試卷，成績便會記錄下來。')],
+    [Z('Are the questions really from my child’s school work?', '題目真的來自孩子的學校課本嗎？'),
+      Z('Yes. Questions are written from the pages of the textbook your child uses, and each one shows where in the book it comes from. A second AI check rejects questions that don’t match the book, refer to something your child can’t see, or have a doubtful answer.', '是的。題目根據孩子所用課本的內容編寫，每一題都會註明出自課本哪一部分。另一輪 AI 檢查會剔除與課本不符、提及孩子看不到的內容，或答案有疑問的題目。')],
+    [Z('Can I trust the AI’s marking?', 'AI 的批改可信嗎？'),
+      Z('Multiple choice is marked exactly. Written answers are marked against a mark scheme, point by point, with the reason shown, so your child sees what earned each mark. Writing and speaking get estimated bands, never official grades. If anything looks wrong, your child taps “Report a problem” and we check it.', '選擇題按標準答案批改。文字題按評分準則逐點批改，並列出原因，讓孩子知道每一分從何而來。寫作和說話會給出估計等級，並非正式成績。如有問題，孩子可按「報告問題」，我們會跟進。')],
+    [Z('What about writing, speaking, 默書 and homework?', '寫作、說話、默書和功課呢？'),
+      Z('All included. Writing is marked by DSE or primary criteria, with the three fixes that matter most, then redrafted. Speaking answers are recorded and marked. 默書 lists are read aloud in natural Cantonese, Putonghua or English voices and checked. For homework, your child snaps a photo and Buddy guides them through it step by step, without just giving the answer.', '全部包括。寫作按 DSE 或小學準則批改，指出最重要的三項改善，然後再修改。說話回應會錄音及評分。默書詞語會以自然的粵語、普通話或英語朗讀並核對。功課方面，孩子拍照後，Buddy 會一步步引導，而不是直接給答案。')],
+    [Z('How do I know it’s working?', '我怎樣知道它有效？'),
+      Z('Three ways. “How ready” shows how much of each textbook your child has really mastered, with the change each week. “Getting stronger” shows their level in each subject, measured so it doesn’t drop when questions get harder. And “School results” puts their school marks from before PrepBuddy next to the latest ones. You also get a one-page weekly report.', '三方面。「準備程度」顯示孩子真正掌握了每本課本多少，以及每週的變化。「越來越強」顯示每科的程度，計算方法不會因題目變難而下降。「學校成績」把使用 PrepBuddy 前後的校內分數並列。你每週亦會收到一頁報告。')],
+    [Z('How much time does it take?', '要花多少時間？'),
+      Z('As little as 5 minutes. Your child chooses 5, 15 or 30 minutes and Today’s mission fits. Little and often works better than long, rare sessions, so the app nudges a daily habit with streaks, a weekly goal and stars.', '最少 5 分鐘。孩子可選 5、15 或 30 分鐘，今日任務會按此調整。少量而經常練習比偶爾長時間更有效，所以 App 會以連續日數、每週目標和星星鼓勵每天練習。')],
+    [Z('Should it replace our tutor?', '應該取代補習老師嗎？'),
+      Z('Not necessarily. Many families use both. PrepBuddy covers the daily practice, marking and revision between lessons, and shows the tutor exactly which chapters are weak, so paid tutor time goes on what really needs a person. For some families, it’s enough on its own.', '不一定。很多家庭兩者並用。PrepBuddy 負責課堂之間的每日練習、批改和溫習，並清楚顯示哪些章節較弱，讓付費的補習時間用在真正需要老師的地方。對部分家庭來說，單用 PrepBuddy 已經足夠。')],
+    [Z('Is my child’s data safe?', '孩子的資料安全嗎？'),
+      Z('Your child’s work stays on your device. The AI only reads what it needs to write or mark a question. Pilot families share a short summary of progress with PrepBuddy, only after a parent agrees, and you can delete everything at any time from Settings.', '孩子的功課保存在你的裝置上。AI 只會讀取編寫或批改題目所需的內容。試用家庭在家長同意後，才會與 PrepBuddy 分享簡短的進度摘要，你亦可隨時在「設定」刪除所有資料。')],
+  ];
+  const surprise = [
+    ['📖', Z('Your child’s own textbook', '孩子自己的課本'), Z('Not generic worksheets. Every question comes from the book their teacher uses.', '不是通用練習。每一題都來自老師所用的課本。')],
+    ['🎯', Z('Knows the weak spots', '知道弱點在哪'), Z('Chapter by chapter, it finds what’s weak and goes back to it until it isn’t.', '逐章找出弱項，反覆練習直到掌握。')],
+    ['🧠', Z('Stops forgetting', '防止遺忘'), Z('Brings topics back days later, just before they’d be forgotten.', '在快要忘記之前，安排幾天後再溫習。')],
+    ['📅', Z('Plans to the test date', '按考試日期計劃'), Z('Add a school test and every day works towards it, with a forecast of how ready they’ll be.', '加入學校測驗，每天都為它準備，並預測考試當天的準備程度。')],
+    ['✍️', Z('Marks like a teacher', '像老師一樣批改'), Z('Written answers, essays, speaking and 默書, marked with reasons, any time.', '文字題、作文、說話和默書，隨時批改並說明原因。')],
+    ['👀', Z('Honest with parents', '對家長坦誠'), Z('Shows hints used and rushed sets, not just scores, and school marks before and after.', '不只顯示分數，也顯示用了多少提示、有否趕急，以及前後的學校成績。')],
+  ];
+  const next = [
+    Z('Learns your child’s own pace: how many sets they need to master a chapter, so plans and forecasts fit them exactly.', '學習孩子自己的步伐：掌握一章需要多少組練習，讓計劃和預測更貼合。'),
+    Z('“Buddy noticed”: patterns a tutor would spot, like “more accurate in the evening” or “often loses marks on units”.', '「Buddy 發現」：導師會留意到的規律，例如「晚上較準確」或「常因單位失分」。'),
+    Z('A day-by-day plan to each exam that re-plans itself, with a mock exam aimed at weak spots.', '為每個考試制定每日計劃並自動調整，以及針對弱項的模擬試。'),
+    Z('Weak spots at skill level, not just chapter level, with 3-minute mini-lessons on exactly that skill.', '找出技能層面的弱項（不只章節），並提供針對該技能的 3 分鐘小課堂。'),
+  ];
+  $app.innerHTML = `
+  <main class="pad stack g18 about" data-view="settings" style="flex:1">
+    <div class="topbar" style="padding:0"><button class="backbtn" id="back">${ICON.back}<span>${Z('Settings', '設定')}</span></button></div>
+    <section class="ab-hero">${buddySVG('happy', 72)}<div><h1>${Z('Why PrepBuddy?', '為甚麼選擇 PrepBuddy？')}</h1>
+      <p>${Z('A private tutor for your child’s own textbooks: there every day, marks every answer, remembers every mistake, and plans each day around their next school test.', '一位為孩子自己的課本而設的私人導師：每天都在、批改每一題、記住每一個錯誤，並按下一次學校測驗安排每一天。')}</p></div></section>
+    <section class="ab-grid">${surprise.map(([ic, t, d]) => `<div class="ab-card"><span class="ab-ic" aria-hidden="true">${ic}</span><b>${t}</b><span>${d}</span></div>`).join('')}</section>
+    <section class="card ab-sec"><h2>${Z('How it compares', '比較一下')}</h2>
+      <div class="ab-scroll"><table class="ab-table"><thead><tr><th></th><th class="ab-us">PrepBuddy</th><th>${Z('Private tutor', '私人補習')}</th><th>${Z('Learning centre', '補習社')}</th><th>${Z('Assessment books', '補充練習')}</th></tr></thead>
+      <tbody>${rows.map((r) => `<tr><th scope="row">${r[0]}</th><td class="ab-us">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</tbody></table></div>
+      <p class="hint" style="margin:0">${Z('Tutor and centre costs are typical Hong Kong rates (about HK$200–600 an hour) for one lesson a week; they vary widely.', '補習費用為香港一般收費（約每小時 HK$200–600），以每週一堂計算，實際收費差異很大。')}</p></section>
+    <section class="ab-sec"><h2>${Z('Questions parents ask', '家長常見問題')}</h2>
+      <div class="ab-qa">${qa.map(([q, a], i) => `<details class="ab-q" ${i === 0 ? 'open' : ''}><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></section>
+    <section class="card ab-sec ab-honest"><h2>${Z('What it isn’t', '它不是甚麼')}</h2>
+      <ul><li>${Z('Not a person. Buddy encourages and explains, but it can’t sit beside your child or replace your involvement.', '不是真人。Buddy 會鼓勵和解釋，但不能坐在孩子身旁，也不能取代家長的參與。')}</li>
+      <li>${Z('Not an official mark. Writing and speaking bands are estimates to guide practice.', '不是正式成績。寫作和說話等級只是用來指導練習的估計。')}</li>
+      <li>${Z('Not magic. Progress comes from practice: little and often, every day.', '不是魔法。進步來自練習：少量而經常，每天一點。')}</li></ul></section>
+    <section class="card ab-sec"><h2>${Z('Coming next', '即將推出')}</h2><ul class="ab-next">${next.map((t) => `<li>${t}</li>`).join('')}</ul></section>
+    <div class="ab-cta"><button class="btn" id="abTour">${Z('Take the tour', '看看導覽')}</button><button class="btn ghost" id="abPlans">${Z('See plans', '查看計劃')}</button></div>
+  </main>`;
+  document.getElementById('back').onclick = () => go({ name: 'settings' });
+  document.getElementById('abTour').onclick = () => startTour('full');
+  document.getElementById('abPlans').onclick = () => go({ name: 'plans' });
+}
+
 function renderSettings(sec) {
   const zh = LANG === 'zh';
   const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" lang="${k === 'zh' ? 'zh-HK' : 'en'}" data-raw><b>${label}</b><span>${sub}</span></button>`;
@@ -2889,6 +2969,7 @@ function renderSettings(sec) {
         ${tile('backup', 'backup', BK('Backup', '備份'), sub.backup)}
         ${hasHelp ? tile('help', 'help', PLT('Help and feedback', '說明及意見'), sub.help) : ''}
         ${tile('privacy', 'privacy', PLT('Privacy and data', '私隱及資料'), sub.privacy)}
+        ${tile('about', 'help', PLT('Why PrepBuddy?', '為甚麼選擇 PrepBuddy？'), PLT('How it compares with a tutor or centre', '與補習老師或補習社比較'))}
         ${DEV ? tile('usage', 'usage', 'AI usage', 'Cost on this device') : ''}
       </div>
     </main>`;
@@ -2896,6 +2977,7 @@ function renderSettings(sec) {
       const k = b.dataset.sec;
       if (k === 'parents') return openParent();
       if (k === 'usage') return go({ name: 'usage' });
+      if (k === 'about') return go({ name: 'about' });
       go({ name: 'settings', sec: k });
     }));
   }
