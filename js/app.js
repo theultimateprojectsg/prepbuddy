@@ -2516,7 +2516,7 @@ async function renderHome() {
     : streak ? Z(`Keep your ${streak}-day streak going: one short mission today is all it takes.`, `保持連續 ${streak} 日的紀錄：今天只需完成一個小任務。`)
     : nOn ? Z(`You practised ${nOn} day${nOn === 1 ? '' : 's'} this week. Do today’s mission and start a new streak 🔥`, `本週已練習 ${nOn} 日。完成今日任務，開始新的連續紀錄 🔥`)
     : Z('Every streak starts with day one. Finish today’s mission to light your first 🔥', '每個連續紀錄都由第一日開始。完成今日任務，點燃你的第一團火 🔥');
-  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}<small class="gr-goal">${gw ? Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`) : Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
+  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}${gw && gw.met ? `<small class="gr-goal">${Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`)}</small>` : !gw && nOn ? `<small class="gr-goal">${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small>` : ''}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
@@ -8180,12 +8180,26 @@ async function refreshOldQuestions() {
   local.qrules = QRULES; saveLocal();
 }
 getBooks().then(pruneMistakes).catch(() => {});
-// "i" buttons open and close their explainer
+// "i" buttons open their explainer in a pop-up you close when you're done reading
 document.addEventListener('click', (e) => {
   const b = e.target.closest && e.target.closest('[data-how]'); if (!b) return;
   const d = document.getElementById(b.dataset.how); if (!d) return;
-  d.open = !d.open; b.setAttribute('aria-expanded', String(d.open)); b.classList.toggle('on', d.open);
-  if (d.open) setTimeout(() => d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 30);
+  const body = d.querySelector(':scope > div'); if (!body) return;
+  document.querySelectorAll('.cdlg-wrap').forEach((x) => x.remove());
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), back = document.activeElement;
+  const w = document.createElement('div');
+  w.className = 'cdlg-wrap';
+  w.innerHTML = `<div class="cdlg how-dlg" role="dialog" aria-modal="true" aria-labelledby="howT">
+    <div class="how-dlg-h"><h2 id="howT">${esc(b.getAttribute('aria-label') || '')}</h2><button type="button" class="how-x" aria-label="${Z('Close', '關閉')}">${ICON.close || '✕'}</button></div>
+    <div class="how-dlg-b">${body.innerHTML}</div>
+    <button type="button" class="btn how-ok">${Z('Got it', '明白了')}</button></div>`;
+  const done = () => { document.removeEventListener('keydown', onKey, true); w.remove(); if (back && back.focus) back.focus(); };
+  const onKey = (ev) => { if (ev.key === 'Escape') { ev.preventDefault(); done(); } ev.stopPropagation(); };
+  document.addEventListener('keydown', onKey, true);
+  w.onclick = (ev) => { if (ev.target === w) done(); };
+  w.querySelector('.how-x').onclick = done; w.querySelector('.how-ok').onclick = done;
+  document.body.appendChild(w);
+  w.querySelector('.how-ok').focus();
 });
 flushReports().catch(() => {});
 pilotGate().then(async () => { if ((await getBooks()).some((b) => b.demo)) await removeDemo(); }).then(() => pilotWelcome()).then(() => refreshOldQuestions().catch(() => {})).finally(async () => {
