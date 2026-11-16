@@ -207,6 +207,8 @@ function leaveText(kind, viaMenu) {
     : { title: 'Leave this paper?', body: 'The timer stops and this paper won’t be marked.', stay: 'Keep going', leave: 'Leave' };
   if (kind === 'cards') return zh ? { title: '停止溫習字卡？', body: '你可以隨時再溫。', stay: '繼續', leave: '離開' }
     : { title: 'Stop these flashcards?', body: 'You can come back to them any time.', stay: 'Keep going', leave: 'Leave' };
+  if (kind === 'lesson') return zh ? { title: '離開這一課？', body: '你的進度已保存，可以在「今日」繼續。', stay: '繼續上課', leave: '離開' }
+    : { title: 'Leave this lesson?', body: 'Your place is saved. You can carry on from Today.', stay: 'Keep learning', leave: 'Leave' };
   if (kind === 'dict') return zh ? { title: '停止這次默書？', body: '已核對的詞語會保存。', stay: '繼續', leave: '停止' }
     : { title: 'Stop this dictation?', body: 'Words you’ve marked so far are saved.', stay: 'Keep going', leave: 'Stop' };
   if (kind === 'wait') return zh ? { title: '停止呢次練習？', body: '題目仲做緊，離開就會停止。', stay: '繼續等', leave: '離開' }
@@ -222,7 +224,7 @@ function saveOpenAnswer() {
     S.got[S.i] = partsGot(q); record(q, S.got[S.i]);
   }
 }
-const inSession = () => document.getElementById('quit');
+const inSession = () => document.getElementById('quit') || document.querySelector('#back[data-kind="lesson"]');
 function toast(msg) { document.querySelectorAll('.toast').forEach((x) => x.remove()); const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
 
 // Long questions are laid out so they're easy to read: the scenario in short paragraphs, lists of given
@@ -2024,7 +2026,7 @@ async function renderLearn(bookId, unitId) {
   const saved = (local.lessonAt || {})[lsKey];
   const R = { k: -1, picked: {}, right: 0, msgs: [], busy: false, err: null };
   if (saved && Date.now() - saved.t < 7 * DAY && saved.k < L.steps.length) { Object.assign(R, { k: saved.k, picked: saved.picked || {}, right: saved.right || 0, msgs: saved.msgs || [] }); setTimeout(() => toast(T(`Picking up where you left off: step ${saved.k + 1}`, `由上次的第 ${saved.k + 1} 步繼續`)), 300); }
-  const keepPlace = () => { local.lessonAt = local.lessonAt || {}; if (R.k >= 0 && R.k < L.steps.length) local.lessonAt[lsKey] = { t: Date.now(), k: R.k, picked: R.picked, right: R.right, msgs: R.msgs.filter((m) => !m.live).slice(-20) }; else delete local.lessonAt[lsKey]; saveLocal(); };
+  const keepPlace = () => { local.lessonAt = local.lessonAt || {}; if (R.k >= 0 && R.k < L.steps.length) local.lessonAt[lsKey] = { t: Date.now(), n: L.steps.length, title: unit.title, k: R.k, picked: R.picked, right: R.right, msgs: R.msgs.filter((m) => !m.live).slice(-20) }; else delete local.lessonAt[lsKey]; saveLocal(); };
   const n = L.steps.length;
   const chText = await store.get(`text:${book.id}:${unit.id}`, '');
   if (view !== myView) return;
@@ -2112,6 +2114,7 @@ async function renderLearn(bookId, unitId) {
     const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
     keepPlace();
     const lm = document.getElementById('lnMain'); if (!lm) return;
+    { const bk = document.getElementById('back'); if (bk) { if (R.k >= 0 && R.k < n) bk.dataset.kind = 'lesson'; else delete bk.dataset.kind; } }
     const y = window.scrollY;
     lm.innerHTML = `${R.k >= 0 && R.k < n ? dots : ''}${body}`;
     renderMath(lm);
@@ -2459,6 +2462,18 @@ async function renderHome() {
     if (dl.length) bits.push(Z(`默書 ${Math.max(...dl)}%`, `默書 ${Math.max(...dl)}%`));
     if (bits.length) winHTML = `<div class="td-win"><span aria-hidden="true">🎉</span><span><b>${Z('Yesterday', '昨天')}</b> · ${bits.join(' · ')}</span></div>`; }
   // a subject left alone for 5+ days
+  // A lesson left part-way (from the last 7 days): carry on, or close it.
+  let lessonHTML = '', lessonLeft = null;
+  { const la = local.lessonAt || {};
+    const cands = Object.entries(la).filter(([, v]) => v && v.k >= 0 && t0 - v.t < 7 * DAY).sort((a, b) => b[1].t - a[1].t);
+    for (const [key, v] of cands) {
+      const [bid, uid] = key.split(':'), b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === uid);
+      if (!u) continue;
+      lessonLeft = { key, b, u };
+      lessonHTML = `<div class="td-slip td-lesson"><span class="pg-ic">${pIcon('book', 18)}</span><span class="td-slt"><b>${Z('Lesson in progress', '未完成的課堂')}</b><small>${esc(shortTitle(u.title))}${v.n ? Z(` · step ${v.k + 1} of ${v.n}`, ` · 第 ${v.k + 1}／${v.n} 步`) : ''}${cands.length > 1 ? Z(` · ${cands.length - 1} more`, ` · 另有 ${cands.length - 1} 課`) : ''}</small></span>
+        <span class="td-lbtns"><button class="btn-sm" id="lessonX">${Z('Close', '關閉')}</button><button class="btn-sm primary" id="lessonGo">${Z('Continue', '繼續')}</button></span></div>`;
+      break;
+    } }
   let slipHTML = '', slip = null;
   { const lastAt = {}; for (const e of local.log) { const bid = String(e.q).split(':')[0]; if (!lastAt[bid] || e.t > lastAt[bid]) lastAt[bid] = e.t; }
     const cand = books.filter((b) => !b.demo && lastAt[b.id]).map((b) => ({ b, days: Math.round((t0 - dayStart(lastAt[b.id])) / DAY) })).filter((x) => x.days >= 5).sort((a, b) => b.days - a.days)[0];
@@ -2536,6 +2551,7 @@ async function renderHome() {
     ${head.replace('<!--STRIP-->', strip)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
+    ${lessonHTML}
     ${winHTML}
     ${slipHTML}
     ${missionHTML}
@@ -2568,6 +2584,10 @@ async function renderHome() {
   bindSchoolTests();
   { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('button.ms-row'); if (r) r.click(); }; }
   $app.querySelectorAll('[data-mtime]').forEach((b) => (b.onclick = () => { local.mtime = +b.dataset.mtime; local.mission = null; saveLocal(); renderHome(); }));
+  { const lg = document.getElementById('lessonGo'); if (lg && lessonLeft) lg.onclick = () => go({ name: 'learn', bookId: lessonLeft.b.id, unitId: lessonLeft.u.id }); }
+  { const lx = document.getElementById('lessonX'); if (lx && lessonLeft) lx.onclick = async () => {
+    if (!(await confirmLeave({ title: Z('Close this lesson?', '關閉這一課？'), body: Z('Your place in it is cleared. You can start it again any time from the chapter.', '會清除這一課的進度，你可以隨時在章節重新開始。'), stay: Z('Keep it', '保留'), leave: Z('Close', '關閉') }))) return;
+    delete local.lessonAt[lessonLeft.key]; saveLocal(); renderHome(); }; }
   { const sg2 = document.getElementById('slipGo'); if (sg2 && slip) sg2.onclick = () => { pick = { bookId: slip.b.id, ids: new Set([slip.u.id]) }; startUnits(slip.b, [slip.u], 10); }; }
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
