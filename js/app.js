@@ -2358,7 +2358,32 @@ function missionHowHTML(id = 'howMission') {
       <li>${Z('A step ticks itself off when it’s done (for practice, after 3 questions). The list stays the same all day, but adding a school test updates it straight away.', '完成後步驟會自動打剔（練習的話，做完 3 題）。清單全日不變，但加入學校測驗後會即時更新。')}</li>
     </ul></div></details>`;
 }
-// "How is 'how ready' worked out?": a short fold-out under the readiness rings (Today and Progress).
+// Info pop-ups for the School tests and Also for tonight cards on Today.
+function testsHowHTML(id = 'howTests') {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  return `<details class="ms-how how-panel" id="${id}"><summary>${Z('How do school tests work?', '學校測驗是怎樣運作的？')}</summary><div>
+    <p>${Z('Add each test or quiz, exam or dictation from school, with its date. Pick the textbook and chapters if you know them.', '加入學校的每個測驗、考試或默書和日期。知道的話，可選課本和章節。')}</p>
+    <ul>
+      <li>${Z('Two weeks before a test, Today’s mission starts getting you ready for it: first lessons on chapters you haven’t learned, then your weakest chapter, then mixed practice.', '測驗前兩星期，「今日任務」會開始幫你準備：先學未學的章節，再練最弱的一章，然後混合練習。')}</li>
+      <li>${Z('The day before, a practice test. On the day, a short warm-up.', '前一天做模擬測驗；當天做簡短熱身。')}</li>
+      <li>${Z('Each test shows how ready you are and what to do next. For dictation, readiness is your latest score on the word list.', '每個測驗都會顯示準備程度和下一步。默書的準備度是你最近一次在詞語表的分數。')}</li>
+      <li>${Z('Not sure which chapters? Leave them out: Buddy uses everything you’ve practised in that subject.', '不清楚範圍？可以不填：Buddy 會用你在該科練習過的所有內容。')}</li>
+    </ul></div></details>`;
+}
+function quickHowHTML(id = 'howQuick') {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  return `<details class="ms-how how-panel" id="${id}"><summary>${Z('How are these chosen?', '這些是怎樣選出來的？')}</summary><div>
+    <p>${Z('Three extra things you could do tonight, picked for you each time you open Today. Most useful first:', '今晚可以多做的三件事，每次打開「今天」都會為你重新挑選，最有用的排先：')}</p>
+    <ol>
+      <li><b>${Z('A dictation coming up.', '快要默書。')}</b> ${Z('Practise that word list, or add the words if you haven’t yet.', '練習那個詞語表；未加入詞語的話，先加入。')}</li>
+      <li><b>${Z('A writing test coming up.', '快要寫作測驗。')}</b> ${Z('Practise writing with Buddy’s feedback.', '練習寫作，Buddy 會給評語。')}</li>
+      <li><b>${Z('Unfinished work.', '未完成的功課。')}</b> ${Z('Writing to finish or redraft, or homework you snapped today.', '要完成或修改的寫作，或今天拍下的功課。')}</li>
+      <li><b>${Z('Words to get right.', '要寫對的詞語。')}</b> ${Z('A word list with words you missed last time.', '上次寫錯詞語的詞語表。')}</li>
+      <li><b>${Z('Mistakes to fix.', '要改正的錯題。')}</b> ${Z('When a few have piled up.', '錯題累積了幾條的時候。')}</li>
+    </ol>
+    <p>${Z('Nothing special on? You’ll see Homework help, Dictation and Writing.', '沒有特別的事？就會顯示功課輔導、默書和寫作。')}</p></div></details>`;
+}
+// "How is 'how ready' worked out?\": a short fold-out under the readiness rings (Today and Progress).
 function readyHowHTML(id = 'howReady') {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
   const rows = [[30, Z('Passed timed chapter tests', '通過限時章節測驗'), Z('80% or more, on two different days.', '取得 80% 或以上，並在兩個不同日子通過。')],
@@ -2521,8 +2546,8 @@ async function renderHome() {
     c.push({ k: 'wr', score: 10, icon: 'writing', t: Z('Writing', '寫作'), s: Z('Kind feedback, then redraft', '溫和的評語，再改寫'), run: () => go({ name: 'writing' }) });
     const seen = new Set(); return c.sort((a, b) => b.score - a.score).filter((q) => !seen.has(q.k) && seen.add(q.k)).slice(0, 3);
   })();
-  const quickHTML = `<section class="stack g10 td-sec" aria-label="${Z('Other things to do', '其他功課')}"><div class="sect-head"><h2>${Z('Also for tonight', '今晚也可以')}</h2></div>
-    <div class="td-quick quick">${quick.map((q, i) => `<button class="qtile hwtile" data-tq="${i}">${actionTile(q.icon, 44)}<b>${esc(q.t)}</b><span>${esc(q.s)}</span></button>`).join('')}</div></section>`;
+  const quickHTML = `<section class="stack g10 td-sec" aria-label="${Z('Other things to do', '其他功課')}"><div class="sect-head"><h2 class="h-info">${Z('Also for tonight', '今晚也可以')}${infoBtn('howQuick', Z('How are these chosen?', '這些是怎樣選出來的？'))}</h2></div>
+    <div class="td-quick quick">${quick.map((q, i) => `<button class="qtile hwtile" data-tq="${i}">${actionTile(q.icon, 44)}<b>${esc(q.t)}</b><span>${esc(q.s)}</span></button>`).join('')}</div>${quickHowHTML()}</section>`;
   // Buddy's daily brief for the coach panel (built from the numbers, no AI call)
   { const p = tests.steps.find((q) => q.left <= 14);
     const first = steps.find((x) => !x.done && x.now);
@@ -2554,7 +2579,7 @@ async function renderHome() {
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
-  const testHead = `<div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>`;
+  const testHead = `<div class="sect-head"><h2 class="h-info">${SCH('School tests', '學校測驗')}${infoBtn('howTests', SCH('How do school tests work?', '學校測驗是怎樣運作的？'))}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>${testsHowHTML()}`;
   let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s mission will get you ready, day by day.', '加入後，今日任務會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
   if (nt) {
     // every upcoming test gets the same full card; tests on the same date share one calendar
