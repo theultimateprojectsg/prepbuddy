@@ -603,6 +603,20 @@ main.qpaper{background:#FFFFFF;background-image:linear-gradient(90deg,transparen
   @keyframes grbob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
   @media (prefers-reduced-motion:reduce){.today .gr-buddy{animation:none}}
 }
+/* computers: the same friendly greeting card as on phones (Buddy, a cheer line and the streak strip), a bit larger */
+@media (min-width:1024px){
+  .today .greet{align-items:flex-start!important;gap:16px!important}
+  .today .gr-hero{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:22px 26px;border-radius:22px;overflow:hidden;
+    background:radial-gradient(120% 160% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 50%),linear-gradient(135deg,#EEF1FB 0%,#EEF1FB 60%,#FFF8E1 100%);border:1px solid #DCE2EE}
+  .today .gr-hero::after{content:"";position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .today .gr-row{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+  .today .gr-text{flex:1;min-width:0}
+  .today .gr-sub{display:block;margin-top:8px;font-size:15px;font-weight:500;color:var(--ink);opacity:.85}
+  .today .gr-buddy{display:block;flex:none;animation:grbob 3.2s ease-in-out infinite}
+  .today .gr-hero>*:not(.gr-row){position:relative;z-index:1}
+  @keyframes grbob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+  @media (prefers-reduced-motion:reduce){.today .gr-buddy{animation:none}}
+}
 .plan{background:#FFFFFF;border:1px solid var(--line);border-radius:16px;padding:6px 16px;display:flex;flex-direction:column}
 .plan h2{margin:0 0 6px;font-size:16px;font-weight:700}
 .plan-item{display:flex;gap:16px;align-items:center;padding:13px 0;border:none;border-top:1px solid #EEF1F6;background:none;text-align:left;width:100%;cursor:pointer;color:var(--ink);font-family:inherit}
