@@ -1,7 +1,7 @@
 // POST /api/coach — the study coach on the Today screen. It sees a snapshot of the student's progress
 // (made on their device) and answers questions like "How am I doing?" or "What should I work on this week?".
 // body: { snapshot (text), ask, history: [{role, text}], lang, voice: 'en' | 'yue' when it's a spoken chat }   returns: { reply, action (or null): what to open in the app, usage }
-const { callTextWithAction, streamText, ndjson, MODELS, voiceNote, checkAccess, readJson, newUsage, httpError, APP_GUIDE } = require('../lib/claude');
+const { callTextWithAction, streamText, ndjson, MODELS, voiceNote, replyLang, checkAccess, readJson, newUsage, httpError, APP_GUIDE } = require('../lib/claude');
 
 const COACH = `You are the study coach inside PrepBuddy, an exam-practice app for Hong Kong secondary students (HKDSE). PrepBuddy turns the student's own textbooks into practice questions.
 Below is a snapshot of this student's progress, made just now from their practice history. Use it to answer.
@@ -61,7 +61,7 @@ module.exports = async (req, res) => {
     while (history.length && history[0].role !== 'user') history.shift();
     const list = [...history, { role: 'user', content: ask }];
     for (let i = 1; i < list.length; i++) if (list[i].role === list[i - 1].role) throw httpError(400, 'Bad conversation.');
-    const system = [{ type: 'text', text: `${COACH}${body.lang === 'zh' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>${body.screen ? `\n\nThe student is on this screen right now: ${String(body.screen).slice(0, 60)}.` : ''}` }];
+    const system = [{ type: 'text', text: `${COACH}${replyLang(body.lang) ? '\n' + replyLang(body.lang) : ''}${voiceNote(body.voice)}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>${body.screen ? `\n\nThe student is on this screen right now: ${String(body.screen).slice(0, 60)}.` : ''}` }];
     const usage = require('../lib/learner').attachLearner(newUsage(), body);
     const fallback = (out) => out.text || (out.action ? (body.lang === 'zh' ? '好，而家幫你打開。' : 'Okay, opening it now.') : '') || 'Sorry, I could not answer that. Please try asking another way.';
     if (body.stream) {

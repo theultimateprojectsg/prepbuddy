@@ -126,8 +126,21 @@ async function kindOfId(qid) {
 async function levelOfId(qid) { const id = String(qid || '').split(':')[0]; const b = (await getBooks()).find((x) => x.id === id); return (b && b.level) || ''; }
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const marksOf = (q) => (q.type === 'mcq' || q.type === 'graph' ? 1 : (q.parts || []).reduce((s, p) => s + p.marks, 0));
-// 'zh-HK' when the text is mostly Chinese characters, else 'en'.
-const langOf = (t) => { const x = String(t || '').slice(0, 20000); const cjk = (x.match(/[\u3400-\u9fff]/g) || []).length; const words = (x.match(/[A-Za-z]{2,}/g) || []).length; return cjk > words ? 'zh-HK' : 'en'; };
+// The language a chapter is written in, so the AI writes questions, marking and explanations in it:
+// 'ja' (any real amount of kana), 'zh-HK' (mostly Chinese characters), 'fr' (French words and accents), else 'en'.
+const FR_WORDS = /\b(le|la|les|des|une|est|et|du|dans|pour|que|qui|sur|avec|au|aux|ce|cette|sont|pas|il|elle|nous|vous|ils|leur|mais|ou|où|être|avoir|fait|très|aussi)\b/gi;
+const EN_WORDS = /\b(the|and|is|of|to|in|that|it|for|with|are|this|was|be|on|as|by|which|from|have)\b/gi;
+const langOf = (t) => {
+  const x = String(t || '').slice(0, 20000);
+  const kana = (x.match(/[\u3040-\u30ff]/g) || []).length, cjk = (x.match(/[\u3400-\u9fff]/g) || []).length;
+  if (kana >= 2 && kana > (kana + cjk) * 0.1) return 'ja';
+  const words = (x.match(/[A-Za-zÀ-ÿ]{2,}/g) || []).length;
+  if (cjk > words) return 'zh-HK';
+  const fr = (x.match(FR_WORDS) || []).length + (x.match(/[éèêëàâçùûôîïœ]/gi) || []).length / 2, en = (x.match(EN_WORDS) || []).length;
+  return fr >= 3 && fr > en * 1.5 ? 'fr' : 'en';
+};
+// The reading / listening voice that matches a chapter's language.
+const voiceOf = (lang) => ({ 'zh-HK': zhVoice(), fr: 'fr', ja: 'ja' }[lang] || 'en');
 // Drop or repair malformed questions before they reach a student.
 function usable(q) {
   if (!q || typeof q !== 'object') return false;
@@ -311,7 +324,7 @@ function renderStem(stem, cls = 'stem') {
 /* ---------- books ---------- */
 // Each book's subject (grouped: two maths books are one subject), kept in memory for the progress tracker.
 const BOOK_SUBJ = {};
-async function getBooks() { const bs = await store.get('books', []); bs.forEach((b) => { BOOK_SUBJ[b.id] = PG.subjectKey(b.subject, b.id); }); if (!libSynced && bs.some((b) => b.library)) { libSynced = true; setTimeout(() => refreshLibBooks().catch(() => {}), 2500); } return bs; }
+async function getBooks() { const bs = await store.get('books', []); bs.forEach((b) => { BOOK_SUBJ[b.id] = PG.subjectKey(b.subject, b.id); const k = bookSubjKey(b); if (k === 'fre' || k === 'jpn') EXTRA_SUBJ.add(k); }); if (!libSynced && bs.some((b) => b.library)) { libSynced = true; setTimeout(() => refreshLibBooks().catch(() => {}), 2500); } return bs; }
 // Library books we update (e.g. PrepBuddy starter books) carry "rev" in the catalog: a newer rev re-downloads the chapter
 // texts and chapter list on this device, keeping the student's questions and progress.
 let libSynced = false;
@@ -852,6 +865,8 @@ function voiceNoticeHTML(where) { return VC.notice && VC.notice.where === where 
 const VSTATE_BIG = () => ({ listening: VL('Listening', '聆聽中'), thinking: VL('Thinking', '諗緊'), speaking: VL('Speaking', '講緊') }[VC.state] || '');
 const VHINT = () => ({ listening: VL('Just talk. Pause when you’re done.', '直接講，講完停一停就得。'), thinking: '', speaking: VL('Talk any time to interrupt', '你隨時開口都可以打斷') }[VC.state] || '');
 // Voice mode lives inside the chat box: a living orb instead of the messages. Captions only if CC is on.
+// The voice-chat language button: switches between the chapter's own language and English.
+const VC_NAME = { yue: '廣東話', en: 'English', fr: 'Français', ja: '日本語' };
 function voicePanelHTML() {
   return `<div class="vpanel" id="vov" data-state="${VC.state}" data-raw tabindex="-1">
     <div class="vorbbox"><canvas id="vovOrb" aria-hidden="true"></canvas><svg class="vbuddy" id="vovBuddy" viewBox="0 0 100 100" aria-hidden="true" focusable="false">${buddyFace('listen')}</svg></div>
@@ -860,7 +875,7 @@ function voicePanelHTML() {
     <div class="vov-cap" id="vovCap"></div>
     <div class="vov-ctrls">
       <button class="vov-cc ${local.voiceCC ? 'on' : ''}" id="vovCC" aria-pressed="${local.voiceCC ? 'true' : 'false'}" title="${VL('Show what’s being said', '顯示字幕')}">CC</button>
-      <button class="vov-lang" id="vovLang">${VC.lang === 'yue' ? '廣東話' : 'English'}</button>
+      <button class="vov-lang" id="vovLang">${VC_NAME[VC.lang] || 'English'}</button>
       <button class="vov-end" id="vovEnd" aria-label="${VL('End voice chat', '結束語音對話')}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div></div>`;
 }
@@ -928,7 +943,7 @@ function paintVoice() {
     ov.dataset.state = VC.state;
     document.getElementById('vovState').textContent = VSTATE_BIG();
     document.getElementById('vovHint').textContent = VHINT();
-    document.getElementById('vovLang').textContent = VC.lang === 'yue' ? '廣東話' : 'English';
+    document.getElementById('vovLang').textContent = VC_NAME[VC.lang] || 'English';
     const cap = document.getElementById('vovCap');
     cap.textContent = local.voiceCC ? (VC.state === 'speaking' ? VC.saying : VC.state === 'listening' ? VC.heard : '') : '';
     cap.className = `vov-cap ${VC.state === 'speaking' ? 'ai' : ''}`;
@@ -937,7 +952,7 @@ function paintVoice() {
 function bindVoiceBar() {
   const el = document.getElementById('vov'); if (!el) return;
   el.querySelector('#vovEnd').onclick = () => VC.ctrl && VC.ctrl.stop();
-  el.querySelector('#vovLang').onclick = () => VC.ctrl && VC.ctrl.setLang(VC.lang === 'yue' ? 'en' : 'yue');
+  el.querySelector('#vovLang').onclick = () => VC.ctrl && VC.ctrl.setLang(VC.lang === 'en' ? VC.home || 'yue' : 'en');
   el.querySelector('#vovCC').onclick = (e) => { local.voiceCC = !local.voiceCC; saveLocal(); e.currentTarget.classList.toggle('on', local.voiceCC); e.currentTarget.setAttribute('aria-pressed', String(!!local.voiceCC)); paintVoice(); };
   el.onkeydown = (e) => { if (e.key === 'Escape' && VC.ctrl) VC.ctrl.stop(); };
   animateOrb(el.querySelector('#vovOrb'));
@@ -949,7 +964,7 @@ function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
   if (VC.ctrl) VC.ctrl.stop();
   VC.notice = null;
   if (!voiceSupported()) { VC.notice = { where, text: VL('Voice chat works in Chrome, Edge or Safari. This browser can’t listen yet, so please type instead.', '語音對話要用 Chrome、Edge 或 Safari。呢個瀏覽器聽唔到聲，請打字。') }; return redraw(); }
-  Object.assign(VC, { where, key, state: 'listening', heard: '', saying: '', lang });
+  Object.assign(VC, { where, key, state: 'listening', heard: '', saying: '', lang, home: lang === 'en' ? 'yue' : lang });
   VC.ctrl = startVoice({
     lang, alive,
     send: (text, onChunk) => send(text, VC.lang, onChunk),
@@ -1069,7 +1084,7 @@ function bindCoach() {
     const history = msgs.slice(-10).map((m) => ({ role: m.role, text: m.text }));
     msgs.push({ role: 'user', text, chip }); coach.busy = true; coach.error = null; redraw();
     try {
-      const req = { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? (voice === 'yue' ? 'zh' : 'en') : LANG, voice, screen: SCREEN_NAME[view && view.name] || (view && view.name) || 'Today' };
+      const req = { snapshot: await coachSnapshot(), ask: text, history, lang: voice ? ({ yue: 'zh', fr: 'fr', ja: 'ja' }[voice] || 'en') : LANG, voice, screen: SCREEN_NAME[view && view.name] || (view && view.name) || 'Today' };
       const r = onChunk ? await apiStream('coach', req, onChunk) : await api('coach', req);
       // Buttons under the reply: the coach's suggested next steps, one tap to start.
       const btns = r.action && r.action.go_now === false && Array.isArray(r.action.buttons)
@@ -1690,15 +1705,16 @@ async function renderSpeakingFb(it, qi) {
    A list is typed in or read from a photo. PrepBuddy reads each item aloud (Cantonese, Putonghua or English);
    the child writes it on paper and checks it against the answer, or types it and the app checks. Items they
    miss come back first next time. Lists and results are kept on this device. */
-const DL = { yue: ['粵語', 'Cantonese', 'zh-HK'], cmn: ['普通話', 'Putonghua', 'zh-CN'], en: ['English', 'English', 'en-GB'] };
+const DL = { yue: ['粵語', 'Cantonese', 'zh-HK'], cmn: ['普通話', 'Putonghua', 'zh-CN'], en: ['English', 'English', 'en-GB'], fr: ['法文', 'French', 'fr-FR'], ja: ['日文', 'Japanese', 'ja-JP'] };
 const DT = (en, zh) => (LANG === 'zh' ? zh : en);
 function dictVoice(lang) {
   const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
   const want = lang === 'yue' ? (v) => /^(zh-HK|yue)/i.test(v.lang) || /Cantonese|粵|粤/i.test(v.name)
     : lang === 'cmn' ? (v) => /^zh[-_](CN|TW|Hans)/i.test(v.lang) || /Mandarin|普通話|普通话/i.test(v.name)
+    : lang === 'fr' ? (v) => /^fr[-_]/i.test(v.lang) : lang === 'ja' ? (v) => /^ja[-_]/i.test(v.lang)
     : (v) => /^en[-_]/i.test(v.lang);
   const ok = vs.filter(want);
-  const score = (v) => (/Natural|Online|Neural|Premium|Enhanced/i.test(v.name) ? 4 : 0) + (/Google/i.test(v.name) ? 2 : 0) + (lang === 'en' && /en[-_]GB/i.test(v.lang) ? 1 : 0);
+  const score = (v) => (/Natural|Online|Neural|Premium|Enhanced/i.test(v.name) ? 4 : 0) + (/Google/i.test(v.name) ? 2 : 0) + (lang === 'en' && /en[-_]GB/i.test(v.lang) ? 1 : 0) + (lang === 'fr' && /fr[-_]FR/i.test(v.lang) ? 1 : 0);
   return ok.sort((a, b) => score(b) - score(a))[0] || null;
 }
 // Reading aloud: a natural voice from the server (Azure neural voices: HK Cantonese, Putonghua, British English),
@@ -1805,7 +1821,7 @@ async function renderDictation(id, sub) {
   <main class="pad stack g18 dictpage" data-view="dictation" data-raw style="flex:1">
     <h1 class="pagetitle">${DT('Dictation', '默書')}</h1>
     <section class="hw-hero">${buddySVG('happy', 56)}<div><b>${DT('I read the words, you write them.', '我讀，你寫。')}</b>
-      <span>${DT('Add this week’s dictation or spelling list. I read each one aloud in Cantonese, Putonghua or English. Write it down, then check. Words you miss come back next time.', '加入今個星期的默書或串字。我會用粵語、普通話或英文逐個讀出來，你寫低再對答案。寫錯的會在下次再出現。')}</span></div></section>
+      <span>${DT('Add this week’s dictation or spelling list. I read each one aloud in Cantonese, Putonghua, English, French or Japanese. Write it down, then check. Words you miss come back next time.', '加入今個星期的默書或串字。我會用粵語、普通話、英文、法文或日文逐個讀出來，你寫低再對答案。寫錯的會在下次再出現。')}</span></div></section>
     <button class="btn" id="dnew">+ ${DT('Add a dictation list', '加入默書')}</button>
     ${lists.length ? `<div class="hw-list">${lists.slice().reverse().map((x) => { const m = missed(x), last = (x.runs || []).slice(-1)[0];
       return `<div class="dl-item"><button class="dl-main" data-run="${x.id}"><span class="hw-ic">${actionIcon('dictation', 22)}</span><span class="hw-it"><b>${esc(x.title)}</b><small>${DL[x.lang][LANG === 'zh' ? 0 : 1]} · ${x.items.length} ${DT('items', '項')}${last ? ` · ${DT('last', '上次')} ${last.g}/${last.n}` : ''}${m ? ` · <span class="dl-miss">${DT(`${m} to practise`, `${m} 個要再練`)}</span>` : ''}</small></span><span class="dl-go">▶</span></button>
@@ -1848,7 +1864,7 @@ function editDictation(L) {
       st.busy = false; draw();
     };
     document.getElementById('dsave').onclick = () => {
-      { const ta = document.getElementById('ditems'); const tx = ta ? ta.value : st.text; if (!st.picked && !L && /[\u3400-\u9fff]/.test(tx) && st.lang === 'en') st.lang = zhVoice(); } // Chinese words left on English: read them in Cantonese
+      { const ta = document.getElementById('ditems'); const tx = ta ? ta.value : st.text; if (!st.picked && !L && st.lang === 'en') { const g = langOf(tx); if (g !== 'en') st.lang = voiceOf(g); } } // Chinese words left on English: read them in Cantonese
       keep();
       const items = st.text.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 60);
       if (!items.length) { st.err = DT('Add at least one word.', '請最少加入一個詞語。'); return draw(); }
@@ -6040,11 +6056,16 @@ const upcomingTests = () => schoolTests().filter((x) => testLeft(x) >= 0);
 const leftText = (n) => (n === 0 ? SCH('today', '今天') : n === 1 ? SCH('tomorrow', '明天') : SCH(`in ${n} days`, `${n} 天後`));
 // What to do today for one test: the step, plus a function that starts it.
 // Subjects a school test can be for, and which subject a textbook belongs to.
-const TEST_SUBJ = () => [['chi', '中文', 'Chinese'], ['eng', '英文', 'English'], ['math', '數學', 'Maths'], isPrimaryKid() ? ['gs', '常識', 'General Studies'] : ['gs', '科學／人文', 'Science / Humanities'], ['other', '其他', 'Other subject']];
-const tSubjName = (k) => { const x = TEST_SUBJ().find((s) => s[0] === k); return x ? (LANG === 'zh' ? x[1] : x[2]) : ''; };
+// French and Japanese show up once the child has a book in that language (all = every subject, for names).
+let EXTRA_SUBJ = new Set();
+// School dictation languages: [key, 中文 name, English name, subject key]. Word lists in Cantonese or Putonghua are both Chinese.
+const DICT_LANGS = [['zh', '中文', 'Chinese', 'chi'], ['en', '英文', 'English', 'eng'], ['fr', '法文', 'French', 'fre'], ['ja', '日文', 'Japanese', 'jpn']];
+const dictGroup = (l) => (l === 'yue' || l === 'cmn' || l === 'zh' ? 'zh' : l);
+const TEST_SUBJ = (all) => [['chi', '中文', 'Chinese'], ['eng', '英文', 'English'], ...(all || EXTRA_SUBJ.has('fre') ? [['fre', '法文', 'French']] : []), ...(all || EXTRA_SUBJ.has('jpn') ? [['jpn', '日文', 'Japanese']] : []), ['math', '數學', 'Maths'], isPrimaryKid() ? ['gs', '常識', 'General Studies'] : ['gs', '科學／人文', 'Science / Humanities'], ['other', '其他', 'Other subject']];
+const tSubjName = (k) => { const x = TEST_SUBJ(true).find((s) => s[0] === k); return x ? (LANG === 'zh' ? x[1] : x[2]) : ''; };
 function bookSubjKey(b) {
   const t = String((b && (b.subject + ' ' + b.title)) || '');
-  return /english|英文/i.test(t) ? 'eng' : /math|數學|algebra/i.test(t) ? 'math' : /chinese|中文|中國語文/i.test(t) ? 'chi' : /science|general studies|humanities|常識|科學|人文/i.test(t) ? 'gs' : 'other';
+  return /french|français|francais|法文|法語/i.test(t) ? 'fre' : /japanese|日本語|国語|日文|日語/i.test(t) ? 'jpn' : /english|英文/i.test(t) ? 'eng' : /math|數學|algebra/i.test(t) ? 'math' : /chinese|中文|中國語文/i.test(t) ? 'chi' : /science|general studies|humanities|常識|科學|人文/i.test(t) ? 'gs' : 'other';
 }
 // A small tear-off calendar: month band, big day number, weekday. Used for school tests.
 function calTile(t, size = 'lg') {
@@ -6112,7 +6133,7 @@ function testDialog(edit) {
     parts: group ? group.map((x) => ({ id: x.id, subj: x.subj || '', date: x.date, b: x.b || '', score: x.score })) : [{ id: uid(), subj: '', date: wk, b: '' }],
   };
   const autoName = () => {
-    if (st.kind === 'dict') return SCH(`${st.lang === 'en' ? 'English' : 'Chinese'} 默書`, `${st.lang === 'en' ? '英文' : '中文'}默書`);
+    if (st.kind === 'dict') { const n = DICT_LANGS.find((x) => x[0] === st.lang) || DICT_LANGS[0]; return SCH(`${n[2]} dictation`, `${n[1]}默書`); }
     if (st.kind === 'exam') return SCH('Exams', '考試');
     return st.subj && st.subj !== 'other' ? SCH(`${tSubjName(st.subj)} test`, `${tSubjName(st.subj)}測驗`) : '';
   };
@@ -6130,7 +6151,8 @@ function testDialog(edit) {
     const book = books.find((b) => b.id === st.b);
     if (!st.subj && book && st.kind === 'test') st.subj = bookSubjKey(book);
     const kinds = [['test', SCH('Test or quiz', '測驗或小測'), SCH('One subject', '一個科目')], ['dict', '默書', SCH('Dictation', '默寫詞語')], ['exam', SCH('Exams', '考試'), SCH('Several subjects', '多個科目')]];
-    const lists = (local.dict || []).filter((L) => (L.lang === 'en') === (st.lang === 'en'));
+    const lists = (local.dict || []).filter((L) => dictGroup(L.lang) === st.lang);
+    const dls = DICT_LANGS.filter((x) => x[0] === 'zh' || x[0] === 'en' || x[0] === st.lang || EXTRA_SUBJ.has(x[3]) || (local.dict || []).some((L) => L.lang === x[0]));
     let body = '';
     if (st.kind === 'test') {
       body = `<div class="td-two"><div><label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}"></div>
@@ -6141,8 +6163,8 @@ function testDialog(edit) {
         <span class="td-hint">${SCH('Not sure? Leave them all unticked: Buddy will use everything you’ve practised so far.', '不清楚範圍？全部不剔：Buddy 會用你至今練習過的內容。')}</span>`
       : st.subj ? `<span class="td-hint">${SCH('No textbook for this subject yet. The test still counts down on Today, and you can add the book any time.', '這科未有課本。測驗仍會在「今天」倒數，你可隨時加入課本。')}</span>` : ''}`;
     } else if (st.kind === 'dict') {
-      body = `<div class="td-two"><div><label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}"></div>
-      <div><label>${SCH('Language', '語文')}</label><div class="td-seg"><button type="button" data-lang="zh" class="${st.lang !== 'en' ? 'on' : ''}">中文</button><button type="button" data-lang="en" class="${st.lang === 'en' ? 'on' : ''}">English</button></div></div></div>
+      body = `<div class="${dls.length > 2 ? 'td-one' : 'td-two'}"><div><label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}"></div>
+      <div><label>${SCH('Language', '語文')}</label><div class="td-seg">${dls.map((x) => `<button type="button" data-lang="${x[0]}" class="${st.lang === x[0] ? 'on' : ''}">${x[0] === 'zh' ? '中文' : x[0] === 'en' ? 'English' : LANG === 'zh' ? x[1] : x[2]}</button>`).join('')}</div></div></div>
       <label for="td-l">${SCH('Word list', '詞語表')}</label><select id="td-l" class="input">${lists.map((L) => `<option value="${esc(L.id)}" ${L.id === st.L ? 'selected' : ''}>${esc(L.title)} · ${L.items.length}</option>`).join('')}<option value="" ${!st.L ? 'selected' : ''}>${SCH('Add the words after saving', '儲存後加入詞語')}</option></select>
       <span class="td-hint">${SCH('Today’s mission will have you practise this list, and readiness is your latest score on it.', '「今日任務」會讓你練習這個詞語表，準備度是你最近一次的分數。')}</span>`;
     } else {
@@ -6190,7 +6212,7 @@ function testDialog(edit) {
       if (st.kind === 'exam') {
         const grp = group ? edit.grp : uid();
         recs = st.parts.map((pt) => ({ id: pt.id, kind: 'test', grp, gname: name, name: `${name} · ${tSubjName(pt.subj)}`.slice(0, 60), date: pt.date, subj: pt.subj, b: pt.b || null, u: [], ...(typeof pt.score === 'number' ? { score: pt.score } : {}) }));
-      } else if (st.kind === 'dict') recs = [{ id: st.id, kind: 'dict', name, date: st.date, subj: st.lang === 'en' ? 'eng' : 'chi', lang: st.lang, L: st.L || null }];
+      } else if (st.kind === 'dict') recs = [{ id: st.id, kind: 'dict', name, date: st.date, subj: (DICT_LANGS.find((x) => x[0] === st.lang) || DICT_LANGS[0])[3], lang: st.lang, L: st.L || null }];
       else recs = [{ id: st.id, kind: 'test', name, date: st.date, subj: st.subj, b: st.b || null, u: [...st.u] }];
       if (edit && typeof edit.score === 'number' && !group) recs[0].score = edit.score;
       local.sched = [...others, ...recs].slice(-40);
@@ -7169,8 +7191,7 @@ function sayAloud(text, lang) {
     const t = plainSpeech(text); if (!t) return;
     if (sayingText === t) return stopSaying(); // tapping 🔊 again while it reads = stop
     stopSaying(); const my = ttsSeq;
-    const zh = lang ? lang !== 'en' : (t.match(/[\u3400-\u9fff]/g) || []).length > t.length / 4;
-    const L = lang === 'yue' || lang === 'cmn' ? lang : zh ? zhVoice() : 'en';
+    const L = ['yue', 'cmn', 'en', 'fr', 'ja'].includes(lang) ? lang : lang === 'zh' ? zhVoice() : voiceOf(langOf(t));
     const done = () => { if (my === ttsSeq) sayPill(null); };
     const phone = (rest) => {
       if (!window.speechSynthesis || my !== ttsSeq) return done();
@@ -7399,7 +7420,7 @@ function bindTutor(q) {
       const chapter = await store.get(`text:${bookId}:${unitId}`, '');
       if (!chapter) throw new Error('This chapter’s text is missing on this device.');
       const before = S.phase !== 'revealed';
-      const req = { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: before ? '' : studentAnswerText(q), before, ask: text, history, lang: voice ? (voice === 'yue' ? 'zh-HK' : 'en') : langOf(chapter), voice };
+      const req = { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: before ? '' : studentAnswerText(q), before, ask: text, history, lang: voice ? ({ yue: 'zh-HK', fr: 'fr', ja: 'ja' }[voice] || 'en') : langOf(chapter), voice };
       const r = onChunk ? await apiStream('explain', req, onChunk) : await api('explain', req);
       c.msgs.push({ role: 'assistant', text: r.reply }); reply = r.reply;
       const mk = local.mistakes[q.id];
@@ -7417,7 +7438,7 @@ function bindTutor(q) {
     c.open = true;
     const [bookId, unitId] = qUnit(q.id);
     const chapter = await store.get(`text:${bookId}:${unitId}`, '');
-    const lang = (LANG === 'zh' || langOf(chapter) === 'zh-HK') ? 'yue' : 'en';
+    const bl = langOf(chapter), lang = bl === 'fr' || bl === 'ja' ? bl : (LANG === 'zh' || bl === 'zh-HK') ? 'yue' : 'en';
     startVoiceChat({ where: 'tutor', key: `${q.id}#${idx}`, lang, send: (t, l, onChunk) => ask(t, undefined, l, onChunk), alive: () => S === sess && S.i === idx && c.open && !!document.getElementById('tutor'), redraw, title: VL('Tutor · this question', '導師 · 呢條題目') });
   };
   bindVoiceBar();
