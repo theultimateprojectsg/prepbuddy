@@ -8323,7 +8323,9 @@ document.addEventListener('click', (e) => {
   w.onclick = (ev) => { if (ev.target === w) done(); };
   w.querySelector('.how-x').onclick = done; w.querySelector('.how-ok').onclick = done;
   document.body.appendChild(w);
-  w.querySelector('.how-ok').focus();
+  // open at the top: the title first, not scrolled down to the button
+  const bd = w.querySelector('.how-dlg-b'); if (bd) bd.scrollTop = 0; w.querySelector('.how-dlg').scrollTop = 0;
+  w.querySelector('.how-ok').focus({ preventScroll: true });
 });
 flushReports().catch(() => {});
 pilotGate().then(async () => { if ((await getBooks()).some((b) => b.demo)) await removeDemo(); }).then(() => pilotWelcome()).then(() => refreshOldQuestions().catch(() => {})).finally(async () => {

@@ -1996,6 +1996,14 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 @keyframes fi2{0%,100%{transform:scale(1,1) translateY(0);opacity:1}40%{transform:scale(calc(1 - .1*var(--amp)),calc(1 + .18*var(--amp))) translateY(calc(-1px*var(--amp)));opacity:.85}70%{transform:scale(calc(1 + .08*var(--amp)),calc(1 - .1*var(--amp)));opacity:1}}
 /* even with "reduce motion" on, keep a small flicker on the flame itself (no embers, no card pulse) */
 @media (prefers-reduced-motion:reduce){.sk-flame.lit .f-o{animation:fo2 var(--dur) ease-in-out infinite!important}.sk-flame.lit .f-m{animation:fm2 calc(var(--dur) * .73) ease-in-out infinite!important}.sk-flame.lit .f-i{animation:fi2 calc(var(--dur) * .53) ease-in-out infinite!important}.sk-flame{--amp:.6!important}}
+
+/* info pop-ups: title and button stay put, only the text scrolls; one text size throughout */
+.cdlg.how-dlg{display:flex;flex-direction:column;max-height:calc(100dvh - 32px);overflow:hidden}
+.how-dlg-h,.how-ok{flex:none}
+.how-dlg-b{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-right:4px}
+.how-dlg-b :is(p,li,span,div,small){font-size:inherit!important;line-height:inherit}
+.how-dlg-b b{font-size:inherit}
+@media (max-width:600px){.cdlg.how-dlg{padding:20px 18px;max-height:calc(100dvh - 24px)}.how-dlg-h h2{font-size:18px}.how-dlg-b{font-size:15px}.how-ok{align-self:stretch}}
 </style>
 </head>
 <body>
