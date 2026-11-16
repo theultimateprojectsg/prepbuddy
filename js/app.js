@@ -1966,11 +1966,11 @@ function getLesson(book, unit, fresh) {
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     const lg = langOf(text);
     // A lesson saved in another language than the chapter's (e.g. English for a Japanese book) is written again.
-    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && (have.v >= 3 || kindOfBook(book) !== 'language') && (have.lang === lg || (!have.lang && lg !== 'fr' && lg !== 'ja'))) return have; }
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && have.v >= 4 && (have.lang === lg || (!have.lang && lg !== 'fr' && lg !== 'ja'))) return have; }
     if (!text) throw new Error('This chapter’s text is missing on this device.');
     const l = await api('learn', { title: unit.title, text, kind: kindOfBook(book), lang: lg });
     if (!l || !Array.isArray(l.steps) || !l.steps.length) throw new Error('Buddy couldn’t put this lesson together. Please try again.');
-    delete l.usage; l.at = Date.now(); l.v = 3; l.lang = lg;
+    delete l.usage; l.at = Date.now(); l.v = 4; l.lang = lg; // v4 (16 Nov): accuracy and detail rules
     await store.set(key, l);
     return l;
   })();
@@ -8145,7 +8145,7 @@ new MutationObserver((muts) => {
 { const st = document.createElement('style'); st.textContent = REPORT_CSS; document.head.appendChild(st); }
 initLang();
 // French and Japanese screens: new English text is translated by the AI in batches (needs the family code; not counted as AI use).
-setTranslator(async (lang, strings) => { if (!local.code) throw new Error('no code'); return (await apiOnce('uitr', { lang, strings })).out; });
+setTranslator(async (lang, strings, screen) => { if (!local.code) throw new Error('no code'); return (await apiOnce('uitr', { lang, strings, screen })).out; });
 watch(document.body);
 // Question-writing rules change over time. When they do, questions made under the old rules that the student
 // hasn't answered yet are dropped once, so they're remade under the new ones. Answered questions (and so all
