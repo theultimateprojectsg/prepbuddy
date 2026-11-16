@@ -2575,7 +2575,11 @@ async function renderHome() {
     : streak ? Z(`Keep your ${streak}-day streak going: one short mission today is all it takes.`, `保持連續 ${streak} 日的紀錄：今天只需完成一個小任務。`)
     : nOn ? Z(`You practised ${nOn} day${nOn === 1 ? '' : 's'} this week. Do today’s mission and start a new streak 🔥`, `本週已練習 ${nOn} 日。完成今日任務，開始新的連續紀錄 🔥`)
     : Z('Every streak starts with day one. Finish today’s mission to light your first 🔥', '每個連續紀錄都由第一日開始。完成今日任務，點燃你的第一團火 🔥');
-  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak">${streak ? `<span aria-hidden="true">🔥</span> ${Z(`${streak}-day streak`, `連續 ${streak} 日`)}` : Z('Start a streak today', '今天開始連續練習')}${gw && gw.met ? `<small class="gr-goal">${Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`)}</small>` : !gw && nOn ? `<small class="gr-goal">${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small>` : ''}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
+  // The streak burns hotter the longer it runs: 1-2 days a small flame, 3-6 a bigger one, 7-13 embers rise, 14+ the card blazes.
+  const fire = !streak ? 0 : streak < 3 ? 1 : streak < 7 ? 2 : streak < 14 ? 3 : 4;
+  const flame = `<span class="fl" aria-hidden="true"><svg viewBox="0 0 40 52"><defs><radialGradient id="flg" cx="50%" cy="78%" r="70%"><stop offset="0" stop-color="#FFE27A"/><stop offset=".45" stop-color="#FF9F1C"/><stop offset="1" stop-color="#F0441F"/></radialGradient></defs><path class="fl-o" d="M20 2c3 9 14 15 14 29a14 14 0 0 1-28 0c0-7 4-11 7-15 0 5 2 8 5 9-2-8 0-15 2-23z" fill="url(#flg)"/><path class="fl-i" d="M20 22c2 5 8 8 8 15a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-5 0-8 1-12z" fill="#FFF3B0"/></svg></span>`;
+  const embers = fire >= 3 ? `<span class="gr-embers" aria-hidden="true">${Array.from({ length: fire === 4 ? 14 : 8 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 5) * 0.7}s;--s:${3 + (i % 4)}s"></i>`).join('')}</span>` : '';
+  const strip = `${embers}<button class="gr-strip gr-btn fire-${fire}" id="streakGo"><span class="gr-streak">${streak ? `<span class="gr-sk">${flame}<span class="gr-sk-n"><b>${streak}</b><span>${Z(`day${streak === 1 ? '' : 's'} in a row`, '日連續')}</span></span></span>` : Z('Start a streak today', '今天開始連續練習')}${gw && gw.met ? `<small class="gr-goal">${Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`)}</small>` : !gw && nOn ? `<small class="gr-goal">${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small>` : ''}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
@@ -2615,7 +2619,7 @@ async function renderHome() {
   }
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
-    ${head.replace('<!--STRIP-->', strip)}
+    ${head.replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero fire-${fire}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
     ${lessonHTML}

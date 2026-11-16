@@ -1885,6 +1885,38 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .bookcover.tb .c-recent{left:34px}
 @media (hover:hover){.covergrid .bookcover.tb:hover{transform:translateY(-3px) rotate(-.4deg)}}
 @media (max-width:600px){.covergrid:has(.tb){grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}.covergrid .bookcover.tb{aspect-ratio:auto;min-height:230px;padding:12px 12px 12px 30px;gap:10px}.bookcover.tb .tb-label{flex:none}.bookcover.tb .c-title{font-size:14px!important;-webkit-line-clamp:7}.bookcover.tb .c-sub{font-size:12px}.bookcover.tb .tb-label{padding:10px}}
+
+/* ---- Streak fire: hotter the longer the streak (fire-1 … fire-4) ---- */
+.gr-sk{display:flex;align-items:center;gap:10px}
+.gr-sk .fl{display:inline-flex;width:30px;height:38px;flex:none;transform-origin:50% 90%;animation:flk 1.6s ease-in-out infinite;filter:drop-shadow(0 2px 6px rgba(255,120,30,.35))}
+.gr-sk .fl svg{width:100%;height:100%;overflow:visible}
+.gr-sk .fl .fl-i{transform-origin:50% 90%;animation:flk2 1.1s ease-in-out infinite}
+.gr-sk-n{display:flex;align-items:baseline;gap:6px;color:#8A3A10}
+.gr-sk-n b{font-size:28px;line-height:1;font-weight:800;background:linear-gradient(180deg,#FF9F1C,#E8431C);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gr-sk-n span{font-size:15px;font-weight:700;white-space:nowrap}
+@keyframes flk{0%,100%{transform:scale(1,1) rotate(-1.5deg)}25%{transform:scale(1.04,.96) rotate(1.5deg)}50%{transform:scale(.97,1.06) rotate(-.5deg)}75%{transform:scale(1.03,.98) rotate(1deg)}}
+@keyframes flk2{0%,100%{transform:scale(1)}50%{transform:scale(.9,1.12)}}
+/* bigger flame as the streak grows */
+.fire-2 .gr-sk .fl{width:36px;height:46px}
+.fire-3 .gr-sk .fl{width:42px;height:54px;filter:drop-shadow(0 0 10px rgba(255,120,30,.55))}
+.fire-4 .gr-sk .fl{width:48px;height:62px;filter:drop-shadow(0 0 16px rgba(255,90,20,.7));animation-duration:1.1s}
+.fire-3 .gr-sk-n b{font-size:32px}.fire-4 .gr-sk-n b{font-size:38px}
+/* practised days in the week glow orange while a streak is alive */
+.gr-strip:not(.fire-0) .gr-week i.on{background:linear-gradient(160deg,#FFB547,#F0561F);border-color:#F0561F;box-shadow:0 2px 8px rgba(240,86,31,.35)}
+/* the card warms up */
+.today .gr-hero.fire-1{background-image:radial-gradient(100% 70% at 8% 115%,rgba(255,160,70,.14),transparent 60%),radial-gradient(120% 160% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 50%),linear-gradient(135deg,#EEF1FB 0%,#EEF1FB 60%,#FFF8E1 100%)!important}
+.today .gr-hero.fire-2{background-image:radial-gradient(120% 90% at 10% 115%,rgba(255,150,60,.26),transparent 60%),radial-gradient(120% 160% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 50%),linear-gradient(135deg,#F3F1F4 0%,#FFF1DC 100%)!important;border-color:#F7D9B5!important}
+.today .gr-hero.fire-3{border-color:#F5C48F!important;background-image:radial-gradient(120% 100% at 10% 110%,rgba(255,130,40,.32),transparent 62%),linear-gradient(120deg,#FFF6E8,#FFE7C7)!important}
+.today .gr-hero.fire-4{border-color:#F0A060!important;background-image:radial-gradient(130% 110% at 15% 115%,rgba(255,100,30,.42),transparent 62%),linear-gradient(120deg,#FFEFD9,#FFD9A8)!important;animation:heat 3s ease-in-out infinite;box-shadow:0 0 0 1px rgba(240,86,31,.25),0 8px 28px rgba(240,86,31,.18)}
+@keyframes heat{0%,100%{box-shadow:0 0 0 1px rgba(240,86,31,.25),0 8px 28px rgba(240,86,31,.14)}50%{box-shadow:0 0 0 1px rgba(240,86,31,.4),0 10px 36px rgba(240,86,31,.3)}}
+/* embers drifting up from the bottom of the card (7+ days) */
+.gr-embers{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;border-radius:inherit}
+.gr-embers i{position:absolute;bottom:-8px;left:var(--x);width:5px;height:5px;border-radius:50%;background:#FF9F1C;box-shadow:0 0 6px 2px rgba(255,140,30,.6);opacity:0;animation:ember var(--s) linear var(--d) infinite}
+.gr-embers i:nth-child(3n){background:#FFD166;width:4px;height:4px}.gr-embers i:nth-child(4n){background:#F0561F}
+@keyframes ember{0%{transform:translate(0,0) scale(1);opacity:0}10%{opacity:.9}70%{opacity:.6}100%{transform:translate(18px,-170px) scale(.3);opacity:0}}
+.today .gr-hero>*:not(.gr-embers){position:relative;z-index:1}
+@media (prefers-reduced-motion:reduce){.gr-sk .fl,.gr-sk .fl .fl-i,.today .gr-hero.fire-4,.gr-embers i{animation:none!important}.gr-embers{display:none}}
+@media (max-width:600px){.gr-sk .fl{width:24px;height:30px}.fire-3 .gr-sk .fl,.fire-4 .gr-sk .fl{width:32px;height:42px}.gr-sk-n b{font-size:22px!important}.gr-sk-n span{font-size:13px}.gr-sk{gap:6px}}
 </style>
 </head>
 <body>
