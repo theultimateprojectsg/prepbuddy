@@ -2946,6 +2946,17 @@ async function renderBooks() {
 function renderAbout() {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
   const Y = '<span class="ab-y" aria-label="yes">✓</span>', N = '<span class="ab-n" aria-label="no">✕</span>', P = (t) => `<span class="ab-p">${t}</span>`;
+  const prog = [
+    [Z('Practice from your child’s own school textbook', '用孩子自己的課本練習'), Y, N, P(Z('Syllabus', '課程大綱')), Y, P(Z('If you paste it', '要自己貼上'))],
+    [Z('How ready for this test, and by test day', '這次測驗準備得如何，考試時會怎樣'), Y, N, N, P(Z('A feeling', '憑感覺')), N],
+    [Z('Names the exact mix-up, from their answers', '從答案中指出具體的混淆'), Y, P(Z('Missed questions', '答錯的題目')), P(Z('Weak topics', '弱項課題')), Y, N],
+    [Z('Plans every day backwards from the test date', '按考試日期倒數安排每一天'), Y, N, P(Z('Some', '部分')), P(Z('Weekly lesson', '每週一堂')), N],
+    [Z('Before-and-after check, same chapters and level', '相同章節及程度的前後對比'), Y, P(Z('Some', '部分')), N, P(Z('Sometimes', '有時')), N],
+    [Z('Checks what’s remembered weeks later', '檢查幾星期後是否仍記得'), Y, P(Z('Some', '部分')), N, P(Z('Rarely', '很少')), N],
+    [Z('Written answers marked, not just multiple choice', '批改文字答案，不只選擇題'), Y, P(Z('Some', '部分')), P(Z('Some', '部分')), Y, P(Z('Not reliably', '不太可靠'))],
+    [Z('School marks before and after, side by side', '使用前後的學校成績並列'), Y, N, N, P(Z('Sometimes', '有時')), N],
+    [Z('A weekly report you can share, in plain words', '可分享、淺白的每週報告'), Y, P(Z('Usage stats', '使用數據')), Y, P(Z('Varies', '不一定')), N],
+  ];
   const rows = [
     [Z('Uses your child’s own school textbook', '用孩子自己的課本'), Y, P(Z('Only pages you paste in each time', '每次要自己貼上內容')), P(Z('Sometimes', '有時')), P(Z('Own materials', '自家教材')), N],
     [Z('There every day, whenever your child is free', '每天隨時可用'), Y, Y, P(Z('1–2 hours a week', '每週 1–2 小時')), P(Z('Fixed class times', '固定上課時間')), Y],
@@ -3015,6 +3026,11 @@ function renderAbout() {
       <div class="ab-scroll"><table class="ab-table"><thead><tr><th></th><th class="ab-us">PrepBuddy</th><th>${Z('General AI chat (e.g. ChatGPT)', '一般 AI 聊天（如 ChatGPT）')}</th><th>${Z('Private tutor', '私人補習')}</th><th>${Z('Learning centre', '補習社')}</th><th>${Z('Assessment books', '補充練習')}</th></tr></thead>
       <tbody>${rows.map((r) => `<tr><th scope="row">${r[0]}</th><td class="ab-us">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join('')}</tbody></table></div>
       <p class="hint" style="margin:0">${Z('Tutor and centre costs are typical Hong Kong rates (about HK$200–600 an hour) for one lesson a week; they vary widely.', '補習費用為香港一般收費（約每小時 HK$200–600），以每週一堂計算，實際收費差異很大。')}</p></section>
+    <section class="card ab-sec"><h2>${Z('Progress you can actually see', '看得見的進度')}</h2>
+      <p class="hint" style="margin:0 0 10px">${Z('Most apps tell you how many questions were done. PrepBuddy tells you whether your child is ready for their test, what exactly they’re getting wrong, and whether it’s working.', '大部分應用程式只告訴你做了多少題。PrepBuddy 告訴你孩子是否準備好應付測驗、到底錯在哪裡，以及練習有沒有成效。')}</p>
+      <div class="ab-scroll"><table class="ab-table"><thead><tr><th></th><th class="ab-us">PrepBuddy</th><th>${Z('Learning apps', '學習應用程式')}</th><th>${Z('Online tuition', '網上補習')}</th><th>${Z('Private tutor', '私人補習')}</th><th>${Z('General AI chat', '一般 AI 聊天')}</th></tr></thead>
+      <tbody>${prog.map((r) => `<tr><th scope="row">${r[0]}</th><td class="ab-us">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join('')}</tbody></table></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px"><p class="hint" style="margin:0">${Z('Based on what these kinds of service typically show families.', '根據這類服務一般向家長提供的資料。')}</p><button class="btn" id="abSample">${Z('See a sample parent report', '看看家長報告樣本')}</button></div></section>
     <section class="ab-sec"><h2>${Z('Questions parents ask', '家長常見問題')}</h2>
       <div class="ab-qa">${qa.map(([q, a], i) => `<details class="ab-q" ${i === 0 ? 'open' : ''}><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></section>
     <section class="card ab-sec ab-honest"><h2>${Z('What it isn’t', '它不是甚麼')}</h2>
@@ -3026,6 +3042,7 @@ function renderAbout() {
   </main>`;
   document.getElementById('back').onclick = () => go({ name: 'settings' });
   document.getElementById('abTour').onclick = () => startTour('full');
+  { const sb = document.getElementById('abSample'); if (sb) sb.onclick = () => window.open(sampleReportURL(), '_blank'); }
   document.getElementById('abPlans').onclick = () => go({ name: 'plans' });
 }
 
@@ -5062,6 +5079,73 @@ function cardsDone() {
 }
 
 /* ---------- my progress + report for parents ---------- */
+// The parts of the weekly report that sell what PrepBuddy did: the work done for the child this week, the next test
+// with its forecast and plan, what Buddy noticed, and proof it's working. Compact, because it travels in the link.
+// A made-up child's report, to show families what the weekly parent report looks like.
+function sampleReportURL() {
+  const zh = LANG === 'zh', T = (en, c) => (zh ? c : en), t0 = dayStart(), D = DAY;
+  const r = { v: 1, sm: 1, u: zh ? 'zh' : 'en', n: T('Sam', '小明'), b: [T('Science', '常識'), T('Maths', '數學'), T('English', '英文')], from: t0 - 6 * D, at: Date.now(),
+    days: [18, 12, 22, 15, 0, 20, 13], q: 142, a: 78, pa: 74, dp: 6, tr: [64, 66, 70, 72, 74, 78], st: 12, pq: 120, pm: 90, mk: 9, fx: 11, lt: 214, rd: 6,
+    ch: [[T('Water cycle', '水的循環'), 64, 24, 58], [T('Fractions', '分數'), 81, 30, 70], [T('Electricity', '電'), 45, 12, null], [T('Plants', '植物'), 92, 20, 88]],
+    up: T('Fractions: up from 70% to 81% since last week.', '分數：由上週 70% 進步至 81%。'), weak: T('Electricity: 6 of 12 questions not fully right.', '電：12 題中有 6 題未完全答對。'),
+    rev: '', next: T('Two 15-minute sessions on Electricity, and keep up daily review.', '為「電」做兩次 15 分鐘練習，並保持每日溫習。'),
+    sk: [[88, 40], [80, 52], [61, 36], [48, 14]], ms: [[T('Science', '常識'), 58, 74], [T('Maths', '數學'), 72, 90], [T('English', '英文'), 47]],
+    g: null, ex: null, ts: [['test', T('Chapter test · Plants', '章節測驗 · 植物'), t0 - 3 * D, 85, 15]], sr: null, gs: null,
+    x: { dw: { q: 142, w: 18, mx: 2, rv: 46, fx: 11, ls: 2, hw: 3 },
+      nt: { n: T('Science test', '常識測驗'), d: t0 + 9 * D, l: 9, r: 58, f: 74, st: 'close', sc: T('Chapters 1–6', '第 1–6 章'), pl: [[t0 + D, T('Learn Heat', '學習「熱」')], [t0 + 2 * D, T('Learn Magnets', '學習「磁石」')], [t0 + 3 * D, T('Practise Electricity', '練習「電」')], [t0 + 8 * D, T('Practice test on Chapters 1–6', '模擬測驗')], [t0 + 9 * D, T('10-minute warm-up', '10 分鐘熱身')]] },
+      mx: [[T('Mixes up evaporation and boiling', '混淆了蒸發和沸騰'), T('In 4 answers Sam said water has to boil before it can evaporate. That costs marks in the water cycle chapter, which is in the test.', '小明在 4 個答案中說水要先沸騰才會蒸發。這會令「水的循環」一章失分，而這章在測驗範圍內。')], [T('Adds the bottoms of fractions', '把分母相加'), T('3 times this week, e.g. 1/3 + 1/4 = 2/7. Buddy has set 10 targeted questions.', '本週 3 次，例如 1/3 + 1/4 = 2/7。Buddy 已安排 10 條針對性題目。')]],
+      hi: [82, 61], pc: [[T('Maths', '數學'), 50, 88, t0 - 40 * D]], gn: T('Primary 4', '小四'), ge: [[T('Maths', '數學'), 'above'], [T('Science', '常識'), 'meet'], [T('English', '英文'), 'build']],
+      mk: [[T('Science', '常識'), 62, 71], [T('Maths', '數學'), 70, 78]] } };
+  return `${location.origin}/report.html#d=${encodeReport(r)}`;
+}
+async function reportExtras(books, gs) {
+  const now = Date.now(), wk = now - 7 * DAY, t0 = dayStart();
+  const week = local.log.filter((e) => e.t >= t0 - 6 * DAY);
+  const sname = (b) => (b.subject ? subj(b.subject) : b.title);
+  // what PrepBuddy did this week
+  const dw = {
+    q: week.length,
+    w: week.filter((e) => e.ty === 'w').length,
+    mx: local.insights && local.insights.lang === LANG ? (local.insights.list || []).length : 0,
+    rv: week.filter((e) => e.k === 'spaced').length,
+    fx: Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > wk).length,
+    ls: Object.values(local.learned || {}).filter((t) => (typeof t === 'number' ? t : (t && t.t) || 0) > wk).length,
+    hw: (local.hw || []).filter((h) => h.t > wk).length,
+  };
+  // next school test: ready now, by the test, and a day-by-day plan to close the gap
+  let nt = null;
+  const T = await schoolTestsHTML(); const p = T.steps.find((x) => x.ready != null) || T.steps[0];
+  if (p) {
+    const RH = await readyHist(books), h = p.book ? RH.find((y) => y.b.id === p.book.id) : null;
+    const fc = p.ready == null || locked('forecast') ? null : h && h.rate > 0 ? Math.min(100, Math.round(p.ready + h.rate * p.left)) : p.ready;
+    const v = fc ?? p.ready, st = v == null ? 'none' : v >= 80 ? 'ok' : v >= 65 ? 'close' : 'risk';
+    const plan = [];
+    if (p.book && p.units && p.units.length && (p.x.kind || 'test') !== 'dict') {
+      const m = await bookMastery(p.book), chs = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id));
+      const todo = [...chs.filter((c) => !c.done && !c.tests).map((c) => LANG === 'zh' ? `學習「${shortTitle(c.unit.title)}」` : `Learn ${shortTitle(c.unit.title)}`),
+        ...chs.filter((c) => (c.done || c.tests) && c.pct < 70).sort((a, b) => a.pct - b.pct).map((c) => LANG === 'zh' ? `練習「${shortTitle(c.unit.title)}」` : `Practise ${shortTitle(c.unit.title)}`)];
+      const td = testDay(p.x), slots = Math.max(0, p.left - 1);
+      todo.slice(0, Math.min(4, slots)).forEach((t, i) => plan.push([t0 + (i + 1) * DAY, t]));
+      if (p.left >= 2) plan.push([td - DAY, LANG === 'zh' ? '模擬測驗' : `Practice test on ${testScope(p)}`]);
+      if (p.left >= 1) plan.push([td, LANG === 'zh' ? '10 分鐘熱身' : '10-minute warm-up']);
+    }
+    nt = { n: String(p.x.name).slice(0, 50), d: testDay(p.x), l: p.left, r: p.ready, f: fc, st, sc: p.book ? String(testScope(p)).slice(0, 60) : '', pl: plan.slice(0, 6).map(([t, x]) => [t, String(x).slice(0, 60)]) };
+  }
+  // what Buddy noticed: mix-ups from wrong answers, plus independence
+  const mx = local.insights && local.insights.lang === LANG ? (local.insights.list || []).slice(0, 3).map((m) => [String(m.title).slice(0, 90), String(m.detail || '').slice(0, 260)]) : [];
+  const lw = local.log.filter((e) => e.t > now - 14 * DAY), lp = local.log.filter((e) => e.t <= now - 14 * DAY && e.t > now - 56 * DAY);
+  const own = (es) => Math.round(100 * es.filter((e) => !e.h).length / es.length);
+  const hi = lw.length >= 30 && lp.length >= 30 ? [own(lw), own(lp)] : null;
+  // proof it's working: progress checks, level against the grade, school marks before and after
+  const pc = books.filter((b) => (local.placement || {})[b.id]).map((b) => { const pl = local.placement[b.id], c = (local.pchecks || []).filter((x) => x.b === b.id && x.t > pl.t).pop(); if (!c) return null;
+    const pct = (per) => { const v = Object.values(per || {}); const g = v.reduce((a, x) => a + x[0], 0), m = v.reduce((a, x) => a + x[1], 0); return m ? Math.round(100 * g / m) : null; };
+    return [sname(b), pct(pl.u), pct(c.per), pl.t]; }).filter(Boolean).slice(0, 3);
+  const gName = gradeNow() ? gradeName(gradeNow()) : '';
+  const ge = gName && gs && gs.s ? gs.s.filter((x) => x[1] != null).slice(0, 4).map((x) => [x[0], x[1] >= 3 ? 'above' : x[1] >= 2 ? 'meet' : 'build']) : [];
+  const ML = marksList(), mB = ML.find((m) => m.kind === 'before'), mL = ML.filter((m) => m.kind === 'later').pop();
+  const mk = mB && mL ? MARK_SUBJ().filter(([k]) => typeof mB.s[k] === 'number' && typeof mL.s[k] === 'number').map(([k, z, e]) => [LANG === 'zh' ? z : e, mB.s[k], mL.s[k]]).slice(0, 4) : [];
+  return { dw, nt, mx, hi, pc, gn: gName, ge, mk };
+}
 async function currentReport() {
   const books = await getBooks();
   const practised = new Set(local.log.filter((e) => e.t >= Date.now() - 7 * DAY).map((e) => e.q.split(':')[0]));
@@ -5075,7 +5159,9 @@ async function currentReport() {
   const fx = Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > weekAgo).length;
   const ts = (local.tests || []).filter((t) => t.kind && t.t > monthAgo).slice(-6).reverse().map((t) => [t.kind, String(t.title || '').slice(0, 60), t.t, t.m ? Math.round(100 * t.g / t.m) : 0, t.min || 0]);
   const gs = await gsData().catch(() => null);
-  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms, mk: mistakeCount(), fx, gs,
+  const un = {}; books.forEach((b) => b.units.forEach((u) => { un[`${b.id}:${u.id}`] = shortTitle(u.title); }));
+  const x = await reportExtras(books, gs).catch(() => null);
+  return buildReport({ log: local.log, stats: local.stats, name: local.name, books: [...new Set(names)], lang: LANG, ms, mk: mistakeCount(), fx, gs, un, x,
     goal: local.goal || null, exam: E && E.left !== null ? { left: E.left, date: E.date } : null, ts,
     sr: starsOn() ? (() => { const st = starState(), wk = Date.now() - 7 * DAY;
       return { w: st.log.filter((x) => x.t > wk).reduce((a, x) => a + x.n, 0), bal: st.bal,
@@ -5341,6 +5427,7 @@ async function renderProgress() {
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${bar}<p class="pv-p">${what}</p>${st !== 'ok' && steps.length ? `<ul class="pv-steps">${steps.map((s) => `<li data-raw>${esc(s)}</li>`).join('')}</ul>` : ''}
+      ${p.ready != null ? `<span class="pv-op">${PT('Only PrepBuddy · forecast to your test date', '只有 PrepBuddy · 按你的考試日期預測')}</span>` : ''}
       <div class="pv-test-f">${p.step ? btn(esc(p.step.t), p.step.run, `pv-btn ${st === 'ok' ? '' : 'primary'}`) : ''}${btn(PT('Edit', '修改'), () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet')}</div></div>`;
   });
   const testedBooks = new Set(tests.steps.map((p) => p.book && p.book.id).filter(Boolean));
@@ -5364,7 +5451,7 @@ async function renderProgress() {
     const g = qs[0] ? qs[0].g : null;
     const run = qs.length >= 2 ? () => { S = newSession({ mode: 'mistakes', title: m.title, qs: shuffle(qs.map((x) => x.q)).map(shuffleOptions), target: qs.length }); renderQuestion(); }
       : g && g.unit ? () => startUnits(g.book, [g.unit], 8) : null;
-    cards.push(card(PT('Mix-up', '常見混淆'), 'red', m.title, m.detail, run ? btn(PT('Practise this', '練習這個'), run, 'pv-btn soft') : ''));
+    cards.push(card(PT('Mix-up', '常見混淆'), 'red', m.title, m.detail, `<span class="pv-op">${PT('Only PrepBuddy · found by reading your answers', '只有 PrepBuddy · 從你的答案中找出')}</span>${run ? btn(PT('Practise this', '練習這個'), run, 'pv-btn soft') : ''}`));
   });
   // rushing: multiple-choice sets answered too fast to be thinking, in the last 2 weeks
   const ss = (local.sess || []).filter((x) => x.t > now - 14 * DAY);
@@ -5490,7 +5577,7 @@ async function renderProgress() {
         ${chs.length ? `<div class="pv-pcch">${chs.slice(0, 6).map((x) => `<span data-raw>${esc(chName(x.u))}</span><em>${x.a}% → <b class="${x.c > x.a ? 'good' : x.c < x.a ? 'low' : ''}">${x.c}%</b></em>`).join('')}</div>` : ''}
         ${now >= due ? btn(pc ? PT('Take the next progress check · 5 min', '做下一次進度檢查 · 5 分鐘') : PT('Take a progress check · 5 min', '做進度檢查 · 5 分鐘'), () => startProgressCheck(b), 'pv-btn soft') : `<p class="pv-sm">${PT(`Next progress check from ${new Date(due).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}.`, `下次進度檢查：${new Date(due).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })} 起。`)}</p>`}</div>`;
     }).join('');
-    return `<div class="pv-card"><b class="pv-ct h-info">${PT('Progress check: before and now', '進度檢查：之前與現在')}${ib('howPc', PT('What is a progress check?', '甚麼是進度檢查？'))}</b>${rows}
+    return `<div class="pv-card"><b class="pv-ct h-info">${PT('Progress check: before and now', '進度檢查：之前與現在')}${ib('howPc', PT('What is a progress check?', '甚麼是進度檢查？'))}</b>${rows}<span class="pv-op">${PT('Only PrepBuddy · before and after at the same level', '只有 PrepBuddy · 相同程度的前後對比')}</span>
       ${how('howPc', PT('What is a progress check?', '甚麼是進度檢查？'), `<p>${PT('When a textbook is added, a short level check asks about 2 questions from each of up to 6 chapters. Every 4 weeks, a progress check asks the same chapters again, at the same level, with new questions.', '加入課本時，程度評估會在最多 6 章中每章問約 2 題。之後每 4 星期，進度檢查會用新題目、以相同程度再問同樣的章節。')}</p><p>${PT('Because the chapters and the level are the same, the two scores compare fairly: it’s the clearest before-and-after there is. It takes about 5 minutes.', '章節和程度都一樣，兩次分數可以公平比較，是最清楚的前後對比。大約 5 分鐘。')}</p>`)}</div>`;
   })() : '';
   const memCard = ret != null || D.longTerm ? `<div class="pv-card"><b class="pv-ct h-info">${PT('Remembered, not just learned', '記得，不只是學過')}${ib('howMemP', PT('How is this worked out?', '這是怎樣計算的？'))}</b>${how('howMemP', PT('How is this worked out?', '這是怎樣計算的？'), `<p>${PT('Every question you get fully right comes back later: after 1 day, then 3, 7, 14 and 30 days. The % is how many you got right when they came back.', '每題完全答對後會再出現：1 日後，然後 3、7、14、30 日後。百分比是再出現時答對的比例。')}</p><p>${PT('“Remembered for a week or more” counts questions that have come back right at the 7-day step or later.', '「記得一星期或以上」是在 7 日或之後再出現時仍答對的題目。')}</p>`)}${ret != null ? `<div class="pv-big"><b>${ret}%</b><span>${PT('of reviews right days later', '的溫習題幾天後仍答對')}</span></div>` : ''}<p class="pv-sm">${PT(`${D.longTerm} questions remembered for a week or more.`, `${D.longTerm} 題已記得一星期或以上。`)}</p></div>` : '';
@@ -5525,7 +5612,17 @@ async function renderProgress() {
     return `<svg class="pv-kspark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts.map((v, i) => `${(2 + i * (W - 4) / (pts.length - 1)).toFixed(1)},${(H - 3 - ((v - lo) / ((hi - lo) || 1)) * (H - 6)).toFixed(1)}`).join(' ')}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`; };
   const cLine = weekly('c'), mLine = weekly('m');
   const kpi = (v, lab, sub, line, id, t) => `<div class="pv-kpi"><div class="pv-kpi-t"><span class="h-info">${lab}${ib(id, t)}</span></div><b>${v}</b>${sub}${kspark(line)}</div>`;
-  const kpiHTML = `<section class="pv-kpis" aria-label="${PT('Headline numbers', '主要數字')}">
+  // What PrepBuddy did this week: the work a tutor would do, counted
+  const wkLog = local.log.filter((e) => e.t >= t0 - 6 * DAY), wAgo = now - 7 * DAY;
+  const didL = [[wkLog.length, PT('questions from your own textbooks', '條題目來自你自己的課本')], [wkLog.filter((e) => e.ty === 'w').length, PT('written answers marked, with feedback', '條文字答案已批改並有評語')],
+    [ins ? ins.list.length : 0, PT(ins && ins.list.length === 1 ? 'mix-up found by reading your answers' : 'mix-ups found by reading your answers', '個混淆從你的答案中找出')], [wkLog.filter((e) => e.k === 'spaced').length, PT('reviews brought back just before you’d forget', '條溫習題在快忘記前再出現')],
+    [Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > wAgo).length, PT('mistakes fixed on a second try', '題錯題再做時改正')],
+    [Object.values(local.learned || {}).filter((t) => (typeof t === 'number' ? t : 0) > wAgo).length, PT('lessons taught by Buddy', '堂 Buddy 課堂')],
+    [(local.hw || []).filter((h) => h.t > wAgo).length, PT('homework sheets helped with', '份功課得到協助')]].filter(([n]) => n > 0).slice(0, 6);
+  const nt0 = tests.steps.find((p) => p.left >= 1 && p.left <= 21);
+  const didHTML = didL.length ? `<section class="pv-sec pv-did"><div class="pv-h"><h2>${PT('What PrepBuddy did for you this week', 'PrepBuddy 本週為你做了甚麼')}</h2><span>${PT('The work of a tutor, every day you practised', '好導師會做的事，你每次練習都有')}</span></div>
+    <div class="pv-didg">${didL.map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}${nt0 ? `<div><b>${PT(`${nt0.left} days`, `${nt0.left} 日`)}</b><span data-raw>${esc(PT(`planned towards the ${nt0.x.name}`, `為「${nt0.x.name}」安排`))}</span></div>` : ''}</div></section>` : '';
+  const kpiHTML = `<section class="pv-kpis\" aria-label="${PT('Headline numbers', '主要數字')}">
     ${kpi(`${overall}%`, PT('Overall readiness', '整體準備度'), delta(overall, ago(rdLine), '%'), rdLine, 'howK1', PT('What is overall readiness?', '甚麼是整體準備度？'))}
     ${kpi(`${chDone}<small>/${chAll}</small>`, PT('Chapters mastered', '已掌握的章節'), delta(chDone, ago(cLine)), cLine, 'howK2', PT('What counts as mastered?', '怎樣才算掌握？'))}
     ${kpi(String(D.longTerm), PT('In long-term memory', '長期記憶'), delta(D.longTerm, ago(mLine)), mLine, 'howK3', PT('What is long-term memory?', '甚麼是長期記憶？'))}
@@ -5616,7 +5713,7 @@ async function renderProgress() {
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(PT('Weekly report', '每週報告'), () => reportDialog(), 'pv-btn quiet')}${btn(`${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}`, () => openParent(), 'pv-btn quiet')}</div></div>
     <section class="pv-hero">${buddySVG(local.log.length ? 'happy' : 'think', 56)}<div><b data-raw>${esc(head)}</b>${sub2 ? `<span data-raw>${esc(sub2)}</span>` : ''}</div></section>
-    ${kpiHTML}${sec1}${sec2}${sec3}${sec4}${sec5}
+    ${kpiHTML}${didHTML}${sec1}${sec2}${sec3}${sec4}${sec5}
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };

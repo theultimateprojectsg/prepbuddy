@@ -36,6 +36,11 @@ try {
   if (zh) document.documentElement.lang = 'zh-HK';
   document.title = headline(r) + ' · PrepBuddy';
   el.innerHTML = reportHTML(r) + (zh ? '<div class="cta">PrepBuddy 把你子女自己的課本變成應試練習，並由 AI 批改。<a href="./">了解更多</a></div>' : '<div class="cta">PrepBuddy turns your child’s own textbook into exam practice with AI marking. <a href="./">Learn more</a></div>');
+  // printing opens the folded charts; WhatsApp shares this same link
+  window.addEventListener('beforeprint', () => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+  const pr = el.querySelector('.rp-print');
+  if (pr) { const wa = document.createElement('button'); wa.className = 'rp-print rp-wa'; wa.textContent = zh ? '用 WhatsApp 分享' : 'Share on WhatsApp';
+    wa.onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent(document.title + '\n' + location.href), '_blank'); pr.parentNode.insertBefore(wa, pr); }
 } catch (e) {
   const zhPhone = /^zh/i.test(navigator.language || '');
   el.innerHTML = zhPhone ? '<p class="err">這個報告連結不完整。請從 PrepBuddy 再傳送一次報告。</p>' : '<p class="err">This report link looks incomplete. Ask for the report to be sent again from PrepBuddy.</p>';
