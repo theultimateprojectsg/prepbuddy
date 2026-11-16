@@ -2564,9 +2564,6 @@ async function renderHome() {
   // ---- greeting card: streak and this week's days ----
   const daysSet = new Set(local.log.map((e) => dayStart(e.t)));
   let streak = 0; for (let d = daysSet.has(t0) ? t0 : t0 - DAY; daysSet.has(d); d -= DAY) streak++;
-  // TEMPORARY streak preview (remove later): a test counter in the card to see how it looks at any streak length
-  let devStreak = null; try { const v = localStorage.getItem('prepbuddy.devStreak'); if (v !== null) devStreak = Math.max(0, +v || 0); } catch (e) {}
-  if (devStreak !== null) streak = devStreak;
   const mon = t0 - ((new Date(t0).getDay() + 6) % 7) * DAY;
   const DN = { zh: ['一', '二', '三', '四', '五', '六', '日'], fr: ['L', 'M', 'M', 'J', 'V', 'S', 'D'], ja: ['月', '火', '水', '木', '金', '土', '日'] }[LANG] || ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0 }));
@@ -2580,23 +2577,21 @@ async function renderHome() {
     : Z('Every streak starts with day one. Finish today’s mission to light your first 🔥', '每個連續紀錄都由第一日開始。完成今日任務，點燃你的第一團火 🔥');
   // Streak, the way Duolingo and others show it: one bold flame and the number. The flame is lit once today's
   // practice is done, grey until then (and wobbles in the evening when the streak is at risk). Days in a row join up.
-  const lit = doneToday || (devStreak !== null && streak > 0);
+  const lit = doneToday;
   // how big the fire is: 1 (1-2 days) … 5 (30+ days). The flame grows and flickers harder, and its light warms the card.
   const tier = !streak ? 0 : streak < 3 ? 1 : streak < 7 ? 2 : streak < 14 ? 3 : streak < 30 ? 4 : 5;
   const embs = (k) => (k >= 3 ? `<span class="sk-emb" aria-hidden="true">${Array.from({ length: k * 2 - 2 }, (_, i) => `<i style="--x:${20 + ((i * 29) % 60)}%;--d:${(i * 0.31).toFixed(2)}s;--s:${(1.4 + (i % 3) * 0.4).toFixed(1)}s"></i>`).join('')}</span>` : '');
   const risk = !lit && streak > 0 && hr >= 18;
   const flameSVG = (on) => `<svg viewBox="0 0 40 50" style="overflow:visible" aria-hidden="true"><defs><linearGradient id="skg${on ? 1 : 0}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${on ? '#E8361A' : '#AEB5C4'}"/><stop offset=".6" stop-color="${on ? '#FF8A1F' : '#C9CFDB'}"/><stop offset="1" stop-color="${on ? '#FFC94D' : '#DCE1EA'}"/></linearGradient></defs><g class="f-all"><path class="f-o" d="M20 1c3 9 15 15 15 30a15 15 0 0 1-30 0c0-7 4-12 7-16 0 5 2 8 5 9-2-8 0-15 3-23z" fill="url(#skg${on ? 1 : 0})"/>${on ? '<path class="f-m" d="M21 12c2 7 10 11 10 20a11 11 0 0 1-22 0c0-5 3-8 5-11 0 4 2 6 4 7-1-6 1-11 3-16z" fill="#FFA62B" opacity=".9"/>' : ''}<path class="f-i" d="M20 24c2 5 8 8 8 14a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-4 0-8 1-11z" fill="${on ? '#FFF1B8' : '#F1F3F7'}"/></g></svg>`;
-  // which days of this week to colour (the test counter fills the last N days so you can preview it)
-  const wkOn = wk.map((x, k) => (devStreak !== null ? mon + k * DAY <= t0 && mon + k * DAY > t0 - streak * DAY : x.on));
+  const wkOn = wk.map((x) => x.on);
   const weekHTML = (cls = '') => `<span class="gr-week ${cls}" aria-label="${Z(`${wkOn.filter(Boolean).length} day(s) this week`, `本週 ${wkOn.filter(Boolean).length} 日`)}">${wk.map((x, k) => `<i class="${wkOn[k] ? 'on' : ''} ${wkOn[k] && wkOn[k + 1] ? 'jr' : ''} ${x.today ? 'today' : ''}">${wkOn[k] ? flameSVG(true).replace(/skg1/g, 'skw' + k) : DN[k]}</i>`).join('')}</span>`;
   // the next badge to aim for
   const MIL = [3, 7, 14, 30, 50, 100, 200, 365];
   const nextM = MIL.find((m) => m > streak) || streak + 100, prevM = [...MIL].reverse().find((m) => m <= streak) || 0;
   const medal = `<svg class="medal" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l2 5-3 2zM17 2h-4l-2 5 3 2z" fill="#6E8BE0"/><circle cx="12" cy="15" r="7" fill="#FFC531" stroke="#E09B00" stroke-width="1.5"/><path d="M12 11.5l1.1 2.2 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3z" fill="#FFF6D6"/></svg>`;
   const nextHTML = `<span class="sk-next">${medal}<span>${Z(`${nextM - streak} more day${nextM - streak === 1 ? '' : 's'} to your ${nextM}-day badge`, `再 ${nextM - streak} 日得到 ${nextM} 日徽章`)}</span><span class="bar"><i style="width:${Math.round(((streak - prevM) / (nextM - prevM)) * 100)}%"></i></span></span>`;
-  const devBox = `<span class="dev-streak" role="group" aria-label="Test streak"><b>Test streak</b><button type="button" data-dstk="-1" aria-label="One less">−</button><output>${streak}</output><button type="button" data-dstk="1" aria-label="One more">+</button><button type="button" data-dstk="0">Reset</button></span>`;
   const label = streak ? Z(`day streak`, '日連續') : Z('Start a streak today', '今天開始連續練習');
-  const strip = `${devBox}<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame sk-t${lit ? tier : 0} ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}${lit ? embs(tier) : ''}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small>${nextHTML}</span>
+  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame sk-t${lit ? tier : 0} ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}${lit ? embs(tier) : ''}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small>${nextHTML}</span>
     ${weekHTML()}</button>`;
   // Celebration, once a day, the first time Today opens after practising (like Duolingo's streak screen)
   const celebrate = (n) => {
@@ -2611,8 +2606,7 @@ async function renderHome() {
     const close = () => box.remove(); box.querySelector('#skcOk').onclick = close; box.onclick = (e) => { if (e.target === box) close(); };
     box.querySelector('#skcOk').focus();
   };
-  if (doneToday && devStreak === null && local.skSeen !== t0) { local.skSeen = t0; saveLocal(); setTimeout(() => celebrate(streak), 400); }
-  window.__skCelebrate = () => celebrate(streak);
+  if (doneToday && local.skSeen !== t0) { local.skSeen = t0; saveLocal(); setTimeout(() => celebrate(streak), 400); }
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
   const testHead = `<div class="sect-head"><h2 class="h-info">${SCH('School tests', '學校測驗')}${infoBtn('howTests', SCH('How do school tests work?', '學校測驗是怎樣運作的？'))}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>${testsHowHTML()}`;
@@ -2693,7 +2687,6 @@ async function renderHome() {
     delete local.lessonAt[lessonLeft.key]; saveLocal(); renderHome(); }; }
   { const sg2 = document.getElementById('slipGo'); if (sg2 && slip) sg2.onclick = () => { pick = { bookId: slip.b.id, ids: new Set([slip.u.id]) }; startUnits(slip.b, [slip.u], 10); }; }
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
-  $app.querySelectorAll('[data-dstk]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); const d = +b.dataset.dstk; try { const cur = +(localStorage.getItem('prepbuddy.devStreak') ?? (document.querySelector('.dev-streak output') || {}).textContent ?? 0) || 0; if (d === 0) localStorage.removeItem('prepbuddy.devStreak'); else localStorage.setItem('prepbuddy.devStreak', String(Math.max(0, cur + d))); } catch (er) {} Promise.resolve(renderHome()).then(() => { if (d === 1 && window.__skCelebrate) window.__skCelebrate(); }); }));
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
