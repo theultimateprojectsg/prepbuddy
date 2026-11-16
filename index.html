@@ -1392,22 +1392,6 @@ footer .btn-sm{min-height:28px;padding:2px 10px;font-size:12px;vertical-align:mi
   .app:has(.results){max-width:1560px}
   .mkpage{max-width:1480px}
 }
-/* Super-wide screens (1600px and up): every page sits in the same centred frame, sparse pages use more columns
-   instead of a narrow strip, and nothing stretches into lines too long to read. */
-@media (min-width:1600px){
-  body[data-tab] .app:has(> main[data-view="practice"]),body[data-tab] .app:has(> main.settings){max-width:min(var(--tabw),1240px)}
-  main[data-view="practice"] .quick,main.settings .quick{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
-  .settings{max-width:none}
-  /* Today: Buddy's chat stays a comfortable width; the plan gets the rest */
-  body[data-tab] .app:has(> aside.coach){grid-template-columns:minmax(0,1fr) minmax(420px,600px)}
-  /* results: the answers column keeps readable lines */
-  .results{grid-template-columns:420px minmax(0,1fr)}
-  .rlist{max-width:1100px}
-  /* question, lesson and homework screens: centred in the space beside the menu, not pinned to it */
-  body[data-tab] .app:has(> main.qpaper){max-width:1680px;margin:0 0 0 calc(220px + max(0px, (100vw - 220px - 1680px) / 2))!important}
-  body[data-tab] .app:has(> main.hwchat),body[data-tab] .app:has(> main.waitpage){max-width:1560px;margin:0 0 0 calc(220px + max(0px, (100vw - 220px - 1560px) / 2))!important}
-  /* paragraphs never run wider than is comfortable to read */
-  .ln-x,.ln-ex,.rsg-why,.about p{max-width:80ch}
 }
 .blank-in{width:100%;max-width:280px;font:inherit;font-size:18px;padding:10px 12px;border:2px solid var(--line,#DCE2EE);border-radius:12px;background:#FFFFFF;color:inherit}.blank-in:focus{outline:none;border-color:var(--ink,#1E2A5A)}
 .bk-bar{display:flex;align-items:flex-start;gap:12px}.bk-bar>#chips{flex:1;min-width:0}.bk-bar>.bk-view{flex:none}
@@ -1779,6 +1763,40 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .rsg-t{margin:0;font-size:19px;line-height:1.3;color:var(--ink)}.rsg-why{margin:0;font-size:14.5px;line-height:1.55;color:var(--text-2)}
 .rsg-facts{display:flex;flex-wrap:wrap;gap:6px}.rsg-facts span{font-size:12.5px;background:#FFFFFF;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--text-2)}
 .rsg-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}.rsg-btns .btn{flex:1 1 180px}
+
+/* ---------- laptops and wide screens: every page with the menu starts just right of it (left-aligned) and fills the
+   width with a small margin on both sides, whatever the screen size. Inner layouts use the room with more columns. ---------- */
+@media (min-width:1024px){
+  :root{--gut:clamp(24px,2.2vw,48px)}
+  body[data-tab] .app,body[data-tab] .app:has(> main),body[data-tab] .app:has(> main.qpaper),body[data-tab] .app:has(> main.hwchat),body[data-tab] .app:has(> main.waitpage),body[data-tab] .app:has(> aside.coach),body[data-tab] .app:has(.bookpage),body[data-tab] .app:has(.results){max-width:none!important;margin:0 var(--gut) 0 calc(220px + var(--gut))!important;padding-left:0!important;padding-right:0!important;width:auto}
+  body[data-tab] .app>main,body[data-tab] .app>.topbar{max-width:none}
+  body[data-tab] .app>main.pad{padding-left:0;padding-right:0}
+  body[data-tab] .app>.topbar{padding-left:0;padding-right:0}
+  /* pages that were a narrow column now use the width */
+  .settings,.learnpage,.plres,.sprec,.priv,.mkpage{max-width:none}
+  main[data-view="practice"] .quick,main.settings .quick{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  /* Today: Buddy's chat a comfortable width, the plan takes the rest */
+  body[data-tab] .app:has(> aside.coach){grid-template-columns:minmax(0,1fr) clamp(380px,32%,620px)}
+  /* results: on very wide screens the answers sit in two columns */
+  .results{grid-template-columns:clamp(380px,26%,460px) minmax(0,1fr)}
+  /* reading text never runs into very long lines */
+  .ln-x,.ln-ex,.rsg-why,.about p,.rfix{max-width:90ch}
+}
+@media (min-width:2000px){
+  .rlist .card{display:grid;grid-template-columns:1fr 1fr;align-items:start}
+  .rlist .rrow{border-bottom:1px solid #EEF1F6}
+}
+@media (min-width:1024px){
+  .pp-cards{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))!important}
+  .rw-grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+  .badges{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+}
+/* long reading pages (privacy notice): two columns on wide screens instead of very long lines */
+@media (min-width:1600px){
+  .priv{column-count:2;column-gap:56px}.priv>*{break-inside:avoid-column}.priv-head,.priv>h1{column-span:all}
+  .priv h2,.priv h3{break-after:avoid-column}
+}
+@media (min-width:1024px){.wr-kinds{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
 </style>
 </head>
 <body>
