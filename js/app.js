@@ -2581,8 +2581,11 @@ async function renderHome() {
   // Streak, the way Duolingo and others show it: one bold flame and the number. The flame is lit once today's
   // practice is done, grey until then (and wobbles in the evening when the streak is at risk). Days in a row join up.
   const lit = doneToday || (devStreak !== null && streak > 0);
+  // how big the fire is: 1 (1-2 days) … 5 (30+ days). The flame grows and flickers harder, and its light warms the card.
+  const tier = !streak ? 0 : streak < 3 ? 1 : streak < 7 ? 2 : streak < 14 ? 3 : streak < 30 ? 4 : 5;
+  const embs = (k) => (k >= 3 ? `<span class="sk-emb" aria-hidden="true">${Array.from({ length: k * 2 - 2 }, (_, i) => `<i style="--x:${20 + ((i * 29) % 60)}%;--d:${(i * 0.31).toFixed(2)}s;--s:${(1.4 + (i % 3) * 0.4).toFixed(1)}s"></i>`).join('')}</span>` : '');
   const risk = !lit && streak > 0 && hr >= 18;
-  const flameSVG = (on) => `<svg viewBox="0 0 40 50" aria-hidden="true"><defs><linearGradient id="skg${on ? 1 : 0}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${on ? '#F0441F' : '#AEB5C4'}"/><stop offset=".6" stop-color="${on ? '#FF9A2E' : '#C9CFDB'}"/><stop offset="1" stop-color="${on ? '#FFC94D' : '#DCE1EA'}"/></linearGradient></defs><path d="M20 1c3 9 15 15 15 30a15 15 0 0 1-30 0c0-7 4-12 7-16 0 5 2 8 5 9-2-8 0-15 3-23z" fill="url(#skg${on ? 1 : 0})"/><path d="M20 24c2 5 8 8 8 14a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-4 0-8 1-11z" fill="${on ? '#FFF1B8' : '#F1F3F7'}"/></svg>`;
+  const flameSVG = (on) => `<svg viewBox="0 0 40 50" style="overflow:visible" aria-hidden="true"><defs><linearGradient id="skg${on ? 1 : 0}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${on ? '#F0441F' : '#AEB5C4'}"/><stop offset=".6" stop-color="${on ? '#FF9A2E' : '#C9CFDB'}"/><stop offset="1" stop-color="${on ? '#FFC94D' : '#DCE1EA'}"/></linearGradient></defs><path class="f-o" d="M20 1c3 9 15 15 15 30a15 15 0 0 1-30 0c0-7 4-12 7-16 0 5 2 8 5 9-2-8 0-15 3-23z" fill="url(#skg${on ? 1 : 0})"/><path class="f-i" d="M20 24c2 5 8 8 8 14a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-4 0-8 1-11z" fill="${on ? '#FFF1B8' : '#F1F3F7'}"/></svg>`;
   // which days of this week to colour (the test counter fills the last N days so you can preview it)
   const wkOn = wk.map((x, k) => (devStreak !== null ? mon + k * DAY <= t0 && mon + k * DAY > t0 - streak * DAY : x.on));
   const weekHTML = (cls = '') => `<span class="gr-week ${cls}" aria-label="${Z(`${wkOn.filter(Boolean).length} day(s) this week`, `本週 ${wkOn.filter(Boolean).length} 日`)}">${wk.map((x, k) => `<i class="${wkOn[k] ? 'on' : ''} ${wkOn[k] && wkOn[k + 1] ? 'jr' : ''} ${x.today ? 'today' : ''}">${wkOn[k] ? flameSVG(true).replace(/skg1/g, 'skw' + k) : DN[k]}</i>`).join('')}</span>`;
@@ -2593,15 +2596,16 @@ async function renderHome() {
   const nextHTML = `<span class="sk-next">${medal}<span>${Z(`${nextM - streak} more day${nextM - streak === 1 ? '' : 's'} to your ${nextM}-day badge`, `再 ${nextM - streak} 日得到 ${nextM} 日徽章`)}</span><span class="bar"><i style="width:${Math.round(((streak - prevM) / (nextM - prevM)) * 100)}%"></i></span></span>`;
   const devBox = `<span class="dev-streak" role="group" aria-label="Test streak"><b>Test streak</b><button type="button" data-dstk="-1" aria-label="One less">−</button><output>${streak}</output><button type="button" data-dstk="1" aria-label="One more">+</button><button type="button" data-dstk="0">Reset</button></span>`;
   const label = streak ? Z(`day streak`, '日連續') : Z('Start a streak today', '今天開始連續練習');
-  const strip = `${devBox}<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small>${nextHTML}</span>
+  const strip = `${devBox}<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame sk-t${lit ? tier : 0} ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}${lit ? embs(tier) : ''}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span><small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small>${nextHTML}</span>
     ${weekHTML()}</button>`;
   // Celebration, once a day, the first time Today opens after practising (like Duolingo's streak screen)
   const celebrate = (n) => {
+    const nt = !n ? 1 : n < 3 ? 1 : n < 7 ? 2 : n < 14 ? 3 : n < 30 ? 4 : 5;
     const box = document.createElement('div'); box.className = 'skc-wrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
     const msg = n === 1 ? Z('Your streak has started! Practise tomorrow to keep it going.', '你的連續紀錄開始了！明天再練習，繼續保持。')
       : MIL.includes(n) ? Z(`You reached ${n} days in a row. That earns a badge!`, `你已連續 ${n} 日，得到一個徽章！`) : Z(`${n} days in a row. Come back tomorrow for day ${n + 1}!`, `已連續 ${n} 日。明天回來挑戰第 ${n + 1} 日！`);
     const sparks = Array.from({ length: 14 }, (_, i) => `<i class="spark" style="--dx:${Math.round(Math.cos(i * 0.45) * 130)}px;--dy:${Math.round(Math.sin(i * 0.45) * 110 - 30)}px;left:50%;top:110px"></i>`).join('');
-    box.innerHTML = `<div class="skc" style="position:relative">${sparks}<span class="big">${flameSVG(true).replace(/skg1/g, 'skbig')}</span><span class="num" id="skcN">${Math.max(0, n - 1)}</span><span class="lab">${Z('day streak!', '日連續！')}</span><p>${msg}</p>${weekHTML()}${n < nextM ? nextHTML : ''}<button class="btn" id="skcOk">${Z('Keep it up!', '繼續加油！')}</button></div>`;
+    box.innerHTML = `<div class="skc sk-t${nt}" style="position:relative">${sparks}<span class="big sk-flame lit sk-t${nt}">${flameSVG(true).replace(/skg1/g, 'skbig')}${embs(nt)}</span><span class="num" id="skcN">${Math.max(0, n - 1)}</span><span class="lab">${Z('day streak!', '日連續！')}</span><p>${msg}</p>${weekHTML()}${n < nextM ? nextHTML : ''}<button class="btn" id="skcOk">${Z('Keep it up!', '繼續加油！')}</button></div>`;
     document.body.appendChild(box);
     setTimeout(() => { const el = box.querySelector('#skcN'); if (el) el.textContent = n; el && el.animate && el.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,1.6,.5,1)' }); }, 650);
     const close = () => box.remove(); box.querySelector('#skcOk').onclick = close; box.onclick = (e) => { if (e.target === box) close(); };
@@ -2647,7 +2651,7 @@ async function renderHome() {
   }
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
-    ${head.replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip)}
+    ${head.replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
     ${lessonHTML}

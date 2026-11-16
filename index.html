@@ -1947,6 +1947,47 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .skc .num{font-size:60px!important}
 .skc .btn{width:100%;min-width:0!important}
 @keyframes skbox{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+
+/* ---- Streak flame flicker: bigger and wilder as the streak grows (sk-t1 … sk-t5) ---- */
+.sk-flame{position:relative;--amp:1;--dur:1.6s;--glow:6px;--ga:.3}
+.sk-flame.lit svg{animation:none!important;filter:drop-shadow(0 0 var(--glow) rgba(255,120,30,var(--ga)))}
+.sk-flame.lit .f-o{transform-box:fill-box;transform-origin:50% 100%;animation:fo var(--dur) ease-in-out infinite}
+.sk-flame.lit .f-i{transform-box:fill-box;transform-origin:50% 100%;animation:fi calc(var(--dur) * .7) ease-in-out infinite}
+.sk-flame.lit svg{animation:fglow calc(var(--dur) * 1.3) ease-in-out infinite!important}
+@keyframes fo{0%,100%{transform:scale(1,1) skewX(0)}20%{transform:scale(calc(1 + .03*var(--amp)),calc(1 - .04*var(--amp))) skewX(calc(-2deg*var(--amp)))}40%{transform:scale(calc(1 - .03*var(--amp)),calc(1 + .06*var(--amp))) skewX(calc(2.5deg*var(--amp)))}60%{transform:scale(calc(1 + .02*var(--amp)),calc(1 - .02*var(--amp))) skewX(calc(-1.5deg*var(--amp)))}80%{transform:scale(calc(1 - .02*var(--amp)),calc(1 + .05*var(--amp))) skewX(calc(1.5deg*var(--amp)))}}
+@keyframes fi{0%,100%{transform:scale(1,1) translateY(0)}30%{transform:scale(calc(1 - .06*var(--amp)),calc(1 + .1*var(--amp))) translateY(calc(-1px*var(--amp)))}65%{transform:scale(calc(1 + .05*var(--amp)),calc(1 - .06*var(--amp))) translateY(0)}}
+@keyframes fglow{0%,100%{filter:drop-shadow(0 0 var(--glow) rgba(255,120,30,var(--ga)))}50%{filter:drop-shadow(0 0 calc(var(--glow) * 1.6) rgba(255,110,20,calc(var(--ga) + .15)))}}
+.sk-flame.sk-t1{--amp:.8;--dur:1.8s;--glow:4px;--ga:.25}
+.sk-flame.sk-t2{--amp:1.2;--dur:1.5s;--glow:7px;--ga:.35;width:38px;height:47px}
+.sk-flame.sk-t3{--amp:1.6;--dur:1.2s;--glow:10px;--ga:.45;width:42px;height:52px}
+.sk-flame.sk-t4{--amp:2;--dur:1s;--glow:13px;--ga:.55;width:46px;height:57px}
+.sk-flame.sk-t5{--amp:2.5;--dur:.85s;--glow:16px;--ga:.65;width:50px;height:62px}
+/* little embers rising off the flame from 7 days */
+.sk-emb{position:absolute;left:0;right:0;bottom:30%;height:160%;pointer-events:none}
+.sk-emb i{position:absolute;bottom:0;left:var(--x);width:3px;height:3px;border-radius:50%;background:#FFB547;box-shadow:0 0 4px 1px rgba(255,140,30,.7);opacity:0;animation:semb var(--s) ease-out var(--d) infinite}
+.sk-emb i:nth-child(2n){background:#FFD166}
+@keyframes semb{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(calc((var(--x) - 50%) * .3),-130%);opacity:0}}
+/* the lightbox flame is the same, just bigger */
+.skc .big.sk-flame{--glow:14px}
+.skc .big.sk-t1{width:80px!important;height:100px!important}.skc .big.sk-t2{width:92px!important;height:115px!important}.skc .big.sk-t3{width:104px!important;height:130px!important}.skc .big.sk-t4{width:116px!important;height:145px!important}.skc .big.sk-t5{width:128px!important;height:160px!important;--glow:22px}
+.skc .big .sk-emb i{width:5px;height:5px}
+/* the flame's light warms the card, stronger as the streak grows (only once today's flame is lit) */
+.today .gr-hero[class*="glow-"]:not(.glow-0){background:radial-gradient(var(--gw) var(--gh) at 4% 100%,var(--gc),rgba(255,160,60,0) 70%),radial-gradient(120% 160% at 100% 0%,#FFE9A8 0%,rgba(255,233,168,0) 50%),linear-gradient(135deg,var(--b1) 0%,var(--b1) 55%,var(--b2) 100%);border-color:var(--bd)}
+.today .gr-hero.glow-1{--gw:45%;--gh:70%;--gc:rgba(255,170,80,.22);--b1:#EEF1FB;--b2:#FFF8E1;--bd:#E6DCCB}
+.today .gr-hero.glow-2{--gw:60%;--gh:90%;--gc:rgba(255,160,60,.30);--b1:#F2F1F6;--b2:#FFF3DC;--bd:#EED6B6}
+.today .gr-hero.glow-3{--gw:80%;--gh:110%;--gc:rgba(255,145,45,.38);--b1:#F8F1EE;--b2:#FFEACB;--bd:#F2C99C}
+.today .gr-hero.glow-4{--gw:100%;--gh:130%;--gc:rgba(255,125,35,.45);--b1:#FFF2E6;--b2:#FFDFB3;--bd:#F0B47A}
+.today .gr-hero.glow-5{--gw:130%;--gh:160%;--gc:rgba(255,105,25,.52);--b1:#FFEEDC;--b2:#FFD39A;--bd:#EC9D5C}
+.today .gr-hero.glow-4,.today .gr-hero.glow-5{animation:hglow 2.6s ease-in-out infinite}
+@keyframes hglow{0%,100%{box-shadow:0 4px 18px rgba(240,100,30,.10)}50%{box-shadow:0 6px 28px rgba(240,100,30,.24)}}
+/* lightbox background warms the same way */
+.skc.sk-t1{background:radial-gradient(90% 60% at 50% 22%,rgba(255,180,90,.25),transparent 70%),#FFFFFF}
+.skc.sk-t2{background:radial-gradient(100% 70% at 50% 22%,rgba(255,165,70,.32),transparent 70%),linear-gradient(180deg,#FFF6E6,#FFFFFF 60%)}
+.skc.sk-t3{background:radial-gradient(110% 75% at 50% 22%,rgba(255,150,55,.42),transparent 72%),linear-gradient(180deg,#FFEFD6,#FFFFFF 62%)}
+.skc.sk-t4{background:radial-gradient(120% 85% at 50% 22%,rgba(255,130,40,.5),transparent 74%),linear-gradient(180deg,#FFE6C2,#FFFFFF 65%)}
+.skc.sk-t5{background:radial-gradient(130% 95% at 50% 22%,rgba(255,110,25,.58),transparent 76%),linear-gradient(180deg,#FFDCAA,#FFF7EE 68%)}
+@media (prefers-reduced-motion:reduce){.sk-flame .f-o,.sk-flame .f-i,.sk-flame svg,.sk-emb i,.today .gr-hero.glow-4,.today .gr-hero.glow-5{animation:none!important}.sk-emb{display:none}}
+@media (max-width:600px){.sk-flame.sk-t2{width:28px;height:35px}.sk-flame.sk-t3{width:31px;height:39px}.sk-flame.sk-t4{width:34px;height:42px}.sk-flame.sk-t5{width:37px;height:46px}}
 </style>
 </head>
 <body>
