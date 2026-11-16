@@ -69,6 +69,44 @@ function shell(active, body) {
   const cur = app.querySelector('.adm-nav .on'); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   window.scrollTo(0, 0);
 }
+// Who can find a library book: hidden, every family, or only the families you tick.
+async function whoDialog(book) {
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;inset:0;z-index:50;background:rgba(20,28,60,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+  box.innerHTML = '<div class="card" style="max-width:560px;width:100%;max-height:88vh;overflow:auto;margin:0"><p class="hint">Loading families…</p></div>';
+  document.body.appendChild(box);
+  if (!PILOT) { try { PILOT = await adminApi({ action: 'pilot' }); PILOT.at = Date.now(); } catch (e) { box.remove(); return alert(e.message); } }
+  const fams = (PILOT.families || []).slice().sort((a, b) => String(a.name || a.code).localeCompare(String(b.name || b.code)));
+  const norm = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const picked = new Set(Array.isArray(book.families) ? book.families.map(norm) : []);
+  let mode = book.families === true ? 'all' : Array.isArray(book.families) ? 'some' : 'none';
+  const draw = () => {
+    box.firstChild.innerHTML = `<h2 style="margin-top:0">Who can find “${esc(book.title)}”?</h2>
+      <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0">${[['none', 'Hidden', 'No family can find it in the library.'], ['all', 'All families', 'Every family can find and add it.'], ['some', 'Only selected families', 'Only the families you tick below.']].map(([k, t, d]) => `<label style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:flex-start;justify-content:flex-start;margin:0;font-weight:400;padding:10px 12px;border:1px solid ${mode === k ? '#26357A' : '#DCE2EE'};border-radius:10px;cursor:pointer;background:${mode === k ? '#EEF1FB' : '#fff'}"><input type="radio" name="who" value="${k}" ${mode === k ? 'checked' : ''} style="margin-top:3px;width:auto;flex:none"><span><b>${t}</b><br><span class="hint" style="margin:0">${d}</span></span></label>`).join('')}</div>
+      ${mode === 'some' ? (fams.length ? `<div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 6px"><b>Families (${picked.size} ticked)</b><span style="display:flex;gap:6px"><button class="link" id="w-all">Tick all</button><button class="link" id="w-none">Untick all</button></span></div>
+        <div style="border:1px solid #DCE2EE;border-radius:10px;max-height:300px;overflow:auto;padding:4px">${fams.map((f) => `<label style="display:flex;flex-direction:row;text-align:left;justify-content:flex-start;margin:0;font-weight:400;gap:10px;align-items:center;padding:8px;cursor:pointer"><input style="width:auto;flex:none" type="checkbox" data-code="${esc(norm(f.code))}" ${picked.has(norm(f.code)) ? 'checked' : ''}><span><b>${esc(f.name || f.code)}</b> <span class="hint" style="margin:0">${esc(f.code)}${f.note ? ' · ' + esc(String(f.note).slice(0, 60)) : ''}</span></span></label>`).join('')}</div>`
+        : '<p class="hint">No pilot families yet. Add families in the Families section first.</p>') : ''}
+      ${mode !== 'none' ? `<p class="hint">Only do this if PrepBuddy has the right to share it with these families (an open licence, your own material, or the publisher’s permission). Licence on file: ${esc(book.licence || 'not set')}.</p>` : ''}
+      <p class="hint">Families who already added the book keep their copy.</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="w-cancel">Cancel</button><button class="btn" id="w-save">Save</button></div>`;
+    box.querySelectorAll('input[name=who]').forEach((r) => (r.onchange = () => { mode = r.value; draw(); }));
+    box.querySelectorAll('[data-code]').forEach((c) => (c.onchange = () => { c.checked ? picked.add(c.dataset.code) : picked.delete(c.dataset.code); draw(); }));
+    const all = box.querySelector('#w-all'); if (all) all.onclick = () => { fams.forEach((f) => picked.add(norm(f.code))); draw(); };
+    const none = box.querySelector('#w-none'); if (none) none.onclick = () => { picked.clear(); draw(); };
+    box.querySelector('#w-cancel').onclick = () => box.remove();
+    box.querySelector('#w-save').onclick = async (e) => {
+      if (mode === 'some' && !picked.size) return alert('Tick at least one family, or choose Hidden.');
+      const val = mode === 'all' ? true : mode === 'some' ? [...picked] : false;
+      e.target.disabled = true; e.target.textContent = 'Saving…';
+      try {
+        await adminApi({ action: 'update', id: book.id, changes: { families: val } }); box.remove();
+        renderLibrary(mode === 'all' ? `Every family can now find “${book.title}” (in about 1–2 minutes).` : mode === 'some' ? `${picked.size} famil${picked.size === 1 ? 'y' : 'ies'} can now find “${book.title}” (in about 1–2 minutes).` : `“${book.title}” is hidden from families (anyone who already added it keeps their copy).`);
+      } catch (err) { alert(err.message); e.target.disabled = false; e.target.textContent = 'Save'; }
+    };
+  };
+  draw();
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+}
 async function renderLibrary(note) {
   setHash('#library');
   const cat = await catalog();
@@ -77,9 +115,9 @@ async function renderLibrary(note) {
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2>Books in the library (${cat.length})</h2><button class="btn" id="add">Add a textbook</button></div>
     <div>${cat.map((b) => `<div class="row" data-id="${esc(b.id)}"><div class="meta"><b>${esc(b.title)}</b><span>${esc(b.subject || '')}${b.level ? ' · ' + esc(b.level) : ''} · ${b.units.length} chapters · code ${esc(b.code)}</span></div>
-      <div class="acts">${b.starter ? '<span class="fam on" title="PrepBuddy’s own starter book: always in the families’ library">Families: always</span>' : `<button class="fam ${b.families ? 'on' : ''}" data-fam="${esc(b.id)}" aria-pressed="${!!b.families}" title="Whether families can find and add this book in the app’s library">Families can find it: <b>${b.families ? 'On' : 'Off'}</b></button>`}${b.questionCount ? `<span class="hint" style="align-self:center">${b.questionCount} questions</span>` : ''}<button class="link" data-starter="${esc(b.id)}">${b.questionCount ? 'Add more questions' : 'Add starter questions'}</button><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
+      <div class="acts">${b.starter ? '<span class="fam on" title="PrepBuddy’s own starter book: always in the families’ library">Families: always</span>' : `<button class="fam ${b.families ? 'on' : ''}" data-fam="${esc(b.id)}" title="Which families can find and add this book in the app’s library">Who can find it: <b>${b.families === true ? 'All families' : Array.isArray(b.families) ? `${b.families.length} famil${b.families.length === 1 ? 'y' : 'ies'}` : 'Hidden'}</b></button>`}${b.questionCount ? `<span class="hint" style="align-self:center">${b.questionCount} questions</span>` : ''}<button class="link" data-starter="${esc(b.id)}">${b.questionCount ? 'Add more questions' : 'Add starter questions'}</button><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
   </div>
-  <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy. Families only find books with “Families can find it” on, plus PrepBuddy’s starter books.</p>`);
+  <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy. Families only find PrepBuddy’s starter books plus books set to “All families”, or to a list of families that includes theirs.</p>`);
   $('add').onclick = () => renderUpload();
   app.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => renderDetails(cat.find((x) => x.id === b.dataset.edit), cat)));
   app.querySelectorAll('[data-starter]').forEach((b) => (b.onclick = async () => {
@@ -88,13 +126,7 @@ async function renderLibrary(note) {
     catch (e) { renderLibrary(); alert(`Starter questions didn’t finish: ${e.message}`); }
   }));
   // Families only see books switched on here (and PrepBuddy's starter books). Only for books you have the right to share.
-  app.querySelectorAll('[data-fam]').forEach((b) => (b.onclick = async () => {
-    const book = cat.find((x) => x.id === b.dataset.fam), on = !book.families;
-    if (on && !confirm(`Let families find “${book.title}” in the app’s library?\n\nOnly do this if PrepBuddy has the right to share it with every family (an open licence, your own material, or the publisher’s permission). Licence on file: ${book.licence || 'not set'}.`)) return;
-    b.disabled = true; b.textContent = 'Saving…';
-    try { await adminApi({ action: 'update', id: book.id, changes: { families: on } }); renderLibrary(on ? `Families can now find “${book.title}”. It shows in their library in about 1–2 minutes.` : `“${book.title}” is hidden from families again (anyone who already added it keeps their copy).`); }
-    catch (err) { alert(err.message); renderLibrary(); }
-  }));
+  app.querySelectorAll('[data-fam]').forEach((b) => (b.onclick = () => whoDialog(cat.find((x) => x.id === b.dataset.fam))));
   app.querySelectorAll('[data-remove]').forEach((b) => (b.onclick = async () => {
     const book = cat.find((x) => x.id === b.dataset.remove);
     if (!confirm(`Remove “${book.title}” from the library? Students who already added it keep their copy; nobody new can add it.`)) return;
