@@ -1797,6 +1797,12 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
   .priv h2,.priv h3{break-after:avoid-column}
 }
 @media (min-width:1024px){.wr-kinds{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+/* book page: an even split on wider screens; the right side uses its room (more-ways tiles in a row) */
+@media (min-width:1600px){
+  .bookpage{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:28px}
+  .bookpage .mw-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media (min-width:1600px) and (max-width:2199px){.bookpage .gbody,.bookpage .gbody.flat{grid-template-columns:1fr 1fr!important}}
 </style>
 </head>
 <body>
