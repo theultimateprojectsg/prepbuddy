@@ -2860,7 +2860,7 @@ function renderAbout() {
     [Z('Plans each day around school test dates', '按學校測驗日期安排每天'), Y, N, P(Z('Sometimes', '有時')), N, N],
     [Z('Shows parents progress every week', '每週向家長報告進度'), Y, N, P(Z('A quick chat', '口頭交代')), P(Z('Each term', '每學期')), N],
     [Z('Made for children, and keeps them on schoolwork', '為兒童而設，專注學業'), Y, P(Z('General-purpose; ChatGPT is for ages 13+', '通用工具；ChatGPT 只限 13 歲或以上')), Y, Y, Y],
-    [Z('A real person who knows your child', '一位認識孩子的真人'), N, N, Y, Y, N],
+    [Z('Knows your child: their level in every chapter, past mistakes, pace and test dates', '了解孩子：每章程度、過往錯誤、學習步伐和測驗日期'), Y, P(Z('Only what you tell it', '只知道你告訴它的')), P(Z('What they notice in lessons', '上堂時留意到的')), P(Z('As one of a class', '班上其中一人')), N],
     [Z('Typical cost each month', '每月大約費用'), `<b>HK$218–298</b><small>${Z('all subjects', '所有科目')}</small>`, `<b>${Z('Free–HK$160', '免費至 HK$160')}</b><small>${Z('ChatGPT Plus is US$20', 'ChatGPT Plus 為 US$20')}</small>`, `<b>HK$800–1,600+</b><small>${Z('per subject, 1 hr a week', '每科，每週 1 小時')}</small>`, `<b>HK$800–2,400+</b><small>${Z('per subject', '每科')}</small>`, `<b>${Z('Low', '低')}</b><small>${Z('per book', '每本')}</small>`],
   ];
   const qa = [
