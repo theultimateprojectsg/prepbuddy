@@ -818,8 +818,8 @@ function renderUpload(msg) {
         }
       } catch (err) { /* keep the reader's own split */ }
       const sample = units.slice(0, 3).map((u) => u.text).join(' ').slice(0, 20000);
-      const cjk = (sample.match(/[㐀-鿿]/g) || []).length, words = (sample.match(/[A-Za-z]{2,}/g) || []).length;
-      draft = { fileName: file.name, title: book.title, pageCount: book.pageCount, pageTexts: book.pageTexts, units, hidden: [], lang: cjk > words ? 'zh-HK' : 'en', method };
+      const kana = (sample.match(/[\u3040-\u30ff]/g) || []).length, cjk = (sample.match(/[㐀-鿿]/g) || []).length, words = (sample.match(/[A-Za-z]{2,}/g) || []).length;
+      draft = { fileName: file.name, title: book.title, pageCount: book.pageCount, pageTexts: book.pageTexts, units, hidden: [], lang: kana >= 2 && kana > (kana + cjk) * 0.1 ? 'ja' : cjk > words ? 'zh-HK' : /\b(le|la|les|des|est|une|et|dans|pour)\b/gi.test(sample) && (sample.match(/\b(le|la|les|des|est|une|dans|pour)\b/gi) || []).length > (sample.match(/\b(the|and|is|of|to|in)\b/gi) || []).length ? 'fr' : 'en', method };
       // the book's details (title, subject, level, licence…) are read from its first pages while chapters are checked
       draft.infoP = aiApi('bookinfo', { fileName: file.name, pdfTitle: book.title, text: book.pageTexts.slice(0, 8).join('\n\n').slice(0, 12000) }).catch(() => null);
       renderChapters();
