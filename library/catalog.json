@@ -1831,32 +1831,6 @@
   ]
  },
  {
-  "id": "nisa-aw8a",
-  "code": "FIN-JUZW",
-  "title": "はじめてみよう！NISA 早わかり（ガイドブック）",
-  "subject": "Finance",
-  "level": "S4–S6 (HKDSE)",
-  "kind": "maths",
-  "publisher": "",
-  "licence": "Licensed from the publisher",
-  "credit": "",
-  "lang": "ja",
-  "pageCount": 8,
-  "addedAt": "2026-11-16",
-  "questionCount": 0,
-  "units": [
-   {
-    "id": "u0",
-    "title": "Overview",
-    "chapter": null,
-    "startPage": 1,
-    "endPage": 8,
-    "figs": true
-   }
-  ],
-  "families": true
- },
- {
   "id": "eiken-grade-3-3-vocabula-6xmu",
   "code": "ENG-VXNK",
   "title": "EIKEN GRADE 3 英検 3 級 れんしゅうノート: Vocabulary & Conversation & Writing Practice",
