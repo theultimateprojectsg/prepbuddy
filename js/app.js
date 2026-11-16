@@ -7882,7 +7882,22 @@ function renderSummary() {
     const plain = (t) => String(t || '').replace(/^\|.*$/gm, ' ').replace(/\\[dt]?frac\{([^}]*)\}\{([^}]*)\}/g, '$1/$2').replace(/\\times/g, '×').replace(/\\div/g, '÷').replace(/[$\\]/g, '').replace(/\s+/g, ' ').trim();
     const label = plain(q.stem) || plain(q.parts && q.parts[0] && q.parts[0].prompt);
     const st = full ? 'right' : g ? 'half' : 'miss';
-    return `<div class="rrow ${st}"><span class="rnum">Q${k + 1}</span><span class="rtext" data-raw>${esc(String(label).slice(0, 110))}${String(label).length > 110 ? '…' : ''}</span><span class="rmark">${g}/${m}</span></div>`;
+    // Missed or partly right: the right answer and why, under the question.
+    let fix = '';
+    if (!full) {
+      const ZZ = (en, zh) => (LANG === 'zh' ? zh : en), lines = [];
+      if (choiceType(q) && Array.isArray(q.options)) {
+        const L = q.correct_option, oi = 'ABCD'.indexOf(L), mine = S.answers && S.answers[k];
+        if (oi >= 0) lines.push(`<span><b>${ZZ('Answer', '答案')}: ${L}.</b> ${esc(plain(q.options[oi]))}</span>`);
+        if (mine && mine !== L && 'ABCD'.indexOf(mine) >= 0) lines.push(`<span class="rfx-mine">${ZZ('You chose', '你選了')} ${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}</span>`);
+      } else if (Array.isArray(q.parts)) {
+        const pts = q.parts.filter((p) => Array.isArray(p.mark_scheme) && p.mark_scheme.length);
+        if (pts.length) lines.push(`<b>${ZZ('Marks were for', '得分要點')}:</b><ul>${pts.map((p) => p.mark_scheme.slice(0, 4).map((x) => `<li>${pts.length > 1 && p.label ? `(${esc(String(p.label).replace(/[()]/g, ''))}) ` : ''}${esc(plain(x))}</li>`).join('')).join('')}</ul>`);
+      }
+      if (q.explanation) lines.push(`<span class="rfx-why">${esc(plain(q.explanation))}</span>`);
+      if (lines.length) fix = `<div class="rfix" data-keep>${lines.join('')}</div>`;
+    }
+    return `<div class="rrow ${st}"><span class="rnum">Q${k + 1}</span><span class="rtext" data-raw>${esc(String(label).slice(0, 110))}${String(label).length > 110 ? '…' : ''}</span><span class="rmark">${g}/${m}</span>${fix}</div>`;
   }).join('');
   const missed = qs.filter((q, k) => (S.got[k] || 0) < marksOf(q));
   const missedIdx = qs.map((q, k) => k).filter((k) => (S.got[k] || 0) < marksOf(qs[k]));
@@ -7913,7 +7928,7 @@ function renderSummary() {
   const sub = pct >= 85 ? 'You know this well. Reviews over the next few days will lock it in.'
     : pct >= 70 ? 'A few slips to tidy up, then you’re there.'
     : pct >= 50 ? 'Fix the ones you missed and you’ll be well on your way.'
-    : 'This set was tough. Drilling the ones you missed is the fastest way up.';
+    : S.units ? 'This set was tough. Buddy’s suggestion below is the quickest way up.' : 'This set was tough. Drilling the ones you missed is the fastest way up.';
   const sections = S.mode === 'dse' ? (() => {
     const sec = (from, to) => { const xs = qs.slice(from, to); return [xs.reduce((a, q, k) => a + (S.got[from + k] || 0), 0), xs.reduce((a, q) => a + marksOf(q), 0)]; };
     const [ga, ta] = sec(0, S.sectionA), [gb, tb] = sec(S.sectionA, qs.length);
@@ -7938,21 +7953,23 @@ function renderSummary() {
       ${starsOn() && S.starNote ? `<p class="starnote">${starSVG(16)} ${esc(S.starNote)}</p>` : ''}
     </section>
     <div class="ractions">
-      ${drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} <span class="rprim">${LANG === 'zh' ? '針對弱項練習' : 'Drill my weak spots'}<small>${LANG === 'zh' ? `${drillable.length * PER_IDEA} 條針對答錯內容的新題目` : `${drillable.length * PER_IDEA} new questions on what you missed`}</small></span></button>` : ''}
+      ${unitRef ? `<section class="rsugg" id="rsugg" aria-live="polite"><div class="rsg-head">${buddySVG('happy', 30)}<b>${LANG === 'zh' ? 'Buddy 建議' : 'Buddy suggests'}</b></div><div class="rsg-body"><span class="dots"><i></i><i></i><i></i></span></div></section>` : ''}
+      ${!unitRef && drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} <span class="rprim">${LANG === 'zh' ? '針對弱項練習' : 'Drill my weak spots'}<small>${LANG === 'zh' ? `${drillable.length * PER_IDEA} 條針對答錯內容的新題目` : `${drillable.length * PER_IDEA} new questions on what you missed`}</small></span></button>` : ''}
       ${(() => {
         // Primary: drill if there are weak spots, otherwise more questions. The rest sit in one tidy list.
         const sv = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
         const I = { more: sv('<path d="M12 5v14M5 12h14"/>'), retry: sv('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'), redo: sv('<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>'), book: sv('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/>'), home: sv('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>') };
         const row = (id, icon, tone, t, sub) => `<button class="ropt" id="${id}"><span class="ropt-i ${tone}">${icon}</span><span class="ropt-t"><b>${t}</b><small>${sub}</small></span><span class="ropt-go" aria-hidden="true">›</span></button>`;
         const n = S.count || sessionSize(), many = unitRef && unitRef.units.length > 1, Z = (en, zh) => (LANG === 'zh' ? zh : en);
-        const prim = !drillable.length && unitRef ? `<button class="btn" id="more">${I.more} ${n} more on ${many ? 'these chapters' : 'this chapter'}</button>` : '';
+        const prim = '';
         const rows = [
-          drillable.length && unitRef ? row('more', I.more, 'blue', Z(`${n} more questions`, `再做 ${n} 題`), many ? Z('New questions on these chapters', '這些章節的新題目') : Z('New questions on this chapter', '這一章的新題目')) : '',
+          drillable.length && unitRef ? row('drillall', I.target || ICON.target.replace('width="22" height="22"', 'width="20" height="20"').replace('var(--miss)', 'currentColor'), 'red', Z('Drill my weak spots', '針對弱項練習'), Z(`${drillable.length * PER_IDEA} new questions on what you missed`, `${drillable.length * PER_IDEA} 條針對答錯概念的新題目`)) : '',
+          unitRef ? row('more', I.more, 'blue', Z(`${n} more questions`, `再做 ${n} 題`), many ? Z('New questions on these chapters', '這些章節的新題目') : Z('New questions on this chapter', '這一章的新題目')) : '',
           missed.length ? row('retry', I.retry, 'red', Z(`Retry the ${missed.length} I missed`, `重做答錯的 ${missed.length} 題`), Z('Same questions, until they stick', '同樣的題目，直到記熟為止')) : '',
           qs.length ? row('redo', I.redo, 'violet', Z('Redo this set', '重做這一組'), Z('The same questions, shuffled', '同樣的題目，次序打亂')) : '',
           row('home', S.book ? I.book : I.home, 'grey', S.book ? Z('Back to chapters', '返回章節') : Z('Back to home', '返回主頁'), S.book ? Z('Pick another chapter or activity', '選擇其他章節或活動') : Z('See today’s plan', '查看今日計劃')),
         ].filter(Boolean).join('');
-        return `${prim}${rows ? `<details class="rmore"><summary>${Z('More options', '其他選擇')}</summary><div class="ropts card">${rows}</div></details>` : ''}`;
+        return `${prim}${rows ? `<div class="rmore"><h3 class="rmore-h">${unitRef ? Z('Or choose for yourself', '或者自己選擇') : Z('What next?', '下一步')}</h3><div class="ropts card">${rows}</div></div>` : ''}`;
       })()}
     </div>
     </div>
@@ -7968,12 +7985,62 @@ function renderSummary() {
   const again = (list, title) => { const l = shuffle(list).map(shuffleOptions); S = newSession({ mode: 'retry', title, book: S.book, qs: l, target: l.length }); renderQuestion(); };
   if (r) r.onclick = () => again(missed, 'Retry');
   const rd = document.getElementById('redo'); if (rd) rd.onclick = () => again(qs, 'Redo');
+  const drill = () => { const items = drillable.map((k) => ({ q: qs[k], idea: missedIdea(qs[k], k) })); startDrills(items, S.book, S.types || 'mix'); };
   const da = document.getElementById('drillall');
-  if (da) da.onclick = () => {
-    const items = drillable.map((k) => ({ q: qs[k], idea: missedIdea(qs[k], k) }));
-    startDrills(items, S.book, S.types || 'mix');
-  };
+  if (da) da.onclick = drill;
+  if (unitRef) fillSuggestion({ unitRef, qs, pct, missed, drillable, drill, again: () => again(qs, 'Redo'), rushed: rushedSet(qs), at: S.at, mode: S.mode });
   window.scrollTo(0, 0);
+}
+
+/* ---------- Buddy suggests: the best next step after a set ----------
+   Worked out from this set (score, speed, question levels), the chapter (lesson done? test passed? mastery) and how the
+   child did on it before. Always optional: the other choices sit underneath. */
+async function fillSuggestion({ unitRef, qs, pct, missed, drillable, drill, again, rushed, at, mode }) {
+  const box = document.getElementById('rsugg'); if (!box) return;
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
+  const book = unitRef.book, u = unitRef.units[0], one = unitRef.units.length === 1;
+  const key = `${book.id}:${u.id}`, learned = !!(local.learned || {})[key];
+  let ch = null; try { ch = (await bookMastery(book)).chapters.find((c) => c.unit.id === u.id) || null; } catch (e) {}
+  // How this chapter went before this set (first tries only).
+  const before = (local.log || []).filter((e) => e.t < at && String(e.q).startsWith(key + ':'));
+  const prevPct = before.length >= 4 ? Math.round(100 * before.reduce((a, e) => a + (e.g || 0), 0) / Math.max(1, before.reduce((a, e) => a + (e.m || 1), 0))) : null;
+  const avgLv = qs.length ? qs.reduce((a, q) => a + (q.level || 2), 0) / qs.length : 2;
+  const canHard = !limitOf('hardDiff');
+  const idx = book.units.findIndex((x) => x.id === u.id), nextU = one ? book.units.slice(idx + 1).find((x) => !NOT_TEACHING.test(String(x.title))) : null;
+  const name = shortTitle(u.title);
+  const focus = (fn) => () => { pick = { bookId: book.id, ids: new Set(unitRef.units.map((x) => x.id)) }; fn(); };
+  let s = null, alt = null;
+  if (rushed) s = { t: Z('Slow down and redo this set', '放慢一點，重做這一組'), why: Z('The answers came very fast. Reading each question properly is the quickest way to a better score.', '你答得很快。逐題細心讀，是最快提升分數的方法。'), go: Z('Redo this set', '重做這一組'), run: again };
+  else if (pct < 50 && !learned && one) {
+    s = { t: Z(`Take the lesson on ${name}`, `先上「${name}」這一課`), why: Z('This set was tough and you haven’t done the lesson for this chapter yet. It teaches the ideas step by step with quick checks, so the next set feels much easier.', '這一組比較難，而你還未上這一章的課。課堂會一步步講解並有小測，之後再做題會容易得多。'), go: Z('Start the lesson', '開始上課'), run: () => go({ name: 'learn', bookId: book.id, unitId: u.id }) };
+    if (drillable.length) alt = { go: Z('Drill my weak spots instead', '改為針對弱項練習'), run: drill };
+  } else if (pct < 50) {
+    s = { t: Z('Read the key points, then try again', '先溫習重點，再試一次'), why: Z(`The ideas haven’t stuck yet. Two minutes with the revision notes${one ? ` for ${name}` : ''}, then a drill on the ${missed.length} you missed, works better than more of the same.`, `概念還未記牢。先花兩分鐘看${one ? `「${name}」的` : ''}溫習筆記，再針對答錯的 ${missed.length} 題練習，比繼續做同類題更有效。`), go: Z('Open revision notes', '打開溫習筆記'), run: focus(() => go({ name: 'notes', bookId: book.id })) };
+    if (drillable.length) alt = { go: Z('Drill my weak spots', '針對弱項練習'), run: drill };
+  } else if (pct < 80 && drillable.length) {
+    s = { t: Z('Drill your weak spots', '針對弱項練習'), why: Z(`You’re close. ${drillable.length === 1 ? 'One idea' : `${drillable.length} ideas`} tripped you up; new questions on exactly ${drillable.length === 1 ? 'that' : 'those'} will fix ${drillable.length === 1 ? 'it' : 'them'} fastest.`, `差一點就到了。有 ${drillable.length} 個概念出錯，針對它們做新題目最快改正。`), go: Z('Start the drill', '開始練習'), run: drill };
+    alt = { go: Z('Flashcards for this chapter', '這一章的閃卡'), run: focus(() => go({ name: 'cards', bookId: book.id })) };
+  } else if (pct >= 80 && avgLv < 2.6 && canHard) {
+    s = { t: Z('Ready for harder questions', '可以挑戰較深的題目'), why: Z(`You got ${pct}% on mostly recall and understanding questions. Apply and analyse questions are what school exams use to separate the top marks.`, `你在記憶和理解題答對了 ${pct}%。應用和分析題才是考試拉開分數的地方。`), go: Z('Try harder questions', '挑戰較深題目'), run: () => startUnits(book, unitRef.units, S && S.count || sessionSize(), { diff: 'hard' }) };
+  } else if (pct >= 80 && ch && !ch.passDays && !locked('test')) {
+    s = { t: Z(`Take the chapter test on ${name}`, `做「${name}」的章節測驗`), why: Z('You’re doing well in practice. Passing a timed test (80%+) is what proves it and moves this chapter past 70% ready.', '練習做得不錯。通過限時測驗（80% 或以上）才能證明你掌握了，並令這一章的準備度超過 70%。'), go: Z('Start the test', '開始測驗'), run: () => startChapterTest(book, unitRef.units) };
+  } else if (pct >= 80 && nextU) {
+    const nl = !!(local.learned || {})[`${book.id}:${nextU.id}`];
+    s = { t: Z(`Move on to ${shortTitle(nextU.title)}`, `繼續下一章「${shortTitle(nextU.title)}」`), why: Z(`${name} is in good shape${ch && ch.passDays ? ' and you’ve passed its test' : ''}. Reviews will bring it back at the right time.`, `「${name}」掌握得不錯${ch && ch.passDays ? '，測驗也合格了' : ''}。之後會在適當時間提醒你溫習。`), go: nl ? Z('Practise it', '練習') : Z('Start its lesson', '開始上課'), run: nl ? () => startUnits(book, [nextU]) : () => go({ name: 'learn', bookId: book.id, unitId: nextU.id }) };
+  } else if (drillable.length) {
+    s = { t: Z('Drill your weak spots', '針對弱項練習'), why: Z('A few slips to tidy up. New questions on the ideas you missed lock them in.', '有幾個小錯要改正。針對答錯的概念做新題目，能把它們記牢。'), go: Z('Start the drill', '開始練習'), run: drill };
+  } else {
+    s = { t: Z('Great set. Keep it fresh', '做得好！保持記憶'), why: Z('Nothing to fix here. Come back for your reviews over the next few days and it will stick.', '沒有需要改正的地方。接下來幾天回來溫習，就會記得牢。'), go: Z('Back to chapters', '返回章節'), run: () => go({ name: 'book', bookId: book.id }) };
+  }
+  const trend = prevPct === null ? '' : pct > prevPct + 4 ? Z(`Up from ${prevPct}% before on this chapter.`, `比之前在這一章的 ${prevPct}% 進步了。`) : pct < prevPct - 4 ? Z(`Below your ${prevPct}% before on this chapter.`, `低於之前在這一章的 ${prevPct}%。`) : Z(`About the same as before on this chapter (${prevPct}%).`, `與之前在這一章差不多（${prevPct}%）。`);
+  const mast = ch ? Z(`Chapter ready: ${ch.pct}%`, `本章準備度：${ch.pct}%`) : '';
+  if (!document.body.contains(box)) return;
+  box.querySelector('.rsg-body').innerHTML = `<h3 class="rsg-t">${esc(s.t)}</h3><p class="rsg-why">${esc(s.why)}</p>
+    ${trend || mast ? `<div class="rsg-facts">${mast ? `<span>${esc(mast)}</span>` : ''}${trend ? `<span>${esc(trend)}</span>` : ''}</div>` : ''}
+    <div class="rsg-btns"><button class="btn" id="rsgGo">${esc(s.go)}</button>${alt ? `<button class="btn ghost" id="rsgAlt">${esc(alt.go)}</button>` : ''}</div>`;
+  document.getElementById('rsgGo').onclick = s.run;
+  if (alt) document.getElementById('rsgAlt').onclick = alt.run;
+  track('suggest_shown');
 }
 
 // Same question, MCQ options in a new order (so a redo tests the idea, not the letter).

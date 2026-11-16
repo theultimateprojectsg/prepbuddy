@@ -3,6 +3,8 @@
 // Book content and questions are never translated here (they are already in the book's language).
 
 const EXACT = {
+  'This set was tough. Buddy’s suggestion below is the quickest way up.': '這一組比較難。按下面 Buddy 的建議做，進步最快。',
+  'Your answers': '你的答案',
   'Parent dashboard': '家長主頁',
   'Speaking': '說話',
   'DSE Paper 4, one-minute answers': 'DSE 卷四，一分鐘回應',
