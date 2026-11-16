@@ -4221,8 +4221,13 @@ function celebrate(won) {
   const conf = Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 37) % 100}%;animation-delay:${(i % 9) * 0.07}s;background:${['#FFC531', '#FF7A59', '#4CC38A', '#5B8DEF', '#B57AF0'][i % 5]}"></i>`).join('');
   // the next reward to aim for: the one being saved for, else the cheapest one not yet affordable
   const st = starState(), rw = (st.rewards || []).filter((r) => r && r.cost);
-  const goal = rw.find((r) => r.id === st.saving) || rw.filter((r) => r.cost > st.bal).sort((x, y) => x.cost - y.cost)[0] || null;
+  let goal = rw.find((r) => r.id === st.saving) || rw.filter((r) => r.cost > st.bal).sort((x, y) => x.cost - y.cost)[0] || null;
   const was = Math.max(0, st.bal - (won.n || 0));
+  // the reward card: the one the child is saving for (or the cheapest they can't get yet). "Change" lets them pick another.
+  const goalHTML = (g, anim) => !g ? `<span>${ST('You have', '你現在有')} <b>${st.bal}</b> ${starSVG(18)}</span>` : `<div class="sc2-goal"><span class="sc2-gi">${esc(g.icon || '🎁')}</span><div><b>${st.bal >= g.cost ? ST(`You can get ${g.name}!`, `可以換「${g.name}」了！`) : ST(`${g.cost - st.bal} more to ${g.name}`, `再儲 ${g.cost - st.bal} 粒換「${g.name}」`)}</b>
+      <div class="sc2-bar"><i style="width:${Math.min(100, Math.round(100 * (anim ? was : st.bal) / g.cost))}%" data-to="${Math.min(100, Math.round(100 * st.bal / g.cost))}"></i></div><small>${starSVG(13)} ${st.bal} / ${g.cost}${st.saving === g.id ? ` · ${ST('Saving for this', '正在儲')}` : ''}</small></div>
+      ${rw.length > 1 ? `<button class="btn-sm quiet sc2-chg" id="sc-chg">${ST('Change', '更改')}</button>` : ''}</div>`;
+  const pickHTML = () => `<div class="sc2-pick"><small>${ST('Which reward are you saving for?', '你想儲星換甚麼？')}</small><div>${rw.map((r) => `<button class="${(goal && goal.id === r.id) ? 'on' : ''}" data-pick="${esc(r.id)}"><i>${esc(r.icon || '🎁')}</i><span>${esc(r.name)}</span><em>${starSVG(12)} ${r.cost}</em></button>`).join('')}</div></div>`;
   const rays = Array.from({ length: 12 }, (_, i) => `<i style="transform:rotate(${i * 30}deg)"></i>`).join('');
   const fly = Array.from({ length: Math.min(8, Math.max(3, won.n || 3)) }, (_, i) => `<span style="--a:${-70 + i * (140 / Math.max(1, Math.min(8, Math.max(3, won.n || 3)) - 1))}deg;--d:${(0.15 + i * 0.06).toFixed(2)}s">${starSVG(18)}</span>`).join('');
   box.innerHTML = `<div class="confetti" aria-hidden="true">${conf}</div><div class="cdlg sc-card sc2" role="dialog" aria-modal="true" aria-labelledby="sc-t" data-raw>
@@ -4233,15 +4238,17 @@ function celebrate(won) {
     ${won.badges.length > 2 ? `<div class="sc2-badges"><small>${ST(`${won.badges.length} new badges!`, `${won.badges.length} 個新徽章！`)}</small><div>${won.badges.map((b) => `<span title="${esc(ST(b.den, b.dzh))}"><i>${b.icon}</i><b>${esc(ST(b.en, b.zh))}</b><em>+${b.stars} ★</em></span>`).join('')}</div></div>`
       : won.badges.map((b) => `<div class="sc-badge"><span>${b.icon}</span><div><small>${ST('New badge!', '新徽章！')}</small><b>${esc(ST(b.en, b.zh))}</b><span>${esc(ST(b.den, b.dzh))} · +${b.stars} ★</span></div></div>`).join('')}
     ${won.capped ? `<p class="sc-cap">${ST('That’s all the stars for today. Come back tomorrow for more!', '今日的星星已經全部拿到，明天再來吧！')}</p>` : ''}
-    <div class="sc2-bal">${goal ? `<div class="sc2-goal"><span class="sc2-gi">${esc(goal.icon || '🎁')}</span><div><b>${st.bal >= goal.cost ? ST(`You can get ${goal.name}!`, `可以換「${goal.name}」了！`) : ST(`${goal.cost - st.bal} more to ${goal.name}`, `再儲 ${goal.cost - st.bal} 粒換「${goal.name}」`)}</b>
-        <div class="sc2-bar"><i style="width:${Math.min(100, Math.round(100 * was / goal.cost))}%" data-to="${Math.min(100, Math.round(100 * st.bal / goal.cost))}"></i></div><small>${starSVG(13)} ${st.bal} / ${goal.cost}</small></div></div>`
-      : `<span>${ST('You have', '你現在有')} <b>${st.bal}</b> ${starSVG(18)}</span>`}</div>
+    <div class="sc2-bal" id="sc-goal">${goalHTML(goal, true)}</div>
     <div class="rd-row"><button class="btn ghost" id="sc-shop">${ST('Star shop', '星星商店')}</button><button class="btn" id="sc-ok">${ST('Yay!', '好呀！')}</button></div>
   </div>`;
   // count the stars up and fill the bar towards the reward
   setTimeout(() => { const n = box.querySelector('#sc-n'); if (n && won.n) { let k = 0; const step = () => { k++; n.textContent = k; if (k < won.n) setTimeout(step, Math.max(60, 400 / won.n)); }; step(); }
     const bar = box.querySelector('.sc2-bar i'); if (bar) bar.style.width = bar.dataset.to + '%'; }, 450);
   document.body.appendChild(box);
+  const gbox = box.querySelector('#sc-goal');
+  const wireGoal = () => { const c = gbox.querySelector('#sc-chg'); if (c) c.onclick = () => { gbox.innerHTML = pickHTML();
+    gbox.querySelectorAll('[data-pick]').forEach((b) => (b.onclick = () => { st.saving = b.dataset.pick; saveLocal(); goal = rw.find((r) => r.id === st.saving); gbox.innerHTML = goalHTML(goal); wireGoal(); })); }; };
+  if (gbox) wireGoal();
   const close = () => box.remove();
   box.querySelector('#sc-ok').onclick = close;
   box.querySelector('#sc-shop').onclick = () => { close(); go({ name: 'stars' }); };
