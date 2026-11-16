@@ -4219,15 +4219,28 @@ function celebrate(won) {
   const box = document.createElement('div');
   box.className = 'cdlg-wrap star-cel';
   const conf = Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 37) % 100}%;animation-delay:${(i % 9) * 0.07}s;background:${['#FFC531', '#FF7A59', '#4CC38A', '#5B8DEF', '#B57AF0'][i % 5]}"></i>`).join('');
-  box.innerHTML = `<div class="confetti" aria-hidden="true">${conf}</div><div class="cdlg sc-card" role="dialog" aria-modal="true" aria-labelledby="sc-t" data-raw>
-    <div class="sc-buddy">${buddySVG('happy', 84)}</div>
-    ${won.n ? `<b id="sc-t" class="sc-big">+${won.n} ${starSVG(30)}</b>` : `<b id="sc-t" class="sc-big">${ST('Great work!', '做得好！')}</b>`}
-    ${won.lines.length ? `<div class="sc-lines">${won.lines.map(([l, k]) => `<div><span>${esc(l)}</span><b>+${k} ★</b></div>`).join('')}</div>` : ''}
-    ${won.badges.map((b) => `<div class="sc-badge"><span>${b.icon}</span><div><small>${ST('New badge!', '新徽章！')}</small><b>${esc(ST(b.en, b.zh))}</b><span>${esc(ST(b.den, b.dzh))} · +${b.stars} ★</span></div></div>`).join('')}
+  // the next reward to aim for: the one being saved for, else the cheapest one not yet affordable
+  const st = starState(), rw = (st.rewards || []).filter((r) => r && r.cost);
+  const goal = rw.find((r) => r.id === st.saving) || rw.filter((r) => r.cost > st.bal).sort((x, y) => x.cost - y.cost)[0] || null;
+  const was = Math.max(0, st.bal - (won.n || 0));
+  const rays = Array.from({ length: 12 }, (_, i) => `<i style="transform:rotate(${i * 30}deg)"></i>`).join('');
+  const fly = Array.from({ length: Math.min(8, Math.max(3, won.n || 3)) }, (_, i) => `<span style="--a:${-70 + i * (140 / Math.max(1, Math.min(8, Math.max(3, won.n || 3)) - 1))}deg;--d:${(0.15 + i * 0.06).toFixed(2)}s">${starSVG(18)}</span>`).join('');
+  box.innerHTML = `<div class="confetti" aria-hidden="true">${conf}</div><div class="cdlg sc-card sc2" role="dialog" aria-modal="true" aria-labelledby="sc-t" data-raw>
+    <div class="sc2-top"><div class="sc2-rays" aria-hidden="true">${rays}</div><div class="sc2-fly" aria-hidden="true">${fly}</div>
+      <div class="sc2-star" aria-hidden="true">${starSVG(92)}</div><div class="sc2-bud" aria-hidden="true">${buddySVG('happy', 58)}</div></div>
+    ${won.n ? `<b id="sc-t" class="sc-big sc2-big"><span>+<span id="sc-n">0</span></span> ${ST(won.n === 1 ? 'star' : 'stars', '粒星')}</b>` : `<b id="sc-t" class="sc-big sc2-big">${ST('Great work!', '做得好！')}</b>`}
+    ${won.lines.length ? `<div class="sc2-lines">${won.lines.map(([l, k]) => `<div><span class="sc2-ic">${starSVG(16)}</span><span>${esc(l)}</span><b>+${k}</b></div>`).join('')}</div>` : ''}
+    ${won.badges.length > 2 ? `<div class="sc2-badges"><small>${ST(`${won.badges.length} new badges!`, `${won.badges.length} 個新徽章！`)}</small><div>${won.badges.map((b) => `<span title="${esc(ST(b.den, b.dzh))}"><i>${b.icon}</i><b>${esc(ST(b.en, b.zh))}</b><em>+${b.stars} ★</em></span>`).join('')}</div></div>`
+      : won.badges.map((b) => `<div class="sc-badge"><span>${b.icon}</span><div><small>${ST('New badge!', '新徽章！')}</small><b>${esc(ST(b.en, b.zh))}</b><span>${esc(ST(b.den, b.dzh))} · +${b.stars} ★</span></div></div>`).join('')}
     ${won.capped ? `<p class="sc-cap">${ST('That’s all the stars for today. Come back tomorrow for more!', '今日的星星已經全部拿到，明天再來吧！')}</p>` : ''}
-    <div class="sc-bal">${ST('You have', '你現在有')} <b>${starState().bal}</b> ${starSVG(18)}</div>
+    <div class="sc2-bal">${goal ? `<div class="sc2-goal"><span class="sc2-gi">${esc(goal.icon || '🎁')}</span><div><b>${st.bal >= goal.cost ? ST(`You can get ${goal.name}!`, `可以換「${goal.name}」了！`) : ST(`${goal.cost - st.bal} more to ${goal.name}`, `再儲 ${goal.cost - st.bal} 粒換「${goal.name}」`)}</b>
+        <div class="sc2-bar"><i style="width:${Math.min(100, Math.round(100 * was / goal.cost))}%" data-to="${Math.min(100, Math.round(100 * st.bal / goal.cost))}"></i></div><small>${starSVG(13)} ${st.bal} / ${goal.cost}</small></div></div>`
+      : `<span>${ST('You have', '你現在有')} <b>${st.bal}</b> ${starSVG(18)}</span>`}</div>
     <div class="rd-row"><button class="btn ghost" id="sc-shop">${ST('Star shop', '星星商店')}</button><button class="btn" id="sc-ok">${ST('Yay!', '好呀！')}</button></div>
   </div>`;
+  // count the stars up and fill the bar towards the reward
+  setTimeout(() => { const n = box.querySelector('#sc-n'); if (n && won.n) { let k = 0; const step = () => { k++; n.textContent = k; if (k < won.n) setTimeout(step, Math.max(60, 400 / won.n)); }; step(); }
+    const bar = box.querySelector('.sc2-bar i'); if (bar) bar.style.width = bar.dataset.to + '%'; }, 450);
   document.body.appendChild(box);
   const close = () => box.remove();
   box.querySelector('#sc-ok').onclick = close;
@@ -8076,7 +8089,8 @@ function writtenBody(q, revealed) {
     const parts = q.parts.map((p, k) => {
       const ink = inkOf(S.i, k, true);
       // a one-word blank (cloze, proofreading line, verb form): a one-line box, no handwriting pad
-      if (p.blank && !essay) return `<div class="part"><label class="ph${GENERIC_ASK.test(p.prompt) ? ' generic' : ''}" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
+      // (a maths blank like "47 × 23" gets the full box instead: type with the maths keys, or handwrite)
+      if (p.blank && !essay && !maths) return `<div class="part"><label class="ph${GENERIC_ASK.test(p.prompt) ? ' generic' : ''}" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
       <input id="a${k}" data-k="${k}" class="blank-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer" value="${esc(ans[k])}"></div>`;
       return `<div class="part">
       <label class="ph${GENERIC_ASK.test(p.prompt) ? ' generic' : ''}" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
@@ -8087,7 +8101,7 @@ function writtenBody(q, revealed) {
       <textarea id="a${k}" data-k="${k}" class="${essay ? 'essay' : ''}" placeholder="${essay ? 'Write your answer here' : maths ? 'Show your working, one step per line' : 'Type, or tap the microphone on your keyboard to speak'}">${esc(ans[k])}</textarea>
       ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}`}</div>`;
     }).join('');
-    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint ahint">${q.parts.every((p) => p.blank) ? (kindSync(q.id) === 'maths' ? 'Write just the answer. Units like cm² can be typed as cm2.' : 'Check your spelling: it counts.') : maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
+    const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint ahint">${q.parts.every((p) => p.blank) ? (kindSync(q.id) === 'maths' ? (maths ? 'Type or handwrite your answer. Showing your working helps Buddy see where it went wrong.' : 'Write just the answer. Units like cm² can be typed as cm2.') : 'Check your spelling: it counts.') : maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
     const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">I don’t know this one. Show me the answer</button><span class="hint" style="text-align:center">It goes into your Mistake book so you can try it again later.</span>'}</div>`;
     return { main, footer, bind() {
       const grab = () => {
@@ -8348,15 +8362,43 @@ function renderSummary() {
     let fix = '';
     if (!full) {
       const ZZ = (en, zh) => (LANG === 'zh' ? zh : en), lines = [];
+      // two boxes side by side: the right answer (green, big) and what the child put (red), then the steps, then why
+      const box2 = (good, alsoOk, mine) => `<div class="rfx-pair"><div class="rfx-box ok"><small>${ZZ('Correct answer', '正確答案')}</small><b data-keep>${good}</b>${alsoOk ? `<em data-keep>${ZZ('Also accepted', '亦接受')}: ${alsoOk}</em>` : ''}</div>
+        <div class="rfx-box no"><small>${ZZ('Your answer', '你的答案')}</small><b data-keep>${mine || `<i>${ZZ('Left blank', '未作答')}</i>`}</b></div></div>`;
       if (choiceType(q) && Array.isArray(q.options)) {
         const L = q.correct_option, oi = 'ABCD'.indexOf(L), mine = S.answers && S.answers[k];
-        if (oi >= 0) lines.push(`<span><b>${ZZ('Answer', '答案')}</b><b data-keep>: ${L}.</b> <span data-keep>${esc(plain(q.options[oi]))}</span></span>`);
-        if (mine && mine !== L && 'ABCD'.indexOf(mine) >= 0) lines.push(`<span class="rfx-mine"><span>${ZZ('You chose', '你選了')}</span><span data-keep> ${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}</span></span>`);
+        if (oi >= 0) lines.push(box2(`${L}. ${esc(plain(q.options[oi]))}`, '', mine && 'ABCD'.indexOf(mine) >= 0 ? `${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}` : ''));
       } else if (Array.isArray(q.parts)) {
-        const pts = q.parts.filter((p) => Array.isArray(p.mark_scheme) && p.mark_scheme.length);
-        if (pts.length) lines.push(`<b>${ZZ('Marks were for', '得分要點')}</b><ul data-keep>${pts.map((p) => p.mark_scheme.slice(0, 4).map((x) => `<li>${pts.length > 1 && p.label ? `(${esc(String(p.label).replace(/[()]/g, ''))}) ` : ''}${esc(plain(x))}</li>`).join('')).join('')}</ul>`);
+        const tk = (S.ticks && S.ticks[k]) || [], my = (S.answers && S.answers[k]) || [];
+        q.parts.forEach((p, pi) => {
+          if (!Array.isArray(p.mark_scheme) || !p.mark_scheme.length) return;
+          const lab = q.parts.length > 1 && p.label ? `<div class="rfx-part">${ZZ('Part', '部分')} ${esc(String(p.label).replace(/[()]/g, ''))}</div>` : '';
+          // pull "Answer: 10810. Accept 10810 or 10 810" apart into the answer and the accepted forms
+          let ans = '', acc = '';
+          const rest = [];
+          p.mark_scheme.forEach((x, j) => {
+            const t = plain(x), m1 = t.match(/^(?:final\s+)?(?:answer|ans|答案)\s*[:：=]\s*(.+)$/i);
+            if (m1 && !ans) {
+              const sp = m1[1].split(/[.;,，。]?\s*(?:accept|also accept|或接受|接受)\s*/i);
+              ans = sp[0].replace(/[.。]\s*$/, ''); acc = (sp[1] || '').replace(/[.。]\s*$/, '');
+              if (acc && acc.replace(/\s/g, '') === ans.replace(/\s/g, '')) acc = '';
+              acc = acc.split(/\s+or\s+|\s*\/\s*|，|,\s*/).filter((v) => v && v.replace(/\s/g, '') !== ans.replace(/\s/g, '')).join(' · ');
+            } else rest.push([t, !!tk[pi] && !!tk[pi][j]]);
+          });
+          if (!ans && p.blank && rest.length) ans = rest.shift()[0];
+          const mine = String(my[pi] || '').trim();
+          let h = lab;
+          if (ans) h += box2(esc(ans), esc(acc), esc(mine.slice(0, 200)));
+          if (rest.length) {
+            const steps = rest.some(([t]) => /[=×÷+−\-]\s*\d|\d\s*[=×÷+−]/.test(t)) && ans;
+            h += `<div class="rfx-steps"><small>${steps ? ZZ('How to get it', '計法') : ans ? ZZ('Marks also given for', '其他得分要點') : ZZ('What the marker looked for', '得分要點')}</small>
+              <ol class="${steps ? 'num' : 'pts'}">${rest.slice(0, 6).map(([t, got]) => `<li class="${steps ? '' : got ? 'got' : 'lost'}"><span class="rfx-dot">${steps ? '' : got ? '✓' : '✗'}</span><span data-keep>${esc(t)}</span></li>`).join('')}</ol></div>`;
+            if (!ans && mine) h += `<div class="rfx-mine2"><small>${ZZ('You wrote', '你寫了')}</small><span data-keep>${esc(mine.slice(0, 300))}</span></div>`;
+          }
+          if (h) lines.push(`<div class="rfx-p">${h}</div>`);
+        });
       }
-      if (q.explanation) lines.push(`<span class="rfx-why" data-keep>${esc(plain(q.explanation))}</span>`);
+      if (q.explanation) lines.push(`<div class="rfx-why2"><span class="rfx-bulb" aria-hidden="true">💡</span><span data-keep>${esc(plain(q.explanation))}</span></div>`);
       if (lines.length) fix = `<div class="rfix">${lines.join('')}</div>`;
     }
     return `<div class="rrow ${st}"><span class="rnum">Q${k + 1}</span><span class="rtext" data-raw>${esc(String(label).slice(0, 110))}${String(label).length > 110 ? '…' : ''}</span><span class="rmark">${g}/${m}</span>${fix}</div>`;
@@ -8503,8 +8545,14 @@ async function fillSuggestion({ unitRef, qs, pct, missed, drillable, drill, agai
   const trend = prevPct === null ? '' : pct > prevPct + 4 ? Z(`Up from ${prevPct}% before on this chapter.`, `比之前在這一章的 ${prevPct}% 進步了。`) : pct < prevPct - 4 ? Z(`Below your ${prevPct}% before on this chapter.`, `低於之前在這一章的 ${prevPct}%。`) : Z(`About the same as before on this chapter (${prevPct}%).`, `與之前在這一章差不多（${prevPct}%）。`);
   const mast = ch ? Z(`Chapter ready: ${ch.pct}%`, `本章準備度：${ch.pct}%`) : '';
   if (!document.body.contains(box)) return;
-  box.querySelector('.rsg-body').innerHTML = `<h3 class="rsg-t">${esc(s.t)}</h3><p class="rsg-why">${esc(s.why)}</p>
-    ${trend || mast ? `<div class="rsg-facts">${mast ? `<span>${esc(mast)}</span>` : ''}${trend ? `<span>${esc(trend)}</span>` : ''}</div>` : ''}
+  // the chapter's readiness as a big ring with a plain label, so it is the first thing a child sees
+  const rp = ch ? Math.max(0, Math.min(100, ch.pct)) : null, rc = rp === null ? '' : rp >= 70 ? 'hi' : rp >= 40 ? 'mid' : 'lo';
+  const rlab = rp === null ? '' : rp >= 70 ? Z('Nearly test-ready', '差不多可以應考') : rp >= 40 ? Z('Getting there', '漸入佳境') : Z('Just started', '剛剛起步');
+  const meter = rp === null ? '' : `<div class="rsg-meter ${rc}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(rp * 0.974).toFixed(1)} 100"/></svg><b>${rp}%</b></div>
+    <div class="rsg-mtxt"><small>${esc(Z('Chapter ready for the test', '本章應考準備度'))}</small><b>${esc(rlab)}</b>${trend ? `<span class="rsg-trend ${pct > (prevPct || 0) + 4 ? 'up' : pct < (prevPct || 0) - 4 ? 'down' : ''}">${esc(Z(`This set: ${pct}%. `, `今次：${pct}%。`) + trend)}</span>` : `<span class="rsg-trend">${esc(Z(`This set: ${pct}%`, `今次：${pct}%`))}</span>`}</div>`;
+  box.querySelector('.rsg-body').innerHTML = `${meter ? `<div class="rsg-ready">${meter}</div>` : ''}
+    <div class="rsg-next"><small>${esc(Z('Next step', '下一步'))}</small><h3 class="rsg-t">${esc(s.t)}</h3><p class="rsg-why">${esc(s.why)}</p></div>
+    ${!meter && trend ? `<div class="rsg-facts"><span>${esc(trend)}</span></div>` : ''}
     <div class="rsg-btns"><button class="btn" id="rsgGo">${esc(s.go)}</button>${alt ? `<button class="btn ghost" id="rsgAlt">${esc(alt.go)}</button>` : ''}</div>`;
   document.getElementById('rsgGo').onclick = s.run;
   if (alt) document.getElementById('rsgAlt').onclick = alt.run;
