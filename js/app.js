@@ -668,7 +668,7 @@ async function apiStreamOnce(path, body, onChunk) {
   return done;
 }
 // Every AI request carries the student profile (grade etc.), when a parent has set one.
-const withProfile = (body) => { const l = learnerPayload(); return l && body && typeof body === 'object' && !body.learner ? { ...body, learner: l } : body; };
+const withProfile = (body) => { if (!body || typeof body !== 'object') return body; const l = learnerPayload(); return { ...body, ...(l && !body.learner ? { learner: l } : {}), ...(LANG === 'fr' || LANG === 'ja' ? { ui: LANG } : {}) }; };
 async function apiOnce(path, body) {
   let r;
   try {
@@ -1222,7 +1222,7 @@ async function renderHomeworkChat(hw) {
     const log = document.getElementById('hwlog'); if (log) log.scrollTop = log.scrollHeight;
     document.getElementById('back').onclick = () => go({ name: 'homework' });
     $app.querySelectorAll('[data-help]').forEach((b) => (b.onclick = () => { const i = +b.dataset.help; hw.cur = i; const q = hw.questions[i]; ask(HW(`Help me with ${q.label || 'question ' + (i + 1)}.`, `請幫我做 ${q.label || '第 ' + (i + 1) + ' 題'}。`)); }));
-    $app.querySelectorAll('[data-say]').forEach((b) => (b.onclick = () => ask(b.dataset.say)));
+    $app.querySelectorAll('[data-say]').forEach((b) => (b.onclick = () => ask(b.textContent.trim() || b.dataset.say)));
     $app.querySelectorAll('[data-zoom]').forEach((b) => (b.onclick = () => zoomPhoto(photos[+b.dataset.zoom])));
     document.getElementById('hwform').onsubmit = (e) => { e.preventDefault(); ask(document.getElementById('hwq').value); };
   };
@@ -2055,7 +2055,7 @@ async function renderLearn(bookId, unitId) {
       <form class="tform" id="lnform"><input id="lnq" class="tinput" placeholder="${T('Ask Buddy anything about this…', '有甚麼問題都可以問 Buddy…')}" autocomplete="off" ${R.busy ? 'disabled' : ''}><button class="tsend" aria-label="${T('Send', '傳送')}" ${R.busy ? 'disabled' : ''}>${ICON.send}</button></form>`;
     renderMath(box);
     const log = document.getElementById('lnlog'); if (log) log.scrollTop = log.scrollHeight;
-    box.querySelectorAll('[data-say]').forEach((x) => (x.onclick = () => askBuddy(x.dataset.say)));
+    box.querySelectorAll('[data-say]').forEach((x) => (x.onclick = () => askBuddy(x.textContent.trim() || x.dataset.say)));
     document.getElementById('lnform').onsubmit = (e) => { e.preventDefault(); askBuddy(document.getElementById('lnq').value); };
   };
   const askBuddy = async (t) => {
