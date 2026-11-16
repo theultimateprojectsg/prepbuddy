@@ -2860,6 +2860,7 @@ function renderAbout() {
     [Z('Plans each day around school test dates', '按學校測驗日期安排每天'), Y, N, P(Z('Sometimes', '有時')), N, N],
     [Z('Shows parents progress every week', '每週向家長報告進度'), Y, N, P(Z('A quick chat', '口頭交代')), P(Z('Each term', '每學期')), N],
     [Z('Made for children, and keeps them on schoolwork', '為兒童而設，專注學業'), Y, P(Z('General-purpose; ChatGPT is for ages 13+', '通用工具；ChatGPT 只限 13 歲或以上')), Y, Y, Y],
+    [Z('Rewards steady effort every day, not just test results', '每天獎勵持續努力，不只看考試成績'), Y, N, P(Z('Praise in the lesson', '上堂時稱讚')), P(Z('Stickers, sometimes', '有時派貼紙')), N],
     [Z('Knows your child: their level in every chapter, past mistakes, pace and test dates', '了解孩子：每章程度、過往錯誤、學習步伐和測驗日期'), Y, P(Z('Only what you tell it', '只知道你告訴它的')), P(Z('What they notice in lessons', '上堂時留意到的')), P(Z('As one of a class', '班上其中一人')), N],
     [Z('Typical cost each month', '每月大約費用'), `<b>HK$218–298</b><small>${Z('all subjects', '所有科目')}</small>`, `<b>${Z('Free–HK$160', '免費至 HK$160')}</b><small>${Z('ChatGPT Plus is US$20', 'ChatGPT Plus 為 US$20')}</small>`, `<b>HK$800–1,600+</b><small>${Z('per subject, 1 hr a week', '每科，每週 1 小時')}</small>`, `<b>HK$800–2,400+</b><small>${Z('per subject', '每科')}</small>`, `<b>${Z('Low', '低')}</b><small>${Z('per book', '每本')}</small>`],
   ];
@@ -2884,6 +2885,8 @@ function renderAbout() {
       Z('Three ways. “How ready” shows how much of each textbook your child has really mastered, with the change each week. “Getting stronger” shows their level in each subject, measured so it doesn’t drop when questions get harder. And “School results” puts their school marks from before PrepBuddy next to the latest ones. You also get a one-page weekly report.', '三方面。「準備程度」顯示孩子真正掌握了每本課本多少，以及每週的變化。「越來越強」顯示每科的程度，計算方法不會因題目變難而下降。「學校成績」把使用 PrepBuddy 前後的校內分數並列。你每週亦會收到一頁報告。')],
     [Z('How much time does it take?', '要花多少時間？'),
       Z('As little as 5 minutes. Your child chooses 5, 15 or 30 minutes and Today’s mission fits. Little and often works better than long, rare sessions, so the app nudges a daily habit with streaks, a weekly goal and stars.', '最少 5 分鐘。孩子可選 5、15 或 30 分鐘，今日任務會按此調整。少量而經常練習比偶爾長時間更有效，所以 App 會以連續日數、每週目標和星星鼓勵每天練習。')],
+    [Z('How does it keep my child coming back?', '它怎樣令孩子願意每天回來？'),
+      Z('By rewarding the habit, not just the result. A treat after a good test comes weeks after the work that earned it; PrepBuddy rewards the work itself, every day. Your child earns stars for finishing a set, fixing an old mistake, doing the day’s reviews, passing a chapter test and reaching the weekly goal, and spends them on rewards you choose in the star shop (screen time, a treat, a family movie night). Rushing through answers earns nothing, so stars only come from real effort. Streaks and badges add to it, and there’s a daily cap so it stays about learning.', '獎勵的是習慣，而不只是結果。考試考得好後的獎勵，往往是在努力過後幾個星期才出現；PrepBuddy 每天直接獎勵努力本身。孩子完成一組練習、改正舊錯題、完成當天溫習、通過章節測驗和達到每週目標都會獲得星星，並可在星星商店換取由你設定的獎勵（例如玩平板時間、小食、家庭電影夜）。趕急作答不會得到星星，所以星星只來自真正的努力。連續日數和徽章更添動力，每天亦設有上限，確保重點仍是學習。')],
     [Z('Should it replace our tutor?', '應該取代補習老師嗎？'),
       Z('Not necessarily. Many families use both. PrepBuddy covers the daily practice, marking and revision between lessons, and shows the tutor exactly which chapters are weak, so paid tutor time goes on what really needs a person. For some families, it’s enough on its own.', '不一定。很多家庭兩者並用。PrepBuddy 負責課堂之間的每日練習、批改和溫習，並清楚顯示哪些章節較弱，讓付費的補習時間用在真正需要老師的地方。對部分家庭來說，單用 PrepBuddy 已經足夠。')],
     [Z('Is my child’s data safe?', '孩子的資料安全嗎？'),
@@ -2895,6 +2898,7 @@ function renderAbout() {
     ['🧠', Z('Stops forgetting', '防止遺忘'), Z('Brings topics back days later, just before they’d be forgotten.', '在快要忘記之前，安排幾天後再溫習。')],
     ['📅', Z('Plans to the test date', '按考試日期計劃'), Z('Add a school test and every day works towards it, with a forecast of how ready they’ll be.', '加入學校測驗，每天都為它準備，並預測考試當天的準備程度。')],
     ['✍️', Z('Marks like a teacher', '像老師一樣批改'), Z('Written answers, essays, speaking and 默書, marked with reasons, any time.', '文字題、作文、說話和默書，隨時批改並說明原因。')],
+    ['⭐', Z('Makes them want to come back', '令孩子想再來'), Z('Stars for every honest effort (none for rushing), spent on rewards you choose. Streaks and badges keep the habit going.', '每次認真努力都有星星（趕急完成不計），可換取由你設定的獎勵。連續日數和徽章幫助建立習慣。')],
     ['👀', Z('Honest with parents', '對家長坦誠'), Z('Shows hints used and rushed sets, not just scores, and school marks before and after.', '不只顯示分數，也顯示用了多少提示、有否趕急，以及前後的學校成績。')],
   ];
   const next = [
