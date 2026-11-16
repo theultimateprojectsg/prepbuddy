@@ -1988,6 +1988,19 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .skc.sk-t5{background:radial-gradient(130% 95% at 50% 22%,rgba(255,110,25,.58),transparent 76%),linear-gradient(180deg,#FFDCAA,#FFF7EE 68%)}
 @media (prefers-reduced-motion:reduce){.sk-flame .f-o,.sk-flame .f-i,.sk-flame svg,.sk-emb i,.today .gr-hero.glow-4,.today .gr-hero.glow-5{animation:none!important}.sk-emb{display:none}}
 @media (max-width:600px){.sk-flame.sk-t2{width:28px;height:35px}.sk-flame.sk-t3{width:31px;height:39px}.sk-flame.sk-t4{width:34px;height:42px}.sk-flame.sk-t5{width:37px;height:46px}}
+
+/* Flame flicker v2: three layers moving at different speeds so it looks alive, plus a sway; stronger as the streak grows */
+.sk-flame.lit .f-all,.sk-flame.lit .f-o,.sk-flame.lit .f-m,.sk-flame.lit .f-i{transform-box:fill-box;transform-origin:50% 100%}
+.sk-flame.lit .f-all{animation:fsway calc(var(--dur) * 1.9) ease-in-out infinite}
+.sk-flame.lit .f-o{animation:fo2 var(--dur) ease-in-out infinite}
+.sk-flame.lit .f-m{animation:fm2 calc(var(--dur) * .73) ease-in-out infinite}
+.sk-flame.lit .f-i{animation:fi2 calc(var(--dur) * .53) ease-in-out infinite}
+@keyframes fsway{0%,100%{transform:rotate(calc(-3deg*var(--amp)))}50%{transform:rotate(calc(3deg*var(--amp)))}}
+@keyframes fo2{0%,100%{transform:scale(1,1) skewX(0)}15%{transform:scale(calc(1 + .05*var(--amp)),calc(1 - .07*var(--amp))) skewX(calc(-5deg*var(--amp)))}35%{transform:scale(calc(1 - .06*var(--amp)),calc(1 + .12*var(--amp))) skewX(calc(4deg*var(--amp)))}55%{transform:scale(calc(1 + .03*var(--amp)),calc(1 - .03*var(--amp))) skewX(calc(-2deg*var(--amp)))}75%{transform:scale(calc(1 - .04*var(--amp)),calc(1 + .09*var(--amp))) skewX(calc(5deg*var(--amp)))}}
+@keyframes fm2{0%,100%{transform:scale(1,1) skewX(0);opacity:.9}30%{transform:scale(calc(1 - .07*var(--amp)),calc(1 + .14*var(--amp))) skewX(calc(6deg*var(--amp)));opacity:1}60%{transform:scale(calc(1 + .06*var(--amp)),calc(1 - .08*var(--amp))) skewX(calc(-6deg*var(--amp)));opacity:.75}}
+@keyframes fi2{0%,100%{transform:scale(1,1) translateY(0);opacity:1}40%{transform:scale(calc(1 - .1*var(--amp)),calc(1 + .18*var(--amp))) translateY(calc(-1px*var(--amp)));opacity:.85}70%{transform:scale(calc(1 + .08*var(--amp)),calc(1 - .1*var(--amp)));opacity:1}}
+/* even with "reduce motion" on, keep a small flicker on the flame itself (no embers, no card pulse) */
+@media (prefers-reduced-motion:reduce){.sk-flame.lit .f-o{animation:fo2 var(--dur) ease-in-out infinite!important}.sk-flame.lit .f-m{animation:fm2 calc(var(--dur) * .73) ease-in-out infinite!important}.sk-flame.lit .f-i{animation:fi2 calc(var(--dur) * .53) ease-in-out infinite!important}.sk-flame{--amp:.6!important}}
 </style>
 </head>
 <body>
