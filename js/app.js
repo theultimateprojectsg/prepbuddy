@@ -5294,157 +5294,247 @@ function howData(logW) {
 const pgBar = (label, pct, note, tn) => `<div class="pg-ch"><div class="pg-ch-top"><span>${label}</span><b class="${tn}">${note}</b></div><div class="pg-bar ${tn}"><i style="width:${pct}%"></i></div></div>`;
 
 async function renderProgress() {
-  const gsHTML = strongerHTML(await gsData().catch(() => null), LANG === 'zh', 'pgcard', true);
-  const D = await progressData(), r = D.r;
+  // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
+  // what should I work on, is it working, and am I putting in the effort. Every card has a number,
+  // one line on what it means, and (where there's something to do) a button.
   const zh = LANG === 'zh';
-  const mins = r.days.reduce((a, m) => a + m, 0);
-  const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : PT(`${mins} min`, `${mins} 分鐘`);
-  const tone0 = weekTone(r);
-  const verdict = { none: PT('No practice yet this week', '本週還未練習'), strong: PT('You had a strong week', '你本週表現出色'),
-    lighter: PT('A lighter week', '本週練習較少'), steady: PT('You had a steady week', '你本週表現穩定'), start: PT('Good start this week', '本週好的開始') }[tone0];
-  const sub = tone0 === 'none' ? PT('A short session today gets your week going.', '今天練習一會兒，為這星期開個好頭。')
-    : tone0 === 'lighter' ? PT(`You practised ${r.pm - mins} min less than last week. A short session today gets you back on track.`, `比上週少練習了 ${r.pm - mins} 分鐘。今天練習一會兒，就能重回正軌。`)
-    : PT(`Practised ${r.dp} of the last 7 days`, `過去 7 日中有 ${r.dp} 日練習`);
-  const diff = r.a !== null && r.pa !== null ? r.a - r.pa : null;
-  const stat = (icon, tone, value, label, extra = '') => `<div class="pg-stat"><span class="pg-ic ${tone}">${pIcon(icon, 20)}</span><div><b>${value}</b><span>${label}</span>${extra}</div></div>`;
-  const dayName = (i, f) => new Date(r.from + i * DAY).toLocaleDateString(LOCALE(), { weekday: f });
-  const maxMin = Math.max(20, ...r.days);
-  const longest = r.days.indexOf(Math.max(...r.days));
-  const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
-  const chLabel = (p) => (p >= 80 ? PT('Strong', '強') : p >= 60 ? PT('Getting there', '漸入佳境') : PT('Needs work', '需加強'));
-  const chName = (c) => shortTitle(c.unit.title);
-
-  // what to do next: each one is something to tap
-  const acts = [];
-  if (D.weak) acts.push(`<button class="pg-act weak" data-unit="${esc(D.weak.book.id)}:${esc(D.weak.unit.id)}"><span class="pg-ic low">${pIcon('alert')}</span><span class="pg-at"><small>${PT('Needs work', '需要加強')}</small><b>${esc(chName(D.weak))}</b><span>${PT(`${D.weak.wrong} of ${D.weak.n} not fully right · practise it`, `${D.weak.n} 題中有 ${D.weak.wrong} 題未完全答對 · 去練習`)}</span></span>${pIcon('next', 18)}</button>`);
-  if (D.due) acts.push(`<button class="pg-act" id="act-review"><span class="pg-ic blue">${pIcon('repeat')}</span><span class="pg-at"><small>${PT('Due today', '今日要溫習')}</small><b>${PT(`${D.due} review${D.due === 1 ? '' : 's'}`, `${D.due} 條溫習題`)}</b><span>${PT('Quick reviews help you remember for the exam', '快速溫習，考試時記得更牢')}</span></span>${pIcon('next', 18)}</button>`);
-  if (D.mistakes) acts.push(`<button class="pg-act" id="act-mistakes"><span class="pg-ic red">${pIcon('pencil')}</span><span class="pg-at"><small>${PT('Mistake book', '錯題簿')}</small><b>${PT(`${D.mistakes} to get right`, `${D.mistakes} 題要改正`)}</b><span>${D.fixed ? PT(`${D.fixed} fixed this week`, `本週改正了 ${D.fixed} 題`) : PT('Get them right to move them to Mastered', '答對後會移到已掌握')}</span></span>${pIcon('next', 18)}</button>`);
-  if (D.up) acts.push(`<div class="pg-act good"><span class="pg-ic green">${pIcon('up')}</span><span class="pg-at"><small>${PT('Getting better', '有進步')}</small><b>${esc(chName(D.up))}</b><span>${D.up.was !== null ? PT(`Up from ${D.up.was}% to ${D.up.a}% since last week`, `由上週 ${D.up.was}% 進步至 ${D.up.a}%`) : PT(`${D.up.a}% this week`, `本週 ${D.up.a}%`)}</span></span></div>`);
-  if (!acts.length) acts.push(`<button class="pg-act" id="act-books"><span class="pg-ic blue">${pIcon('book')}</span><span class="pg-at"><small>${PT('Start here', '由這裡開始')}</small><b>${PT('Practise a chapter', '練習一個章節')}</b><span>${PT('Your insights appear after a few questions', '做幾題後，就會看到你的分析')}</span></span>${pIcon('next', 18)}</button>`);
-
-  const names = SKILL_PLAIN();
-  const rated = r.sk.map(([a, n], i) => ({ a, n, i })).filter((x) => x.n >= 3 && x.a !== null);
-  const best = rated.slice().sort((x, y) => y.a - x.a)[0], worst = rated.slice().sort((x, y) => x.a - y.a)[0];
-  const skillNote = best && worst && best.i !== worst.i && best.a - worst.a >= 15
-    ? PT(`Best at ${names[best.i].toLowerCase()}. ${names[worst.i]} needs the most work.`, `最擅長「${names[best.i]}」；「${names[worst.i]}」最需要加強。`)
-    : rated.length ? PT('Fairly even across question types.', '各類題型表現大致平均。') : '';
-
-  // ---- new data for the redesigned page ----
+  const D = await progressData(), r = D.r;
   const books = (await getBooks()).filter((b) => !b.demo);
   const RH = await readyHist(books);
-  const t0 = dayStart();
-  const logW = local.log.filter((e) => e.t >= t0 - 6 * DAY), logP = local.log.filter((e) => e.t >= t0 - 13 * DAY && e.t < t0 - 6 * DAY);
-  const daysP = new Set(logP.map((e) => dayStart(e.t))).size;
-  const allDays = [...new Set(local.log.map((e) => dayStart(e.t)))].sort((a, b) => a - b);
-  let bestRun = 0, run = 0, prevD = 0; allDays.forEach((d) => { run = prevD && d - prevD <= DAY + 3600e3 ? run + 1 : 1; bestRun = Math.max(bestRun, run); prevD = d; });
-  const chg = (now, was, unit = '') => (was == null ? '' : now > was ? `<small class="upc">▲ ${PT(`from ${was}${unit}`, `上週 ${was}${unit}`)}</small>` : now < was ? `<small class="downc">▼ ${PT(`from ${was}${unit}`, `上週 ${was}${unit}`)}</small>` : `<small>${PT('same as last week', '與上週相同')}</small>`);
-  const hmOf = (m) => (m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : PT(`${m} min`, `${m} 分鐘`));
-  const tile = (icon, tn, value, label, extra) => `<div class="pg-stat"><span class="pg-ic ${tn}">${pIcon(icon, 20)}</span><div><b>${value}</b><span>${label}</span>${extra || ''}</div></div>`;
-  const tilesHTML = tile('check', 'green', `${r.dp}<small class="pg-of">/7</small>`, PT('days practised', '日有練習'), chg(r.dp, logP.length || daysP ? daysP : null))
-    + tile('clock', 'purple', hm, PT('practising this week', '本週練習時間'), r.pm != null && (r.pm || mins) ? (mins > r.pm ? `<small class="upc">▲ ${PT(`from ${hmOf(r.pm)}`, `上週 ${hmOf(r.pm)}`)}</small>` : mins < r.pm ? `<small class="downc">▼ ${PT(`from ${hmOf(r.pm)}`, `上週 ${hmOf(r.pm)}`)}</small>` : '') : '')
-    + tile('bars', 'blue', r.q, PT('questions this week', '本週題數'), r.pq || r.q ? chg(r.q, r.pq) : '')
-    + tile('flame', 'orange', D.streak, PT(D.streak === 1 ? 'day in a row' : 'days in a row', '連續練習日數'), bestRun > 1 ? `<small>${PT(`best: ${bestRun} days`, `最長：${bestRun} 日`)}</small>` : '');
-  // Am I ready? rings with this week's change
-  const ringRow = RH.map((x) => {
-    const lab = x.pct > 0 ? masteryLabel(x.pct) : x.covered ? PT(`Started · ${x.covered}% covered`, `已開始 · 涵蓋 ${x.covered}%`) : PT('Not started', '未開始');
-    const ch = x.was == null || !x.used ? '' : x.pct > x.was ? `<em class="up">▲ ${x.pct - x.was}% ${PT('this week', '本週')}</em>` : x.pct < x.was ? `<em class="down">▼ ${x.was - x.pct}% ${PT('this week', '本週')}</em>` : `<em>${PT('no change this week', '本週沒有變化')}</em>`;
-    return `<button class="pg-rg tr-rg" data-book="${esc(x.b.id)}">${x.pct > 0 ? ringHTML(x.pct, tone(x.pct), x.pct + '%') : ringHTML(x.covered, 'cov', x.covered ? x.covered + '%' : '–')}<b>${esc(x.b.subject ? subj(x.b.subject) : shortTitle(x.b.title))}</b><small>${lab}</small>${x.started && x.pct > 0 ? `<span class="rg-st">${LANG === 'zh' ? `已開始的 ${x.started.n} 章：${x.started.pct}%` : `${x.started.pct}% in ${x.started.n} started chapter${x.started.n > 1 ? 's' : ''}`}</span>` : ''}${ch}</button>`;
+  const MB = new Map(); for (const b of books) MB.set(b.id, await bookMastery(b));
+  const GS = await gsData().catch(() => null);
+  const t0 = dayStart(), now = Date.now();
+  const sname = (b) => (b.subject ? subj(b.subject) : b.title);
+  const chName = (u) => shortTitle(u.title);
+  const acts = []; // [run] for every button on the page, bound by index
+  const btn = (label, run, cls = 'pv-btn') => { acts.push(run); return `<button class="${cls}" data-pv="${acts.length - 1}">${label}</button>`; };
+  const fresh = (c) => !c.done && !c.tests;
+  const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
+
+  // ---------- 1. Am I on track for my tests? ----------
+  const tests = await schoolTestsHTML();
+  const fcLocked = locked('forecast');
+  const fmtDay = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+  const testCards = tests.steps.slice(0, 3).map((p) => {
+    const h = p.book ? RH.find((x) => x.b.id === p.book.id) : null;
+    const fc = p.ready == null ? null : h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(p.ready + h.rate * p.left)) : p.ready;
+    const st = p.ready == null ? 'none' : (fc ?? p.ready) >= 80 ? 'ok' : (fc ?? p.ready) >= 65 ? 'close' : 'risk';
+    const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
+    const steps = [];
+    if (p.book && p.units && p.units.length && (p.x.kind || 'test') !== 'dict') {
+      const m = MB.get(p.book.id), chs = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id));
+      chs.filter(fresh).slice(0, 2).forEach((c) => steps.push(PT(`Learn ${chName(c.unit)} · not started`, `學習「${chName(c.unit)}」· 未開始`)));
+      const weak = chs.filter((c) => !fresh(c) && c.pct < 70).sort((a, b) => a.pct - b.pct)[0];
+      if (weak) steps.push(PT(`Practise ${chName(weak.unit)} · ${weak.pct}%`, `練習「${chName(weak.unit)}」· ${weak.pct}%`));
+      if (p.left >= 2) steps.push(PT(`Practice test on ${fmtDay(testDay(p.x) - DAY)}`, `${fmtDay(testDay(p.x) - DAY)} 做模擬測驗`));
+    }
+    const what = p.ready == null ? PT('Add the textbook so Buddy can get you ready.', '加入課本，Buddy 便可幫你準備。')
+      : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT(`Aim for 80% by test day.`, '目標：考試前達到 80%。'))
+      : st === 'ok' ? PT(`At this pace you’ll reach about ${fc}%. Short reviews keep it there; Today’s mission takes care of it.`, `按現時進度，考試時約 ${fc}%。今日任務會安排溫習，保持狀態。`)
+      : PT(`At this pace you’ll reach about ${fc}%. To get to 80%:`, `按現時進度，考試時約 ${fc}%。要達到 80%：`);
+    const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
+      <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:80%"></s><small style="left:80%">${PT('aim 80%', '目標 80%')}</small></div>
+      ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>`;
+    return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
+      ${bar}<p class="pv-p">${what}</p>${st !== 'ok' && steps.length ? `<ul class="pv-steps">${steps.map((s) => `<li data-raw>${esc(s)}</li>`).join('')}</ul>` : ''}
+      <div class="pv-test-f">${p.step ? btn(esc(p.step.t), p.step.run, `pv-btn ${st === 'ok' ? '' : 'primary'}`) : ''}${btn(PT('Edit', '修改'), () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet')}</div></div>`;
+  });
+  const testedBooks = new Set(tests.steps.map((p) => p.book && p.book.id).filter(Boolean));
+  const noTest = RH.filter((x) => x.used && !testedBooks.has(x.b.id)).slice(0, Math.max(1, 3 - testCards.length)).map((x) => `<div class="pv-test none"><b data-raw>${esc(sname(x.b))} · ${PT('no test added', '未加入測驗')}</b>
+      <p class="pv-p">${PT(`${x.pct}% ready overall. Add the next ${esc(sname(x.b))} test and Buddy plans backwards from the date.`, `整體準備度 ${x.pct}%。加入下一個${esc(sname(x.b))}測驗，Buddy 會按日期倒數安排。`)}</p>
+      ${btn(`+ ${PT('Add a test', '加入測驗')}`, () => testDialog())}</div>`);
+  const sec1 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('Am I on track for my tests?', '考試準備好了嗎？')}${infoBtn('howTestP', PT('How is this worked out?', '這是怎樣計算的？'))}</h2><span>${PT('Readiness now, and where it’s heading by test day', '現在的準備度，以及考試當日的預測')}</span></div>
+    <div class="pv-grid3">${testCards.join('') + noTest.join('') || `<div class="pv-test none"><b>${PT('Got a test coming up?', '快要測驗？')}</b><p class="pv-p">${PT('Add it and Buddy plans backwards from the date: new chapters first, then the weakest, then a practice test the day before.', '加入後，Buddy 會按日期倒數安排：先學新章節，再練最弱的，前一天做模擬測驗。')}</p>${btn(`+ ${PT('Add a test', '加入測驗')}`, () => testDialog())}</div>`}</div>
+    <details class="ms-how how-panel" id="howTestP"><summary>${PT('How is this worked out?', '這是怎樣計算的？')}</summary><div>
+      <p>${PT('Ready now is the readiness of the chapters in the test (or everything practised so far, if you didn’t choose chapters).', '「現在」是測驗範圍內各章節的準備度（未選章節的話，就是所有練習過的內容）。')}</p>
+      <p>${PT('On test day is a forecast: how fast readiness has been rising over the last 4 weeks, carried forward to the test date.', '「考試當日」是預測：按過去 4 星期準備度上升的速度，推算到考試日期。')}</p>
+      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('80% or more by test day', '考試時達 80% 或以上')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('65–79%', '65–79%')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('under 65%', '低於 65%')}</li></ul></div></details></section>`;
+
+  // ---------- 2. What Buddy has noticed ----------
+  const cards = [];
+  const card = (tag, cls, title, detail, button = '') => `<div class="pv-ins"><em class="pv-tag ${cls}">${tag}</em><b data-raw>${esc(title)}</b><p class="pv-p" data-raw>${esc(detail)}</p>${button}</div>`;
+  const ins = local.insights && local.insights.lang === LANG ? local.insights : null;
+  const MK = await mistakeItems(false), mkAll = MK.flatMap((g) => g.items.map((x) => ({ ...x, g })));
+  (ins ? ins.list : []).forEach((m) => {
+    const qs = mkAll.filter((x) => m.ids.includes(x.q.id));
+    const g = qs[0] ? qs[0].g : null;
+    const run = qs.length >= 2 ? () => { S = newSession({ mode: 'mistakes', title: m.title, qs: shuffle(qs.map((x) => x.q)).map(shuffleOptions), target: qs.length }); renderQuestion(); }
+      : g && g.unit ? () => startUnits(g.book, [g.unit], 8) : null;
+    cards.push(card(PT('Mix-up', '常見混淆'), 'red', m.title, m.detail, run ? btn(PT('Practise this', '練習這個'), run, 'pv-btn soft') : ''));
+  });
+  // rushing: multiple-choice sets answered too fast to be thinking, in the last 2 weeks
+  const ss = (local.sess || []).filter((x) => x.t > now - 14 * DAY);
+  const rushed = ss.filter((x) => x.r);
+  if (rushed.length >= 2 && rushed.length / ss.length >= 0.3) {
+    const late = rushed.filter((x) => new Date(x.t).getHours() >= 21).length;
+    const avg = (xs) => Math.round(xs.reduce((a, x) => a + (x.p || 0), 0) / Math.max(1, xs.length)), steady = ss.filter((x) => !x.r);
+    const gap = steady.length ? avg(steady) - avg(rushed) : 0;
+    cards.push(card(PT('Habit', '習慣'), 'orange', late >= 2 ? PT('Rushes multiple choice late at night', '夜晚做選擇題太快') : PT('Rushes some multiple-choice sets', '有時做選擇題太快'),
+      PT(`${rushed.length} of ${ss.length} sets in the last 2 weeks were answered too fast to think${late >= 2 ? `, ${late} of them after 9pm` : ''}${gap >= 5 ? `, scoring ${gap}% lower than steady sets` : ''}.`, `過去兩星期 ${ss.length} 次練習中有 ${rushed.length} 次答得太快${late >= 2 ? `，其中 ${late} 次在晚上 9 時後` : ''}${gap >= 5 ? `，分數比慢慢做時低 ${gap}%` : ''}。`)));
+  }
+  // independence: answers without Buddy's help, last 2 weeks vs the 6 weeks before
+  const lw = local.log.filter((e) => e.t > now - 14 * DAY), lp = local.log.filter((e) => e.t <= now - 14 * DAY && e.t > now - 56 * DAY);
+  const own = (es) => Math.round(100 * es.filter((e) => !e.h).length / es.length);
+  if (lw.length >= 30) {
+    const a = own(lw), b = lp.length >= 30 ? own(lp) : null;
+    if (b != null && a - b >= 8) cards.push(card(PT('Growing', '進步'), 'green', PT('Needs Buddy’s hints less', '越來越少需要提示'), PT(`${a}% of answers now without hints, up from ${b}%. Working things out alone.`, `現在 ${a}% 的題目不用提示，之前是 ${b}%。越來越能自己想通。`)));
+    else if (a < 60) cards.push(card(PT('Habit', '習慣'), 'orange', PT('Leans on hints a lot', '經常依賴提示'), PT(`Only ${a}% of answers in the last 2 weeks were without Buddy’s help. Try first, then ask.`, `過去兩星期只有 ${a}% 的題目不用 Buddy 幫忙。先自己試，再問。`)));
+  }
+  // memory: reviews answered right after a gap (from the level model)
+  const kt = GS && GS.kt; const ret = kt && kt[1] >= 15 ? Math.round(100 * kt[0] / kt[1]) : null;
+  if (ret != null) cards.push(ret >= 75 ? card(PT('Growing', '進步'), 'green', PT('What’s learned is sticking', '學過的記得牢'), PT(`${ret}% of review questions right days later. ${D.longTerm} questions remembered for a week or more.`, `${ret}% 的溫習題幾天後仍答對。${D.longTerm} 題已記得一星期或以上。`))
+    : card(PT('Memory', '記憶'), 'orange', PT('Forgets some things after a few days', '有些內容過幾天就忘記'), PT(`Only ${ret}% of review questions right days later. Doing reviews when they’re due fixes this.`, `只有 ${ret}% 的溫習題幾天後仍答對。按時溫習就能改善。`), btn(PT('Do reviews now', '現在溫習'), () => startReview('spaced'), 'pv-btn soft')));
+  // writing: which rubric parts are strong and which keep losing marks (last 3 months)
+  const drafts = (local.wr || []).flatMap((w) => (w.drafts || []).filter((d) => d.fb && d.fb.criteria && d.t > now - 90 * DAY).map((d) => ({ w, d })));
+  if (drafts.length >= 2) {
+    const by = {}; drafts.forEach(({ d }) => d.fb.criteria.forEach((c) => { const x = by[c.name] || (by[c.name] = []); x.push(c.band); }));
+    const rows = Object.entries(by).map(([n, v]) => [n, v.reduce((a, b) => a + b, 0) / v.length]).sort((a, b) => b[1] - a[1]);
+    if (rows.length >= 2 && rows[0][1] - rows[rows.length - 1][1] >= 1) {
+      const w = drafts[drafts.length - 1].w;
+      cards.push(card(PT('Writing', '寫作'), 'blue', PT(`${rows[0][0]} strong, ${rows[rows.length - 1][0]} weakest`, `「${rows[0][0]}」最好，「${rows[rows.length - 1][0]}」最弱`),
+        PT(`Across ${drafts.length} drafts, ${rows[rows.length - 1][0].toLowerCase()} has lost the most marks.`, `${drafts.length} 份草稿中，「${rows[rows.length - 1][0]}」失分最多。`), btn(PT('Practise writing', '練習寫作'), () => go({ name: 'writing', id: w.id }), 'pv-btn soft')));
+    }
+  }
+  // dictation: the words that keep tripping them up
+  const words = [];
+  (local.dict || []).forEach((L) => (L.items || []).forEach((w, i) => { const x = (L.res || {})[i]; if (x && x.wrong >= 2) words.push({ w, n: x.wrong, L }); }));
+  if (words.length) {
+    words.sort((a, b) => b.n - a.n); const top = words.slice(0, 3);
+    cards.push(card(PT('Dictation', '默書'), 'blue', PT(`${top.length} word${top.length === 1 ? '' : 's'} keep tripping you up`, `${top.length} 個詞語經常寫錯`), top.map((x) => x.w).join(' · '), btn(PT('Practise these', '練習這些'), () => go({ name: 'dictation', id: top[0].L.id, sub: 'run' }), 'pv-btn soft')));
+  }
+  const sec2 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('What Buddy has noticed', 'Buddy 的觀察')}</h2><span>${PT('From your wrong answers, hints, timing and reviews', '根據答錯的題目、提示、時間和溫習')}</span></div>
+    ${cards.length ? `<div class="pv-grid3">${cards.join('')}</div>` : `<p class="pv-empty">${PT('Buddy needs about a week of practice to spot patterns. Keep going!', 'Buddy 需要大約一星期的練習才能看出規律。繼續加油！')}</p>`}
+    ${!ins && mkAll.length >= 3 ? `<p class="pv-empty pv-loading" id="pvMix">${PT('Buddy is looking through your mistakes for mix-ups…', 'Buddy 正在從錯題中找出常見混淆…')}</p>` : ''}</section>`;
+
+  // ---------- 3. What should I work on? ----------
+  const shown = (RH.some((x) => x.used) ? RH.filter((x) => x.used) : RH).slice(0, 4);
+  const subjHTML = shown.map((x) => {
+    const m = MB.get(x.b.id), chs = m.chapters, max = chs.length > 12 ? 11 : 12;
+    const tile = (c) => { const st = fresh(c) ? 'none' : c.pct >= 80 ? 'good' : c.pct >= 60 ? 'mid' : 'low';
+      const run = fresh(c) ? () => go({ name: 'learn', bookId: x.b.id, unitId: c.unit.id }) : () => startUnits(x.b, [c.unit], local.count || sessionSize());
+      return btn(`<b data-raw>${esc(chName(c.unit))}</b><span>${fresh(c) ? PT('not started', '未開始') : c.pct + '%'}</span>`, run, `pv-tile ${st}`); };
+    return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(x.b))}</b><span>${PT(`${x.pct}% ready · ${chs.length} chapters`, `準備度 ${x.pct}% · ${chs.length} 章`)}</span></div>
+      <div class="pv-tiles">${chs.slice(0, max).map(tile).join('')}${chs.length > max ? btn(PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`), () => go({ name: 'book', bookId: x.b.id }), 'pv-tile more') : ''}</div></div>`;
   }).join('');
-  const tests = await schoolTestsHTML(); const nt = tests.steps[0];
-  let testCard = '';
-  if (nt) {
-    const h = nt.book ? RH.find((x) => x.b.id === nt.book.id) : null; const fc = nt.ready == null ? null : h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(nt.ready + h.rate * nt.left)) : null;
-    const day = new Date(testDay(nt.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
-    testCard = `<button class="pg-next" data-tedit="${esc(nt.x.id)}">${calTile(testDay(nt.x))}<span class="pg-nt"><small>${PT('Next school test', '下一個學校測驗')} · ${leftText(nt.left)}</small><b>${esc(nt.x.name)}</b><span>${esc(testScope(nt))}${nt.ready == null ? '' : ' · ' + PT(`${nt.ready}% ready now`, `現時準備度 ${nt.ready}%`)}</span>${fc != null ? `<em class="${fc >= 80 ? 'up' : ''}">${PT(`At this pace: about ${fc}% ready by the test`, `按現時進度：測驗時約 ${fc}%`)}</em>` : nt.book ? `<em>${PT('Forecast after a week of practice', '練習一星期後會有預測')}</em>` : ''}</span></button>`;
-  } else testCard = `<button class="pg-next pg-next0" id="addTest2"><span class="pg-ic blue">${pIcon('target')}</span><span class="pg-nt"><b>${PT('Got a school test coming up?', '快要學校測驗？')}</b><span>${PT('Add it to see how ready you are for it, and a forecast for the test day.', '加入後，可看到準備度和測驗當日的預測。')}</span></span></button>`;
-  // readiness week by week
+  const next = [];
+  const nt = tests.steps.find((p) => p.step && p.step.u);
+  if (nt) next.push([nt.step.t, PT(`For ${nt.x.name}, ${leftText(nt.left)}`, `為「${nt.x.name}」準備，${leftText(nt.left)}`), nt.step.run]);
+  if (D.weak) next.push([PT(`Practise ${chName(D.weak.unit)}`, `練習「${chName(D.weak.unit)}」`), PT(`Weakest chapter this week · ${D.weak.a}%`, `本週最弱的章節 · ${D.weak.a}%`), () => startUnits(D.weak.book, [D.weak.unit], local.count || sessionSize())]);
+  if (D.mistakes) { const top = MK.slice().sort((a, b) => b.items.length - a.items.length).slice(0, 2).filter((g) => g.unit);
+    next.push([PT(`Fix ${D.mistakes} mistake${D.mistakes === 1 ? '' : 's'}`, `改正 ${D.mistakes} 題錯題`), top.length ? top.map((g) => `${g.items.length} ${PT('in', '題在')} ${chName(g.unit)}`).join(', ') : PT('Questions not fully right yet', '未完全答對的題目'), () => go({ name: 'mistakes' })]); }
+  if (D.due) next.push([PT(`${D.due} review${D.due === 1 ? '' : 's'} due`, `${D.due} 題要溫習`), PT('Just before you’d forget them', '在快要忘記之前溫習'), () => startReview('spaced')]);
+  if (!next.length) next.push([PT('Practise a chapter', '練習一個章節'), PT('Pick any chapter to start', '選一個章節開始'), () => go({ name: 'books' })]);
+  const names = SKILL_PLAIN();
+  const rated = r.sk.map(([a, n], i) => ({ a, n, i })).filter((x) => x.n >= 5 && x.a !== null);
+  const best = rated.slice().sort((x, y) => y.a - x.a)[0], worst = rated.slice().sort((x, y) => x.a - y.a)[0];
+  const gapNote = best && worst && best.i !== worst.i && best.a - worst.a >= 15
+    ? PT(`Strongest at “${names[best.i].toLowerCase()}”. “${names[worst.i]}” questions are the gap, and that’s where test marks are.`, `最擅長「${names[best.i]}」；「${names[worst.i]}」是弱項，也是考試失分的地方。`) : rated.length ? PT('Fairly even across question types.', '各類題型表現大致平均。') : '';
+  const sec3 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('What should I work on?', '要加強甚麼？')}</h2>
+      <span class="pv-legend"><i class="good"></i>${PT('Strong', '強')}<i class="mid"></i>${PT('Getting there', '漸入佳境')}<i class="low"></i>${PT('Needs work', '需加強')}<i class="none"></i>${PT('Not started', '未開始')}</span></div>
+    ${subjHTML ? `<div class="pv-subjs">${subjHTML}</div>` : ''}
+    <div class="pv-next"><b>${PT('Most useful next, in order', '下一步（按重要次序）')}</b><div class="pv-grid4">${next.slice(0, 4).map(([t, s, run]) => btn(`<b data-raw>${esc(t)}</b><span data-raw>${esc(s)}</span>`, run, 'pv-act')).join('')}</div></div>
+    ${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題型')}</b><span>${PT('last 30 days', '過去 30 日')}</span></div><div class="pv-tgrid">${r.sk.map(([a, n], i) => n >= 3 ? `<span>${names[i]} <b class="${tone(a)}">${a}%</b></span>` : '').join('')}</div>${gapNote ? `<p class="pv-p">${gapNote}</p>` : ''}</div>` : ''}</section>`;
+
+  // ---------- 4. Is it working? ----------
+  const spark = (pts, cls) => { if (!pts || pts.length < 2) return ''; const lo = Math.min(...pts) - 0.2, hi = Math.max(...pts) + 0.2, W = 110, H = 30;
+    return `<svg class="pv-spark ${cls}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts.map((v, i) => `${(2 + i * (W - 4) / (pts.length - 1)).toFixed(1)},${(H - 3 - (v - lo) / (hi - lo || 1) * (H - 6)).toFixed(1)}`).join(' ')}" fill="none" stroke-width="2.5" stroke-linecap="round"/></svg>`; };
+  const lv = (GS ? GS.s : []).filter((x) => x[1] != null);
+  const levelCard = `<div class="pv-card"><b class="pv-ct h-info">${PT('Level, by subject', '各科程度')}${infoBtn('howLevelP', PT('What is level?', '甚麼是程度？'))}</b><p class="pv-sm">${PT('How hard a question you get right 2 times in 3, on a 1–4 scale. It doesn’t drop when questions get harder.', '答對三分之二的題目有多難（1–4 級）。題目變難時不會下跌。')}</p>
+    ${lv.length ? lv.slice(0, 5).map(([lab, level, status, change, , line]) => { const r1 = (v) => Math.round(v * 10) / 10, start = change != null ? r1(level - change) : null; level = r1(level); const sl = { rising: PT('Rising', '上升'), dipping: PT('Dipping', '下跌'), steady: PT('Steady', '平穩'), building: PT('Early days', '初步') }[status] || '';
+      return `<div class="pv-lv"><span data-raw>${esc(lab)}</span>${spark(line, status)}<b>${start != null ? `${start} → ` : ''}${level}</b><em class="${status}">${sl}</em></div>`; }).join('') : `<p class="pv-empty">${PT('About 2 weeks of practice shows your level.', '練習大約兩星期後就會顯示程度。')}</p>`}
+    <details class="ms-how how-panel" id="howLevelP"><summary>${PT('What is level?', '甚麼是程度？')}</summary><div><p>${PT('Questions come in 4 levels: 1 remember, 2 understand, 3 apply, 4 think it through. Your level is the hardest level you get right about 2 times in 3, worked out from first attempts only, allowing for lucky guesses and for help from Buddy.', '題目分 4 級：1 記憶、2 理解、3 應用、4 深入思考。程度是你大約答對三分之二的最難級別，只計第一次作答，並考慮猜中和 Buddy 的幫助。')}</p><p>${PT('Unlike % right, it doesn’t fall when the questions get harder, so it’s the fairest way to see whether you’re improving.', '和答對率不同，題目變難時它不會下跌，所以最能公平反映有沒有進步。')}</p></div></details></div>`;
   const lineHTML = readyLinesSVG(RH.filter((x) => x.used));
-  // school results: before PrepBuddy vs the latest
+  const readyCard = `<div class="pv-card"><b class="pv-ct">${PT('Readiness, week by week', '每週準備度')}</b>${lineHTML}</div>`;
   const ML = marksList(), mBase = ML.find((m) => m.kind === 'before'), mLast = ML.filter((m) => m.kind === 'later').pop();
   const msubs = MARK_SUBJ().filter(([k]) => (mBase && typeof mBase.s[k] === 'number') || (mLast && typeof mLast.s[k] === 'number'));
-  const schoolScores = schoolTests().filter((x) => typeof x.score === 'number').sort((a, b) => testDay(b) - testDay(a)).slice(0, 3);
-  const marksHTML = `<section class="pgcard"><h2>${pIcon('target', 18)} ${PT('School results', '學校成績')}<button class="btn-sm" id="pgMarks">+ ${PT('Add results', '加入成績')}</button></h2>
-    ${msubs.length ? `<div class="pg-mk"><span></span><span>${PT('Before', '使用前')}</span><span>${PT('Latest', '最新')}</span><span>${PT('Change', '變化')}</span>
+  const marksCard = `<div class="pv-card"><b class="pv-ct">${PT('School marks', '學校成績')}</b>
+    ${msubs.length ? `<p class="pv-sm">${PT('Before PrepBuddy vs the latest test, entered by a parent.', '使用 PrepBuddy 前與最近一次測驗，由家長填寫。')}</p><div class="pv-mk"><span></span><span>${PT('Before', '使用前')}</span><span>${PT('Latest', '最新')}</span><span>${PT('Change', '變化')}</span>
       ${msubs.map(([k, z, e]) => { const a = mBase ? mBase.s[k] : null, b = mLast ? mLast.s[k] : null, d = a != null && b != null ? b - a : null;
-        return `<span>${zh ? z : e}</span><span class="m0">${a ?? '–'}</span><b>${b ?? '–'}</b><span class="${d == null ? '' : d >= 2 ? 'upc' : d <= -2 ? 'downc' : ''}">${d == null ? '–' : d > 0 ? '▲ ' + d : d < 0 ? '▼ ' + -d : '0'}</span>`; }).join('')}</div>
-      <p class="pg-note">${mLast ? PT('Marks entered by a parent, before PrepBuddy and the latest test or exam.', '由家長填寫：使用 PrepBuddy 前及最近一次測驗或考試的分數。') : PT('Add the next results when they come back to see the change.', '下次成績出來後填寫，便可看到變化。')}</p>`
-      : `<p class="pg-note" style="margin:0">${PT('Ask a parent to add your school marks from before PrepBuddy. Then you’ll see, subject by subject, whether practice is paying off.', '請家長填寫使用 PrepBuddy 前的學校成績，之後便可逐科看到練習有沒有幫助。')}</p>`}
-    ${schoolScores.length ? `<div class="pg-sts">${schoolScores.map((x) => `<span><b>${x.score}%</b> ${esc(x.name)}</span>`).join('')}</div>` : ''}</section>`;
-  // beyond practice questions
+        return `<span>${zh ? z : e}</span><span class="m0">${a ?? '–'}</span><b>${b ?? '–'}</b><b class="${d == null ? '' : d >= 2 ? 'up' : d <= -2 ? 'down' : ''}">${d == null ? '–' : d > 0 ? '+' + d : d}</b>`; }).join('')}</div>`
+      : `<p class="pv-sm">${PT('Add school marks from before PrepBuddy, then after each test, to see subject by subject whether practice is paying off.', '加入使用 PrepBuddy 前的學校分數，之後每次測驗再加入，就能逐科看到練習有沒有成效。')}</p>`}
+    ${btn(`+ ${PT('Add results', '加入成績')}`, async () => { await marksScreen(); go({ name: 'progress' }); }, 'pv-btn quiet')}</div>`;
+  // growth since the level check: the level of question each chapter serves now, against where it started
+  const grow = [];
+  for (const b of books) { const pl = ((local.placement || {})[b.id] || {}).u || {};
+    for (const [uid, rr] of Object.entries(pl)) { const u = b.units.find((x) => x.id === uid); if (!u || !rr || !rr[1]) continue;
+      const pre = `${b.id}:${uid}:`; const n = local.log.filter((e) => e.q && e.q.startsWith(pre) && e.k !== 'mistakes').length; if (n < 5) continue;
+      const a = rr[0] / rr[1], s0 = 2 + (a >= 0.99 ? 1 : a < 0.4 ? -1 : 0), s1 = 2 + levelShift(b.id, uid); grow.push({ u, s0, s1 }); } }
+  grow.sort((a, b) => (b.s1 - b.s0) - (a.s1 - a.s0));
+  const growCard = grow.length ? `<div class="pv-card"><b class="pv-ct">${PT('Grown since the level check', '自程度測試以來的進步')}</b><p class="pv-sm">${PT('The level of question each chapter gives you now, against where you started.', '每章現在給你的題目程度，與開始時比較。')}</p>
+    ${grow.slice(0, 5).map((g) => `<div class="pv-gr"><span data-raw>${esc(chName(g.u))}</span><b>${PT('Level', '程度')} ${g.s0} → <em class="${g.s1 > g.s0 ? 'up' : ''}">${g.s1}</em></b></div>`).join('')}</div>` : '';
+  const memCard = ret != null || D.longTerm ? `<div class="pv-card"><b class="pv-ct">${PT('Remembered, not just learned', '記得，不只是學過')}</b>${ret != null ? `<div class="pv-big"><b>${ret}%</b><span>${PT('of reviews right days later', '的溫習題幾天後仍答對')}</span></div>` : ''}<p class="pv-sm">${PT(`${D.longTerm} questions remembered for a week or more.`, `${D.longTerm} 題已記得一星期或以上。`)}</p></div>` : '';
+  const timed = (local.tests || []).filter((x) => x.t > now - 60 * DAY && x.m && x.nt === 0);
+  const prac = local.log.filter((e) => e.t > now - 60 * DAY && !['dse', 'mock', 'mistakes'].includes(e.k));
+  const tAcc = timed.length >= 2 ? Math.round(100 * timed.reduce((a, x) => a + x.g, 0) / timed.reduce((a, x) => a + x.m, 0)) : null;
+  const pAcc = prac.length >= 30 ? Math.round(100 * prac.reduce((a, e) => a + e.g, 0) / Math.max(1, prac.reduce((a, e) => a + e.m, 0))) : null;
+  const timedCard = tAcc != null && pAcc != null ? `<div class="pv-card"><b class="pv-ct">${PT('Under test conditions', '考試狀態下')}</b><div class="pv-pair"><span>${PT('Practice', '練習')} <b>${pAcc}%</b></span><span>${PT('Timed tests', '限時測驗')} <b class="${pAcc - tAcc >= 8 ? 'mid' : 'good'}">${tAcc}%</b></span></div>
+    <p class="pv-sm">${pAcc - tAcc >= 8 ? PT(`${pAcc - tAcc}% lower when timed. One timed chapter test a week builds exam stamina.`, `限時下低 ${pAcc - tAcc}%。每星期做一次限時章節測驗，可以增強考試耐力。`) : PT('Holds up well under time pressure.', '在時間壓力下表現穩定。')}</p>
+    ${pAcc - tAcc >= 8 && shown[0] ? btn(PT('Take a timed chapter test', '做限時章節測驗'), () => go({ name: 'book', bookId: shown[0].b.id }), 'pv-btn soft') : ''}</div>` : '';
+  const sec4 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('Proof that practice is paying off', '練習有沒有效果')}</span></div>
+    <div class="pv-grid3">${levelCard}${readyCard}${marksCard}${growCard}${memCard}${timedCard}</div></section>`;
+
+  // ---------- 5. Effort and habits ----------
+  const mins = r.days.reduce((a, m) => a + m, 0), hmOf = (m) => (m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : PT(`${m} min`, `${m} 分鐘`));
+  const logP = local.log.filter((e) => e.t >= t0 - 13 * DAY && e.t < t0 - 6 * DAY), daysP = new Set(logP.map((e) => dayStart(e.t))).size;
+  const allDays = [...new Set(local.log.map((e) => dayStart(e.t)))].sort((a, b) => a - b);
+  let bestRun = 0, run = 0, prevD = 0; allDays.forEach((d) => { run = prevD && d - prevD <= DAY + 3600e3 ? run + 1 : 1; bestRun = Math.max(bestRun, run); prevD = d; });
+  const cmp = (a, b, unit = '') => (b == null ? '' : a > b ? `<small class="up">▲ ${PT(`from ${b}${unit}`, `上週 ${b}${unit}`)}</small>` : a < b ? `<small class="down">▼ ${PT(`from ${b}${unit}`, `上週 ${b}${unit}`)}</small>` : `<small>${PT('same as last week', '和上週一樣')}</small>`);
+  const wk = now - 7 * DAY, ME = Object.values(local.mistakes || {});
+  const fixedW = ME.filter((m) => m.done && (m.doneAt || 0) > wk && !m.manual).length, newW = ME.filter((m) => !m.done && m.t > wk).length;
+  // best time of day: the 2-hour band with the highest score over the last 30 days (needs 20+ answers in it)
+  const band = {}; local.log.filter((e) => e.t > now - 30 * DAY).forEach((e) => { const h = Math.floor(new Date(e.t).getHours() / 2) * 2; const x = band[h] || (band[h] = [0, 0, 0]); x[0] += e.g; x[1] += e.m; x[2]++; });
+  const bands = Object.entries(band).filter(([, x]) => x[2] >= 20 && x[1]).map(([h, x]) => [+h, x[0] / x[1]]).sort((a, b) => b[1] - a[1]);
+  const fmtH = (h) => (zh ? `${h}:00` : `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`);
+  const tileE = (v, lab, sub) => `<div class="pv-eff"><b>${v}</b><span>${lab}</span>${sub || ''}</div>`;
   const BY = beyondData();
-  const beyondHTML = BY.length ? `<section class="pgcard"><h2>${pIcon('pencil', 18)} ${PT('Beyond practice questions', '練習題以外')}</h2><div class="pg-by">${BY.map((x) => `<div><small>${x.k}</small><b>${x.v}</b>${x.c ? `<em class="${x.up ? 'up' : ''}">${x.c}</em>` : ''}${x.n ? `<span>${x.n}</span>` : ''}</div>`).join('')}</div></section>` : '';
-  // how you practised (this week)
-  const HP = howData(logW);
-  const howHTML = logW.length ? `<section class="pgcard"><h2>${pIcon('memory', 18)} ${PT('How you practised', '練習情況')}<span>${PT('this week', '本週')}</span></h2>
-    ${pgBar(PT('Answered without Buddy’s hints', '不用 Buddy 提示作答'), HP.own, `${HP.own}%`, HP.own >= 70 ? 'good' : HP.own >= 40 ? 'mid' : 'low')}
-    ${HP.sets ? pgBar(PT('Sets done at a steady pace (not rushed)', '穩定完成的練習（沒有趕急）'), Math.round(100 * HP.steady / HP.sets), PT(`${HP.steady} of ${HP.sets}`, `${HP.sets} 次中 ${HP.steady} 次`), HP.steady === HP.sets ? 'good' : HP.steady / HP.sets >= 0.7 ? 'mid' : 'low') : ''}
-    <div class="pg-chips">${HP.when ? `<span>${PT(`Most practice: ${HP.when}`, `最常練習：${HP.when}`)}</span>` : ''}${HP.passed ? `<span>${PT(`${HP.passed} chapter test${HP.passed > 1 ? 's' : ''} passed`, `通過 ${HP.passed} 個章節測驗`)}</span>` : ''}${HP.early ? `<span class="warn">${PT(`${HP.early} set${HP.early > 1 ? 's' : ''} stopped early`, `${HP.early} 次中途停止`)}</span>` : ''}${HP.rushed ? `<span class="warn">${PT(`${HP.rushed} rushed set${HP.rushed > 1 ? 's' : ''}`, `${HP.rushed} 次太快完成`)}</span>` : ''}</div></section>` : '';
-  const explainHTML = `<details class="pg-explain"><summary>${PT('What these numbers mean', '這些數字是甚麼意思？')}</summary><div>
-    <p><b>${PT('How ready', '準備程度')}</b> · ${PT('how much of the textbook you’ve really got: covered, answered well, harder questions, remembered later, chapter tests passed. The main “am I prepared?” number.', '你真正掌握了課本多少：涵蓋範圍、答得好、較難的題目、之後仍記得、通過章節測驗。這是「我準備好了嗎？」的主要數字。')}</p>
-    <p><b>${PT('Level (1–4)', '程度（1–4）')}</b> · ${PT('how hard a question you get right about 2 times in 3. It doesn’t drop when questions get harder, so it’s the fairest “am I improving?” number.', '你大約三次答對兩次的題目有多難。題目變難時它不會下跌，所以最能公平反映「我有沒有進步」。')}</p>
-    <p><b>${PT('% right', '答對率')}</b> · ${PT('this week’s raw score. Useful, but it dips as questions get harder.', '本週的原始分數。有參考價值，但題目變難時會下跌。')}</p></div></details>`;
-  const detailHTML = `<details class="pg-more"><summary>${PT('More detail: each day, chapters, % right over time, tests, question types, stars', '更多詳情：每日練習、章節、答對率走勢、測驗、題型、星星')}</summary><div class="pg-more-in">
-        <section class="pgcard"><h2>${pIcon('bars', 18)} ${PT('This week', '本週')}<span>${r.q ? PT(`Longest: ${dayName(longest, 'long')}, ${r.days[longest]} min`, `最長：${dayName(longest, 'long')}，${r.days[longest]} 分鐘`) : ''}</span></h2>
-          <div class="pg-bars">${r.days.map((m, i) => `<div title="${dayName(i, 'long')}: ${m} min"><small>${m ? m + PT('m', '分') : ''}</small><i class="${m ? '' : 'none'} ${i === 6 ? 'today' : ''}" style="height:${m ? Math.max(8, Math.round(96 * m / maxMin)) : 4}px"></i><span>${dayName(i, 'short')}</span></div>`).join('')}</div>
-        </section>
-        ${D.chapters.length ? `<section class="pgcard"><h2>${pIcon('book', 18)} ${PT('Chapters this week', '本週練習的章節')}</h2>
-          <div class="pg-chs">${D.chapters.slice(0, 8).map((c) => `<div class="pg-ch"><div class="pg-ch-top"><span>${esc(chName(c))}</span><b class="${tone(c.a)}">${c.a}%</b></div><div class="pg-bar ${tone(c.a)}"><i style="width:${c.a}%"></i></div><small>${PT('Scored', '得分')} · ${chLabel(c.a)} · ${PT(`${c.n} answered`, `${c.n} 題`)}${c.was === null ? '' : c.a === c.was ? ` · ${PT('same as last week', '與上週相同')}` : ` · ${c.a > c.was ? '↑' : '↓'} ${PT(`from ${c.was}%`, `上週 ${c.was}%`)}`}</small></div>`).join('')}</div></section>` : ''}
-        <section class="pgcard"><h2>${pIcon('line', 18)} ${PT('% right over time', '答對率走勢')}<span>${r.a === null ? '' : PT(`this week ${r.a}%`, `本週 ${r.a}%`)}</span></h2>${trendSVG(D.weeks)}</section>
-        ${testsCardHTML(D)}
-        ${rated.length ? `<section class="pgcard"><h2>${pIcon('brain', 18)} ${PT('Question types', '題型表現')}<span>${PT('last 30 days', '過去 30 日')}</span></h2>
-          <div class="pg-chs">${r.sk.map(([a, n], i) => n ? `<div class="pg-ch"><div class="pg-ch-top"><span>${names[i]}</span><b class="${tone(a)}">${a}%</b></div><div class="pg-bar ${tone(a)}"><i style="width:${a}%"></i></div></div>` : '').join('')}</div>
-          ${skillNote ? `<p class="pg-note">${skillNote}</p>` : ''}</section>` : ''}
-        <section class="pg-two">
-          <button class="pgcard pg-mini" id="mini-mistakes"><span class="pg-ic red">${pIcon('pencil')}</span><b>${D.mistakes}</b><span>${PT('mistakes to fix', '題要改正')}</span>${D.fixed ? `<small class="upc">${PT(`${D.fixed} fixed this week`, `本週改正 ${D.fixed} 題`)}</small>` : ''}</button>
-          <div class="pgcard pg-mini"><span class="pg-ic green">${pIcon('memory')}</span><b>${D.longTerm}</b><span>${PT('remembered a week or more', '題記得一星期或以上')}</span></div>
-        </section>
-        ${starsOn() ? `<section class="pgcard"><h2>${starSVG(18)} ${PT('Stars and badges', '星星與徽章')}<button class="btn-sm quiet" data-stargo>${PT('Star shop', '星星商店')}</button></h2>
-          <div class="pg-starrow"><b>${starState().bal}</b><span>${PT('stars to spend', '粒星星可以用')}</span><small>${PT(`${starState().log.filter((x) => x.t > Date.now() - 7 * DAY).reduce((a, x) => a + x.n, 0)} earned this week`, `本週賺了 ${starState().log.filter((x) => x.t > Date.now() - 7 * DAY).reduce((a, x) => a + x.n, 0)} 粒`)}</small></div>
-          ${badgeShelf()}</section>` : ''}
-    </div></details>`;
+  const sec5 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Effort and habits', '努力與習慣')}</h2><span>${PT('This week, compared with last week', '本週，與上週比較')}</span></div>
+    <div class="pv-grid6">${tileE(`${r.dp}<small>/7</small>`, PT('days practised', '日有練習'), cmp(r.dp, logP.length ? daysP : null))}
+      ${tileE(hmOf(mins), PT('practising', '練習時間'), r.pm != null && (r.pm || mins) ? (mins > r.pm ? `<small class="up">▲ ${PT(`from ${hmOf(r.pm)}`, `上週 ${hmOf(r.pm)}`)}</small>` : mins < r.pm ? `<small class="down">▼ ${PT(`from ${hmOf(r.pm)}`, `上週 ${hmOf(r.pm)}`)}</small>` : `<small>${PT('same as last week', '和上週一樣')}</small>`) : '')}
+      ${tileE(String(r.q), PT('questions', '題目'), r.pq || r.q ? cmp(r.q, r.pq) : '')}
+      ${tileE(PT(`${D.streak} day${D.streak === 1 ? '' : 's'}`, `${D.streak} 日`), PT('streak', '連續練習'), bestRun > 1 ? `<small>${PT(`best ever: ${bestRun}`, `最長：${bestRun} 日`)}</small>` : '')}
+      ${fixedW || newW ? tileE(PT(`${fixedW} fixed`, `改正 ${fixedW} 題`), PT(`vs ${newW} new mistakes`, `新錯題 ${newW} 題`), `<small class="${fixedW >= newW ? 'up' : 'down'}">${fixedW >= newW ? PT('Fixing faster than making', '改正比犯錯快') : PT('More new than fixed', '新錯題比改正多')}</small>`) : ''}
+      ${bands.length >= 2 ? tileE(`${fmtH(bands[0][0])}–${fmtH(bands[0][0] + 2)}`, PT('your best time', '你最好的時段'), `<small>${PT('Scores highest here', '這段時間分數最高')}</small>`) : ''}</div>
+    ${BY.length ? `<div class="pv-chips">${BY.map((x) => `<span data-raw>${esc(x.k)}: ${esc(x.v)}${x.c ? ` (${esc(x.c)})` : ''}</span>`).join('')}${starsOn() ? `<span>${PT('Stars to spend', '可用星星')}: ${starState().bal}</span>` : ''}</div>` : ''}
+    ${goalCardHTML(D)}</section>`;
+
+  // the one-line summary at the top
+  const rising = lv.filter((x) => x[2] === 'rising').map((x) => x[0]);
+  const close = tests.steps.find((p) => p.ready != null && p.ready < 80 && p.left <= 14);
+  const quiet = RH.filter((x) => x.used).map((x) => x.b).find((b) => { const last = local.log.filter((e) => e.q && e.q.startsWith(b.id + ':')).pop(); return last && now - last.t > 4 * DAY; });
+  const head = !local.log.length ? PT('Practise a few chapters and this page fills up with how you’re doing.', '練習幾個章節後，這一頁就會顯示你的學習情況。')
+    : rising.length ? PT(`You’re getting stronger in ${rising.slice(0, 2).join(' and ')}.`, `你在${rising.slice(0, 2).join('和')}越來越強。`) : r.dp >= 4 ? PT('A steady week of practice.', '本週練習穩定。') : PT('Every short session adds up.', '每次短時間練習都有幫助。');
+  const sub2 = [close ? PT(`${close.x.name} is ${leftText(close.left)}: ${close.ready}% ready.`, `「${close.x.name}」${leftText(close.left)}：準備度 ${close.ready}%。`) : '', quiet ? PT(`${sname(quiet)} has been quiet for a few days.`, `${sname(quiet)}已經幾天沒有練習。`) : ''].filter(Boolean).join(' ');
 
   $app.innerHTML = `
-  <main class="pad pgpage" data-view="progress" data-raw style="flex:1">
-    <div class="greet pg-greet"><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, and whether it’s working.', '你的學習情況，以及練習有沒有幫助。')}</p></div>
-    <section class="pg-hero">${buddySVG(r.q ? 'happy' : 'think', 60)}<div><b>${verdict}</b><span>${sub}</span></div></section>
-    <div class="pg-stats">${tilesHTML}</div>
-    ${explainHTML}
-    <div class="pg-grid">
-      <div class="pg-c">
-        ${RH.length ? `<section class="pgcard"><h2 class="h-info">${pIcon('ring', 18)} ${PT('Am I ready?', '我準備好了嗎？')}${infoBtn('howReadyP', PT('How is this worked out?', '這是怎樣計算的？'))}</h2><div class="pg-rings">${ringRow}</div>${testCard}${readyHowHTML('howReadyP')}</section>` : ''}
-        ${goalCardHTML(D)}
-        <section class="pgcard"><h2>${pIcon('target', 18)} ${PT('What to work on', '要加強的地方')}</h2><div class="pg-acts">${acts.join('')}</div></section>
-        ${beyondHTML}
-        ${howHTML}
-      </div>
-      <div class="pg-c">
-        ${gsHTML}
-        ${lineHTML ? `<section class="pgcard"><h2>${pIcon('line', 18)} ${PT('How ready, week by week', '每週準備程度')}</h2>${lineHTML}</section>` : ''}
-        ${marksHTML}
-        <section class="pgcard pg-parent"><span class="pg-ic blue">${pIcon('send')}</span><div><b>${PT('For parents', '家長專區')}</b><span>${PT('The weekly report and the Parent dashboard use the same numbers as this page.', '每週報告和家長主頁使用和這一頁相同的數字。')}</span></div><span class="pg-pbtns"><button class="btn-sm primary" id="report">${PT('Send this week’s report', '傳送本週報告')}</button><button class="btn-sm" id="parentDash">${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}</button></span></section>
-      </div>
-    </div>
-    ${detailHTML}
+  <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
+    <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
+      <div class="pv-topb">${btn(PT('Weekly report', '每週報告'), () => reportDialog(), 'pv-btn quiet')}${btn(`${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}`, () => openParent(), 'pv-btn quiet')}</div></div>
+    <section class="pv-hero">${buddySVG(local.log.length ? 'happy' : 'think', 56)}<div><b data-raw>${esc(head)}</b>${sub2 ? `<span data-raw>${esc(sub2)}</span>` : ''}</div></section>
+    ${sec1}${sec2}${sec3}${sec4}${sec5}
   </main>`;
-  $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
-  $app.querySelectorAll('.gs-next[data-unit], .pg-act[data-unit]').forEach((b) => (b.onclick = async () => {
-    const [bid, uid2] = b.dataset.unit.split(':'); const book = (await getBooks()).find((x) => x.id === bid);
-    const u = book && book.units.find((x) => x.id === uid2); if (u) startUnits(book, [u], local.count || sessionSize());
-  }));
+  $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
-  on('act-review', () => startReview('spaced'));
-  on('act-mistakes', () => go({ name: 'mistakes' }));
-  on('mini-mistakes', () => go({ name: 'mistakes' }));
-  on('act-books', () => go({ name: 'books' }));
-  on('report', () => reportDialog());
-  on('parentDash', () => openParent());
-  bindStarChips($app);
   on('goal-edit', () => goalDialog());
   on('goal-set', () => goalDialog());
   on('fcUp', () => go({ name: 'plans', hi: 'pro' }));
-  on('pgMarks', async () => { await marksScreen(); go({ name: 'progress' }); });
-  bindSchoolTests();
-  $app.querySelectorAll('[data-tests-more]').forEach((b) => (b.onclick = () => { b.previousElementSibling.hidden = false; b.remove(); }));
+  bindStarChips($app);
+  // Mix-ups from wrong answers: worked out by Buddy about once a week, kept on this device.
+  if (!ins || now - ins.t > 7 * DAY) refreshInsights(mkAll).catch(() => {});
+}
+async function refreshInsights(mkAll) {
+  if (refreshInsights.busy || !navigator.onLine) return; const now = Date.now();
+  const open = (mkAll || []).filter((x) => x.m.t > now - 45 * DAY).sort((a, b) => (b.m.n - a.m.n) || (b.m.t - a.m.t)).slice(0, 40);
+  const done = () => { const el = document.getElementById('pvMix'); if (el) el.remove(); };
+  if (open.length < 3) { local.insights = { t: now, lang: LANG, list: [] }; saveLocal(); return done(); }
+  refreshInsights.busy = true;
+  try {
+    const items = open.map(({ q, m, g }) => ({ id: q.id, ch: g.unit ? cleanUnitTitle(g.unit.title) : '', q: String(choiceType(q) ? `${q.stem}\nOptions: ${(q.options || []).join(' | ')}` : [writtenStem(q), ...(q.parts || []).map((p) => p.prompt)].filter(Boolean).join('\n')).slice(0, 600),
+      right: choiceType(q) ? (q.options || [])['ABCD'.indexOf(q.correct_option)] || '' : (q.parts || []).map((p) => (p.mark_scheme || []).join('; ')).join(' / ').slice(0, 500),
+      said: choiceType(q) ? m.ansText || '' : (Array.isArray(m.ans) ? m.ans.filter(Boolean).join(' / ') : '').slice(0, 500), n: m.n }));
+    const r = await api('insights', { items, lang: LANG === 'zh' ? 'zh' : LANG });
+    local.insights = { t: Date.now(), lang: LANG, list: (r.mixups || []).filter((x) => x.title) }; saveLocal();
+    if (view && view.name === 'progress') renderProgress(); else done();
+  } catch (e) { done(); } finally { refreshInsights.busy = false; }
 }
 
 function goalCardHTML(D) {
