@@ -85,10 +85,10 @@ module.exports = async (req, res) => {
       out = { ok: true, commit };
     } else if (body.action === 'update') {
       if (!safeId(body.id)) throw err(400, 'Bad book id.');
-      const allowed = ['title', 'subject', 'level', 'publisher', 'licence', 'credit', 'kind', 'units'];
+      const allowed = ['title', 'subject', 'level', 'publisher', 'licence', 'credit', 'kind', 'units', 'families'];
       const commit = await commitWith({
         message: `Library: update details of ${body.id}`,
-        change: (cat) => cat.map((x) => { if (x.id !== body.id) return x; const y = { ...x }; for (const k of allowed) if (body.changes && k in body.changes) y[k] = body.changes[k]; return y; }),
+        change: (cat) => cat.map((x) => { if (x.id !== body.id) return x; const y = { ...x }; for (const k of allowed) if (body.changes && k in body.changes) y[k] = k === 'families' ? !!body.changes[k] : body.changes[k]; if (y.families === false) delete y.families; return y; }),
       });
       out = { ok: true, commit };
     } else if (body.action === 'bank') {

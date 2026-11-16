@@ -77,15 +77,23 @@ async function renderLibrary(note) {
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2>Books in the library (${cat.length})</h2><button class="btn" id="add">Add a textbook</button></div>
     <div>${cat.map((b) => `<div class="row" data-id="${esc(b.id)}"><div class="meta"><b>${esc(b.title)}</b><span>${esc(b.subject || '')}${b.level ? ' · ' + esc(b.level) : ''} · ${b.units.length} chapters · code ${esc(b.code)}</span></div>
-      <div class="acts">${b.questionCount ? `<span class="hint" style="align-self:center">${b.questionCount} questions</span>` : ''}<button class="link" data-starter="${esc(b.id)}">${b.questionCount ? 'Add more questions' : 'Add starter questions'}</button><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
+      <div class="acts">${b.starter ? '<span class="fam on" title="PrepBuddy’s own starter book: always in the families’ library">Families: always</span>' : `<button class="fam ${b.families ? 'on' : ''}" data-fam="${esc(b.id)}" aria-pressed="${!!b.families}" title="Whether families can find and add this book in the app’s library">Families can find it: <b>${b.families ? 'On' : 'Off'}</b></button>`}${b.questionCount ? `<span class="hint" style="align-self:center">${b.questionCount} questions</span>` : ''}<button class="link" data-starter="${esc(b.id)}">${b.questionCount ? 'Add more questions' : 'Add starter questions'}</button><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
   </div>
-  <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy.</p>`);
+  <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy. Families only find books with “Families can find it” on, plus PrepBuddy’s starter books.</p>`);
   $('add').onclick = () => renderUpload();
   app.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => renderDetails(cat.find((x) => x.id === b.dataset.edit), cat)));
   app.querySelectorAll('[data-starter]').forEach((b) => (b.onclick = async () => {
     const book = cat.find((x) => x.id === b.dataset.starter);
     try { const n = await starterFor(book); renderLibrary(`Added ${n} starter questions to “${book.title}”. Students get them in about 1–2 minutes.`); }
     catch (e) { renderLibrary(); alert(`Starter questions didn’t finish: ${e.message}`); }
+  }));
+  // Families only see books switched on here (and PrepBuddy's starter books). Only for books you have the right to share.
+  app.querySelectorAll('[data-fam]').forEach((b) => (b.onclick = async () => {
+    const book = cat.find((x) => x.id === b.dataset.fam), on = !book.families;
+    if (on && !confirm(`Let families find “${book.title}” in the app’s library?\n\nOnly do this if PrepBuddy has the right to share it with every family (an open licence, your own material, or the publisher’s permission). Licence on file: ${book.licence || 'not set'}.`)) return;
+    b.disabled = true; b.textContent = 'Saving…';
+    try { await adminApi({ action: 'update', id: book.id, changes: { families: on } }); renderLibrary(on ? `Families can now find “${book.title}”. It shows in their library in about 1–2 minutes.` : `“${book.title}” is hidden from families again (anyone who already added it keeps their copy).`); }
+    catch (err) { alert(err.message); renderLibrary(); }
   }));
   app.querySelectorAll('[data-remove]').forEach((b) => (b.onclick = async () => {
     const book = cat.find((x) => x.id === b.dataset.remove);

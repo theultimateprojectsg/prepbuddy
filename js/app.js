@@ -4284,7 +4284,7 @@ const normCode = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 async function renderLibrary(query) {
   let list;
   try { list = await getCatalog(); } catch (e) { toast(e.message); return go({ name: 'home' }); }
-  if (!DEV) list = list.filter((b) => b.starter); // families see PrepBuddy's own books; other library books are for testing
+  if (!DEV) list = list.filter((b) => b.starter || b.families); // families see PrepBuddy's own books and books the admin has switched on for families
   const mine = new Set((await getBooks()).map((b) => b.id));
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>Books</span></button><span style="font-weight:600;font-size:16px">Textbook library</span></div>
