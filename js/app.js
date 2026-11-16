@@ -2564,6 +2564,9 @@ async function renderHome() {
   // ---- greeting card: streak and this week's days ----
   const daysSet = new Set(local.log.map((e) => dayStart(e.t)));
   let streak = 0; for (let d = daysSet.has(t0) ? t0 : t0 - DAY; daysSet.has(d); d -= DAY) streak++;
+  // TEMPORARY streak preview (remove later): a test counter in the card to see how it looks at any streak length
+  let devStreak = null; try { const v = localStorage.getItem('prepbuddy.devStreak'); if (v !== null) devStreak = Math.max(0, +v || 0); } catch (e) {}
+  if (devStreak !== null) streak = devStreak;
   const mon = t0 - ((new Date(t0).getDay() + 6) % 7) * DAY;
   const DN = { zh: ['一', '二', '三', '四', '五', '六', '日'], fr: ['L', 'M', 'M', 'J', 'V', 'S', 'D'], ja: ['月', '火', '水', '木', '金', '土', '日'] }[LANG] || ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0 }));
@@ -2579,7 +2582,8 @@ async function renderHome() {
   const fire = !streak ? 0 : streak < 3 ? 1 : streak < 7 ? 2 : streak < 14 ? 3 : 4;
   const flame = `<span class="fl" aria-hidden="true"><svg viewBox="0 0 40 52"><defs><radialGradient id="flg" cx="50%" cy="78%" r="70%"><stop offset="0" stop-color="#FFE27A"/><stop offset=".45" stop-color="#FF9F1C"/><stop offset="1" stop-color="#F0441F"/></radialGradient></defs><path class="fl-o" d="M20 2c3 9 14 15 14 29a14 14 0 0 1-28 0c0-7 4-11 7-15 0 5 2 8 5 9-2-8 0-15 2-23z" fill="url(#flg)"/><path class="fl-i" d="M20 22c2 5 8 8 8 15a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-5 0-8 1-12z" fill="#FFF3B0"/></svg></span>`;
   const embers = fire >= 3 ? `<span class="gr-embers" aria-hidden="true">${Array.from({ length: fire === 4 ? 14 : 8 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 5) * 0.7}s;--s:${3 + (i % 4)}s"></i>`).join('')}</span>` : '';
-  const strip = `${embers}<button class="gr-strip gr-btn fire-${fire}" id="streakGo"><span class="gr-streak">${streak ? `<span class="gr-sk">${flame}<span class="gr-sk-n"><b>${streak}</b><span>${Z(`day${streak === 1 ? '' : 's'} in a row`, '日連續')}</span></span></span>` : Z('Start a streak today', '今天開始連續練習')}${gw && gw.met ? `<small class="gr-goal">${Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`)}</small>` : !gw && nOn ? `<small class="gr-goal">${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small>` : ''}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
+  const devBox = `<span class="dev-streak" role="group" aria-label="Test streak"><b>Test streak</b><button type="button" data-dstk="-1" aria-label="One less">−</button><output>${streak}</output><button type="button" data-dstk="1" aria-label="One more">+</button><button type="button" data-dstk="0">Reset</button></span>`;
+  const strip = `${embers}${devBox}<button class="gr-strip gr-btn fire-${fire}" id="streakGo"><span class="gr-streak">${streak ? `<span class="gr-sk">${flame}<span class="gr-sk-n"><b>${streak}</b><span>${Z(`day${streak === 1 ? '' : 's'} in a row`, '日連續')}</span></span></span>` : Z('Start a streak today', '今天開始連續練習')}${gw && gw.met ? `<small class="gr-goal">${Z(`${gw.met} of ${gw.days} days this week`, `本週 ${gw.met}／${gw.days} 日`)}</small>` : !gw && nOn ? `<small class="gr-goal">${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week`, `本週 ${nOn} 日`)}</small>` : ''}<small class="gr-cta ${doneToday ? 'ok' : ''}">${doneToday ? Z('✓ Done today', '✓ 今天已練習') : Z('See today’s mission ›', '查看今日任務 ›')}</small><span class="gr-enc">${encHTML}</span></span>
     <span class="gr-week" aria-label="${Z(`${nOn} day${nOn === 1 ? '' : 's'} this week${gw ? ` of ${gw.days}` : ''}`, `本週 ${nOn} 日${gw ? `（目標 ${gw.days} 日）` : ''}`)}">${wk.map((x, k) => `<i class="${x.on ? 'on' : ''} ${x.today ? 'today' : ''}">${x.on ? ICON.check : DN[k]}</i>`).join('')}</span></button>`;
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
@@ -2661,6 +2665,7 @@ async function renderHome() {
     delete local.lessonAt[lessonLeft.key]; saveLocal(); renderHome(); }; }
   { const sg2 = document.getElementById('slipGo'); if (sg2 && slip) sg2.onclick = () => { pick = { bookId: slip.b.id, ids: new Set([slip.u.id]) }; startUnits(slip.b, [slip.u], 10); }; }
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
+  $app.querySelectorAll('[data-dstk]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); const d = +b.dataset.dstk; try { const cur = +(localStorage.getItem('prepbuddy.devStreak') ?? (document.querySelector('.dev-streak output') || {}).textContent ?? 0) || 0; if (d === 0) localStorage.removeItem('prepbuddy.devStreak'); else localStorage.setItem('prepbuddy.devStreak', String(Math.max(0, cur + d))); } catch (er) {} renderHome(); }));
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
