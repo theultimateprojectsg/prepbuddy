@@ -6158,7 +6158,7 @@ function calTile(t, size = 'lg') {
 function testScope(p) {
   if (p.dict) return SCH(`默書 · ${p.dict.title}`, `默書 · ${p.dict.title}`);
   if ((p.x.kind || 'test') === 'dict') return SCH('默書 · words not added yet', '默書 · 未加入詞語');
-  if (!p.book) return SCH(`${tSubjName(p.x.subj) || 'Subject'} · no textbook in the app yet`, `${tSubjName(p.x.subj) || '科目'} · 未加入課本`);
+  if (!p.book) return SCH(`${p.x.sname || tSubjName(p.x.subj) || 'Subject'} · no textbook in the app yet`, `${p.x.sname || tSubjName(p.x.subj) || '科目'} · 未加入課本`);
   if (p.all) return SCH('Everything practised so far', '至今練習過的所有內容');
   return p.units.length === 1 ? cleanUnitTitle(p.units[0].title) : SCH(`${p.units.length} chapters`, `${p.units.length} 個章節`);
 }
@@ -6217,29 +6217,55 @@ function testDialog(edit) {
   const autoName = () => {
     if (st.kind === 'dict') { const n = DICT_LANGS.find((x) => x[0] === st.lang) || DICT_LANGS[0]; return SCH(`${n[2]} dictation`, `${n[1]}默書`); }
     if (st.kind === 'exam') return SCH('Exams', '考試');
-    return st.subj && st.subj !== 'other' ? SCH(`${tSubjName(st.subj)} test`, `${tSubjName(st.subj)}測驗`) : '';
+    const nm = st.sname || (st.subj && st.subj !== 'other' ? tSubjName(st.subj) : '');
+    return nm ? SCH(`${nm} test`, `${nm}測驗`) : '';
   };
-  const subjOpts = (cur) => `<option value="">${SCH('Choose a subject', '選擇科目')}</option>` + TEST_SUBJ().map(([k, z, e]) => `<option value="${k}" ${k === cur ? 'selected' : ''}>${LANG === 'zh' ? z : e}</option>`).join('');
+  // Subjects come from the child's own textbooks first (by their real names, e.g. "Science"), then any other subject.
+  const bookLabel = (b, books) => { const n = String(b.subject || b.title || '').trim(); return books.filter((x) => String(x.subject || x.title || '').trim() === n).length > 1 ? `${n} · ${b.title}` : n; };
+  const choices = (books) => {
+    const mine = books.map((b) => ({ v: `b:${b.id}`, label: bookLabel(b, books), subj: bookSubjKey(b), b: b.id }));
+    const have = new Set(mine.map((x) => x.subj));
+    const rest = TEST_SUBJ().filter(([k]) => k === 'other' || !have.has(k)).map(([k, z, e]) => ({ v: `s:${k}`, label: LANG === 'zh' ? z : e, subj: k, b: null }));
+    return { mine, rest };
+  };
+  const subjOpts = (books, curB, curS) => { const { mine, rest } = choices(books); const cur = curB ? `b:${curB}` : curS ? `s:${curS}` : '';
+    const o = (x) => `<option value="${esc(x.v)}" ${x.v === cur ? 'selected' : ''}>${esc(x.label)}</option>`;
+    return `<option value="">${SCH('Choose a subject', '選擇科目')}</option>${mine.length ? `<optgroup label="${SCH('Your textbooks', '你的課本')}">${mine.map(o).join('')}</optgroup><optgroup label="${SCH('Other subjects', '其他科目')}">${rest.map(o).join('')}</optgroup>` : rest.map(o).join('')}`; };
+  const parseChoice = (v, books) => { if (!v) return { subj: '', b: null }; if (v.startsWith('b:')) { const b = books.find((x) => x.id === v.slice(2)); return b ? { subj: bookSubjKey(b), b: b.id } : { subj: '', b: null }; } return { subj: v.slice(2), b: null }; };
+  // Typing the name picks the subject: "Science test" → the Science textbook.
+  const KW = [[/scien|科學|理科|常識|general stud|\bgs\b|生物|biolog|chemi|化學|physic|物理/i, 'sci'], [/math|數學|算數|算術|数学/i, 'math'], [/english|英文|英語|英语/i, 'eng'], [/chinese|中文|中國語文|國文/i, 'chi'], [/french|français|法文|法語/i, 'fre'], [/japanese|日本語|日文|国語/i, 'jpn'], [/histor|歷史|历史/i, 'hist'], [/geograph|地理/i, 'geo']];
+  const groupOf = (t) => { const k = KW.find(([re]) => re.test(t)); return k ? k[1] : ''; };
+  const guess = (name, books) => {
+    const t = String(name || '').toLowerCase(); if (t.trim().length < 3) return null;
+    const byWord = books.find((b) => String(b.subject || '').toLowerCase().split(/[^a-z\u3400-\u9fff]+/).some((w) => w.length >= 4 && t.includes(w)));
+    if (byWord) return { subj: bookSubjKey(byWord), b: byWord.id };
+    const g = groupOf(t); if (!g) return null;
+    const bk = books.find((b) => groupOf(`${b.subject || ''} ${b.title || ''}`) === g);
+    if (bk) return { subj: bookSubjKey(bk), b: bk.id };
+    const key = { sci: 'gs', math: 'math', eng: 'eng', chi: 'chi', fre: 'fre', jpn: 'jpn' }[g];
+    return key ? { subj: key, b: null } : null;
+  };
   const bookOpts = (books, subjK, cur) => {
     const mine = books.filter((b) => !subjK || subjK === 'other' || bookSubjKey(b) === subjK);
     const list = mine.length ? mine : books;
     return list.map((b) => `<option value="${esc(b.id)}" ${b.id === cur ? 'selected' : ''}>${esc(b.title)}</option>`).join('') + `<option value="" ${!cur ? 'selected' : ''}>${SCH('No textbook in the app for this', '這科未有課本')}</option>`;
   };
   const pickBook = (books, subjK) => { const m = books.filter((b) => subjK && bookSubjKey(b) === subjK); return m.length ? m[0].id : ''; };
+  let dlgBooks = [];
   const draw = async () => {
-    const books = (await getBooks()).filter((b) => !b.demo);
+    const books = (await getBooks()).filter((b) => !b.demo); dlgBooks = books;
     const keep = box.querySelector('.cdlg') ? box.querySelector('.cdlg').scrollTop : 0;
     if (!st.named) st.name = autoName();
     const book = books.find((b) => b.id === st.b);
     if (!st.subj && book && st.kind === 'test') st.subj = bookSubjKey(book);
+    st.sname = book ? String(book.subject || book.title || '').trim() : '';
     const kinds = [['test', SCH('Test or quiz', '測驗或小測'), SCH('One subject', '一個科目')], ['dict', '默書', SCH('Dictation', '默寫詞語')], ['exam', SCH('Exams', '考試'), SCH('Several subjects', '多個科目')]];
     const lists = (local.dict || []).filter((L) => dictGroup(L.lang) === st.lang);
     const dls = DICT_LANGS.filter((x) => x[0] === 'zh' || x[0] === 'en' || x[0] === st.lang || EXTRA_SUBJ.has(x[3]) || (local.dict || []).some((L) => L.lang === x[0]));
     let body = '';
     if (st.kind === 'test') {
       body = `<div class="td-two"><div><label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}"></div>
-      <div><label for="td-s">${SCH('Subject', '科目')}</label><select id="td-s" class="input">${subjOpts(st.subj)}</select></div></div>
-      ${st.subj ? `<label for="td-b">${SCH('Textbook', '課本')}</label><select id="td-b" class="input">${bookOpts(books, st.subj, st.b)}</select>` : ''}
+      <div><label for="td-s">${SCH('Subject', '科目')}</label><select id="td-s" class="input">${subjOpts(books, st.b, st.subj)}</select></div></div>
       ${book ? `<label>${SCH('Chapters in the test', '測驗範圍')} <span class="td-opt">${SCH('optional', '可不填')}</span></label>
         <div class="td-chs">${book.units.map((u) => `<label class="td-ch"><input type="checkbox" data-u="${esc(u.id)}" ${st.u.has(u.id) ? 'checked' : ''}><span>${esc(cleanUnitTitle(u.title))}</span></label>`).join('')}</div>
         <span class="td-hint">${SCH('Not sure? Leave them all unticked: Buddy will use everything you’ve practised so far.', '不清楚範圍？全部不剔：Buddy 會用你至今練習過的內容。')}</span>`
@@ -6251,7 +6277,7 @@ function testDialog(edit) {
       <span class="td-hint">${SCH('Today’s mission will have you practise this list, and readiness is your latest score on it.', '「今日任務」會讓你練習這個詞語表，準備度是你最近一次的分數。')}</span>`;
     } else {
       body = `<label>${SCH('Subjects and dates', '科目及日期')}</label>
-      <div class="td-parts">${st.parts.map((pt, i) => `<div class="td-part"><select class="input" data-ps="${i}" aria-label="${SCH('Subject', '科目')}">${subjOpts(pt.subj)}</select><input class="input" type="date" data-pd="${i}" min="${ymd(Date.now())}" value="${esc(pt.date)}" aria-label="${SCH('Date', '日期')}">${st.parts.length > 1 ? `<button type="button" class="btn-sm quiet" data-px="${i}" aria-label="${SCH('Remove', '移除')}">✕</button>` : ''}</div>`).join('')}</div>
+      <div class="td-parts">${st.parts.map((pt, i) => `<div class="td-part"><select class="input" data-ps="${i}" aria-label="${SCH('Subject', '科目')}">${subjOpts(books, pt.b, pt.subj)}</select><input class="input" type="date" data-pd="${i}" min="${ymd(Date.now())}" value="${esc(pt.date)}" aria-label="${SCH('Date', '日期')}">${st.parts.length > 1 ? `<button type="button" class="btn-sm quiet" data-px="${i}" aria-label="${SCH('Remove', '移除')}">✕</button>` : ''}</div>`).join('')}</div>
       <button type="button" class="btn-sm" id="td-addp" style="align-self:flex-start">+ ${SCH('Add a subject', '加入科目')}</button>
       <span class="td-hint">${SCH('Each subject uses its textbook, and everything you’ve practised in it so far. Buddy plans the soonest and weakest first.', '每科會用相關課本及至今練習過的內容。Buddy 會先安排最近和最弱的科目。')}</span>`;
     }
@@ -6265,15 +6291,22 @@ function testDialog(edit) {
     </div>`;
     box.querySelector('.cdlg').scrollTop = keep;
     const $ = (q) => box.querySelector(q);
-    $('#td-n').oninput = (e) => { st.name = e.target.value; st.named = !!st.name.trim(); };
+    $('#td-n').oninput = (e) => {
+      st.name = e.target.value; st.named = !!st.name.trim();
+      if (st.kind !== 'test' || st.picked) return;
+      clearTimeout(st.gt); st.gt = setTimeout(() => {
+        const g = guess(st.name, books); if (!g || (g.b === st.b && g.subj === st.subj)) return;
+        st.subj = g.subj; st.b = g.b; st.u = new Set();
+        const pos = e.target.selectionStart; draw().then(() => { const n = box.querySelector('#td-n'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) {} } });
+      }, 350);
+    };
     box.querySelectorAll('[data-kind]').forEach((b) => (b.onclick = () => { st.kind = b.dataset.kind; draw(); }));
     if ($('#td-d')) $('#td-d').oninput = (e) => (st.date = e.target.value);
-    if ($('#td-s')) $('#td-s').onchange = (e) => { st.subj = e.target.value; st.b = pickBook(books, st.subj) || null; st.u = new Set(); draw(); };
-    if ($('#td-b')) $('#td-b').onchange = (e) => { st.b = e.target.value || null; st.u = new Set(); draw(); };
+    if ($('#td-s')) $('#td-s').onchange = (e) => { const c = parseChoice(e.target.value, books); st.subj = c.subj; st.b = c.b; st.u = new Set(); st.picked = true; draw(); };
     box.querySelectorAll('[data-u]').forEach((c) => (c.onchange = () => (c.checked ? st.u.add(c.dataset.u) : st.u.delete(c.dataset.u))));
     box.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { st.lang = b.dataset.lang; st.L = ''; draw(); }));
     if ($('#td-l')) $('#td-l').onchange = (e) => (st.L = e.target.value);
-    box.querySelectorAll('[data-ps]').forEach((x) => (x.onchange = () => { const pt = st.parts[+x.dataset.ps]; pt.subj = x.value; pt.b = pickBook(books, pt.subj); }));
+    box.querySelectorAll('[data-ps]').forEach((x) => (x.onchange = () => { const pt = st.parts[+x.dataset.ps]; const c = parseChoice(x.value, books); pt.subj = c.subj; pt.b = c.b || pickBook(books, c.subj); }));
     box.querySelectorAll('[data-pd]').forEach((x) => (x.oninput = () => (st.parts[+x.dataset.pd].date = x.value)));
     box.querySelectorAll('[data-px]').forEach((x) => (x.onclick = () => { st.parts.splice(+x.dataset.px, 1); draw(); }));
     if ($('#td-addp')) $('#td-addp').onclick = () => { const last = st.parts[st.parts.length - 1]; st.parts.push({ id: uid(), subj: '', date: last ? last.date : wk, b: '' }); draw(); };
@@ -6293,9 +6326,9 @@ function testDialog(edit) {
       let recs;
       if (st.kind === 'exam') {
         const grp = group ? edit.grp : uid();
-        recs = st.parts.map((pt) => ({ id: pt.id, kind: 'test', grp, gname: name, name: `${name} · ${tSubjName(pt.subj)}`.slice(0, 60), date: pt.date, subj: pt.subj, b: pt.b || null, u: [], ...(typeof pt.score === 'number' ? { score: pt.score } : {}) }));
+        recs = st.parts.map((pt) => ({ id: pt.id, kind: 'test', grp, gname: name, name: `${name} · ${pt.b ? (dlgBooks.find((b) => b.id === pt.b) || {}).subject || tSubjName(pt.subj) : tSubjName(pt.subj)}`.slice(0, 60), date: pt.date, subj: pt.subj, b: pt.b || null, u: [], ...(typeof pt.score === 'number' ? { score: pt.score } : {}) }));
       } else if (st.kind === 'dict') recs = [{ id: st.id, kind: 'dict', name, date: st.date, subj: (DICT_LANGS.find((x) => x[0] === st.lang) || DICT_LANGS[0])[3], lang: st.lang, L: st.L || null }];
-      else recs = [{ id: st.id, kind: 'test', name, date: st.date, subj: st.subj, b: st.b || null, u: [...st.u] }];
+      else recs = [{ id: st.id, kind: 'test', name, date: st.date, subj: st.subj, b: st.b || null, u: [...st.u], ...(st.sname ? { sname: st.sname } : {}) }];
       if (edit && typeof edit.score === 'number' && !group) recs[0].score = edit.score;
       local.sched = [...others, ...recs].slice(-40);
       if (recs.some((r) => testLeft(r) <= 14)) local.mission = null; // rebuild today's mission so it includes the new test
