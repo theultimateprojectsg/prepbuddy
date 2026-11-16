@@ -6255,10 +6255,10 @@ function testDialog(edit) {
   const draw = async () => {
     const books = (await getBooks()).filter((b) => !b.demo); dlgBooks = books;
     const keep = box.querySelector('.cdlg') ? box.querySelector('.cdlg').scrollTop : 0;
-    if (!st.named) st.name = autoName();
     const book = books.find((b) => b.id === st.b);
     if (!st.subj && book && st.kind === 'test') st.subj = bookSubjKey(book);
     st.sname = book ? String(book.subject || book.title || '').trim() : '';
+    if (!st.named) st.name = autoName();
     const kinds = [['test', SCH('Test or quiz', '測驗或小測'), SCH('One subject', '一個科目')], ['dict', '默書', SCH('Dictation', '默寫詞語')], ['exam', SCH('Exams', '考試'), SCH('Several subjects', '多個科目')]];
     const lists = (local.dict || []).filter((L) => dictGroup(L.lang) === st.lang);
     const dls = DICT_LANGS.filter((x) => x[0] === 'zh' || x[0] === 'en' || x[0] === st.lang || EXTRA_SUBJ.has(x[3]) || (local.dict || []).some((L) => L.lang === x[0]));

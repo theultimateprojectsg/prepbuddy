@@ -1847,6 +1847,10 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .how-x{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#FFFFFF;color:var(--muted);display:grid;place-items:center;cursor:pointer;font-size:15px}.how-x svg{width:16px;height:16px}
 .how-dlg-b{font-size:14.5px;line-height:1.55;color:var(--ink)}.how-dlg-b>*:first-child{margin-top:0}
 .how-ok{align-self:flex-end;min-width:120px}
+
+/* Add-a-test dialog: wider on big screens, chapters in two columns so less scrolling */
+@media (min-width:1024px){.tdlg{max-width:760px}.tdlg .td-chs{display:grid;grid-template-columns:1fr 1fr;align-content:start;column-gap:8px;max-height:min(56dvh,560px)}}
+@media (min-width:1600px){.tdlg{max-width:900px}.tdlg .td-chs{max-height:min(60dvh,640px)}}
 </style>
 </head>
 <body>
