@@ -1841,7 +1841,7 @@ function editDictation(L) {
   const st = { title: L ? L.title : '', lang: L ? L.lang : (LANG === 'zh' ? zhVoice() : 'en'), text: L ? L.items.join('\n') : '', busy: false, err: '' };
   const draw = () => {
     $app.innerHTML = `
-    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button><span style="font-weight:600;font-size:16px">${L ? DT('Edit list', '修改默書') : DT('New list', '新默書')}</span></div>
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('Dictation', '默書')}</span></button><span style="font-weight:600;font-size:16px">${L ? DT('Edit list', '修改默書') : DT('New list', '新默書')}</span></div>
     <main class="pad stack g14 dictpage" data-view="dictation" data-raw style="flex:1">
       <label class="dl-lab" for="dtitle">${DT('Name', '名稱')}</label>
       <input id="dtitle" class="input" maxlength="60" placeholder="${DT('e.g. Chinese Lesson 5 or Spelling Unit 3', '例如：中文默書 第五課')}" value="${esc(st.title)}">
@@ -1899,7 +1899,7 @@ function runDictation(L) {
     const won = n && g / n >= STAR_PASS / 100 ? (() => { const a = addStars(1, 'dictation'); const b = g === n && n >= 3 && R.mode !== 'paper' ? addStars(1, 'dictation-perfect') : 0; return a + b ? { n: a + b, lines: [[DT('Finished a dictation', '完成默書'), a], ...(b ? [[DT('Every word right!', '全部正確！'), b]] : [])].filter((x) => x[1]), badges: checkBadges({}), capped: false } : null; })() : null;
     const miss = Object.entries(R.marks).filter(([, ok]) => !ok).map(([i]) => L.items[i]);
     $app.innerHTML = `
-    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('默書', '默書')}</span></button></div>
+    <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${DT('Dictation', '默書')}</span></button></div>
     <main class="pad stack g18 dictpage" data-view="dictation" data-raw style="flex:1;align-items:stretch">
       <section class="dl-done">${buddySVG(g === n ? 'happy' : 'think', 72)}<b class="dl-score">${g} / ${n}</b><span>${g === n ? DT('Every word right. Brilliant!', '全部正確，好叻！') : DT('Good effort! Practise the ones you missed.', '做得好！再練習寫錯的詞語。')}</span></section>
       ${miss.length ? `<section class="card stack g10" style="padding:16px"><b>${DT('To practise again', '要再練習')}</b><div class="dl-miss-list">${miss.map((t) => `<span>${esc(t)}</span>`).join('')}</div>
@@ -2486,9 +2486,7 @@ async function renderHome() {
       if (weak) { slip = { b: cand.b, u: weak.unit };
         slipHTML = `<div class="td-slip"><span class="pg-ic orange">${pIcon('alert', 18)}</span><span class="td-slt"><b>${Z(`${esc(name)} hasn’t been practised for ${cand.days} days${slipping ? ' and is slipping' : ''}`, `${esc(name)}已經 ${cand.days} 日沒有練習${slipping ? '，而且有退步' : ''}`)}</b><small>${Z(`A short set on ${esc(shortTitle(weak.unit.title))} brings it back.`, `做一組「${esc(shortTitle(weak.unit.title))}」就能追回。`)}</small></span><button class="btn-sm primary" id="slipGo">${Z('Practise', '練習')}</button></div>`; } } }
   const quickHTML = `<section class="stack g10 td-sec" aria-label="${Z('Other things to do', '其他功課')}"><div class="sect-head"><h2>${Z('Also for tonight', '今晚也可以')}</h2></div>
-    <div class="td-quick"><button class="td-q" data-qgo="homework">${pIcon('pencil', 20)}<span><b>${Z('Snap homework', '拍功課')}</b><small>${Z('Buddy helps you through it', 'Buddy 一步步教你')}</small></span></button>
-    <button class="td-q" data-qgo="dictation">${pIcon('memory', 20)}<span><b>${Z('Practise 默書', '練習默書')}</b><small>${Z('Your word lists', '你的詞語表')}</small></span></button>
-    <button class="td-q" data-qgo="writing">${pIcon('book', 20)}<span><b>${Z('Write', '寫作')}</b><small>${Z('Marked, then redraft', '批改後再修改')}</small></span></button></div></section>`;
+    <div class="td-quick quick">${(() => { const T = practiceTiles(); return ['hwgo', 'dictgo', 'wrgo'].map((k) => T[k] || '').join(''); })()}</div></section>`;
   // Buddy's daily brief for the coach panel (built from the numbers, no AI call)
   { const p = tests.steps.find((q) => q.left <= 14);
     const first = steps.find((x) => !x.done && x.now);
@@ -5184,7 +5182,7 @@ function beyondData() {
     out.push({ k: PT('Speaking', '說話'), v: lvShow(l) || '–', c: x.tries.length > 1 && f !== l ? PT(`from ${lvShow(f)} on the first try`, `首次 ${lvShow(f)}`) : '', up: x.tries.length > 1, n: PT(`${sp.reduce((a, s) => a + s.tries.filter((t) => t.t > wk).length, 0)} tries this week`, `本週 ${sp.reduce((a, s) => a + s.tries.filter((t) => t.t > wk).length, 0)} 次`) }); }
   const dl = (local.dict || []).filter((L) => (L.runs || []).length).sort((a, b) => b.runs[b.runs.length - 1].t - a.runs[a.runs.length - 1].t);
   if (dl.length) { const L = dl[0], last = L.runs[L.runs.length - 1], first = L.runs[0], pc = (q) => (q.n ? Math.round(100 * q.g / q.n) : 0);
-    out.push({ k: PT('默書 · Dictation', '默書'), v: pc(last) + '%', c: L.runs.length > 1 && pc(first) !== pc(last) ? PT(`from ${pc(first)}% on the first try`, `首次 ${pc(first)}%`) : '', up: pc(last) > pc(first), n: L.title }); }
+    out.push({ k: PT('Dictation', '默書'), v: pc(last) + '%', c: L.runs.length > 1 && pc(first) !== pc(last) ? PT(`from ${pc(first)}% on the first try`, `首次 ${pc(first)}%`) : '', up: pc(last) > pc(first), n: L.title }); }
   const les = Object.values(local.learned || {}), pl = Object.keys(local.placement || {}).length;
   if (les.length || pl) out.push({ k: PT('Lessons with Buddy', '與 Buddy 上課'), v: String(les.filter((t) => t > wk).length), c: PT('this week', '本週'), up: false, n: `${PT(`${les.length} in total`, `累計 ${les.length} 課`)}${pl ? PT(` · level check done in ${pl} book${pl > 1 ? 's' : ''}`, ` · ${pl} 本書已做程度評估`) : ''}` });
   return out;
@@ -6156,8 +6154,8 @@ function calTile(t, size = 'lg') {
 }
 // What the test covers, in a few words, for lists and cards.
 function testScope(p) {
-  if (p.dict) return SCH(`默書 · ${p.dict.title}`, `默書 · ${p.dict.title}`);
-  if ((p.x.kind || 'test') === 'dict') return SCH('默書 · words not added yet', '默書 · 未加入詞語');
+  if (p.dict) return SCH(`Dictation · ${p.dict.title}`, `默書 · ${p.dict.title}`);
+  if ((p.x.kind || 'test') === 'dict') return SCH('Dictation · words not added yet', '默書 · 未加入詞語');
   if (!p.book) return SCH(`${p.x.sname || tSubjName(p.x.subj) || 'Subject'} · no textbook in the app yet`, `${p.x.sname || tSubjName(p.x.subj) || '科目'} · 未加入課本`);
   if (p.all) return SCH('Everything practised so far', '至今練習過的所有內容');
   return p.units.length === 1 ? cleanUnitTitle(p.units[0].title) : SCH(`${p.units.length} chapters`, `${p.units.length} 個章節`);
@@ -6169,8 +6167,8 @@ async function testStep(x) {
     const L = (local.dict || []).find((d) => d.id === x.L) || null;
     const last = L && (L.runs || []).length ? L.runs[L.runs.length - 1] : null;
     const ready = last && last.n ? Math.round(100 * last.g / last.n) : 0;
-    const step = !L ? { icon: 'learn', t: SCH('Add your 默書 words', '加入默書詞語'), s: SCH('Type them in or snap the list, then practise', '輸入或拍下詞語表，然後練習'), go: SCH('Add', '加入'), run: () => go({ name: 'dictation', id: 'new' }) }
-      : { icon: 'practise', t: SCH(`Practise 默書: ${L.title}`, `練習默書：${L.title}`), s: last ? SCH(`${last.g} of ${last.n} right last time`, `上次 ${last.n} 個中寫對 ${last.g} 個`) : SCH('Not tried yet', '未試過'), go: SCH('Practise', '練習'), run: () => go({ name: 'dictation', id: L.id, sub: 'run' }) };
+    const step = !L ? { icon: 'learn', t: SCH('Add your dictation words', '加入默書詞語'), s: SCH('Type them in or snap the list, then practise', '輸入或拍下詞語表，然後練習'), go: SCH('Add', '加入'), run: () => go({ name: 'dictation', id: 'new' }) }
+      : { icon: 'practise', t: SCH(`Practise dictation: ${L.title}`, `練習默書：${L.title}`), s: last ? SCH(`${last.g} of ${last.n} right last time`, `上次 ${last.n} 個中寫對 ${last.g} 個`) : SCH('Not tried yet', '未試過'), go: SCH('Practise', '練習'), run: () => go({ name: 'dictation', id: L.id, sub: 'run' }) };
     return { x, book: null, units: [], left, ready, step, dict: L, last };
   }
   const book = x.b ? (await getBooks()).find((b) => b.id === x.b) : null;
@@ -6259,7 +6257,7 @@ function testDialog(edit) {
     if (!st.subj && book && st.kind === 'test') st.subj = bookSubjKey(book);
     st.sname = book ? String(book.subject || book.title || '').trim() : '';
     if (!st.named) st.name = autoName();
-    const kinds = [['test', SCH('Test or quiz', '測驗或小測'), SCH('One subject', '一個科目')], ['dict', '默書', SCH('Dictation', '默寫詞語')], ['exam', SCH('Exams', '考試'), SCH('Several subjects', '多個科目')]];
+    const kinds = [['test', SCH('Test or quiz', '測驗或小測'), SCH('One subject', '一個科目')], ['exam', SCH('Exams', '考試'), SCH('Several subjects', '多個科目')], ['dict', SCH('Dictation', '默書'), SCH('Spelling words', '默寫詞語')]];
     const lists = (local.dict || []).filter((L) => dictGroup(L.lang) === st.lang);
     const dls = DICT_LANGS.filter((x) => x[0] === 'zh' || x[0] === 'en' || x[0] === st.lang || EXTRA_SUBJ.has(x[3]) || (local.dict || []).some((L) => L.lang === x[0]));
     let body = '';
@@ -6333,7 +6331,7 @@ function testDialog(edit) {
       local.sched = [...others, ...recs].slice(-40);
       if (recs.some((r) => testLeft(r) <= 14)) local.mission = null; // rebuild today's mission so it includes the new test
       saveLocal();
-      if (st.kind === 'dict' && !st.L) { box.remove(); toast(SCH('Saved. Now add the words for your 默書.', '已儲存。請加入默書詞語。')); return go({ name: 'dictation', id: 'new' }); }
+      if (st.kind === 'dict' && !st.L) { box.remove(); toast(SCH('Saved. Now add the words for your dictation.', '已儲存。請加入默書詞語。')); return go({ name: 'dictation', id: 'new' }); }
       done(SCH(`Added. Today’s mission now gets you ready for ${name}.`, `已加入。今日任務會幫你準備「${name}」。`));
     };
     // delete sits at the top; a second tap confirms

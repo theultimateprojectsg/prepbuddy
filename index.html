@@ -1851,6 +1851,9 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 /* Add-a-test dialog: wider on big screens, chapters in two columns so less scrolling */
 @media (min-width:1024px){.tdlg{max-width:760px}.tdlg .td-chs{display:grid;grid-template-columns:1fr 1fr;align-content:start;column-gap:8px;max-height:min(56dvh,560px)}}
 @media (min-width:1600px){.tdlg{max-width:900px}.tdlg .td-chs{max-height:min(60dvh,640px)}}
+
+/* Also for tonight: same tiles as the Practice page; on phones each tile is one row (icon beside the text) */
+@media (max-width:600px){.td-quick{grid-template-columns:1fr!important;grid-auto-rows:auto}.td-quick .qtile{display:grid!important;grid-template-columns:44px minmax(0,1fr);min-height:0;column-gap:12px;row-gap:2px;align-items:center;padding:12px 14px}.td-quick .qtile>.atile,.td-quick .qtile>svg:first-child{grid-row:1/3;grid-column:1;margin:0}.td-quick .qtile b,.td-quick .qtile span{grid-column:2}}
 </style>
 </head>
 <body>
