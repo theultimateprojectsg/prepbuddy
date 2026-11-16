@@ -2871,10 +2871,11 @@ async function renderBooks() {
   // A cover in the subject's colour. A book not started yet says "New" instead of a discouraging 0%.
   const prog = ({ sc, t }) => (sc || t ? `<b>${sc}%</b><span class="c-meter" aria-hidden="true"><i style="width:${sc}%"></i></span>` : `<span class="c-new">${W('New', '新')}</span>`);
   const recentTag = (b) => (b.id === recentId ? `<span class="c-recent">${W('Last used', '最近使用')}</span>` : '');
-  const cover = (it) => { const { b, sc } = it; return `<button class="bookcover light" data-book="${esc(b.id)}" style="--cc:${coverColour(b)}" aria-label="${esc(b.title)}">
-      ${recentTag(b)}<span class="c-ic">${subjectIcon(b.subject, 20, null, b.title)}</span>
-      <span class="c-sub" data-raw>${esc(b.subject ? subj(b.subject) : (b.library ? '' : W('My upload', '我上載的')))}</span>
-      <span class="c-title" data-raw>${esc(b.title)}</span>
+  // A spiral-bound textbook: cover in the subject's colour, a white title label, a wire coil down the left edge.
+  const cover = (it) => { const { b } = it; return `<button class="bookcover tb" data-book="${esc(b.id)}" style="--cc:${coverColour(b)}" aria-label="${esc(b.title)}">
+      ${recentTag(b)}<span class="tb-coil" aria-hidden="true"></span>
+      <span class="tb-top"><span class="c-sub" data-raw>${esc(b.subject ? subj(b.subject) : (b.library ? '' : W('My upload', '我上載的')))}</span><span class="c-ic">${subjectIcon(b.subject, 22, null, b.title)}</span></span>
+      <span class="tb-label"><span class="c-title" data-raw>${esc(b.title)}</span></span>
       <span class="c-foot"><span class="c-ch">${chN(b.units.length)}</span>${prog(it)}</span>
     </button>`; };
   // A row: spine in the subject colour, title, subject and level, and a progress ring.
