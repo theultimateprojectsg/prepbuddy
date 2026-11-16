@@ -663,23 +663,89 @@ const PATTERNS = [
 
 export let LANG = 'en';
 const KEY = 'prepbuddy.ui';
+const HTML_LANG = { zh: 'zh-HK', fr: 'fr', ja: 'ja', en: 'en' };
+export const LOCALE = () => ({ zh: 'zh-HK', fr: 'fr-FR', ja: 'ja-JP' }[LANG] || 'en-GB');
 
 export function initLang() {
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) {}
-  const phoneZh = (navigator.languages || [navigator.language || '']).some((l) => /^zh/i.test(l));
-  LANG = saved || (phoneZh ? 'zh' : 'en');
-  document.documentElement.lang = LANG === 'zh' ? 'zh-HK' : 'en';
+  const pl = navigator.languages || [navigator.language || ''];
+  const phone = pl.some((l) => /^zh/i.test(l)) ? 'zh' : /^fr/i.test(pl[0] || '') ? 'fr' : /^ja/i.test(pl[0] || '') ? 'ja' : 'en';
+  LANG = HTML_LANG[saved] ? saved : phone;
+  document.documentElement.lang = HTML_LANG[LANG];
+  loadAuto();
   return LANG;
 }
 
 export function setLang(l) {
   LANG = l;
   try { localStorage.setItem(KEY, l); } catch (e) {}
-  document.documentElement.lang = l === 'zh' ? 'zh-HK' : 'en';
+  document.documentElement.lang = HTML_LANG[l] || 'en';
+  loadAuto();
+}
+
+/* ---------- French and Japanese ----------
+   Screens are written in English (with Chinese inline), so for French and Japanese the English text is swapped as it
+   appears: first from the built-in list below, then from translations the AI made earlier on this device. Anything new
+   is sent to the AI in small batches (numbers are replaced by {0}, {1}… so "Review 5 questions" and "Review 6 questions"
+   share one translation), and the screen updates when it comes back. */
+const SEED = {
+  fr: { 'Today': 'Aujourd’hui', 'Books': 'Livres', 'Practice': 'Exercices', 'Progress': 'Progrès', 'Settings': 'Réglages', 'Back': 'Retour', 'Next': 'Suivant', 'Start': 'Commencer', 'Close': 'Fermer', 'Continue': 'Continuer', 'Leave': 'Quitter', 'Keep going': 'Continuer', 'Cancel': 'Annuler', 'Save': 'Enregistrer', 'Done': 'Terminé', 'Delete': 'Supprimer', 'Edit': 'Modifier', 'Skip': 'Passer', 'Practise': 'S’entraîner', 'Learn': 'Apprendre', 'Chapter': 'Chapitre', 'Chapters': 'Chapitres', 'Language': 'Langue', 'Today’s mission': 'Mission du jour', 'School tests': 'Contrôles à l’école', '+ Add a test': '+ Ajouter un contrôle', 'Lesson in progress': 'Leçon en cours', 'Leave this lesson?': 'Quitter cette leçon ?', 'Your place is saved. You can carry on from Today.': 'Ta progression est enregistrée. Tu peux reprendre depuis Aujourd’hui.', 'Keep learning': 'Continuer la leçon', 'Mistake book': 'Carnet d’erreurs', 'Add a textbook': 'Ajouter un manuel', 'My textbooks': 'Mes manuels', 'Ask Buddy': 'Demander à Buddy', 'Quick check': 'Vérification rapide', 'Example': 'Exemple', 'Remember': 'À retenir', 'Start the lesson': 'Commencer la leçon', 'Finish': 'Terminer', 'Check my answer': 'Vérifier ma réponse', 'Next question': 'Question suivante', 'I don’t get it': 'Je ne comprends pas', 'Results': 'Résultats', 'Find your level': 'Trouve ton niveau', 'About your child': 'À propos de votre enfant', 'For parents': 'Pour les parents', 'Reading voice': 'Voix de lecture', 'Time today:': 'Temps aujourd’hui :', 'Also for tonight': 'Aussi pour ce soir', 'Snap homework': 'Photographier les devoirs', 'Write': 'Écrire', 'Speaking': 'Oral', 'Writing': 'Écriture', 'Flashcards': 'Cartes mémoire', 'Revision notes': 'Fiches de révision', 'Mock exam': 'Examen blanc', 'Chapter test': 'Contrôle du chapitre', 'Good morning': 'Bonjour', 'Good afternoon': 'Bon après-midi', 'Good evening': 'Bonsoir', 'Am I ready?': 'Suis-je prêt ?', 'Why PrepBuddy?': 'Pourquoi PrepBuddy ?', 'Plans': 'Formules', 'Privacy': 'Confidentialité', 'Report a problem': 'Signaler un problème' },
+  ja: { 'Today': 'きょう', 'Books': '本', 'Practice': '練習', 'Progress': '記録', 'Settings': '設定', 'Back': 'もどる', 'Next': '次へ', 'Start': 'はじめる', 'Close': '閉じる', 'Continue': 'つづける', 'Leave': 'やめる', 'Keep going': 'つづける', 'Cancel': 'キャンセル', 'Save': '保存', 'Done': '完了', 'Delete': '削除', 'Edit': '編集', 'Skip': 'スキップ', 'Practise': '練習する', 'Learn': '学ぶ', 'Chapter': '章', 'Chapters': '章', 'Language': '言語', 'Today’s mission': 'きょうのミッション', 'School tests': '学校のテスト', '+ Add a test': '+ テストを追加', 'Lesson in progress': 'とちゅうのレッスン', 'Leave this lesson?': 'レッスンをやめますか？', 'Your place is saved. You can carry on from Today.': 'どこまで進んだか保存しました。「きょう」からつづけられます。', 'Keep learning': 'レッスンをつづける', 'Mistake book': 'まちがいノート', 'Add a textbook': '教科書を追加', 'My textbooks': '自分の教科書', 'Ask Buddy': 'Buddy に聞く', 'Quick check': 'ミニテスト', 'Example': '例', 'Remember': 'ポイント', 'Start the lesson': 'レッスンをはじめる', 'Finish': 'おわる', 'Check my answer': '答え合わせ', 'Next question': '次の問題', 'I don’t get it': 'わからない', 'Results': '結果', 'Find your level': 'レベルチェック', 'About your child': 'お子さまについて', 'For parents': '保護者の方へ', 'Reading voice': '読み上げの声', 'Time today:': 'きょうの時間：', 'Also for tonight': '今夜できること', 'Snap homework': '宿題を撮る', 'Write': '書く', 'Speaking': 'スピーキング', 'Writing': '作文', 'Flashcards': '単語カード', 'Revision notes': 'まとめノート', 'Mock exam': '模擬テスト', 'Chapter test': '章のテスト', 'Good morning': 'おはよう', 'Good afternoon': 'こんにちは', 'Good evening': 'こんばんは', 'Am I ready?': '準備はできてる？', 'Why PrepBuddy?': 'PrepBuddy とは？', 'Plans': 'プラン', 'Privacy': 'プライバシー', 'Report a problem': '問題を報告' },
+};
+let AUTO = {}, VALS = new Set();
+const autoKey = () => `${KEY}.${LANG}`;
+function loadAuto() {
+  AUTO = {}; VALS = new Set(); PEND.clear();
+  if (!SEED[LANG]) return;
+  try { AUTO = JSON.parse(localStorage.getItem(autoKey()) || '{}') || {}; } catch (e) { AUTO = {}; }
+  Object.assign(AUTO, SEED[LANG]);
+  Object.values(AUTO).forEach((v) => VALS.add(v.trim()));
+}
+function saveAuto() {
+  const mine = {}; for (const [k, v] of Object.entries(AUTO)) if (!SEED[LANG] || SEED[LANG][k] !== v) mine[k] = v;
+  try { localStorage.setItem(autoKey(), JSON.stringify(mine)); } catch (e) { /* storage full: keep this session's copy */ }
+}
+// "Review 5 questions in 2 days" → ["Review {0} questions in {1} days", ["5", "2"]]
+const NUM = /\d+(?:[.,:]\d+)?/g;
+const toTemplate = (t) => { const nums = []; const k = t.replace(NUM, (m) => `{${nums.push(m) - 1}}`); return [k, nums]; };
+const fill = (tpl, nums) => tpl.replace(/\{(\d+)\}/g, (m, i) => (nums[+i] !== undefined ? nums[+i] : m));
+let translator = null, timer = 0, busy = false, coolUntil = 0;
+const PEND = new Set();
+// app.js supplies the call to the server (it holds the access code).
+export function setTranslator(fn) { translator = fn; }
+function queue(k) {
+  if (!translator || PEND.has(k) || PEND.size > 400) return;
+  PEND.add(k); clearTimeout(timer); timer = setTimeout(flush, 350);
+}
+async function flush() {
+  if (busy || !PEND.size || Date.now() < coolUntil) { if (PEND.size && !busy) timer = setTimeout(flush, Math.max(500, coolUntil - Date.now())); return; }
+  busy = true;
+  const lang = LANG, batch = [...PEND].slice(0, 60);
+  try {
+    const out = await translator(lang, batch);
+    if (lang === LANG) {
+      batch.forEach((k, i) => { const v = out[i]; if (typeof v === 'string' && v.trim()) { AUTO[k] = v; VALS.add(v.trim()); } PEND.delete(k); });
+      saveAuto();
+      translateTree(document.body);
+    }
+  } catch (e) { batch.forEach((k) => PEND.delete(k)); coolUntil = Date.now() + 30000; }
+  busy = false;
+  if (PEND.size) timer = setTimeout(flush, 50);
+}
+function trAuto(text) {
+  const t = text.trim();
+  if (t.length < 2 || t.length > 700 || !/[A-Za-z]{2}/.test(t) || VALS.has(t)) return null;
+  if (/^[A-Z0-9][A-Z0-9-]{3,}$/.test(t) || /^https?:|@/.test(t)) return null; // codes, links, emails
+  if (Object.prototype.hasOwnProperty.call(AUTO, t)) return text.replace(t, AUTO[t]);
+  const [k, nums] = toTemplate(t);
+  if (Object.prototype.hasOwnProperty.call(AUTO, k)) { const v = fill(AUTO[k], nums); VALS.add(v.trim()); return text.replace(t, v); }
+  queue(k);
+  return null;
 }
 
 export function tr(text) {
+  if (SEED[LANG]) return trAuto(text);
   if (LANG !== 'zh') return null;
   const t = text.trim();
   if (!t || !/[A-Za-z]/.test(t)) return null;
@@ -693,9 +759,12 @@ export function tr(text) {
 const ATTRS = ['placeholder', 'aria-label', 'title'];
 // Book content and questions: never translate.
 const RAW = '.stemblock, [data-raw], .point > span:last-child, .marker, .fml, .terms, .stem, p.q, .pstem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
-const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(RAW)); };
+// French and Japanese: whole screens marked data-raw (they carry their own Chinese) are still translated, so only real
+// content is kept as written: questions, the textbook, lessons, Buddy's replies, the child's writing and word lists.
+const RAW_FJ = RAW.replace('[data-raw], ', '') + ', [data-keep], [lang]:not(html), .tmsg:not(.tmsg-ui), .ln-x, .ln-ex, .ln-q, .ln-opt, .ln-why, .ln-sum li, .ln-card h1, .ln-card h2, .ln-script, .nbody, .ntitle, .ffront, .fback, .wtext, .readtxt, .rtext, .mq-text, .improve, .etitle, .sp-q, .sp-qt, .sp-sample, .sp-trx, .sp-phr, .sp-ex, .sp-exq, .wr-essay, .wr-ptext, .wr-corr, .wr-fixes, .wr-crit, .wr-tip, .wr-sum, .wr-note, .dl-item, .dl-big, .dl-q, .dl-miss, .hw-qt, .hw-qx, .hw-qs, .katex, code, input, select';
+const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(SEED[LANG] ? RAW_FJ : RAW)); };
 export function translateTree(root) {
-  if (LANG !== 'zh' || !root) return;
+  if (LANG === 'en' || !root) return;
   if (root.nodeType === 3) { if (isRaw(root)) return; const x = tr(root.nodeValue); if (x !== null && x !== root.nodeValue) root.nodeValue = x; return; }
   if (root.nodeType !== 1) return;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -714,7 +783,7 @@ export function translateTree(root) {
 export function watch(root = document.body) {
   translateTree(root);
   new MutationObserver((muts) => {
-    if (LANG !== 'zh') return;
+    if (LANG === 'en') return;
     for (const m of muts) {
       if (m.type === 'characterData') translateTree(m.target);
       m.addedNodes.forEach((n) => translateTree(n));

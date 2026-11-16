@@ -3,7 +3,7 @@ import * as store from './store.js';
 import { DEMO_ID, installDemo, removeDemo } from './demo.js';
 import { buildReport, encodeReport, headline, weekTone, minutesOf, skillsHTML, REPORT_CSS, reportHTML, strongerHTML } from './report.js';
 import * as PG from './progress.js';
-import { initLang, setLang, watch, LANG } from './i18n.js';
+import { initLang, setLang, watch, LANG, LOCALE, setTranslator } from './i18n.js';
 import { startVoice, voiceSupported } from './voice.js';
 import { logoSVG, buddySVG, buddyFace } from './buddy.js';
 import { PRIVACY, PRIVACY_UPDATED } from './privacy.js';
@@ -1160,7 +1160,7 @@ async function renderHomework(id) {
       ${hwState.error ? `<p class="hw-err" role="alert">${esc(hwState.error)}</p>` : ''}
     </section>
     ${list.length ? `<section class="stack g10"><h2 class="st-h">${HW('Recent homework', '最近的功課')}</h2>
-      <div class="hw-list">${list.slice().reverse().map((x) => `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('homework', 22)}</span><span class="hw-it"><b>${esc(x.title || HW('Homework', '功課'))}</b><small>${esc([x.subject, x.level].filter(Boolean).join(' · '))}${x.subject || x.level ? ' · ' : ''}${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.questions.length} ${HW('questions', '題')}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div></section>` : ''}
+      <div class="hw-list">${list.slice().reverse().map((x) => `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('homework', 22)}</span><span class="hw-it"><b>${esc(x.title || HW('Homework', '功課'))}</b><small>${esc([x.subject, x.level].filter(Boolean).join(' · '))}${x.subject || x.level ? ' · ' : ''}${new Date(x.t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })} · ${x.questions.length} ${HW('questions', '題')}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div></section>` : ''}
   </main>`;
   const add = async (files) => {
     hwState.error = null;
@@ -1209,7 +1209,7 @@ async function renderHomeworkChat(hw) {
       <section class="tchat hw-tchat" id="hwchat">
         <div class="thead"><b class="thead-t">${buddySVG('happy', 28)}<span>${HW('Ask Buddy', '問 Buddy')}<small>${HW('Hints and checking, not answers to copy', '提示和檢查，不是直接給答案')}</small></span></b></div>
         <div class="tlog" id="hwlog">
-          ${!msgs.length ? `<div class="tmsg ai">${HW(`I’ve read your homework: ${hw.questions.length} question${hw.questions.length === 1 ? '' : 's'}. Tap <b>Help me</b> on one, or tell me which one you’re stuck on. Try it first, then show me your answer and I’ll check it!`, `我已經讀了你的功課，共 ${hw.questions.length} 題。按題目旁的<b>幫我</b>，或告訴我你哪一題不會。先自己試試，再把答案告訴我，我幫你檢查！`)}</div>` : ''}
+          ${!msgs.length ? `<div class="tmsg ai tmsg-ui">${HW(`I’ve read your homework: ${hw.questions.length} question${hw.questions.length === 1 ? '' : 's'}. Tap <b>Help me</b> on one, or tell me which one you’re stuck on. Try it first, then show me your answer and I’ll check it!`, `我已經讀了你的功課，共 ${hw.questions.length} 題。按題目旁的<b>幫我</b>，或告訴我你哪一題不會。先自己試試，再把答案告訴我，我幫你檢查！`)}</div>` : ''}
           ${msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath">${esc(m.text)}</div>` : `<div class="tmsg ai">${tutorMd(m.text)}</div>`).join('')}
           ${hwChat.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
           ${hwChat.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(hwChat.error)}</p>` : ''}
@@ -1343,7 +1343,7 @@ async function renderWriting(id, sub) {
       <p class="hint" style="margin:0">${WT('No task? You can still start: Buddy will judge it as a general piece of this type.', '沒有題目？也可以開始，Buddy 會按這類文章的一般要求批改。')}</p>
     </section>` : ''}
     ${list.length ? `<section class="stack g10"><h2 class="st-h">${WT('Your writing', '你的文章')}</h2>
-      <div class="hw-list">${list.slice().reverse().map((x) => { const d = x.drafts[x.drafts.length - 1], lv = d && wrLevel(d.fb, x.kind); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('writing', 22)}</span><span class="hw-it"><b>${esc(x.title)}</b><small>${LANG === 'zh' ? WR_KINDS[x.kind].zh : WR_KINDS[x.kind].en} · ${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.drafts.length ? WT(`${x.drafts.length} draft${x.drafts.length > 1 ? 's' : ''} marked`, `已批改 ${x.drafts.length} 稿`) : WT('Not marked yet', '未批改')}</small></span>${lv ? `<span class="wr-lv sm" title="${WT('Estimated level', '估計等級')}">${lvShow(lv)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
+      <div class="hw-list">${list.slice().reverse().map((x) => { const d = x.drafts[x.drafts.length - 1], lv = d && wrLevel(d.fb, x.kind); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('writing', 22)}</span><span class="hw-it"><b>${esc(x.title)}</b><small>${LANG === 'zh' ? WR_KINDS[x.kind].zh : WR_KINDS[x.kind].en} · ${new Date(x.t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })} · ${x.drafts.length ? WT(`${x.drafts.length} draft${x.drafts.length > 1 ? 's' : ''} marked`, `已批改 ${x.drafts.length} 稿`) : WT('Not marked yet', '未批改')}</small></span>${lv ? `<span class="wr-lv sm" title="${WT('Estimated level', '估計等級')}">${lvShow(lv)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
   </main>`;
   $app.querySelectorAll('[data-kind]').forEach((b) => (b.onclick = () => { s.kind = b.dataset.kind; s.error = null; renderWriting(); }));
   $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => { const x = list.find((y) => y.id === b.dataset.open); go({ name: 'writing', id: b.dataset.open, sub: x && x.drafts.length && !x.work ? 'fb' : undefined }); }));
@@ -1516,7 +1516,7 @@ async function renderSpeaking(id, sub, qi) {
       ${spx.error ? `<p class="hw-err" role="alert">${esc(spx.error)}</p>` : ''}
     </section>
     ${list.length ? `<section class="stack g10"><h2 class="st-h">${SPK('Your topics', '你的題目')}</h2>
-      <div class="hw-list">${list.slice().reverse().map((x) => { const best = x.tries.reduce((b, t) => { const l = spLevel(t.fb, x); return l && (!b || l > b) ? l : b; }, null); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('speaking', 22)}</span><span class="hw-it"><b>${esc(x.task.title)}</b><small>${new Date(x.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · ${x.tries.length ? SPK(`${x.tries.length} answer${x.tries.length > 1 ? 's' : ''}`, `已回答 ${x.tries.length} 次`) : SPK('Not answered yet', '未回答')}</small></span>${best ? `<span class="wr-lv sm">${lvShow(best)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
+      <div class="hw-list">${list.slice().reverse().map((x) => { const best = x.tries.reduce((b, t) => { const l = spLevel(t.fb, x); return l && (!b || l > b) ? l : b; }, null); return `<button class="hw-item" data-open="${x.id}"><span class="hw-ic">${actionIcon('speaking', 22)}</span><span class="hw-it"><b>${esc(x.task.title)}</b><small>${new Date(x.t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })} · ${x.tries.length ? SPK(`${x.tries.length} answer${x.tries.length > 1 ? 's' : ''}`, `已回答 ${x.tries.length} 次`) : SPK('Not answered yet', '未回答')}</small></span>${best ? `<span class="wr-lv sm">${lvShow(best)}</span>` : ''}<span aria-hidden="true">›</span></button>`; }).join('')}</div></section>` : ''}
   </main>`;
   const tp = document.getElementById('spTopic'); tp.oninput = () => (spx.topic = tp.value);
   $app.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => go({ name: 'speaking', id: b.dataset.open })));
@@ -2044,7 +2044,7 @@ async function renderLearn(bookId, unitId) {
     const where = R.k < 0 ? '' : R.k >= n ? '' : T(`On step ${R.k + 1}: ${L.steps[R.k].heading}`, `第 ${R.k + 1} 步：${L.steps[R.k].heading}`);
     box.innerHTML = `<div class="thead"><b class="thead-t">${buddySVG('happy', 28)}<span>${T('Ask Buddy', '問 Buddy')}<small>${esc(where || T('Your tutor for this lesson', '這一課的導師'))}</small></span></b></div>
       <div class="tlog" id="lnlog">
-        ${!R.msgs.length ? `<div class="tmsg ai">${T('I’m right here while you learn. If something doesn’t make sense, ask me: I can explain it another way, give you a new example, or help with the quick check.', '你上課時我都在這裏。有不明白的地方就問我：我可以換個方法解釋、再給你例子，或者幫你想小測。')}</div>` : ''}
+        ${!R.msgs.length ? `<div class="tmsg ai tmsg-ui">${T('I’m right here while you learn. If something doesn’t make sense, ask me: I can explain it another way, give you a new example, or help with the quick check.', '你上課時我都在這裏。有不明白的地方就問我：我可以換個方法解釋、再給你例子，或者幫你想小測。')}</div>` : ''}
         ${R.msgs.map((m) => m.role === 'user' ? `<div class="tmsg me nomath">${esc(m.text)}</div>` : `<div class="tmsg ai">${tutorMd(m.text)}</div>`).join('')}
         ${R.busy && !(R.msgs[R.msgs.length - 1] || {}).live ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
         ${R.err ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(R.err)}</p>` : ''}
@@ -2377,7 +2377,7 @@ async function renderHome() {
   const hr = new Date().getHours();
   const hello = LANG === 'zh' ? (hr < 12 ? '早晨' : hr < 18 ? '午安' : '晚安') : hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
   const name = (local.name || '').trim();
-  const dateText = new Date().toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  const dateText = new Date().toLocaleDateString(LOCALE(), { weekday: 'long', day: 'numeric', month: 'long' });
   const who = name || (KIDS.list.length > 1 && KID && KID.nick) || '';
   const cheer = LANG === 'zh' ? (hr < 12 ? '新的一天，先做一點點吧！' : hr < 18 ? '今天也來練習一下吧！' : '睡前做十分鐘，明天更有信心。')
     : hr < 12 ? 'A little practice now, a lot easier later.' : hr < 18 ? 'Ready for a quick practice?' : 'Ten minutes before bed goes a long way.';
@@ -2445,7 +2445,7 @@ async function renderHome() {
   const mins = Math.max(5, Math.round(steps.length * 5));
   const stepRow = (x, k) => x.done || !x.now
     ? `<div class="ms-row done"><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
-    : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('NEXT', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
+    : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
@@ -2504,7 +2504,7 @@ async function renderHome() {
   const daysSet = new Set(local.log.map((e) => dayStart(e.t)));
   let streak = 0; for (let d = daysSet.has(t0) ? t0 : t0 - DAY; daysSet.has(d); d -= DAY) streak++;
   const mon = t0 - ((new Date(t0).getDay() + 6) % 7) * DAY;
-  const DN = LANG === 'zh' ? ['一', '二', '三', '四', '五', '六', '日'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const DN = { zh: ['一', '二', '三', '四', '五', '六', '日'], fr: ['L', 'M', 'M', 'J', 'V', 'S', 'D'], ja: ['月', '火', '水', '木', '金', '土', '日'] }[LANG] || ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0 }));
   const nOn = wk.filter((x) => x.on).length, gw = goalWeek();
   const doneToday = daysSet.has(t0);
@@ -2523,7 +2523,7 @@ async function renderHome() {
       let plan = '';
       if (p.book && chs.length && p.left >= 1 && p.ready != null) {
         const need = 80 - p.ready, weak = chs.filter((c) => c.pct < 80).sort((a, b) => a.pct - b.pct).slice(0, 2).map((c) => shortTitle(c.unit.title));
-        const dd = new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        const dd = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
         // rough guide: a 10-question set moves its chapter about 8 points; the test's readiness is the average of its chapters
         const perDay = Math.max(1, Math.min(4, Math.ceil(Math.ceil(need * chs.length / 8) / Math.max(1, p.left))));
         plan = need <= 0 ? `<p class="td-plan ok">${Z('On track for 80%. A set every few days keeps it fresh.', '已達 80% 準備度。每隔幾天練一次，保持手感。')}</p>`
@@ -2536,7 +2536,7 @@ async function renderHome() {
     const cards = [];
     for (const d of dates) {
       const same = tests.steps.filter((q) => testDay(q.x) === d), first = same[0];
-      const day = new Date(d).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+      const day = new Date(d).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
       const inMission = same.some((p) => M.steps.some((x) => x.key === `t:${p.x.id}`));
       cards.push(`<div class="td-test">
         <div class="td-day">${calTile(d)}<span class="td-tt"><b>${same.length > 1 ? Z(`${same.length} tests on ${day}`, `${day} 有 ${same.length} 個測驗`) : esc(day)}</b><small class="${first.left <= 2 ? 'soon' : ''}">${leftText(first.left)}</small></span></div>
@@ -2922,7 +2922,7 @@ function renderAbout() {
 
 function renderSettings(sec) {
   const zh = LANG === 'zh';
-  const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" lang="${k === 'zh' ? 'zh-HK' : 'en'}" data-raw><b>${label}</b><span>${sub}</span></button>`;
+  const opt = (k, label, sub) => `<button class="langopt ${LANG === k ? 'on' : ''}" data-lang="${k}" aria-pressed="${LANG === k}" lang="${{ zh: 'zh-HK', fr: 'fr', ja: 'ja' }[k] || 'en'}" data-raw><b>${label}</b><span>${sub}</span></button>`;
   const helpHTML = `${planCardHTML()}
     ${local.pilot ? `<section class="card stack g10" style="padding:16px">
       <b style="font-size:16px">${PLT('Take the tour again', '再看一次導覽')}</b>
@@ -2955,7 +2955,8 @@ function renderSettings(sec) {
 `],
     language: [PLT('Language', '語言'), 'language', `    <section class="card stack g10" style="padding:16px">
       <span class="muted" style="font-size:14px;line-height:1.5">For PrepBuddy’s buttons and messages. Your textbooks and their questions stay in the book’s own language.</span>
-      <div class="langopts" role="group" aria-label="Language">${opt('en', 'English', 'English')}${opt('zh', '中文（繁體）', 'Traditional Chinese')}</div>
+      <div class="langopts" role="group" aria-label="Language">${opt('en', 'English', 'English')}${opt('zh', '中文（繁體）', 'Traditional Chinese')}${opt('fr', 'Français', 'French')}${opt('ja', '日本語', 'Japanese')}</div>
+      ${LANG === 'fr' || LANG === 'ja' ? `<span class="muted" style="font-size:13px;line-height:1.5">${LANG === 'fr' ? 'Les écrans sont traduits automatiquement la première fois que tu les ouvres, puis gardés sur cet appareil.' : '画面は初めて開いたときに自動で翻訳され、この端末に保存されます。'}</span>` : ''}
     </section>
 `],
     backup: [BK('Backup', '備份'), 'backup', `    <section class="card stack g10" style="padding:16px">
@@ -2990,7 +2991,7 @@ function renderSettings(sec) {
     const sub = {
       child: [local.name, gradeNow() ? gradeName(gradeNow()) : ''].filter(Boolean).join(' · ') || PLT('Name, grade, stars', '名字、年級、星星'),
       parents: PLT('Dashboard and reports · PIN', '家長主頁及報告 · 密碼'),
-      language: LANG === 'zh' ? '中文（繁體）' : 'English',
+      language: { zh: '中文（繁體）', fr: 'Français', ja: '日本語' }[LANG] || 'English',
       backup: local.backupAt ? BK(`Last backup ${agoWords(local.backupAt)}`, `上次備份：${agoWords(local.backupAt)}`) : BK('No backup yet', '仍未備份'),
       help: local.pilot ? PLT('Tour and feedback', '導覽及意見') : PLT('Plans and help', '計劃及說明'),
       privacy: PLT('Privacy notice, delete data', '私隱聲明、刪除資料'),
@@ -3563,7 +3564,7 @@ function marksCard() {
   const C = (en, zh) => (LANG === 'zh' ? zh : en);
   const list = marksList(), base = marksBase(), later = list.filter((m) => m.kind === 'later'), last = later[later.length - 1];
   const name = (k, m) => (k === 'other' ? (m.other || C('Other', '其他')) : ((MARK_SUBJ().concat([['gs', '常識', 'General Studies']]).find((x) => x[0] === k) || [k, k, k])[LANG === 'zh' ? 1 : 2]));
-  const mon = (w) => { try { return new Date(w + '-01').toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short', year: 'numeric' }); } catch (e) { return w; } };
+  const mon = (w) => { try { return new Date(w + '-01').toLocaleDateString(LOCALE(), { month: 'short', year: 'numeric' }); } catch (e) { return w; } };
   const rows = base ? Object.keys({ ...base.s, ...(last ? last.s : {}) }).map((k) => {
     const a = base.s[k], b = last ? last.s[k] : undefined, d = typeof a === 'number' && typeof b === 'number' ? b - a : null;
     return `<div class="mk-cmp"><span>${esc(name(k, last && last.s[k] !== undefined ? last : base))}</span><b>${a ?? '–'}</b><b>${b ?? '–'}</b><em class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d === null ? '' : d > 0 ? `+${d}` : d}</em></div>`; }).join('') : '';
@@ -3886,7 +3887,7 @@ async function restoreFile(file) {
   const children = whole ? data.children : [{ meta: null, local: data.local, db: data.db }];
   const okChild = (c) => c && c.local && typeof c.local === 'object' && c.local.stats && typeof c.local.stats === 'object' && Array.isArray(c.local.log) && c.db && typeof c.db === 'object' && !Array.isArray(c.db);
   if (!Array.isArray(children) || !children.length || children.length > 6 || !children.every(okChild)) throw bad();
-  const when = new Date(data.at).toLocaleString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const when = new Date(data.at).toLocaleString(LOCALE(), { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const names = children.map((c) => (c.meta && (c.meta.nick || c.meta.name)) || c.local.name || '').filter(Boolean).join(', ');
   const ok = await confirmLeave({ title: whole ? BK('Replace everything on this device?', '取代這部裝置上的所有資料？') : BK(`Replace ${kidLabel(KID)}’s progress?`, `取代${kidLabel(KID)}的進度？`),
     body: BK(`This backup is from ${when}${names ? ` (${names})` : ''}. ${whole ? 'Every child’s books and progress on this device now' : 'This child’s books and progress on this device now'} will be replaced by it.`,
@@ -4140,7 +4141,7 @@ function renderStars(parent = false) {
   const saving = s.rewards.find((r) => r.id === s.saving) || null;
   const weekAgo = Date.now() - 7 * DAY;
   const thisWeek = s.log.filter((x) => x.t > weekAgo).reduce((a, x) => a + x.n, 0);
-  const fmt = (t) => new Date(t).toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
+  const fmt = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
   const rewardCard = (r) => {
     const can = s.bal >= r.cost, pct = Math.min(100, Math.round(100 * s.bal / r.cost));
     return `<div class="rw ${can ? 'can' : ''} ${s.saving === r.id ? 'saving' : ''}">
@@ -4193,7 +4194,7 @@ function renderStars(parent = false) {
 }
 function badgeShelf() {
   const s = starState();
-  return `<div class="badges">${BADGES.map((b) => { const got = s.badges[b.id]; return `<div class="bdg ${got ? 'got' : ''}" title="${esc(ST(b.den, b.dzh))}"><span>${b.icon}</span><b>${esc(ST(b.en, b.zh))}</b><small>${got ? new Date(got).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' }) : esc(ST(b.den, b.dzh))}</small></div>`; }).join('')}</div>`;
+  return `<div class="badges">${BADGES.map((b) => { const got = s.badges[b.id]; return `<div class="bdg ${got ? 'got' : ''}" title="${esc(ST(b.den, b.dzh))}"><span>${b.icon}</span><b>${esc(ST(b.en, b.zh))}</b><small>${got ? new Date(got).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' }) : esc(ST(b.den, b.dzh))}</small></div>`; }).join('')}</div>`;
 }
 function rewardEditor() {
   const s = starState();
@@ -4634,11 +4635,11 @@ async function renderBook(bookId) {
   const plHTML = !pl && !answered && !(local.plHide || {})[book.id]
     ? `<section class="pl-card"><span class="pl-ic">${buddySVG('happy', 44)}</span><div class="pl-ct"><b>New to this book? Find your level first</b><span>About ${Math.max(6, Math.min(12, levelUnits(book).length * 2))} quick questions, about 5 minutes. Then every chapter starts at the right level for you.</span></div>
         <div class="pl-acts"><button class="btn" id="plGo">Start level check</button><button class="btn-sm quiet" id="plSkip">Not now</button></div></section>`
-    : pl ? `<p class="pl-done">✓ Level check done ${new Date(pl.t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })} · <button class="linkbtn" id="plGo">Take it again</button></p>` : '';
+    : pl ? `<p class="pl-done">✓ Level check done ${new Date(pl.t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })} · <button class="linkbtn" id="plGo">Take it again</button></p>` : '';
   // Learn: a guided lesson per chapter, shown as its own section above the practice list.
   const learned = local.learned || {};
   const lkey = (u) => learned[`${book.id}:${u.id}`];
-  const lstat = (u) => (lkey(u) ? `✓ Learned ${new Date(lkey(u)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' })}` : 'Not learned yet · about 5 min');
+  const lstat = (u) => (lkey(u) ? `✓ Learned ${new Date(lkey(u)).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}` : 'Not learned yet · about 5 min');
   const plWeak = (u) => { const r = ((pl || {}).u || {})[u.id]; return r && r[1] && r[0] / r[1] < 0.4; };
   const nextU = book.units.find((u) => pick.ids.has(u.id) && !lkey(u)) || book.units.find((u) => plWeak(u) && !lkey(u)) || book.units.find((u) => !lkey(u)) || book.units[0];
   const lrow = (u, cls = '', tag = 'Up next') => `<div class="lc-row ${cls} ${lkey(u) ? 'done' : ''}">${cls === 'next' ? `<span class="lc-up">${tag}</span>` : ''}<span class="lc-t"><b data-raw>${esc(shortTitle(u.title))}</b><small>${lstat(u)}</small></span><button class="btn-sm lc-go ${lkey(u) ? '' : 'primary'}" data-learn="${esc(u.id)}">${lkey(u) ? 'Learn again' : 'Start lesson'}</button></div>`;
@@ -4962,7 +4963,7 @@ async function currentReport() {
 
 // The week (days practised + three numbers) and "How ready you are", shared by Today and Progress.
 function weekHTML(r) {
-  const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'narrow' }));
+  const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LOCALE(), { weekday: 'narrow' }));
   const mins = r.days.reduce((a, m) => a + m, 0);
   const hm = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`;
   const trend = r.a !== null && r.pa !== null ? (r.a >= r.pa ? `<span style="color:var(--good);font-weight:600">↑ ${r.a - r.pa} from last week</span>` : `<span style="color:var(--miss-dark);font-weight:600">↓ ${r.pa - r.a} from last week</span>`) : '<span>correct</span>';
@@ -5099,7 +5100,7 @@ function trendSVG(weeks) {
   const narrow = !matchMedia('(min-width:700px)').matches;
   const W = narrow ? 340 : 520, H = narrow ? 130 : 150, px = (i) => (narrow ? 44 : 56) + i * (W - (narrow ? 70 : 100)) / 5, py = (a) => 22 + (100 - a) * (H - 40) / 100;
   const path = pts.map((p, k) => `${k ? 'L' : 'M'}${px(p.i).toFixed(1)} ${py(p.a).toFixed(1)}`).join(' ');
-  const lab = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
+  const lab = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
   return `<svg class="pg-trend" viewBox="0 0 ${W} ${H + 18}" role="img" aria-label="${PT('Weekly score', '每週分數')}: ${weeks.map((w) => (w.a === null ? '–' : w.a + '%')).join(', ')}">
     ${[50, 80].map((g) => `<line x1="34" x2="${W - 12}" y1="${py(g)}" y2="${py(g)}" class="grid"/><text x="0" y="${py(g) + 4}" class="gl">${g}%</text>`).join('')}
     <path d="${path}" class="ln"/>
@@ -5185,7 +5186,7 @@ async function renderProgress() {
     : PT(`Practised ${r.dp} of the last 7 days`, `過去 7 日中有 ${r.dp} 日練習`);
   const diff = r.a !== null && r.pa !== null ? r.a - r.pa : null;
   const stat = (icon, tone, value, label, extra = '') => `<div class="pg-stat"><span class="pg-ic ${tone}">${pIcon(icon, 20)}</span><div><b>${value}</b><span>${label}</span>${extra}</div></div>`;
-  const dayName = (i, f) => new Date(r.from + i * DAY).toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { weekday: f });
+  const dayName = (i, f) => new Date(r.from + i * DAY).toLocaleDateString(LOCALE(), { weekday: f });
   const maxMin = Math.max(20, ...r.days);
   const longest = r.days.indexOf(Math.max(...r.days));
   const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
@@ -5232,7 +5233,7 @@ async function renderProgress() {
   let testCard = '';
   if (nt) {
     const h = nt.book ? RH.find((x) => x.b.id === nt.book.id) : null; const fc = nt.ready == null ? null : h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(nt.ready + h.rate * nt.left)) : null;
-    const day = new Date(testDay(nt.x)).toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const day = new Date(testDay(nt.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
     testCard = `<button class="pg-next" data-tedit="${esc(nt.x.id)}">${calTile(testDay(nt.x))}<span class="pg-nt"><small>${PT('Next school test', '下一個學校測驗')} · ${leftText(nt.left)}</small><b>${esc(nt.x.name)}</b><span>${esc(testScope(nt))}${nt.ready == null ? '' : ' · ' + PT(`${nt.ready}% ready now`, `現時準備度 ${nt.ready}%`)}</span>${fc != null ? `<em class="${fc >= 80 ? 'up' : ''}">${PT(`At this pace: about ${fc}% ready by the test`, `按現時進度：測驗時約 ${fc}%`)}</em>` : nt.book ? `<em>${PT('Forecast after a week of practice', '練習一星期後會有預測')}</em>` : ''}</span></button>`;
   } else testCard = `<button class="pg-next pg-next0" id="addTest2"><span class="pg-ic blue">${pIcon('target')}</span><span class="pg-nt"><b>${PT('Got a school test coming up?', '快要學校測驗？')}</b><span>${PT('Add it to see how ready you are for it, and a forecast for the test day.', '加入後，可看到準備度和測驗當日的預測。')}</span></span></button>`;
   // readiness week by week
@@ -5327,7 +5328,7 @@ async function renderProgress() {
 
 function goalCardHTML(D) {
   const G = D.goal, E = D.exam;
-  const fmt = (t, o) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', o);
+  const fmt = (t, o) => new Date(t).toLocaleDateString(LOCALE(), o);
   if (!G && !E) return `<section class="pgcard pg-goal0"><span class="pg-ic orange">${pIcon('target')}</span><div><b>${PT('Set a weekly goal', '設定每週目標')}</b><span>${PT('Pick how often to practise and your exam date. We’ll track it here and in your parent report.', '選擇練習次數和考試日期，進度會在這裡和家長報告中顯示。')}</span></div><button class="btn-sm" id="goal-set">${PT('Set goal', '設定')}</button></section>`;
   const tone = (p) => (p >= 85 ? 'good' : p >= 60 ? 'mid' : 'low');
   const goalPart = G ? `<div class="pg-gl">
@@ -5345,7 +5346,7 @@ function goalCardHTML(D) {
 function testsCardHTML(D) {
   const list = D.tests;
   const KIND = { paper: [PT('Mock exam', '模擬考試'), 'blue'], test: [PT('Chapter test', '章節測驗'), 'purple'], mini: [PT('Mini mock', '小型模擬'), 'orange'] };
-  const fmt = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
+  const fmt = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
   const row = (x) => { const p = x.m ? Math.round(100 * x.g / x.m) : 0, k = KIND[x.kind] || KIND.paper, pass = x.kind === 'test' ? p >= 80 : null;
     return `<div class="pg-test"><span class="pg-ic ${k[1]}">${pIcon(x.kind === 'test' ? 'check' : 'pencil', 18)}</span><div class="pg-tt"><small>${k[0]} · ${fmt(x.t)}</small><b data-raw>${esc(String(x.title || '').replace(/^(Chapter test|章節測驗) · /, ''))}</b><span>${x.g} / ${x.m} ${PT('marks', '分')} · ${x.min} ${PT('min', '分鐘')}${x.nt ? PT(' · no time limit', ' · 不限時') : x.x ? PT(` · +${x.x} min extra`, ` · 加時 ${x.x} 分鐘`) : ''}</span></div><b class="pg-tp ${p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low'}">${p}%${pass === null ? '' : `<small>${pass ? PT('Passed', '合格') : PT('Not yet', '未合格')}</small>`}</b></div>`; };
   return `<section class="pgcard"><h2>${pIcon('pencil', 18)} ${PT('Tests and mock exams', '測驗及模擬考試')}</h2>
@@ -5729,7 +5730,7 @@ async function renderWorksheets() {
   const books = await getBooks();
   const list = [];
   for (const c of local.worksheets || []) { const ws = await store.get('ws:' + c, null); if (ws && books.some((b) => b.id === ws.bookId)) list.push(ws); }
-  const when = (t) => new Date(t).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { day: 'numeric', month: 'short' });
+  const when = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button><span style="font-weight:600;font-size:16px">Printed worksheets</span></div>
   <main class="stack g14" style="flex:1;padding:4px 20px 24px">
@@ -6047,7 +6048,7 @@ async function renderParent() {
   const last = log.length ? log[log.length - 1].t : 0;
   const name = (local.name || '').trim() || PD('Your child', '你的孩子');
   const weekMin = r.days.reduce((a, b) => a + b, 0);
-  const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { weekday: 'short' }));
+  const dayNames = Array.from({ length: 7 }, (_, i) => new Date(r.from + i * DAY).toLocaleDateString(LOCALE(), { weekday: 'short' }));
   const maxMin = Math.max(20, ...r.days);
   // subjects
   const subj = [];
@@ -6075,7 +6076,7 @@ async function renderParent() {
     <div class="rp-today"><div class="${todayMin ? '' : 'warn'}"><b>${todayMin}</b><span>${PD('minutes', '分鐘')}</span></div><div><b>${today.length}</b><span>${PD('questions', '題目')}</span></div><div><b>${tm ? Math.round(100 * tg / tm) + '%' : '–'}</b><span>${PD('marks scored', '得分率')}</span></div></div>
     ${!today.length ? `<p style="font-size:14px;color:#B4531A">${PD('No practice yet today.', '今日仍未練習。')}</p>` : ''}</section>`;
   const testsCard = tests.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('target', 18)} ${PD('School tests coming up', '即將來臨的學校測驗')}</h2><span>${PD('and today’s plan for each', '及每個測驗的今日計劃')}</span></div>
-    <div class="rp-up">${tests.map((p) => `<div><span class="rp-cal ${p.left <= 1 ? 'soon' : ''}"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LANG === 'zh' ? 'zh-HK' : 'en-GB', { month: 'short' })}</small></span><span class="rp-ut"><b>${esc(p.x.name)}</b><small>${leftText(p.left)} · ${esc(p.step.t)}</small></span><b class="${tone(p.ready || 0)}">${p.ready == null ? '–' : p.ready + '%'}</b></div>`).join('')}</div></section>` : '';
+    <div class="rp-up">${tests.map((p) => `<div><span class="rp-cal ${p.left <= 1 ? 'soon' : ''}"><b>${new Date(testDay(p.x)).getDate()}</b><small>${new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { month: 'short' })}</small></span><span class="rp-ut"><b>${esc(p.x.name)}</b><small>${leftText(p.left)} · ${esc(p.step.t)}</small></span><b class="${tone(p.ready || 0)}">${p.ready == null ? '–' : p.ready + '%'}</b></div>`).join('')}</div></section>` : '';
   const feedCard = `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('bars', 18)} ${PD('Recent activity', '最近活動')}</h2><span>${PD('newest first', '最新在前')}</span></div>
     ${feed.length ? `<ol class="rp-feed">${feed.slice(0, 12).map((f) => `<li><span class="rp-fi">${pIcon(f.ic, 14)}</span><span>${esc(f.tx)}<small>${agoWords(f.t)}</small></span></li>`).join('')}</ol>` : `<p style="font-size:14px;color:var(--muted)">${PD('Activity will show here as your child studies.', '孩子溫習時，活動會在這裏顯示。')}</p>`}</section>`;
   const fixCard = mk || due ? `<section class="rp-call weak"><h3>${PD('To do', '待處理')}</h3><p>${[mk ? PD(`${mk} mistake${mk > 1 ? 's' : ''} to fix`, `${mk} 題錯題待改正`) : '', due ? PD(`${due} review${due > 1 ? 's' : ''} due`, `${due} 題待溫習`) : ''].filter(Boolean).join(' · ')}</p></section>` : '';
@@ -6121,7 +6122,7 @@ function bookSubjKey(b) {
 // A small tear-off calendar: month band, big day number, weekday. Used for school tests.
 function calTile(t, size = 'lg') {
   const d = new Date(t), zh = LANG === 'zh';
-  return `<span class="cal-tile ${size}" aria-hidden="true"><span class="cal-m">${d.toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { month: 'short' })}</span><b class="cal-d">${d.getDate()}</b><span class="cal-w">${d.toLocaleDateString(zh ? 'zh-HK' : 'en-GB', { weekday: 'short' })}</span></span>`;
+  return `<span class="cal-tile ${size}" aria-hidden="true"><span class="cal-m">${d.toLocaleDateString(LOCALE(), { month: 'short' })}</span><b class="cal-d">${d.getDate()}</b><span class="cal-w">${d.toLocaleDateString(LOCALE(), { weekday: 'short' })}</span></span>`;
 }
 // What the test covers, in a few words, for lists and cards.
 function testScope(p) {
@@ -8061,6 +8062,8 @@ new MutationObserver((muts) => {
 
 { const st = document.createElement('style'); st.textContent = REPORT_CSS; document.head.appendChild(st); }
 initLang();
+// French and Japanese screens: new English text is translated by the AI in batches (needs the family code; not counted as AI use).
+setTranslator(async (lang, strings) => { if (!local.code) throw new Error('no code'); return (await apiOnce('uitr', { lang, strings })).out; });
 watch(document.body);
 // Question-writing rules change over time. When they do, questions made under the old rules that the student
 // hasn't answered yet are dropped once, so they're remade under the new ones. Answered questions (and so all
