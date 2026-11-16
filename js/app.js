@@ -1966,11 +1966,11 @@ function getLesson(book, unit, fresh) {
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     const lg = langOf(text);
     // A lesson saved in another language than the chapter's (e.g. English for a Japanese book) is written again.
-    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && have.v >= 4 && (have.lang === lg || (!have.lang && lg !== 'fr' && lg !== 'ja'))) return have; }
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.steps) && have.steps.length && have.v >= 5 && (have.lang === lg || (!have.lang && lg !== 'fr' && lg !== 'ja'))) return have; }
     if (!text) throw new Error('This chapter’s text is missing on this device.');
     const l = await api('learn', { title: unit.title, text, kind: kindOfBook(book), lang: lg });
     if (!l || !Array.isArray(l.steps) || !l.steps.length) throw new Error('Buddy couldn’t put this lesson together. Please try again.');
-    delete l.usage; l.at = Date.now(); l.v = 4; l.lang = lg; // v4 (16 Nov): accuracy and detail rules
+    delete l.usage; l.at = Date.now(); l.v = 5; l.lang = lg; // v5 (16 Nov): teach content not the page; native-teacher review for French/Japanese
     await store.set(key, l);
     return l;
   })();
@@ -2013,7 +2013,7 @@ async function renderLearn(bookId, unitId) {
   const T = (en, z) => (zh ? z : en);
   $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel(T('Chapter', '章節'))}</span></button><span style="font-weight:600;font-size:16px" data-raw>${esc(shortTitle(unit.title))}</span></div>
     <main class="pad stack g18 learnpage" data-view="learn" style="flex:1;align-items:center;justify-content:center;text-align:center">
-      ${buddySVG('think', 64)}<b style="font-size:18px">${T('Getting your lesson ready…', '正在準備你的課堂…')}</b><span class="muted">${T('Buddy is reading the chapter and planning how to teach it. This takes about half a minute the first time.', 'Buddy 正在閱讀這一章並準備教學，第一次大約需要半分鐘。')}</span><div class="spinner" aria-hidden="true"></div></main>`;
+      ${buddySVG('think', 64)}<b style="font-size:18px">${T('Getting your lesson ready…', '正在準備你的課堂…')}</b><span class="muted">${T('Buddy is reading the chapter and planning how to teach it. This takes up to a minute the first time.', 'Buddy 正在閱讀這一章並準備教學，第一次大約需要半分鐘。')}</span><div class="spinner" aria-hidden="true"></div></main>`;
   document.getElementById('back').onclick = () => leaveTo(bookId);
   let L;
   try { L = await getLesson(book, unit); } catch (e) {
@@ -4822,11 +4822,11 @@ function getNotes(book, unit, fresh) {
     const text = await store.get(`text:${book.id}:${unit.id}`, '');
     const lg = langOf(text);
     // Notes saved before a chapter's language was recognised (French, Japanese) are written again in that language.
-    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.sections) && (have.lang === lg || (!have.lang && lg !== 'fr' && lg !== 'ja'))) return have; }
+    if (!fresh) { const have = await store.get(key, null); if (have && Array.isArray(have.sections) && ((have.lang === lg && (have.v >= 2 || (lg !== 'fr' && lg !== 'ja'))) || (!have.lang && lg !== 'fr' && lg !== 'ja'))) return have; }
     if (!text) throw new Error('This chapter’s text is missing on this device.');
     const n = await api('notes', { title: unit.title, text, kind: kindOfBook(book), lang: lg });
     delete n.usage;
-    n.at = Date.now(); n.lang = lg;
+    n.at = Date.now(); n.lang = lg; n.v = 2; // v2: classroom style for French/Japanese
     await store.set(key, n);
     return n;
   })();

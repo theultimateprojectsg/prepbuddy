@@ -10,6 +10,7 @@ const NOTES_RULES = `You are now writing revision notes for a secondary-school s
 - Flashcards test one fact or idea each; mix definitions, explanations ("why…"), processes and, if any, formulas or calculations.
 - Use only what the section says.`;
 
+const { TEACH } = require('../lib/fns/learn');
 module.exports = handler(async (body, usage) => {
   const out = await callTool({
     system: NOTES_RULES,
@@ -17,7 +18,7 @@ module.exports = handler(async (body, usage) => {
     instruction: 'Write the revision notes, key terms, formulas and flashcards for this section.' +
       (body.kind === 'maths' ? ' Focus on methods, formulas and worked-example steps; flashcards can ask for a formula or the next step of a method.' : '') +
       (body.kind === 'language' ? ' Focus on the vocabulary, grammar points, text-type features and writing skills taught; key_terms are words/phrases with meanings and an example sentence.' : '') +
-      langNote(body.lang, 'write'),
+      langNote(body.lang, 'write') + (TEACH[body.lang] ? '\n\n' + TEACH[body.lang] : ''),
     toolName: 'save_notes',
     maxTokens: 8000,
     usage,
