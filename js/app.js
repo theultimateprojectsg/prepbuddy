@@ -2469,6 +2469,7 @@ async function renderHome() {
   const steps = M.steps.map((st) => ({ ...st, done: isDone(st), now: cands.find((c) => c.key === st.key) || (st.attr && !/^t:/.test(st.key) ? { t: st.t, s: st.s, attr: st.attr } : null) }));
   const firstOpen = steps.findIndex((x) => !x.done && x.now);
   const allDone = steps.every((x) => x.done || !x.now);
+  { const md = local.mdone || (local.mdone = {}); const nd = steps.filter((x) => x.done).length; const prev = md[t0]; if (!prev || prev[0] !== nd || prev[1] !== steps.length) { md[t0] = [nd, steps.length]; Object.keys(md).filter((k) => +k < t0 - 60 * DAY).forEach((k) => delete md[k]); saveLocal(); } }
   const mins = Math.max(5, Math.round(steps.length * 5));
   const stepRow = (x, k) => x.done || !x.now
     ? `<div class="ms-row done"><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
@@ -5452,10 +5453,12 @@ async function renderProgress() {
   const spark = (pts, cls) => { if (!pts || pts.length < 2) return ''; const lo = Math.min(...pts) - 0.2, hi = Math.max(...pts) + 0.2, W = 110, H = 30;
     return `<svg class="pv-spark ${cls}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts.map((v, i) => `${(2 + i * (W - 4) / (pts.length - 1)).toFixed(1)},${(H - 3 - (v - lo) / (hi - lo || 1) * (H - 6)).toFixed(1)}`).join(' ')}" fill="none" stroke-width="2.5" stroke-linecap="round"/></svg>`; };
   const lv = (GS ? GS.s : []).filter((x) => x[1] != null);
+  const gName = gradeNow() ? gradeName(gradeNow()) : '';
   const levelCard = `<div class="pv-card"><b class="pv-ct h-info">${PT('Level, by subject', '各科程度')}${infoBtn('howLevelP', PT('What is level?', '甚麼是程度？'))}</b><p class="pv-sm">${PT('How hard a question you get right 2 times in 3, on a 1–4 scale. It doesn’t drop when questions get harder.', '答對三分之二的題目有多難（1–4 級）。題目變難時不會下跌。')}</p>
     ${lv.length ? lv.slice(0, 5).map(([lab, level, status, change, , line]) => { const r1 = (v) => Math.round(v * 10) / 10, start = change != null ? r1(level - change) : null; level = r1(level); const sl = { rising: PT('Rising', '上升'), dipping: PT('Dipping', '下跌'), steady: PT('Steady', '平穩'), building: PT('Early days', '初步') }[status] || '';
-      return `<div class="pv-lv"><span data-raw>${esc(lab)}</span>${spark(line, status)}<b>${start != null ? `${start} → ` : ''}${level}</b><em class="${status}">${sl}</em></div>`; }).join('') : `<p class="pv-empty">${PT('About 2 weeks of practice shows your level.', '練習大約兩星期後就會顯示程度。')}</p>`}
-    <details class="ms-how how-panel" id="howLevelP"><summary>${PT('What is level?', '甚麼是程度？')}</summary><div><p>${PT('Questions come in 4 levels: 1 remember, 2 understand, 3 apply, 4 think it through. Your level is the hardest level you get right about 2 times in 3, worked out from first attempts only, allowing for lucky guesses and for help from Buddy.', '題目分 4 級：1 記憶、2 理解、3 應用、4 深入思考。程度是你大約答對三分之二的最難級別，只計第一次作答，並考慮猜中和 Buddy 的幫助。')}</p><p>${PT('Unlike % right, it doesn’t fall when the questions get harder, so it’s the fairest way to see whether you’re improving.', '和答對率不同，題目變難時它不會下跌，所以最能公平反映有沒有進步。')}</p></div></details></div>`;
+      const ge = gName ? (level >= 3 ? ['above', PT(`Above ${gName}`, `高於${gName}`)] : level >= 2 ? ['meet', PT(`Meeting ${gName}`, `達到${gName}`)] : ['build', PT(`Building to ${gName}`, `邁向${gName}`)]) : null;
+      return `<div class="pv-lv"><span data-raw>${esc(lab)}</span>${spark(line, status)}<b>${start != null ? `${start} → ` : ''}${level}</b><em class="${status}">${sl}</em>${ge ? `<i class="pv-ge ${ge[0]}">${ge[1]}</i>` : ''}</div>`; }).join('') : `<p class="pv-empty">${PT('About 2 weeks of practice shows your level.', '練習大約兩星期後就會顯示程度。')}</p>`}
+    <details class="ms-how how-panel" id="howLevelP"><summary>${PT('What is level?', '甚麼是程度？')}</summary><div><p>${PT('Questions come in 4 levels: 1 remember, 2 understand, 3 apply, 4 think it through. Your level is the hardest level you get right about 2 times in 3, worked out from first attempts only, allowing for lucky guesses and for help from Buddy.', '題目分 4 級：1 記憶、2 理解、3 應用、4 深入思考。程度是你大約答對三分之二的最難級別，只計第一次作答，並考慮猜中和 Buddy 的幫助。')}</p><p>${PT('Unlike % right, it doesn’t fall when the questions get harder, so it’s the fairest way to see whether you’re improving.', '和答對率不同，題目變難時它不會下跌，所以最能公平反映有沒有進步。')}</p>${gName ? `<p><b>${PT(`Against ${gName} expectations`, `與${gName}要求比較`)}</b> · ${PT(`Questions are written for ${gName}: level 2 is what a typical ${gName} school test expects, and levels 3–4 are its harder questions. So under 2 is building towards ${gName}, 2–2.9 is meeting it, and 3 or more is above it.`, `題目按${gName}程度出題：第 2 級是一般${gName}測驗的要求，第 3–4 級是較難的題目。所以低於 2 是邁向${gName}，2–2.9 是達到，3 或以上是高於${gName}。`)}</p>` : ''}</div></details></div>`;
   const lineHTML = readyLinesSVG(RH.filter((x) => x.used));
   const readyCard = `<div class="pv-card"><b class="pv-ct h-info">${PT('Readiness, week by week', '每週準備度')}${ib('howRwP', PT('What is readiness?', '甚麼是準備度？'))}</b>${lineHTML}${how('howRwP', PT('What is readiness?', '甚麼是準備度？'), `<p>${PT('How much of each textbook you really know, out of 100%: the average of its chapters, with longer chapters counting more. One line per subject, one point per week.', '你真正掌握每本課本的程度（滿分 100%）：各章的平均，較長的章節比重較大。每科一條線，每星期一點。')}</p><p>${PT('It only goes up for real learning: covering every part, getting harder questions right, remembering days later and passing timed chapter tests. Answering lots of easy questions doesn’t move it much.', '只有真正學會才會上升：涵蓋每部分、答對較難的題目、幾天後仍記得、通過限時章節測驗。做很多容易的題目不會令它上升很多。')}</p>`)}</div>`;
   const ML = marksList(), mBase = ML.find((m) => m.kind === 'before'), mLast = ML.filter((m) => m.kind === 'later').pop();
@@ -5475,6 +5478,21 @@ async function renderProgress() {
   grow.sort((a, b) => (b.s1 - b.s0) - (a.s1 - a.s0));
   const growCard = grow.length ? `<div class="pv-card"><b class="pv-ct h-info">${PT('Grown since the level check', '自程度測試以來的進步')}${ib('howGrP', PT('How is this worked out?', '這是怎樣計算的？'))}</b>${how('howGrP', PT('How is this worked out?', '這是怎樣計算的？'), `<p>${PT('The level check set a starting level (1–4) for each chapter. Since then, the app moves each chapter’s questions up a level when you score 80% or more and down when you score under 50%, from your last 15 answers.', '程度測試為每章定了起點（1–4 級）。之後，按你最近 15 題的表現，得分 80% 或以上就升一級，低於 50% 就降一級。')}</p><p>${PT('So “Level 1 → 3” means that chapter now gives you level 3 questions, and you’re keeping up.', '所以「程度 1 → 3」表示那一章現在給你第 3 級的題目，而你應付得來。')}</p>`)}<p class="pv-sm">${PT('The level of question each chapter gives you now, against where you started.', '每章現在給你的題目程度，與開始時比較。')}</p>
     ${grow.slice(0, 5).map((g) => `<div class="pv-gr"><span data-raw>${esc(chName(g.u))}</span><b>${PT('Level', '程度')} ${g.s0} → <em class="${g.s1 > g.s0 ? 'up' : ''}">${g.s1}</em></b></div>`).join('')}</div>` : '';
+  // progress check: the level-check chapters again, at the same level, to compare before and now
+  const plBooks = books.filter((b) => (local.placement || {})[b.id]);
+  const pcCard = plBooks.length ? (() => {
+    const rows = plBooks.slice(0, 3).map((b) => {
+      const pl = local.placement[b.id], pc = (local.pchecks || []).filter((x) => x.b === b.id && x.t > pl.t).pop();
+      const pctOf = (per) => { const v = Object.values(per || {}); const g = v.reduce((a, x) => a + x[0], 0), m = v.reduce((a, x) => a + x[1], 0); return m ? Math.round(100 * g / m) : null; };
+      const before = pctOf(pl.u), nowP = pc ? pctOf(pc.per) : null, last = pc ? pc.t : pl.t, due = last + 28 * DAY;
+      const chs = pc ? b.units.filter((u) => pl.u[u.id] && pc.per[u.id]).map((u) => { const a = pl.u[u.id], c = pc.per[u.id]; return { u, a: Math.round(100 * a[0] / a[1]), c: Math.round(100 * c[0] / c[1]) }; }) : [];
+      return `<div class="pv-pc"><div class="pv-pc-h"><b data-raw>${esc(sname(b))}</b>${nowP != null ? `<span><s>${before}%</s> → <b class="${nowP > before ? 'good' : nowP < before ? 'low' : ''}">${nowP}%</b></span>` : `<span>${PT('Level check', '程度評估')} ${before}%</span>`}</div>
+        ${chs.length ? `<div class="pv-pcch">${chs.slice(0, 6).map((x) => `<span data-raw>${esc(chName(x.u))}</span><em>${x.a}% → <b class="${x.c > x.a ? 'good' : x.c < x.a ? 'low' : ''}">${x.c}%</b></em>`).join('')}</div>` : ''}
+        ${now >= due ? btn(pc ? PT('Take the next progress check · 5 min', '做下一次進度檢查 · 5 分鐘') : PT('Take a progress check · 5 min', '做進度檢查 · 5 分鐘'), () => startProgressCheck(b), 'pv-btn soft') : `<p class="pv-sm">${PT(`Next progress check from ${new Date(due).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}.`, `下次進度檢查：${new Date(due).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })} 起。`)}</p>`}</div>`;
+    }).join('');
+    return `<div class="pv-card"><b class="pv-ct h-info">${PT('Progress check: before and now', '進度檢查：之前與現在')}${ib('howPc', PT('What is a progress check?', '甚麼是進度檢查？'))}</b>${rows}
+      ${how('howPc', PT('What is a progress check?', '甚麼是進度檢查？'), `<p>${PT('When a textbook is added, a short level check asks about 2 questions from each of up to 6 chapters. Every 4 weeks, a progress check asks the same chapters again, at the same level, with new questions.', '加入課本時，程度評估會在最多 6 章中每章問約 2 題。之後每 4 星期，進度檢查會用新題目、以相同程度再問同樣的章節。')}</p><p>${PT('Because the chapters and the level are the same, the two scores compare fairly: it’s the clearest before-and-after there is. It takes about 5 minutes.', '章節和程度都一樣，兩次分數可以公平比較，是最清楚的前後對比。大約 5 分鐘。')}</p>`)}</div>`;
+  })() : '';
   const memCard = ret != null || D.longTerm ? `<div class="pv-card"><b class="pv-ct h-info">${PT('Remembered, not just learned', '記得，不只是學過')}${ib('howMemP', PT('How is this worked out?', '這是怎樣計算的？'))}</b>${how('howMemP', PT('How is this worked out?', '這是怎樣計算的？'), `<p>${PT('Every question you get fully right comes back later: after 1 day, then 3, 7, 14 and 30 days. The % is how many you got right when they came back.', '每題完全答對後會再出現：1 日後，然後 3、7、14、30 日後。百分比是再出現時答對的比例。')}</p><p>${PT('“Remembered for a week or more” counts questions that have come back right at the 7-day step or later.', '「記得一星期或以上」是在 7 日或之後再出現時仍答對的題目。')}</p>`)}${ret != null ? `<div class="pv-big"><b>${ret}%</b><span>${PT('of reviews right days later', '的溫習題幾天後仍答對')}</span></div>` : ''}<p class="pv-sm">${PT(`${D.longTerm} questions remembered for a week or more.`, `${D.longTerm} 題已記得一星期或以上。`)}</p></div>` : '';
   const timed = (local.tests || []).filter((x) => x.t > now - 60 * DAY && x.m && x.nt === 0);
   const prac = local.log.filter((e) => e.t > now - 60 * DAY && !['dse', 'mock', 'mistakes'].includes(e.k));
@@ -5552,7 +5570,7 @@ async function renderProgress() {
       <div class="pv-callg"><i style="background:#26357A;border-radius:50%"></i><span>${PT('Open', '未改正')}</span><i style="background:#18966A"></i><span>${PT('Fixed', '已改正')}</span><i style="background:#F0A35E"></i><span>${PT('New', '新錯題')}</span></div>
       ${how('howMk', PT('How to read this', '怎樣看這個圖'), `<p>${PT('The blue line is how many mistakes were still open (not yet got right) at the end of each week. Green bars are mistakes fixed that week; orange bars are new mistakes that week.', '藍線是每星期結束時仍未改正的錯題數。綠色棒是當星期改正的錯題，橙色棒是當星期新增的錯題。')}</p><p>${PT('Every wrong answer goes into the mistake book; getting it fully right later fixes it. A falling blue line means the gaps are closing.', '每題答錯都會放進錯題簿；之後完全答對就算改正。藍線下降，代表漏洞正在補上。')}</p>`)}</div>`; })() : '';
   const sec4 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('Proof that practice is paying off', '練習有沒有效果')}</span></div>
-    <div class="pv-grid3">${levelCard}${readyCard}${mixCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div></section>`;
+    <div class="pv-grid3">${levelCard}${pcCard}${readyCard}${mixCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div></section>`;
 
   // ---------- 5. Effort and habits ----------
   const mins = r.days.reduce((a, m) => a + m, 0), hmOf = (m) => (m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : PT(`${m} min`, `${m} 分鐘`));
@@ -5570,15 +5588,18 @@ async function renderProgress() {
   const BY = beyondData();
   const sec5 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('Effort and habits', '努力與習慣')}${ib('howEffP', PT('How is this counted?', '這是怎樣計算的？'))}</h2><span>${PT('This week, compared with last week', '本週，與上週比較')}</span></div>
     ${how('howEffP', PT('How is this counted?', '這是怎樣計算的？'), `<ul><li><b>${PT('Days, time and questions', '日數、時間和題數')}</b> · ${PT('the last 7 days, against the 7 days before. Time is counted from when you answer questions.', '過去 7 日，與之前 7 日比較。時間按作答時計算。')}</li>
-      <li><b>${PT('Streak', '連續練習')}</b> · ${PT('days in a row with some practice, up to today.', '連續有練習的日數，直到今天。')}</li>
+      <li><b>${PT('Streak', '連續練習')}</b> · ${PT('days in a row with some practice, up to today.', '連續有練習的日數，直到今天。')}</li><li><b>${PT('Missions finished', '完成的任務')}</b> · ${PT('days this week when every step of Today’s mission was done, out of the days Today was opened. Finishing the plan matters more than total time.', '本週打開「今天」的日子中，完成所有任務步驟的日數。完成計劃比總時間更重要。')}</li>
       <li><b>${PT('Fixed vs new mistakes', '改正與新錯題')}</b> · ${PT('mistakes put right this week against new ones still open. Fixing faster than making means the mistake book is shrinking.', '本週改正的錯題與仍未改正的新錯題比較。改正比犯錯快，代表錯題簿在減少。')}</li>
       <li><b>${PT('Best time', '最好的時段')}</b> · ${PT('the 2-hour slot with your highest score over the last 30 days (with at least 20 answers in it).', '過去 30 日得分最高的兩小時時段（最少 20 題）。')}</li></ul>`)}
     <div class="pv-grid6">${tileE(`${r.dp}<small>/7</small>`, PT('days practised', '日有練習'), cmp(r.dp, logP.length ? daysP : null))}
       ${tileE(hmOf(mins), PT('practising', '練習時間'), r.pm != null && (r.pm || mins) ? (mins > r.pm ? `<small class="up">▲ ${PT(`from ${hmOf(r.pm)}`, `上週 ${hmOf(r.pm)}`)}</small>` : mins < r.pm ? `<small class="down">▼ ${PT(`from ${hmOf(r.pm)}`, `上週 ${hmOf(r.pm)}`)}</small>` : `<small>${PT('same as last week', '和上週一樣')}</small>`) : '')}
       ${tileE(String(r.q), PT('questions', '題目'), r.pq || r.q ? cmp(r.q, r.pq) : '')}
       ${tileE(PT(`${D.streak} day${D.streak === 1 ? '' : 's'}`, `${D.streak} 日`), PT('streak', '連續練習'), bestRun > 1 ? `<small>${PT(`best ever: ${bestRun}`, `最長：${bestRun} 日`)}</small>` : '')}
+      ${(() => { const md = local.mdone || {}, wkDays = Object.keys(md).map(Number).filter((d) => d > t0 - 7 * DAY), pv = Object.keys(md).map(Number).filter((d) => d <= t0 - 7 * DAY && d > t0 - 14 * DAY);
+        const fin = (ds) => ds.filter((d) => md[d][1] && md[d][0] >= md[d][1]).length;
+        return wkDays.length ? tileE(`${fin(wkDays)}<small>/${wkDays.length}</small>`, PT('missions finished', '完成的任務'), pv.length ? cmp(fin(wkDays), fin(pv)) : `<small>${PT('days a mission was set', '有任務的日數')}</small>`) : ''; })()}
       ${fixedW || newW ? tileE(PT(`${fixedW} fixed`, `改正 ${fixedW} 題`), PT(`vs ${newW} new mistakes`, `新錯題 ${newW} 題`), `<small class="${fixedW >= newW ? 'up' : 'down'}">${fixedW >= newW ? PT('Fixing faster than making', '改正比犯錯快') : PT('More new than fixed', '新錯題比改正多')}</small>`) : ''}
-      ${bands.length >= 2 ? tileE(`${fmtH(bands[0][0])}–${fmtH(bands[0][0] + 2)}`, PT('your best time', '你最好的時段'), `<small>${PT('Scores highest here', '這段時間分數最高')}</small>`) : ''}</div>
+      ${bands.length >= 2 ? tileE(`${fmtH(bands[0][0])}–${fmtH((bands[0][0] + 2) % 24)}`, PT('your best time', '你最好的時段'), `<small>${PT('Scores highest here', '這段時間分數最高')}</small>`) : ''}</div>
     ${BY.length ? `<div class="pv-chips">${BY.map((x) => `<span data-raw>${esc(x.k)}: ${esc(x.v)}${x.c ? ` (${esc(x.c)})` : ''}</span>`).join('')}${starsOn() ? `<span>${PT('Stars to spend', '可用星星')}: ${starState().bal}</span>` : ''}</div>` : ''}
     ${calCard}${goalCardHTML(D)}</section>`;
 
@@ -6133,8 +6154,10 @@ async function startUnits(book, units, count = sessionSize(), opts = {}) {
   if (types !== 'mcq' && limitOf('written') !== UNL && leftOf('written') <= 0) { types = 'mcq'; toast(PL('Today’s written questions are used up: multiple choice for now. Standard has unlimited.', '今日的文字題已用完，暫時只有選擇題。標準計劃無限使用。')); }
   const pools = [];
   for (const u of units) {
-    const want = 2 + levelShift(book.id, u.id);
-    const pool = shuffle((await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types) && diffOK(q, diff)));
+    const want = opts.pcheck ? 2 : 2 + levelShift(book.id, u.id); // a progress check asks at the level-check level, so before and now compare fairly
+    const all_ = (await getQs(book.id, u.id)).filter((q) => matchType(q, types) && diffOK(q, diff));
+    // a progress check may reuse questions answered before (least recently seen first), so it never has to wait for new ones
+    const pool = opts.pcheck ? shuffle(all_).sort((a, b) => ((local.stats[a.id] || {}).last_t || 0) - ((local.stats[b.id] || {}).last_t || 0)) : shuffle(all_.filter((q) => !local.stats[q.id]));
     // closest to the student's level first, with some variety
     pools.push(pool.map((q) => [q, Math.abs((q.level || 2) - want) + Math.random() * 1.5]).sort((a, b) => a[1] - b[1]).map((x) => x[0]));
   }
@@ -6145,7 +6168,7 @@ async function startUnits(book, units, count = sessionSize(), opts = {}) {
   // unused questions each chapter still has after this session: spares are only written when that runs low
   const bankLeft = {}; units.forEach((u, i) => { bankLeft[u.id] = pools[i].filter((q) => !qs.includes(q)).length; });
   const title = k === 1 ? units[0].title : `${k} chapters`;
-  S = newSession({ mode: 'unit', title: opts.title || title, book, units, qs, target: count, pending: 0, types, count, diff, placement: !!opts.placement, bankLeft });
+  S = newSession({ mode: 'unit', title: opts.title || title, book, units, qs, target: count, pending: 0, types, count, diff, placement: !!opts.placement, pcheck: !!opts.pcheck, bankLeft });
   topUp(S);
   if (S.qs.length) renderQuestion(); else renderWaiting();
 }
@@ -6660,6 +6683,13 @@ function levelUnits(book) {
   if (us.length <= 6) return us.slice();
   return [...new Set([0, 1, 2, 3, 4, 5].map((i) => Math.round(i * (us.length - 1) / 5)))].map((i) => us[i]);
 }
+async function startProgressCheck(book) {
+  const pl = (local.placement || {})[book.id]; if (!pl) return startPlacement(book);
+  const units = book.units.filter((u) => pl.u && pl.u[u.id]);
+  if (!units.length) return startPlacement(book);
+  const count = Math.max(6, Math.min(12, units.length * 2));
+  await startUnits(book, units, count, { types: 'mcq', diff: 'auto', pcheck: true, title: LV('Progress check', '進度檢查') });
+}
 async function startPlacement(book) {
   const units = levelUnits(book);
   const count = Math.max(6, Math.min(12, units.length * 2));
@@ -6672,7 +6702,7 @@ function renderPlacementResult() {
   qs.forEach((q, k) => { const u = qUnit(q.id)[1]; const r = per[u] || (per[u] = [0, 0]); r[0] += S.got[k] || 0; r[1] += marksOf(q); });
   if (!S.recorded) {
     S.recorded = true;
-    local.placement = { ...(local.placement || {}), [book.id]: { t: Date.now(), u: per } }; saveLocal();
+    local.placement = { ...(local.placement || {}), [book.id]: { t: Date.now(), u: per, q: qs.map((q) => q.id) } }; saveLocal();
     if (starsOn()) addStars(2, 'level check');
   }
   const g = qs.reduce((a, q, k) => a + (S.got[k] || 0), 0), m = qs.reduce((a, q) => a + marksOf(q), 0);
@@ -8242,6 +8272,12 @@ function renderSummary() {
   }
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
   const won = awardSession(qs, pct);
+  if (S.pcheck && !S.endedEarly && !S.pcRecorded && S.book) {
+    // Progress check: the same chapters as the level check, at the same level, to compare before and now
+    S.pcRecorded = true; const per = {};
+    qs.forEach((q, k) => { const u = qUnit(q.id)[1]; const x = per[u] || (per[u] = [0, 0]); x[0] += S.got[k] || 0; x[1] += marksOf(q); });
+    local.pchecks = [...(local.pchecks || []), { t: Date.now(), b: S.book.id, per }].slice(-40); saveLocal();
+  }
   if (!S.sessLogged && qs.length) {
     // One line per finished set, for the pilot dashboard: mode, size, score, minutes, rushed or not.
     S.sessLogged = true;
