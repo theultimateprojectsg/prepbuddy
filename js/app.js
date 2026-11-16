@@ -1726,6 +1726,8 @@ const VOICE_OPTS = {
   yue: [['HiuGaai', '曉佳', 'Female · clear, like a teacher', '女聲 · 清晰，似老師'], ['HiuMaan', '曉曼', 'Female · bright and lively', '女聲 · 明亮活潑'], ['WanLung', '雲龍', 'Male · calm', '男聲 · 沉穩']],
   cmn: [['Xiaochen', '曉辰', 'Female · most natural (HD)', '女聲 · 最自然 (HD)'], ['Yunfan', '雲帆', 'Male · most natural (HD)', '男聲 · 最自然 (HD)'], ['Xiaoxiao', '曉曉', 'Female · classic', '女聲 · 經典']],
   en: [['Sonia', 'Sonia', 'Female · British', '女聲 · 英式'], ['Ryan', 'Ryan', 'Male · British', '男聲 · 英式'], ['Ava', 'Ava', 'Female · most natural (HD) · American accent', '女聲 · 最自然 (HD) · 美式口音']],
+  fr: [['Denise', 'Denise', 'Female · clear', '女聲 · 清晰'], ['Henri', 'Henri', 'Male · calm', '男聲 · 沉穩'], ['Eloise', 'Eloise', 'Girl’s voice · friendly', '女孩聲 · 親切']],
+  ja: [['Nanami', 'Nanami', 'Female · clear', '女聲 · 清晰'], ['Keita', 'Keita', 'Male · calm', '男聲 · 沉穩'], ['Aoi', 'Aoi', 'Girl’s voice · friendly', '女孩聲 · 親切']],
 };
 const voicePref = (lang) => { const l = local.learner || {}, v = l.voices && l.voices[lang]; return VOICE_OPTS[lang] && VOICE_OPTS[lang].some((o) => o[0] === v) ? v : ''; };
 const ratePref = () => ((local.learner || {}).vrate === 'slower' ? 'slower' : '');
@@ -2385,7 +2387,7 @@ async function renderHome() {
     let starters = [];
     try { const cat = await getCatalog(); const g = gradeNow(); const all = cat.filter((b) => b.starter); starters = all.filter((b) => !g || String(b.level).toUpperCase() === g); if (!starters.length) starters = all; starters = starters.slice(0, 3); } catch (e) {}
     $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
-    ${starters.length ? `<section class="starter-card" aria-label="${LANG === 'zh' ? '免費入門書' : 'Free starter books'}"><span class="st-tag">${LANG === 'zh' ? '免費 · PrepBuddy 編寫' : 'Free · written by PrepBuddy'}</span>
+    ${starters.length && inHK() ? `<section class="starter-card" aria-label="${LANG === 'zh' ? '免費入門書' : 'Free starter books'}"><span class="st-tag">${LANG === 'zh' ? '免費 · PrepBuddy 編寫' : 'Free · written by PrepBuddy'}</span>
       <h2>${LANG === 'zh' ? '先試一本入門書' : 'Try a free starter book'}</h2>
       <p>${LANG === 'zh' ? '跟足香港課程，即刻有練習、筆記和測驗，之後再加入學校課本。' : 'Follows the Hong Kong curriculum. Practice, notes and tests straight away, then add your school textbook later.'}</p>
       ${starters.map((b) => `<button class="starter-book" data-starter="${esc(b.id)}"><span class="cover" aria-hidden="true" style="background:${subjectColour(b.subject, b.title)}1F">${subjectIcon(b.subject, 26, null, b.title)}</span><span><b data-raw>${esc(b.title)}</b><small>${esc([subj(b.subject), b.level].filter(Boolean).join(' · '))} · ${b.units.length} ${LANG === 'zh' ? '單元' : 'units'}</small></span><span class="st-go">${LANG === 'zh' ? '加入' : 'Add'}</span></button>`).join('')}</section>` : ''}
@@ -2579,10 +2581,10 @@ function practiceTiles() {
   const t = {};
   const html = `
         <button class="qtile" data-mode="weak">${actionTile('weak', 44)}<b>Weak topics</b><span>Questions you found hard</span></button>
-        <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${LANG === 'zh' ? '模擬考試' : 'Mock exam'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : 'DSE-style, timed'}</span></button>
+        <button class="qtile" data-mode="mock">${lockTag('mock')}${actionTile('mock', 44)}<b>${LANG === 'zh' ? '模擬考試' : 'Mock exam'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '校內考試模式，限時' : 'School-exam style, timed') : inHK() ? 'DSE-style, timed' : (LANG === 'zh' ? '考試模式，限時' : 'Exam style, timed')}</span></button>
         <button class="qtile hwtile" id="hwgo">${lockTag('homework')}${actionTile('homework', 44)}<b>Homework help</b><span>Snap a photo, get hints</span></button>
         <button class="qtile hwtile" id="dictgo">${actionTile('dictation', 44)}<b>${LANG === 'zh' ? '默書' : 'Dictation'}</b><span>I read, you write</span></button>
-        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>${LANG === 'zh' ? '寫作' : 'Writing'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '溫和的評語，再改寫' : 'Kind feedback, then redraft') : (LANG === 'zh' ? 'DSE 準則評語，再改寫' : 'DSE-style feedback, then redraft')}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>${LANG === 'zh' ? '聆聽' : 'Listening'}</b><span>${LANG === 'zh' ? '先聽，再作答' : 'Listen, then answer'}</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>${LANG === 'zh' ? '呈分試衝刺' : 'Exam sprint'}</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>${LANG === 'zh' ? '說話' : 'Speaking'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '朗讀再回答' : 'Read aloud and answer') : (LANG === 'zh' ? 'DSE 卷四，一分鐘回答' : 'DSE Paper 4, one-minute answers')}</span></button>
+        <button class="qtile hwtile" id="wrgo">${lockTag('writing')}${actionTile('writing', 44)}<b>${LANG === 'zh' ? '寫作' : 'Writing'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '溫和的評語，再改寫' : 'Kind feedback, then redraft') : inHK() ? (LANG === 'zh' ? 'DSE 準則評語，再改寫' : 'DSE-style feedback, then redraft') : (LANG === 'zh' ? '考試準則評語，再改寫' : 'Exam-style feedback, then redraft')}</span></button>${readAloudOn() || !isPrimaryKid() ? `<button class="qtile hwtile" id="lngo">${actionTile('listening', 44)}<b>${LANG === 'zh' ? '聆聽' : 'Listening'}</b><span>${LANG === 'zh' ? '先聽，再作答' : 'Listen, then answer'}</span></button>` : ''}${ssaOn() ? `<button class="qtile hwtile" id="ssago">${actionTile('sprint', 44)}<b>${LANG === 'zh' ? '呈分試衝刺' : 'Exam sprint'}</b><span>${LANG === 'zh' ? '中英數弱項，限時' : 'Chinese, English, Maths weak spots'}</span></button>` : ''}<button class="qtile hwtile" id="spgo">${lockTag('speaking')}${actionTile('speaking', 44)}<b>${LANG === 'zh' ? '說話' : 'Speaking'}</b><span>${isPrimaryKid() ? (LANG === 'zh' ? '朗讀再回答' : 'Read aloud and answer') : inHK() ? (LANG === 'zh' ? 'DSE 卷四，一分鐘回答' : 'DSE Paper 4, one-minute answers') : (LANG === 'zh' ? '一分鐘回答' : 'One-minute answers')}</span></button>
 `;
   html.split(/(?=<button class="qtile)/).map((x) => x.trim()).filter(Boolean).forEach((x) => { const m = /data-mode="(\w+)"|id="(\w+)"/.exec(x); if (m) t[m[1] || m[2]] = x; });
   return t;
@@ -3180,7 +3182,7 @@ async function pilotWelcome() {
   if (profileOn() && !local.learner && (!local.toured || local.needProfile)) {
     await profileScreen({ first: true });
     // while a parent is holding the device: school marks from before PrepBuddy (optional, can be skipped)
-    if (marksAsk()) await marksScreen(null, { setup: true });
+    if (marksAsk() && inHK()) await marksScreen(null, { setup: true });
   }
   await preloadStarters();
   if (!local.toured) await startTour('full'); // new families get the full guided tour; the quick one is in Settings
@@ -3264,15 +3266,37 @@ function gradeNow() {
   const i = GRADE_LIST.indexOf(L.grade) + Math.max(0, schoolYearOf(Date.now()) - schoolYearOf(L.at || Date.now()));
   return GRADE_LIST[Math.min(i, GRADE_LIST.length - 1)];
 }
-const learnerPayload = () => (profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], likes: local.learner.likes || '' } : null);
+const learnerPayload = () => (profileOn() && gradeNow() ? { grade: gradeNow(), country: country(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], likes: local.learner.likes || '' } : null);
 // Chinese read aloud in Putonghua when the parent says the school teaches Chinese in Putonghua (普教中).
-const zhVoice = () => (local.learner && local.learner.zhLang === 'cmn' ? 'cmn' : 'yue');
+const zhVoice = () => (local.learner && (local.learner.zhLang === 'cmn' || (local.learner.country && local.learner.country !== 'hk')) ? 'cmn' : 'yue');
 const gradeBand = () => { const g = gradeNow(); return !g ? '' : /^P[12]$/.test(g) ? 'p12' : /^P[34]$/.test(g) ? 'p34' : /^P[56]$/.test(g) ? 'p56' : /^S[123]$/.test(g) ? 's13' : 's46'; };
 // Primary or not: the child's grade when the parent has set it, otherwise a guess from their books.
 const isPrimaryKid = () => (profileOn() && gradeNow() ? gradeNow()[0] === 'P' : !!primaryCache);
 const sessionSize = () => ({ p12: 6, p34: 8 }[gradeBand()] || SESSION_SIZE);
 const gradeLabel = () => (gradeNow() ? gradeName(gradeNow()) : LANG === 'zh' ? '小學' : 'primary');
-const gradeName = (g) => (LANG === 'zh' ? `${g[0] === 'P' ? '小' : '中'}${'一二三四五六'[+g[1] - 1]}` : `${g[0] === 'P' ? 'Primary' : 'Secondary'} ${g[1]}`);
+// Where the child goes to school. Grades are stored as P1-P6 / S1-S6 (by age) and shown in the country's own names.
+// rows: the grade picker rows [English label, 中文 label, grades]; chip: short name; name: full name; voices: reading voices offered.
+const CN_NUM = '一二三四五六';
+const COUNTRIES = {
+  hk: { en: 'Hong Kong', zh: '香港', flag: '🇭🇰', rows: [['Primary', '小學', 'P1 P2 P3 P4 P5 P6'], ['Secondary', '中學', 'S1 S2 S3 S4 S5 S6']],
+    chip: (g) => (LANG === 'zh' ? `${g[0] === 'P' ? '小' : '中'}${CN_NUM[+g[1] - 1]}` : g),
+    name: (g) => (LANG === 'zh' ? `${g[0] === 'P' ? '小' : '中'}${CN_NUM[+g[1] - 1]}` : `${g[0] === 'P' ? 'Primary' : 'Secondary'} ${g[1]}`), voices: ['yue', 'cmn', 'en'] },
+  sg: { en: 'Singapore', zh: '新加坡', flag: '🇸🇬', rows: [['Primary', '小學', 'P1 P2 P3 P4 P5 P6'], ['Secondary', '中學', 'S1 S2 S3 S4'], ['Junior college', '初級學院', 'S5 S6']],
+    chip: (g) => (g[0] === 'P' ? g : +g[1] <= 4 ? `Sec ${g[1]}` : `JC${+g[1] - 4}`),
+    name: (g) => (g[0] === 'P' ? `Primary ${g[1]}` : +g[1] <= 4 ? `Secondary ${g[1]}` : `JC ${+g[1] - 4}`), voices: ['en', 'cmn'] },
+  fr: { en: 'France', zh: '法國', flag: '🇫🇷', rows: [['École', '小學', 'P1 P2 P3 P4 P5'], ['Collège', '初中', 'P6 S1 S2 S3'], ['Lycée', '高中', 'S4 S5 S6']],
+    chip: (g) => ({ P1: 'CP', P2: 'CE1', P3: 'CE2', P4: 'CM1', P5: 'CM2', P6: '6e', S1: '5e', S2: '4e', S3: '3e', S4: '2nde', S5: '1re', S6: 'Terminale' }[g]),
+    name: (g) => COUNTRIES.fr.chip(g), voices: ['fr', 'en'] },
+  jp: { en: 'Japan', zh: '日本', flag: '🇯🇵', rows: [['Elementary 小学校', '小學', 'P1 P2 P3 P4 P5 P6'], ['Junior high 中学校', '初中', 'S1 S2 S3'], ['High school 高校', '高中', 'S4 S5 S6']],
+    chip: (g) => (g[0] === 'P' ? `小${g[1]}` : +g[1] <= 3 ? `中${g[1]}` : `高${+g[1] - 3}`),
+    name: (g) => `${COUNTRIES.jp.chip(g)}年`, voices: ['ja', 'en'] },
+  intl: { en: 'Somewhere else', zh: '其他地方', flag: '🌏', rows: [['Grades 1-6', '一至六年級', 'P1 P2 P3 P4 P5 P6'], ['Grades 7-12', '七至十二年級', 'S1 S2 S3 S4 S5 S6']],
+    chip: (g) => `G${GRADE_LIST.indexOf(g) + 1}`, name: (g) => (LANG === 'zh' ? `${GRADE_LIST.indexOf(g) + 1} 年級` : `Grade ${GRADE_LIST.indexOf(g) + 1}`), voices: ['en', 'cmn'] },
+};
+const countryOf = (L) => (L && COUNTRIES[L.country] ? L.country : 'hk');
+const country = () => countryOf(local.learner);
+const inHK = () => country() === 'hk';
+const gradeName = (g, c) => COUNTRIES[c || country()].name(g);
 function profileScreen({ first } = {}) {
   return new Promise((resolve) => {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
@@ -3284,8 +3308,12 @@ function profileScreen({ first } = {}) {
     const keep = () => { const n = document.getElementById('pname'); if (n) nameV = n.value; const lk = document.getElementById('plikes'); if (lk) L.likes = lk.value; };
     const nav = document.getElementById('tabs'); if (first && nav) nav.style.display = 'none';
     if (first) document.body.dataset.tab = '';
-    const GOALS = (g) => [['tests', C('School tests and exams', '校內測驗及考試')], ...(/^P[23]$|^S[23]$/.test(g) || g === 'P6' ? [['tsa', C('TSA', '全港性系統評估 (TSA)')]] : []),
-      ...(/^P[456]$/.test(g) ? [['ssa', C('Exams that count for secondary places (P5–P6)', '呈分試')]] : []), ...(/^S[3-6]$/.test(g) ? [['dse', 'HKDSE']] : []), ['habits', C('A regular study habit', '建立溫習習慣')]];
+    const GOALS = (g) => { const c = countryOf(L), T = [['tests', C('School tests and exams', '校內測驗及考試')]], H = [['habits', C('A regular study habit', '建立溫習習慣')]];
+      if (c === 'hk') return [...T, ...(/^P[23]$|^S[23]$/.test(g) || g === 'P6' ? [['tsa', C('TSA', '全港性系統評估 (TSA)')]] : []), ...(/^P[456]$/.test(g) ? [['ssa', C('Exams that count for secondary places (P5–P6)', '呈分試')]] : []), ...(/^S[3-6]$/.test(g) ? [['dse', 'HKDSE']] : []), ...H];
+      if (c === 'sg') return [...T, ...(/^P[56]$/.test(g) ? [['psle', 'PSLE']] : []), ...(/^S[34]$/.test(g) ? [['olevel', C('O-Level / N-Level', 'O-Level / N-Level')]] : []), ...(/^S[56]$/.test(g) ? [['alevel', 'A-Level']] : []), ...H];
+      if (c === 'fr') return [...T, ...(/^S[23]$/.test(g) ? [['brevet', 'Brevet']] : []), ...(/^S[4-6]$/.test(g) ? [['bac', 'Bac']] : []), ...H];
+      if (c === 'jp') return [...T, ...(/^P[4-6]$/.test(g) ? [['juken_j', C('Junior high entrance exams (中学受験)', '中學入學試 (中学受験)')]] : []), ...(/^S[1-3]$/.test(g) ? [['juken_h', C('High school entrance exams (高校受験)', '高中入學試 (高校受験)')]] : []), ...(/^S[4-6]$/.test(g) ? [['juken_u', C('University entrance exams (大学入試)', '大學入學試 (大学入試)')]] : []), ...H];
+      return [...T, ...H]; };
     const opt = (k, v, t, sub) => `<button class="langopt ${L[k] === v ? 'on' : ''}" data-k="${k}" data-v="${v}" aria-pressed="${L[k] === v}"><b>${t}</b>${sub ? `<span>${sub}</span>` : ''}</button>`;
     let drawn = false;
     const draw = () => {
@@ -3298,27 +3326,29 @@ function profileScreen({ first } = {}) {
         ${first ? `<section class="stack g10" data-st="1"><label for="pname"><b>${C('What’s your child’s name?', '孩子叫甚麼名字？')}</b></label>
           <input id="pname" class="input" autocomplete="given-name" maxlength="30" placeholder="${C('e.g. Ka Yan', '例如：嘉欣')}" value="${esc(nameV)}">
           <span class="hint" style="margin:0;text-align:left">${C('Buddy uses it to greet them. A first name or nickname is enough.', 'Buddy 會用來打招呼。名字或小名都可以。')}</span></section>` : ''}
+        <section class="stack g10" data-st="1"><b>${C('Where do they go to school?', '孩子在哪裏上學？')}</b>
+          <div class="prof-country">${Object.entries(COUNTRIES).map(([k, x]) => `<button class="fchip ${countryOf(L) === k ? 'on' : ''}" data-country="${k}" aria-pressed="${countryOf(L) === k}"><span aria-hidden="true">${x.flag}</span> ${C(x.en, x.zh)}</button>`).join('')}</div>
+          <span class="hint" style="margin:0;text-align:left">${C('Buddy then uses that country’s grade names, test style and marking.', 'Buddy 會用該地的年級名稱、考試模式和評分方法。')}</span></section>
         <section class="stack g10" data-st="1"><b>${C('Which grade are they in?', '孩子讀幾年級？')}</b>
-          <div class="prof-grades"><span class="muted">${C('Primary', '小學')}</span>${GRADE_LIST.slice(0, 6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div>
-          <div class="prof-grades"><span class="muted">${C('Secondary', '中學')}</span>${GRADE_LIST.slice(6).map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${LANG === 'zh' ? gradeName(g) : g}</button>`).join('')}</div></section>
+          ${COUNTRIES[countryOf(L)].rows.map(([en, zh, gs]) => `<div class="prof-grades${countryOf(L) === 'hk' ? '' : ' wide'}"><span class="muted">${C(en, zh)}</span>${gs.split(' ').map((g) => `<button class="fchip ${L.grade === g ? 'on' : ''}" data-g="${g}" aria-pressed="${L.grade === g}">${COUNTRIES[countryOf(L)].chip(g)}</button>`).join('')}</div>`).join('')}</section>
         ${`
         <section class="stack g10" data-st="2"><b>${C('How are they doing at school?', '孩子在學校的情況？')}</b>
           <div class="prof-opts">${opt('pace', 'support', C('Needs extra help', '需要多些幫助'), C('Smaller steps, easier start', '由淺入深，循序漸進'))}${opt('pace', 'ontrack', C('About right', '跟得上'), C('Keeping up with the class', '跟上班中進度'))}${opt('pace', 'ahead', C('Ahead', '超前'), C('Ready for harder work', '可以挑戰較深的題目'))}</div></section>
-        <section class="stack g10" data-st="2"><b>${C('Their school mostly teaches in…', '學校主要用甚麼語言教學？')}</b>
+        ${countryOf(L) === 'hk' ? `<section class="stack g10" data-st="2"><b>${C('Their school mostly teaches in…', '學校主要用甚麼語言教學？')}</b>
           <div class="prof-opts two">${opt('medium', 'cmi', C('Chinese', '中文'), C('Cantonese / Chinese', '廣東話／中文'))}${opt('medium', 'emi', C('English', '英文'), C('English-medium school', '英文中學／小學'))}</div></section>
         <section class="stack g10" data-st="2"><b>${C('Chinese lessons are taught in…', '中文科用甚麼語言教？')}</b>
-          <div class="prof-opts two">${opt('zhLang', 'yue', C('Cantonese', '廣東話'), C('粵教中', '粵教中'))}${opt('zhLang', 'cmn', C('Putonghua', '普通話'), C('Chinese taught in Putonghua: Buddy reads Chinese in Putonghua', '普教中：Buddy 用普通話朗讀'))}</div></section>
-        <section class="stack g10" data-st="2"><b>${C('Buddy should explain in…', 'Buddy 用甚麼語言講解？')}</b>
+          <div class="prof-opts two">${opt('zhLang', 'yue', C('Cantonese', '廣東話'), C('粵教中', '粵教中'))}${opt('zhLang', 'cmn', C('Putonghua', '普通話'), C('Chinese taught in Putonghua: Buddy reads Chinese in Putonghua', '普教中：Buddy 用普通話朗讀'))}</div></section>` : ''}
+        ${['hk', 'sg'].includes(countryOf(L)) ? `<section class="stack g10" data-st="2"><b>${C('Buddy should explain in…', 'Buddy 用甚麼語言講解？')}</b>
           <div class="prof-opts">${opt('explain', 'en', C('English', '英文'), C('Even if they type in Chinese', '即使孩子用中文提問'))}${opt('explain', 'zh', C('Chinese', '中文'), C('English terms in brackets', '英文術語放在括號內'))}${opt('explain', 'mix', C('Chinese + English terms', '中文 + 英文術語'), C('Learn the English words', '同時學英文詞彙'))}</div>
           <span class="muted" style="font-size:14px;line-height:1.5">${C('English lessons are always explained in simple English, with Chinese only for hard words.', '英文科一律用淺白英文講解，只在難字旁加中文。')}</span>
-          <span class="hint" style="margin:0;text-align:left">${C('Practice questions stay in the textbook’s language.', '練習題目會保持課本的語言。')}</span></section>
+          <span class="hint" style="margin:0;text-align:left">${C('Practice questions stay in the textbook’s language.', '練習題目會保持課本的語言。')}</span></section>` : `<section class="stack g10" data-st="2"><b>${C('Language', '語言')}</b><span class="muted" style="font-size:14px;line-height:1.5">${C('Buddy writes questions, marking and explanations in each textbook’s own language (for example French or Japanese).', 'Buddy 會用每本課本的語言出題、批改和講解（例如法文或日文）。')}</span></section>`}
         <section class="stack g10" data-st="3"><b>${C('Reading voice', '朗讀聲音')}</b>
           <span class="muted" style="font-size:14px;line-height:1.5;margin-top:-4px">${C('For dictation, listening and reading questions aloud (🔊). Tap ▶ to hear each one.', '用於默書、聆聽和朗讀題目（🔊）。按 ▶ 試聽。')}</span>
-          ${[['yue', C('Cantonese', '廣東話')], ['cmn', C('Putonghua', '普通話')], ['en', C('English', '英文')]].map(([lg, name]) => `<div class="vc-group"><small>${name}</small><div class="vc-row">${VOICE_OPTS[lg].map(([id, zhn, en, zh], i) => {
+          ${[['yue', C('Cantonese', '廣東話')], ['cmn', C('Putonghua', '普通話')], ['en', C('English', '英文')], ['fr', C('French', '法文')], ['ja', C('Japanese', '日文')]].filter(([lg]) => COUNTRIES[countryOf(L)].voices.includes(lg)).sort((a, b) => COUNTRIES[countryOf(L)].voices.indexOf(a[0]) - COUNTRIES[countryOf(L)].voices.indexOf(b[0])).map(([lg, name]) => `<div class="vc-group"><small>${name}</small><div class="vc-row">${VOICE_OPTS[lg].map(([id, zhn, en, zh], i) => {
             const on = (L.voices && L.voices[lg] ? L.voices[lg] : VOICE_OPTS[lg][0][0]) === id;
             return `<div class="vc-opt ${on ? 'on' : ''}"><button class="vc-pick" data-vlang="${lg}" data-voice="${id}" aria-pressed="${on}"><b>${LANG === 'zh' || lg !== 'en' ? zhn : id}</b><span>${C(en, zh)}</span></button><button class="vc-play" data-vplay="${lg}:${id}" aria-label="${C('Listen', '試聽')}">▶</button></div>`; }).join('')}</div></div>`).join('')}
           <div class="prof-opts two">${opt('vrate', '', C('Normal speed', '正常速度'), '')}${opt('vrate', 'slower', C('A bit slower', '慢一點'), C('Good for younger children', '適合年紀較小的孩子'))}</div>
-          <div class="prof-opts two">${opt('autoread', '', C('Read questions only when tapped', '按 🔊 才朗讀題目'), C('Tap 🔊 on a question', '在題目按 🔊'))}${opt('autoread', 'on', C('Read each question automatically', '自動朗讀每一題'), C('Good for P1–P2', '適合小一至小二'))}</div>
+          <div class="prof-opts two">${opt('autoread', '', C('Read questions only when tapped', '按 🔊 才朗讀題目'), C('Tap 🔊 on a question', '在題目按 🔊'))}${opt('autoread', 'on', C('Read each question automatically', '自動朗讀每一題'), C(`Good for ${COUNTRIES[countryOf(L)].chip('P1')}–${COUNTRIES[countryOf(L)].chip('P2')}`, `適合${gradeName('P1', countryOf(L))}至${gradeName('P2', countryOf(L))}`))}</div>
         </section>
         ${L.grade ? `<section class="stack g10" data-st="4"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
@@ -3347,12 +3377,13 @@ function profileScreen({ first } = {}) {
       const likes = document.getElementById('plikes') || { value: L.likes || '' };
       const redraw = () => { keep(); const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.trim().slice(0, 12); const y = window.scrollY; draw(); window.scrollTo(0, y); };
       $app.querySelectorAll('[data-g]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.grade = b.dataset.g; redraw(); }));
+      $app.querySelectorAll('[data-country]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.country = b.dataset.country; redraw(); }));
       $app.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L[b.dataset.k] = b.dataset.v; redraw(); }));
       $app.querySelectorAll('[data-voice]').forEach((b) => (b.onclick = () => { L.likes = likes.value; L.voices = { ...(L.voices || {}), [b.dataset.vlang]: b.dataset.voice }; redraw(); }));
       $app.querySelectorAll('[data-vplay]').forEach((b) => (b.onclick = () => {
         const [lg, id] = b.dataset.vplay.split(':');
         const keep = local.learner; local.learner = { ...(keep || {}), voices: { ...((L.voices) || {}), [lg]: id }, vrate: L.vrate || '' };
-        sayAloud({ yue: '你好，我係 Buddy。今日我哋一齊溫習啦！', cmn: '你好，我是 Buddy。今天我們一起溫習吧！', en: 'Hello, I’m Buddy. Let’s practise together today!' }[lg], lg);
+        sayAloud({ yue: '你好，我係 Buddy。今日我哋一齊溫習啦！', cmn: '你好，我是 Buddy。今天我們一起溫習吧！', en: 'Hello, I’m Buddy. Let’s practise together today!', fr: 'Bonjour, je suis Buddy. On révise ensemble aujourd’hui !', ja: 'こんにちは、バディです。きょうもいっしょにべんきょうしよう！' }[lg], lg);
         local.learner = keep;
       }));
       $app.querySelectorAll('[data-goal]').forEach((b) => (b.onclick = () => { L.likes = likes.value; const k = b.dataset.goal; L.goals = L.goals.includes(k) ? L.goals.filter((x) => x !== k) : [...L.goals, k]; redraw(); }));
@@ -3362,7 +3393,7 @@ function profileScreen({ first } = {}) {
         if (first && step < STEPS) { keep(); step++; draw(); window.scrollTo(0, 0); return; }
         if (first) { keep(); local.name = nameV.replace(/[<>]/g, '').trim().slice(0, 30); if (cap('stars')) local.starsOn = starsV; }
         { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.replace(/[<>]/g, '').trim().slice(0, 12); }
-        local.learner = { grade: L.grade, at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', voices: L.voices || {}, vrate: L.vrate || '', autoread: L.autoread || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
+        local.learner = { grade: L.grade, country: countryOf(L), at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', voices: L.voices || {}, vrate: L.vrate || '', autoread: L.autoread || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
         delete local.needProfile; saveLocal(); track('profile'); kidMeta();
         if (first && nav) nav.style.display = '';
         if (first) $app.innerHTML = `<main class="pad" style="flex:1"></main>`;
@@ -3724,7 +3755,7 @@ async function pilotSnap() {
   let best = 0, run = 0, prev = 0; [...dset].sort((a, b) => a - b).forEach((d) => { run = prev && d - prev <= DAY + 3600e3 ? run + 1 : 1; best = Math.max(best, run); prev = d; });
   const mk = Object.values(local.mistakes || {});
   return {
-    v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache, learner: profileOn() && gradeNow() ? { grade: gradeNow(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], kid: KIDS.list.length > 1 ? KIDS.list.indexOf(KID) + 1 : 0 } : null,
+    v: 2, at: Date.now(), name: (local.name || '').trim().slice(0, 30), lang: LANG, plan: planId(), primary: !!primaryCache, learner: profileOn() && gradeNow() ? { grade: gradeNow(), country: country(), pace: local.learner.pace || '', medium: local.learner.medium || '', zhLang: local.learner.zhLang || '', explain: local.learner.explain || '', goals: local.learner.goals || [], kid: KIDS.list.length > 1 ? KIDS.list.indexOf(KID) + 1 : 0 } : null,
     // School marks entered by the parent (subject: percent), and school test results the child noted after each test.
     marks: (local.marks || []).slice(-12).map((m) => ({ kind: m.kind, exam: m.exam, when: m.when, s: m.s, other: m.other ? String(m.other).slice(0, 20) : '' })),
     // Getting stronger, per subject (see progress.js), plus first-attempt totals by level for the admin's calibration check.
@@ -6500,7 +6531,7 @@ function agoText(t) {
 /* ---------- 呈分試 sprint (P5-P6, when the parent picked it as a goal) ----------
    A timed paper across the child's Chinese, English and Maths books: mostly the questions they found hardest,
    topped up with ones they haven't tried, easiest first, like a school exam. */
-const ssaOn = () => /^P[56]$/.test(gradeNow() || '') && ((local.learner && local.learner.goals) || []).includes('ssa');
+const ssaOn = () => inHK() && /^P[56]$/.test(gradeNow() || '') && ((local.learner && local.learner.goals) || []).includes('ssa');
 const SSA_SUBJ = /chinese|中文|中國語文|english|英文|英國語文|math|數學|数学/i;
 async function startSprint() {
   const all = (await allQuestions()).filter((x) => SSA_SUBJ.test(String(x.book.subject || '') + ' ' + x.book.title));
