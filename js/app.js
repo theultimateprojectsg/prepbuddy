@@ -2849,20 +2849,25 @@ function renderAbout() {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
   const Y = '<span class="ab-y" aria-label="yes">✓</span>', N = '<span class="ab-n" aria-label="no">✕</span>', P = (t) => `<span class="ab-p">${t}</span>`;
   const rows = [
-    [Z('Uses your child’s own school textbook', '用孩子自己的課本'), Y, P(Z('Sometimes', '有時')), P(Z('Own materials', '自家教材')), N],
-    [Z('There every day, whenever your child is free', '每天隨時可用'), Y, P(Z('1–2 hours a week', '每週 1–2 小時')), P(Z('Fixed class times', '固定上課時間')), Y],
-    [Z('Marks every answer straight away, and explains it', '每題即時批改並解釋'), Y, P(Z('In the lesson', '上堂時')), P(Z('In class', '課堂上')), P(Z('Answer key', '答案頁'))],
-    [Z('Adjusts difficulty chapter by chapter', '按每章調整難度'), Y, P(Z('A good one does', '好的導師會')), P(Z('Class pace', '跟全班進度')), N],
-    [Z('Keeps every mistake and brings it back until it’s right', '記住每題錯題，直到改正'), Y, P(Z('Partly', '部分')), N, N],
-    [Z('Brings topics back just before they’re forgotten', '在快要忘記前安排溫習'), Y, N, N, N],
-    [Z('Plans each day around school test dates', '按學校測驗日期安排每天'), Y, P(Z('Sometimes', '有時')), N, N],
-    [Z('Shows parents progress every week', '每週向家長報告進度'), Y, P(Z('A quick chat', '口頭交代')), P(Z('Each term', '每學期')), N],
-    [Z('A real person who knows your child', '一位認識孩子的真人'), N, Y, Y, N],
-    [Z('Typical cost each month', '每月大約費用'), `<b>HK$218–298</b><small>${Z('all subjects', '所有科目')}</small>`, `<b>HK$800–1,600+</b><small>${Z('per subject, 1 hr a week', '每科，每週 1 小時')}</small>`, `<b>HK$800–2,400+</b><small>${Z('per subject', '每科')}</small>`, `<b>${Z('Low', '低')}</b><small>${Z('per book', '每本')}</small>`],
+    [Z('Uses your child’s own school textbook', '用孩子自己的課本'), Y, P(Z('Only pages you paste in each time', '每次要自己貼上內容')), P(Z('Sometimes', '有時')), P(Z('Own materials', '自家教材')), N],
+    [Z('There every day, whenever your child is free', '每天隨時可用'), Y, Y, P(Z('1–2 hours a week', '每週 1–2 小時')), P(Z('Fixed class times', '固定上課時間')), Y],
+    [Z('Sets the right practice without being asked', '主動安排合適的練習'), Y, P(Z('Only what you ask for', '只做你要求的')), Y, P(Z('Class plan', '按課程安排')), P(Z('Fixed pages', '固定頁數'))],
+    [Z('Marks every answer straight away, and explains it', '每題即時批改並解釋'), Y, P(Z('If you ask', '要自己問')), P(Z('In the lesson', '上堂時')), P(Z('In class', '課堂上')), P(Z('Answer key', '答案頁'))],
+    [Z('Questions checked against the textbook, with the page shown', '題目與課本核對，並顯示出處'), Y, P(Z('Can sound sure and still be wrong', '可能說錯但語氣肯定')), Y, Y, Y],
+    [Z('Adjusts difficulty chapter by chapter', '按每章調整難度'), Y, N, P(Z('A good one does', '好的導師會')), P(Z('Class pace', '跟全班進度')), N],
+    [Z('Keeps every mistake and brings it back until it’s right', '記住每題錯題，直到改正'), Y, N, P(Z('Partly', '部分')), N, N],
+    [Z('Brings topics back just before they’re forgotten', '在快要忘記前安排溫習'), Y, N, N, N, N],
+    [Z('Plans each day around school test dates', '按學校測驗日期安排每天'), Y, N, P(Z('Sometimes', '有時')), N, N],
+    [Z('Shows parents progress every week', '每週向家長報告進度'), Y, N, P(Z('A quick chat', '口頭交代')), P(Z('Each term', '每學期')), N],
+    [Z('Made for children, and keeps them on schoolwork', '為兒童而設，專注學業'), Y, P(Z('General-purpose; ChatGPT is for ages 13+', '通用工具；ChatGPT 只限 13 歲或以上')), Y, Y, Y],
+    [Z('A real person who knows your child', '一位認識孩子的真人'), N, N, Y, Y, N],
+    [Z('Typical cost each month', '每月大約費用'), `<b>HK$218–298</b><small>${Z('all subjects', '所有科目')}</small>`, `<b>${Z('Free–HK$160', '免費至 HK$160')}</b><small>${Z('ChatGPT Plus is US$20', 'ChatGPT Plus 為 US$20')}</small>`, `<b>HK$800–1,600+</b><small>${Z('per subject, 1 hr a week', '每科，每週 1 小時')}</small>`, `<b>HK$800–2,400+</b><small>${Z('per subject', '每科')}</small>`, `<b>${Z('Low', '低')}</b><small>${Z('per book', '每本')}</small>`],
   ];
   const qa = [
     [Z('What exactly is PrepBuddy?', 'PrepBuddy 究竟是甚麼？'),
       Z('A study coach on your phone or laptop, built from your child’s own textbooks. Add a book and Buddy turns every chapter into lessons, practice questions, chapter tests, mock exams, revision notes and flashcards, then marks every answer and decides what your child should do next.', '一個放在手機或電腦上的溫習教練，以孩子自己的課本為基礎。加入課本後，Buddy 會把每一章變成課堂、練習題、章節測驗、模擬試、筆記和溫習卡，批改每一題，並決定孩子下一步應該做甚麼。')],
+    [Z('Why not just use ChatGPT?', '為甚麼不直接用 ChatGPT？'),
+      Z('A general AI chat is a brilliant tool, but it only does what you ask, each time you ask. It doesn’t know which textbook your child uses, which chapters are on Friday’s test, or what they got wrong last week, and it can state wrong answers confidently. PrepBuddy uses the same kind of AI, but builds a whole tutor around it: questions made from and checked against your child’s own pages, every mistake kept and brought back, reviews timed before things are forgotten, a plan for each day up to the test, and a weekly report for you. Your child just opens it and starts; nobody has to know what to ask.', '一般 AI 聊天是很好的工具，但它只會做你每次要求的事。它不知道孩子用哪本課本、星期五測驗考哪幾章、上星期錯了甚麼，而且可能很肯定地說出錯誤答案。PrepBuddy 用同類的 AI，但圍繞它建立了一位完整的導師：題目由孩子自己的課本製作並與課本核對、每個錯誤都會記住並再出現、在快忘記前安排溫習、按測驗日期安排每天的練習，並每週向你報告。孩子打開就能開始，不用懂得怎樣發問。')],
     [Z('Does it really know my child, or is it just random questions?', '它真的了解我的孩子嗎？還是只是隨機出題？'),
       Z('It keeps a record of every answer and uses it. For each chapter it knows how far your child has got, how hard a question they can handle, which mistakes are still open, what they’re about to forget, and whether they passed a timed test. It also notices habits: how often hints were needed, whether a set was rushed, and when they usually study. Questions get harder as they improve and easier when they struggle, chapter by chapter.', '它會記錄每一個答案並加以運用。每一章它都知道孩子學到哪裡、能應付多難的題目、還有哪些錯題未改正、哪些快要忘記，以及有否通過限時測驗。它也會留意習慣：需要提示的次數、有否趕急完成、通常甚麼時候溫習。孩子進步，題目會變難；遇到困難，題目會變易，每章分開計算。')],
     [Z('How does it decide what my child does each day?', '它怎樣決定孩子每天做甚麼？'),
@@ -2905,8 +2910,8 @@ function renderAbout() {
       <p>${Z('A private tutor for your child’s own textbooks: there every day, marks every answer, remembers every mistake, and plans each day around their next school test.', '一位為孩子自己的課本而設的私人導師：每天都在、批改每一題、記住每一個錯誤，並按下一次學校測驗安排每一天。')}</p></div></section>
     <section class="ab-grid">${surprise.map(([ic, t, d]) => `<div class="ab-card"><span class="ab-ic" aria-hidden="true">${ic}</span><b>${t}</b><span>${d}</span></div>`).join('')}</section>
     <section class="card ab-sec"><h2>${Z('How it compares', '比較一下')}</h2>
-      <div class="ab-scroll"><table class="ab-table"><thead><tr><th></th><th class="ab-us">PrepBuddy</th><th>${Z('Private tutor', '私人補習')}</th><th>${Z('Learning centre', '補習社')}</th><th>${Z('Assessment books', '補充練習')}</th></tr></thead>
-      <tbody>${rows.map((r) => `<tr><th scope="row">${r[0]}</th><td class="ab-us">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</tbody></table></div>
+      <div class="ab-scroll"><table class="ab-table"><thead><tr><th></th><th class="ab-us">PrepBuddy</th><th>${Z('General AI chat (e.g. ChatGPT)', '一般 AI 聊天（如 ChatGPT）')}</th><th>${Z('Private tutor', '私人補習')}</th><th>${Z('Learning centre', '補習社')}</th><th>${Z('Assessment books', '補充練習')}</th></tr></thead>
+      <tbody>${rows.map((r) => `<tr><th scope="row">${r[0]}</th><td class="ab-us">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join('')}</tbody></table></div>
       <p class="hint" style="margin:0">${Z('Tutor and centre costs are typical Hong Kong rates (about HK$200–600 an hour) for one lesson a week; they vary widely.', '補習費用為香港一般收費（約每小時 HK$200–600），以每週一堂計算，實際收費差異很大。')}</p></section>
     <section class="ab-sec"><h2>${Z('Questions parents ask', '家長常見問題')}</h2>
       <div class="ab-qa">${qa.map(([q, a], i) => `<details class="ab-q" ${i === 0 ? 'open' : ''}><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></section>
