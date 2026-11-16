@@ -2274,6 +2274,13 @@ function installTip() {
   setTimeout(() => { const x = document.getElementById('itip-x'); if (x) x.onclick = () => { local.installTipOff = Date.now(); saveLocal(); x.closest('.itip').remove(); }; }, 0);
   return `<section class="itip" role="note"><span class="itip-i">📲</span><div><b>${LANG === 'zh' ? '把 PrepBuddy 加到主畫面' : 'Add PrepBuddy to your Home Screen'}</b><span>${LANG === 'zh' ? 'iPhone 可能會在一星期沒有使用後刪除網站的進度。在 Safari 按「分享」→「加至主畫面」，之後從主畫面圖示打開 PrepBuddy。請盡早做：主畫面的 App 會重新開始，已有的進度可用「設定 → 儲存備份檔案」轉移。' : 'iPhones can delete a website’s saved progress after a week without a visit. In Safari tap Share → Add to Home Screen, then use PrepBuddy from that icon. Do it early: the Home Screen app starts fresh, so move anything you’ve done with Settings → Save a backup file.'}</span></div><button class="itip-x" id="itip-x" aria-label="${LANG === 'zh' ? '關閉' : 'Dismiss'}">×</button></section>`;
 }
+// Readiness in just the chapters started so far (so effort shows while the rest of the book is untouched).
+function startedOf(m) {
+  const cs = m.chapters.filter((c) => c.done || c.tests);
+  if (!cs.length || cs.length === m.chapters.length) return null;
+  const w = cs.reduce((t, c) => t + c.weight, 0) || 1;
+  return { n: cs.length, of: m.chapters.length, pct: Math.round(cs.reduce((t, c) => t + c.pct * c.weight, 0) / w) };
+}
 // Today: how ready for each subject (rings, from the book's mastery) and the change since about a week ago.
 // One reading per book per day is kept in local.mhist (also used by the exam forecast).
 async function todayReadyHTML(books) {
@@ -2285,7 +2292,7 @@ async function todayReadyHTML(books) {
     const h = (local.mhist[b.id] || []).filter((p) => p[0] !== t0); h.push([t0, pct]); local.mhist[b.id] = h.slice(-120);
     // the reading closest to 7 days ago, at least 5 days old
     const old = h.filter((p) => p[0] <= t0 - 5 * DAY).sort((x, y) => Math.abs(x[0] - (t0 - 7 * DAY)) - Math.abs(y[0] - (t0 - 7 * DAY)))[0];
-    rows.push({ b, pct, covered: Math.round(100 * (m.areas.covered || 0)), was: old ? old[1] : null, used: (local.log || []).some((e) => e.q && e.q.startsWith(b.id + ':')) });
+    rows.push({ b, pct, covered: Math.round(100 * (m.areas.covered || 0)), was: old ? old[1] : null, used: (local.log || []).some((e) => e.q && e.q.startsWith(b.id + ':')), started: startedOf(m) });
   }
   saveLocal();
   if (!rows.length) return '';
@@ -2299,7 +2306,7 @@ async function todayReadyHTML(books) {
   const ring = (x) => {
     const lab = x.pct > 0 ? masteryLabel(x.pct) : x.covered ? Z(`Started · ${x.covered}% covered`, `已開始 · 涵蓋 ${x.covered}%`) : Z('Not started', '未開始');
     const ch = x.was == null || !x.used ? '' : x.pct > x.was ? `<em class="up">▲ ${x.pct - x.was}% ${Z('this week', '本週')}</em>` : x.pct < x.was ? `<em class="down">▼ ${x.was - x.pct}% ${Z('this week', '本週')}</em>` : `<em>${Z('no change this week', '本週沒有變化')}</em>`;
-    return `<button class="pg-rg tr-rg" data-book="${esc(x.b.id)}">${x.pct > 0 ? ringHTML(x.pct, tone(x.pct), x.pct + '%', 68) : ringHTML(x.covered, 'cov', x.covered ? x.covered + '%' : '–', 68)}<b data-raw>${esc(x.b.subject ? subj(x.b.subject) : shortTitle(x.b.title))}</b><small>${lab}</small>${ch}</button>`;
+    return `<button class="pg-rg tr-rg" data-book="${esc(x.b.id)}">${x.pct > 0 ? ringHTML(x.pct, tone(x.pct), x.pct + '%', 68) : ringHTML(x.covered, 'cov', x.covered ? x.covered + '%' : '–', 68)}<b data-raw>${esc(x.b.subject ? subj(x.b.subject) : shortTitle(x.b.title))}</b><small>${lab}</small>${x.started && x.pct > 0 ? `<span class="rg-st">${LANG === 'zh' ? `已開始的 ${x.started.n} 章：${x.started.pct}%` : `${x.started.pct}% in ${x.started.n} started chapter${x.started.n > 1 ? 's' : ''}`}</span>` : ''}${ch}</button>`;
   };
   return `<section class="stack g10 td-sec" aria-label="${Z('How ready you are', '準備程度')}"><div class="sect-head"><h2 class="h-info">${Z('How ready you are', '準備程度')}${infoBtn('howReady', Z('How is this worked out?', '這是怎樣計算的？'))}</h2><button class="btn-sm" id="moreready">${Z('See progress', '查看進度')}</button></div>
     <div class="card td-ready"><div class="tr-week"><span class="tr-wl">${Z('This week', '本週')}</span>${wk.join('')}</div>
@@ -2415,8 +2422,13 @@ async function renderHome() {
   const stepRow = (x, k) => x.done || !x.now
     ? `<div class="ms-row done"><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
     : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('NEXT', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
+  // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
+  let extra = null;
+  { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
+    if (p) { const m = await bookMastery(p.book); const ch = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)).sort((a, b) => a.pct - b.pct)[0];
+      if (ch && ch.pct < 90) extra = { label: Z(`Extra for ${p.x.name}: ${shortTitle(ch.unit.title)} (${ch.pct}%)`, `為「${p.x.name}」加練：${shortTitle(ch.unit.title)}（${ch.pct}%）`), run: () => { pick = { bookId: p.book.id, ids: new Set([ch.unit.id]) }; startUnits(p.book, [ch.unit], 10); } }; } }
   const missionHTML = allDone
-    ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
+    ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span>${Z(`about ${mins} min`, `約 ${mins} 分鐘`)}</span></div>
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
       ${missionHowHTML()}
@@ -2464,9 +2476,9 @@ async function renderHome() {
     ${head.replace('<!--STRIP-->', strip)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
+    ${missionHTML}
     ${tests.pastHTML}
     ${testHTML}
-    ${missionHTML}
     ${readyHTML}
   </main>
   <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
@@ -2492,7 +2504,7 @@ async function renderHome() {
   }; }
   bindSchoolTests();
   { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('button.ms-row'); if (r) r.click(); }; }
-  { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => go({ name: 'practice' }); }
+  { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
   bindPracticeTiles(); bindGear();
@@ -4912,7 +4924,7 @@ async function readyHist(books) {
     const h28 = h.filter((p) => p[0] >= t0 - 28 * DAY);
     const rate = h28.length && t0 - h28[0][0] >= 7 * DAY ? (pct - h28[0][1]) / ((t0 - h28[0][0]) / DAY) : null;
     const weeks = Array.from({ length: 6 }, (_, k) => { const t = t0 - (5 - k) * 7 * DAY; const p = h.filter((x) => x[0] <= t).pop(); return p ? p[1] : null; });
-    out.push({ b, pct, covered: Math.round(100 * (m.areas.covered || 0)), was: old ? old[1] : null, rate, weeks, used: (local.log || []).some((e) => e.q && e.q.startsWith(b.id + ':')) });
+    out.push({ b, pct, covered: Math.round(100 * (m.areas.covered || 0)), was: old ? old[1] : null, rate, weeks, started: startedOf(m), used: (local.log || []).some((e) => e.q && e.q.startsWith(b.id + ':')) });
   }
   saveLocal();
   return out.sort((x, y) => (y.used - x.used) || (y.pct - x.pct));
@@ -5018,7 +5030,7 @@ async function renderProgress() {
   const ringRow = RH.map((x) => {
     const lab = x.pct > 0 ? masteryLabel(x.pct) : x.covered ? PT(`Started · ${x.covered}% covered`, `已開始 · 涵蓋 ${x.covered}%`) : PT('Not started', '未開始');
     const ch = x.was == null || !x.used ? '' : x.pct > x.was ? `<em class="up">▲ ${x.pct - x.was}% ${PT('this week', '本週')}</em>` : x.pct < x.was ? `<em class="down">▼ ${x.was - x.pct}% ${PT('this week', '本週')}</em>` : `<em>${PT('no change this week', '本週沒有變化')}</em>`;
-    return `<button class="pg-rg tr-rg" data-book="${esc(x.b.id)}">${x.pct > 0 ? ringHTML(x.pct, tone(x.pct), x.pct + '%') : ringHTML(x.covered, 'cov', x.covered ? x.covered + '%' : '–')}<b>${esc(x.b.subject ? subj(x.b.subject) : shortTitle(x.b.title))}</b><small>${lab}</small>${ch}</button>`;
+    return `<button class="pg-rg tr-rg" data-book="${esc(x.b.id)}">${x.pct > 0 ? ringHTML(x.pct, tone(x.pct), x.pct + '%') : ringHTML(x.covered, 'cov', x.covered ? x.covered + '%' : '–')}<b>${esc(x.b.subject ? subj(x.b.subject) : shortTitle(x.b.title))}</b><small>${lab}</small>${x.started && x.pct > 0 ? `<span class="rg-st">${LANG === 'zh' ? `已開始的 ${x.started.n} 章：${x.started.pct}%` : `${x.started.pct}% in ${x.started.n} started chapter${x.started.n > 1 ? 's' : ''}`}</span>` : ''}${ch}</button>`;
   }).join('');
   const tests = await schoolTestsHTML(); const nt = tests.steps[0];
   let testCard = '';
