@@ -1919,7 +1919,6 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .gr-week i{position:relative}
 .gr-week i.on{background:#FF9A2E!important;border-color:#FF9A2E!important;color:#FFFFFF!important;box-shadow:none!important}
 .gr-week i.on svg{width:60%!important;height:60%!important}
-.gr-week i.jr::after{content:"";position:absolute;left:100%;top:50%;height:46%;transform:translateY(-50%);width:calc(var(--gap,8px) + 4px);margin-left:-2px;background:#FF9A2E;z-index:-1}
 .gr-week i.today:not(.on){border:2px dashed #FF9A2E!important;color:#F2661E!important}
 .today .gr-week{--gap:8px}.gr-week{--gap:4px}
 /* celebration (once a day, after the first practice) */
@@ -2964,6 +2963,13 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-head h2{white-space:nowrap;min-width:0}
 .ms-head .ms-est{flex:none;display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;background:#EEF1FB;color:var(--accent)!important;font-size:13.5px!important;font-weight:700;white-space:nowrap}
 @media (max-width:420px){.ms-head h2{font-size:21px!important}.ms-el{display:none}.ms-head .ms-est{padding:5px 9px}}
+/* Streak on phones: the days get their own row under '4 day streak', evenly spaced, never touching */
+@media (max-width:1023.98px){
+  .today .gr-strip.gr-btn{flex-wrap:wrap;row-gap:12px}
+  .today .gr-btn .gr-streak{flex:1 1 auto}
+  .today .gr-btn .gr-week{flex:1 1 100%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;justify-items:center}
+  .today .gr-btn .gr-week i{width:34px;height:34px;font-size:12px}
+}
 </style>
 </head>
 <body>
