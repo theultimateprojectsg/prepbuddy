@@ -5631,6 +5631,46 @@ function daysSheet() {
   const g = box.querySelector('[data-ds="goal"]'); if (g) g.onclick = () => { close(); goalDialog(); };
   const p = box.querySelector('[data-o="go"]'); if (p) p.onclick = () => { close(); go({ name: 'home' }); };
 }
+// Tapping "Overall readiness": each subject's readiness, and the chapters worth doing next (plain words, no recipe).
+function readySheet(subs, overall) {
+  const sname2 = (b) => (b.subject ? subj(b.subject) : b.title), nm = (u) => shortTitle(u.title);
+  const all = subs.flatMap((x) => x.m.chapters.map((c) => ({ b: x.b, c })));
+  const weak = all.filter((x) => x.c.done && x.c.pct < 80).sort((a, b) => a.c.pct - b.c.pct)[0];
+  const close = all.filter((x) => x.c.pct >= 50 && x.c.pct < 80).sort((a, b) => b.c.pct - a.c.pct)[0];
+  const fresh = all.find((x) => !x.c.done && !x.c.learned);
+  const tone = (p) => (p >= 70 ? 'hi' : p >= 40 ? 'mid' : 'lo');
+  const acts = [weak && [weak, 'target', PT(`Practise ${nm(weak.c.unit)}`, `練習「${nm(weak.c.unit)}」`), PT(`Your weakest chapter · ${weak.c.pct}%`, `最弱的章節 · ${weak.c.pct}%`)],
+    close && close !== weak && [close, 'up', PT(`Finish off ${nm(close.c.unit)}`, `完成「${nm(close.c.unit)}」`), PT(`Closest to strong · ${close.c.pct}%`, `最接近掌握 · ${close.c.pct}%`)],
+    fresh && [fresh, 'book', PT(`Start ${nm(fresh.c.unit)}`, `開始「${nm(fresh.c.unit)}」`), PT(`A new chapter in ${sname2(fresh.b)}`, `${sname2(fresh.b)}的新章節`)]].filter(Boolean);
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  box.innerHTML = `<div class="cdlg cs2 rs" role="dialog" aria-modal="true" aria-labelledby="rs-t">
+    <header class="cs2-h"><div class="rsg-meter ${tone(overall)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(overall * 0.974).toFixed(1)} 100"/></svg><b>${overall}%</b></div>
+      <div class="cs2-ht"><b id="rs-t">${PT('Overall readiness', '整體準備度')}</b><small>${PT('How much of your textbooks you really know. Subjects with a test coming up count more.', '你真正掌握多少課本內容。快要考試的科目佔比較大。')}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <section class="cs2-sec" style="padding-top:0"><h3>${PT('By subject', '各科')}</h3><div class="rs-subs">${subs.map((x) => `<div><span data-raw>${esc(sname2(x.b))}</span><i><em class="${tone(x.pct)}" style="width:${x.pct}%"></em></i><b>${x.pct}%</b></div>`).join('')}</div></section>
+    ${acts.length ? `<section class="cs2-sec"><h3>${PT('Best next steps', '最好的下一步')}</h3><div class="cs2-more">${acts.map(([x, ic, t, sub], i) => `<button data-o="${i}">${actionTile(ic === 'up' ? 'test' : ic === 'book' ? 'learn' : 'practise', 32)}<span><b data-raw>${esc(t)}</b><em data-raw>${esc(sub)}</em></span><i>›</i></button>`).join('')}</div></section>` : ''}
+  </div>`;
+  document.body.appendChild(box);
+  const close2 = () => box.remove();
+  box.querySelector('.cs2-x').onclick = close2; box.onclick = (e) => { if (e.target === box) close2(); };
+  box.querySelectorAll('[data-o]').forEach((b) => (b.onclick = () => { const x = acts[+b.dataset.o][0]; close2(); chapterSheet(x.b, x.c); }));
+}
+// Tapping "Chapters mastered": how many per subject, and the chapters closest to getting there.
+function masteredSheet(subs, done, all) {
+  const sname2 = (b) => (b.subject ? subj(b.subject) : b.title), nm = (u) => shortTitle(u.title);
+  const near = subs.flatMap((x) => x.m.chapters.map((c) => ({ b: x.b, c }))).filter((x) => x.c.pct < 80 && (x.c.done || x.c.learned)).sort((a, b) => b.c.pct - a.c.pct).slice(0, 3);
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  box.innerHTML = `<div class="cdlg cs2 rs" role="dialog" aria-modal="true" aria-labelledby="ms-t">
+    <header class="cs2-h"><div class="cs2-ht"><b id="ms-t">${PT(`${done} of ${all} chapters mastered`, `${all} 章中掌握了 ${done} 章`)}</b><small>${PT('Mastered means passed the test, handled the harder questions, and still remembered it later. It takes a few weeks per chapter, on purpose.', '掌握代表通過測驗、應付到較深題目，而且之後仍記得。每章需要幾個星期，這是刻意的。')}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <section class="cs2-sec" style="padding-top:0"><h3>${PT('By subject', '各科')}</h3><div class="rs-subs">${subs.map((x) => { const n = x.m.chapters.length, d = x.m.chapters.filter((c) => c.pct >= 80).length;
+      return `<div><span data-raw>${esc(sname2(x.b))}</span><i><em class="hi" style="width:${n ? Math.round(100 * d / n) : 0}%"></em></i><b>${d}/${n}</b></div>`; }).join('')}</div></section>
+    ${near.length ? `<section class="cs2-sec"><h3>${PT('Closest to mastered', '最接近掌握')}</h3><div class="cs2-more">${near.map((x, i) => `<button data-o="${i}">${actionTile('test', 32)}<span><b data-raw>${esc(nm(x.c.unit))} · ${x.c.pct}%</b><em data-raw>${esc(sname2(x.b))} · ${PT('see what it needs', '看看需要甚麼')}</em></span><i>›</i></button>`).join('')}</div></section>`
+      : `<section class="cs2-sec"><p class="cs2-sub">${PT('Start practising a chapter and it will show up here.', '開始練習一章，就會在這裡出現。')}</p></section>`}
+  </div>`;
+  document.body.appendChild(box);
+  const close2 = () => box.remove();
+  box.querySelector('.cs2-x').onclick = close2; box.onclick = (e) => { if (e.target === box) close2(); };
+  box.querySelectorAll('[data-o]').forEach((b) => (b.onclick = () => { const x = near[+b.dataset.o]; close2(); chapterSheet(x.b, x.c); }));
+}
 // On track / close / at risk, against the target the parent set for that test (default 80%).
 const aimTone = (v, aim = 80) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
 async function renderProgress() {
@@ -6117,7 +6157,7 @@ async function renderProgress() {
   $app.innerHTML = `
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
-      <div class="pv-topb">${btn(PT('Weekly report', '每週報告'), () => reportDialog(), 'pv-btn quiet')}${btn(`${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}`, () => openParent(), 'pv-btn quiet')}</div></div>
+      <div class="pv-topb">${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${PT('Weekly report', '每週報告')}</span>`, () => reportDialog(), 'pv-btn primary pv-topbtn')}${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5"/></svg><span>${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}</span>`, () => openParent(), 'pv-btn primary pv-topbtn')}</div></div>
     <section class="pv-sec pv-sumsec"><div class="pv-h"><h2 class="h-info">${PT('Your week at a glance', '本週一覽')}${ib('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'))}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}${how('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'), '')}</section>
     <div id="pv-s2">${sec2}</div><div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>
   </main>`;
@@ -6163,7 +6203,7 @@ async function renderProgress() {
     window.__pvActs = acts; }
   // headline numbers lead somewhere: readiness and chapters to what to work on, memory to reviews, days to the calendar
   { const go2 = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-    const KT = { 'k-ring': () => go2('pv-s3'), 'k-book': () => go2('pv-s3'), 'k-brain': () => memorySheet(), 'k-cal': () => daysSheet() };
+    const KT = { 'k-ring': () => readySheet(used.map((x) => ({ b: x.b, pct: x.pct, m: MB.get(x.b.id) })), overall), 'k-book': () => masteredSheet(used.map((x) => ({ b: x.b, m: MB.get(x.b.id) })), chDone, chAll), 'k-brain': () => memorySheet(), 'k-cal': () => daysSheet() };
     $app.querySelectorAll('.pv-sum .pv-kpi').forEach((k) => { const key = Object.keys(KT).find((c) => k.classList.contains(c)); if (!key) return;
       k.classList.add('pv-click'); k.setAttribute('role', 'button'); k.tabIndex = 0;
       const run = (e) => { if (e.target.closest('.info-btn')) return; KT[key](); };
