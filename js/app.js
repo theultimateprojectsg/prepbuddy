@@ -41,7 +41,7 @@ const matchType = (q, types) => !types || types === 'mix' || (types === 'mcq' ? 
 // Difficulty the student picks. Auto adapts to how they're doing; the others keep questions to these levels
 // (1 Recall, 2 Understand, 3 Apply, 4 Analyse / evaluate).
 const DIFFS = [['auto', 'Auto'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard'], ['master', 'Master']];
-const DIFF_RANGE = { easy: [1, 2], medium: [2, 3], hard: [3, 4], master: [4, 4] };
+const DIFF_RANGE = { easy: [1, 2], medium: [2, 3], hard: [3, 4], master: [4, 4], l1: [1, 1], l2: [2, 2], l3: [3, 3], l4: [4, 4] };
 const curDiff = () => { const d = local.diff || 'auto'; return limitOf('hardDiff') || d === 'easy' || d === 'medium' ? d : 'medium'; };
 const diffOK = (q, diff) => { const r = DIFF_RANGE[diff]; if (!r) return true; const l = q.level || 2; return l >= r[0] && l <= r[1]; };
 const PLAN = [[2, 'mcq'], [1, 'mcq'], [2, 'mcq'], [2, 'short'], [1, 'mcq'], [3, 'structured'], [2, 'mcq'],
@@ -6428,20 +6428,45 @@ async function renderProgress() {
   // the mistake book over time: open mistakes at the end of each week, and fixed vs new that week
   const firstWrong = new Map(); local.log.forEach((e) => { if (e.g < e.m && !firstWrong.has(e.q)) firstWrong.set(e.q, e.t); });
   const MKE = Object.entries(local.mistakes || {}).map(([id, m]) => ({ made: Math.min(firstWrong.get(id) || m.t, m.t), done: m.done ? m.doneAt || m.t : null }));
-  const mkW = Array.from({ length: 8 }, (_, i) => { const end = t0 + DAY - (7 - i) * WK, start = end - WK;
+  const mkWk = Array.from({ length: 8 }, (_, i) => { const end = t0 + DAY - (7 - i) * WK, start = end - WK;
     return { open: MKE.filter((x) => x.made < end && (!x.done || x.done >= end)).length, fixed: MKE.filter((x) => x.done && x.done >= start && x.done < end).length, made: MKE.filter((x) => x.made >= start && x.made < end).length }; });
+  // the chart starts at the child's first week with mistakes, not with empty weeks before they began
+  const mkFirst = mkWk.findIndex((w) => w.open || w.fixed || w.made), mkW = mkFirst < 0 ? [] : mkWk.slice(mkFirst);
   const mkMax = Math.max(1, ...mkW.map((w) => Math.max(w.open, w.fixed, w.made)));
-  const mkCard = MKE.length ? (() => { const W = 300, H = 120, x = (i) => 14 + i * (W - 28) / 7, y = (v) => H - 18 - v / mkMax * (H - 30);
+  const mkCard = MKE.length && mkW.length ? (() => { const W = 300, H = 120, n = mkW.length, x = (i) => (n === 1 ? W / 2 : 20 + i * (W - 40) / (n - 1)), y = (v) => H - 18 - v / mkMax * (H - 30);
     const bars = mkW.map((w, i) => `<rect x="${(x(i) - 9).toFixed(1)}" y="${y(w.fixed).toFixed(1)}" width="8" height="${(H - 18 - y(w.fixed)).toFixed(1)}" rx="2" fill="#18966A"/><rect x="${(x(i) + 1).toFixed(1)}" y="${y(w.made).toFixed(1)}" width="8" height="${(H - 18 - y(w.made)).toFixed(1)}" rx="2" fill="#F0A35E"/>`).join('');
-    const line = `<polyline points="${mkW.map((w, i) => `${x(i).toFixed(1)},${y(w.open).toFixed(1)}`).join(' ')}" fill="none" stroke="#26357A" stroke-width="2.5" stroke-linejoin="round"/>${mkW.map((w, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(w.open).toFixed(1)}" r="3" fill="#26357A"/>`).join('')}`;
-    const a = mkW[0].open, b = mkW[7].open;
+    const line = `${n > 1 ? `<polyline points="${mkW.map((w, i) => `${x(i).toFixed(1)},${y(w.open).toFixed(1)}`).join(' ')}" fill="none" stroke="#26357A" stroke-width="2.5" stroke-linejoin="round"/>` : ''}${mkW.map((w, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(w.open).toFixed(1)}" r="3" fill="#26357A"/>`).join('')}`;
+    const wk = mkW[n - 1], a = mkW[0].open, b = wk.open;
+    const openL = MKE.filter((x) => !x.done), oldest = openL.length ? Math.round((now - Math.min(...openL.map((x) => x.made))) / DAY) : 0;
+    const fresh = n <= 3; // first few weeks: practising creates mistakes; that's how Buddy finds what to work on
+    const head = PT(`<b>Fixed ${wk.fixed} this week</b>, ${b} still open${oldest >= 3 ? ` (oldest: ${oldest} days)` : ''}.`, `<b>本週改正 ${wk.fixed} 題</b>，仍有 ${b} 題未改正${oldest >= 3 ? `（最舊的已 ${oldest} 日）` : ''}。`);
+    const tail = fresh ? PT('Wrong answers are how Buddy finds what to practise. Fixing them in Today’s mission turns them into marks.', '答錯的題目讓 Buddy 知道要練習甚麼。在今日任務改正它們，就能變成分數。')
+      : b < a ? PT(`Down from ${a} to ${b} open: gaps are closing.`, `未改正的由 ${a} 減至 ${b}：漏洞正在補上。`)
+      : b > a ? PT(`Up from ${a} to ${b} open. Fixing a few each day in Today’s mission turns it around.`, `未改正的由 ${a} 增至 ${b}。每天在今日任務改正幾題就能扭轉。`)
+      : PT('About the same as before. Keep fixing a few each day.', '和之前差不多。每天繼續改正幾題。');
     return `<div class="pv-card"><b class="pv-ct h-info">${PT('Mistake book over time', '錯題簿的變化')}${ib('howMk', PT('How to read this', '怎樣看這個圖'))}</b>
-      <p class="pv-sm">${b < a ? PT(`Down from ${a} to ${b} open mistakes in 8 weeks: gaps are closing.`, `8 星期內未改正的錯題由 ${a} 減至 ${b}，漏洞正在補上。`) : b > a ? PT(`Up from ${a} to ${b} open mistakes in 8 weeks. Fixing a few each day turns it around.`, `8 星期內未改正的錯題由 ${a} 增至 ${b}。每天改正幾題就能扭轉。`) : PT(`${b} open mistakes, about the same as 8 weeks ago.`, `未改正的錯題 ${b} 題，和 8 星期前差不多。`)}</p>
-      <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${PT('Open mistakes each week, with mistakes fixed and new', '每星期未改正的錯題，以及改正和新增的錯題')}"><line x1="0" y1="${H - 18}" x2="${W}" y2="${H - 18}" stroke="#E6EAF2"/>${bars}${line}<text x="4" y="${H - 4}" font-size="10" fill="#5A6380">${PT('8 wks ago', '8 週前')}</text><text x="${W - 4}" y="${H - 4}" font-size="10" fill="#5A6380" text-anchor="end">${PT('This wk', '本週')}</text></svg>
+      <p class="pv-sm">${head} ${tail}</p>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${PT('Open mistakes each week, with mistakes fixed and new', '每星期未改正的錯題，以及改正和新增的錯題')}"><line x1="0" y1="${H - 18}" x2="${W}" y2="${H - 18}" stroke="#E6EAF2"/>${bars}${line}${n > 1 ? `<text x="4" y="${H - 4}" font-size="11" fill="#5A6380">${n === 2 ? PT('Last wk', '上週') : PT(`${n - 1} wks ago`, `${n - 1} 週前`)}</text>` : ''}<text x="${W - 4}" y="${H - 4}" font-size="11" fill="#5A6380" text-anchor="end">${PT('This wk', '本週')}</text></svg>
       <div class="pv-callg"><i style="background:#26357A;border-radius:50%"></i><span>${PT('Open', '未改正')}</span><i style="background:#18966A"></i><span>${PT('Fixed', '已改正')}</span><i style="background:#F0A35E"></i><span>${PT('New', '新錯題')}</span></div>
-      ${how('howMk', PT('How to read this', '怎樣看這個圖'), `<p>${PT('The blue line is how many mistakes were still open (not yet got right) at the end of each week. Green bars are mistakes fixed that week; orange bars are new mistakes that week.', '藍線是每星期結束時仍未改正的錯題數。綠色棒是當星期改正的錯題，橙色棒是當星期新增的錯題。')}</p><p>${PT('Every wrong answer goes into the mistake book; getting it fully right later fixes it. A falling blue line means the gaps are closing.', '每題答錯都會放進錯題簿；之後完全答對就算改正。藍線下降，代表漏洞正在補上。')}</p>`)}</div>`; })() : '';
-  const typesCard = rated.length ? `<div class="pv-card pv-typescard"><b class="pv-ct">${PT('Types of question', '題型')}</b><p class="pv-sm">${PT('How often you get each kind right, last 30 days.', '過去 30 日各類題目的答對率。')}</p>
-    <div class="pv-tbars">${r.sk.map(([a, n], i) => (n >= 3 ? `<div class="pv-tb ${tone(a)}"><span>${names[i]}</span><b>${a}%</b><i><s style="width:${a}%"></s></i></div>` : '')).join('')}</div>${gapNote ? `<p class="pv-sm" style="margin:0">${gapNote}</p>` : ''}</div>` : '';
+      ${openL.length ? btn(PT(`Fix mistakes now`, '現在改正錯題'), () => go({ name: 'mistakes' }), 'pv-btn soft') : ''}
+      ${how('howMk', PT('How to read this', '怎樣看這個圖'), `<p>${PT('The blue line is how many mistakes were still open (not yet got right) at the end of each week. Green bars are mistakes fixed that week; orange bars are new mistakes that week.', '藍線是每星期結束時仍未改正的錯題數。綠色棒是當星期改正的錯題，橙色棒是當星期新增的錯題。')}</p><p>${PT('Every wrong answer goes into the mistake book; getting it fully right later fixes it. Practising more always makes some new ones: what matters is that the green keeps up with the orange.', '每題答錯都會放進錯題簿；之後完全答對就算改正。練習多了一定會有新錯題：重要的是綠色追得上橙色。')}</p>`)}</div>`; })() : '';
+  // first tries only (reviews and redone mistakes are mostly remembering questions seen before), last 30 days
+  const tySeen = new Set(), FT = [];
+  for (const e of local.log) { if (!e.q || !e.m || tySeen.has(e.q)) continue; tySeen.add(e.q); if (e.t >= now - 30 * DAY && e.k !== 'mistakes' && e.k !== 'spaced') FT.push(e); }
+  const tyAcc = (es) => { const m = es.reduce((a, e) => a + e.m, 0); return m ? Math.round(100 * es.reduce((a, e) => a + e.g, 0) / m) : null; };
+  const tyL = (e) => Math.max(1, Math.min(4, Math.round(e.l || 2)));
+  const byL = [1, 2, 3, 4].map((l) => { const es = FT.filter((e) => tyL(e) === l); return { l, a: tyAcc(es), n: es.length }; }).filter((x) => x.n >= 3 && x.a != null);
+  // the weakest subject x type with enough answers to trust
+  const cellM = new Map(); for (const e of FT) { const bk = books.find((b) => e.q.startsWith(b.id + ':')); if (!bk) continue; const k = `${bk.id}|${tyL(e)}`; (cellM.get(k) || cellM.set(k, { bk, l: tyL(e), es: [] }).get(k)).es.push(e); }
+  const weakC = [...cellM.values()].filter((c) => c.es.length >= 6).map((c) => ({ ...c, a: tyAcc(c.es) })).filter((c) => c.a != null && c.a < 70).sort((a, b) => a.a - b.a)[0];
+  const tyBest = byL.slice().sort((a, b) => b.a - a.a)[0], tyWorst = byL.slice().sort((a, b) => a.a - b.a)[0];
+  const tyNote = weakC ? PT(`Weakest spot: <b>${esc(sname(weakC.bk))} · ${names[weakC.l - 1].toLowerCase()}</b>, ${weakC.a}% right on first tries.`, `最弱的地方：<b>${esc(sname(weakC.bk))} ·「${names[weakC.l - 1]}」</b>，第一次作答答對 ${weakC.a}%。`)
+    : tyBest && tyWorst && tyBest.l !== tyWorst.l && tyBest.a - tyWorst.a >= 15 ? PT(`Strongest at “${names[tyBest.l - 1].toLowerCase()}”. “${names[tyWorst.l - 1]}” questions are the gap, and that’s where test marks are.`, `最擅長「${names[tyBest.l - 1]}」；「${names[tyWorst.l - 1]}」是弱項，也是考試失分的地方。`)
+    : byL.length ? PT('Fairly even across question types.', '各類題型表現大致平均。') : '';
+  const weakUnits = weakC ? [...new Set(weakC.es.map((e) => qUnit(e.q)[1]))].map((id) => weakC.bk.units.find((u) => u.id === id)).filter(Boolean).slice(0, 3) : [];
+  const typesCard = byL.length ? `<div class="pv-card pv-typescard"><b class="pv-ct">${PT('Types of question', '題型')}</b><p class="pv-sm">${PT('How often you get each kind right on the first try, last 30 days.', '過去 30 日第一次作答時，各類題目的答對率。')}</p>
+    <div class="pv-tbars">${byL.map((x) => `<div class="pv-tb ${tone(x.a)}"><span>${names[x.l - 1]}</span><b>${x.a}%</b><i><s style="width:${x.a}%"></s></i></div>`).join('')}</div>${tyNote ? `<p class="pv-sm" style="margin:0">${tyNote}</p>` : ''}
+    ${weakC && weakUnits.length ? btn(PT(`Practise ${names[weakC.l - 1].toLowerCase()} questions in ${sname(weakC.bk)}`, `練習${sname(weakC.bk)}的「${names[weakC.l - 1]}」題`), () => startUnits(weakC.bk, weakUnits, 8, { diff: `l${weakC.l}` }), 'pv-btn soft') : ''}</div>` : '';
   const sec4 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('Proof that practice is paying off', '練習有沒有效果')}</span></div>
     <div class="pv-grid3">${levelCard}${pcCard}${readyCard}${mixCard}${typesCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div>
 </section>`;
