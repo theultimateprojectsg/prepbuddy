@@ -5702,8 +5702,10 @@ async function renderProgress() {
     const tile = (c) => { const st = fresh(c) ? 'none' : c.pct >= 80 ? 'good' : c.pct >= 60 ? 'mid' : 'low';
       const run = () => chapterSheet(x.b, c);
       return btn(`<b data-raw>${esc(chName(c.unit))}</b><span>${fresh(c) ? PT('not started', '未開始') : c.pct + '%'}</span>`, run, `pv-tile ${st}`); };
-    return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(x.b))}</b><span>${PT(`${x.pct}% ready · ${chs.length} chapters`, `準備度 ${x.pct}% · ${chs.length} 章`)}</span></div>
-      <div class="pv-tiles">${chs.slice(0, max).map(tile).join('')}${chs.length > max ? btn(PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`), () => go({ name: 'book', bookId: x.b.id }), 'pv-tile more') : ''}</div></div>`;
+    return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(x.b))}${x.b.subject && x.b.title && x.b.title !== sname(x.b) ? `<small class="pv-subj-bk">${esc(x.b.title)}</small>` : ''}</b><span>${PT(`${x.pct}% ready · ${chs.length} chapters`, `準備度 ${x.pct}% · ${chs.length} 章`)}</span></div>
+      <div class="pv-tiles" id="pvt-${esc(x.b.id)}">${chs.map((c, i) => (i < max ? tile(c) : tile(c).replace('class="pv-tile', 'class="pv-tile pv-hid'))).join('')}${chs.length > max ? btn(PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`), () => {
+        const el = document.getElementById(`pvt-${x.b.id}`), open = el.classList.toggle('open'), b = el.querySelector('.pv-tile.more');
+        if (b) b.textContent = open ? PT('Show fewer', '顯示較少') : PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`); }, 'pv-tile more') : ''}</div></div>`;
   }).join('');
   const next = [];
   const nt = tests.steps.find((p) => p.step && p.step.u);
