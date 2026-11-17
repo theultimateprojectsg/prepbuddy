@@ -2439,17 +2439,32 @@ async function renderHome() {
   const name = (local.name || '').trim();
   const dateText = new Date().toLocaleDateString(LOCALE(), { weekday: 'long', day: 'numeric', month: 'long' });
   const who = name || (KIDS.list.length > 1 && KID && KID.nick) || '';
-  const cheer = LANG === 'zh' ? (hr < 12 ? '新的一天，先做一點點吧！' : hr < 18 ? '今天也來練習一下吧！' : '睡前做十分鐘，明天更有信心。')
-    : hr < 12 ? 'A little practice now, a lot easier later.' : hr < 18 ? 'Ready for a quick practice?' : 'Ten minutes before bed goes a long way.';
+  // Buddy's line under the date: the most useful thing about today (a test, the streak, a win), else a friendly line that changes daily
+  const cheerFor = (F) => {
+    const Z = (en, zh) => (LANG === 'zh' ? zh : en), nt = F.test, ch = nt && nt.step ? String(nt.step.t || '').replace(/^(Learn|Practise|Practice)\s*:?\s*/i, '').replace(/^(學習|練習)[：:「]?/, '').replace(/」$/, '') : '';
+    if (nt && nt.left === 0) return Z(`${nt.x.name} today. You’ve got this! A quick warm-up first?`, `今天「${nt.x.name}」，你一定得！先熱熱身？`);
+    if (nt && nt.left === 1) return Z(`${nt.x.name} tomorrow. A practice run tonight, then a good sleep.`, `明天「${nt.x.name}」。今晚做一次模擬，然後好好睡一覺。`);
+    if (F.allDone) return F.streak >= 2 ? Z(`Mission done, and ${F.streak} days in a row. Brilliant!`, `任務完成，已連續 ${F.streak} 日，太棒了！`) : Z('Mission done for today. Brilliant work!', '今天的任務完成了，做得好！');
+    if (nt && nt.left <= 7 && ch) return Z(`${nt.x.name} in ${nt.left} days. Let’s get ${ch} sorted today.`, `「${nt.x.name}」還有 ${nt.left} 日，今天先搞定「${ch}」。`);
+    if (F.streak >= 2 && !F.doneToday) return Z(`${F.streak} days in a row! Keep the flame going today.`, `已連續 ${F.streak} 日！今天也要保持。`);
+    if (F.fixedY >= 3) return Z(`You fixed ${F.fixedY} mistakes yesterday. Nice!`, `昨天你改正了 ${F.fixedY} 題錯題，做得好！`);
+    if (F.gw && !F.gw.reached && F.gw.met === F.gw.days - 1) return Z('One more day and you hit this week’s goal!', '再多一日就達到本週目標！');
+    if (F.streak >= 2) return Z(`${F.streak} days in a row. Come back tomorrow for day ${F.streak + 1}!`, `已連續 ${F.streak} 日，明天回來挑戰第 ${F.streak + 1} 日！`);
+    if (nt && nt.left <= 14) return Z(`${nt.x.name} in ${nt.left} days. A little each day beats a lot the night before.`, `「${nt.x.name}」還有 ${nt.left} 日。每天一點點，好過考前一晚臨急抱佛腳。`);
+    const L = LANG === 'zh'
+      ? (hr < 12 ? ['新的一天，先做一點點吧！', '早上的腦袋最清醒，來幾題吧！', '先做一點點，今天就輕鬆得多。'] : hr < 18 ? ['今天也來練習一下吧！', '放學後做一個小任務？', '十分鐘就夠，開始吧！'] : ['睡前做十分鐘，明天更有信心。', '今晚做一點，明天記得更牢。', '一個小任務，然後好好休息。'])
+      : (hr < 12 ? ['A little practice now, a lot easier later.', 'Fresh brain, fresh start. Let’s go!', 'A few questions before the day gets busy?'] : hr < 18 ? ['Ready for a quick practice?', 'A short mission after school?', 'Ten minutes is all it takes. Let’s go!'] : ['Ten minutes before bed goes a long way.', 'A little tonight helps it stick tomorrow.', 'One small mission, then time to relax.']);
+    return L[Math.floor(Date.now() / DAY) % L.length];
+  };
   // Phones: an app bar (logo · child · stars · settings) above a friendly greeting card with Buddy. Computers: the plain greeting.
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}<span class="gr-bud-in" aria-hidden="true"><!--BUD46--></span></h1><p data-raw>${esc(dateText)}</p><span class="gr-sub">${esc(cheer)}</span></div><span class="gr-buddy" aria-hidden="true"><!--BUD64--></span></div><!--STRIP--></div>
+      <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}<span class="gr-bud-in" aria-hidden="true"><!--BUD46--></span></h1><p data-raw>${esc(dateText)}</p><span class="gr-sub"><!--CHEER--></span></div><span class="gr-buddy" aria-hidden="true"><!--BUD64--></span></div><!--STRIP--></div>
       <div class="greet-r"><span class="gr-brand">${logoSVG(36)}<b>PrepBuddy</b></span>${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}${gearBtn()}</div></div>`;
   if (!books.length) {
     // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
     let starters = [];
     try { const cat = await getCatalog(); const g = gradeNow(); const all = cat.filter((b) => b.starter); starters = all.filter((b) => !g || String(b.level).toUpperCase() === g); if (!starters.length) starters = all; starters = starters.slice(0, 3); } catch (e) {}
-    $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head}
+    $app.innerHTML = `<main class="pad stack today" data-view="home" style="flex:1">${head.replace('<!--CHEER-->', esc(cheerFor({ streak: 0 })))}
     ${starters.length && inHK() ? `<section class="starter-card" aria-label="${LANG === 'zh' ? '免費入門書' : 'Free starter books'}"><span class="st-tag">${LANG === 'zh' ? '免費 · PrepBuddy 編寫' : 'Free · written by PrepBuddy'}</span>
       <h2>${LANG === 'zh' ? '先試一本入門書' : 'Try a free starter book'}</h2>
       <p>${LANG === 'zh' ? '跟足香港課程，即刻有練習、筆記和測驗，之後再加入學校課本。' : 'Follows the Hong Kong curriculum. Practice, notes and tests straight away, then add your school textbook later.'}</p>
@@ -2705,6 +2720,8 @@ async function renderHome() {
   const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0 }));
   const nOn = wk.filter((x) => x.on).length, gw = goalWeek();
   const doneToday = daysSet.has(t0);
+  const fixedY = local.log.filter((e) => e.k === 'mistakes' && e.t >= t0 - DAY && e.t < t0 && e.m && e.g >= e.m).length;
+  const cheer = cheerFor({ test: tests.steps.find((q) => q.left >= 0), allDone, streak, doneToday, fixedY, gw });
   // a line of encouragement for the streak (computers; phones show the "See today's mission" button instead)
   const encHTML = doneToday
     ? (streak >= 2 ? Z(`${streak} days in a row. Brilliant! Come back tomorrow for day ${streak + 1}.`, `已連續 ${streak} 日，太棒了！明天回來挑戰第 ${streak + 1} 日。`) : Z('Great start! Come back tomorrow and it becomes a streak.', '好開始！明天再來，就開始連續練習了。'))
@@ -2802,7 +2819,7 @@ async function renderHome() {
 
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
-    ${head.replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
+    ${head.replace('<!--CHEER-->', esc(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${installTip()}
     ${winHTML}
