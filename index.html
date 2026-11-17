@@ -3018,6 +3018,11 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .pv-simple .pv-p{margin:0}
 .pv-tolink{align-self:flex-start;font-size:14px;font-weight:600}
 .today .pv-test{gap:12px}
+.pv-aimok{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:#FFF6CC;border:1px solid #F3DE8A}
+.pv-aimok span{flex:1 1 100%;font-size:14px;font-weight:600;color:var(--ink)}
+.pv-aimok .btn-sm{flex:1 1 0;min-height:44px}
+/* scrolling past the goal bar with a thumb shouldn't drag it */
+.pv-aim{touch-action:pan-y}
 </style>
 </head>
 <body>

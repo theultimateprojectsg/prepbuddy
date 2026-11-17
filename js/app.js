@@ -5961,7 +5961,21 @@ function bindTestCards(root) {
       const ln = card.querySelector('.pv-fcline'); if (ln) { ln.innerHTML = tcFcLine(+ln.dataset.ready, a, +ln.dataset.left, JSON.parse(ln.dataset.info)); bindSet(); } };
     const bindSet = () => card.querySelectorAll('[data-setaim]').forEach((b) => (b.onclick = () => { r.value = b.dataset.setaim; r.onchange(); }));
     r.oninput = show; r.onpointerdown = () => bar.classList.add('drag'); r.onpointerup = r.onblur = () => bar.classList.remove('drag');
-    r.onchange = () => { show(); const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = +r.value; saveLocal(); } };
+    // nothing is saved until it's confirmed: a slip of the finger while scrolling is easy to undo
+    const saved = () => { const x = (local.sched || []).find((y) => y.id === r.dataset.aim); return (x && x.aim) || 80; };
+    r.onchange = () => {
+      show();
+      let cf = card.querySelector('.pv-aimok'); const a = +r.value, was = saved();
+      if (a === was) { if (cf) cf.remove(); return; }
+      if (!cf) { cf = document.createElement('div'); cf.className = 'pv-aimok'; (bar.closest('.pv-track') || bar).after(cf); }
+      cf.innerHTML = `<span>${PT(`Change the goal from ${was}% to ${a}%?`, `把目標由 ${was}% 改為 ${a}%？`)}</span><button type="button" class="btn-sm" data-k="no">${PT(`Keep ${was}%`, `保留 ${was}%`)}</button><button type="button" class="btn-sm primary" data-k="yes">${PT(`Set ${a}%`, `設為 ${a}%`)}</button>`;
+      cf.querySelector('[data-k="no"]').onclick = () => { r.value = was; show(); cf.remove(); };
+      cf.querySelector('[data-k="yes"]').onclick = () => {
+        const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = a; saveLocal(); }
+        cf.remove(); toast(PT(`Goal set to ${a}%`, `目標已設為 ${a}%`));
+        if (view && view.name === 'home') renderHome(); // Today's mission and minutes follow the goal
+      };
+    };
     bindSet();
   });
 }
