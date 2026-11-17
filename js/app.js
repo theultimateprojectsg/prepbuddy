@@ -5990,7 +5990,8 @@ function bindTestCards(root) {
       cf.querySelector('[data-k="yes"]').onclick = () => {
         const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = a; saveLocal(); }
         cf.remove(); toast(PT(`Goal set to ${a}%`, `目標已設為 ${a}%`));
-        if (view && view.name === 'home') renderHome(); // Today's mission and minutes follow the goal
+        // Today's mission and minutes follow the goal: redraw, staying where the child was on the page
+        if (view && view.name === 'home') { const id = r.dataset.aim, top = card.getBoundingClientRect().top; renderHome().then(() => { const c = [...document.querySelectorAll('.pv-aim')].find((e) => e.dataset.aim === id), t = c && c.closest('.pv-test'); if (!t) return; const keep = () => window.scrollTo(0, window.scrollY + t.getBoundingClientRect().top - top); keep(); requestAnimationFrame(keep); t.classList.add('aim-saved'); setTimeout(() => t.classList.remove('aim-saved'), 1200); }); }
       };
     };
     bindSet();
