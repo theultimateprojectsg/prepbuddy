@@ -2536,7 +2536,7 @@ async function renderHome() {
   }
   const t0 = dayStart();
   const nSteps = Math.min(8, 5 + extraJobs); // up to 5, plus catch-up jobs when behind pace for a test
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 3) { local.mission = { v: 3, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 4) { local.mission = { v: 4, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
