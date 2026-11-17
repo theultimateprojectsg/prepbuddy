@@ -5431,28 +5431,22 @@ function chapterSheet(book, c) {
   // where the chapter stands, in plain words (no formula), and what's still to do for 100%
   const fmtD = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
   const now = Date.now(), wk = 7 * DAY, recentTest = c.lastTest && now - c.lastTest < wk, retestAt = c.lastTest + wk;
-  const see = [
-    [learned, PT('Lesson', '課堂'), learned ? PT('Done', '已完成') : PT('Not done yet', '未上')],
-    [c.done >= T && (acc || 0) >= 75, PT('Practice', '練習'), c.done ? PT(`${c.done} of ${T} questions · ${acc}% right first time`, `${T} 題中做了 ${c.done} 題 · 第一次答對 ${acc}%`) : PT('No questions yet', '未做題目')],
-    [c.score.deep >= 1, PT('Harder questions', '較深題目'), c.lvTop >= 4 ? PT('Analyse level reached', '已到分析程度') : c.lvTop === 3 ? PT('Apply level reached · analyse next', '已到應用程度 · 下一步分析') : c.done ? PT('Not yet · Buddy moves you up as you improve', '未到 · 進步了 Buddy 會調高') : '–'],
-    [!c.open && c.done > 0, PT('Mistakes', '錯題'), c.open ? PT(`${c.open} to fix`, `${c.open} 題要改正`) : c.done ? PT('None open', '沒有') : '–'],
-    [c.score.remembered >= 1, PT('Memory', '記憶'), c.due ? PT(`${c.due} reviews due now`, `${c.due} 題到期溫習`) : c.nextDue < Infinity ? PT(`Next review ${fmtD(c.nextDue)}`, `下次溫習 ${fmtD(c.nextDue)}`) : '–'],
-    [c.spread && c.lastPass, PT('Chapter test', '章節測驗'), c.spread && c.lastPass ? PT('Passed twice, a week apart', '相隔一星期兩次合格') : recentTest ? PT(`${c.lastPass ? 'Passed' : 'Tried'} ${fmtD(c.lastTest)} · next one counts from ${fmtD(retestAt)}`, `${fmtD(c.lastTest)} ${c.lastPass ? '合格' : '試過'} · ${fmtD(retestAt)} 起再考才計`) : c.passes ? PT('Passed once · ready to retest', '合格一次 · 可以再考') : c.tests ? PT('Not passed yet', '未合格') : PT('Not tried yet', '未試過')],
+  // the six steps to 100%, each a tile: done (green), started (amber) or still to do (grey), with one line
+  // that says where it stands or what's needed next
+  const ST3 = (done, part) => (done ? 'done' : part ? 'part' : 'todo');
+  const steps = [
+    ['learn', PT('Lesson', '課堂'), ST3(learned, false), learned ? PT('Done', '已完成') : PT('Take the lesson', '上課')],
+    ['practise', PT('Practice', '練習'), ST3(c.done >= T && (acc || 0) >= 75, c.done > 0), c.done ? PT(`${c.done}/${T} questions · ${acc}% first try`, `${c.done}/${T} 題 · 第一次答對 ${acc}%`) : PT(`Answer ${T} questions`, `回答 ${T} 題`)],
+    ['level', PT('Harder questions', '較深題目'), ST3(c.score.deep >= 1, c.lvTop >= 3), c.score.deep >= 1 ? PT('Analyse level done', '分析程度完成') : c.lvTop >= 3 ? PT('Apply reached · analyse next', '已到應用 · 下一步分析') : PT('Unlocks as you improve', '進步後解鎖')],
+    ['mistakes', PT('Mistakes', '錯題'), ST3(c.done > 0 && !c.open, c.open > 0), c.open ? PT(`${c.open} to fix`, `${c.open} 題要改正`) : c.done ? PT('All fixed', '全部改正') : PT('None yet', '暫時沒有')],
+    ['review', PT('Memory', '記憶'), ST3(c.score.remembered >= 1, c.done > 0), c.due ? PT(`${c.due} reviews due now`, `${c.due} 題到期溫習`) : c.nextDue < Infinity ? PT(`Next review ${fmtD(c.nextDue)}`, `下次溫習 ${fmtD(c.nextDue)}`) : PT('Right again over 2 weeks', '兩星期內再答對')],
+    ['test', PT('Chapter test', '章節測驗'), ST3(c.spread && c.lastPass, c.passes > 0), c.spread && c.lastPass ? PT('Passed twice', '兩次合格') : recentTest ? PT(`Passed ${fmtD(c.lastTest)} · retest ${fmtD(retestAt)}`, `${fmtD(c.lastTest)} 合格 · ${fmtD(retestAt)} 再考`) : c.passes ? PT('Passed once · retest now', '合格一次 · 可再考') : c.tests ? PT('Not passed yet · 80%', '未合格 · 80%') : PT('Pass with 80%', '80% 合格')],
   ];
-  // still to do for 100%: the few things left, with when (some only count after a wait)
-  const todo = [];
-  if (!learned && !c.done) todo.push(PT('Take the lesson', '上課'));
-  if (c.done < T) todo.push(PT(`Practise ${T - c.done} more questions`, `再練習 ${T - c.done} 題`));
-  else if ((acc || 0) < 75) todo.push(PT('Get more right the first time', '第一次就答對更多題'));
-  if (c.score.deep < 1) todo.push(PT('Get the harder questions right', '答對較深的題目'));
-  if (c.open) todo.push(PT(`Fix ${c.open} mistakes`, `改正 ${c.open} 題錯題`));
-  if (!c.passes) todo.push(PT('Pass the chapter test (80%)', '通過章節測驗（80%）'));
-  else if (!c.spread || !c.lastPass) todo.push(recentTest ? PT(`Retest from ${fmtD(retestAt)}, to show it stuck`, `${fmtD(retestAt)} 起再考，證明記得`) : PT('Pass the chapter test again', '再通過章節測驗'));
-  if (c.score.remembered < 1) todo.push(PT('Keep getting reviews right over the next 2 weeks', '未來兩星期溫習時繼續答對'));
+  const left = steps.filter((x) => x[2] !== 'done').length;
   const LV = [PT('Remember', '記憶'), PT('Understand', '理解'), PT('Apply', '應用'), PT('Analyse', '分析')];
-  const ladder = `<div class="chs-lv"><small>${PT('Question difficulty', '題目難度')}</small>
-    <div class="chs-stairs">${LV.map((l, i) => `<div class="${i + 1 <= c.lvTop ? 'got' : ''} ${i + 1 === c.lvNow ? 'now' : ''}" style="--h:${28 + i * 16}px">${i + 1 === c.lvNow ? `<span class="chs-you">${buddySVG('happy', 34)}</span>` : ''}<i>${i + 1 <= c.lvTop ? '✓' : i + 1}</i><em>${l}</em></div>`).join('')}</div>
-    <p>${c.done >= 5 ? PT(`Buddy is giving you <b>${LV[c.lvNow - 1].toLowerCase()}</b> questions now (step ${c.lvNow} of 4). Get 80% right and it moves you up a level; under 50% and it eases off.`, `Buddy 現在給你<b>${LV[c.lvNow - 1]}</b>題目（第 ${c.lvNow} 級，共 4 級）。答對 80% 會升一級；低於 50% 會調低。`) : PT('After 5 questions Buddy starts moving the level up or down to match you.', '做了 5 題之後，Buddy 會按你的表現調高或調低程度。')}</p></div>`;
+  const ladder = `<section class="cs2-sec"><h3>${PT('Question difficulty', '題目難度')}</h3>
+    <div class="cs2-lv">${LV.map((l, i) => `<div class="${i + 1 <= c.lvTop ? 'got' : ''}${i + 1 === c.lvNow ? ' now' : ''}">${i + 1 === c.lvNow ? `<span class="cs2-you">${buddySVG('happy', 30)}</span>` : ''}<i style="height:${10 + i * 6}px"></i><b>${l}</b></div>`).join('')}</div>
+    <p class="cs2-sub">${c.done >= 5 ? PT(`Buddy is giving you <b>${LV[c.lvNow - 1].toLowerCase()}</b> questions now. Get 80% right and it steps up; under 50% and it eases off.`, `Buddy 現在給你<b>${LV[c.lvNow - 1]}</b>題目。答對 80% 會升一級；低於 50% 會調低。`) : PT('After 5 questions Buddy starts moving the difficulty up or down to match you.', '做了 5 題之後，Buddy 會按你的表現調高或調低難度。')}</p></section>`;
   // Buddy's pick, in the order a tutor would go
   const retestOK = c.passes && Date.now() >= c.firstPass + 7 * DAY;
   const pick = !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review'
@@ -5476,23 +5470,23 @@ function chapterSheet(book, c) {
   const best = O.find((o) => o[0] === pick) || O[0], rest = O.filter((o) => o !== best);
   const tone = c.pct >= 70 ? 'hi' : c.pct >= 40 ? 'mid' : 'lo';
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
-  box.innerHTML = `<div class="cdlg chs" role="dialog" aria-modal="true" aria-labelledby="chs-t">
-    <div class="chs-h"><div class="rsg-meter ${tone}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(c.pct * 0.974).toFixed(1)} 100"/></svg><b>${c.pct}%</b></div>
-      <div><small data-raw>${esc(book.subject ? subj(book.subject) : book.title)}</small><b id="chs-t" data-raw>${esc(name)}</b><span>${esc(masteryLabel(c.pct))}</span></div>
-      <button class="chs-x" aria-label="${PT('Close', '關閉')}">✕</button></div>
-    <div class="chs-pick"><small>${buddySVG('happy', 22)} ${PT('Buddy suggests', 'Buddy 建議')}</small><p>${why}</p>
-      <button class="chs-best" data-o="0">${actionTile(best[1], 40)}<span><b>${best[2]}</b><em>${best[3]}</em></span><i>›</i></button></div>
-    <div class="chs-two"><div class="chs-see"><small>${PT('Where you are', '你的進度')}</small>${see.map(([ok, l, v]) => `<div class="${ok ? 'ok' : ''}"><i>${ok ? '✓' : ''}</i><span><b>${l}</b><em>${v}</em></span></div>`).join('')}</div>
-    ${todo.length ? `<div class="chs-todo"><small>${PT('Still to do for 100%', '要到 100% 還要')}</small><ul>${todo.slice(0, 4).map((t) => `<li>${t}</li>`).join('')}</ul></div>` : `<div class="chs-todo done"><b>${PT('Mastered. Keep your reviews going and it stays that way.', '已掌握！繼續溫習就能保持。')}</b></div>`}</div>
+  box.innerHTML = `<div class="cdlg cs2" role="dialog" aria-modal="true" aria-labelledby="chs-t">
+    <header class="cs2-h"><div class="rsg-meter ${tone}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(c.pct * 0.974).toFixed(1)} 100"/></svg><b>${c.pct}%</b></div>
+      <div class="cs2-ht"><small data-raw>${esc(book.subject ? subj(book.subject) : book.title)}</small><b id="chs-t" data-raw>${esc(name)}</b><span class="cs2-pill ${tone}">${esc(masteryLabel(c.pct))}</span></div>
+      <button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <section class="cs2-pick"><div class="cs2-pk-h">${buddySVG('happy', 40)}<div><small>${PT('Buddy suggests', 'Buddy 建議')}</small><p>${why}</p></div></div>
+      <button class="cs2-go" data-o="0">${actionTile(best[1], 36)}<span><b>${best[2]}</b><em>${best[3]}</em></span><i>›</i></button></section>
+    <section class="cs2-sec"><h3>${left ? PT(`${6 - left} of 6 steps to 100%`, `100% 的 6 步中完成了 ${6 - left} 步`) : PT('All 6 steps done: mastered', '6 步全部完成：已掌握')}</h3>
+      <div class="cs2-steps">${steps.map(([ic, l, st3, v]) => `<div class="cs2-st s-${st3}"><span class="cs2-ic">${pIcon({ learn: 'book', practise: 'target', level: 'bars', mistakes: 'pencil', review: 'memory', test: 'check' }[ic], 18)}</span><div><b>${l}</b><em>${v}</em></div><i aria-label="${st3}">${st3 === 'done' ? '✓' : ''}</i></div>`).join('')}</div></section>
     ${ladder}
-    <div class="chs-more"><small>${PT('Or choose for yourself', '或自己選擇')}</small>${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 34)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div>
+    <section class="cs2-sec"><h3>${PT('Or choose for yourself', '或自己選擇')}</h3><div class="cs2-more">${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 32)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div></section>
   </div>`;
   document.body.appendChild(box);
   const all = [best, ...rest], close = () => box.remove();
   box.querySelectorAll('[data-o]').forEach((b) => (b.onclick = () => { close(); all[+b.dataset.o][4](); }));
   box.querySelector('.chs-x').onclick = close;
   box.onclick = (e) => { if (e.target === box) close(); };
-  box.querySelector('.chs-best').focus({ preventScroll: true });
+  box.querySelector('.cs2-go').focus({ preventScroll: true });
 }
 async function renderProgress() {
   // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
