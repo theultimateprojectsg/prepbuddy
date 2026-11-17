@@ -2939,6 +2939,18 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .tdc-job .btn-sm{flex:none;min-height:40px;padding:0 18px}
 .tdc-f{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;color:var(--text-2)}
 .tdc-f .linkbtn{font-weight:700;color:var(--accent)}
+
+/* results: score ring coloured by how it went; answers as compact lines */
+.rtop .ring{--c:#E5604A!important}.rtop .ring.mid{--c:#F2B705!important}.rtop .ring.good{--c:#2FB173!important}
+.rfix .rfx-p{margin:0!important;padding:0!important;border:0!important}
+.rfx-line{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:10px;font-size:15px;line-height:1.4}
+.rfx-line+.rfx-line,.rfx-p+.rfx-p{margin-top:6px}
+.rfx-line.ok{background:#F0FAF4}.rfx-line.no{background:#FDF3F1}
+.rfx-pl{flex:none;min-width:20px;height:20px;border-radius:6px;background:#FFFFFF;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--text-2);display:grid;place-items:center;margin-top:1px}
+.rfx-ic{flex:none;width:18px;font-weight:800;text-align:center}.rfx-line.ok .rfx-ic{color:#18966A}.rfx-line.no .rfx-ic{color:#C0392B}
+.rfx-a{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.rfx-a s{color:#A8321F;text-decoration-thickness:1.5px}.rfx-a b{color:#0E6E4D;font-weight:700}.rfx-line.ok .rfx-a b{color:var(--ink);font-weight:600}
+.rfx-a i{color:var(--muted)}.rfx-arr{color:var(--muted)}.rfx-a em{flex-basis:100%;font-style:normal;font-size:12.5px;color:var(--text-2)}
 </style>
 </head>
 <body>

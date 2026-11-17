@@ -9049,17 +9049,17 @@ function renderSummary() {
     let fix = '';
     if (!full) {
       const ZZ = (en, zh) => (LANG === 'zh' ? zh : en), lines = [];
-      // two boxes side by side: the right answer (green, big) and what the child put (red), then the steps, then why
-      const box2 = (good, alsoOk, mine) => `<div class="rfx-pair"><div class="rfx-box ok"><small>${ZZ('Correct answer', '正確答案')}</small><b data-keep>${good}</b>${alsoOk ? `<em data-keep>${ZZ('Also accepted', '亦接受')}: ${alsoOk}</em>` : ''}</div>
-        <div class="rfx-box no"><small>${ZZ('Your answer', '你的答案')}</small><b data-keep>${mine || `<i>${ZZ('Left blank', '未作答')}</i>`}</b></div></div>`;
+      // one compact line per answer: a tick, or what the child put (crossed out) → the right answer
+      const norm = (t) => String(t || '').toLowerCase().replace(/<[^>]*>/g, '').replace(/[\s.,;:!?'"’‘“”。，]/g, '');
+      const line = (good, alsoOk, mine, ok, lab = '') => `<div class="rfx-line ${ok ? 'ok' : 'no'}">${lab ? `<span class="rfx-pl">${lab}</span>` : ''}<span class="rfx-ic" aria-hidden="true">${ok ? '✓' : '✗'}</span><span class="rfx-a" data-keep>${ok ? `<b>${mine || good}</b>` : `${mine ? `<s>${mine}</s>` : `<i>${ZZ('blank', '未作答')}</i>`}<span class="rfx-arr" aria-hidden="true">→</span><b>${good}</b>`}${!ok && alsoOk ? `<em>${ZZ('also OK', '亦接受')}: ${alsoOk}</em>` : ''}</span></div>`;
       if (choiceType(q) && Array.isArray(q.options)) {
         const L = q.correct_option, oi = 'ABCD'.indexOf(L), mine = S.answers && S.answers[k];
-        if (oi >= 0) lines.push(box2(`${L}. ${esc(plain(q.options[oi]))}`, '', mine && 'ABCD'.indexOf(mine) >= 0 ? `${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}` : ''));
+        if (oi >= 0) lines.push(line(`${L}. ${esc(plain(q.options[oi]))}`, '', mine && 'ABCD'.indexOf(mine) >= 0 ? `${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}` : '', false));
       } else if (Array.isArray(q.parts)) {
         const tk = (S.ticks && S.ticks[k]) || [], my = (S.answers && S.answers[k]) || [];
         q.parts.forEach((p, pi) => {
           if (!Array.isArray(p.mark_scheme) || !p.mark_scheme.length) return;
-          const lab = q.parts.length > 1 && p.label ? `<div class="rfx-part">${ZZ('Part', '部分')} ${esc(String(p.label).replace(/[()]/g, ''))}</div>` : '';
+          const lab = q.parts.length > 1 ? esc(String(p.label || pi + 1).replace(/[()]/g, '')) : '';
           // pull "Answer: 10810. Accept 10810 or 10 810" apart into the answer and the accepted forms
           let ans = '', acc = '';
           const rest = [];
@@ -9074,8 +9074,11 @@ function renderSummary() {
           });
           if (!ans && p.blank && rest.length) ans = rest.shift()[0];
           const mine = String(my[pi] || '').trim();
-          let h = lab;
-          if (ans) h += box2(esc(ans), esc(acc), esc(mine.slice(0, 200)));
+          const partOK = (tk[pi] && p.mark_scheme.length && p.mark_scheme.every((_, j) => tk[pi][j])) || (ans && mine && (norm(mine) === norm(ans) || acc.split(' · ').some((a) => a && norm(a) === norm(mine))));
+          let h = '';
+          if (ans) h += line(esc(ans), esc(acc), esc(mine.slice(0, 200)), partOK, lab);
+          else if (lab) h += `<div class="rfx-part">${ZZ('Part', '部分')} ${lab}</div>`;
+          if (partOK) { lines.push(`<div class="rfx-p">${h}</div>`); return; }
           if (rest.length) {
             const steps = rest.some(([t]) => /[=×÷+−\-]\s*\d|\d\s*[=×÷+−]/.test(t)) && ans;
             h += `<div class="rfx-steps"><small>${steps ? ZZ('How to get it', '計法') : ans ? ZZ('Marks also given for', '其他得分要點') : ZZ('What the marker looked for', '得分要點')}</small>
