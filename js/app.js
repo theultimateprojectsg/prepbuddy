@@ -2065,10 +2065,12 @@ async function renderLearn(bookId, unitId) {
   const T = (en, z) => (zh ? z : en);
   $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel(T('Chapter', '章節'))}</span></button><span style="font-weight:600;font-size:16px" data-raw>${esc(shortTitle(unit.title))}</span></div>
     <main class="pad stack g18 learnpage" data-view="learn" style="flex:1;align-items:center;justify-content:center;text-align:center">
-      ${buddySVG('think', 64)}<b style="font-size:18px">${T('Getting your lesson ready…', '正在準備你的課堂…')}</b><span class="muted">${T('Buddy is reading the chapter and planning how to teach it. This takes up to a minute the first time.', 'Buddy 正在閱讀這一章並準備教學，第一次大約需要半分鐘。')}</span><div class="spinner" aria-hidden="true"></div></main>`;
+      ${buddySVG('think', 64)}<b style="font-size:18px">${T('Getting your lesson ready…', '正在準備你的課堂…')}</b><span class="muted">${T('Buddy is reading the chapter and planning how to teach it. This takes up to a minute the first time.', 'Buddy 正在閱讀這一章並準備教學，第一次大約需要半分鐘。')}</span><div class="spinner" aria-hidden="true"></div><div class="wslot" id="lwait" hidden></div></main>`;
   document.getElementById('back').onclick = () => leaveTo(bookId);
+  const stopWait = mountWaitCards(document.getElementById('lwait'), book, [unit]);
   let L;
   try { L = await getLesson(book, unit); } catch (e) {
+    stopWait();
     if (view !== myView) return;
     $app.querySelector('main').innerHTML = `<b>${T('Couldn’t make the lesson', '未能準備課堂')}</b><span class="muted">${esc(e.status === 0 ? T('You seem to be offline.', '你好像離線了。') : (e.message || ''))}</span><button class="btn" id="retry">${T('Try again', '再試')}</button>`;
     document.getElementById('retry').onclick = () => renderLearn(bookId, unitId);
@@ -5141,6 +5143,7 @@ async function renderNotes(bookId) {
   $app.innerHTML = `
   <div class="topbar noprint"><button class="backbtn" id="back">${ICON.back}<span>${backLabel('Chapters')}</span></button><span style="font-weight:600;font-size:16px;flex:1">Revision notes</span><button class="btn-sm" id="printn">Print</button></div>
   <main class="stack g18 notes" style="flex:1;padding:4px 20px 24px">
+    <div class="wslot noprint" id="nwaitc" hidden></div>
     ${units.map((u) => `<section class="ncard" id="n-${esc(u.id)}"><h2 class="ntitle" data-raw>${esc(u.title)}</h2><div class="nwait"><div class="spinner small" aria-hidden="true"></div><span>Writing notes from your textbook…</span></div></section>`).join('')}
     <p class="hint" style="margin:0;line-height:1.5">Written by AI from your textbook. If something looks wrong, check it against the book.</p>
   </main>
@@ -5151,10 +5154,14 @@ async function renderNotes(bookId) {
   document.getElementById('back').onclick = () => leaveTo(bookId);
   document.getElementById('printn').onclick = () => window.print();
   document.getElementById('tocards').onclick = () => go({ name: 'cards', bookId });
+  // one quick-look card at the top while notes are still being written (not when they're saved already)
+  let pending = 0, stopWait = null;
+  const track = (pr) => { pending++; if (!stopWait) stopWait = mountWaitCards(document.getElementById('nwaitc'), book, units); pr.catch(() => {}).finally(() => { if (--pending === 0 && stopWait) { stopWait(); stopWait = null; } }); };
   const fill = (u, fresh) => {
     const el = document.getElementById(`n-${u.id}`); if (!el) return;
     if (fresh) el.innerHTML = `<h2 class="ntitle" data-raw>${esc(u.title)}</h2><div class="nwait"><div class="spinner small" aria-hidden="true"></div><span>Writing notes from your textbook…</span></div>`;
-    getNotes(book, u, fresh).then((n) => {
+    const pr = getNotes(book, u, fresh); track(pr);
+    pr.then((n) => {
       if (view !== myView) return;
       const e2 = document.getElementById(`n-${u.id}`); if (!e2) return;
       e2.innerHTML = notesHTML(u, n) + `<button class="btn-sm quiet noprint" data-remake="${esc(u.id)}" style="align-self:flex-start">Make these notes again</button>`;
@@ -5178,9 +5185,11 @@ async function renderCards(bookId, only) {
     $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel('Chapters')}</span></button></div>
     <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
       <div class="spinner" aria-hidden="true"></div><h1 class="display" style="margin:0;font-size:22px">Making your flashcards</h1>
-      <p class="muted" id="cw" style="margin:0;line-height:1.5;max-width:320px">Written from your textbook. The first time takes about 20–40 seconds per chapter.</p></main>`;
+      <p class="muted" id="cw" style="margin:0;line-height:1.5;max-width:320px">Written from your textbook. The first time takes about 20–40 seconds per chapter.</p><div class="wslot" id="cwait" hidden></div></main>`;
     document.getElementById('back').onclick = () => leaveTo(bookId);
+    const stopWait = mountWaitCards(document.getElementById('cwait'), book, units);
     const res = await Promise.allSettled(units.map((u) => getNotes(book, u).then((n) => n.flashcards.map((c) => ({ ...c, unit: u.title })))));
+    stopWait();
     if (view !== myView) return;
     const deck = res.filter((r) => r.status === 'fulfilled').flatMap((r) => r.value);
     if (!deck.length) {
@@ -8097,9 +8106,34 @@ function waitCards(sess) {
       sess.cards = [sess.cards[sess.cardAt] || cheers[0], ...mixed];
       sess.cardAt = 0;
       if (sess === S && S.waiting) paintCard();
+      if (sess.onCards) sess.onCards();
     });
   } else sess.cards = cheers;
   return sess.cards;
+}
+// The same quick-look cards (key terms, key ideas, exam tips and Buddy's cheers) for any other wait:
+// a lesson, revision notes or flashcards being made. Shown only if the wait lasts; turns every 10 s unless touched.
+function mountWaitCards(slot, book, units, delay = 700) {
+  const st = { book, units, cardAt: 0 };
+  let timer = null, stopped = false;
+  const paint = () => {
+    if (stopped || !slot.isConnected) return stop();
+    const cards = waitCards(st), c = cards[st.cardAt % cards.length];
+    slot.innerHTML = `<div class="card wcard k-${c.kind}"><div class="wcard-top">${c.kind === 'cheer' ? `<span class="wbuddy" aria-hidden="true">${buddySVG('happy', 30)}</span>` : `<span class="wk">${SNIP_LABEL[c.kind]}</span>`}
+      ${cards.length > 1 ? `<span class="wdots" aria-hidden="true">${cards.map((_, k) => `<i class="${k === st.cardAt % cards.length ? 'on' : ''}"></i>`).join('')}</span>` : ''}</div>
+      <b class="wtitle" ${c.kind === 'cheer' ? '' : 'data-raw'}>${esc(c.title)}</b><p class="wtext" ${c.kind === 'cheer' ? '' : 'data-raw'}>${esc(c.text)}</p>
+      ${cards.length > 1 ? `<button class="btn-sm quiet wnext" type="button">Next card ›</button>` : ''}</div>`;
+    const n = slot.querySelector('.wnext'); if (n) n.onclick = (e) => { e.stopPropagation(); st.touch = Date.now(); st.cardAt++; paint(); };
+    slot.firstElementChild.onclick = () => { st.touch = Date.now(); };
+  };
+  const stop = () => { stopped = true; clearTimeout(st.startT); clearInterval(timer); };
+  st.onCards = () => { if (!stopped && slot.innerHTML) paint(); };
+  st.startT = setTimeout(() => {
+    if (stopped || !slot.isConnected) return stop();
+    slot.hidden = false; paint();
+    timer = setInterval(() => { if (!slot.isConnected) return stop(); if (Date.now() - (st.touch || 0) > 15000) { st.cardAt++; paint(); } }, 10000);
+  }, delay);
+  return () => { stop(); slot.hidden = true; slot.innerHTML = ''; };
 }
 function paintCard() {
   const box = document.getElementById('wcard'); if (!box || !S) return;
