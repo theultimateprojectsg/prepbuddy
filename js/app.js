@@ -5549,20 +5549,38 @@ async function readyHist(books) {
   return out.sort((x, y) => (y.used - x.used) || (y.pct - x.pct));
 }
 const LINE_COLS = ['#26357A', '#18966A', '#C2620F', '#7A4FC2', '#C2357A', '#0E7490'];
+// One plain sentence on top of the readiness chart: who moved most (and what that means in chapters), who dipped, who stalled.
+function readySummary(rows, name) {
+  const Z = PT, R = rows.map((r) => { const v = r.weeks.map((x, k) => [k, x]).filter(([, x]) => x != null); if (v.length < 2) return null;
+    const [k0, a] = v[0], [, b] = v[v.length - 1], prev = v.length > 1 ? v[v.length - 2][1] : a;
+    return { r, n: name(r), ch: b - a, wk: 5 - k0, last: b, step: b - prev, chs: Math.floor(((b - a) / 100) * (r.b.units || []).length) }; }).filter(Boolean);
+  if (!R.length) return '';
+  const best = R.slice().sort((x, y) => y.ch - x.ch)[0], dip = R.filter((x) => x.step <= -3).sort((x, y) => x.step - y.step)[0];
+  const flat = R.filter((x) => x !== best && x.ch <= 2 && x.wk >= 2).sort((x, y) => x.ch - y.ch)[0];
+  const wks = (n) => Z(`${n} week${n === 1 ? '' : 's'}`, `${n} 星期`);
+  const parts = [];
+  if (best.ch >= 3) parts.push(Z(`<b>${esc(best.n)} up ${best.ch}% in ${wks(best.wk)}</b>${best.chs >= 1 ? `, about ${best.chs} more chapter${best.chs === 1 ? '' : 's'} known well` : ''}.`, `<b>${esc(best.n)}在 ${wks(best.wk)}內上升 ${best.ch}%</b>${best.chs >= 1 ? `，約多掌握 ${best.chs} 章` : ''}。`));
+  if (dip && dip !== best) parts.push(Z(`${esc(dip.n)} dipped ${-dip.step}% this week: fixing mistakes and doing reviews brings it back.`, `${esc(dip.n)}本週下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
+  else if (dip) parts.push(Z(`It dipped ${-dip.step}% this week: fixing mistakes and doing reviews brings it back.`, `本週下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
+  if (flat && parts.length < 2) parts.push(Z(`${esc(flat.n)} has barely moved: try a lesson this week.`, `${esc(flat.n)}幾乎沒有變化：這星期試上一課吧。`));
+  if (!parts.length) parts.push(best.ch > 0 ? Z(`Small steps up. A short mission most days gets the lines climbing.`, `有少少進步。大部分日子做個小任務，線就會上升。`) : Z('Not much change yet. A short mission most days gets the lines moving.', '暫時變化不大。大部分日子做個小任務，線就會上升。'));
+  return parts.join(' ');
+}
 function readyLinesSVG(rows) {
   rows = rows.filter((x) => x.weeks.filter((v) => v != null).length >= 2).slice(0, 6);
   if (!rows.length) return `<p class="pg-empty">${PT('Practise for two weeks to see how ready you are, week by week.', '練習兩星期後，就會看到每週的準備程度。')}</p>`;
   // the scale fits the data (0-20%, 0-40%, … 0-100%), so small early numbers still show their climb
   const top = Math.min(100, Math.max(20, Math.ceil(Math.max(...rows.flatMap((r) => r.weeks.filter((v) => v != null))) * 1.15 / 20) * 20));
-  const W = 560, H = 190, L = 36, B = 24, x = (k) => L + k * (W - 8 - L) / 5, y = (p) => H - B - (p / top) * (H - B - 10);
-  const lab = [PT('5 wks ago', '5 週前'), '4', '3', '2', PT('Last wk', '上週'), PT('This wk', '本週')];
-  let g = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * top)).map((v) => `<line x1="${L}" x2="${W - 8}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#EEF1F6"/><text x="${L - 8}" y="${(y(v) + 4).toFixed(1)}" font-size="11" fill="#5A6380" text-anchor="end">${v}%</text>`).join('');
-  g += lab.map((t, k) => `<text x="${x(k).toFixed(1)}" y="${H - 6}" font-size="11" fill="#5A6380" text-anchor="middle">${t}</text>`).join('');
+  const W = 380, H = 190, L = 40, B = 26, x = (k) => L + 14 + k * (W - 28 - L - 14) / 5, y = (p) => H - B - (p / top) * (H - B - 10);
+  const lab = [PT('5 wks', '5 週前'), '4', '3', '2', PT('Last', '上週'), PT('Now', '本週')];
+  let g = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * top)).map((v) => `<line x1="${L}" x2="${W - 8}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#EEF1F6"/><text x="${L - 8}" y="${(y(v) + 4).toFixed(1)}" font-size="14" fill="#5A6380" text-anchor="end">${v}%</text>`).join('');
+  g += lab.map((t, k) => `<text x="${x(k).toFixed(1)}" y="${H - 6}" font-size="14" fill="#5A6380" text-anchor="middle">${t}</text>`).join('');
   rows.forEach((r, i) => { const pts = r.weeks.map((v, k) => (v == null ? null : `${x(k).toFixed(1)},${y(v).toFixed(1)}`)).filter(Boolean); const c = LINE_COLS[i];
     g += `<polyline points="${pts.join(' ')}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
     const [lx, ly] = pts[pts.length - 1].split(','); g += `<circle cx="${lx}" cy="${ly}" r="4" fill="${c}"/>`; });
   const name = (r) => (r.b.subject ? subj(r.b.subject) : shortTitle(r.b.title));
-  return `<svg class="pg-lines" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(rows.map((r) => `${name(r)} ${r.pct}%`).join(', '))}">${g}</svg>
+  const sum = readySummary(rows, name);
+  return `${sum ? `<p class="rw-sum">${sum}</p>` : ''}<svg class="pg-lines" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(rows.map((r) => `${name(r)} ${r.pct}%`).join(', '))}">${g}</svg>
     <div class="pg-legend">${rows.map((r, i) => `<span><i style="background:${LINE_COLS[i]}"></i>${esc(name(r))} ${r.pct}%</span>`).join('')}</div>`;
 }
 // Writing, speaking, dictation and lessons: the latest result and the change since the first try.
@@ -6278,7 +6296,7 @@ async function renderProgress() {
         <div class="pv-gauge"><i class="fill ${ge ? ge[0] : ''}" style="width:${now10 * 10}%"></i>${was10 != null ? `<i class="was" style="left:${was10 * 10}%"></i>` : ''}${gName ? `<i class="gm" style="left:${gm * 10}%" title="${esc(gName)}"></i>` : ''}</div>
         ${ge ? `<i class="pv-ge ${ge[0]}">${ge[1]}</i>` : ''}</div>`; }).join('') : `<p class="pv-empty">${PT('About 2 weeks of practice shows your level.', '練習大約兩星期後就會顯示程度。')}</p>`}
     <details class="ms-how how-panel" id="howLevelP"><summary>${PT('What is level?', '甚麼是程度？')}</summary><div><p>${PT('Questions come in 4 levels: 1 remember, 2 understand, 3 apply, 4 think it through. Your level is the hardest level you get right about 2 times in 3, worked out from first attempts only, allowing for lucky guesses and for help from Buddy. It’s shown out of 10: level 1 is 0, level 4 is 10.', '題目分 4 級：1 記憶、2 理解、3 應用、4 深入思考。程度是你大約答對三分之二的最難級別，只計第一次作答，並考慮猜中和 Buddy 的幫助。')}</p><p>${PT('Unlike % right, it doesn’t fall when the questions get harder, so it’s the fairest way to see whether you’re improving.', '和答對率不同，題目變難時它不會下跌，所以最能公平反映有沒有進步。')}</p>${gName ? `<p><b>${PT(`Against ${gName} expectations`, `與${gName}要求比較`)}</b> · ${PT(`Questions are written for ${gName}: level 2 is what a typical ${gName} school test expects, and levels 3–4 are its harder questions. So under 2 is building towards ${gName}, 2–2.9 is meeting it, and 3 or more is above it.`, `題目按${gName}程度出題：第 2 級是一般${gName}測驗的要求，第 3–4 級是較難的題目。所以低於 2 是邁向${gName}，2–2.9 是達到，3 或以上是高於${gName}。`)}</p>` : ''}</div></details></div>`;
-  const lineHTML = readyLinesSVG(RH.filter((x) => x.used));
+  const lineHTML = `<div id="rwBody">${readyLinesSVG(RH.filter((x) => x.used))}</div>${DEV && RH.length ? `<div class="rw-demo" role="group" aria-label="Sample data"><span>Sample data (dev)</span>${['Real', 'Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'].map((t, k) => `<button type="button" class="${k ? '' : 'on'}" data-rw="${k}">${t}</button>`).join('')}</div>` : ''}`;
   const readyCard = `<div class="pv-card"><b class="pv-ct h-info">${PT('Readiness, week by week', '每週準備度')}${ib('howRwP', PT('What is readiness?', '甚麼是準備度？'))}</b>${lineHTML}${how('howRwP', PT('What is readiness?', '甚麼是準備度？'), `<p>${PT('How much of each textbook you really know, out of 100%: the average of its chapters, with longer chapters counting more. One line per subject, one point per week.', '你真正掌握每本課本的程度（滿分 100%）：各章的平均，較長的章節比重較大。每科一條線，每星期一點。')}</p><p>${PT('It only goes up for real learning: covering every part, getting harder questions right, remembering days later and passing timed chapter tests. Answering lots of easy questions doesn’t move it much.', '只有真正學會才會上升：涵蓋每部分、答對較難的題目、幾天後仍記得、通過限時章節測驗。做很多容易的題目不會令它上升很多。')}</p>`)}</div>`;
   const ML = marksList(), mBase = ML.find((m) => m.kind === 'before'), mLast = ML.filter((m) => m.kind === 'later').pop();
   const msubs = MARK_SUBJ().filter(([k]) => (mBase && typeof mBase.s[k] === 'number') || (mLast && typeof mLast.s[k] === 'number'));
@@ -6534,6 +6552,14 @@ async function renderProgress() {
   on('goal-set', () => goalDialog());
   on('fcUp', () => go({ name: 'plans', hi: 'pro' }));
   bindStarChips($app);
+  // dev only: page through sample weeks to see how the readiness chart and its sentence change
+  $app.querySelectorAll('[data-rw]').forEach((b) => (b.onclick = () => {
+    const n = +b.dataset.rw, box = document.getElementById('rwBody'); if (!box) return;
+    $app.querySelectorAll('[data-rw]').forEach((x) => x.classList.toggle('on', x === b));
+    if (!n) { box.innerHTML = readyLinesSVG(RH.filter((x) => x.used)); return; }
+    const S = [[8, 12, 15, 22, 27, 31], [5, 6, 9, 12, 9, 14], [3, 3, 4, 5, 5, 6]];
+    box.innerHTML = readyLinesSVG(RH.slice(0, 3).map((x, i) => { const s = S[i], weeks = Array.from({ length: 6 }, (_, k) => (k >= 6 - n ? s[k - (6 - n)] : null)); return { ...x, weeks, pct: weeks[5] }; }));
+  }));
   // Mix-ups from wrong answers: worked out by Buddy about once a week, kept on this device.
   if (!ins || now - ins.t > 7 * DAY) refreshInsights(mkAll).catch(() => {});
 }
