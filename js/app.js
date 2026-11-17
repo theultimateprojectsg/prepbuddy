@@ -625,10 +625,11 @@ async function startChapterTest(book, units) {
   }
 }
 
+const QCTX = new Map(); // question id -> its book and chapter, for showing where a question came from
 async function allQuestions() {
   const out = [];
   for (const b of await getBooks()) for (const u of b.units) {
-    (await getQs(b.id, u.id)).forEach((q) => out.push({ q, book: b, unit: u }));
+    (await getQs(b.id, u.id)).forEach((q) => { out.push({ q, book: b, unit: u }); QCTX.set(q.id, { book: b, unit: u }); });
   }
   return out;
 }
@@ -5585,7 +5586,41 @@ async function memorySheet() {
   const close = () => box.remove();
   box.querySelector('.cs2-x').onclick = close;
   box.onclick = (e) => { if (e.target === box) close(); };
-  const go = box.querySelector('[data-o]'); if (go) { go.onclick = () => { close(); startReview('spaced'); }; go.focus({ preventScroll: true }); }
+  const go = box.querySelector('[data-o]'); if (go) { go.onclick = () => { close(); reviewSheet(); }; go.focus({ preventScroll: true }); }
+}
+// Before a review: what reviews are, which chapters these ones come from, how long they've waited, then Start
+async function reviewSheet() {
+  const zh = LANG === 'zh', due = await dueItems(), t0 = startOfToday(), cap = 15;
+  if (!due.length) return toast(PT('Nothing to review right now.', '暫時沒有要溫習的題目。'));
+  const wait = (x) => Math.max(0, Math.round((t0 - local.stats[x.q.id].due) / DAY));
+  const over = due.filter((x) => wait(x) >= 2).length, oldest = wait(due[0]);
+  const pick = due.slice(0, cap), mins = Math.max(3, Math.round(pick.length * 0.6));
+  const by = new Map(); pick.forEach((x) => { const k = `${x.book.id}:${x.unit.id}`; const g = by.get(k) || { x, n: 0, w: 0, wrong: 0 }; g.n++; g.w = Math.max(g.w, wait(x)); if ((local.stats[x.q.id].box || 1) === 1) g.wrong++; by.set(k, g); });
+  const rows = [...by.values()].sort((a, b) => b.w - a.w || b.n - a.n);
+  const wtxt = (w) => (w === 0 ? PT('due today', '今日到期') : PT(`waiting ${w} day${w === 1 ? '' : 's'}`, `等了 ${w} 日`));
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  box.innerHTML = `<div class="cdlg cs2 mem rvs" role="dialog" aria-modal="true" aria-labelledby="rvs-t">
+    <header class="cs2-h"><div class="cs2-ht"><b id="rvs-t">${PT('Your reviews', '你的溫習')}</b><small>${PT('Questions you’ve done before, coming back to check you still remember', '做過的題目再出現，看看你是否仍然記得')}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <section class="cs2-sec" style="padding-top:0">
+      <ol class="rvs-how"><li><b>1</b><span>${PT('You answer a question', '你答一條題目')}</span></li><li><b>2</b><span>${PT('It comes back after a gap: 1, 3, 7, 14, then 30 days', '它會隔一段時間再出現：1、3、7、14，然後 30 日')}</span></li><li><b>3</b><span>${PT('Right: the gap gets longer. Wrong: back tomorrow', '答對：隔更久。答錯：明天再來')}</span></li></ol>
+      <div class="mem-g">
+        <div><b>${due.length}</b><span>${PT('due now', '現在到期')}</span></div>
+        <div class="${over ? 'bad' : ''}"><b>${over}</b><span>${PT('overdue (waiting 2+ days)', '過期（等了 2 日以上）')}</span></div>
+        <div class="${oldest >= 2 ? 'bad' : ''}"><b>${oldest}</b><span>${PT(`day${oldest === 1 ? '' : 's'} the oldest has waited`, '日：最久的已等了')}</span></div>
+      </div>
+      ${over ? `<p class="cs2-sub">${PT('<b>Overdue</b> means the day it was meant to come back has passed. The longer it waits, the more likely it’s been forgotten, so the oldest go first.', '<b>過期</b>即是本來應該再出現的日子已經過了。等得越久，越可能已經忘記，所以最舊的先做。')}</p>` : ''}
+    </section>
+    <section class="cs2-sec"><h3 class="rvs-h">${PT(`In this review (${pick.length} question${pick.length === 1 ? '' : 's'}, oldest first)`, `今次溫習（${pick.length} 題，最舊的先做）`)}</h3>
+      <ul class="rvs-list">${rows.map((g) => `<li><span class="rvs-s">${esc(g.x.book.subject ? subj(g.x.book.subject) : shortTitle(g.x.book.title))}</span><b data-raw>${esc(shortTitle(g.x.unit.title))}</b><small>${PT(`${g.n} question${g.n === 1 ? '' : 's'}`, `${g.n} 題`)} · ${wtxt(g.w)}${g.wrong ? ` · ${PT(`${g.wrong} you got wrong last time`, `${g.wrong} 題上次答錯`)}` : ''}</small></li>`).join('')}</ul>
+      ${due.length > pick.length ? `<p class="cs2-sub">${PT(`The other ${due.length - pick.length} will be in your next review.`, `其餘 ${due.length - pick.length} 題會在下次溫習。`)}</p>` : ''}
+    </section>
+    <section class="cs2-pick" style="margin:6px 0 18px"><button class="cs2-go" data-o="0">${actionTile('review', 36)}<span><b>${PT('Start review', '開始溫習')}</b><em>${PT(`${pick.length} questions · about ${mins} min`, `${pick.length} 題 · 大約 ${mins} 分鐘`)}</em></span><i>›</i></button></section>
+  </div>`;
+  document.body.appendChild(box);
+  const close = () => box.remove();
+  box.querySelector('.cs2-x').onclick = close;
+  box.onclick = (e) => { if (e.target === box) close(); };
+  const go = box.querySelector('[data-o]'); go.onclick = () => { close(); startReview('spaced', null, cap); }; go.focus({ preventScroll: true });
 }
 // Tapping "Days practised": the last 4 weeks as a calendar (tap a day for its minutes and questions),
 // streaks, this week vs last, the weekly goal, the best time of day, and a button if today is still empty.
@@ -5771,7 +5806,7 @@ async function renderProgress() {
   const stat = (n, t) => `<div class="pv-ev pv-evs"><b>${n}</b><span>${esc(t)}</span></div>`;
   const quote = (t, sub) => `<div class="pv-q" data-raw>“${esc(t)}”<small>${esc(sub)}</small></div>`;
   const card = (tag, cls, title, detail, button = '', x = {}) => {
-    const act = button && x.act ? `<div class="pv-act2"><div><b>${esc(x.act[0])}</b>${x.act[1] ? `<small>${esc(x.act[1])}</small>` : ''}</div>${button.replace(/(<button[^>]*>)[\s\S]*(<\/button>)$/, `$1${PT('Start', '開始')}$2`)}</div>` : button;
+    const act = button && x.act ? `<div class="pv-act2"><div><b>${esc(x.act[0])}</b>${x.act[1] ? `<small>${esc(x.act[1])}</small>` : ''}</div>${button.replace(/(<button[^>]*>)[\s\S]*(<\/button>)$/, `$1${x.go || PT('Start', '開始')}$2`)}</div>` : button;
     return `<div class="pv-ins"><em class="pv-tag ${cls}">${tag}</em><b data-raw>${esc(title)}</b>${x.quote || ''}${x.ev ? x.ev : ''}${!x.ev || x.keep ? `<p class="pv-p" data-raw>${esc(detail)}</p>` : ''}${x.why ? `<p class="pv-why"><b>${x.lead || (cls === 'green' ? PT('Nice work:', '做得好：') : PT('Why it matters:', '為甚麼重要：'))}</b> ${esc(x.why)}</p>` : ''}${act}</div>`; };
   const ins = local.insights && local.insights.lang === LANG ? local.insights : null;
   const MK = await mistakeItems(false), mkAll = MK.flatMap((g) => g.items.map((x) => ({ ...x, g })));
@@ -5805,7 +5840,7 @@ async function renderProgress() {
   // memory: reviews answered right after a gap (from the level model)
   const kt = GS && GS.kt; const ret = kt && kt[1] >= 15 ? Math.round(100 * kt[0] / kt[1]) : null;
   if (ret != null) add(ret >= 75 ? 9 : 35, ret >= 75 ? card(PT('Growing', '進步'), 'green', PT('What’s learned is sticking', '學過的記得牢'), PT(`${ret}% of review questions right days later. ${D.longTerm} questions remembered for a week or more.`, `${ret}% 的溫習題幾天後仍答對。${D.longTerm} 題已記得一星期或以上。`), '', { ev: bars([[PT('Right days later', '幾天後仍答對'), ret, 'good']], PT('Review questions', '溫習題')), why: PT('Remembering it days later is what counts on test day.', '幾天後仍記得，考試時才用得上。') })
-    : card(PT('Memory', '記憶'), 'orange', PT('Forgets some things after a few days', '有些內容過幾天就忘記'), PT(`Only ${ret}% of review questions right days later. Doing reviews when they’re due fixes this.`, `只有 ${ret}% 的溫習題幾天後仍答對。按時溫習就能改善。`), btn(PT('Do reviews now', '現在溫習'), () => startReview('spaced'), 'pv-btn soft'), { ev: bars([[PT('Right days later', '幾天後仍答對'), ret, 'low']], PT('Review questions', '溫習題')), why: PT('If it’s forgotten after a few days, it won’t be there on test day.', '幾天就忘記，考試時就用不上。'), act: [PT('Do your reviews', '做溫習'), PT(`${D.due || 'A few'} due · a few minutes`, `${D.due || '幾'} 題到期 · 幾分鐘`)] }), false, ret >= 75 ? ['green', PT('What’s learned is sticking', '學過的記得牢'), PT(`${ret}% of review questions right days later.`, `${ret}% 的溫習題幾天後仍答對。`)] : ['orange', PT('Forgets some things after a few days', '有些內容過幾天就忘記'), PT(`Only ${ret}% of review questions right days later. Reviews on time fix this.`, `只有 ${ret}% 的溫習題幾天後仍答對。按時溫習可改善。`)]);
+    : card(PT('Memory', '記憶'), 'orange', PT('Forgets some things after a few days', '有些內容過幾天就忘記'), PT(`Only ${ret}% of review questions right days later. Doing reviews on the day they come back fixes this.`, `只有 ${ret}% 的溫習題幾天後仍答對。按時溫習就能改善。`), (D.due ? btn(PT('See your reviews', '看看要溫習甚麼'), () => reviewSheet(), 'pv-btn soft') : ''), { ev: bars([[PT('Right days later', '幾天後仍答對'), ret, 'low']], PT('Review questions', '溫習題')), why: PT('If it’s forgotten after a few days, it won’t be there on test day.', '幾天就忘記，考試時就用不上。'), go: PT('See them', '查看'), act: [PT(`${D.due} question${D.due === 1 ? '' : 's'} ready to review`, `${D.due} 題可以溫習`), PT('See which chapters first · a few minutes', '先看看是哪些章節 · 幾分鐘')] }), false, ret >= 75 ? ['green', PT('What’s learned is sticking', '學過的記得牢'), PT(`${ret}% of review questions right days later.`, `${ret}% 的溫習題幾天後仍答對。`)] : ['orange', PT('Forgets some things after a few days', '有些內容過幾天就忘記'), PT(`Only ${ret}% of review questions right days later. Reviews on time fix this.`, `只有 ${ret}% 的溫習題幾天後仍答對。按時溫習可改善。`)]);
   // writing: which rubric parts are strong and which keep losing marks (last 3 months)
   const drafts = (local.wr || []).flatMap((w) => (w.drafts || []).filter((d) => d.fb && d.fb.criteria && d.t > now - 90 * DAY).map((d) => ({ w, d })));
   if (drafts.length >= 2) {
@@ -5821,8 +5856,9 @@ async function renderProgress() {
   const words = [];
   (local.dict || []).forEach((L) => (L.items || []).forEach((w, i) => { const x = (L.res || {})[i]; if (x && x.wrong >= 2) words.push({ w, n: x.wrong, L }); }));
   if (words.length) {
-    words.sort((a, b) => b.n - a.n); const top = words.slice(0, 3);
-    add(40, card(PT('Dictation', '默書'), 'blue', PT(`${top.length} word${top.length === 1 ? '' : 's'} keep tripping you up`, `${top.length} 個詞語經常寫錯`), top.map((x) => x.w).join(' · '), btn(PT('Practise these', '練習這些'), () => go({ name: 'dictation', id: top[0].L.id, sub: 'run' }), 'pv-btn soft'), { ev: `<div class="pv-ev pv-words">${top.map((x) => `<span>${esc(x.w)}<small>${PT(`missed ${x.n}×`, `錯 ${x.n} 次`)}</small></span>`).join('')}</div>`, why: PT('Words missed twice tend to be missed in the real 默書 too.', '錯過兩次的詞語，在真正默書時也容易寫錯。'), act: [PT('Practise these words', '練習這些詞語'), PT(`${top.length} words · about 2 min`, `${top.length} 個詞語 · 大約 2 分鐘`)] }), false, ['blue', PT('Dictation words keep slipping', '默書詞語經常寫錯'), top.map((x) => x.w).join(' · ')]);
+    const byL = {}; words.forEach((x) => (byL[x.L.id] = (byL[x.L.id] || 0) + x.n)); const bestL = Object.keys(byL).sort((a, b) => byL[b] - byL[a])[0];
+    const top = words.filter((x) => x.L.id === bestL).sort((a, b) => b.n - a.n).slice(0, 3);
+    add(40, card(PT('Dictation', '默書'), 'blue', PT(`${top.length} word${top.length === 1 ? '' : 's'} keep tripping you up`, `${top.length} 個詞語經常寫錯`), top.map((x) => x.w).join(' · '), btn(PT('Practise these', '練習這些'), () => go({ name: 'dictation', id: top[0].L.id, sub: 'run' }), 'pv-btn soft'), { ev: `<div class="pv-ev pv-words">${top.map((x) => `<span>${esc(x.w)}<small>${PT(`missed ${x.n}×`, `錯 ${x.n} 次`)}</small></span>`).join('')}</div>`, why: PT('Words missed twice tend to be missed in the real 默書 too.', '錯過兩次的詞語，在真正默書時也容易寫錯。'), act: [PT(`Practise “${top[0].L.title || 'this list'}”`, `練習「${top[0].L.title || '這個默書'}」`), PT(`The list these ${top.length} words are in · about 5 min`, `這 ${top.length} 個詞語所在的默書 · 大約 5 分鐘`)] }), false, ['blue', PT('Dictation words keep slipping', '默書詞語經常寫錯'), top.map((x) => x.w).join(' · ')]);
   }
 
   // ----- more noticings, from data already recorded (no extra AI) -----
@@ -5865,9 +5901,12 @@ async function renderProgress() {
   // 6. old mistakes left open
   { const old = Object.values(local.mistakes || {}).filter((m) => !m.done && m.t < now - 14 * DAY).length;
     if (old >= 8) add(34, card(PT('Mistakes', '錯題'), 'red', PT(`${old} mistakes are over 2 weeks old`, `${old} 題錯題已超過兩星期`), PT('Old mistakes tend to show up again in tests. Fixing a few a day clears them.', '舊錯題很容易在考試再出現。每天改正幾題就能清完。'), btn(PT('Fix the old ones', '改正舊錯題'), runSet(mkAll.filter((x) => (local.mistakes[x.q.id] || {}).t < now - 14 * DAY).map((x) => x.q), PT('Old mistakes', '舊錯題')), 'pv-btn soft'), { ev: stat(old, PT('mistakes older than 2 weeks, still not fixed', '題超過兩星期仍未改正的錯題')), why: PT('Old mistakes tend to show up again in tests.', '舊錯題很容易在考試再出現。'), act: [PT('Fix the old ones', '改正舊錯題'), PT(`${Math.min(15, old)} questions · about ${Math.max(3, Math.round(Math.min(15, old) * 0.7))} min`, `${Math.min(15, old)} 題 · 大約 ${Math.max(3, Math.round(Math.min(15, old) * 0.7))} 分鐘`)] }), false, ['red', PT(`${old} mistakes over 2 weeks old`, `${old} 題錯題超過兩星期`), PT('Old mistakes tend to come back in tests.', '舊錯題很容易在考試再出現。')]); }
-  // 7. reviews piling up
-  { const od = (await dueItems()).filter((x) => local.stats[x.q.id] && local.stats[x.q.id].due < now - 2 * DAY).length;
-    if (od >= 10) add(25, card(PT('Memory', '記憶'), 'red', PT(`${od} reviews are overdue`, `${od} 題溫習已過期`), PT('These are the ones about to be forgotten. A few minutes now saves relearning them later.', '這些就快忘記了。現在花幾分鐘，好過之後重新學。'), btn(PT('Review now', '現在溫習'), () => startReview('spaced'), 'pv-btn soft'), { ev: stat(od, PT('reviews more than 2 days overdue', '題溫習過期超過 2 日')), why: PT('These are the ones about to be forgotten. A few minutes now saves relearning them.', '這些就快忘記了。現在花幾分鐘，好過之後重新學。'), act: [PT('Review now', '現在溫習'), PT(`${Math.min(15, od)} questions · about ${Math.max(3, Math.round(Math.min(15, od) * 0.6))} min`, `${Math.min(15, od)} 題 · 大約 ${Math.max(3, Math.round(Math.min(15, od) * 0.6))} 分鐘`)] }), false, ['red', PT(`${od} reviews overdue`, `${od} 題溫習已過期`), PT('These are the ones about to be forgotten.', '這些就快忘記了。')]); }
+  // 7. reviews piling up: questions whose come-back day passed 2+ days ago
+  { const t0 = startOfToday(), dueAll = await dueItems(), odI = dueAll.filter((x) => t0 - local.stats[x.q.id].due >= 2 * DAY), od = odI.length;
+    if (od >= 10) { const cc = {}; odI.forEach((x) => { const k = x.book.subject ? subj(x.book.subject) : shortTitle(x.book.title); cc[k] = (cc[k] || 0) + 1; });
+      const tops = Object.entries(cc).sort((a, b) => b[1] - a[1]), names = tops.slice(0, 2).map((x) => x[0]).join(PT(' and ', '和')), more = tops.length - 2;
+      const oldest = Math.round((t0 - local.stats[dueAll[0].q.id].due) / DAY), n = Math.min(15, dueAll.length);
+      add(25, card(PT('Memory', '記憶'), 'red', PT(`${od} questions are overdue for review`, `${od} 題溫習已過期`), PT('Buddy brings back questions you’ve done after a gap, to check you still remember them. These have been waiting more than 2 days.', 'Buddy 會隔一段時間再問你做過的題目，看看你是否仍然記得。這些已經等了超過 2 日。'), btn(PT('See your reviews', '看看要溫習甚麼'), () => reviewSheet(), 'pv-btn soft'), { ev: stat(od, PT(`questions past their review day, the oldest by ${oldest} days. Mostly ${names}${more > 0 ? ` and ${more} more subject${more === 1 ? '' : 's'}` : ''}.`, `題已過了溫習日，最久的已過 ${oldest} 日。主要是${names}${more > 0 ? `及另外 ${more} 科` : ''}。`)), why: PT('The longer a review waits, the more likely it’s been forgotten. A few minutes now saves relearning it.', '溫習等得越久，越可能已經忘記。現在花幾分鐘，好過之後重新學。'), go: PT('See them', '查看'), act: [PT(`Review the oldest ${n}`, `溫習最舊的 ${n} 題`), PT(`See which chapters first · about ${Math.max(3, Math.round(n * 0.6))} min`, `先看看是哪些章節 · 大約 ${Math.max(3, Math.round(n * 0.6))} 分鐘`)] }), false, ['red', PT(`${od} reviews overdue`, `${od} 題溫習已過期`), PT(`Questions Buddy brought back to check they’re remembered, waiting 2+ days. Mostly ${names}.`, `Buddy 安排再做的題目，已等了 2 日以上。主要是${names}。`)]); } }
   // 8. avoiding the subject with the nearest test
   { const wk7 = local.log.filter((e) => e.t > now - 7 * DAY && e.q);
     const soon = tests.steps.find((p) => p.book && p.left >= 1 && p.left <= 10 && (p.x.kind || 'test') !== 'dict');
@@ -7664,7 +7703,7 @@ async function startReview(mode, bookId = null, cap = 15) {
   if (mode === 'spaced') {
     pick = (await dueItems()).slice(0, cap).map((x) => shuffleOptions(x.q));
     if (!pick.length) return toast('Nothing to review today.');
-    S = newSession({ mode: 'spaced', title: 'Spaced review', qs: shuffle(pick), target: pick.length });
+    S = newSession({ mode: 'spaced', title: LANG === 'zh' ? '溫習' : 'Reviews', qs: shuffle(pick), target: pick.length });
     return renderQuestion();
   }
   if (mode === 'weak') {
@@ -8189,6 +8228,15 @@ function bindTutorCTA(q, cls) {
   b.onclick = () => { chatOf().shown = true; const d = document.createElement('div'); d.className = cls; d.id = 'tutor'; d.innerHTML = tutorHTML(q); b.replaceWith(d); bindTutor(q); const i = d.querySelector('input, textarea'); d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
 }
 
+// In mixed sets (reviews, mistakes, weak spots) say where each question is from, and for reviews when it was last seen
+function qWhere(q) {
+  if (!S || S.mode === 'unit' || S.mode === 'dse' || S.placement) return '';
+  const c = QCTX.get(q.id); if (!c) return '';
+  const zh = LANG === 'zh', name = `${c.book.subject ? subj(c.book.subject) : shortTitle(c.book.title)} · ${shortTitle(c.unit.title)}`;
+  const st = local.stats[q.id], d = st && st.at ? Math.max(0, Math.round((startOfToday() - new Date(st.at).setHours(0, 0, 0, 0)) / DAY)) : null;
+  const seen = S.mode === 'spaced' && d != null ? (zh ? ` · ${d === 0 ? '今日' : d === 1 ? '昨日' : `${d} 日前`}做過` : ` · last seen ${d === 0 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`}`) : '';
+  return `<p class="qwhere" data-raw>${S.mode === 'spaced' ? `<b>${zh ? '溫習' : 'Review'}</b>` : ''}<span>${esc(name)}${seen}</span></p>`;
+}
 function renderQuestion() {
   S.waiting = false;
   navSession();
@@ -8198,7 +8246,7 @@ function renderQuestion() {
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
-    <div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
+    ${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '不明白？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
