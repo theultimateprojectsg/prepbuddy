@@ -2886,6 +2886,9 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 
 .pv-fcline{margin:4px 0 0!important;font-size:14px!important;line-height:1.45;color:var(--text-2)}
 .pv-nofc b{color:var(--muted)!important}
+
+/* sign-in, welcome and set-up screens hide the side menu: centre them on the whole screen */
+body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:auto!important;margin-right:auto!important}
 </style>
 </head>
 <body>
