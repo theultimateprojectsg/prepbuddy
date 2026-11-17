@@ -5943,7 +5943,6 @@ async function renderProgress() {
       ${local.log.length ? `<div class="pv-sum-t">
         ${goodTx ? row('g', '✓', PT('Going well', '做得好'), goodTx, goodRun) : ''}
         ${watchTx ? row('w', '!', PT('Keep an eye on', '要留意'), watchTx, watchRun) : ''}
-        ${nx ? row('n', '→', PT('Do next', '下一步'), nx[0], nx[2], PT('Start', '開始')) : ''}
       </div>` : ''}
     </div>
     <div class="pv-sum-r">${kpiHTML}</div>
