@@ -2795,6 +2795,15 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 .pv-nrow small{line-height:1.45}.pv-nrow .pv-ch{align-self:center;font-style:normal;font-size:20px;color:var(--muted)}
 
 .pv-nrow>.pv-nt{flex:none!important;display:block}
+
+/* Today mission rows: reason tag above the title */
+.ms-t .pv-tag2{margin-bottom:3px}
+/* Progress: link to Today's mission */
+.pv-totoday{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;padding:12px 14px;border-radius:14px;border:1.5px solid #C9D3F0;background:#EEF1FB;color:var(--ink);cursor:pointer;margin-bottom:14px}
+.pv-totoday>svg{flex:none;color:var(--accent)}.pv-totoday>span{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.pv-totoday b{font-size:15px}.pv-totoday small{font-size:13px;color:var(--text-2)}
+.pv-totoday>em{flex:none;font-style:normal;font-weight:700;font-size:14px;color:#FFFFFF;background:var(--accent);padding:8px 14px;border-radius:10px;white-space:nowrap}
+.pv-own{margin:0 0 8px;font-size:13.5px;font-weight:700;color:var(--text-2)}
+@media (max-width:600px){.pv-totoday{flex-wrap:wrap}.pv-totoday>em{width:100%;text-align:center}}
 </style>
 </head>
 <body>

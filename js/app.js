@@ -2468,9 +2468,19 @@ async function renderHome() {
     const sc = scoreOf(await getQs(last.book.id, last.unit.id));
     cands.push({ key: `u:${last.book.id}:${last.unit.id}`, icon: 'practise', t: shortTitle(last.unit.title), s: Z(`Keep going${sc !== null ? ` · scored ${sc}%` : ''}`, `繼續${sc !== null ? ` · 得分 ${sc}%` : ''}`), attr: 'id="continue"', chk: { y: 'log', b: last.book.id, us: [last.unit.id] } });
   } else cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z('Practise your first chapter', '練習第一章'), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-book="${esc(books[0].id)}"`, chk: { y: 'log', b: books[0].id, us: null } });
+  // every mission step says why it's there: a coloured reason tag and one plain sentence
+  for (const c of cands) {
+    if (c.key.startsWith('t:')) { const p = tests.steps.find((q) => `t:${q.x.id}` === c.key);
+      if (p) { c.tag = ['test', p.left === 0 ? Z('Test today', '今天測驗') : Z(`Test ${leftText(p.left)}`, `${leftText(p.left)}測驗`)]; c.s = p.step.icon === 'learn' && p.step.u ? Z(`Your ${p.x.name} is ${leftText(p.left)} and covers this chapter. You haven’t started it yet, so begin with the lesson.`, `「${p.x.name}」${leftText(p.left)}，範圍包括這一章。你還未開始，先上課。`) : Z(`Your ${p.x.name} is ${leftText(p.left)}. ${p.step.s}.`, `「${p.x.name}」${leftText(p.left)}。${p.step.s}。`).replace(/\.\.$/, '.'); } }
+    else if (c.key === 'mk') { c.tag = ['mistakes', Z(`${mk} mistakes`, `${mk} 題錯題`)]; c.s = Z('Questions you got wrong. Fixing them is the quickest way to win marks back.', '你答錯的題目。改正它們是最快拿回分數的方法。'); }
+    else if (c.key === 'rv') { c.tag = ['review', Z('Due today', '今日到期')]; c.s = Z(`Due back today. Getting them right now is what makes them stick · about ${Math.max(2, Math.round(Math.min(10, due.length) * 0.6))} min`, `今天到期。現在答對才會記得牢 · 約 ${Math.max(2, Math.round(Math.min(10, due.length) * 0.6))} 分鐘`); }
+    else if (c.key.startsWith('lv:')) { c.tag = ['level', Z('New book', '新課本')]; c.s = Z('A 5-minute check so Buddy starts you at the right level.', '5 分鐘的評估，讓 Buddy 從適合你的程度開始。'); }
+    else if (c.key.startsWith('u:')) { c.tag = ['practise', Z('Keep going', '繼續')]; c.s = c.s.replace(/^Keep going( · )?/, Z('Pick up where you left off', '從上次的地方繼續') + '$1').replace(/^繼續( · )?/, '從上次的地方繼續$1'); }
+    else c.tag = ['learn', Z('Get started', '開始')];
+  }
   const t0 = dayStart();
   const nSteps = local.mtime === 5 ? 1 : local.mtime === 15 ? 2 : 3;
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length) { local.mission = { d: t0, at: Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr }) => ({ key, icon, t, s, chk, attr })) }; saveLocal(); }
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length) { local.mission = { d: t0, at: Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag }) => ({ key, icon, t, s, chk, attr, tag })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
@@ -2489,7 +2499,7 @@ async function renderHome() {
   const mins = Math.max(5, Math.round(steps.length * 5));
   const stepRow = (x, k) => x.done || !x.now
     ? `<div class="ms-row done"><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
-    : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
+    : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t">${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}<b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
@@ -5953,7 +5963,8 @@ async function renderProgress() {
     ${how('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it (or to start its lesson).', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習（或開始上課）。')}</p>
       <p><b>${PT('Most useful next', '下一步')}</b> · ${PT('in order: what your nearest test needs, then this week’s weakest chapter, then mistakes to fix, then reviews due.', '次序：最近的測驗需要的、本週最弱的章節、要改正的錯題、到期的溫習。')}</p>
       <p><b>${PT('Types of question', '題型')}</b> · ${PT('every question has a level: 1 remember facts, 2 understand, 3 use it, 4 think it through. This is your score on each, over the last 30 days.', '每題都有級別：1 記憶、2 理解、3 應用、4 深入思考。這是過去 30 日各級的得分。')}</p>`)}
-    <div class="pv-next2"><div class="pv-nh"><b>${PT('Do these next', '下一步先做這些')}</b><span>${PT('Buddy picked these from your tests, weakest chapters and mistakes.', 'Buddy 根據你的測驗、最弱章節和錯題挑選。')}</span></div>${next.slice(0, 3).map(([t, s2, run, tg], i) => btn(`<span class="pv-nt">${actionTile(tg ? tg[0] : 'practise', 34)}<i class="pv-nn">${i + 1}</i></span><span><em class="pv-tag2 ${tg ? tg[0] : ''}">${tg ? tg[1] : ''}</em><b data-raw>${esc(t)}</b><small data-raw>${esc(s2)}</small></span><em class="pv-ch">›</em>`, run, 'pv-nrow')).join('')}</div>
+    <button class="pv-totoday" data-pvtoday>${pIcon('target', 20)}<span><b>${PT('Your next steps are in Today’s mission', '下一步在「今日任務」')}</b><small>${PT('Buddy picks them from your tests, weakest chapters and mistakes, and says why.', 'Buddy 會根據你的測驗、最弱章節和錯題挑選，並說明原因。')}</small></span><em>${PT('Go to Today', '前往今日')} ›</em></button>
+    <p class="pv-own">${PT('Or pick a chapter yourself', '或自己選一章')}</p>
     ${subjHTML ? `<div class="pv-subjs">${subjHTML}</div>` : ''}
     </section>`;
 
@@ -6214,6 +6225,7 @@ ${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題�
     };
     Object.entries(HOW).forEach(([id, html]) => { const d = document.getElementById(id); const b = d && d.querySelector(':scope > div'); if (b) b.innerHTML = html; });
     window.__pvActs = acts; }
+  { const tb = $app.querySelector('[data-pvtoday]'); if (tb) tb.onclick = () => go({ name: 'home' }); }
   // headline numbers lead somewhere: readiness and chapters to what to work on, memory to reviews, days to the calendar
   { const go2 = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     const KT = { 'k-ring': () => readySheet(used.map((x) => ({ b: x.b, pct: x.pct, m: MB.get(x.b.id) })), overall), 'k-book': () => masteredSheet(used.map((x) => ({ b: x.b, m: MB.get(x.b.id) })), chDone, chAll), 'k-brain': () => memorySheet(), 'k-cal': () => daysSheet() };
