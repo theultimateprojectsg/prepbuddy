@@ -456,7 +456,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, parts, uncovered: parts - hit.size,
+    pct, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -5428,17 +5428,27 @@ const pgBar = (label, pct, note, tn) => `<div class="pg-ch"><div class="pg-ch-to
 function chapterSheet(book, c) {
   const T = c.target || 10, learned = !!c.learned, acc = c.done ? Math.round(100 * Math.min(1, c.score.accurate / Math.max(0.01, Math.min(1, c.done / T)))) : null;
   const n = local.count || sessionSize(), name = shortTitle(c.unit.title);
-  // the six parts of the chapter score: points earned of points possible, and what's left to do
-  const W = Object.fromEntries(AREAS.map(([k, , w]) => [k, w])), pts = (k) => Math.round(W[k] * c.score[k]);
-  const fmtD = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
+  // where the chapter stands, in plain words (no formula), and what's still to do for 100%
+  const fmtD = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+  const now = Date.now(), wk = 7 * DAY, recentTest = c.lastTest && now - c.lastTest < wk, retestAt = c.lastTest + wk;
   const see = [
-    ['tested', PT('Chapter tests', '章節測驗'), c.spread ? PT('Passed twice, a week apart', '相隔一星期合格兩次') : c.passes ? PT(`Passed once. Pass again from ${fmtD(c.firstPass + 7 * DAY)}`, `合格一次。${fmtD(c.firstPass + 7 * DAY)} 起再考一次`) : c.tests ? PT('Not passed yet · 80% passes', '未合格 · 80% 合格') : PT('Pass a timed test · 80%', '通過限時測驗 · 80%')],
-    ['covered', PT('Whole chapter', '整章內容'), PT(`${c.hit} of ${c.parts} sections right`, `${c.parts} 部分中答對 ${c.hit} 部分`)],
-    ['accurate', PT('First-try accuracy', '第一次就答對'), c.done ? PT(`${acc}% over ${c.done} of ${T} questions`, `${T} 題中做了 ${c.done} 題 · ${acc}%`) : PT(`Answer ${T} questions`, `回答 ${T} 題`)],
-    ['deep', PT('Harder questions', '較深題目'), PT(`Apply ${Math.min(3, c.l3n)}/3 · Analyse ${Math.min(2, c.l4n)}/2 · Written ${Math.min(2, c.written)}/2`, `應用 ${Math.min(3, c.l3n)}/3 · 分析 ${Math.min(2, c.l4n)}/2 · 文字 ${Math.min(2, c.written)}/2`)],
-    ['remembered', PT('Remembered', '記得牢'), c.b5 ? PT(`${c.b5} of ${c.memTarget} right after 2+ weeks`, `${c.memTarget} 題中 ${c.b5} 題隔兩星期仍答對`) : c.b4 ? PT(`${c.b4} right after a week · 2-week check next`, `${c.b4} 題隔一星期仍答對 · 接著是兩星期`) : PT('Reviews come back after 1, 3, 7 and 14 days', '溫習題會在 1、3、7、14 日後再出現')],
-    ['fixed', PT('Mistakes fixed', '錯題已改正'), c.open ? PT(`${c.open} still open`, `尚有 ${c.open} 題`) : c.done ? PT('None open', '沒有') : '–'],
-  ].map(([k, l, v]) => [pts(k) >= W[k], l, v, `${pts(k)}/${W[k]}`]);
+    [learned, PT('Lesson', '課堂'), learned ? PT('Done', '已完成') : PT('Not done yet', '未上')],
+    [c.done >= T && (acc || 0) >= 75, PT('Practice', '練習'), c.done ? PT(`${c.done} of ${T} questions · ${acc}% right first time`, `${T} 題中做了 ${c.done} 題 · 第一次答對 ${acc}%`) : PT('No questions yet', '未做題目')],
+    [c.score.deep >= 1, PT('Harder questions', '較深題目'), c.lvTop >= 4 ? PT('Analyse level reached', '已到分析程度') : c.lvTop === 3 ? PT('Apply level reached · analyse next', '已到應用程度 · 下一步分析') : c.done ? PT('Not yet · Buddy moves you up as you improve', '未到 · 進步了 Buddy 會調高') : '–'],
+    [!c.open && c.done > 0, PT('Mistakes', '錯題'), c.open ? PT(`${c.open} to fix`, `${c.open} 題要改正`) : c.done ? PT('None open', '沒有') : '–'],
+    [c.score.remembered >= 1, PT('Memory', '記憶'), c.due ? PT(`${c.due} reviews due now`, `${c.due} 題到期溫習`) : c.nextDue < Infinity ? PT(`Next review ${fmtD(c.nextDue)}`, `下次溫習 ${fmtD(c.nextDue)}`) : '–'],
+    [c.spread && c.lastPass, PT('Chapter test', '章節測驗'), c.spread && c.lastPass ? PT('Passed twice, a week apart', '相隔一星期兩次合格') : recentTest ? PT(`${c.lastPass ? 'Passed' : 'Tried'} ${fmtD(c.lastTest)} · next one counts from ${fmtD(retestAt)}`, `${fmtD(c.lastTest)} ${c.lastPass ? '合格' : '試過'} · ${fmtD(retestAt)} 起再考才計`) : c.passes ? PT('Passed once · ready to retest', '合格一次 · 可以再考') : c.tests ? PT('Not passed yet', '未合格') : PT('Not tried yet', '未試過')],
+  ];
+  // still to do for 100%: the few things left, with when (some only count after a wait)
+  const todo = [];
+  if (!learned && !c.done) todo.push(PT('Take the lesson', '上課'));
+  if (c.done < T) todo.push(PT(`Practise ${T - c.done} more questions`, `再練習 ${T - c.done} 題`));
+  else if ((acc || 0) < 75) todo.push(PT('Get more right the first time', '第一次就答對更多題'));
+  if (c.score.deep < 1) todo.push(PT('Get the harder questions right', '答對較深的題目'));
+  if (c.open) todo.push(PT(`Fix ${c.open} mistakes`, `改正 ${c.open} 題錯題`));
+  if (!c.passes) todo.push(PT('Pass the chapter test (80%)', '通過章節測驗（80%）'));
+  else if (!c.spread || !c.lastPass) todo.push(recentTest ? PT(`Retest from ${fmtD(retestAt)}, to show it stuck`, `${fmtD(retestAt)} 起再考，證明記得`) : PT('Pass the chapter test again', '再通過章節測驗'));
+  if (c.score.remembered < 1) todo.push(PT('Keep getting reviews right over the next 2 weeks', '未來兩星期溫習時繼續答對'));
   const LV = [PT('Remember', '記憶'), PT('Understand', '理解'), PT('Apply', '應用'), PT('Analyse', '分析')];
   const ladder = `<div class="chs-lv"><small>${PT('Question level', '題目程度')}</small>
     <div class="chs-lad">${LV.map((l, i) => `<span class="${i + 1 <= c.lvTop ? 'got' : ''} ${i + 1 === c.lvNow ? 'now' : ''}"><b>${i + 1}</b><em>${l}</em></span>`).join('')}</div>
@@ -5446,12 +5456,12 @@ function chapterSheet(book, c) {
   // Buddy's pick, in the order a tutor would go
   const retestOK = c.passes && Date.now() >= c.firstPass + 7 * DAY;
   const pick = !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review'
-    : !c.passes || !c.lastPass ? 'test' : !c.spread && retestOK ? 'test' : c.score.deep < 1 ? 'practise' : 'review';
+    : (!c.passes || !c.lastPass) && !(c.lastTest && Date.now() - c.lastTest < 2 * DAY) ? 'test' : !c.spread && retestOK ? 'test' : c.score.deep < 1 ? 'practise' : 'review';
   const why = {
     lesson: PT('You haven’t started this chapter. The lesson explains it step by step with quick checks.', '你還未開始這一章。課堂會一步步講解，並有小測。'),
     fix: PT(`You have ${c.open} mistakes open here. Fixing them is the fastest way up.`, `這一章有 ${c.open} 題錯題，改正它們是最快的進步方法。`),
     practise: c.passes && c.score.deep < 1 ? PT('You’ve passed the test. Now the harder apply and analyse questions: Buddy moves you up as you get them right.', '你已通過測驗。接著挑戰較深的應用和分析題，答對了 Buddy 會再調高程度。') : c.done ? PT(`${acc}% right so far over ${c.done} questions. More practice will firm it up${learned ? '' : ', or take the lesson first if it feels shaky'}.`, `目前 ${c.done} 題答對 ${acc}%。多做練習可以鞏固${learned ? '' : '；如果覺得不穩，可以先上課'}。`) : PT('You’ve done the lesson. Now practise so it sticks.', '你已上了課，現在做練習鞏固。'),
-    review: PT(`${c.due || 'A few'} questions are due. Getting them right days later is what makes it stick.`, `有 ${c.due || '幾'} 題到期溫習。隔幾日仍答對，才算真正記住。`),
+    review: !c.due && c.passes && !retestOK ? PT(`Nice work. You tested this recently, so give it a few days. Come back on ${new Date(c.firstPass + 7 * DAY).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} to retest and show it stuck. Flashcards keep it fresh meanwhile.`, `做得好！你最近考過，先休息幾日。${new Date(c.firstPass + 7 * DAY).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}再回來考一次，證明記得。期間可以用閃卡保持記憶。`) : PT(`${c.due || 'A few'} questions are due. Getting them right days later is what makes it stick.`, `有 ${c.due || '幾'} 題到期溫習。隔幾日仍答對，才算真正記住。`),
     test: c.tests && !c.lastPass ? PT('Your practice is strong. Try the timed chapter test again: 80% passes.', '練習做得好，再試一次限時章節測驗：80% 合格。') : c.passes ? PT('It’s been a week since you passed. Passing again now shows it has stuck.', '距離上次合格已經一星期，現在再合格一次，證明你真的記住了。') : PT('Your practice is strong. A timed chapter test (like a mock exam) proves it: 80% passes.', '練習做得好。做一次限時章節測驗（像模擬試）來證明：80% 合格。'),
   }[pick];
   const O = [
@@ -5459,7 +5469,7 @@ function chapterSheet(book, c) {
     ['practise', 'practise', PT(`Practise ${n} questions`, `練習 ${n} 題`), PT('New questions that adapt to you', '會按你的程度調整的新題目'), () => startUnits(book, [c.unit], n)],
     c.open ? ['fix', 'mistakes', PT(`Fix ${c.open} mistakes`, `改正 ${c.open} 題錯題`), PT('Try the ones you got wrong again', '再做一次答錯的題目'), () => go({ name: 'mistakes', book: book.id })] : null,
     c.done ? ['review', 'review', PT(c.due ? `Review ${c.due} due` : 'Review', c.due ? `溫習 ${c.due} 題` : '溫習'), PT('Questions from before, just before you’d forget', '在快忘記前再做以前的題目'), () => startReview('spaced', book.id)] : null,
-    ['test', 'test', PT('Chapter test', '章節測驗'), PT('Timed, like a mock exam · 80% passes', '限時，像模擬試 · 80% 合格'), () => startChapterTest(book, [c.unit])],
+    ['test', 'test', PT('Chapter test', '章節測驗'), c.lastTest && Date.now() - c.lastTest < 7 * DAY ? PT(`You did one ${new Date(c.lastTest).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}. Another now is fine for practice; the one that proves it stuck is from ${new Date(c.lastTest + 7 * DAY).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}`, `你在${new Date(c.lastTest).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}做過。現在再做可當練習；${new Date(c.lastTest + 7 * DAY).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}起再做才能證明記得`) : PT('Timed, like a mock exam · 80% passes', '限時，像模擬試 · 80% 合格'), () => startChapterTest(book, [c.unit])],
     ['cards', 'flashcards', PT('Flashcards', '閃卡'), PT('Key words and ideas, quick fire', '重點詞語和概念，快速溫習'), () => go({ name: 'cards', bookId: book.id })],
     ['notes', 'notes', PT('Revision notes', '溫習筆記'), PT('The chapter on one page', '一頁看完整章'), () => go({ name: 'notes', bookId: book.id })],
   ].filter(Boolean);
@@ -5472,8 +5482,8 @@ function chapterSheet(book, c) {
       <button class="chs-x" aria-label="${PT('Close', '關閉')}">✕</button></div>
     <div class="chs-pick"><small>${buddySVG('happy', 22)} ${PT('Buddy suggests', 'Buddy 建議')}</small><p>${why}</p>
       <button class="chs-best" data-o="0">${actionTile(best[1], 40)}<span><b>${best[2]}</b><em>${best[3]}</em></span><i>›</i></button></div>
-    <div class="chs-see"><small>${PT(`What makes up the ${c.pct}%`, `${c.pct}% 是怎樣來的`)}${learned ? `<span class="chs-ld">✓ ${PT('Lesson done', '已上課')}</span>` : ''}</small>${see.map(([ok, l, v, p]) => `<div class="${ok ? 'ok' : ''}"><i>${ok ? '✓' : ''}</i><span><b>${l}</b><em>${v}</em></span><strong>${p}</strong></div>`).join('')}
-      <p class="chs-note">${PT('100% means passed twice a week apart, right first time on harder questions, and still remembered after two weeks.', '100% 代表：相隔一星期兩次合格、較深題目第一次就答對，而且兩星期後仍然記得。')}</p></div>
+    <div class="chs-see"><small>${PT('Where you are', '你的進度')}</small>${see.map(([ok, l, v]) => `<div class="${ok ? 'ok' : ''}"><i>${ok ? '✓' : ''}</i><span><b>${l}</b><em>${v}</em></span></div>`).join('')}</div>
+    ${todo.length ? `<div class="chs-todo"><small>${PT('Still to do for 100%', '要到 100% 還要')}</small><ul>${todo.slice(0, 4).map((t) => `<li>${t}</li>`).join('')}</ul></div>` : `<div class="chs-todo done"><b>${PT('Mastered. Keep your reviews going and it stays that way.', '已掌握！繼續溫習就能保持。')}</b></div>`}
     ${ladder}
     <div class="chs-more"><small>${PT('Or choose for yourself', '或自己選擇')}</small>${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 34)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div>
   </div>`;
