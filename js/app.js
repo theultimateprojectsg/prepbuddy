@@ -5586,6 +5586,9 @@ function daysSheet() {
   const fmt = (t, o) => new Date(t).toLocaleDateString(LOCALE(), o);
   const info = (d) => { const es = byDay.get(d) || [], m = es.reduce((a, e) => a + (e.m || 0), 0); return { q: es.length, min: minutesOf(es), acc: m ? Math.round(100 * es.reduce((a, e) => a + (e.g || 0), 0) / m) : null }; };
   const shade = (q) => (!q ? 0 : q < 10 ? 1 : q < 20 ? 2 : q < 40 ? 3 : 4);
+  // what was done on a day, as three small tiles under the day's name
+  const dayInfo = (d) => { const x = info(d), lab = d === t0 ? PT('Today', '今日') : fmt(d, { weekday: 'long', day: 'numeric', month: 'short' });
+    return `<small class="ds-il">${lab}</small>${x.q ? `<div class="ds-it"><div><b>${x.min}</b><span>${PT('minutes', '分鐘')}</span></div><div><b>${x.q}</b><span>${PT('questions', '題目')}</span></div><div class="${x.acc >= 70 ? 'ok' : x.acc != null && x.acc < 50 ? 'lo' : ''}"><b>${x.acc != null ? x.acc + '%' : '–'}</b><span>${PT('right', '答對')}</span></div></div>` : `<p class="ds-none">${d === t0 ? PT('No practice yet today. Tap any day above to see it.', '今日仍未練習。按上面任何一日查看。') : PT('No practice this day.', '這一日沒有練習。')}</p>`}`; };
   const cells = Array.from({ length: 28 }, (_, i) => { const d = start + i * DAY, x = info(d), fut = d > t0;
     return `<button class="ds-day s${fut ? 'f' : shade(x.q)} ${d === t0 ? 'tod' : ''}" ${fut ? 'disabled' : ''} data-d="${d}"><span>${new Date(d).getDate()}</span></button>`; }).join('');
   let streak = 0; for (let d = byDay.has(t0) ? t0 : t0 - DAY; byDay.has(d); d -= DAY) streak++;
@@ -5593,7 +5596,7 @@ function daysSheet() {
   allDays.forEach((d) => { run = prev && d - prev <= DAY + 3600e3 ? run + 1 : 1; best = Math.max(best, run); prev = d; });
   const wk = (a, b) => { const es = L.filter((e) => e.t >= a && e.t < b); return { d: new Set(es.map((e) => dayStart(e.t))).size, min: minutesOf(es), q: es.length }; };
   const thisW = wk(mon, t0 + DAY), lastW = wk(mon - 7 * DAY, t0 + DAY - 7 * DAY); // same days of last week, so it's a fair comparison
-  const cmp = (a, b) => (a > b ? `<em class="up">▲ ${b}</em>` : a < b ? `<em class="down">▼ ${b}</em>` : `<em>= ${b}</em>`);
+  const cmp = (a, b) => (a > b ? `<em class="up">${PT(`▲ was ${b}`, `▲ 之前 ${b}`)}</em>` : a < b ? `<em class="down">${PT(`▼ was ${b}`, `▼ 之前 ${b}`)}</em>` : `<em>${PT('same', '一樣')}</em>`);
   const band = {}; L.filter((e) => e.t > now - 30 * DAY).forEach((e) => { const h = Math.floor(new Date(e.t).getHours() / 2) * 2; const x = band[h] || (band[h] = [0, 0, 0]); x[0] += e.g || 0; x[1] += e.m || 0; x[2]++; });
   const bands = Object.entries(band).filter(([, x]) => x[2] >= 20 && x[1]).map(([h, x]) => [+h, x[0] / x[1]]).sort((a, b) => b[1] - a[1]);
   const fmtH = (h) => (LANG === 'zh' ? `${h}:00` : `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`);
@@ -5605,7 +5608,7 @@ function daysSheet() {
     <header class="cs2-h"><div class="cs2-ht"><b id="ds-t">${PT(`Practised ${days28} of the last 28 days`, `過去 28 日中練習了 ${days28} 日`)}</b><small>${PT('A little most days beats a lot once a week', '每天少少，勝過一星期一次做很多')}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="ds-body">
       <section class="ds-cal"><div class="ds-dow">${dow.map((x) => `<span>${x}</span>`).join('')}</div><div class="ds-grid">${cells}</div>
-        <p class="ds-info" id="ds-info">${today.q ? PT(`Today: ${today.min} min · ${today.q} questions${today.acc != null ? ` · ${today.acc}% right` : ''}`, `今日：${today.min} 分鐘 · ${today.q} 題${today.acc != null ? ` · 答對 ${today.acc}%` : ''}`) : PT('Tap a day to see what was done.', '按一日看看做了甚麼。')}</p></section>
+        <div class="ds-info" id="ds-info">${dayInfo(t0)}</div></section>
       <section class="ds-side">
         <div class="ds-st"><div><b>${streak}</b><span>${PT('day streak now', '日連續')}</span></div><div><b>${best}</b><span>${PT('best streak', '最長連續')}</span></div></div>
         <div class="ds-wk"><h3>${PT('This week vs the same days last week', '本週 vs 上週同期')}</h3>
@@ -5613,7 +5616,7 @@ function daysSheet() {
           <div><span>${PT('Minutes', '分鐘')}</span><b>${thisW.min}</b>${cmp(thisW.min, lastW.min)}</div>
           <div><span>${PT('Questions', '題目')}</span><b>${thisW.q}</b>${cmp(thisW.q, lastW.q)}</div></div>
         ${G ? `<div class="ds-goal"><h3>${PT('Weekly goal', '每週目標')}</h3><b>${G.reached ? PT('Reached this week!', '本週已達成！') : PT(`${G.met} of ${G.days} days done`, `已完成 ${G.met}／${G.days} 日`)}</b><span>${PT(`${G.days} days a week, ${G.mins} min each`, `每星期 ${G.days} 日，每次 ${G.mins} 分鐘`)}</span><button class="btn-sm quiet" data-ds="goal">${PT('Change goal', '修改目標')}</button></div>`
-          : `<div class="ds-goal"><h3>${PT('Weekly goal', '每週目標')}</h3><span>${PT('Pick how many days a week. Reaching it earns bonus stars.', '選擇每星期練習幾日，達成可得額外星星。')}</span><button class="btn-sm" data-ds="goal">${PT('Set a weekly goal', '設定每週目標')}</button></div>`}
+          : `<div class="ds-goal"><h3>${PT('Weekly goal', '每週目標')}</h3><span>${PT('Pick how many days a week. Reaching it earns bonus stars.', '選擇每星期練習幾日，達成可得額外星星。')}</span><button class="btn-sm primary" data-ds="goal">${PT('Set a weekly goal', '設定每週目標')}</button></div>`}
         ${bands.length >= 2 ? `<p class="ds-best">${PT(`Best time to practise: <b>${fmtH(bands[0][0])}–${fmtH((bands[0][0] + 2) % 24)}</b>. Scores are highest then.`, `最好的練習時段：<b>${fmtH(bands[0][0])}–${fmtH((bands[0][0] + 2) % 24)}</b>，這段時間分數最高。`)}</p>` : ''}
       </section>
     </div>
@@ -5625,8 +5628,7 @@ function daysSheet() {
   box.onclick = (e) => { if (e.target === box) close(); };
   box.querySelectorAll('.ds-day[data-d]').forEach((b) => (b.onclick = () => {
     box.querySelectorAll('.ds-day.on').forEach((x) => x.classList.remove('on')); b.classList.add('on');
-    const d = +b.dataset.d, x = info(d), lab = fmt(d, { weekday: 'long', day: 'numeric', month: 'short' });
-    box.querySelector('#ds-info').textContent = x.q ? PT(`${lab}: ${x.min} min · ${x.q} questions${x.acc != null ? ` · ${x.acc}% right` : ''}`, `${lab}：${x.min} 分鐘 · ${x.q} 題${x.acc != null ? ` · 答對 ${x.acc}%` : ''}`) : PT(`${lab}: no practice`, `${lab}：沒有練習`);
+    box.querySelector('#ds-info').innerHTML = dayInfo(+b.dataset.d);
   }));
   const g = box.querySelector('[data-ds="goal"]'); if (g) g.onclick = () => { close(); goalDialog(); };
   const p = box.querySelector('[data-o="go"]'); if (p) p.onclick = () => { close(); go({ name: 'home' }); };

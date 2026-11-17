@@ -2682,6 +2682,18 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 .rs-pct{flex:none;font-size:13px;font-weight:700;color:#8A6A00;background:#FFF4D6;border-radius:999px;padding:3px 9px}
 .rs button[data-o]{min-width:0}.rs button[data-o]>span:not(.atile){min-width:0}.rs button[data-o]>span:not(.atile) b{overflow-wrap:break-word}
 @media (max-width:600px){.rs .cs2-ht b{font-size:19px}.rs .cs2-ht small{font-size:13.5px}}
+
+/* days pop-up: day numbers centred, the chosen day as three tiles */
+.ds-day{align-items:center!important;justify-content:center!important;padding:0!important;font-size:14px!important}
+.ds-info{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.ds-il{font-size:13px;font-weight:700;color:var(--text-2)}
+.ds-it{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ds-it>div{background:#F6F7FB;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column}
+.ds-it b{font-family:'Lexend',sans-serif;font-size:22px;color:var(--ink)}.ds-it span{font-size:12px;color:var(--text-2)}
+.ds-it .ok{background:#E7F7EF}.ds-it .ok b{color:var(--good-dark)}.ds-it .lo{background:#FDECE8}.ds-it .lo b{color:#A8321F}
+.ds-none{margin:0;font-size:14px;color:var(--text-2)}
+.ds-wk em{font-size:12.5px!important}
+@media (max-width:600px){.ds-body{padding:0 16px 16px!important}.ds-grid,.ds-dow{gap:5px}}
 </style>
 </head>
 <body>
