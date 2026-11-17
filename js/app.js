@@ -5543,43 +5543,61 @@ async function readyHist(books) {
     const h28 = h.filter((p) => p[0] >= t0 - 28 * DAY);
     const rate = h28.length && t0 - h28[0][0] >= 7 * DAY ? (pct - h28[0][1]) / ((t0 - h28[0][0]) / DAY) : null;
     const weeks = Array.from({ length: 6 }, (_, k) => { const t = t0 - (5 - k) * 7 * DAY; const p = h.filter((x) => x[0] <= t).pop(); return p ? p[1] : null; });
-    out.push({ b, pct, covered: Math.round(100 * (m.areas.covered || 0)), was: old ? old[1] : null, rate, weeks, started: startedOf(m), used: (local.log || []).some((e) => e.q && e.q.startsWith(b.id + ':')) });
+    const days = Array.from({ length: 28 }, (_, k) => { const t = t0 - (27 - k) * DAY; const p = h.find((x) => x[0] === t); return p ? p[1] : null; });
+    out.push({ b, pct, days, first: h.length ? h[0][0] : t0, covered: Math.round(100 * (m.areas.covered || 0)), was: old ? old[1] : null, rate, weeks, started: startedOf(m), used: (local.log || []).some((e) => e.q && e.q.startsWith(b.id + ':')) });
   }
   saveLocal();
   return out.sort((x, y) => (y.used - x.used) || (y.pct - x.pct));
 }
 const LINE_COLS = ['#26357A', '#18966A', '#C2620F', '#7A4FC2', '#C2357A', '#0E7490'];
 // One plain sentence on top of the readiness chart: who moved most (and what that means in chapters), who dipped, who stalled.
-function readySummary(rows, name) {
-  const Z = PT, R = rows.map((r) => { const v = r.weeks.map((x, k) => [k, x]).filter(([, x]) => x != null); if (v.length < 2) return null;
+function readySummary(rows, name, U = { daily: false, n: 6 }) {
+  const Z = PT, R = rows.map((r) => { const v = (r.ser || r.weeks).map((x, k) => [k, x]).filter(([, x]) => x != null); if (v.length < 2) return null;
     const [k0, a] = v[0], [, b] = v[v.length - 1], prev = v.length > 1 ? v[v.length - 2][1] : a;
-    return { r, n: name(r), ch: b - a, wk: 5 - k0, last: b, step: b - prev, chs: Math.floor(((b - a) / 100) * (r.b.units || []).length) }; }).filter(Boolean);
+    return { r, n: name(r), ch: b - a, wk: U.n - 1 - k0, k0, last: b, step: b - prev, chs: Math.floor(((b - a) / 100) * (r.b.units || []).length) }; }).filter(Boolean);
   if (!R.length) return '';
   const best = R.slice().sort((x, y) => y.ch - x.ch)[0], dip = R.filter((x) => x.step <= -3).sort((x, y) => x.step - y.step)[0];
-  const flat = R.filter((x) => x !== best && x.ch <= 2 && x.wk >= 2).sort((x, y) => x.ch - y.ch)[0];
+  const flat = R.filter((x) => x !== best && x.ch <= 2 && x.wk >= (U.daily ? 5 : 2)).sort((x, y) => x.ch - y.ch)[0];
   const wks = (n) => Z(`${n} week${n === 1 ? '' : 's'}`, `${n} 星期`);
+  const span = (x) => (!U.daily ? Z(`in ${wks(x.wk)}`, `${wks(x.wk)}內`) : x.wk <= 6 ? Z(`since ${new Date(U.at(x.k0)).toLocaleDateString(LOCALE(), { weekday: 'long' })}`, `自${new Date(U.at(x.k0)).toLocaleDateString(LOCALE(), { weekday: 'long' })}起`) : Z(`in ${x.wk} days`, `${x.wk} 日內`));
+  const when = U.daily ? Z('since yesterday', '比昨天') : Z('this week', '本週');
   const parts = [];
-  if (best.ch >= 3) parts.push(Z(`<b>${esc(best.n)} up ${best.ch}% in ${wks(best.wk)}</b>${best.chs >= 1 ? `, about ${best.chs} more chapter${best.chs === 1 ? '' : 's'} known well` : ''}.`, `<b>${esc(best.n)}在 ${wks(best.wk)}內上升 ${best.ch}%</b>${best.chs >= 1 ? `，約多掌握 ${best.chs} 章` : ''}。`));
-  if (dip && dip !== best) parts.push(Z(`${esc(dip.n)} dipped ${-dip.step}% this week: fixing mistakes and doing reviews brings it back.`, `${esc(dip.n)}本週下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
-  else if (dip) parts.push(Z(`It dipped ${-dip.step}% this week: fixing mistakes and doing reviews brings it back.`, `本週下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
+  if (best.ch >= (U.daily ? 2 : 3)) parts.push(Z(`<b>${esc(best.n)} up ${best.ch}% ${span(best)}</b>${best.chs >= 1 ? `, about ${best.chs} more chapter${best.chs === 1 ? '' : 's'} known well` : ''}.`, `<b>${esc(best.n)}${span(best)}上升 ${best.ch}%</b>${best.chs >= 1 ? `，約多掌握 ${best.chs} 章` : ''}。`));
+  if (dip && dip !== best) parts.push(Z(`${esc(dip.n)} dipped ${-dip.step}% ${when}: fixing mistakes and doing reviews brings it back.`, `${esc(dip.n)}${when}下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
+  else if (dip) parts.push(Z(`It dipped ${-dip.step}% ${when}: fixing mistakes and doing reviews brings it back.`, `${when}下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
   if (flat && parts.length < 2) parts.push(Z(`${esc(flat.n)} has barely moved: try a lesson this week.`, `${esc(flat.n)}幾乎沒有變化：這星期試上一課吧。`));
   if (!parts.length) parts.push(best.ch > 0 ? Z(`Small steps up. A short mission most days gets the lines climbing.`, `有少少進步。大部分日子做個小任務，線就會上升。`) : Z('Not much change yet. A short mission most days gets the lines moving.', '暫時變化不大。大部分日子做個小任務，線就會上升。'));
   return parts.join(' ');
 }
 function readyLinesSVG(rows) {
-  rows = rows.filter((x) => x.weeks.filter((v) => v != null).length >= 2).slice(0, 6);
-  if (!rows.length) return `<p class="pg-empty">${PT('Practise for two weeks to see how ready you are, week by week.', '練習兩星期後，就會看到每週的準備程度。')}</p>`;
+  // the first 4 weeks: one dot per day, so a new child sees the line start straight away; after that, one per week
+  const t0 = dayStart(), seen = rows.filter((r) => (r.days || []).some((v) => v != null) || r.weeks.some((v) => v != null));
+  const oldest = seen.length ? Math.min(...seen.map((r) => r.first || t0)) : t0;
+  const daily = seen.length && t0 - oldest < 28 * DAY && rows.some((r) => r.days);
+  let n = 6, lab, ser, unit;
+  if (daily) {
+    const from = Math.max(0, 27 - Math.round((t0 - oldest) / DAY)); n = 28 - from;
+    ser = (r) => (r.days || []).slice(from);
+    const dl = (k) => { const t = t0 - (n - 1 - k) * DAY; return k === n - 1 ? PT('Today', '今天') : new Date(t).toLocaleDateString(LOCALE(), n <= 8 ? { weekday: 'short' } : { day: 'numeric', month: 'short' }); };
+    const every = n <= 8 ? 1 : Math.ceil(n / 5);
+    lab = Array.from({ length: n }, (_, k) => (k === n - 1 || (n - 1 - k) % every === 0 ? dl(k) : ''));
+    unit = { daily: true, at: (k) => t0 - (n - 1 - k) * DAY };
+  } else {
+    ser = (r) => r.weeks; lab = [PT('5 wks', '5 週前'), '4', '3', '2', PT('Last', '上週'), PT('Now', '本週')]; unit = { daily: false };
+  }
+  rows = rows.map((r) => ({ ...r, ser: ser(r) })).filter((r) => r.ser.filter((v) => v != null).length >= 2).slice(0, 6);
+  if (!rows.length) return `<p class="pg-empty">${PT('Practise again tomorrow and your line starts here.', '明天再練習，你的線就會在這裏開始。')}</p>`;
   // the scale fits the data (0-20%, 0-40%, … 0-100%), so small early numbers still show their climb
-  const top = Math.min(100, Math.max(20, Math.ceil(Math.max(...rows.flatMap((r) => r.weeks.filter((v) => v != null))) * 1.15 / 20) * 20));
-  const W = 380, H = 190, L = 40, B = 26, x = (k) => L + 14 + k * (W - 28 - L - 14) / 5, y = (p) => H - B - (p / top) * (H - B - 10);
-  const lab = [PT('5 wks', '5 週前'), '4', '3', '2', PT('Last', '上週'), PT('Now', '本週')];
+  const top = Math.min(100, Math.max(20, Math.ceil(Math.max(...rows.flatMap((r) => r.ser.filter((v) => v != null))) * 1.15 / 20) * 20));
+  const W = 380, H = 190, L = 40, B = 26, x = (k) => L + 14 + k * (W - 28 - L - 14) / Math.max(1, n - 1), y = (p) => H - B - (p / top) * (H - B - 10);
   let g = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * top)).map((v) => `<line x1="${L}" x2="${W - 8}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#EEF1F6"/><text x="${L - 8}" y="${(y(v) + 4).toFixed(1)}" font-size="14" fill="#5A6380" text-anchor="end">${v}%</text>`).join('');
-  g += lab.map((t, k) => `<text x="${x(k).toFixed(1)}" y="${H - 6}" font-size="14" fill="#5A6380" text-anchor="middle">${t}</text>`).join('');
-  rows.forEach((r, i) => { const pts = r.weeks.map((v, k) => (v == null ? null : `${x(k).toFixed(1)},${y(v).toFixed(1)}`)).filter(Boolean); const c = LINE_COLS[i];
+  g += lab.map((t, k) => (t ? `<text x="${x(k).toFixed(1)}" y="${H - 6}" font-size="14" fill="#5A6380" text-anchor="middle">${esc(t)}</text>` : '')).join('');
+  rows.forEach((r, i) => { const pts = r.ser.map((v, k) => (v == null ? null : `${x(k).toFixed(1)},${y(v).toFixed(1)}`)).filter(Boolean); const c = LINE_COLS[i];
     g += `<polyline points="${pts.join(' ')}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (daily && n <= 14) pts.forEach((pt) => { const [px, py] = pt.split(','); g += `<circle cx="${px}" cy="${py}" r="2.5" fill="${c}"/>`; });
     const [lx, ly] = pts[pts.length - 1].split(','); g += `<circle cx="${lx}" cy="${ly}" r="4" fill="${c}"/>`; });
   const name = (r) => (r.b.subject ? subj(r.b.subject) : shortTitle(r.b.title));
-  const sum = readySummary(rows, name);
+  const sum = readySummary(rows, name, { ...unit, n });
   return `${sum ? `<p class="rw-sum">${sum}</p>` : ''}<svg class="pg-lines" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(rows.map((r) => `${name(r)} ${r.pct}%`).join(', '))}">${g}</svg>
     <div class="pg-legend">${rows.map((r, i) => `<span><i style="background:${LINE_COLS[i]}"></i>${esc(name(r))} ${r.pct}%</span>`).join('')}</div>`;
 }
@@ -6296,8 +6314,8 @@ async function renderProgress() {
         <div class="pv-gauge"><i class="fill ${ge ? ge[0] : ''}" style="width:${now10 * 10}%"></i>${was10 != null ? `<i class="was" style="left:${was10 * 10}%"></i>` : ''}${gName ? `<i class="gm" style="left:${gm * 10}%" title="${esc(gName)}"></i>` : ''}</div>
         ${ge ? `<i class="pv-ge ${ge[0]}">${ge[1]}</i>` : ''}</div>`; }).join('') : `<p class="pv-empty">${PT('About 2 weeks of practice shows your level.', '練習大約兩星期後就會顯示程度。')}</p>`}
     <details class="ms-how how-panel" id="howLevelP"><summary>${PT('What is level?', '甚麼是程度？')}</summary><div><p>${PT('Questions come in 4 levels: 1 remember, 2 understand, 3 apply, 4 think it through. Your level is the hardest level you get right about 2 times in 3, worked out from first attempts only, allowing for lucky guesses and for help from Buddy. It’s shown out of 10: level 1 is 0, level 4 is 10.', '題目分 4 級：1 記憶、2 理解、3 應用、4 深入思考。程度是你大約答對三分之二的最難級別，只計第一次作答，並考慮猜中和 Buddy 的幫助。')}</p><p>${PT('Unlike % right, it doesn’t fall when the questions get harder, so it’s the fairest way to see whether you’re improving.', '和答對率不同，題目變難時它不會下跌，所以最能公平反映有沒有進步。')}</p>${gName ? `<p><b>${PT(`Against ${gName} expectations`, `與${gName}要求比較`)}</b> · ${PT(`Questions are written for ${gName}: level 2 is what a typical ${gName} school test expects, and levels 3–4 are its harder questions. So under 2 is building towards ${gName}, 2–2.9 is meeting it, and 3 or more is above it.`, `題目按${gName}程度出題：第 2 級是一般${gName}測驗的要求，第 3–4 級是較難的題目。所以低於 2 是邁向${gName}，2–2.9 是達到，3 或以上是高於${gName}。`)}</p>` : ''}</div></details></div>`;
-  const lineHTML = `<div id="rwBody">${readyLinesSVG(RH.filter((x) => x.used))}</div>${DEV && RH.length ? `<div class="rw-demo" role="group" aria-label="Sample data"><span>Sample data (dev)</span>${['Real', 'Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'].map((t, k) => `<button type="button" class="${k ? '' : 'on'}" data-rw="${k}">${t}</button>`).join('')}</div>` : ''}`;
-  const readyCard = `<div class="pv-card"><b class="pv-ct h-info">${PT('Readiness, week by week', '每週準備度')}${ib('howRwP', PT('What is readiness?', '甚麼是準備度？'))}</b>${lineHTML}${how('howRwP', PT('What is readiness?', '甚麼是準備度？'), `<p>${PT('How much of each textbook you really know, out of 100%: the average of its chapters, with longer chapters counting more. One line per subject, one point per week.', '你真正掌握每本課本的程度（滿分 100%）：各章的平均，較長的章節比重較大。每科一條線，每星期一點。')}</p><p>${PT('It only goes up for real learning: covering every part, getting harder questions right, remembering days later and passing timed chapter tests. Answering lots of easy questions doesn’t move it much.', '只有真正學會才會上升：涵蓋每部分、答對較難的題目、幾天後仍記得、通過限時章節測驗。做很多容易的題目不會令它上升很多。')}</p>`)}</div>`;
+  const lineHTML = `<div id="rwBody">${readyLinesSVG(RH.filter((x) => x.used))}</div>${DEV && RH.length ? `<div class="rw-demo" role="group" aria-label="Sample data"><span>Sample data (dev)</span>${['Real', 'Day 2', 'Day 5', 'Day 12', 'Day 25', 'Wk 6', 'Wk 10'].map((t, k) => `<button type="button" class="${k ? '' : 'on'}" data-rw="${k}">${t}</button>`).join('')}</div>` : ''}`;
+  const readyCard = `<div class="pv-card"><b class="pv-ct h-info">${PT('Readiness over time', '準備度的變化')}${ib('howRwP', PT('What is readiness?', '甚麼是準備度？'))}</b>${lineHTML}${how('howRwP', PT('What is readiness?', '甚麼是準備度？'), `<p>${PT('How much of each textbook you really know, out of 100%: the average of its chapters, with longer chapters counting more. One line per subject: one point per day for the first 4 weeks, then one per week.', '你真正掌握每本課本的程度（滿分 100%）：各章的平均，較長的章節比重較大。每科一條線：頭 4 星期每日一點，之後每星期一點。')}</p><p>${PT('It only goes up for real learning: covering every part, getting harder questions right, remembering days later and passing timed chapter tests. Answering lots of easy questions doesn’t move it much.', '只有真正學會才會上升：涵蓋每部分、答對較難的題目、幾天後仍記得、通過限時章節測驗。做很多容易的題目不會令它上升很多。')}</p>`)}</div>`;
   const ML = marksList(), mBase = ML.find((m) => m.kind === 'before'), mLast = ML.filter((m) => m.kind === 'later').pop();
   const msubs = MARK_SUBJ().filter(([k]) => (mBase && typeof mBase.s[k] === 'number') || (mLast && typeof mLast.s[k] === 'number'));
   const marksCard = `<div class="pv-card"><b class="pv-ct h-info">${PT('School marks', '學校成績')}${ib('howMkP', PT('About school marks', '關於學校成績'))}</b>${how('howMkP', PT('About school marks', '關於學校成績'), `<p>${PT('A parent enters the child’s school marks (as %) from the last test or exam before PrepBuddy, then after each test or exam since. Change is the latest minus before.', '家長填寫使用 PrepBuddy 前最後一次測驗或考試的分數（%），之後每次再填。變化是最新減使用前。')}</p><p>${PT('School tests differ in difficulty, so look at the trend over a few tests rather than one result.', '學校測驗難度不一，看幾次的走勢比單次分數更有意思。')}</p>`)}
@@ -6523,7 +6541,7 @@ async function renderProgress() {
       howLevelP: L([['📈', 'How hard a question you can get right, out of 10.', '你能答對多難的題目（滿分 10）。', 'From remembering facts up to analysing and explaining.', '由記住事實，到分析和解釋。'],
         ['🧗', 'Harder questions right = it goes up.', '答對較深題目就會上升。', 'It won’t drop just because the questions got harder.', '題目變難也不會因此下跌。'],
         ['📍', 'The small line is what’s expected for your grade.', '小直線是你年級的預期程度。', 'To the right of it means you’re ahead.', '在它右邊就是超前。']]),
-      howRwP: L([['📈', 'One line per subject, one dot per week.', '每科一條線，每星期一點。', 'Each dot is how ready you were in that subject that week.', '每點是當週該科的準備度。'], ['⬆️', 'Going up = you know more of the textbook.', '向上 = 你掌握更多課本內容。']]),
+      howRwP: L([['📈', 'One line per subject: a dot per day for the first 4 weeks, then per week.', '每科一條線：頭 4 星期每日一點，之後每星期一點。', 'Each dot is how ready you were in that subject then.', '每點是當時該科的準備度。'], ['⬆️', 'Going up = you know more of the textbook.', '向上 = 你掌握更多課本內容。']]),
       howMkP: L([['📝', 'Real school test marks, added by a parent.', '家長輸入的學校測驗成績。', 'Before PrepBuddy, then each new test.', '用 PrepBuddy 前，以及之後每次測驗。'], ['🔁', 'The before-and-after you can see for yourself.', '你自己就能看到的前後對比。', 'The one number here that isn’t worked out by PrepBuddy.', '這是唯一不是 PrepBuddy 計算的數字。']]),
       howGrP: L([['🌱', 'How much harder each chapter’s questions are now, vs when you started.', '每章現在的題目比剛開始時難了多少。', 'Buddy raises the level as you get things right.', '你答對了，Buddy 就會提升程度。']]),
       howPc: L([['🧪', 'A short quiz at the same level as your first level check.', '與第一次程度評估同樣難度的小測。', 'About 5 minutes.', '大約 5 分鐘。'], ['⚖️', 'Same difficulty, so any change is real progress.', '難度一樣，所以分數變化就是真正的進步。', 'Worth doing about once a month.', '大約每月做一次。']]),
@@ -6557,8 +6575,14 @@ async function renderProgress() {
     const n = +b.dataset.rw, box = document.getElementById('rwBody'); if (!box) return;
     $app.querySelectorAll('[data-rw]').forEach((x) => x.classList.toggle('on', x === b));
     if (!n) { box.innerHTML = readyLinesSVG(RH.filter((x) => x.used)); return; }
-    const S = [[8, 12, 15, 22, 27, 31], [5, 6, 9, 12, 9, 14], [3, 3, 4, 5, 5, 6]];
-    box.innerHTML = readyLinesSVG(RH.slice(0, 3).map((x, i) => { const s = S[i], weeks = Array.from({ length: 6 }, (_, k) => (k >= 6 - n ? s[k - (6 - n)] : null)); return { ...x, weeks, pct: weeks[5] }; }));
+    // sample: each book's readiness on each of the last 70 days (practice most days, a dip in one subject)
+    const D = [2, 5, 12, 25, 42, 70][n - 1], t00 = dayStart();
+    const curve = (i, d) => [Math.round(1 + d * 0.45), Math.round(1 + d * 0.2 - (d % 9 === 8 ? 2 : 0)), Math.round(1 + d * 0.08)][i];
+    box.innerHTML = readyLinesSVG(RH.slice(0, 3).map((x, i) => {
+      const val = (age) => (age >= D ? null : (age % 6 === 5 && age > 0 ? null : curve(i, D - 1 - age))); // a few days without the app
+      const days = Array.from({ length: 28 }, (_, k) => val(27 - k));
+      const weeks = Array.from({ length: 6 }, (_, k) => { const age = (5 - k) * 7; let v = null; for (let a = age; a < D && v == null; a++) v = curve(i, D - 1 - a); return age < D ? v : null; });
+      return { ...x, days, weeks, first: t00 - (D - 1) * DAY, pct: curve(i, D - 1) }; }));
   }));
   // Mix-ups from wrong answers: worked out by Buddy about once a week, kept on this device.
   if (!ins || now - ins.t > 7 * DAY) refreshInsights(mkAll).catch(() => {});
