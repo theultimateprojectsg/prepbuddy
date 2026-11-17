@@ -2983,7 +2983,7 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-item>.ms-row{border-top:0}
 .ms-why{display:flex;gap:8px;align-items:flex-start;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--accent-soft);font-size:14px;line-height:1.5;color:var(--ink)}
 .ms-bud{flex:none;margin-top:1px}
-.ms-item.is-next>.ms-row{padding-bottom:8px}
+.ms-item>.ms-row:has(+ .ms-why){padding-bottom:8px}
 .ms-whyd{margin:-6px 0 10px}
 .ms-whyd summary{display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;font-weight:600;color:var(--accent);list-style:none;padding:4px 0;min-height:32px}
 .ms-whyd summary::-webkit-details-marker{display:none}
