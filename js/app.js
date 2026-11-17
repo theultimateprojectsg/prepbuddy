@@ -5762,9 +5762,19 @@ async function renderProgress() {
     const other = MB.get(p.book.id).chapters.filter((c) => (c.done || c.learned) && !p.units.some((u) => u.id === c.unit.id));
     if (!other.length || cs.some((c) => c.done)) return '';
     return `<p class="pv-out">ⓘ ${PT(`Your practice so far was on ${other.slice(0, 2).map((c) => chName(c.unit)).join(' and ')}, which ${other.length > 1 ? 'aren’t' : 'isn’t'} in this test. If the test covers ${other.length > 1 ? 'them' : 'it'}, tap Edit and add ${other.length > 1 ? 'them' : 'it'}.`, `你目前練習的是${other.slice(0, 2).map((c) => `「${chName(c.unit)}」`).join('和')}，不在這個測驗範圍內。如果測驗包括，請按「修改」加入。`)}</p>`; };
+  // one plain sentence under each test bar: where it's heading, or why there's no forecast yet, and what it would take
+  const fcLine = (ready, fc, aim, left, lock = false) => {
+    const per = Math.max(1, Math.ceil((aim - ready) / Math.max(1, left)));
+    if (ready >= aim) return PT(`You’ve reached your ${aim}% goal. Short reviews keep it there.`, `已達到 ${aim}% 目標。短時間溫習保持狀態。`);
+    if (lock) return PT(`To reach your ${aim}% goal by test day, you’d need about ${per}% more each day.`, `要在考試前達到 ${aim}% 目標，每天大約要提升 ${per}%。`);
+    if (fc == null) return PT(`Too early to predict test day: Buddy needs about 2 weeks of practice first. To reach ${aim}%, you’d need about ${per}% more each day.`, `現在預測考試當日還太早：Buddy 需要大約兩星期的練習。要達到 ${aim}%，每天大約要提升 ${per}%。`);
+    if (fc >= aim) return PT(`At this pace you’ll reach about ${fc}% by test day, above your ${aim}% goal.`, `按現時進度，考試時約 ${fc}%，高於 ${aim}% 目標。`);
+    return PT(`At this pace you’ll reach about ${fc}% by test day, ${aim - fc}% short of your ${aim}% goal. About ${per}% more each day would get you there.`, `按現時進度，考試時約 ${fc}%，比 ${aim}% 目標少 ${aim - fc}%。每天多提升大約 ${per}% 就能達到。`);
+  };
   const testCards = tests.steps.map((p, ti) => {
     const h = p.book ? RH.find((x) => x.b.id === p.book.id) : null;
-    const fc = p.ready == null ? null : h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(p.ready + h.rate * p.left)) : p.ready;
+    const trend = !!(h && h.rate != null && h.rate > 0); // enough weeks of practice to see how fast readiness is rising
+    const fc = p.ready == null ? null : trend ? Math.min(100, Math.round(p.ready + h.rate * p.left)) : p.ready;
     const aim = p.x.aim || 80; // the parent's target for this test, set with the slider
     const st = p.ready == null ? 'none' : aimTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
@@ -5782,7 +5792,8 @@ async function renderProgress() {
       : PT(`At this pace you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<span class="pv-flag" style="left:${aim}%;--a:${aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${PT(`Goal ${aim}%`, `目標 ${aim}%`)}</b></span><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Goal for this test', '這個測驗的目標')}"></div>
-      ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>`;
+      ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : trend ? `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>` : `<div class="pv-num pv-nofc"><b class="fc ${st}">?</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>
+      <p class="pv-fcline" data-ready="${p.ready}" data-fc="${trend && !fcLocked ? fc : ''}" data-left="${p.left}" data-lock="${fcLocked ? 1 : ''}">${fcLine(p.ready, trend && !fcLocked ? fc : null, aim, p.left, !!fcLocked)}</p>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Slide Buddy to set your own goal for this test.', '拖動 Buddy，為這個測驗設定你自己的目標。')}</p>` : ''}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
       <div class="pv-test-f">${p.book && p.ready != null && (p.x.kind || 'test') !== 'dict' ? btn(PT('My plan for this test', '這個測驗的計劃'), () => testPlanSheet(p, chOf(p), (local.sched || []).find((y) => y.id === p.x.id)?.aim || 80, fc), 'pv-btn primary') : p.step ? btn(esc(p.step.t), p.step.run, 'pv-btn primary') : ''}${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
@@ -5797,7 +5808,7 @@ async function renderProgress() {
       <p>${PT('Ready now is the readiness of the chapters in the test (or everything practised so far, if you didn’t choose chapters).', '「現在」是測驗範圍內各章節的準備度（未選章節的話，就是所有練習過的內容）。')}</p>
       <p>${PT('Finishing a chapter’s lesson counts as 10%. Practice, reviews and chapter tests take it the rest of the way. Practice on chapters that aren’t in the test doesn’t change this number.', '完成一章的課堂計 10%，之後靠練習、溫習和章節測驗提升。練習測驗範圍以外的章節不會影響這個數字。')}</p>
       <p>${PT('On test day is a forecast: how fast readiness has been rising over the last 4 weeks, carried forward to the test date.', '「考試當日」是預測：按過去 4 星期準備度上升的速度，推算到考試日期。')}</p>
-      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('your goal or more by test day (80% unless you drag the goal line)', '考試時達到你的目標或以上（預設 80%，可拖動目標線）')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('65–79%', '65–79%')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('under 65%', '低於 65%')}</li></ul></div></details></section>`;
+      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('your goal or more by test day (80% unless you drag the goal line)', '考試時達到你的目標或以上（預設 80%，可拖動目標線）')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('within 15% of your goal', '與目標相差 15% 以內')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('more than 15% below your goal', '比目標低超過 15%')}</li><li><b>?</b> · ${PT('too early to predict: Buddy needs about 2 weeks of practice first. Until then, the colour compares where you are now with your goal.', '現在預測還太早：Buddy 需要大約兩星期的練習。在此之前，顏色會比較你現在的程度和目標。')}</li></ul></div></details></section>`;
 
   // ---------- 2. What Buddy has noticed ----------
   const cards = [], add = (pri, html, win = false, par = null) => cards.push({ pri, html, win, par });
@@ -6110,10 +6121,10 @@ async function renderProgress() {
   const didHTML = didL.length ? `<section class="pv-sec pv-did"><div class="pv-h"><h2>${PT('What PrepBuddy did for you this week', 'PrepBuddy 本週為你做了甚麼')}</h2><span>${PT('The work of a tutor, every day you practised', '好導師會做的事，你每次練習都有')}</span></div>
     <div class="pv-didg2">${didL.map(([n, l, ic]) => `<div class="dd-${ic}">${actionTile(ic, 40)}<b>${n}</b><span>${l}</span></div>`).join('')}${nt0 ? `<div class="dd-test">${actionTile('test', 40)}<b>${PT(`${nt0.left} days`, `${nt0.left} 日`)}</b><span data-raw>${esc(PT(`planned towards the ${nt0.x.name}`, `為「${nt0.x.name}」安排`))}</span></div>` : ''}</div></section>` : '';
   const kpiHTML = `<section class="pv-kpis\" aria-label="${PT('Headline numbers', '主要數字')}">
-    ${kpi('ring', `${overall}%`, PT('Overall readiness', '整體準備度'), delta(overall, ago(rdLine), '%'), `<div class="pv-kvis">${kring(overall)}</div>`, 'howK1', PT('What is overall readiness?', '甚麼是整體準備度？'))}
-    ${kpi('book', `${chDone}<small>/${chAll}</small>`, PT('Chapters mastered', '已掌握的章節'), delta(chDone, ago(cLine)) || `<small>${chAll - chDone ? PT(`${chAll - chDone} to go`, `還有 ${chAll - chDone} 章`) : PT('all mastered', '全部掌握')}</small>`, `<div class="pv-kvis">${kbar(chDone, chAll)}</div>`, 'howK2', PT('What counts as mastered?', '怎樣才算掌握？'))}
-    ${kpi('brain', String(D.longTerm), PT('In long-term memory', '長期記憶'), delta(D.longTerm, ago(mLine)) || `<small>${PT('questions remembered a week later', '題一星期後仍記得')}</small>`, `<div class="pv-kvis">${kspark(mLine)}</div>`, 'howK3', PT('What is long-term memory?', '甚麼是長期記憶？'))}
-    ${kpi('cal', `${days28}<small>/28</small>`, PT('Days practised', '練習日數'), `<small>${PT('in the last 4 weeks', '過去 4 星期')}</small>`, `<div class="pv-kvis">${kdots()}</div>`, 'howK4', PT('Why consistency?', '為甚麼看持續性？'))}
+    ${kpi('ring', `${overall}%`, `<span class="kl-l">${PT('Overall readiness', '整體準備度')}</span><span class="kl-s">${PT('Readiness', '準備度')}</span>`, delta(overall, ago(rdLine), '%'), `<div class="pv-kvis">${kring(overall)}<div class="pv-ktrack pv-kmob" aria-hidden="true"><i style="width:${Math.max(0, Math.min(100, overall))}%"></i></div></div>`, 'howK1', PT('What is overall readiness?', '甚麼是整體準備度？'))}
+    ${kpi('book', `${chDone}<small>/${chAll}</small>`, `<span class="kl-l">${PT('Chapters mastered', '已掌握的章節')}</span><span class="kl-s">${PT('Mastered', '已掌握')}</span>`, delta(chDone, ago(cLine)) || `<small>${chAll - chDone ? PT(`${chAll - chDone} to go`, `還有 ${chAll - chDone} 章`) : PT('all mastered', '全部掌握')}</small>`, `<div class="pv-kvis">${kbar(chDone, chAll)}</div>`, 'howK2', PT('What counts as mastered?', '怎樣才算掌握？'))}
+    ${kpi('brain', String(D.longTerm), `<span class="kl-l">${PT('In long-term memory', '長期記憶')}</span><span class="kl-s">${PT('Memory', '記憶')}</span>`, delta(D.longTerm, ago(mLine)) || `<small>${PT('questions remembered a week later', '題一星期後仍記得')}</small>`, `<div class="pv-kvis">${kspark(mLine)}</div>`, 'howK3', PT('What is long-term memory?', '甚麼是長期記憶？'))}
+    ${kpi('cal', `${days28}<small>/28</small>`, `<span class="kl-l">${PT('Days practised', '練習日數')}</span><span class="kl-s">${PT('Days', '日數')}</span>`, `<small>${PT('in the last 4 weeks', '過去 4 星期')}</small>`, `<div class="pv-kvis">${kdots()}</div>`, 'howK4', PT('Why consistency?', '為甚麼看持續性？'))}
     ${how('howK1', PT('What is overall readiness?', '甚麼是整體準備度？'), `<p>${PT('One number for how prepared you are across all your subjects: the readiness of each textbook you practise, averaged, with subjects that have a test in the next 30 days counting double.', '所有科目準備程度的一個數字：每本有練習的課本的準備度平均，30 日內有測驗的科目計雙倍。')}</p><p>${PT('The line shows it week by week over the last 12 weeks.', '線圖顯示過去 12 星期每週的變化。')}</p>`)}
     ${how('howK2', PT('What counts as mastered?', '怎樣才算掌握？'), `<p>${PT('A chapter counts as mastered at 80% readiness or more. That needs a timed chapter test passed, plus covering the chapter, harder questions right first time and things remembered in reviews.', '準備度達 80% 或以上的章節就算掌握。這需要通過限時章節測驗，並涵蓋全章、較深題目第一次就答對和溫習時記得。')}</p><p>${PT('Out of all the chapters in the textbooks you practise.', '分母是你有練習的課本的所有章節。')}</p>`)}
     ${how('howK3', PT('What is long-term memory?', '甚麼是長期記憶？'), `<p>${PT('Questions you got right again a week or more after first getting them right. Reviews bring questions back after 1, 3, 7, 14 and 30 days; reaching the 7-day step means it has stuck.', '答對後一星期或更久仍再次答對的題目。溫習會在 1、3、7、14、30 日後再出題；到了 7 日那一步，就代表記住了。')}</p><p>${PT('This only grows if reviews are done, so it shows real learning, not cramming.', '只有做溫習才會增加，所以反映的是真正學會，而不是臨急抱佛腳。')}</p>`)}
@@ -6282,7 +6293,8 @@ ${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題�
     const LAB = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') };
     const show = () => { if (+r.value < 50) r.value = 50; const a = +r.value, t = aimTone(fc, a); const fl = bar.querySelector('.pv-flag'); fl.style.left = a + '%'; fl.style.setProperty('--a', a); fl.querySelector('b').textContent = PT(`Goal ${a}%`, `目標 ${a}%`);
       ['ok', 'close', 'risk'].forEach((k) => { card.classList.toggle(k, k === t); bar.classList.toggle(k, k === t); }); const pill = card.querySelector('.pv-pill'); if (pill) { pill.className = `pv-pill ${t}`; pill.textContent = LAB[t]; }
-      const f = card.querySelector('.pv-num .fc'); if (f) f.className = `fc ${t}`; };
+      const f = card.querySelector('.pv-num .fc'); if (f) f.className = `fc ${t}`;
+      const ln = card.querySelector('.pv-fcline'); if (ln) ln.textContent = fcLine(+ln.dataset.ready, ln.dataset.fc === '' ? null : +ln.dataset.fc, a, +ln.dataset.left, !!ln.dataset.lock); };
     r.oninput = show; r.onpointerdown = () => bar.classList.add('drag'); r.onpointerup = r.onblur = () => bar.classList.remove('drag');
     r.onchange = () => { show(); const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = +r.value; saveLocal(); } };
   });
