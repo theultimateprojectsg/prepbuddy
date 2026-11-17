@@ -2259,6 +2259,21 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .pv-didg2 .atile{margin:0}.pv-didg2 span:not(.atile){grid-column:1/-1}
 
 .pv-didg2 b{white-space:nowrap;font-size:24px}
+
+/* chapter sheet v2: the six parts with points, and the level ladder */
+.chs-see div{grid-template-columns:22px 1fr auto!important;align-items:flex-start!important}
+.chs-see div>span{display:flex;flex-direction:column;gap:1px;min-width:0}.chs-see div>span b{font-size:14px;color:var(--ink)}.chs-see div>span em{font-style:normal;font-size:12.5px;color:var(--text-2);text-align:left}
+.chs-see strong{font-size:13px;color:var(--text-2);font-variant-numeric:tabular-nums;padding-top:1px}.chs-see .ok strong{color:var(--good-dark)}
+.chs-see i{margin-top:1px}.chs-ld{margin-left:auto;font-weight:600;color:var(--good-dark)}
+.chs-note{margin:4px 0 0;font-size:12.5px;line-height:1.45;color:var(--text-2)}
+.chs-lv{display:flex;flex-direction:column;gap:8px}.chs-lv p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink)}
+.chs-lad{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.chs-lad span{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px;border-radius:10px;background:#F1F3F8;border:1.5px solid transparent;color:var(--text-2)}
+.chs-lad b{font-family:'Lexend',sans-serif;font-size:16px}.chs-lad em{font-style:normal;font-size:11.5px}
+.chs-lad .got{background:var(--good-soft);color:var(--good-dark)}.chs-lad .now{border-color:var(--accent);background:#FFFFFF;color:var(--accent)}.chs-lad .now em::after{content:' ●'}
+
+.chs .chs-note{font-size:12.5px!important;line-height:1.45!important;margin:6px 0 0!important}
+.chs .chs-lv p{font-size:13.5px!important}
 </style>
 </head>
 <body>

@@ -397,6 +397,14 @@ function partOf(q, ntext, parts) {
   const k = ntext.indexOf(normQ(q.source_quote).slice(0, 60));
   return k < 0 ? -1 : Math.min(parts - 1, Math.floor(parts * k / ntext.length));
 }
+// First attempt at each question (from the activity log), kept until the log grows.
+let _ft = null, _ftN = -1;
+function firstTries() {
+  if (_ft && _ftN === local.log.length) return _ft;
+  _ft = new Map(); _ftN = local.log.length;
+  for (const e of local.log) if (e.q && e.m && e.k !== 'mistakes' && !_ft.has(e.q)) _ft.set(e.q, e.g / e.m);
+  return _ft;
+}
 function testsFor(key) {
   return (local.tests || []).map((t) => ({ t: t.t, r: t.per && t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
 }
@@ -406,41 +414,50 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const key = `${book.id}:${u.id}`;
   const st = (q) => local.stats[q.id];
   const done = qs.filter((q) => st(q));
-  const good = (q) => (st(q).last || 0) >= 0.7;
-  // covered: every part of the chapter has a question answered well
+  // First tries only: a question got right on the third go has been memorised, not learnt.
+  const F = firstTries(), ft = (q) => (F.has(q.id) ? F.get(q.id) : st(q).seen === 1 ? st(q).last || 0 : 0);
+  const good = (q) => ft(q) >= 0.7;
+  // covered: every part of the chapter has a question answered well first time
   const pages = u.startPage && u.endPage ? u.endPage - u.startPage + 1 : 8;
   const parts = Math.max(3, Math.min(6, Math.round(pages / 2)));
   const ntext = ntextPre !== undefined ? ntextPre : (text ? normQ(text) : '');
   const hit = new Set(done.filter(good).map((q) => partOf(q, ntext, parts)).filter((x) => x >= 0));
   const covered = ntext ? hit.size / parts : Math.min(1, done.filter(good).length / T);
-  // accurate: latest scores, over at least T questions
-  const latest = done.map((q) => Math.max(0, Math.min(1, st(q).last || 0)));
-  const accurate = latest.length ? (latest.reduce((a, b) => a + b, 0) / latest.length) * Math.min(1, latest.length / T) : 0;
-  // deep: right at "apply" and "analyse" level, and full marks on written answers
-  const l3 = done.some((q) => (q.level || 2) === 3 && good(q)), l4 = done.some((q) => (q.level || 2) >= 4 && good(q));
-  const written = done.filter((q) => !choiceType(q) && (st(q).last || 0) >= 1).length;
-  const deep = ((l3 ? 1 : 0) + (l4 ? 1 : 0) + Math.min(2, written)) / 4;
-  // remembered: right again in spaced reviews (box 3+ = right first time and in two reviews days apart)
+  // accurate: first-try scores, over at least T questions
+  const firsts = done.map((q) => Math.max(0, Math.min(1, ft(q))));
+  const accurate = firsts.length ? (firsts.reduce((a, b) => a + b, 0) / firsts.length) * Math.min(1, firsts.length / T) : 0;
+  // deep: right first time at the harder levels (3 "apply", 2 "analyse") and 2 written answers with full marks
+  const l3n = done.filter((q) => (q.level || 2) === 3 && good(q)).length, l4n = done.filter((q) => (q.level || 2) >= 4 && good(q)).length;
+  const written = done.filter((q) => !choiceType(q) && ft(q) >= 1).length;
+  const deep = (Math.min(3, l3n) / 3 + Math.min(2, l4n) / 2 + Math.min(2, written) / 2) / 3;
+  // remembered: still right after long gaps. Box 4 = survived the 7-day gap (half credit), box 5 = the 14-day gap (full).
   const memTarget = Math.max(4, Math.min(8, Math.round(T / 2)));
-  const remembered = Math.min(1, done.filter((q) => (st(q).box || 0) >= 3).length / memTarget);
+  const b4 = done.filter((q) => (st(q).box || 0) >= 4).length, b5 = done.filter((q) => (st(q).box || 0) >= 5).length;
+  const remembered = Math.min(1, (0.5 * b4 + 0.5 * b5) / memTarget);
   // mistakes fixed
   const open = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && qUnit(id).join(':') === key).length;
   const fixed = done.length ? Math.max(0, 1 - open / 5) : 0;
-  // tested: two passes (80%+) on different days, and the latest test also a pass
+  // tested: passes (80%+) at least a week apart; the latest test must be a pass
   const tests = testsFor(key);
-  const passDays = new Set(tests.filter((x) => x.r[0] / x.r[1] >= PASS).map((x) => new Date(x.t).toDateString())).size;
+  const passes = tests.filter((x) => x.r[0] / x.r[1] >= PASS);
+  const passDays = new Set(passes.map((x) => new Date(x.t).toDateString())).size;
+  const spread = passes.length >= 2 && passes[passes.length - 1].t - passes[0].t >= 7 * DAY;
   const lastPass = tests.length ? tests[tests.length - 1].r[0] / tests[tests.length - 1].r[1] >= PASS : false;
-  let tested = Math.min(1, passDays / 2);
+  let tested = spread ? 1 : passes.length ? 0.5 : 0;
   if (tests.length && !lastPass) tested = Math.min(tested, 0.5);
   const score = { tested, covered, accurate, deep, remembered, fixed };
   let pct = Math.round(AREAS.reduce((t, [k, , w]) => t + w * score[k], 0));
-  if (!passDays) pct = Math.min(pct, 70); // not proven in a test yet
+  // ceilings: each one needs real proof, over time
+  if (!passes.length) pct = Math.min(pct, 70);            // not proven in a timed test yet
+  else if (!spread || !lastPass) pct = Math.min(pct, 85);  // one test, or tests too close together
+  if (!b5) pct = Math.min(pct, 95);                         // not yet shown it's remembered after a 2-week gap
   const learnedIt = !!(local.learned || {})[key];
   if (learnedIt) pct = Math.max(pct, LESSON_CREDIT); // a finished lesson is a real first step
-  else if (passDays < 2 || !lastPass) pct = Math.min(pct, 95);
+  const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
+  const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, score, target: T, done: done.length, learned: learnedIt, parts, uncovered: parts - hit.size,
-    more: Math.max(0, T - done.length), needL3: !l3, needL4: !l4, needWritten: Math.max(0, 2 - written),
+    pct, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, parts, uncovered: parts - hit.size,
+    more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
   };
@@ -524,7 +541,7 @@ function masterySteps(m) {
     else if (c.score.remembered < 1 && c.done >= 4) opts.push([0.3 * (1 - c.score.remembered), `Come back for reviews over the next few days to prove you remember ${t}`, 'wait']);
     if (c.done >= Math.min(6, c.target)) {
       if (!c.passDays) opts.push([1.2, `Pass a chapter test on ${t} (80% or more)`, 'test']);
-      else if (c.passDays < 2 || !c.lastPass) opts.push([0.9, `Pass another chapter test on ${t} on a different day`, 'test']);
+      else if (!c.spread || !c.lastPass) opts.push([0.9, `Pass another chapter test on ${t} on a different day`, 'test']);
     }
     opts.sort((a, b) => b[0] - a[0]);
     if (opts[0]) steps.push({ unit: c.unit, text: opts[0][1], kind: opts[0][2] });
@@ -540,7 +557,7 @@ function masteryCard(m) {
     <div class="m-top"><div class="ring ${p >= 85 ? 'good' : p >= 50 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% mastered"><span>${p}%</span></div>
       <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. The button below works on your weakest spot.` : 'Practise a chapter to see how ready you are.'}</span></div></div>
     <details class="areas"><summary>How this is worked out</summary>${AREAS.map(([k, label, w]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}<small>${w}%</small></span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
-      <p class="hint" style="margin:6px 0 0">A chapter can’t go above 70% until you pass a timed test on it, or reach 100% until you’ve passed two on different days.</p></details>
+      <p class="hint" style="margin:6px 0 0">A chapter can’t go above 70% until you pass a timed test on it, above 85% until you pass again at least a week later, or reach 100% until you’ve shown you remember it two weeks on.</p></details>
     ${p > 0 && p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
   </section>`;
 }
@@ -2389,16 +2406,16 @@ function quickHowHTML(id = 'howQuick') {
 // "How is 'how ready' worked out?\": a short fold-out under the readiness rings (Today and Progress).
 function readyHowHTML(id = 'howReady') {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
-  const rows = [[30, Z('Passed timed chapter tests', '通過限時章節測驗'), Z('80% or more, on two different days.', '取得 80% 或以上，並在兩個不同日子通過。')],
+  const rows = [[30, Z('Passed timed chapter tests', '通過限時章節測驗'), Z('80% or more, twice, at least a week apart.', '取得 80% 或以上兩次，相隔最少一星期。')],
     [15, Z('Covered every part', '涵蓋每個部分'), Z('Right answers from every part of the chapter, not just one bit.', '章節每個部分都有答對的題目，不只是其中一部分。')],
-    [15, Z('Accurate in practice', '練習準確'), Z('Your latest scores, once you’ve done enough questions in the chapter.', '你最近的分數（要做夠該章的題目數量）。')],
-    [15, Z('Deep understanding', '深入理解'), Z('Right on harder “apply” and “analyse” questions, and full marks on written answers.', '答對較難的「應用」和「分析」題，以及文字題取得滿分。')],
-    [15, Z('Remembered over time', '長久記得'), Z('Right again in reviews, days later.', '幾天後溫習時仍然答對。')],
+    [15, Z('Accurate in practice', '練習準確'), Z('Right the first time you see a question. Getting it right on a later try doesn’t count here, because by then you may just remember it.', '第一次見到題目就答對。之後再做才答對不計，因為可能只是記住了答案。')],
+    [15, Z('Deep understanding', '深入理解'), Z('Right first time on 3 “apply” and 2 “analyse” questions, and full marks on 2 written answers.', '第一次就答對 3 題「應用」和 2 題「分析」，以及 2 題文字題取得滿分。')],
+    [15, Z('Remembered over time', '長久記得'), Z('Still right when reviews come back a week later (half) and two weeks later (full).', '一星期後溫習仍答對（一半分數），兩星期後仍答對（全部分數）。')],
     [10, Z('Mistakes fixed', '改正錯題'), Z('Few mistakes left to fix in the chapter.', '該章剩下要改正的錯題很少。')]];
   return `<details class="ms-how rd-how how-panel" id="${id}"><summary>${Z('How is this worked out?', '這是怎樣計算的？')}</summary><div>
     <p>${Z('Each chapter scores up to 100 points from six things:', '每一章最多 100 分，由六部分組成：')}</p>
     <div class="rd-rows">${rows.map(([n, t, d]) => `<div><b class="rd-n">${n}</b><span><b>${t}</b>${d}</span></div>`).join('')}</div>
-    <p><b>${Z('Two limits keep it honest:', '兩個限制，確保分數真實：')}</b> ${Z('a chapter stays at 70% or below until you pass a timed chapter test, and only goes above 95% after passes on two different days.', '未通過限時章節測驗前，該章最多 70%；要在兩個不同日子通過，才可以超過 95%。')}</p>
+    <p><b>${Z('Two limits keep it honest:', '兩個限制，確保分數真實：')}</b> ${Z('a chapter stays at 70% or below until you pass a timed chapter test, at 85% or below until you pass again at least a week later, and below 100% until it’s been remembered after two weeks. So 100% takes about a month of real work, and means you know it.', '未通過限時章節測驗前，該章最多 70%；相隔最少一星期再合格前，最多 85%；兩星期後仍記得之前，不會到 100%。所以 100% 大約要一個月的努力，代表真正掌握。')}</p>
     <p>${Z('A subject’s ring is the average of its chapters, with bigger chapters counting more.', '科目的圓環是各章的平均分，較長的章節佔比較大。')}</p></div></details>`;
 }
 async function renderHome() {
@@ -5411,22 +5428,31 @@ const pgBar = (label, pct, note, tn) => `<div class="pg-ch"><div class="pg-ch-to
 function chapterSheet(book, c) {
   const T = c.target || 10, learned = !!c.learned, acc = c.done ? Math.round(100 * Math.min(1, c.score.accurate / Math.max(0.01, Math.min(1, c.done / T)))) : null;
   const n = local.count || sessionSize(), name = shortTitle(c.unit.title);
-  // what Buddy sees, one line each, ticked when it's in good shape
+  // the six parts of the chapter score: points earned of points possible, and what's left to do
+  const W = Object.fromEntries(AREAS.map(([k, , w]) => [k, w])), pts = (k) => Math.round(W[k] * c.score[k]);
+  const fmtD = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
   const see = [
-    [learned, PT('Lesson', '課堂'), learned ? PT('Done', '已完成') : PT('Not done yet', '未上')],
-    [c.done >= T && (acc || 0) >= 70, PT('Practice', '練習'), c.done ? PT(`${c.done} of ${T} questions · ${acc}% right`, `${T} 題中做了 ${c.done} 題 · 答對 ${acc}%`) : PT('No questions yet', '未做題目')],
-    [!c.open, PT('Mistakes', '錯題'), c.open ? PT(`${c.open} to fix`, `${c.open} 題要改正`) : PT('None open', '沒有')],
-    [!c.due, PT('Reviews', '溫習'), c.due ? PT(`${c.due} due now`, `${c.due} 題到期`) : c.done ? PT('Up to date', '已完成') : '–'],
-    [c.passDays >= 1, PT('Chapter test', '章節測驗'), c.passDays ? PT(`Passed ${c.passDays === 1 ? 'once' : `on ${c.passDays} days`}`, `已合格 ${c.passDays} 次`) : c.tests ? PT('Not passed yet', '未合格') : PT('Not tried yet', '未試過')],
-  ];
+    ['tested', PT('Chapter tests', '章節測驗'), c.spread ? PT('Passed twice, a week apart', '相隔一星期合格兩次') : c.passes ? PT(`Passed once. Pass again from ${fmtD(c.firstPass + 7 * DAY)}`, `合格一次。${fmtD(c.firstPass + 7 * DAY)} 起再考一次`) : c.tests ? PT('Not passed yet · 80% passes', '未合格 · 80% 合格') : PT('Pass a timed test · 80%', '通過限時測驗 · 80%')],
+    ['covered', PT('Whole chapter', '整章內容'), PT(`${c.hit} of ${c.parts} sections right`, `${c.parts} 部分中答對 ${c.hit} 部分`)],
+    ['accurate', PT('First-try accuracy', '第一次就答對'), c.done ? PT(`${acc}% over ${c.done} of ${T} questions`, `${T} 題中做了 ${c.done} 題 · ${acc}%`) : PT(`Answer ${T} questions`, `回答 ${T} 題`)],
+    ['deep', PT('Harder questions', '較深題目'), PT(`Apply ${Math.min(3, c.l3n)}/3 · Analyse ${Math.min(2, c.l4n)}/2 · Written ${Math.min(2, c.written)}/2`, `應用 ${Math.min(3, c.l3n)}/3 · 分析 ${Math.min(2, c.l4n)}/2 · 文字 ${Math.min(2, c.written)}/2`)],
+    ['remembered', PT('Remembered', '記得牢'), c.b5 ? PT(`${c.b5} of ${c.memTarget} right after 2+ weeks`, `${c.memTarget} 題中 ${c.b5} 題隔兩星期仍答對`) : c.b4 ? PT(`${c.b4} right after a week · 2-week check next`, `${c.b4} 題隔一星期仍答對 · 接著是兩星期`) : PT('Reviews come back after 1, 3, 7 and 14 days', '溫習題會在 1、3、7、14 日後再出現')],
+    ['fixed', PT('Mistakes fixed', '錯題已改正'), c.open ? PT(`${c.open} still open`, `尚有 ${c.open} 題`) : c.done ? PT('None open', '沒有') : '–'],
+  ].map(([k, l, v]) => [pts(k) >= W[k], l, v, `${pts(k)}/${W[k]}`]);
+  const LV = [PT('Remember', '記憶'), PT('Understand', '理解'), PT('Apply', '應用'), PT('Analyse', '分析')];
+  const ladder = `<div class="chs-lv"><small>${PT('Question level', '題目程度')}</small>
+    <div class="chs-lad">${LV.map((l, i) => `<span class="${i + 1 <= c.lvTop ? 'got' : ''} ${i + 1 === c.lvNow ? 'now' : ''}"><b>${i + 1}</b><em>${l}</em></span>`).join('')}</div>
+    <p>${c.done >= 5 ? PT(`Buddy is giving you <b>level ${c.lvNow}</b> questions now. Get 80% right and it moves you up a level; under 50% and it eases off.`, `Buddy 現在給你<b>第 ${c.lvNow} 級</b>題目。答對 80% 會升一級；低於 50% 會調低。`) : PT('After 5 questions Buddy starts moving the level up or down to match you.', '做了 5 題之後，Buddy 會按你的表現調高或調低程度。')}</p></div>`;
   // Buddy's pick, in the order a tutor would go
-  const pick = !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review' : !c.passDays || !c.lastPass ? 'test' : c.passDays < 2 ? 'test' : 'review';
+  const retestOK = c.passes && Date.now() >= c.firstPass + 7 * DAY;
+  const pick = !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review'
+    : !c.passes || !c.lastPass ? 'test' : !c.spread && retestOK ? 'test' : c.score.deep < 1 ? 'practise' : 'review';
   const why = {
     lesson: PT('You haven’t started this chapter. The lesson explains it step by step with quick checks.', '你還未開始這一章。課堂會一步步講解，並有小測。'),
     fix: PT(`You have ${c.open} mistakes open here. Fixing them is the fastest way up.`, `這一章有 ${c.open} 題錯題，改正它們是最快的進步方法。`),
-    practise: c.done ? PT(`${acc}% right so far over ${c.done} questions. More practice will firm it up${learned ? '' : ', or take the lesson first if it feels shaky'}.`, `目前 ${c.done} 題答對 ${acc}%。多做練習可以鞏固${learned ? '' : '；如果覺得不穩，可以先上課'}。`) : PT('You’ve done the lesson. Now practise so it sticks.', '你已上了課，現在做練習鞏固。'),
+    practise: c.passes && c.score.deep < 1 ? PT('You’ve passed the test. Now the harder apply and analyse questions: Buddy moves you up as you get them right.', '你已通過測驗。接著挑戰較深的應用和分析題，答對了 Buddy 會再調高程度。') : c.done ? PT(`${acc}% right so far over ${c.done} questions. More practice will firm it up${learned ? '' : ', or take the lesson first if it feels shaky'}.`, `目前 ${c.done} 題答對 ${acc}%。多做練習可以鞏固${learned ? '' : '；如果覺得不穩，可以先上課'}。`) : PT('You’ve done the lesson. Now practise so it sticks.', '你已上了課，現在做練習鞏固。'),
     review: PT(`${c.due || 'A few'} questions are due. Getting them right days later is what makes it stick.`, `有 ${c.due || '幾'} 題到期溫習。隔幾日仍答對，才算真正記住。`),
-    test: c.tests && !c.lastPass ? PT('Your practice is strong. Try the timed chapter test again: 80% passes.', '練習做得好，再試一次限時章節測驗：80% 合格。') : c.passDays ? PT('One more pass on another day proves it, and moves the chapter past 95%.', '在另一日再合格一次，就證明掌握了，準備度會超過 95%。') : PT('Your practice is strong. A timed chapter test (like a mock exam) proves it: 80% passes.', '練習做得好。做一次限時章節測驗（像模擬試）來證明：80% 合格。'),
+    test: c.tests && !c.lastPass ? PT('Your practice is strong. Try the timed chapter test again: 80% passes.', '練習做得好，再試一次限時章節測驗：80% 合格。') : c.passes ? PT('It’s been a week since you passed. Passing again now shows it has stuck.', '距離上次合格已經一星期，現在再合格一次，證明你真的記住了。') : PT('Your practice is strong. A timed chapter test (like a mock exam) proves it: 80% passes.', '練習做得好。做一次限時章節測驗（像模擬試）來證明：80% 合格。'),
   }[pick];
   const O = [
     ['lesson', 'learn', learned ? PT('Redo the lesson', '重溫課堂') : PT('Take the lesson', '上課'), PT('Step-by-step teaching with quick checks', '一步步講解，附小測'), () => go({ name: 'learn', bookId: book.id, unitId: c.unit.id })],
@@ -5444,9 +5470,11 @@ function chapterSheet(book, c) {
     <div class="chs-h"><div class="rsg-meter ${tone}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(c.pct * 0.974).toFixed(1)} 100"/></svg><b>${c.pct}%</b></div>
       <div><small data-raw>${esc(book.subject ? subj(book.subject) : book.title)}</small><b id="chs-t" data-raw>${esc(name)}</b><span>${esc(masteryLabel(c.pct))}</span></div>
       <button class="chs-x" aria-label="${PT('Close', '關閉')}">✕</button></div>
-    <div class="chs-see"><small>${PT('Where you are', '你的進度')}</small>${see.map(([ok, l, v]) => `<div class="${ok ? 'ok' : ''}"><i>${ok ? '✓' : ''}</i><span>${l}</span><em>${v}</em></div>`).join('')}</div>
     <div class="chs-pick"><small>${buddySVG('happy', 22)} ${PT('Buddy suggests', 'Buddy 建議')}</small><p>${why}</p>
       <button class="chs-best" data-o="0">${actionTile(best[1], 40)}<span><b>${best[2]}</b><em>${best[3]}</em></span><i>›</i></button></div>
+    <div class="chs-see"><small>${PT(`What makes up the ${c.pct}%`, `${c.pct}% 是怎樣來的`)}${learned ? `<span class="chs-ld">✓ ${PT('Lesson done', '已上課')}</span>` : ''}</small>${see.map(([ok, l, v, p]) => `<div class="${ok ? 'ok' : ''}"><i>${ok ? '✓' : ''}</i><span><b>${l}</b><em>${v}</em></span><strong>${p}</strong></div>`).join('')}
+      <p class="chs-note">${PT('100% means passed twice a week apart, right first time on harder questions, and still remembered after two weeks.', '100% 代表：相隔一星期兩次合格、較深題目第一次就答對，而且兩星期後仍然記得。')}</p></div>
+    ${ladder}
     <div class="chs-more"><small>${PT('Or choose for yourself', '或自己選擇')}</small>${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 34)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div>
   </div>`;
   document.body.appendChild(box);
@@ -5620,7 +5648,7 @@ async function renderProgress() {
   const sec3 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('What should I work on?', '要加強甚麼？')}${ib('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'))}</h2>
       <span class="pv-legend"><i class="good"></i>${PT('Strong', '強')}<i class="mid"></i>${PT('Getting there', '漸入佳境')}<i class="low"></i>${PT('Needs work', '需加強')}<i class="none"></i>${PT('Not started', '未開始')}</span></div>
     ${how('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it (or to start its lesson).', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習（或開始上課）。')}</p>
-      <p>${PT('A chapter’s readiness is out of 100: chapter tests passed on 2 different days (30), every part covered (15), accurate in practice (15), harder questions right (15), remembered in reviews (15) and mistakes fixed (10). It stays at 70% or below until a timed chapter test is passed.', '每章準備度滿分 100：在兩日通過章節測驗（30）、涵蓋每部分（15）、練習準確（15）、答對較難的題目（15）、溫習時記得（15）、改正錯題（10）。未通過限時章節測驗前，最高 70%。')}</p>
+      <p>${PT('A chapter’s readiness is out of 100: chapter tests passed twice, a week apart (30), every part covered (15), right first time in practice (15), harder questions right first time (15), still remembered after two weeks (15) and mistakes fixed (10). It stays at 70% or below until a timed chapter test is passed, and at 85% or below until it’s passed again a week later.', '每章準備度滿分 100：相隔一星期兩次通過章節測驗（30）、涵蓋每部分（15）、練習第一次就答對（15）、較深題目第一次就答對（15）、兩星期後仍記得（15）、改正錯題（10）。未通過限時章節測驗前，最高 70%；一星期後再合格前，最高 85%。')}</p>
       <p><b>${PT('Most useful next', '下一步')}</b> · ${PT('in order: what your nearest test needs, then this week’s weakest chapter, then mistakes to fix, then reviews due.', '次序：最近的測驗需要的、本週最弱的章節、要改正的錯題、到期的溫習。')}</p>
       <p><b>${PT('Types of question', '題型')}</b> · ${PT('every question has a level: 1 remember facts, 2 understand, 3 use it, 4 think it through. This is your score on each, over the last 30 days.', '每題都有級別：1 記憶、2 理解、3 應用、4 深入思考。這是過去 30 日各級的得分。')}</p>`)}
     ${subjHTML ? `<div class="pv-subjs">${subjHTML}</div>` : ''}
@@ -5725,7 +5753,7 @@ async function renderProgress() {
     ${kpi('brain', String(D.longTerm), PT('In long-term memory', '長期記憶'), delta(D.longTerm, ago(mLine)) || `<small>${PT('questions remembered a week later', '題一星期後仍記得')}</small>`, `<div class="pv-kvis">${kspark(mLine)}</div>`, 'howK3', PT('What is long-term memory?', '甚麼是長期記憶？'))}
     ${kpi('cal', `${days28}<small>/28</small>`, PT('Days practised', '練習日數'), `<small>${PT('in the last 4 weeks', '過去 4 星期')}</small>`, `<div class="pv-kvis">${kdots()}</div>`, 'howK4', PT('Why consistency?', '為甚麼看持續性？'))}
     ${how('howK1', PT('What is overall readiness?', '甚麼是整體準備度？'), `<p>${PT('One number for how prepared you are across all your subjects: the readiness of each textbook you practise, averaged, with subjects that have a test in the next 30 days counting double.', '所有科目準備程度的一個數字：每本有練習的課本的準備度平均，30 日內有測驗的科目計雙倍。')}</p><p>${PT('The line shows it week by week over the last 12 weeks.', '線圖顯示過去 12 星期每週的變化。')}</p>`)}
-    ${how('howK2', PT('What counts as mastered?', '怎樣才算掌握？'), `<p>${PT('A chapter counts as mastered at 80% readiness or more. That needs a timed chapter test passed on 2 different days, plus covering the chapter, harder questions right and things remembered in reviews.', '準備度達 80% 或以上的章節就算掌握。這需要在兩日通過限時章節測驗，並涵蓋全章、答對較難的題目和溫習時記得。')}</p><p>${PT('Out of all the chapters in the textbooks you practise.', '分母是你有練習的課本的所有章節。')}</p>`)}
+    ${how('howK2', PT('What counts as mastered?', '怎樣才算掌握？'), `<p>${PT('A chapter counts as mastered at 80% readiness or more. That needs a timed chapter test passed, plus covering the chapter, harder questions right first time and things remembered in reviews.', '準備度達 80% 或以上的章節就算掌握。這需要通過限時章節測驗，並涵蓋全章、較深題目第一次就答對和溫習時記得。')}</p><p>${PT('Out of all the chapters in the textbooks you practise.', '分母是你有練習的課本的所有章節。')}</p>`)}
     ${how('howK3', PT('What is long-term memory?', '甚麼是長期記憶？'), `<p>${PT('Questions you got right again a week or more after first getting them right. Reviews bring questions back after 1, 3, 7, 14 and 30 days; reaching the 7-day step means it has stuck.', '答對後一星期或更久仍再次答對的題目。溫習會在 1、3、7、14、30 日後再出題；到了 7 日那一步，就代表記住了。')}</p><p>${PT('This only grows if reviews are done, so it shows real learning, not cramming.', '只有做溫習才會增加，所以反映的是真正學會，而不是臨急抱佛腳。')}</p>`)}
     ${how('howK4', PT('Why consistency?', '為甚麼看持續性？'), `<p>${PT('Days with any practice in the last 4 weeks. The line shows days per week over 12 weeks.', '過去 4 星期有練習的日數。線圖顯示 12 星期內每星期的日數。')}</p><p>${PT('A little most days beats a lot once a week: memory works best with short, spaced practice.', '每天少少，勝過一星期一次做很多：短時間、分散的練習最能幫助記憶。')}</p>`)}
   </section>`;
