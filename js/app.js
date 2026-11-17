@@ -3080,6 +3080,7 @@ function renderSettings(sec) {
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Standard</span>' : ''}</b>
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:14px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
+      ${starsOn() ? `<button class="btn-sm primary sstarshop" data-stargo style="align-self:flex-start">${starSVG(18)} ${PLT(`Open the Star shop · ${starState().bal} stars`, `打開星星商店 · ${starState().bal} 粒星`)}</button>` : ''}
     </section>
 `],
     language: [PLT('Language', '語言'), 'language', `    <section class="card stack g10" style="padding:16px">
@@ -3133,6 +3134,7 @@ function renderSettings(sec) {
       <div class="quick">
         ${tile('child', 'child', PLT('Your child', '你的孩子'), esc(sub.child))}
         ${tile('parents', 'parent', PLT('For parents', '家長專區'), sub.parents)}
+        ${starsOn() ? `<button class="qtile" data-sec="stars"><span class="atile" style="width:44px;height:44px;background:#FFE48A" aria-hidden="true">${starSVG(26)}</span><b>${PLT('Star shop', '星星商店')}</b><span>${PLT(`${starState().bal} stars · rewards and badges`, `${starState().bal} 粒星 · 獎勵及徽章`)}</span></button>` : ''}
         ${tile('language', 'language', PLT('Language', '語言'), sub.language)}
         ${tile('backup', 'backup', BK('Backup', '備份'), sub.backup)}
         ${hasHelp ? tile('help', 'help', PLT('Help and feedback', '說明及意見'), sub.help) : ''}
@@ -3145,6 +3147,7 @@ function renderSettings(sec) {
       const k = b.dataset.sec;
       if (k === 'parents') return openParent();
       if (k === 'usage') return go({ name: 'usage' });
+      if (k === 'stars') return go({ name: 'stars' });
       if (k === 'about') return go({ name: 'about' });
       go({ name: 'settings', sec: k });
     }));
