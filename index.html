@@ -2610,6 +2610,10 @@ main.pv{border-top:0!important;padding-top:24px!important;font-size:inherit!impo
 /* noticing cards: the action sits at the bottom, full width, so every card lines up */
 .pv-ins .pv-btn.soft{margin-top:auto;align-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left}
 .pv-ins .pv-btn.soft::after{content:'›';font-size:20px;line-height:1;opacity:.6}
+
+/* glance: the left side fills the card's height, so no empty gap under the takeaways */
+@media (min-width:1100px){.pv-sum{align-items:stretch}.pv-sum-l{height:100%}.pv-sum-h{flex:1;min-height:0}.pv-sum-t>.pv-sum-row{min-height:58px}}
+.pv-sum-h svg{margin-left:-4px}
 </style>
 </head>
 <body>
