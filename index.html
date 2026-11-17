@@ -2358,6 +2358,11 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 
 .cs2 .cs2-sub{font-size:13px!important;line-height:1.5!important;margin:12px 0 0!important}
 .cs2 .cs2-pk-h p{font-size:14.5px!important;line-height:1.5!important}
+
+/* chapter sheet: one tidy column on every screen; a little narrower on desktop */
+@media (min-width:900px){.cdlg.cs2{max-width:560px;width:560px}}
+.cs2 .cs2-steps,.cs2 .cs2-more{grid-template-columns:1fr!important;gap:6px}
+.cs2 .cs2-st{align-items:center;padding:9px 12px}.cs2 .cs2-st>i{top:50%;transform:translateY(-50%);right:12px}.cs2 .cs2-st>div{padding-right:26px}
 </style>
 </head>
 <body>
