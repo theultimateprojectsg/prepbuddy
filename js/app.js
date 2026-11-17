@@ -2408,7 +2408,7 @@ function missionHowHTML(id = 'howMission') {
 function testsHowHTML(id = 'howTests') {
   return howPanel(id, 'How do school tests work?', '學校測驗是怎樣運作的？', [
     ['➕', 'Add each school test, exam or 默書 with its date.', '加入學校的每個測驗、考試或默書和日期。', 'Pick the chapters if you know them. If not, Buddy uses everything practised in that subject.', '知道範圍就選章節；不知道的話，Buddy 會用該科練習過的所有內容。'],
-    ['📊', 'The bar shows how ready you are, and your goal.', '進度條顯示準備度和你的目標。', 'Set the goal by sliding Buddy on the Progress page.', '在「進度」頁拖動 Buddy 設定目標。'],
+    ['📊', 'The bar shows how ready you are, and your goal.', '進度條顯示準備度和你的目標。', 'Set the goal by sliding Buddy on the test card.', '在測驗卡上拖動 Buddy 設定目標。'],
     ['▶️', 'Today shows one job for each test, with Start.', '每個測驗今天都有一項任務，按「開始」。', 'It’s the same job as in Today’s mission.', '和今日任務的那一項一樣。'],
     ['📝', 'A practice test the day before.', '考試前一天做模擬測驗。', 'Tap Full plan to see every day until the test.', '按「完整計劃」看每一天的安排。']]);
 }
@@ -2747,7 +2747,8 @@ async function renderHome() {
   const nt = tests.steps[0];
   const testHead = `<div class="sect-head"><h2 class="h-info">${SCH('School tests', '學校測驗')}${infoBtn('howTests', SCH('How do school tests work?', '學校測驗是怎樣運作的？'))}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>${testsHowHTML()}`;
   let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s mission will get you ready, day by day.', '加入後，今日任務會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
-  const tdPlans = [], tdMins = [];
+  const tdPlans = [], tdMins = [], jobsT = [], tdActs = [];
+  const tdBtn = (label, run, cls = 'pv-btn') => { tdActs.push(run); return `<button class="${cls}" data-tdact="${tdActs.length - 1}">${label}</button>`; };
   if (nt) {
     // each test: a countdown card with a strip of days to the test, today's job for it, and the full plan one tap away
     const KIC = { learn: 'learn', practise: 'practise', mixed: 'practise', test: 'test', mock: 'mock', 'test-day': 'test', review: 'review' };
@@ -2765,6 +2766,7 @@ async function renderHome() {
       let mins = '';
       if (plan && p.ready != null && p.ready < aim) { const N = planNeeds(p.ready, chs.map((c) => c.pct || 0), Math.max(1, p.left), aim); tdMins.push(Math.max(10, Math.round((N.sets * SET_MIN) / Math.max(1, p.left) / 5) * 5)); mins = ` · ${Z(`${tdMins[tdMins.length - 1]} min`, `${tdMins[tdMins.length - 1]} 分鐘`)}`; }
       const job = p.step ? `<div class="tdc-job"><span class="tdc-ji">${actionIcon(p.step.icon || 'practise', 20)}</span><div><small>${Z('Today', '今天')}${mins}</small><b data-raw>${esc(p.step.t)}</b></div><button class="btn-sm primary" data-tstep="${k}">${Z('Start', '開始')}</button></div>` : '';
+      jobsT[k] = job;
       const next = plan && p.left >= 2 ? plan.days[p.left - 1] : null;
       if (plan) tdPlans[k] = () => testPlanSheet(p, chs, aim, planForecast(p.ready, chs, p.left));
       const icon = p.book ? subjectTile(p.book.subject, 44, p.book.title) : actionTile(p.x.kind === 'dict' ? 'dictation' : 'test', 44);
@@ -2790,10 +2792,11 @@ async function renderHome() {
         ${plan ? `<div class="tdc-f"><span>${next ? `${pIcon('check', 15)} ${Z(`Practice test ${pDay}`, `${pDay} 模擬測驗`)}` : ''}</span><button class="linkbtn" data-tplan="${k}">${Z('Full plan', '完整計劃')} ›</button></div>` : ''}
       </div>`;
     };
-    const cards = [];
-    for (const p of tests.steps) cards.push(await card(p));
+    for (const p of tests.steps) await card(p); // works out today's job and minutes for each test
+    // the full test card (same as Progress used to have), with today's job and its Start button added
+    const cards = (await fullTestCards(tests, tdBtn)).map((h, k) => h.replace('<div class="pv-test-f">', `${jobsT[k] || ''}<div class="pv-test-f">`));
     const tot = tdMins.reduce((a, b) => a + b, 0);
-    const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Lower a goal on Progress to lighten it.', '有點多，可以在「進度」把目標調低。') : ''}</span></p>` : '';
+    const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Slide Buddy to a lower goal on a test card to lighten it.', '時間較多，可在測驗卡上把 Buddy 拖到較低的目標。') : ''}</span></p>` : '';
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>`;
   }
 
@@ -2845,6 +2848,8 @@ async function renderHome() {
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
+  $app.querySelectorAll('[data-tdact]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = tdActs[+b.dataset.tdact]; if (f) f(); }));
+  bindTestCards($app);
   $app.querySelectorAll('[data-tplan]').forEach((b) => (b.onclick = () => { const f = tdPlans[+b.dataset.tplan]; if (f) f(); }));
   $app.querySelectorAll('[data-dictgo]').forEach((b) => (b.onclick = () => go(b.dataset.dictgo === 'new' ? { name: 'dictation', id: 'new' } : { name: 'dictation', id: b.dataset.dictgo, sub: 'run' })));
   $app.querySelectorAll('[data-wrgo]').forEach((b) => (b.onclick = () => go({ name: 'writing' })));
@@ -5870,31 +5875,13 @@ function masteredSheet(subs, done, all) {
   box.querySelector('.cs2-x').onclick = close2; box.onclick = (e) => { if (e.target === box) close2(); };
   box.querySelectorAll('[data-o]').forEach((b) => (b.onclick = () => { const x = near[+b.dataset.o]; close2(); chapterSheet(x.b, x.c); }));
 }
-// On track / close / at risk, against the target the parent set for that test (default 80%).
-const aimTone = (v, aim = 80) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
-async function renderProgress() {
-  // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
-  // what should I work on, is it working, and am I putting in the effort. Every card has a number,
-  // one line on what it means, and (where there's something to do) a button.
-  const zh = LANG === 'zh';
-  const D = await progressData(), r = D.r;
-  const books = (await getBooks()).filter((b) => !b.demo);
-  const RH = await readyHist(books);
-  const MB = new Map(); for (const b of books) MB.set(b.id, await bookMastery(b));
-  const GS = await gsData().catch(() => null);
-  const t0 = dayStart(), now = Date.now();
-  const sname = (b) => (b.subject ? subj(b.subject) : b.title);
+// The full school-test card (goal slider with Buddy, test-day forecast, Buddy's plan, chapter rows, My plan, edit).
+// It lives on Today, where the child acts on it; Progress shows a simpler on-track summary.
+let tcFcLine = null;
+async function fullTestCards(tests, btn) {
+  const MB = new Map(); for (const p of tests.steps) if (p.book && !MB.has(p.book.id)) MB.set(p.book.id, await bookMastery(p.book));
   const chName = (u) => shortTitle(u.title);
-  const acts = []; // [run] for every button on the page, bound by index
-  const btn = (label, run, cls = 'pv-btn') => { acts.push(run); return `<button class="${cls}" data-pv="${acts.length - 1}">${label}</button>`; };
   const fresh = (c) => !c.done && !c.tests && !c.learned;
-  const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
-  // ⓘ pop-ups: how each number is worked out, in plain words
-  const how = (id, title, body) => `<details class="ms-how how-panel" id="${id}"><summary>${title}</summary><div>${body}</div></details>`;
-  const ib = (id, title) => infoBtn(id, title);
-
-  // ---------- 1. Am I on track for my tests? ----------
-  const tests = await schoolTestsHTML();
   const fcLocked = locked('forecast');
   const fmtDay = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
   // each test chapter with its own readiness, so it's clear what the number is made of
@@ -5935,8 +5922,8 @@ async function renderProgress() {
     return box(E(push ? PT(`At your usual pace you’d reach about ${I.fc}%. ${aim}% means stepping it up, and we can do it together. Here’s the plan:`, `照平時的步伐，考試時約 ${I.fc}%。要達到 ${aim}% 就要加把勁，我們一起做得到。計劃是這樣：`)
       : PT(`At your usual pace you’d reach about ${I.fc}%, close to your ${aim}% goal. A bit more each day gets you there. Here’s the plan:`, `照平時的步伐，考試時約 ${I.fc}%，接近 ${aim}% 目標。每天多做一點就能達到。計劃是這樣：`)), steps);
   };
-  const testCards = tests.steps.map((p, ti) => {
-    const h = p.book ? RH.find((x) => x.b.id === p.book.id) : null;
+  tcFcLine = fcLine;
+  return tests.steps.map((p, ti) => {
     const habit = practiceHabit(), fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, habit);
     const fcI = { pcts: chOf(p).map((c) => c.pct || 0), names: chOf(p).map((c) => chName(c.unit)), habit, fc, lock: !!fcLocked, prev: fmtDay(testDay(p.x) - DAY) };
     const aim = p.x.aim || 80; // the parent's target for this test, set with the slider
@@ -5961,6 +5948,63 @@ async function renderProgress() {
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Slide Buddy to set your own goal for this test.', '拖動 Buddy，為這個測驗設定你自己的目標。')}</p>` : ''}${coach}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
       <div class="pv-test-f">${p.book && p.ready != null && (p.x.kind || 'test') !== 'dict' ? btn(PT('My plan for this test', '這個測驗的計劃'), () => testPlanSheet(p, chOf(p), (local.sched || []).find((y) => y.id === p.x.id)?.aim || 80, fc), 'pv-btn primary') : p.step ? btn(esc(p.step.t), p.step.run, 'pv-btn primary') : ''}${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
+  });
+}
+// goal sliders on the full test cards: move the line and the status live; save when let go
+function bindTestCards(root) {
+  root.querySelectorAll('.pv-aim').forEach((r) => {
+    const card = r.closest('.pv-test'), bar = r.closest('.pv-bar'), fc = +r.dataset.fc;
+    const LAB = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') };
+    const show = () => { if (+r.value < 50) r.value = 50; const a = +r.value, t = aimTone(fc, a); const fl = bar.querySelector('.pv-flag'); fl.style.left = a + '%'; fl.style.setProperty('--a', a); fl.querySelector('b').textContent = PT(`Goal ${a}%`, `目標 ${a}%`);
+      ['ok', 'close', 'risk'].forEach((k) => { card.classList.toggle(k, k === t); bar.classList.toggle(k, k === t); }); const pill = card.querySelector('.pv-pill'); if (pill) { pill.className = `pv-pill ${t}`; pill.textContent = LAB[t]; }
+      const f = card.querySelector('.pv-num .fc'); if (f) f.className = `fc ${t}`;
+      const ln = card.querySelector('.pv-fcline'); if (ln) { ln.innerHTML = tcFcLine(+ln.dataset.ready, a, +ln.dataset.left, JSON.parse(ln.dataset.info)); bindSet(); } };
+    const bindSet = () => card.querySelectorAll('[data-setaim]').forEach((b) => (b.onclick = () => { r.value = b.dataset.setaim; r.onchange(); }));
+    r.oninput = show; r.onpointerdown = () => bar.classList.add('drag'); r.onpointerup = r.onblur = () => bar.classList.remove('drag');
+    r.onchange = () => { show(); const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = +r.value; saveLocal(); } };
+    bindSet();
+  });
+}
+// On track / close / at risk, against the target the parent set for that test (default 80%).
+const aimTone = (v, aim = 80) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
+async function renderProgress() {
+  // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
+  // what should I work on, is it working, and am I putting in the effort. Every card has a number,
+  // one line on what it means, and (where there's something to do) a button.
+  const zh = LANG === 'zh';
+  const D = await progressData(), r = D.r;
+  const books = (await getBooks()).filter((b) => !b.demo);
+  const RH = await readyHist(books);
+  const MB = new Map(); for (const b of books) MB.set(b.id, await bookMastery(b));
+  const GS = await gsData().catch(() => null);
+  const t0 = dayStart(), now = Date.now();
+  const sname = (b) => (b.subject ? subj(b.subject) : b.title);
+  const chName = (u) => shortTitle(u.title);
+  const acts = []; // [run] for every button on the page, bound by index
+  const btn = (label, run, cls = 'pv-btn') => { acts.push(run); return `<button class="${cls}" data-pv="${acts.length - 1}">${label}</button>`; };
+  const fresh = (c) => !c.done && !c.tests && !c.learned;
+  const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
+  // ⓘ pop-ups: how each number is worked out, in plain words
+  const how = (id, title, body) => `<details class="ms-how how-panel" id="${id}"><summary>${title}</summary><div>${body}</div></details>`;
+  const ib = (id, title) => infoBtn(id, title);
+
+  // ---------- 1. Am I on track for my tests? ----------
+  const tests = await schoolTestsHTML();
+  const fmtDay = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+  const chOf = (p) => (p.book && p.units && p.units.length ? MB.get(p.book.id).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : []);
+  // Progress only reports: on track or not, ready now, where it's heading, the goal. Acting on it happens on Today.
+  const testCards = tests.steps.map((p) => {
+    const aim = p.x.aim || 80, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
+    const st = p.ready == null ? 'none' : aimTone(fc ?? p.ready, aim);
+    const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
+    const say = p.ready == null ? PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')
+      : st === 'ok' ? PT(`Heading for about ${fc}% on test day, at or above the ${aim}% goal.`, `考試當日預計約 ${fc}%，達到 ${aim}% 目標。`)
+      : st === 'close' ? PT(`Heading for about ${fc}%, a little short of the ${aim}% goal.`, `考試當日預計約 ${fc}%，略低於 ${aim}% 目標。`)
+      : PT(`Heading for about ${fc}%, well short of the ${aim}% goal. Today’s plan steps it up.`, `考試當日預計約 ${fc}%，離 ${aim}% 目標較遠，今日的計劃會加把勁。`);
+    const nums = p.ready == null ? '' : `<div class="pv-snum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i aria-hidden="true">→</i><div><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div><div><b>${aim}%</b><span>${PT('goal', '目標')}</span></div></div>
+      <div class="pv-sbar ${st}"><i style="width:${p.ready}%"></i>${fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:${aim}%"></s></div>`;
+    return `<div class="pv-test pv-simple ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
+      ${nums}<p class="pv-p">${say}</p>${btn(`${PT('Plan and today’s step on Today', '計劃和今天的步驟在「今日」')} ›`, () => { go({ name: 'home' }); setTimeout(() => { const el = document.querySelector('.td-sec'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400); }, 'linkbtn pv-tolink')}</div>`;
   });
   const testedBooks = new Set(tests.steps.map((p) => p.book && p.book.id).filter(Boolean));
   const noTest = RH.filter((x) => x.used && !testedBooks.has(x.b.id)).slice(0, Math.max(1, 3 - testCards.length)).map((x) => `<div class="pv-test none"><b data-raw>${esc(sname(x.b))} · ${PT('no test added', '未加入測驗')}</b>
@@ -6451,19 +6495,6 @@ ${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題�
       k.classList.add('pv-click'); k.setAttribute('role', 'button'); k.tabIndex = 0;
       const run = (e) => { if (e.target.closest('.info-btn')) return; KT[key](); };
       k.onclick = run; k.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); run(e); } }; }); }
-  // aim sliders: move the line and the status live; save when let go
-  $app.querySelectorAll('.pv-aim').forEach((r) => {
-    const card = r.closest('.pv-test'), bar = r.closest('.pv-bar'), fc = +r.dataset.fc;
-    const LAB = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') };
-    const show = () => { if (+r.value < 50) r.value = 50; const a = +r.value, t = aimTone(fc, a); const fl = bar.querySelector('.pv-flag'); fl.style.left = a + '%'; fl.style.setProperty('--a', a); fl.querySelector('b').textContent = PT(`Goal ${a}%`, `目標 ${a}%`);
-      ['ok', 'close', 'risk'].forEach((k) => { card.classList.toggle(k, k === t); bar.classList.toggle(k, k === t); }); const pill = card.querySelector('.pv-pill'); if (pill) { pill.className = `pv-pill ${t}`; pill.textContent = LAB[t]; }
-      const f = card.querySelector('.pv-num .fc'); if (f) f.className = `fc ${t}`;
-      const ln = card.querySelector('.pv-fcline'); if (ln) { ln.innerHTML = fcLine(+ln.dataset.ready, a, +ln.dataset.left, JSON.parse(ln.dataset.info)); bindSet(); } };
-    const bindSet = () => card.querySelectorAll('[data-setaim]').forEach((b) => (b.onclick = () => { r.value = b.dataset.setaim; r.onchange(); }));
-    r.oninput = show; r.onpointerdown = () => bar.classList.add('drag'); r.onpointerup = r.onblur = () => bar.classList.remove('drag');
-    r.onchange = () => { show(); const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = +r.value; saveLocal(); } };
-    bindSet();
-  });
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
   on('goal-edit', () => goalDialog());
   on('goal-set', () => goalDialog());

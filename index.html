@@ -3004,6 +3004,20 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .tdc .tdc-prog:hover{text-decoration:underline}
 .tdc .tdc-more{white-space:nowrap}
 .tdc .pv-tch{margin:0}
+/* Progress: the simple 'am I on track' test summary (the full card with the plan lives on Today) */
+.pv-snum{display:flex;align-items:flex-end;gap:14px}
+.pv-snum>div{display:flex;flex-direction:column}.pv-snum>div:last-child{margin-left:auto;align-items:flex-end}
+.pv-snum b{font-size:22px;font-weight:700;line-height:1.1}.pv-snum span{font-size:12px;color:var(--muted)}
+.pv-snum i{font-style:normal;color:var(--muted);padding-bottom:16px}
+.pv-snum .fc.ok{color:#0E6E4D}.pv-snum .fc.close{color:#8A3A10}.pv-snum .fc.risk{color:#B22A1E}
+.pv-sbar{position:relative;height:10px;border-radius:999px;background:#E9ECF3}
+.pv-sbar>i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--accent)}
+.pv-sbar>em{position:absolute;top:0;bottom:0;border-radius:0 999px 999px 0;background:repeating-linear-gradient(90deg,rgba(38,53,122,.28) 0 4px,transparent 4px 7px)}
+.pv-sbar>s{position:absolute;top:-4px;bottom:-4px;width:3px;border-radius:2px;background:var(--ink);transform:translateX(-50%)}
+.pv-sbar.ok>i{background:#18966A}.pv-sbar.close>i{background:#E08A2E}.pv-sbar.risk>i{background:#E0533F}
+.pv-simple .pv-p{margin:0}
+.pv-tolink{align-self:flex-start;font-size:14px;font-weight:600}
+.today .pv-test{gap:12px}
 </style>
 </head>
 <body>
