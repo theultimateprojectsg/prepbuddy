@@ -2990,6 +2990,11 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-whyd summary::after{content:"›";transform:rotate(90deg);display:inline-block;transition:transform .15s}
 .ms-whyd[open] summary::after{transform:rotate(-90deg)}
 .ms-whyd .ms-why{margin-top:4px}
+/* Buddy peeks over the bubble's top-right corner, so the reason uses the bubble's full width */
+.ms-why{position:relative;display:block;padding:10px 26px 10px 12px;margin-top:6px}
+.ms-why .ms-bud{position:absolute;z-index:1;top:-16px;right:6px;width:32px;height:32px;margin:0;display:block;line-height:0}
+.ms-why .ms-bud svg{width:32px!important;height:32px!important;overflow:visible}
+.ms-why{padding-right:40px}
 </style>
 </head>
 <body>
