@@ -6279,18 +6279,21 @@ function goalDialog() {
   const box = document.createElement('div');
   box.className = 'cdlg-wrap';
   const draw = () => {
-    box.innerHTML = `<div class="cdlg rdlg gdlg" role="dialog" aria-modal="true" aria-labelledby="gd-t" data-raw>
-      <b id="gd-t">${PT('Your weekly goal', '你的每週目標')}</b>
-      <label>${PT('Days a week', '每星期日數')}</label>
-      <div class="gd-seg">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<button class="${n === days ? 'on' : ''}" data-d="${n}">${n}</button>`).join('')}</div>
-      <label>${PT('Minutes each day', '每次分鐘')}</label>
-      <div class="gd-seg">${[10, 15, 20, 30, 45, 60].map((n) => `<button class="${n === mins ? 'on' : ''}" data-m="${n}">${n}</button>`).join('')}</div>
-      <label for="gd-exam">${PT('Exam date (optional)', '考試日期（可選）')}</label>
-      <input id="gd-exam" class="input" type="date" value="${esc(local.exam || '')}">
-      <span class="hint">${PT('For the DSE, use the date of your first paper for this subject.', '如果是 DSE，請用該科第一份試卷的日期。')}</span>
-      <div class="rd-row"><button class="btn ghost" id="gd-cancel">${PT('Cancel', '取消')}</button><button class="btn" id="gd-save">${PT('Save', '儲存')}</button></div>
-      ${local.goal ? `<button class="btn-sm quiet" id="gd-clear" style="align-self:center">${PT('Remove goal', '刪除目標')}</button>` : ''}
+    const tot = days * mins, pick = (n) => (n <= 2 ? PT('A gentle start', '輕鬆開始') : n <= 4 ? PT('A steady habit', '穩定的習慣') : n <= 6 ? PT('Most days: great for memory', '大部分日子：最幫助記憶') : PT('Every day!', '每天！'));
+    box.innerHTML = `<div class="cdlg gd2" role="dialog" aria-modal="true" aria-labelledby="gd-t" data-raw>
+      <header class="gd2-h">${buddySVG('happy', 44)}<div><b id="gd-t">${PT('Your weekly goal', '你的每週目標')}</b><small>${PT('Small and steady beats long and rare.', '少量而穩定，勝過偶爾做很多。')}</small></div><button class="chs-x cs2-x" id="gd-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+      <section><div class="gd2-lh"><label>${PT('How many days a week?', '每星期練習幾日？')}</label><em>${pick(days)}</em></div>
+        <div class="gd2-days">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<button class="${n === days ? 'on' : ''} ${n < days ? 'in' : ''}" data-d="${n}" aria-pressed="${n === days}">${n}</button>`).join('')}</div></section>
+      <section><div class="gd2-lh"><label>${PT('Minutes each day', '每日分鐘')}</label></div>
+        <div class="gd2-mins">${[10, 15, 20, 30, 45, 60].map((n) => `<button class="${n === mins ? 'on' : ''}" data-m="${n}" aria-pressed="${n === mins}"><b>${n}</b><small>${PT('min', '分鐘')}</small></button>`).join('')}</div></section>
+      <div class="gd2-sum"><span>🎯</span><div><b>${PT(`${days} day${days === 1 ? '' : 's'} × ${mins} min = ${tot} min a week`, `${days} 日 × ${mins} 分鐘 = 每星期 ${tot} 分鐘`)}</b><small>${starsOn() ? PT('Reach it and you earn bonus stars ⭐', '達成就可得額外星星 ⭐') : PT('You’ll see your progress on Today and Progress.', '可在今日和進度頁看到進度。')}</small></div></div>
+      <details class="gd2-exam" ${local.exam ? 'open' : ''}><summary>${PT('Add an exam date (optional)', '加入考試日期（可選）')}</summary>
+        <input id="gd-exam" class="input" type="date" value="${esc(local.exam || '')}" aria-label="${PT('Exam date', '考試日期')}">
+        <span class="hint">${inHK() ? PT('For the DSE, use the date of your first paper.', '如果是 DSE，請用第一份試卷的日期。') : PT('Buddy counts down to it and shows a forecast.', 'Buddy 會倒數，並顯示預測。')}</span></details>
+      <div class="rd-row"><button class="btn ghost" id="gd-cancel">${PT('Cancel', '取消')}</button><button class="btn" id="gd-save">${local.goal ? PT('Save goal', '儲存目標') : PT('Set my goal', '設定目標')}</button></div>
+      ${local.goal ? `<button class="gd2-rm" id="gd-clear">${PT('Remove goal', '刪除目標')}</button>` : ''}
     </div>`;
+    box.querySelector('#gd-x').onclick = () => box.remove();
     box.querySelectorAll('[data-d]').forEach((b) => (b.onclick = () => { days = +b.dataset.d; keep(); }));
     box.querySelectorAll('[data-m]').forEach((b) => (b.onclick = () => { mins = +b.dataset.m; keep(); }));
     box.querySelector('#gd-cancel').onclick = () => box.remove();

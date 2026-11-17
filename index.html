@@ -2694,6 +2694,26 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 .ds-none{margin:0;font-size:14px;color:var(--text-2)}
 .ds-wk em{font-size:12.5px!important}
 @media (max-width:600px){.ds-body{padding:0 16px 16px!important}.ds-grid,.ds-dow{gap:5px}}
+
+/* weekly goal dialog */
+.cdlg.gd2{max-width:460px;width:100%;padding:20px;gap:18px;text-align:left}
+.gd2-h{display:flex;align-items:center;gap:12px}.gd2-h>div{flex:1;display:flex;flex-direction:column;gap:2px}.gd2-h b{font-family:'Lexend',sans-serif;font-size:20px;color:var(--ink)}.gd2-h small{font-size:13.5px;color:var(--text-2)}
+.gd2-h .cs2-x{align-self:flex-start}
+.gd2 section{display:flex;flex-direction:column;gap:10px}
+.gd2-lh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.gd2-lh label{font-size:14.5px;font-weight:700;color:var(--ink)}.gd2-lh em{font-style:normal;font-size:13px;font-weight:600;color:var(--accent)}
+.gd2-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.gd2-days button{aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:#FFFFFF;font:inherit;font-family:'Lexend',sans-serif;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.gd2-days button.in{background:#EEF1FB;border-color:#C9D3F0;color:var(--accent)}
+.gd2-days button.on{background:var(--accent);border-color:var(--accent);color:#FFFFFF;transform:scale(1.08)}
+.gd2-mins{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.gd2-mins button{border-radius:12px;border:2px solid var(--line);background:#FFFFFF;font:inherit;cursor:pointer;padding:8px 0;display:flex;flex-direction:column;align-items:center;color:var(--ink)}
+.gd2-mins b{font-family:'Lexend',sans-serif;font-size:17px}.gd2-mins small{font-size:11px;color:var(--text-2)}
+.gd2-mins button.on{background:var(--accent);border-color:var(--accent);color:#FFFFFF}.gd2-mins button.on small{color:rgba(255,255,255,.8)}
+.gd2-sum{display:flex;align-items:center;gap:12px;background:#FFF8E1;border:1.5px solid #FBE7A6;border-radius:14px;padding:12px 14px}.gd2-sum>span{font-size:26px}.gd2-sum div{display:flex;flex-direction:column;gap:2px}.gd2-sum b{font-size:15px;color:var(--ink)}.gd2-sum small{font-size:13px;color:#7A5200}
+.gd2-exam summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent);list-style:none;display:flex;align-items:center;gap:6px}.gd2-exam summary::before{content:'+';font-size:18px;line-height:1}.gd2-exam[open] summary::before{content:'–'}
+.gd2-exam summary::-webkit-details-marker{display:none}.gd2-exam[open]{display:flex;flex-direction:column;gap:8px}.gd2-exam .input{margin-top:8px;min-height:44px}
+.gd2 .rd-row{margin-top:2px}.gd2-rm{align-self:center;background:none;border:0;font:inherit;font-size:13.5px;color:var(--text-2);text-decoration:underline;cursor:pointer}
+@media (max-width:380px){.gd2-mins{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
