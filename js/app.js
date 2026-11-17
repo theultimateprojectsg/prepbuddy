@@ -2425,15 +2425,14 @@ function testsHowHTML(id = 'howTests') {
 function quickHowHTML(id = 'howQuick') {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
   return `<details class="ms-how how-panel" id="${id}"><summary>${Z('How are these chosen?', '這些是怎樣選出來的？')}</summary><div>
-    <p>${Z('Three extra things you could do tonight, picked for you each time you open Today. Most useful first:', '今晚可以多做的三件事，每次打開「今天」都會為你重新挑選，最有用的排先：')}</p>
+    <p>${Z('Work outside your textbooks that’s waiting for you. It only shows when there’s something real to do:', '課本以外、正在等你的功課。只有真的有事要做時才會出現：')}</p>
     <ol>
       <li><b>${Z('A dictation coming up.', '快要默書。')}</b> ${Z('Practise that word list, or add the words if you haven’t yet.', '練習那個詞語表；未加入詞語的話，先加入。')}</li>
       <li><b>${Z('A writing test coming up.', '快要寫作測驗。')}</b> ${Z('Practise writing with Buddy’s feedback.', '練習寫作，Buddy 會給評語。')}</li>
       <li><b>${Z('Unfinished work.', '未完成的功課。')}</b> ${Z('Writing to finish or redraft, or homework you snapped today.', '要完成或修改的寫作，或今天拍下的功課。')}</li>
       <li><b>${Z('Words to get right.', '要寫對的詞語。')}</b> ${Z('A word list with words you missed last time.', '上次寫錯詞語的詞語表。')}</li>
-      <li><b>${Z('Mistakes to fix.', '要改正的錯題。')}</b> ${Z('When a few have piled up.', '錯題累積了幾條的時候。')}</li>
     </ol>
-    <p>${Z('Nothing special on? You’ll see Homework help, Dictation and Writing.', '沒有特別的事？就會顯示功課輔導、默書和寫作。')}</p></div></details>`;
+    <p>${Z('A 默書 in the next 2 days or a writing test in the next 3 goes into Today’s mission instead.', '兩日內的默書或三日內的寫作測驗，會放進今日任務。')}</p></div></details>`;
 }
 // "How is 'how ready' worked out?\": a short fold-out under the readiness rings (Today and Progress).
 function readyHowHTML(id = 'howReady') {
@@ -2491,6 +2490,14 @@ async function renderHome() {
   const cands = []; // { key, icon, t, s, attr, chk }
   for (const p of tests.steps.filter((q) => q.left <= 14 && q.step).slice(0, 2)) {
     { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
+  // school 默書 in the next 2 days, and a writing test in the next 3, go straight into the mission
+  for (const x of (local.sched || []).filter((x) => x.kind === 'dict' && testLeft(x) >= 0 && testLeft(x) <= 2)) {
+    if (cands.some((c) => c.key === `t:${x.id}`)) continue;
+    const L = (local.dict || []).find((d) => d.id === x.L);
+    cands.push({ key: `d:${x.id}`, icon: 'dictation', t: L ? Z(`Practise 默書: ${shortTitle(L.title || '')}`, `練習默書：${shortTitle(L.title || '')}`) : Z('Add your 默書 words', '加入默書詞語'), s: Z(`School 默書 ${leftText(testLeft(x))}. Buddy reads, you write.`, `學校默書${leftText(testLeft(x))}。Buddy 讀，你寫。`), attr: `data-dictgo="${esc(L ? L.id : 'new')}"`, chk: L ? { y: 'dict', L: L.id } : { y: 'none' }, tag: ['test', testLeft(x) === 0 ? Z('默書 today', '今天默書') : Z(`默書 ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}默書`)] });
+  }
+  { const x = (local.sched || []).find((x) => x.kind !== 'dict' && /writ|compos|essay|作文|寫作/i.test(x.name || '') && testLeft(x) >= 0 && testLeft(x) <= 3);
+    if (x && !cands.some((c) => c.key === `t:${x.id}`)) cands.push({ key: `wt:${x.id}`, icon: 'writing', t: Z('Practise writing', '練習寫作'), s: Z(`${x.name} is ${leftText(testLeft(x))}. Write a piece and Buddy marks it with feedback.`, `「${x.name}」${leftText(testLeft(x))}。寫一篇，Buddy 會批改並給意見。`), attr: 'data-wrgo="1"', chk: { y: 'wr' }, tag: ['test', Z(`Writing ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}寫作`)] }); }
   // reviews come before mistakes: they're due today and slip if they wait
   if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Review 10 questions now', '先複習 10 題'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
   else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Review ${due.length} question${due.length > 1 ? 's' : ''}`, `複習 ${due.length} 題`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
@@ -2529,6 +2536,7 @@ async function renderHome() {
     if (c.y === 'rv') return c.n ? due.length <= Math.max(0, c.n - 10) : !due.length;
     if (c.y === 'learn') return !!(local.learned || {})[`${c.b}:${c.u}`];
     if (c.y === 'dict') { const L = (local.dict || []).find((d) => d.id === c.L); return !!(L && (L.runs || []).some((r) => r.t >= M.at)); }
+    if (c.y === 'wr') return (local.wr || []).some((w) => w.t >= M.at || (w.drafts || []).some((d) => d.t >= M.at));
     if (c.y === 'lv') return !!(local.placement || {})[c.b] || bookAnswered(c.b);
     if (c.y === 'log') return local.log.filter((e) => e.t >= M.at && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length >= 3;
     return false;
@@ -2653,15 +2661,11 @@ async function renderHome() {
     // homework snapped today or yesterday
     { const h = (local.hw || []).filter((h) => dayAgo(h.t) <= 1).sort((a, b) => b.t - a.t)[0];
       if (h) c.push({ k: 'hw', score: 55, icon: 'homework', t: Z('Back to your homework', '繼續你的功課'), s: short(h.title || Z('Homework', '功課')), run: () => go({ name: 'homework', id: h.id }) }); }
-    // mistakes piling up
-    { const n = mistakeCount(); if (n >= 3) c.push({ k: 'mk', score: 30 + Math.min(n, 20), icon: 'mistakes', t: Z(`Fix ${n} mistakes`, `改正 ${n} 個錯題`), s: Z('Questions you got wrong before', '之前答錯的題目'), run: () => go({ name: 'pick', mode: 'weak' }) }); }
-    // defaults
-    c.push({ k: 'hw', score: 20, icon: 'homework', t: Z('Homework help', '功課輔導'), s: Z('Snap a photo, get hints', '拍照，得到提示'), run: () => go({ name: 'homework' }) });
-    c.push({ k: 'dict', score: 15, icon: 'dictation', t: Z('Dictation', '默書'), s: Z('I read, you write', '我讀，你寫'), run: () => go({ name: 'dictation' }) });
-    c.push({ k: 'wr', score: 10, icon: 'writing', t: Z('Writing', '寫作'), s: Z('Kind feedback, then redraft', '溫和的評語，再改寫'), run: () => go({ name: 'writing' }) });
-    const seen = new Set(); return c.sort((a, b) => b.score - a.score).filter((q) => !seen.has(q.k) && seen.add(q.k)).slice(0, 3);
+    // anything already in today's mission stays there
+    const inM = new Set(M.steps.map((x) => (x.key.startsWith('d:') || (x.chk && x.chk.y === 'dict') ? 'dict' : x.key.startsWith('wt:') ? 'wr' : '')));
+    const seen = new Set(); return c.filter((q) => !inM.has(q.k)).sort((a, b) => b.score - a.score).filter((q) => !seen.has(q.k) && seen.add(q.k)).slice(0, 3);
   })();
-  const quickHTML = `<section class="stack g10 td-sec" aria-label="${Z('Other things to do', '其他功課')}"><div class="sect-head"><h2 class="h-info">${Z('Also for tonight', '今晚也可以')}${infoBtn('howQuick', Z('How are these chosen?', '這些是怎樣選出來的？'))}</h2></div>
+  const quickHTML = !quick.length ? '' : `<section class="stack g10 td-sec" aria-label="${Z('Other things to do', '其他功課')}"><div class="sect-head"><h2 class="h-info">${Z('Also for tonight', '今晚也可以')}${infoBtn('howQuick', Z('How are these chosen?', '這些是怎樣選出來的？'))}</h2></div>
     <div class="td-quick quick">${quick.map((q, i) => `<button class="qtile hwtile" data-tq="${i}">${actionTile(q.icon, 44)}<b>${esc(q.t)}</b><span>${esc(q.s)}</span></button>`).join('')}</div>${quickHowHTML()}</section>`;
   // Buddy's daily brief for the coach panel (built from the numbers, no AI call)
   { const p = tests.steps.find((q) => q.left <= 14);
@@ -2674,7 +2678,7 @@ async function renderHome() {
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
       ${missionHowHTML()}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
-  const readyHTML = await todayReadyHTML(books);
+  await todayReadyHTML(books); // keeps each book's daily readiness history (used by the 'slipping' banner); not shown on Today
   // ---- greeting card: streak and this week's days ----
   const daysSet = new Set(local.log.map((e) => dayStart(e.t)));
   let streak = 0; for (let d = daysSet.has(t0) ? t0 : t0 - DAY; daysSet.has(d); d -= DAY) streak++;
@@ -2775,7 +2779,6 @@ async function renderHome() {
     ${tests.pastHTML}
     ${testHTML}
     ${quickHTML}
-    ${readyHTML}
   </main>
   <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
   { const co = document.getElementById('coachOpen'); if (co) co.onclick = () => { document.getElementById('coach').classList.remove('folded'); const q = document.getElementById('coachQ'); if (q) q.focus({ preventScroll: true }); document.getElementById('coach').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
@@ -2811,6 +2814,8 @@ async function renderHome() {
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
   $app.querySelectorAll('[data-tplan]').forEach((b) => (b.onclick = () => { const f = tdPlans[+b.dataset.tplan]; if (f) f(); }));
+  $app.querySelectorAll('[data-dictgo]').forEach((b) => (b.onclick = () => go(b.dataset.dictgo === 'new' ? { name: 'dictation', id: 'new' } : { name: 'dictation', id: b.dataset.dictgo, sub: 'run' })));
+  $app.querySelectorAll('[data-wrgo]').forEach((b) => (b.onclick = () => go({ name: 'writing' })));
   $app.querySelectorAll('[data-weak]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.weak.split(':'), bk = books.find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
