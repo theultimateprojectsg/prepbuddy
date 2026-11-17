@@ -5924,12 +5924,29 @@ async function renderProgress() {
     : rising.length ? PT(`You’re getting stronger in ${rising.slice(0, 2).join(' and ')}.`, `你在${rising.slice(0, 2).join('和')}越來越強。`) : r.dp >= 4 ? PT('A steady week of practice.', '本週練習穩定。') : PT('Every short session adds up.', '每次短時間練習都有幫助。');
   const sub2 = [close ? PT(`${close.x.name} is ${leftText(close.left)}: ${close.ready}% ready.`, `「${close.x.name}」${leftText(close.left)}：準備度 ${close.ready}%。`) : '', quiet ? PT(`${sname(quiet)} has been quiet for a few days.`, `${sname(quiet)}已經幾天沒有練習。`) : ''].filter(Boolean).join(' ');
 
+  // The summary card at the top: Buddy's verdict, three takeaways (going well / keep an eye on / next), and the four headline numbers.
+  const goodTx = !local.log.length ? '' : rising.length ? PT(`Getting stronger in ${rising.slice(0, 2).join(' and ')}`, `${rising.slice(0, 2).join('和')}越來越強`)
+    : days28 >= 12 ? PT(`Practised on ${days28} of the last 28 days`, `過去 28 日中有 ${days28} 日練習`) : D.longTerm ? PT(`${D.longTerm} questions now in long-term memory`, `${D.longTerm} 題已進入長期記憶`) : PT(`${r.dp} days of practice this week`, `本週練習了 ${r.dp} 日`);
+  const closeAim = close ? ((local.sched || []).find((y) => y.id === close.x.id) || {}).aim || 80 : 80;
+  const watchTx = close ? PT(`${close.x.name} ${leftText(close.left)}: ${close.ready}% ready, goal ${closeAim}%`, `「${close.x.name}」${leftText(close.left)}：準備度 ${close.ready}%，目標 ${closeAim}%`)
+    : quiet ? PT(`${sname(quiet)} has been quiet for a few days`, `${sname(quiet)}已經幾天沒有練習`) : D.weak ? PT(`Weakest chapter: ${chName(D.weak.unit)} · ${D.weak.a}%`, `最弱的章節：${chName(D.weak.unit)} · ${D.weak.a}%`) : '';
+  const nx = next[0];
+  const sumHTML = `<section class="pv-sum">
+    <div class="pv-sum-l">
+      <div class="pv-sum-h">${buddySVG(local.log.length ? 'happy' : 'think', 52)}<div><small>${PT('At a glance', '一覽')}</small><b data-raw>${esc(head)}</b></div></div>
+      ${local.log.length ? `<div class="pv-sum-t">
+        ${goodTx ? `<div class="g"><i>✓</i><span><small>${PT('Going well', '做得好')}</small><b data-raw>${esc(goodTx)}</b></span></div>` : ''}
+        ${watchTx ? `<div class="w"><i>!</i><span><small>${PT('Keep an eye on', '要留意')}</small><b data-raw>${esc(watchTx)}</b></span></div>` : ''}
+        ${nx ? `<div class="n"><i>→</i><span><small>${PT('Do next', '下一步')}</small><b data-raw>${esc(nx[0])}</b></span>${btn(PT('Start', '開始'), nx[2], 'pv-btn primary pv-sum-go')}</div>` : ''}
+      </div>` : ''}
+    </div>
+    <div class="pv-sum-r">${kpiHTML}</div>
+  </section>`;
   $app.innerHTML = `
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(PT('Weekly report', '每週報告'), () => reportDialog(), 'pv-btn quiet')}${btn(`${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}`, () => openParent(), 'pv-btn quiet')}</div></div>
-    <section class="pv-hero">${buddySVG(local.log.length ? 'happy' : 'think', 56)}<div><b data-raw>${esc(head)}</b>${sub2 ? `<span data-raw>${esc(sub2)}</span>` : ''}</div></section>
-    ${kpiHTML}${didHTML}${sec1}${sec2}${sec3}${sec4}${sec5}
+    ${sumHTML}${didHTML}${sec1}${sec2}${sec3}${sec4}${sec5}
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
   // aim sliders: move the line and the status live; save when let go

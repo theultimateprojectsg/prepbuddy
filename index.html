@@ -2544,6 +2544,22 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 
 .pv-h-r{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 .pv-addt{padding:6px 14px!important;font-size:13.5px!important;white-space:nowrap}
+
+/* top summary: verdict + takeaways on the left, the four headline numbers on the right, all in one card */
+.pv-sum{display:grid;grid-template-columns:1fr;gap:16px;background:#FFFFFF;border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 1px 0 rgba(30,42,90,.03)}
+@media (min-width:1100px){.pv-sum{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;padding:20px 22px}}
+.pv-sum-l{display:flex;flex-direction:column;gap:14px;min-width:0}
+.pv-sum-h{display:flex;align-items:center;gap:12px;background:linear-gradient(120deg,#EEF1FB 0%,#FFF8E1 100%);border-radius:16px;padding:14px 16px}
+.pv-sum-h svg{flex:none}.pv-sum-h div{display:flex;flex-direction:column;gap:2px;min-width:0}.pv-sum-h small{font-size:12.5px;font-weight:700;color:var(--accent)}.pv-sum-h b{font-family:'Lexend',sans-serif;font-size:19px;line-height:1.3;color:var(--ink)}
+.pv-sum-t{display:flex;flex-direction:column;gap:8px}
+.pv-sum-t>div{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:#F6F7FB}
+.pv-sum-t i{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:14px}
+.pv-sum-t .g i{background:var(--good-soft);color:var(--good-dark)}.pv-sum-t .w i{background:#FFF0C2;color:#8A6A00}.pv-sum-t .n i{background:#E3E8FA;color:var(--accent)}
+.pv-sum-t span{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}.pv-sum-t small{font-size:12px;font-weight:600;color:var(--text-2)}.pv-sum-t b{font-size:14.5px;line-height:1.35;color:var(--ink)}
+.pv-sum-go{flex:none;padding:7px 16px!important}
+.pv-sum-r{min-width:0}
+.pv-sum .pv-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px;height:100%}
+.pv-sum .pv-kpi{background:#F9FAFD;border-color:#E7EAF2}
 </style>
 </head>
 <body>
