@@ -5898,7 +5898,7 @@ async function renderProgress() {
   const bands = Object.entries(band).filter(([, x]) => x[2] >= 20 && x[1]).map(([h, x]) => [+h, x[0] / x[1]]).sort((a, b) => b[1] - a[1]);
   const fmtH = (h) => (zh ? `${h}:00` : `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`);
   const tileE = (v, lab, sub) => `<div class="pv-eff"><b>${v}</b><span>${lab}</span>${sub || ''}</div>`;
-  const BY = beyondData();
+  const BY = beyondData(), wMarked = wkLog.filter((e) => e.ty === 'w').length;
   const sec5 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('Effort and habits', '努力與習慣')}${ib('howEffP', PT('How is this counted?', '這是怎樣計算的？'))}</h2><span>${PT('This week, compared with last week', '本週，與上週比較')}</span></div>
     ${how('howEffP', PT('How is this counted?', '這是怎樣計算的？'), `<ul><li><b>${PT('Days, time and questions', '日數、時間和題數')}</b> · ${PT('the last 7 days, against the 7 days before. Time is counted from when you answer questions.', '過去 7 日，與之前 7 日比較。時間按作答時計算。')}</li>
       <li><b>${PT('Streak', '連續練習')}</b> · ${PT('days in a row with some practice, up to today.', '連續有練習的日數，直到今天。')}</li><li><b>${PT('Missions finished', '完成的任務')}</b> · ${PT('days this week when every step of Today’s mission was done, out of the days Today was opened. Finishing the plan matters more than total time.', '本週打開「今天」的日子中，完成所有任務步驟的日數。完成計劃比總時間更重要。')}</li>
@@ -5913,7 +5913,7 @@ async function renderProgress() {
         return wkDays.length ? tileE(`${fin(wkDays)}<small>/${wkDays.length}</small>`, PT('missions finished', '完成的任務'), pv.length ? cmp(fin(wkDays), fin(pv)) : `<small>${PT('days a mission was set', '有任務的日數')}</small>`) : ''; })()}
       ${fixedW || newW ? tileE(PT(`${fixedW} fixed`, `改正 ${fixedW} 題`), PT(`vs ${newW} new mistakes`, `新錯題 ${newW} 題`), `<small class="${fixedW >= newW ? 'up' : 'down'}">${fixedW >= newW ? PT('Fixing faster than making', '改正比犯錯快') : PT('More new than fixed', '新錯題比改正多')}</small>`) : ''}
       ${bands.length >= 2 ? tileE(`${fmtH(bands[0][0])}–${fmtH((bands[0][0] + 2) % 24)}`, PT('your best time', '你最好的時段'), `<small>${PT('Scores highest here', '這段時間分數最高')}</small>`) : ''}</div>
-    ${BY.length ? `<div class="pv-chips">${BY.map((x) => `<span data-raw>${esc(x.k)}: ${esc(x.v)}${x.c ? ` (${esc(x.c)})` : ''}</span>`).join('')}${starsOn() ? `<span>${PT('Stars to spend', '可用星星')}: ${starState().bal}</span>` : ''}</div>` : ''}
+    ${BY.length || wMarked ? `<div class="pv-chips">${wMarked ? `<span>${PT(`Buddy marked ${wMarked} of your written answers this week`, `Buddy 本週批改了你 ${wMarked} 個文字答案`)}</span>` : ''}${BY.map((x) => `<span data-raw>${esc(x.k)}: ${esc(x.v)}${x.c ? ` (${esc(x.c)})` : ''}</span>`).join('')}${starsOn() ? `<span>${PT('Stars to spend', '可用星星')}: ${starState().bal}</span>` : ''}</div>` : ''}
     ${calCard}${goalCardHTML(D)}</section>`;
 
   // the one-line summary at the top
@@ -5953,7 +5953,7 @@ async function renderProgress() {
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(PT('Weekly report', '每週報告'), () => reportDialog(), 'pv-btn quiet')}${btn(`${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}`, () => openParent(), 'pv-btn quiet')}</div></div>
     <section class="pv-sec pv-sumsec"><div class="pv-h"><h2>${PT('Your week at a glance', '本週一覽')}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}</section>
-    ${didHTML}<div id="pv-s1">${sec1}</div><div id="pv-s2">${sec2}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>
+    <div id="pv-s1">${sec1}</div><div id="pv-s2">${sec2}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
   // headline numbers lead somewhere: readiness and chapters to what to work on, memory to reviews, days to the calendar
