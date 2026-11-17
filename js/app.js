@@ -556,8 +556,8 @@ function masteryCard(m) {
   return `<section class="mastery" aria-label="Mastery">
     <div class="m-top"><div class="ring ${p >= 85 ? 'good' : p >= 50 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% mastered"><span>${p}%</span></div>
       <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. The button below works on your weakest spot.` : 'Practise a chapter to see how ready you are.'}</span></div></div>
-    <details class="areas"><summary>How this is worked out</summary>${AREAS.map(([k, label, w]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}<small>${w}%</small></span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
-      <p class="hint" style="margin:6px 0 0">A chapter can’t go above 70% until you pass a timed test on it, above 85% until you pass again at least a week later, or reach 100% until you’ve shown you remember it two weeks on.</p></details>
+    <details class="areas"><summary>${LANG === 'zh' ? '由甚麼組成' : 'What it’s made of'}</summary>${AREAS.map(([k, label]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}</span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
+      <p class="hint" style="margin:6px 0 0">${LANG === 'zh' ? '最高分要經過一段時間證明：通過測驗、之後再證明一次，並且仍然記得。' : 'The top scores take proof over time: passing tests, proving it again later, and still remembering it.'}</p></details>
     ${p > 0 && p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
   </section>`;
 }
@@ -2405,18 +2405,14 @@ function quickHowHTML(id = 'howQuick') {
 }
 // "How is 'how ready' worked out?\": a short fold-out under the readiness rings (Today and Progress).
 function readyHowHTML(id = 'howReady') {
+  // Plain words on what readiness means, without the exact recipe (that stays ours)
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
-  const rows = [[30, Z('Passed timed chapter tests', '通過限時章節測驗'), Z('80% or more, twice, at least a week apart.', '取得 80% 或以上兩次，相隔最少一星期。')],
-    [15, Z('Covered every part', '涵蓋每個部分'), Z('Right answers from every part of the chapter, not just one bit.', '章節每個部分都有答對的題目，不只是其中一部分。')],
-    [15, Z('Accurate in practice', '練習準確'), Z('Right the first time you see a question. Getting it right on a later try doesn’t count here, because by then you may just remember it.', '第一次見到題目就答對。之後再做才答對不計，因為可能只是記住了答案。')],
-    [15, Z('Deep understanding', '深入理解'), Z('Right first time on 3 “apply” and 2 “analyse” questions, and full marks on 2 written answers.', '第一次就答對 3 題「應用」和 2 題「分析」，以及 2 題文字題取得滿分。')],
-    [15, Z('Remembered over time', '長久記得'), Z('Still right when reviews come back a week later (half) and two weeks later (full).', '一星期後溫習仍答對（一半分數），兩星期後仍答對（全部分數）。')],
-    [10, Z('Mistakes fixed', '改正錯題'), Z('Few mistakes left to fix in the chapter.', '該章剩下要改正的錯題很少。')]];
+  const rows = [['💯', Z('Readiness shows how well you really know each chapter.', '準備度顯示你有多掌握每一章。'), Z('Out of 100%. Each subject’s ring brings its chapters together.', '滿分 100%。每科的圓環綜合了各章。')],
+    ['🧠', Z('It’s more than getting questions right.', '不只是答對題目。'), Z('It also checks harder questions, timed tests, fixing mistakes and remembering things later.', '還包括較深的題目、限時測驗、改正錯題，以及之後仍然記得。')],
+    ['🔒', Z('It can’t be rushed.', '不能一蹴而就。'), Z('The top scores only come with proof over time, so a high score really means ready.', '最高分要經過一段時間證明，所以高分代表真正準備好。')],
+    ['👆', Z('Tap a chapter to see what it needs next.', '按一章看看下一步需要做甚麼。'), '']];
   return `<details class="ms-how rd-how how-panel" id="${id}"><summary>${Z('How is this worked out?', '這是怎樣計算的？')}</summary><div>
-    <p>${Z('Each chapter scores up to 100 points from six things:', '每一章最多 100 分，由六部分組成：')}</p>
-    <div class="rd-rows">${rows.map(([n, t, d]) => `<div><b class="rd-n">${n}</b><span><b>${t}</b>${d}</span></div>`).join('')}</div>
-    <p><b>${Z('Two limits keep it honest:', '兩個限制，確保分數真實：')}</b> ${Z('a chapter stays at 70% or below until you pass a timed chapter test, at 85% or below until you pass again at least a week later, and below 100% until it’s been remembered after two weeks. So 100% takes about a month of real work, and means you know it.', '未通過限時章節測驗前，該章最多 70%；相隔最少一星期再合格前，最多 85%；兩星期後仍記得之前，不會到 100%。所以 100% 大約要一個月的努力，代表真正掌握。')}</p>
-    <p>${Z('A subject’s ring is the average of its chapters, with bigger chapters counting more.', '科目的圓環是各章的平均分，較長的章節佔比較大。')}</p></div></details>`;
+    <ul class="how-easy">${rows.map(([i, t, d]) => `<li><span>${i}</span><div><p>${t}</p>${d ? `<small>${d}</small>` : ''}</div></li>`).join('')}</ul></div></details>`;
 }
 async function renderHome() {
   S = null;
@@ -5906,7 +5902,6 @@ async function renderProgress() {
   const sec3 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('What should I work on?', '要加強甚麼？')}${ib('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'))}</h2>
       <span class="pv-legend"><i class="good"></i>${PT('Strong', '強')}<i class="mid"></i>${PT('Getting there', '漸入佳境')}<i class="low"></i>${PT('Needs work', '需加強')}<i class="none"></i>${PT('Not started', '未開始')}</span></div>
     ${how('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it (or to start its lesson).', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習（或開始上課）。')}</p>
-      <p>${PT('A chapter’s readiness is out of 100: chapter tests passed twice, a week apart (30), every part covered (15), right first time in practice (15), harder questions right first time (15), still remembered after two weeks (15) and mistakes fixed (10). It stays at 70% or below until a timed chapter test is passed, and at 85% or below until it’s passed again a week later.', '每章準備度滿分 100：相隔一星期兩次通過章節測驗（30）、涵蓋每部分（15）、練習第一次就答對（15）、較深題目第一次就答對（15）、兩星期後仍記得（15）、改正錯題（10）。未通過限時章節測驗前，最高 70%；一星期後再合格前，最高 85%。')}</p>
       <p><b>${PT('Most useful next', '下一步')}</b> · ${PT('in order: what your nearest test needs, then this week’s weakest chapter, then mistakes to fix, then reviews due.', '次序：最近的測驗需要的、本週最弱的章節、要改正的錯題、到期的溫習。')}</p>
       <p><b>${PT('Types of question', '題型')}</b> · ${PT('every question has a level: 1 remember facts, 2 understand, 3 use it, 4 think it through. This is your score on each, over the last 30 days.', '每題都有級別：1 記憶、2 理解、3 應用、4 深入思考。這是過去 30 日各級的得分。')}</p>`)}
     ${subjHTML ? `<div class="pv-subjs">${subjHTML}</div>` : ''}
