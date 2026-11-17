@@ -2577,7 +2577,7 @@ async function renderHome() {
     const ic = (k) => `<svg class="tw-i ${k}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SV[k] || SV.check}</svg>`;
     if (W.length) {
       const top = W[0], rest = W.slice(1).filter((x) => x.t !== top.t).slice(0, 2);
-      winHTML = `<section class="td-wins" aria-label="${Z('Your wins', '你的進步')}"><span class="tw-conf" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      winHTML = `<section class="td-wins" data-k="${esc(top.t)}" aria-label="${Z('Your wins', '你的進步')}"><button type="button" class="tw-x" id="twX" aria-label="${Z('Dismiss', '關閉')}">✕</button><span class="tw-conf" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
         <div class="tw-top"><span class="tw-bud">${buddySVG('happy', 56)}</span><div><small>${Z('Your wins', '你的進步')}</small><b data-raw>${esc(top.t)}</b></div></div>
         <p class="tw-d">${esc(top.d)}</p>${rest.length ? `<div class="tw-more">${rest.map((x) => `<div>${ic(x.icon)}<span data-raw>${esc(x.t)}</span></div>`).join('')}</div>` : ''}</section>`;
     } else {
@@ -2589,10 +2589,11 @@ async function renderHome() {
       if (mkN >= 3) ideas.push([Z('Fix 3 mistakes and that’s a win', '改正 3 題錯題就是一個進步'), 'check']);
       ideas.push([Z('Get 5 or more questions right in today’s mission', '在今日任務答對 5 題或以上'), 'star']);
       const head = didToday ? Z('Your next win is close!', '下一個進步就快到了！') : Z('Your first win of the week is one session away!', '再練習一次，就有本週第一個進步！');
-      winHTML = `<section class="td-wins tw-next" aria-label="${Z('Your next win', '你的下一個進步')}">
+      winHTML = `<section class="td-wins tw-next" data-k="${esc(head)}" aria-label="${Z('Your next win', '你的下一個進步')}"><button type="button" class="tw-x" id="twX" aria-label="${Z('Dismiss', '關閉')}">✕</button>
         <div class="tw-top"><span class="tw-bud">${buddySVG('happy', 56)}</span><div><small>${Z('Your next win', '你的下一個進步')}</small><b>${head}</b></div></div>
         <p class="tw-d">${Z('Here’s how to earn one today:', '今天這樣做就可以：')}</p><div class="tw-more">${ideas.slice(0, 2).map(([t, k]) => `<div>${ic(k)}<span>${esc(t)}</span></div>`).join('')}</div></section>`;
     } }
+  { const k = (winHTML.match(/data-k="([^"]*)"/) || [])[1], h = local.winsHid; if (k && h && h.d === t0 && h.k === k) winHTML = ''; }
   // a subject left alone for 5+ days
   // A lesson left part-way (from the last 7 days): carry on, or close it.
   let lessonHTML = '', lessonLeft = null;
@@ -2785,6 +2786,7 @@ async function renderHome() {
   }; }
   bindSchoolTests();
   { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('button.ms-row'); if (r) r.click(); }; }
+  { const b = document.getElementById('twX'); if (b) b.onclick = () => { const c = b.closest('.td-wins'); local.winsHid = { d: dayStart(), k: c.dataset.k }; saveLocal(); c.remove(); }; }
   $app.querySelectorAll('[data-mtime]').forEach((b) => (b.onclick = () => { local.mtime = +b.dataset.mtime; local.mission = null; saveLocal(); renderHome(); }));
   { const lg = document.getElementById('lessonGo'); if (lg && lessonLeft) lg.onclick = () => go({ name: 'learn', bookId: lessonLeft.b.id, unitId: lessonLeft.u.id }); }
   { const lx = document.getElementById('lessonX'); if (lx && lessonLeft) lx.onclick = async () => {
