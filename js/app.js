@@ -2771,8 +2771,12 @@ async function renderHome() {
       const r = p.ready == null ? null : Math.max(0, Math.min(100, p.ready)), tone = r == null ? '' : r >= aim ? 'ok' : r >= aim - 15 ? 'mid' : 'low';
       const bar = r == null ? '' : `<div class="tdc-bar"><div class="tdc-bl"><span><b>${r}%</b> ${Z('ready', '準備度')}</span><span>${Z(`goal ${aim}%`, `目標 ${aim}%`)}</span></div><div class="tdc-tr"><i class="${tone}" style="width:${Math.max(2, r)}%"></i><em style="left:${aim}%"></em></div></div>`;
       const pDay = next ? new Date(next.t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric' }) : '';
+      // on track or not: the same verdict as Progress (where test day is heading with the usual pace, against the goal)
+      const fcT = r == null || !chs.length ? null : planForecast(p.ready, chs, p.left, practiceHabit());
+      const st = r == null ? '' : aimTone(fcT ?? r, aim);
+      const stPill = st ? `<em class="pv-pill tdc-pill ${st}">${{ ok: Z('On track', '進度理想'), close: Z('Close', '接近'), risk: Z('At risk', '需要加把勁') }[st]}</em>` : '';
       return `<div class="td-test tdc">
-        <div class="tdc-h">${icon}<button class="tdc-t" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><small>${day}</small></button><span class="tdc-left ${p.left <= 7 ? 'soon' : ''}"><b>${p.left}</b><small>${p.left === 0 ? Z('today', '今天') : p.left === 1 ? Z('day left', '日') : Z('days left', '日')}</small></span></div>
+        <div class="tdc-h">${icon}<button class="tdc-t" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><span class="tdc-st"><small>${day}</small>${stPill}</span></button><span class="tdc-left ${p.left <= 7 ? 'soon' : ''}"><b>${p.left}</b><small>${p.left === 0 ? Z('today', '今天') : p.left === 1 ? Z('day left', '日') : Z('days left', '日')}</small></span></div>
         ${!p.book ? `<small class="muted" data-raw>${esc(testScope(p))}${p.last ? ' · ' + SCH(`${p.last.g} of ${p.last.n} right last time`, `上次 ${p.last.n} 個中寫對 ${p.last.g} 個`) : ''}</small>` : ''}
         ${bar}${job}
         ${plan ? `<div class="tdc-f"><span>${next ? `${pIcon('check', 15)} ${Z(`Practice test ${pDay}`, `${pDay} 模擬測驗`)}` : ''}</span><button class="linkbtn" data-tplan="${k}">${Z('Full plan', '完整計劃')} ›</button></div>` : ''}
