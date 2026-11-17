@@ -2230,6 +2230,35 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 
 /* the star counter always says what it opens */
 .greet-r .starchip .sc-lbl{display:inline!important}
+
+/* what PrepBuddy did: icon tiles in a grid, 2 across on phones */
+.pv-didg2{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.pv-didg2>div{display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:#F6F7FB;border-radius:14px;padding:12px}
+.pv-didg2 .atile{margin-bottom:4px}.pv-didg2 b{font-family:'Lexend',sans-serif;font-size:26px;line-height:1;color:var(--ink)}.pv-didg2 span{font-size:13px;line-height:1.35;color:var(--text-2)}
+@media (max-width:600px){.pv-didg2{grid-template-columns:1fr 1fr}}
+/* chapter sheet */
+.chs{max-width:460px;gap:14px;text-align:left}
+.chs-h{display:flex;align-items:center;gap:12px}.chs-h>div:nth-child(2){flex:1;display:flex;flex-direction:column;min-width:0}
+.chs-h small{font-size:12.5px;color:var(--text-2)}.chs-h b{font-family:'Lexend',sans-serif;font-size:19px;line-height:1.25;color:var(--ink)}.chs-h span{font-size:13px;color:var(--text-2)}
+.chs-h .rsg-meter{width:64px;height:64px}.chs-h .rsg-meter b{font-size:16px}
+.chs-x{align-self:flex-start;width:36px;height:36px;border-radius:10px;border:1.5px solid var(--line);background:#FFFFFF;font-size:16px;cursor:pointer;color:var(--ink);flex:none}
+.chs small{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--text-2)}
+.chs-see{display:flex;flex-direction:column;gap:6px;background:#F6F7FB;border-radius:14px;padding:10px 12px}
+.chs-see div{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;font-size:14px}
+.chs-see i{width:20px;height:20px;border-radius:50%;border:1.5px solid #C9D0E0;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;font-weight:700}
+.chs-see .ok i{background:#2FB173;border-color:#2FB173;color:#FFFFFF}.chs-see span{font-weight:600;color:var(--ink)}.chs-see em{font-style:normal;color:var(--text-2);font-size:13px;text-align:right}
+.chs-pick{display:flex;flex-direction:column;gap:8px}.chs-pick small{color:var(--accent)}.chs-pick p{margin:0;font-size:14.5px;line-height:1.5;color:var(--ink)}
+.chs button[data-o]{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;cursor:pointer;border-radius:14px;padding:10px 12px;background:#FFFFFF;border:1.5px solid var(--line);color:var(--ink)}
+.chs button[data-o] span:not(.atile){display:flex;flex-direction:column;min-width:0}.chs button[data-o] b{font-size:15px}.chs button[data-o] em{font-style:normal;font-size:12.5px;color:var(--text-2)}.chs button[data-o]>i{font-style:normal;font-size:22px;color:var(--text-2)}
+.chs .chs-best{background:var(--accent-tint,#EEF1FB);border:2px solid var(--accent)!important;padding:12px 14px}.chs .chs-best b{font-size:16px}
+.chs-more{display:flex;flex-direction:column;gap:6px}
+
+.chs button[data-o] span.atile{flex:none}
+.chs button[data-o] span:not(.atile){flex:1}
+.pv-didg2>div{display:grid!important;grid-template-columns:auto 1fr;align-items:center;column-gap:10px;row-gap:6px}
+.pv-didg2 .atile{margin:0}.pv-didg2 span:not(.atile){grid-column:1/-1}
+
+.pv-didg2 b{white-space:nowrap;font-size:24px}
 </style>
 </head>
 <body>

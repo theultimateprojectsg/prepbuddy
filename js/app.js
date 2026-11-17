@@ -5406,6 +5406,56 @@ function howData(logW) {
 }
 const pgBar = (label, pct, note, tn) => `<div class="pg-ch"><div class="pg-ch-top"><span>${label}</span><b class="${tn}">${note}</b></div><div class="pg-bar ${tn}"><i style="width:${pct}%"></i></div></div>`;
 
+// Tapping a chapter on Progress: Buddy's read of where the chapter stands, its pick for what to do next,
+// and every other way to work on it, so the child chooses knowing what each one does.
+function chapterSheet(book, c) {
+  const T = c.target || 10, learned = !!c.learned, acc = c.done ? Math.round(100 * Math.min(1, c.score.accurate / Math.max(0.01, Math.min(1, c.done / T)))) : null;
+  const n = local.count || sessionSize(), name = shortTitle(c.unit.title);
+  // what Buddy sees, one line each, ticked when it's in good shape
+  const see = [
+    [learned, PT('Lesson', '課堂'), learned ? PT('Done', '已完成') : PT('Not done yet', '未上')],
+    [c.done >= T && (acc || 0) >= 70, PT('Practice', '練習'), c.done ? PT(`${c.done} of ${T} questions · ${acc}% right`, `${T} 題中做了 ${c.done} 題 · 答對 ${acc}%`) : PT('No questions yet', '未做題目')],
+    [!c.open, PT('Mistakes', '錯題'), c.open ? PT(`${c.open} to fix`, `${c.open} 題要改正`) : PT('None open', '沒有')],
+    [!c.due, PT('Reviews', '溫習'), c.due ? PT(`${c.due} due now`, `${c.due} 題到期`) : c.done ? PT('Up to date', '已完成') : '–'],
+    [c.passDays >= 1, PT('Chapter test', '章節測驗'), c.passDays ? PT(`Passed ${c.passDays === 1 ? 'once' : `on ${c.passDays} days`}`, `已合格 ${c.passDays} 次`) : c.tests ? PT('Not passed yet', '未合格') : PT('Not tried yet', '未試過')],
+  ];
+  // Buddy's pick, in the order a tutor would go
+  const pick = !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review' : !c.passDays || !c.lastPass ? 'test' : c.passDays < 2 ? 'test' : 'review';
+  const why = {
+    lesson: PT('You haven’t started this chapter. The lesson explains it step by step with quick checks.', '你還未開始這一章。課堂會一步步講解，並有小測。'),
+    fix: PT(`You have ${c.open} mistakes open here. Fixing them is the fastest way up.`, `這一章有 ${c.open} 題錯題，改正它們是最快的進步方法。`),
+    practise: c.done ? PT(`${acc}% right so far over ${c.done} questions. More practice will firm it up${learned ? '' : ', or take the lesson first if it feels shaky'}.`, `目前 ${c.done} 題答對 ${acc}%。多做練習可以鞏固${learned ? '' : '；如果覺得不穩，可以先上課'}。`) : PT('You’ve done the lesson. Now practise so it sticks.', '你已上了課，現在做練習鞏固。'),
+    review: PT(`${c.due || 'A few'} questions are due. Getting them right days later is what makes it stick.`, `有 ${c.due || '幾'} 題到期溫習。隔幾日仍答對，才算真正記住。`),
+    test: c.tests && !c.lastPass ? PT('Your practice is strong. Try the timed chapter test again: 80% passes.', '練習做得好，再試一次限時章節測驗：80% 合格。') : c.passDays ? PT('One more pass on another day proves it, and moves the chapter past 95%.', '在另一日再合格一次，就證明掌握了，準備度會超過 95%。') : PT('Your practice is strong. A timed chapter test (like a mock exam) proves it: 80% passes.', '練習做得好。做一次限時章節測驗（像模擬試）來證明：80% 合格。'),
+  }[pick];
+  const O = [
+    ['lesson', 'learn', learned ? PT('Redo the lesson', '重溫課堂') : PT('Take the lesson', '上課'), PT('Step-by-step teaching with quick checks', '一步步講解，附小測'), () => go({ name: 'learn', bookId: book.id, unitId: c.unit.id })],
+    ['practise', 'practise', PT(`Practise ${n} questions`, `練習 ${n} 題`), PT('New questions that adapt to you', '會按你的程度調整的新題目'), () => startUnits(book, [c.unit], n)],
+    c.open ? ['fix', 'mistakes', PT(`Fix ${c.open} mistakes`, `改正 ${c.open} 題錯題`), PT('Try the ones you got wrong again', '再做一次答錯的題目'), () => go({ name: 'mistakes', book: book.id })] : null,
+    c.done ? ['review', 'review', PT(c.due ? `Review ${c.due} due` : 'Review', c.due ? `溫習 ${c.due} 題` : '溫習'), PT('Questions from before, just before you’d forget', '在快忘記前再做以前的題目'), () => startReview('spaced', book.id)] : null,
+    ['test', 'test', PT('Chapter test', '章節測驗'), PT('Timed, like a mock exam · 80% passes', '限時，像模擬試 · 80% 合格'), () => startChapterTest(book, [c.unit])],
+    ['cards', 'flashcards', PT('Flashcards', '閃卡'), PT('Key words and ideas, quick fire', '重點詞語和概念，快速溫習'), () => go({ name: 'cards', bookId: book.id })],
+    ['notes', 'notes', PT('Revision notes', '溫習筆記'), PT('The chapter on one page', '一頁看完整章'), () => go({ name: 'notes', bookId: book.id })],
+  ].filter(Boolean);
+  const best = O.find((o) => o[0] === pick) || O[0], rest = O.filter((o) => o !== best);
+  const tone = c.pct >= 70 ? 'hi' : c.pct >= 40 ? 'mid' : 'lo';
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  box.innerHTML = `<div class="cdlg chs" role="dialog" aria-modal="true" aria-labelledby="chs-t">
+    <div class="chs-h"><div class="rsg-meter ${tone}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(c.pct * 0.974).toFixed(1)} 100"/></svg><b>${c.pct}%</b></div>
+      <div><small data-raw>${esc(book.subject ? subj(book.subject) : book.title)}</small><b id="chs-t" data-raw>${esc(name)}</b><span>${esc(masteryLabel(c.pct))}</span></div>
+      <button class="chs-x" aria-label="${PT('Close', '關閉')}">✕</button></div>
+    <div class="chs-see"><small>${PT('Where you are', '你的進度')}</small>${see.map(([ok, l, v]) => `<div class="${ok ? 'ok' : ''}"><i>${ok ? '✓' : ''}</i><span>${l}</span><em>${v}</em></div>`).join('')}</div>
+    <div class="chs-pick"><small>${buddySVG('happy', 22)} ${PT('Buddy suggests', 'Buddy 建議')}</small><p>${why}</p>
+      <button class="chs-best" data-o="0">${actionTile(best[1], 40)}<span><b>${best[2]}</b><em>${best[3]}</em></span><i>›</i></button></div>
+    <div class="chs-more"><small>${PT('Or choose for yourself', '或自己選擇')}</small>${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 34)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div>
+  </div>`;
+  document.body.appendChild(box);
+  const all = [best, ...rest], close = () => box.remove();
+  box.querySelectorAll('[data-o]').forEach((b) => (b.onclick = () => { close(); all[+b.dataset.o][4](); }));
+  box.querySelector('.chs-x').onclick = close;
+  box.onclick = (e) => { if (e.target === box) close(); };
+  box.querySelector('.chs-best').focus({ preventScroll: true });
+}
 async function renderProgress() {
   // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
   // what should I work on, is it working, and am I putting in the effort. Every card has a number,
@@ -5461,12 +5511,12 @@ async function renderProgress() {
     const what = p.ready == null ? PT('Add the textbook so Buddy can get you ready.', '加入課本，Buddy 便可幫你準備。')
       : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT(`Aim for 80% by test day.`, '目標：考試前達到 80%。'))
       : st === 'ok' ? PT(`At this pace you’ll reach about ${fc}%. Short reviews keep it there; Today’s mission takes care of it.`, `按現時進度，考試時約 ${fc}%。今日任務會安排溫習，保持狀態。`)
-      : PT(`At this pace you’ll reach about ${fc}%. To get to 80%:`, `按現時進度，考試時約 ${fc}%。要達到 80%：`);
+      : PT(`At this pace you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:80%"></s><small style="left:80%">${PT('aim 80%', '目標 80%')}</small></div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${bar}${chipsOf(p)}<p class="pv-p">${what}</p>${outside(p)}${st !== 'ok' && steps.length ? `<ul class="pv-steps">${steps.map((s) => `<li data-raw>${esc(s)}</li>`).join('')}</ul>` : ''}
+      ${bar}${chipsOf(p)}<p class="pv-p">${what}${p.left >= 2 && p.book && (p.x.kind || 'test') !== 'dict' ? ` ${PT(`Practice test on ${fmtDay(testDay(p.x) - DAY)}.`, `${fmtDay(testDay(p.x) - DAY)} 做模擬測驗。`)}` : ''}</p>${outside(p)}
       ${p.ready != null ? `<span class="pv-op">${PT('Only PrepBuddy · forecast to your test date', '只有 PrepBuddy · 按你的考試日期預測')}</span>` : ''}
       <div class="pv-test-f">${p.step ? btn(esc(p.step.t), p.step.run, `pv-btn ${st === 'ok' ? '' : 'primary'}`) : ''}${btn(PT('Edit', '修改'), () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet')}</div></div>`;
   });
@@ -5549,7 +5599,7 @@ async function renderProgress() {
   const subjHTML = shown.map((x) => {
     const m = MB.get(x.b.id), chs = m.chapters, max = chs.length > 12 ? 11 : 12;
     const tile = (c) => { const st = fresh(c) ? 'none' : c.pct >= 80 ? 'good' : c.pct >= 60 ? 'mid' : 'low';
-      const run = fresh(c) ? () => go({ name: 'learn', bookId: x.b.id, unitId: c.unit.id }) : () => startUnits(x.b, [c.unit], local.count || sessionSize());
+      const run = () => chapterSheet(x.b, c);
       return btn(`<b data-raw>${esc(chName(c.unit))}</b><span>${fresh(c) ? PT('not started', '未開始') : c.pct + '%'}</span>`, run, `pv-tile ${st}`); };
     return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(x.b))}</b><span>${PT(`${x.pct}% ready · ${chs.length} chapters`, `準備度 ${x.pct}% · ${chs.length} 章`)}</span></div>
       <div class="pv-tiles">${chs.slice(0, max).map(tile).join('')}${chs.length > max ? btn(PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`), () => go({ name: 'book', bookId: x.b.id }), 'pv-tile more') : ''}</div></div>`;
@@ -5661,14 +5711,14 @@ async function renderProgress() {
   const kdots = () => `<div class="pv-kdots" aria-hidden="true">${Array.from({ length: 28 }, (_, i) => { const d = t0 - (27 - i) * DAY; return `<i class="${dayMap.has(d) ? 'on' : ''} ${d === t0 ? 'today' : ''}"></i>`; }).join('')}</div>`;
   // What PrepBuddy did this week: the work a tutor would do, counted
   const wkLog = local.log.filter((e) => e.t >= t0 - 6 * DAY), wAgo = now - 7 * DAY;
-  const didL = [[wkLog.length, PT('questions from your own textbooks', '條題目來自你自己的課本')], [wkLog.filter((e) => e.ty === 'w').length, PT('written answers marked, with feedback', '條文字答案已批改並有評語')],
-    [ins ? ins.list.length : 0, PT(ins && ins.list.length === 1 ? 'mix-up found by reading your answers' : 'mix-ups found by reading your answers', '個混淆從你的答案中找出')], [wkLog.filter((e) => e.k === 'spaced').length, PT('reviews brought back just before you’d forget', '條溫習題在快忘記前再出現')],
-    [Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > wAgo).length, PT('mistakes fixed on a second try', '題錯題再做時改正')],
-    [Object.values(local.learned || {}).filter((t) => (typeof t === 'number' ? t : 0) > wAgo).length, PT('lessons taught by Buddy', '堂 Buddy 課堂')],
-    [(local.hw || []).filter((h) => h.t > wAgo).length, PT('homework sheets helped with', '份功課得到協助')]].filter(([n]) => n > 0).slice(0, 6);
+  const didL = [[wkLog.length, PT('questions from your own textbooks', '條題目來自你自己的課本'), 'practise'], [wkLog.filter((e) => e.ty === 'w').length, PT('written answers marked, with feedback', '條文字答案已批改並有評語'), 'writing'],
+    [ins ? ins.list.length : 0, PT(ins && ins.list.length === 1 ? 'mix-up found by reading your answers' : 'mix-ups found by reading your answers', '個混淆從你的答案中找出'), 'weak'], [wkLog.filter((e) => e.k === 'spaced').length, PT('reviews brought back just before you’d forget', '條溫習題在快忘記前再出現'), 'review'],
+    [Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > wAgo).length, PT('mistakes fixed on a second try', '題錯題再做時改正'), 'mistakes'],
+    [Object.values(local.learned || {}).filter((t) => (typeof t === 'number' ? t : 0) > wAgo).length, PT('lessons taught by Buddy', '堂 Buddy 課堂'), 'learn'],
+    [(local.hw || []).filter((h) => h.t > wAgo).length, PT('homework sheets helped with', '份功課得到協助'), 'homework']].filter(([n]) => n > 0).slice(0, 6);
   const nt0 = tests.steps.find((p) => p.left >= 1 && p.left <= 21);
   const didHTML = didL.length ? `<section class="pv-sec pv-did"><div class="pv-h"><h2>${PT('What PrepBuddy did for you this week', 'PrepBuddy 本週為你做了甚麼')}</h2><span>${PT('The work of a tutor, every day you practised', '好導師會做的事，你每次練習都有')}</span></div>
-    <div class="pv-didg">${didL.map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}${nt0 ? `<div><b>${PT(`${nt0.left} days`, `${nt0.left} 日`)}</b><span data-raw>${esc(PT(`planned towards the ${nt0.x.name}`, `為「${nt0.x.name}」安排`))}</span></div>` : ''}</div></section>` : '';
+    <div class="pv-didg2">${didL.map(([n, l, ic]) => `<div class="dd-${ic}">${actionTile(ic, 40)}<b>${n}</b><span>${l}</span></div>`).join('')}${nt0 ? `<div class="dd-test">${actionTile('test', 40)}<b>${PT(`${nt0.left} days`, `${nt0.left} 日`)}</b><span data-raw>${esc(PT(`planned towards the ${nt0.x.name}`, `為「${nt0.x.name}」安排`))}</span></div>` : ''}</div></section>` : '';
   const kpiHTML = `<section class="pv-kpis\" aria-label="${PT('Headline numbers', '主要數字')}">
     ${kpi('ring', `${overall}%`, PT('Overall readiness', '整體準備度'), delta(overall, ago(rdLine), '%'), `<div class="pv-kvis">${kring(overall)}</div>`, 'howK1', PT('What is overall readiness?', '甚麼是整體準備度？'))}
     ${kpi('book', `${chDone}<small>/${chAll}</small>`, PT('Chapters mastered', '已掌握的章節'), delta(chDone, ago(cLine)) || `<small>${chAll - chDone ? PT(`${chAll - chDone} to go`, `還有 ${chAll - chDone} 章`) : PT('all mastered', '全部掌握')}</small>`, `<div class="pv-kvis">${kbar(chDone, chAll)}</div>`, 'howK2', PT('What counts as mastered?', '怎樣才算掌握？'))}
