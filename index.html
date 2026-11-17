@@ -2746,6 +2746,22 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 @media (max-width:700px){.pv-sum{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:'h h' 'g w' 'r b' 'm d'}}
 
 @media (max-width:700px){.pv-sum .pv-sum-row b{font-size:15px!important}.pv-sum .pv-sum-row{padding:12px!important}.pv-sum-h{padding:14px!important;align-items:flex-start!important}.pv-sum-h svg{width:40px;height:40px}.pv-sum-h b{font-size:17px!important}.pv-sum-h span{font-size:14px}}
+
+/* "+N more chapters" as the last row of the list */
+.pv-tch .pv-tmore{all:unset;box-sizing:border-box;margin-top:2px;padding:8px 0 2px;border-top:1px dashed var(--line);font-size:13.5px;font-weight:700;color:var(--accent);cursor:pointer;text-align:center}
+.pv-tch .pv-tmore:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+/* phones: section header button on its own neat line; chapter tiles as a simple list */
+@media (max-width:600px){
+  .pv-h{flex-direction:column;align-items:flex-start!important;gap:6px}
+  .pv-h-r{width:100%;justify-content:space-between!important;flex-wrap:nowrap!important;gap:10px}
+  .pv-h-r .pv-addt{flex:none;padding:7px 12px!important;font-size:13px!important}
+  .pv-tiles{grid-template-columns:1fr!important;gap:6px}
+  .pv-tile{flex-direction:row!important;justify-content:space-between;align-items:center;min-height:0!important;padding:10px 12px!important}
+  .pv-tile b{font-size:14px!important;-webkit-line-clamp:1}.pv-tile span{flex:none;font-size:13px!important;margin-left:10px}
+  .pv-tile.more{justify-content:center!important;font-size:14px}
+}
+
+@media (max-width:600px){.pv-tile.more{background:none!important;border:0!important;border-top:1px dashed var(--line)!important;border-radius:0!important;color:var(--accent)!important;font-weight:700;padding:10px 0 2px!important}}
 </style>
 </head>
 <body>

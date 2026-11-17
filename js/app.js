@@ -5703,12 +5703,15 @@ async function renderProgress() {
   // each test chapter with its own readiness, so it's clear what the number is made of
   const chOf = (p) => (p.book && p.units && p.units.length ? MB.get(p.book.id).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : []);
   // each test chapter as one slim row (name, %, bar), weakest first; past 3 the rest fold behind a button
-  const chipsOf = (p) => { const cs = chOf(p).slice().sort((a, b) => a.pct - b.pct); if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
+  // the test's chapters in book order; past 4 the rest fold behind a "+N more" row at the bottom of the list
+  const chipsOf = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
+    if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
+    const SHOWN = 4, more = cs.length - SHOWN;
     const row = (c, hid) => `<div class="pv-tr ${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.pct}%` : c.learned ? PT(`Lesson · ${c.pct}%`, `已上課 · ${c.pct}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.pct}%"></b></i></div>`;
-    const id = `tch${p.x.id}`.replace(/\W/g, ''), more = cs.length - 3;
-    return `<div class="pv-tch" id="${id}">${cs.map((c, i) => row(c, i >= 3 && more > 1)).join('')}</div>${more > 1 ? btn(PT(`Show all ${cs.length} chapters`, `顯示全部 ${cs.length} 個章節`), () => {
-      const el = document.getElementById(id), open = el.classList.toggle('open'), bt = el.nextElementSibling;
-      if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : PT(`Show all ${cs.length} chapters`, `顯示全部 ${cs.length} 個章節`); }, 'pv-btn quiet pv-tmore') : ''}`; };
+    const id = `tch${p.x.id}`.replace(/\W/g, ''), lab = PT(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`);
+    return `<div class="pv-tch" id="${id}">${cs.map((c, i) => row(c, i >= SHOWN && more > 1)).join('')}${more > 1 ? btn(lab, () => {
+      const el = document.getElementById(id), open = el.classList.toggle('open'), bt = el.querySelector('.pv-tmore');
+      if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : lab; }, 'pv-tmore') : ''}</div>`; };
   // practice that went on other chapters of the same book doesn't move this test's number: say so
   const outside = (p) => { if (!p.book || p.all) return ''; const cs = chOf(p); if (!cs.length) return '';
     const other = MB.get(p.book.id).chapters.filter((c) => (c.done || c.learned) && !p.units.some((u) => u.id === c.unit.id));
@@ -5916,7 +5919,7 @@ async function renderProgress() {
     for (const x of g.list) for (const c of MB.get(x.b.id).chapters) { w += c.weight; sum += c.pct * c.weight; nch++; }
     const gp = w ? Math.round(sum / w) : 0;
     const bookHTML = (x) => {
-      const chs = MB.get(x.b.id).chapters, max = many ? (chs.length > 6 ? 5 : 6) : (chs.length > 12 ? 11 : 12);
+      const chs = MB.get(x.b.id).chapters, phone = innerWidth < 600, max = phone ? (chs.length > 6 ? 5 : 6) : many ? (chs.length > 6 ? 5 : 6) : (chs.length > 12 ? 11 : 12);
       const tile = (c) => { const st = fresh(c) ? 'none' : c.pct >= 80 ? 'good' : c.pct >= 60 ? 'mid' : 'low';
         return btn(`<b data-raw>${esc(chName(c.unit))}</b><span>${fresh(c) ? PT('not started', '未開始') : c.pct + '%'}</span>`, () => chapterSheet(x.b, c), `pv-tile ${st}`); };
       return `${many ? `<div class="pv-bk-h"><b data-raw>${esc(x.b.title)}</b><span>${PT(`${x.pct}% · ${chs.length} chapters`, `${x.pct}% · ${chs.length} 章`)}</span></div>` : ''}
