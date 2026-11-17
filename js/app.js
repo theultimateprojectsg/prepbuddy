@@ -5696,16 +5696,27 @@ async function renderProgress() {
     ${!ins && mkAll.length >= 3 ? `<p class="pv-empty pv-loading" id="pvMix">${PT('Buddy is looking through your mistakes for mix-ups…', 'Buddy 正在從錯題中找出常見混淆…')}</p>` : ''}</section>`;
 
   // ---------- 3. What should I work on? ----------
-  const shown = (RH.some((x) => x.used) ? RH.filter((x) => x.used) : RH).slice(0, 4);
-  const subjHTML = shown.map((x) => {
-    const m = MB.get(x.b.id), chs = m.chapters, max = chs.length > 12 ? 11 : 12;
-    const tile = (c) => { const st = fresh(c) ? 'none' : c.pct >= 80 ? 'good' : c.pct >= 60 ? 'mid' : 'low';
-      const run = () => chapterSheet(x.b, c);
-      return btn(`<b data-raw>${esc(chName(c.unit))}</b><span>${fresh(c) ? PT('not started', '未開始') : c.pct + '%'}</span>`, run, `pv-tile ${st}`); };
-    return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(x.b))}${x.b.subject && x.b.title && x.b.title !== sname(x.b) ? `<small class="pv-subj-bk">${esc(x.b.title)}</small>` : ''}</b><span>${PT(`${x.pct}% ready · ${chs.length} chapters`, `準備度 ${x.pct}% · ${chs.length} 章`)}</span></div>
+  // One box per subject; a subject with several textbooks (4A, 4B, workbook) shows each book's chapters under its own small header.
+  const pool = RH.some((x) => x.used) ? RH.filter((x) => x.used) : RH;
+  const groups = [];
+  for (const x of pool) { const k = (x.b.subject || x.b.title || '').toLowerCase(); const g = groups.find((y) => y.k === k); if (g) g.list.push(x); else groups.push({ k, list: [x] }); }
+  const subjHTML = groups.slice(0, 6).map((g) => {
+    const many = g.list.length > 1;
+    let w = 0, sum = 0, nch = 0;
+    for (const x of g.list) for (const c of MB.get(x.b.id).chapters) { w += c.weight; sum += c.pct * c.weight; nch++; }
+    const gp = w ? Math.round(sum / w) : 0;
+    const bookHTML = (x) => {
+      const chs = MB.get(x.b.id).chapters, max = many ? (chs.length > 6 ? 5 : 6) : (chs.length > 12 ? 11 : 12);
+      const tile = (c) => { const st = fresh(c) ? 'none' : c.pct >= 80 ? 'good' : c.pct >= 60 ? 'mid' : 'low';
+        return btn(`<b data-raw>${esc(chName(c.unit))}</b><span>${fresh(c) ? PT('not started', '未開始') : c.pct + '%'}</span>`, () => chapterSheet(x.b, c), `pv-tile ${st}`); };
+      return `${many ? `<div class="pv-bk-h"><b data-raw>${esc(x.b.title)}</b><span>${PT(`${x.pct}% · ${chs.length} chapters`, `${x.pct}% · ${chs.length} 章`)}</span></div>` : ''}
       <div class="pv-tiles" id="pvt-${esc(x.b.id)}">${chs.map((c, i) => (i < max ? tile(c) : tile(c).replace('class="pv-tile', 'class="pv-tile pv-hid'))).join('')}${chs.length > max ? btn(PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`), () => {
-        const el = document.getElementById(`pvt-${x.b.id}`), open = el.classList.toggle('open'), b = el.querySelector('.pv-tile.more');
-        if (b) b.textContent = open ? PT('Show fewer', '顯示較少') : PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`); }, 'pv-tile more') : ''}</div></div>`;
+        const el = document.getElementById(`pvt-${x.b.id}`), open = el.classList.toggle('open'), bt = el.querySelector('.pv-tile.more');
+        if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`); }, 'pv-tile more') : ''}</div>`;
+    };
+    const one = g.list[0].b;
+    return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(one))}${!many && one.subject && one.title && one.title !== sname(one) ? `<small class="pv-subj-bk">${esc(one.title)}</small>` : many ? `<small class="pv-subj-bk">${PT(`${g.list.length} textbooks`, `${g.list.length} 本課本`)}</small>` : ''}</b><span>${PT(`${gp}% ready · ${nch} chapters`, `準備度 ${gp}% · ${nch} 章`)}</span></div>
+      ${g.list.map(bookHTML).join('')}</div>`;
   }).join('');
   const next = [];
   const nt = tests.steps.find((p) => p.step && p.step.u);
