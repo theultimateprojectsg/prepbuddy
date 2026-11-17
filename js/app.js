@@ -5499,6 +5499,62 @@ function chapterSheet(book, c) {
   box.onclick = (e) => { if (e.target === box) close(); };
   box.querySelector('.cs2-go').focus({ preventScroll: true });
 }
+// A test's plan: how ready now vs the target, what each chapter needs, and a day-by-day (or week-by-week)
+// plan up to the test, with today's step ready to start.
+function testPlanSheet(p, chs, aim, fc) {
+  const book = p.book, units = p.units, n = local.count || sessionSize();
+  const fmt = (t, o) => new Date(t).toLocaleDateString(LOCALE(), o || { weekday: 'short', day: 'numeric', month: 'short' });
+  const t0 = dayStart(), tday = testDay(p.x), left = p.left;
+  const nm = (u) => shortTitle(u.title);
+  // what each chapter needs, weakest first
+  const need = chs.slice().sort((a, b) => a.pct - b.pct).map((c) => {
+    const fresh = !c.done && !c.learned;
+    const act = fresh ? ['learn', PT('Learn it', '先上課'), () => go({ name: 'learn', bookId: book.id, unitId: c.unit.id })]
+      : c.pct < Math.min(aim, 70) || !c.passes ? (c.done >= (c.target || 8) && (c.pct >= 55) && !c.passes ? ['test', PT('Chapter test', '章節測驗'), () => startChapterTest(book, [c.unit])] : ['practise', PT('Practise', '練習'), () => startUnits(book, [c.unit], n)])
+      : c.due ? ['review', PT('Review', '溫習'), () => startReview('spaced', book.id)] : ['ok', PT('Keep it fresh', '保持'), () => startUnits(book, [c.unit], 5)];
+    return { c, act };
+  });
+  // the task list, in the order a tutor would go: new chapters, then the weakest, then tests, then mixed practice
+  const tasks = [];
+  need.filter((x) => x.act[0] === 'learn').forEach((x) => { tasks.push([PT(`Lesson: ${nm(x.c.unit)}`, `上課：${nm(x.c.unit)}`), x.act[2]]); tasks.push([PT(`Practise ${nm(x.c.unit)}`, `練習：${nm(x.c.unit)}`), () => startUnits(book, [x.c.unit], n)]); });
+  need.filter((x) => x.act[0] === 'practise').forEach((x) => { tasks.push([PT(`Practise ${nm(x.c.unit)} · ${x.c.pct}%`, `練習：${nm(x.c.unit)} · ${x.c.pct}%`), x.act[2]]); });
+  need.filter((x) => !x.c.passes).forEach((x) => tasks.push([PT(`Chapter test: ${nm(x.c.unit)}`, `章節測驗：${nm(x.c.unit)}`), () => startChapterTest(book, [x.c.unit])]));
+  const filler = () => { const w = need[0]; return [PT(`Mixed practice · weakest first`, '混合練習 · 先做最弱'), () => startUnits(book, units, n)]; };
+  // lay out the days up to the test
+  const days = [];
+  for (let d = 0; d <= left; d++) {
+    const t = t0 + d * DAY;
+    let task;
+    if (d === left) task = [PT('Test day: 5-question warm-up', '考試日：5 題熱身'), () => startUnits(book, units, 5), 'test-day'];
+    else if (d === left - 1 && left >= 2) task = [PT('Practice test on all the chapters (timed)', '所有章節模擬測驗（限時）'), () => startChapterTest(book, units), 'mock'];
+    else task = tasks.shift() || filler();
+    days.push({ t, d, task });
+  }
+  const weekly = left > 14;
+  const rows = weekly
+    ? Array.from({ length: Math.ceil((left + 1) / 7) }, (_, w) => { const part = days.slice(w * 7, w * 7 + 7); return `<div class="tp-row ${w === 0 ? 'now' : ''}"><span class="tp-d"><b>${PT(`Week ${w + 1}`, `第 ${w + 1} 週`)}</b><small>${fmt(part[0].t, { day: 'numeric', month: 'short' })}–${fmt(part[part.length - 1].t, { day: 'numeric', month: 'short' })}</small></span><ul>${[...new Set(part.map((x) => x.task[0]))].slice(0, 4).map((x) => `<li data-raw>${esc(x)}</li>`).join('')}</ul></div>`; }).join('')
+    : days.map((x) => `<div class="tp-row ${x.d === 0 ? 'now' : ''} ${x.task[2] || ''}"><span class="tp-d"><b>${x.d === 0 ? PT('Today', '今日') : x.d === 1 ? PT('Tomorrow', '明日') : fmt(x.t, { weekday: 'short' })}</b><small>${fmt(x.t, { day: 'numeric', month: 'short' })}</small></span><span class="tp-t" data-raw>${esc(x.task[0])}</span>${x.d === 0 ? `<button class="btn-sm primary" data-tp="0">${PT('Start', '開始')}</button>` : ''}</div>`).join('');
+  const tone = aimTone(fc ?? p.ready ?? 0, aim);
+  const gap = Math.max(0, aim - (fc ?? p.ready ?? 0));
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  box.innerHTML = `<div class="cdlg tp" role="dialog" aria-modal="true" aria-labelledby="tp-t">
+    <header class="tp-h"><div><small>${fmt(tday, { weekday: 'long', day: 'numeric', month: 'long' })} · ${leftText(left)}</small><b id="tp-t" data-raw>${esc(p.x.name)}</b></div><span class="pv-pill ${tone}">${{ ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') }[tone]}</span><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <div class="tp-body"><div class="tp-col">
+      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${fc ?? p.ready}%</b><span>${PT('on test day at this pace', '按現時進度考試當日')}</span></div><i>·</i><div><b>${aim}%</b><span>${PT('your aim', '你的目標')}</span></div></div>
+      <p class="tp-p">${gap ? PT(`About ${gap} points short of your aim at the current pace. Follow the plan and most of that gap closes.`, `按現時進度，距離目標約 ${gap} 分。跟著計劃做，大部分差距都能補回。`) : PT('On course for your aim. The plan keeps it there with practice and a final practice test.', '正朝目標前進。計劃會用練習和最後一次模擬測驗保持狀態。')}</p>
+      <h3>${PT('What each chapter needs', '每章需要做甚麼')}</h3>
+      <div class="tp-ch">${need.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${x.c.pct}%"></em><s style="left:${aim}%"></s></i></span><strong>${x.c.pct}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
+    </div><div class="tp-col">
+      <h3>${weekly ? PT('Week by week', '每週計劃') : PT('Day by day', '每日計劃')}</h3>
+      <div class="tp-plan">${rows}</div>
+    </div></div></div>`;
+  document.body.appendChild(box);
+  const close = () => box.remove();
+  box.querySelector('.cs2-x').onclick = close;
+  box.onclick = (e) => { if (e.target === box) close(); };
+  box.querySelectorAll('[data-tc]').forEach((b) => (b.onclick = () => { close(); need[+b.dataset.tc].act[2](); }));
+  const st = box.querySelector('[data-tp]'); if (st) st.onclick = () => { close(); days[0].task[1](); };
+}
 // On track / close / at risk, against the target the parent set for that test (default 80%).
 const aimTone = (v, aim = 80) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
 async function renderProgress() {
@@ -5559,11 +5615,11 @@ async function renderProgress() {
       : st === 'ok' ? PT(`At this pace you’ll reach about ${fc}%. Short reviews keep it there; Today’s mission takes care of it.`, `按現時進度，考試時約 ${fc}%。今日任務會安排溫習，保持狀態。`)
       : PT(`At this pace you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
-      <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:${aim}%"></s><small style="left:${aim}%">${PT(`aim ${aim}%`, `目標 ${aim}%`)}</small><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Target for this test', '這個測驗的目標')}"></div>
+      <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<span class="pv-flag" style="left:${aim}%"><b>${PT(`Aim ${aim}%`, `目標 ${aim}%`)}</b></span><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Target for this test', '這個測驗的目標')}"></div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Drag the aim line to set your own target for this test.', '拖動目標線，為這個測驗設定你自己的目標。')}</p>` : ''}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}${outside(p)}
-      <div class="pv-test-f">${p.step ? btn(esc(p.step.t), p.step.run, `pv-btn ${st === 'ok' ? '' : 'primary'}`) : ''}${btn(PT('Edit', '修改'), () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet')}</div></div>`;
+      <div class="pv-test-f">${p.step ? btn(esc(p.step.t), p.step.run, `pv-btn ${st === 'ok' ? '' : 'primary'}`) : ''}${p.book && p.ready != null && (p.x.kind || 'test') !== 'dict' ? btn(PT('See the plan', '查看計劃'), () => testPlanSheet(p, chOf(p), (local.sched || []).find((y) => y.id === p.x.id)?.aim || 80, fc), 'pv-btn') : ''}${btn(PT('Edit', '修改'), () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet')}</div></div>`;
   });
   const testedBooks = new Set(tests.steps.map((p) => p.book && p.book.id).filter(Boolean));
   const noTest = RH.filter((x) => x.used && !testedBooks.has(x.b.id)).slice(0, Math.max(1, 3 - testCards.length)).map((x) => `<div class="pv-test none"><b data-raw>${esc(sname(x.b))} · ${PT('no test added', '未加入測驗')}</b>
@@ -5575,7 +5631,7 @@ async function renderProgress() {
       <p>${PT('Ready now is the readiness of the chapters in the test (or everything practised so far, if you didn’t choose chapters).', '「現在」是測驗範圍內各章節的準備度（未選章節的話，就是所有練習過的內容）。')}</p>
       <p>${PT('Finishing a chapter’s lesson counts as 10%. Practice, reviews and chapter tests take it the rest of the way. Practice on chapters that aren’t in the test doesn’t change this number.', '完成一章的課堂計 10%，之後靠練習、溫習和章節測驗提升。練習測驗範圍以外的章節不會影響這個數字。')}</p>
       <p>${PT('On test day is a forecast: how fast readiness has been rising over the last 4 weeks, carried forward to the test date.', '「考試當日」是預測：按過去 4 星期準備度上升的速度，推算到考試日期。')}</p>
-      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('80% or more by test day', '考試時達 80% 或以上')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('65–79%', '65–79%')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('under 65%', '低於 65%')}</li></ul></div></details></section>`;
+      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('your aim or more by test day (80% unless you drag the aim line)', '考試時達到你的目標或以上（預設 80%，可拖動目標線）')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('65–79%', '65–79%')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('under 65%', '低於 65%')}</li></ul></div></details></section>`;
 
   // ---------- 2. What Buddy has noticed ----------
   const cards = [];
@@ -5867,10 +5923,10 @@ async function renderProgress() {
   $app.querySelectorAll('.pv-aim').forEach((r) => {
     const card = r.closest('.pv-test'), bar = r.closest('.pv-bar'), fc = +r.dataset.fc;
     const LAB = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') };
-    const show = () => { if (+r.value < 50) r.value = 50; const a = +r.value, t = aimTone(fc, a); bar.querySelector('s').style.left = a + '%'; const sm = bar.querySelector('small'); sm.style.left = a + '%'; sm.textContent = PT(`aim ${a}%`, `目標 ${a}%`);
+    const show = () => { if (+r.value < 50) r.value = 50; const a = +r.value, t = aimTone(fc, a); const fl = bar.querySelector('.pv-flag'); fl.style.left = a + '%'; fl.querySelector('b').textContent = PT(`Aim ${a}%`, `目標 ${a}%`);
       ['ok', 'close', 'risk'].forEach((k) => { card.classList.toggle(k, k === t); bar.classList.toggle(k, k === t); }); const pill = card.querySelector('.pv-pill'); if (pill) { pill.className = `pv-pill ${t}`; pill.textContent = LAB[t]; }
       const f = card.querySelector('.pv-num .fc'); if (f) f.className = `fc ${t}`; };
-    r.oninput = show;
+    r.oninput = show; r.onpointerdown = () => bar.classList.add('drag'); r.onpointerup = r.onblur = () => bar.classList.remove('drag');
     r.onchange = () => { show(); const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = +r.value; saveLocal(); } };
   });
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
