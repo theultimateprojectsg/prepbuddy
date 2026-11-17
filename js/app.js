@@ -2549,7 +2549,17 @@ async function renderHome() {
   const firstOpen = steps.findIndex((x) => !x.done && x.now);
   const allDone = steps.every((x) => x.done || !x.now);
   { const md = local.mdone || (local.mdone = {}); const nd = steps.filter((x) => x.done).length; const prev = md[t0]; if (!prev || prev[0] !== nd || prev[1] !== steps.length) { md[t0] = [nd, steps.length]; Object.keys(md).filter((k) => +k < t0 - 60 * DAY).forEach((k) => delete md[k]); saveLocal(); } }
-  const mins = Math.max(5, Math.round(steps.length * 5));
+  // a rough time for each job, so the header can say how long today's mission takes
+  const jobMin = (x) => { const k = x.key, ic = x.icon;
+    if (k === 'rv') return Math.max(2, Math.round(Math.min(10, due.length) * 0.6));
+    if (k === 'mk') return Math.max(3, (x.chk && x.chk.k) || 5);
+    if (k.startsWith('lv:')) return 5;
+    if (k.startsWith('d:')) return 5;
+    if (k.startsWith('wt:')) return 20;
+    if (ic === 'learn') return 10;
+    if (ic === 'test' || ic === 'mock') return 15;
+    return 10; };
+  const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
   const stepRow = (x, k) => x.done || !x.now
     ? `<div class="ms-row done"><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
     : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t">${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}<b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
@@ -2678,7 +2688,7 @@ async function renderHome() {
       : first ? Z(`Today: ${first.now.t}.`, `今天：${first.now.t}。`) : Z('Today’s mission is done. Nice work!', '今日任務完成，做得好！'); }
   const missionHTML = allDone
     ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
-    : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2></div>
+    : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
       ${missionHowHTML()}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
