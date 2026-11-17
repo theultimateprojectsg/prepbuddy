@@ -5444,7 +5444,7 @@ function chapterSheet(book, c) {
   ];
   const left = steps.filter((x) => x[2] !== 'done').length;
   const LV = [PT('Remember', '記憶'), PT('Understand', '理解'), PT('Apply', '應用'), PT('Analyse', '分析')];
-  const ladder = `<section class="cs2-sec"><h3>${PT('Question difficulty', '題目難度')}</h3>
+  const ladder = `<section class="cs2-sec"><h3>${PT('Question difficulty level', '題目難度級別')}</h3>
     <div class="cs2-lv">${LV.map((l, i) => `<div class="${i + 1 <= c.lvTop ? 'got' : ''}${i + 1 === c.lvNow ? ' now' : ''}">${i + 1 === c.lvNow ? `<span class="cs2-you">${buddySVG('happy', 30)}</span>` : ''}<i style="height:${10 + i * 6}px"></i><b>${l}</b></div>`).join('')}</div>
     <p class="cs2-sub">${c.done >= 5 ? PT(`Buddy is giving you <b>${LV[c.lvNow - 1].toLowerCase()}</b> questions now. Get 80% right and it steps up; under 50% and it eases off.`, `Buddy 現在給你<b>${LV[c.lvNow - 1]}</b>題目。答對 80% 會升一級；低於 50% 會調低。`) : PT('After 5 questions Buddy starts moving the difficulty up or down to match you.', '做了 5 題之後，Buddy 會按你的表現調高或調低難度。')}</p></section>`;
   // Buddy's pick, in the order a tutor would go
@@ -5480,17 +5480,16 @@ function chapterSheet(book, c) {
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   box.innerHTML = `<div class="cdlg cs2" role="dialog" aria-modal="true" aria-labelledby="chs-t">
     <header class="cs2-h"><div class="rsg-meter ${tone}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(c.pct * 0.974).toFixed(1)} 100"/></svg><b>${c.pct}%</b></div>
-      <div class="cs2-ht"><small data-raw>${esc(book.subject ? subj(book.subject) : book.title)}</small><b id="chs-t" data-raw>${esc(name)}</b></div>
-      <span class="cs2-pill ${tone}"><i></i>${esc(masteryLabel(c.pct))}</span>
+      <div class="cs2-ht"><small data-raw>${esc(book.subject ? subj(book.subject) : book.title)}</small><div class="cs2-tl"><b id="chs-t" data-raw>${esc(name)}</b><span class="cs2-pill ${tone}"><i></i>${esc(masteryLabel(c.pct))}</span></div></div>
       <button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="cs2-body"><div class="cs2-col">
     <section class="cs2-pick"><div class="cs2-pk-h">${buddySVG('happy', 40)}<div><small>${PT('Buddy suggests', 'Buddy 建議')}</small><p>${why}</p></div></div>
       <button class="cs2-go" data-o="0">${actionTile(best[1], 36)}<span><b>${best[2]}</b><em>${best[3]}</em></span><i>›</i></button></section>
-    <section class="cs2-sec"><h3>${left ? PT(`${6 - left} of 6 steps to 100%`, `100% 的 6 步中完成了 ${6 - left} 步`) : PT('All 6 steps done: mastered', '6 步全部完成：已掌握')}</h3>
-      <div class="cs2-steps">${steps.map(([ic, l, st3, v]) => `<div class="cs2-st s-${st3}"><span class="cs2-ic">${pIcon({ learn: 'book', practise: 'target', level: 'bars', mistakes: 'pencil', review: 'memory', test: 'check' }[ic], 18)}</span><div><b>${l}</b><em>${v}</em></div><i aria-label="${st3}">${st3 === 'done' ? '✓' : ''}</i></div>`).join('')}</div></section>
+    <section class="cs2-sec"><h3>${PT('Or choose for yourself', '或自己選擇')}</h3><div class="cs2-more">${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 32)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div></section>
     </div><div class="cs2-col">
     ${ladder}
-    <section class="cs2-sec"><h3>${PT('Or choose for yourself', '或自己選擇')}</h3><div class="cs2-more">${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 32)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div></section>
+    <section class="cs2-sec"><h3>${left ? PT(`${6 - left} of 6 steps to 100%`, `100% 的 6 步中完成了 ${6 - left} 步`) : PT('All 6 steps done: mastered', '6 步全部完成：已掌握')}</h3>
+      <div class="cs2-steps">${steps.map(([ic, l, st3, v]) => `<div class="cs2-st s-${st3}"><span class="cs2-ic">${pIcon({ learn: 'book', practise: 'target', level: 'bars', mistakes: 'pencil', review: 'memory', test: 'check' }[ic], 18)}</span><div><b>${l}</b><em>${v}</em></div><i aria-label="${st3}">${st3 === 'done' ? '✓' : ''}</i></div>`).join('')}</div></section>
     </div></div>
   </div>`;
   document.body.appendChild(box);

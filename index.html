@@ -2397,6 +2397,18 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
   .cs2-h .rsg-meter{grid-area:r}.cs2-h .cs2-ht{grid-area:t}.cs2-h .cs2-x{grid-area:x;align-self:start}
   .cs2-h .cs2-pill{grid-area:p;order:0;margin-left:0!important;justify-self:start;align-self:start}
 }
+
+/* v4 layout: left = suggestion + choices, right = difficulty + steps */
+.cs2-tl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cs2-ht .cs2-pill{align-self:center}
+@media (max-width:600px){.cs2-h{display:flex!important}.cs2-tl{gap:6px}}
+@media (min-width:900px){
+  .cs2-col:first-child>.cs2-sec{flex:none;display:block}
+  .cs2-col:first-child .cs2-steps{flex:none}
+  .cs2-col:last-child>.cs2-sec:last-child{flex:1;display:flex;flex-direction:column}
+  .cs2-col:last-child .cs2-steps{flex:1;grid-auto-rows:1fr}
+  .cs2-col:first-child .cs2-sec{padding-right:16px}
+}
 </style>
 </head>
 <body>
