@@ -756,10 +756,9 @@ function planForecast(ready, chs, left, habit = practiceHabit()) {
 }
 // what it takes to reach a goal: practice sets in total, the most that's reachable, and where to start
 function planNeeds(ready, pcts, left, aim) {
-  const cap = planCap(left), before = pcts.reduce((a, b) => a + b, 0) / Math.max(1, pcts.length), at = (n) => Math.round(ready + planAvg(pcts, n, cap) - before);
-  const most = at(left * MAX_SETS_DAY);
-  let sets = null; for (let n = 0; n <= left * MAX_SETS_DAY; n++) if (at(n) >= aim) { sets = n; break; }
-  return { sets, most, cap };
+  const before = pcts.reduce((a, b) => a + b, 0) / Math.max(1, pcts.length), at = (n) => Math.round(ready + planAvg(pcts, n, 100) - before);
+  let sets = 0; while (at(sets) < aim && sets < 400) sets++;
+  return { sets };
 }
 async function dueItems() {
   const now = Date.now();
@@ -5806,14 +5805,15 @@ async function renderProgress() {
     if (I.lock) return box(E(PT(`Here’s how to reach ${aim}%`, `這樣做就能達到 ${aim}%`)), [todayStep, testStep].filter(Boolean).map(E));
     const usual = Math.max(1, Math.round(left * I.habit)), dayW = (n) => (n >= left ? PT('every day', '每天') : PT(`on ${n} of the ${left} days left`, `餘下 ${left} 日中的 ${n} 日`));
     const mins = (sets, days) => Math.max(10, Math.round((sets * SET_MIN) / Math.max(1, days) / 5) * 5);
-    const planFor = (goal) => { const N = planNeeds(ready, I.pcts, left, goal); if (N.sets == null) return null; const days = Math.ceil(N.sets / usual) <= 3 ? usual : left; return { days, m: mins(N.sets, days), easy: N.sets <= Math.round(left * I.habit * 2) }; };
-    const steps = (P) => [PT(`Practise ${dayW(P.days)} for about ${P.m} minutes. Buddy’s plan picks what to do each day.`, `${dayW(P.days)}練習大約 ${P.m} 分鐘，Buddy 的計劃會安排每天做甚麼。`), todayStep, testStep].filter(Boolean).map(E);
-    const P = planFor(aim);
-    if (P && P.easy) return box(E(PT(`You’re on track for ${aim}%. Keep it up!`, `你正朝 ${aim}% 進發，繼續努力！`)), steps(P));
-    if (P) return box(E(PT(`At your usual pace you’d reach about ${I.fc}%, short of your ${aim}% goal. But you can still make it, and I’ll help. Here’s how:`, `照平時的步伐，考試時約 ${I.fc}%，未達 ${aim}% 目標。不過仍然做得到，我會幫你。這樣做：`)), steps(P));
-    // the goal can't be reached in the time left: say so kindly, offer the best goal that can be, and its plan
-    const N = planNeeds(ready, I.pcts, left, aim), best = Math.max(ready, Math.floor(N.most / 5) * 5), BP = planFor(best);
-    return box(E(PT(`${aim}% is too far for ${left} day${left === 1 ? '' : 's'}, but ${best}% is within reach, well above the ${I.fc}% you’re heading for now. I’ll help you get there:`, `${left} 日內要達到 ${aim}% 太遠了，但 ${best}% 做得到，比現在預計的 ${I.fc}% 高得多。我會幫你：`)), BP ? steps(BP) : [], `<button type="button" class="pv-btn soft pv-setaim" data-setaim="${best}">${E(PT(`Set my goal to ${best}%`, `把目標設為 ${best}%`))}</button>`);
+    const N = planNeeds(ready, I.pcts, left, aim), easy = N.sets <= Math.round(left * I.habit * 2);
+    const days = easy || Math.ceil(N.sets / usual) <= 3 ? usual : left, m = mins(N.sets, days);
+    const how = m > 40 ? PT(`Practise ${dayW(days)} for about ${m} minutes, split into two sessions (after school and after dinner works well). Buddy’s plan picks what to do in each one.`, `${dayW(days)}練習大約 ${m} 分鐘，分兩次做（例如放學後和晚飯後）。Buddy 的計劃會安排每次做甚麼。`)
+      : PT(`Practise ${dayW(days)} for about ${m} minutes. Buddy’s plan picks what to do each day.`, `${dayW(days)}練習大約 ${m} 分鐘，Buddy 的計劃會安排每天做甚麼。`);
+    const steps = [how, todayStep, PT('Every wrong answer goes into your Mistake book. Fix them the next day so they don’t cost marks twice.', '答錯的題目會放進錯題簿，第二天改正，就不會再失分。'), testStep].filter(Boolean).map(E);
+    if (easy) return box(E(PT(`You’re on track for ${aim}%. Keep it up!`, `你正朝 ${aim}% 進發，繼續努力！`)), steps.filter((x, k) => k !== 2));
+    const push = I.fc + 15 < aim;
+    return box(E(push ? PT(`At your usual pace you’d reach about ${I.fc}%. ${aim}% means stepping it up, and we can do it together. Here’s the plan:`, `照平時的步伐，考試時約 ${I.fc}%。要達到 ${aim}% 就要加把勁，我們一起做得到。計劃是這樣：`)
+      : PT(`At your usual pace you’d reach about ${I.fc}%, close to your ${aim}% goal. A bit more each day gets you there. Here’s the plan:`, `照平時的步伐，考試時約 ${I.fc}%，接近 ${aim}% 目標。每天多做一點就能達到。計劃是這樣：`)), steps);
   };
   const testCards = tests.steps.map((p, ti) => {
     const h = p.book ? RH.find((x) => x.b.id === p.book.id) : null;
