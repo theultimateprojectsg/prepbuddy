@@ -5430,8 +5430,13 @@ async function renderProgress() {
   const fmtDay = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
   // each test chapter with its own readiness, so it's clear what the number is made of
   const chOf = (p) => (p.book && p.units && p.units.length ? MB.get(p.book.id).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : []);
-  const chipsOf = (p) => { const cs = chOf(p); if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
-    return `<div class="pv-tch">${cs.map((c) => `<span class="${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}"><b data-raw>${esc(chName(c.unit))}</b><em>${c.done ? `${c.pct}%` : c.learned ? PT(`Lesson done · ${c.pct}%`, `已上課 · ${c.pct}%`) : PT('Not started', '未開始')}</em></span>`).join('')}</div>`; };
+  // each test chapter as one slim row (name, %, bar), weakest first; past 3 the rest fold behind a button
+  const chipsOf = (p) => { const cs = chOf(p).slice().sort((a, b) => a.pct - b.pct); if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
+    const row = (c, hid) => `<div class="pv-tr ${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.pct}%` : c.learned ? PT(`Lesson · ${c.pct}%`, `已上課 · ${c.pct}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.pct}%"></b></i></div>`;
+    const id = `tch${p.x.id}`.replace(/\W/g, ''), more = cs.length - 3;
+    return `<div class="pv-tch" id="${id}">${cs.map((c, i) => row(c, i >= 3 && more > 1)).join('')}</div>${more > 1 ? btn(PT(`Show all ${cs.length} chapters`, `顯示全部 ${cs.length} 個章節`), () => {
+      const el = document.getElementById(id), open = el.classList.toggle('open'), bt = el.nextElementSibling;
+      if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : PT(`Show all ${cs.length} chapters`, `顯示全部 ${cs.length} 個章節`); }, 'pv-btn quiet pv-tmore') : ''}`; };
   // practice that went on other chapters of the same book doesn't move this test's number: say so
   const outside = (p) => { if (!p.book || p.all) return ''; const cs = chOf(p); if (!cs.length) return '';
     const other = MB.get(p.book.id).chapters.filter((c) => (c.done || c.learned) && !p.units.some((u) => u.id === c.unit.id));

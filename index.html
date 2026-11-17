@@ -2217,6 +2217,16 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .pv-tch b{font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pv-tch em{font-style:normal;font-size:12px;font-weight:700}
 .pv-tch .good em{color:var(--good-dark)}.pv-tch .mid em{color:#8A6A00}.pv-tch .low em{color:var(--miss-dark)}.pv-tch .zero em{color:var(--muted)}
 .pv-out{margin:6px 0 0;font-size:14px;line-height:1.5;background:#FFFFFF;border:1.5px dashed #F2B8B0;border-radius:12px;padding:8px 12px;color:var(--ink)}
+
+/* test chapters v2: slim rows, weakest first, the rest behind "Show all" */
+.pv-tch{display:flex!important;flex-direction:column;gap:7px!important;margin:6px 0 2px;background:#FFFFFF;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.pv-tr{display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:center}.pv-tr.hid{display:none}.pv-tch.open .pv-tr.hid{display:grid}
+.pv-tr span{font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pv-tr em{font-style:normal;font-size:12.5px;font-weight:700}.pv-tr i{grid-column:1/-1;height:5px;border-radius:999px;background:#E6EAF4;overflow:hidden}.pv-tr i b{display:block;height:100%;border-radius:999px}
+.pv-tr.good em{color:var(--good-dark)}.pv-tr.good b{background:#2FB173}.pv-tr.mid em{color:#8A6A00}.pv-tr.mid b{background:#F2B705}.pv-tr.low em{color:var(--miss-dark)}.pv-tr.low b{background:#F08A5D}.pv-tr.zero em{color:var(--muted)}
+.pv-tmore{align-self:flex-start;margin-top:6px}
+
+.pv-tch .pv-tr span{display:block;padding:0;border:0;background:none;border-radius:0}
 </style>
 </head>
 <body>
