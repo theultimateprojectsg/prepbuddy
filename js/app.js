@@ -2490,6 +2490,7 @@ async function renderHome() {
       const fresh = !c.done && !c.learned, nm = shortTitle(c.unit.title);
       cands.push({ key: `c:${p.x.id}:${c.unit.id}`, icon: fresh ? 'learn' : 'practise', t: fresh ? Z(`Learn: ${nm}`, `學習：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`),
         s: Z(`Extra, to reach your ${aim}% goal`, `額外練習，達到 ${aim}% 目標`),
+        why: Z(`To reach your ${aim}% goal for the ${p.x.name}, Buddy added this. At your usual pace you’d get about ${fc}%.`, `為了在「${p.x.name}」達到 ${aim}% 目標，Buddy 加了這一項。照平時的步伐約 ${fc}%。`),
         attr: fresh ? `data-mlearn="${esc(p.book.id)}:${esc(c.unit.id)}"` : `data-weak="${esc(p.book.id)}:${esc(c.unit.id)}"`,
         chk: fresh ? { y: 'learn', b: p.book.id, u: c.unit.id } : { y: 'log', b: p.book.id, us: [c.unit.id] }, tag: ['test', Z(`${p.x.name} · catch up`, `「${p.x.name}」· 追進度`)] });
       extraJobs++;
@@ -2499,10 +2500,10 @@ async function renderHome() {
   for (const x of (local.sched || []).filter((x) => x.kind === 'dict' && testLeft(x) >= 0 && testLeft(x) <= 2)) {
     if (cands.some((c) => c.key === `t:${x.id}`)) continue;
     const L = (local.dict || []).find((d) => d.id === x.L);
-    cands.push({ key: `d:${x.id}`, icon: 'dictation', t: L ? Z(`Practise 默書: ${shortTitle(L.title || '')}`, `練習默書：${shortTitle(L.title || '')}`) : Z('Add your 默書 words', '加入默書詞語'), s: Z('Buddy reads, you write', 'Buddy 讀，你寫'), attr: `data-dictgo="${esc(L ? L.id : 'new')}"`, chk: L ? { y: 'dict', L: L.id } : { y: 'none' }, tag: ['test', testLeft(x) === 0 ? Z('默書 today', '今天默書') : Z(`默書 ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}默書`)] });
+    cands.push({ key: `d:${x.id}`, icon: 'dictation', t: L ? Z(`Practise 默書: ${shortTitle(L.title || '')}`, `練習默書：${shortTitle(L.title || '')}`) : Z('Add your 默書 words', '加入默書詞語'), s: Z('Buddy reads, you write', 'Buddy 讀，你寫'), why: Z(`School 默書 ${leftText(testLeft(x))}. Buddy reads the words, you write them, then you see what to fix.`, `學校默書${leftText(testLeft(x))}。Buddy 讀，你寫，然後看看要改正甚麼。`), attr: `data-dictgo="${esc(L ? L.id : 'new')}"`, chk: L ? { y: 'dict', L: L.id } : { y: 'none' }, tag: ['test', testLeft(x) === 0 ? Z('默書 today', '今天默書') : Z(`默書 ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}默書`)] });
   }
   { const x = (local.sched || []).find((x) => x.kind !== 'dict' && /writ|compos|essay|作文|寫作/i.test(x.name || '') && testLeft(x) >= 0 && testLeft(x) <= 3);
-    if (x && !cands.some((c) => c.key === `t:${x.id}`)) cands.push({ key: `wt:${x.id}`, icon: 'writing', t: Z('Practise writing', '練習寫作'), s: Z('Write a piece, Buddy gives feedback', '寫一篇，Buddy 給意見'), attr: 'data-wrgo="1"', chk: { y: 'wr' }, tag: ['test', Z(`Writing ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}寫作`)] }); }
+    if (x && !cands.some((c) => c.key === `t:${x.id}`)) cands.push({ key: `wt:${x.id}`, icon: 'writing', t: Z('Practise writing', '練習寫作'), s: Z('Write a piece, Buddy gives feedback', '寫一篇，Buddy 給意見'), why: Z(`${x.name} is ${leftText(testLeft(x))}. Write a piece and Buddy marks it with feedback.`, `「${x.name}」${leftText(testLeft(x))}。寫一篇，Buddy 會批改並給意見。`), attr: 'data-wrgo="1"', chk: { y: 'wr' }, tag: ['test', Z(`Writing ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}寫作`)] }); }
   // reviews come before mistakes: they're due today and slip if they wait
   if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Review 10 questions now', '先複習 10 題'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
   else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Review ${due.length} question${due.length > 1 ? 's' : ''}`, `複習 ${due.length} 題`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
@@ -2514,7 +2515,7 @@ async function renderHome() {
     const inList = new Set(cands.map((c) => (c.chk && c.chk.u ? `${c.chk.b}:${c.chk.u}` : '')).concat(cands.flatMap((c) => (c.chk && c.chk.us ? c.chk.us.map((u) => `${c.chk.b}:${u}`) : []))));
     const w = Object.entries(by).filter(([k, es]) => es.length >= 5 && acc(es) < 70 && !inList.has(k)).sort((a, b) => acc(a[1]) - acc(b[1]))[0];
     if (w) { const [bid, uid] = w[0].split(':'), b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === uid);
-      if (u) cands.push({ key: `w:${w[0]}`, icon: 'weak', t: Z(`Practise ${shortTitle(u.title)}`, `練習「${shortTitle(u.title)}」`), s: Z(`Your weakest lately · ${acc(w[1])}% right`, `最近最弱的一章 · 答對 ${acc(w[1])}%`), attr: `data-weak="${esc(w[0])}"`, chk: { y: 'log', b: bid, us: [uid] }, tag: ['weak', Z('Weak spot', '弱項')] }); } }
+      if (u) cands.push({ key: `w:${w[0]}`, icon: 'weak', t: Z(`Practise ${shortTitle(u.title)}`, `練習「${shortTitle(u.title)}」`), s: Z(`Your weakest lately · ${acc(w[1])}% right`, `最近最弱的一章 · 答對 ${acc(w[1])}%`), why: Z(`${acc(w[1])}% right on first tries lately, your weakest chapter. A short set makes it stronger.`, `最近第一次作答只答對 ${acc(w[1])}%，是最弱的一章。做一組就會進步。`), attr: `data-weak="${esc(w[0])}"`, chk: { y: 'log', b: bid, us: [uid] }, tag: ['weak', Z('Weak spot', '弱項')] }); } }
   { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
     if (nb) cands.push({ key: `lv:${nb.id}`, icon: 'level', t: Z('Find your level', '找出你的程度'), s: Z(`${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · about 5 min`, `${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · 約 5 分鐘`), attr: `data-lv="${esc(nb.id)}"`, chk: { y: 'lv', b: nb.id } }); }
   if (last) {
@@ -2525,16 +2526,17 @@ async function renderHome() {
   for (const c of cands) {
     if (c.key.startsWith('c:')) continue;
     if (c.key.startsWith('t:')) { const p = tests.steps.find((q) => `t:${q.x.id}` === c.key);
-      if (p) { c.tag = ['test', p.left === 0 ? Z(`${p.x.name} · today`, `「${p.x.name}」· 今天`) : Z(`${p.x.name} · ${leftText(p.left)}`, `「${p.x.name}」· ${leftText(p.left)}`)]; c.s = p.step.icon === 'learn' && p.step.u ? Z('New chapter in this test', '測驗範圍內的新一章') : String(p.step.s || Z('Practice for this test', '為這個測驗練習')).replace(/\.$/, ''); } }
-    else if (c.key === 'mk') { c.tag = ['mistakes', Z(`${mk} mistakes`, `${mk} 題錯題`)]; c.s = Z('Quickest way to win marks back', '最快拿回分數的方法'); }
-    else if (c.key === 'rv') { c.tag = ['review', Z('Due today', '今日到期')]; c.s = Z('Helps them stick', '幫你記得牢'); }
-    else if (c.key.startsWith('lv:')) { c.tag = ['level', Z('New book', '新課本')]; c.s = Z('Quick check to find your starting point', '快速評估，找出起點'); }
+      if (p) { c.tag = ['test', p.left === 0 ? Z(`${p.x.name} · today`, `「${p.x.name}」· 今天`) : Z(`${p.x.name} · ${leftText(p.left)}`, `「${p.x.name}」· ${leftText(p.left)}`)]; c.s = p.step.icon === 'learn' && p.step.u ? Z('New chapter in this test', '測驗範圍內的新一章') : String(p.step.s || Z('Practice for this test', '為這個測驗練習')).replace(/\.$/, '');
+        c.why = p.step.icon === 'learn' && p.step.u ? Z(`Your ${p.x.name} is ${leftText(p.left)} and covers this chapter. You haven’t started it yet, so begin with the lesson.`, `「${p.x.name}」${leftText(p.left)}，範圍包括這一章。你還未開始，先上課。`) : Z(`Your ${p.x.name} is ${leftText(p.left)}. ${p.step.s}.`, `「${p.x.name}」${leftText(p.left)}。${p.step.s}。`).replace(/\.\.$/, '.'); } }
+    else if (c.key === 'mk') { c.tag = ['mistakes', Z(`${mk} mistakes`, `${mk} 題錯題`)]; c.s = Z('Quickest way to win marks back', '最快拿回分數的方法'); c.why = Z('Questions you got wrong. Fixing them is the quickest way to win marks back.', '你答錯的題目。改正它們是最快拿回分數的方法。'); }
+    else if (c.key === 'rv') { c.tag = ['review', Z('Due today', '今日到期')]; c.s = Z('Helps them stick', '幫你記得牢'); c.why = Z('These questions are due back today. Getting them right now is what makes them stick.', '這些題目今天到期。現在答對才會記得牢。'); }
+    else if (c.key.startsWith('lv:')) { c.tag = ['level', Z('New book', '新課本')]; c.s = Z('Quick check to find your starting point', '快速評估，找出起點'); c.why = Z('A 5-minute check so Buddy starts you at the right level in this new book.', '5 分鐘的評估，讓 Buddy 在這本新課本從適合你的程度開始。'); }
     else if (c.key.startsWith('u:')) { c.tag = ['practise', Z('Keep going', '繼續')]; c.s = c.s.replace(/^Keep going( · )?/, Z('Pick up where you left off', '從上次的地方繼續') + '$1').replace(/^繼續( · )?/, '從上次的地方繼續$1'); }
     else if (!c.tag) c.tag = ['learn', Z('Get started', '開始')];
   }
   const t0 = dayStart();
   const nSteps = Math.min(8, 5 + extraJobs); // up to 5, plus catch-up jobs when behind pace for a test
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 3) { local.mission = { v: 3, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag }) => ({ key, icon, t, s, chk, attr, tag })) }; saveLocal(); }
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 3) { local.mission = { v: 3, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
@@ -2547,7 +2549,7 @@ async function renderHome() {
     if (c.y === 'log') return local.log.filter((e) => e.t >= M.at && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length >= 3;
     return false;
   };
-  const steps = M.steps.map((st) => ({ ...st, done: isDone(st), now: cands.find((c) => c.key === st.key) || (st.attr && !/^t:/.test(st.key) ? { t: st.t, s: st.s, attr: st.attr } : null) }));
+  const steps = M.steps.map((st) => ({ ...st, done: isDone(st), now: cands.find((c) => c.key === st.key) || (st.attr && !/^t:/.test(st.key) ? { t: st.t, s: st.s, attr: st.attr, why: st.why, tag: st.tag } : null) }));
   const firstOpen = steps.findIndex((x) => !x.done && x.now);
   const allDone = steps.every((x) => x.done || !x.now);
   { const md = local.mdone || (local.mdone = {}); const nd = steps.filter((x) => x.done).length; const prev = md[t0]; if (!prev || prev[0] !== nd || prev[1] !== steps.length) { md[t0] = [nd, steps.length]; Object.keys(md).filter((k) => +k < t0 - 60 * DAY).forEach((k) => delete md[k]); saveLocal(); } }
@@ -2564,7 +2566,7 @@ async function renderHome() {
   const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
   const stepRow = (x, k) => x.done || !x.now
     ? `<div class="ms-row done"><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span></span><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
-    : `<button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
+    : `<div class="ms-item ${k === firstOpen ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${(x.now.why || x.why) ? (k === firstOpen ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : `<details class="ms-whyd"><summary>${Z('Why this?', '為甚麼？')}</summary><p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p></details>`) : ''}</div>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
