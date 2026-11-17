@@ -2580,6 +2580,25 @@ em.pv-sum-go{background:var(--accent);color:#FFFFFF;font-weight:700;font-size:14
 .mem-g .ok{background:#F2FBF6}.mem-g .ok b{color:var(--good-dark)}.mem-g .ok2{background:#E5F6EC}.mem-g .ok2 b{color:var(--good-dark)}
 .mem .mem-none{margin:0;font-size:14px;color:var(--ink)}
 .mem .cs2-pick{margin-left:20px;margin-right:20px}
+
+/* days practised lightbox */
+.cdlg.cs2.ds{max-width:760px!important;width:min(760px,calc(100vw - 24px))!important}
+.ds .cs2-ht small{font-size:13px;font-weight:500}
+.ds-body{display:grid;grid-template-columns:1fr;gap:18px;padding:0 20px 20px}@media (min-width:800px){.ds-body{grid-template-columns:1.1fr 1fr}}
+.ds-dow,.ds-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.ds-dow span{text-align:center;font-size:12px;font-weight:600;color:var(--muted)}
+.ds-grid{margin-top:6px}
+.ds-day{aspect-ratio:1;border-radius:10px;border:2px solid transparent;font:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:flex-start;justify-content:flex-end;padding:5px 7px;color:var(--ink)}
+.ds-day.s0{background:#EEF1F6;color:var(--muted)}.ds-day.s1{background:#FDE3CF}.ds-day.s2{background:#F9B98A}.ds-day.s3{background:#F2894A;color:#FFFFFF}.ds-day.s4{background:#D9631F;color:#FFFFFF}
+.ds-day.sf{background:transparent;border:1.5px dashed #E1E6EF;color:#C3C9D6;cursor:default}
+.ds-day.tod{box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px var(--ink)}.ds-day.on{border-color:var(--ink)}
+.ds-info{margin:12px 0 0;font-size:14px;color:var(--ink);min-height:20px}
+.ds-side{display:flex;flex-direction:column;gap:12px}
+.ds-side h3{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--text-2)}
+.ds-st{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ds-st div{background:#FFF3EA;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column}.ds-st b{font-family:'Lexend',sans-serif;font-size:24px;color:#C25416}.ds-st span{font-size:12px;color:var(--text-2)}
+.ds-wk{background:#F6F7FB;border-radius:12px;padding:10px 12px}.ds-wk>div{display:grid;grid-template-columns:1fr auto 64px;gap:8px;align-items:center;font-size:14px;padding:3px 0}.ds-wk b{font-variant-numeric:tabular-nums}.ds-wk em{font-style:normal;font-size:12px;color:var(--muted);text-align:right}.ds-wk em.up{color:#0E6E4D}.ds-wk em.down{color:#B4531A}
+.ds-goal{display:flex;flex-direction:column;gap:4px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}.ds-goal b{font-size:15px}.ds-goal span{font-size:13px;color:var(--text-2)}.ds-goal .btn-sm{align-self:flex-start;margin-top:4px}
+.ds .ds-best{margin:0;font-size:13.5px;color:var(--ink)}
+.ds .ds-go{margin:0 20px 20px}
 </style>
 </head>
 <body>
