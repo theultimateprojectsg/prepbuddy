@@ -2512,6 +2512,20 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 .pv-flag b::after{display:none}
 .pv-edit{width:44px;padding:0!important;display:inline-flex;align-items:center;justify-content:center}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* goal marker v4: Buddy IS the slider handle, sitting on the bar */
+.pv-track{padding-top:14px!important;padding-bottom:20px!important}
+.pv-flag::before{display:none!important}
+.pv-flag{top:50%!important;bottom:auto!important;height:0}
+.pv-fbud{bottom:auto!important;top:0;transform:translate(-50%,-50%)!important;background:#FFFFFF;border-radius:50%;box-shadow:0 2px 8px rgba(30,42,90,.28),0 0 0 2.5px var(--ink);width:36px;height:36px;display:flex;align-items:center;justify-content:center;filter:none!important}
+.pv-fbud svg{width:32px!important;height:32px!important}
+.pv-bar:hover .pv-fbud{transform:translate(-50%,-50%) scale(1.08) rotate(-6deg)!important}
+.pv-bar.drag .pv-fbud{transform:translate(-50%,-50%) scale(1.18) rotate(8deg)!important;cursor:grabbing}
+.pv-flag b{top:22px!important}
+
+.pv-fbud{background:none!important;box-shadow:none!important;width:46px!important;height:46px!important;filter:drop-shadow(0 2px 4px rgba(30,42,90,.35))!important}
+.pv-fbud svg{width:46px!important;height:46px!important}
+.pv-flag b{top:20px!important}
 </style>
 </head>
 <body>
