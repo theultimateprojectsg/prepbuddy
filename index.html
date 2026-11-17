@@ -2920,6 +2920,25 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .tw-x{position:absolute;top:8px;right:8px;z-index:2;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.7);color:#8A5D00;font-size:14px;cursor:pointer;display:grid;place-items:center}
 .tw-x:hover{background:#FFFFFF}.tw-x:focus-visible{outline:2px solid #C78A00;outline-offset:2px}
 .td-wins .tw-top{padding-right:28px}
+
+/* Today: test countdown cards */
+.tdc{display:flex;flex-direction:column;gap:12px}
+.tdc-h{display:flex;align-items:center;gap:12px}
+.tdc-t{all:unset;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:pointer}
+.tdc-t b{font-size:17px;font-weight:700;color:var(--ink)}.tdc-t small{font-size:13.5px;color:#B4531A;font-weight:600}
+.tdc-t:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.tdc-r{display:flex;flex-direction:column;align-items:flex-end;flex:none}.tdc-r b{font-family:'Lexend',sans-serif;font-size:22px;color:var(--ink)}.tdc-r small{font-size:12px;color:var(--muted)}
+.tdc-strip{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:4px}
+.tdc-d{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 7px;border-radius:10px;background:#F4F6FA;color:var(--muted)}
+.tdc-d small{font-size:11px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.tdc-d.now{background:#DCE3FA;color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.tdc-d.mock{background:#FFF4D6;color:#8A5D00}.tdc-d.end{background:#FDECE8;color:#A8321F}
+.tdc-job{display:flex;align-items:center;gap:10px;background:#EEF1FB;border-radius:12px;padding:12px}
+.tdc-job>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.tdc-job small{font-size:12.5px;color:#3C4C9A}.tdc-job b{font-size:15px;color:var(--ink);line-height:1.35}
+.tdc-job .btn-sm{flex:none;min-height:40px;padding:0 18px}
+.tdc-f{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;color:var(--text-2)}
+.tdc-f .linkbtn{font-weight:700;color:var(--accent)}
 </style>
 </head>
 <body>

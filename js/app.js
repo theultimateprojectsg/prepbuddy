@@ -2725,38 +2725,38 @@ async function renderHome() {
   const nt = tests.steps[0];
   const testHead = `<div class="sect-head"><h2 class="h-info">${SCH('School tests', '學校測驗')}${infoBtn('howTests', SCH('How do school tests work?', '學校測驗是怎樣運作的？'))}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>${testsHowHTML()}`;
   let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s mission will get you ready, day by day.', '加入後，今日任務會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
+  const tdPlans = [];
   if (nt) {
-    // every upcoming test gets the same full card; tests on the same date share one calendar
-    const lab = (c) => (!c.done ? [Z('Not started', '未開始'), 'none'] : c.pct >= 75 ? [Z('Ready', '準備好'), 'ok'] : c.pct >= 40 ? [Z('Getting there', '漸入佳境'), 'mid'] : [Z('Needs work', '要加強'), 'low']);
-    const CH = 3;
-    const detail = async (p) => {
+    // each test: a countdown card with a strip of days to the test, today's job for it, and the full plan one tap away
+    const KIC = { learn: 'learn', practise: 'practise', mixed: 'practise', test: 'test', mock: 'mock', 'test-day': 'test', review: 'review' };
+    const card = async (p) => {
+      const k = tests.steps.indexOf(p), aim = p.x.aim || 80, day = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
       const m = p.book ? await bookMastery(p.book) : null, chs = m ? m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : [];
-      let plan = '';
-      if (p.book && chs.length && p.left >= 1 && p.ready != null) {
-        const need = 80 - p.ready, weak = chs.filter((c) => c.pct < 80).sort((a, b) => a.pct - b.pct).slice(0, 2).map((c) => shortTitle(c.unit.title));
-        const dd = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
-        // rough guide: a 10-question set moves its chapter about 8 points; the test's readiness is the average of its chapters
-        const perDay = Math.max(1, Math.min(4, Math.ceil(Math.ceil(need * chs.length / 8) / Math.max(1, p.left))));
-        plan = need <= 0 ? `<p class="td-plan ok">${Z('On track for 80%. A set every few days keeps it fresh.', '已達 80% 準備度。每隔幾天練一次，保持手感。')}</p>`
-          : `<p class="td-plan">${Z(`To be 80% ready by ${dd}: about <b>${perDay} set${perDay > 1 ? 's' : ''} a day</b>${weak.length ? ` on ${weak.map(esc).join(' and ')}` : ''}.`, `要在${dd}前達到 80%：每天約 <b>${perDay} 組練習</b>${weak.length ? `，集中在${weak.map(esc).join('和')}` : ''}。`)}</p>`;
+      const plan = p.book && chs.length && (p.x.kind || 'test') !== 'dict' ? testDayPlan(p, chs, aim) : null;
+      let strip = '';
+      if (plan && p.left >= 1) {
+        const shown = plan.days.slice(0, Math.min(plan.days.length, 7)), more = plan.days.length > shown.length;
+        const lab = (x) => (x.d === 0 ? Z('Today', '今日') : x.d === p.left ? Z('Test', '測驗') : new Date(x.t).toLocaleDateString(LOCALE(), { weekday: 'short' }));
+        const tile = (x, cls) => `<span class="tdc-d ${cls}" title="${esc(x.task[0])}"><small>${lab(x)}</small>${actionIcon(x.d === 0 && p.step ? p.step.icon : KIC[x.task[2]] || 'practise', 18)}</span>`;
+        strip = `<div class="tdc-strip" style="--n:${shown.length + (more ? 1 : 0)}">${shown.map((x) => tile(x, x.d === 0 ? 'now' : x.d === p.left ? 'end' : x.d === p.left - 1 ? 'mock' : '')).join('')}${more ? tile(plan.days[plan.days.length - 1], 'end') : ''}</div>`;
       }
-      return `<div class="td-one"><button class="td-oh" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><span class="td-pct"><b>${p.ready == null ? '–' : p.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></button>
-        <div class="td-chl">${!p.book ? `<small class="muted" data-raw>${esc(testScope(p))}${p.last ? ' · ' + SCH(`${p.last.g} of ${p.last.n} right last time`, `上次 ${p.last.n} 個中寫對 ${p.last.g} 個`) : ''}</small>` : ''}${p.all ? `<small class="muted">${SCH('Everything practised so far', '至今練習過的所有內容')}</small>` : ''}${chs.slice(0, CH).map((c) => { const [t, k] = lab(c); return `<div class="td-chr"><div><span data-raw>${esc(shortTitle(c.unit.title))}</span><b class="${k}">${t}${c.done ? ` · ${c.pct}%` : ''}</b></div><i><s class="${k}" style="width:${Math.max(0, Math.min(100, c.pct))}%"></s></i></div>`; }).join('')}${chs.length > CH ? `<small class="muted">${Z(`+ ${chs.length - CH} more chapters`, `另有 ${chs.length - CH} 章`)}</small>` : ''}</div>${plan}</div>`;
+      let mins = '';
+      if (plan && p.ready != null && p.ready < aim) { const N = planNeeds(p.ready, chs.map((c) => c.pct || 0), Math.max(1, p.left), aim); mins = ` · ${Z(`about ${Math.max(10, Math.round((N.sets * SET_MIN) / Math.max(1, p.left) / 5) * 5)} min a day`, `每天約 ${Math.max(10, Math.round((N.sets * SET_MIN) / Math.max(1, p.left) / 5) * 5)} 分鐘`)}`; }
+      const job = p.step ? `<div class="tdc-job"><div><small>${Z('Today for this test', '今天為這個測驗')}${mins}</small><b data-raw>${esc(p.step.t)}</b></div><button class="btn-sm primary" data-tstep="${k}">${Z('Start', '開始')}</button></div>` : '';
+      const next = plan && p.left >= 2 ? plan.days[p.left - 1] : null;
+      if (plan) tdPlans[k] = () => testPlanSheet(p, chs, aim, planForecast(p.ready, chs, p.left));
+      return `<div class="td-test tdc">
+        <div class="tdc-h">${calTile(testDay(p.x))}<button class="tdc-t" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><small class="${p.left <= 2 ? 'soon' : ''}">${leftText(p.left)}${p.ready != null ? ` · ${Z(`goal ${aim}%`, `目標 ${aim}%`)}` : ''}</small></button><span class="tdc-r"><b>${p.ready == null ? '–' : p.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></div>
+        ${!p.book ? `<small class="muted" data-raw>${esc(testScope(p))}${p.last ? ' · ' + SCH(`${p.last.g} of ${p.last.n} right last time`, `上次 ${p.last.n} 個中寫對 ${p.last.g} 個`) : ''}</small>` : ''}
+        ${strip}${job}
+        ${plan ? `<div class="tdc-f"><span>${next ? Z(`${new Date(next.t).toLocaleDateString(LOCALE(), { weekday: 'short' })}: practice test`, `${new Date(next.t).toLocaleDateString(LOCALE(), { weekday: 'short' })}：模擬測驗`) : day}</span><button class="linkbtn" data-tplan="${k}">${Z('See the full plan', '查看完整計劃')} ›</button></div>` : ''}
+      </div>`;
     };
-    const dates = [...new Set(tests.steps.map((q) => testDay(q.x)))];
     const cards = [];
-    for (const d of dates) {
-      const same = tests.steps.filter((q) => testDay(q.x) === d), first = same[0];
-      const day = new Date(d).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
-      const inMission = same.some((p) => M.steps.some((x) => x.key === `t:${p.x.id}`));
-      cards.push(`<div class="td-test">
-        <div class="td-day">${calTile(d)}<span class="td-tt"><b>${same.length > 1 ? Z(`${same.length} tests on ${day}`, `${day} 有 ${same.length} 個測驗`) : esc(day)}</b><small class="${first.left <= 2 ? 'soon' : ''}">${leftText(first.left)}</small></span></div>
-        ${(await Promise.all(same.map(detail))).join('')}
-        ${inMission ? `<div class="td-foot"><span>${allDone ? Z('Today’s practice counted towards it.', '今天的練習已計入。') : Z('Today’s mission includes it.', '今日任務已包括這個測驗。')}</span></div>` : ''}
-      </div>`);
-    }
+    for (const p of tests.steps) cards.push(await card(p));
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${cards.join('')}</section>`;
   }
+
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
@@ -2804,6 +2804,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
+  $app.querySelectorAll('[data-tplan]').forEach((b) => (b.onclick = () => { const f = tdPlans[+b.dataset.tplan]; if (f) f(); }));
   $app.querySelectorAll('[data-weak]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.weak.split(':'), bk = books.find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
@@ -5598,10 +5599,10 @@ function chapterSheet(book, c) {
 }
 // A test's plan: how ready now vs the target, what each chapter needs, and a day-by-day (or week-by-week)
 // plan up to the test, with today's step ready to start.
-function testPlanSheet(p, chs, aim, fc) {
-  const book = p.book, units = p.units, n = local.count || sessionSize();
-  const fmt = (t, o) => new Date(t).toLocaleDateString(LOCALE(), o || { weekday: 'short', day: 'numeric', month: 'short' });
-  const t0 = dayStart(), tday = testDay(p.x), left = p.left;
+// The day-by-day plan up to a test: what each chapter needs (weakest first), then one job per day.
+// Each day's task: [label, run, kind] — kind is learn, practise, test, mixed, mock or test-day.
+function testDayPlan(p, chs, aim = 80) {
+  const book = p.book, units = p.units, n = local.count || sessionSize(), t0 = dayStart(), left = p.left;
   const nm = (u) => shortTitle(u.title);
   // what each chapter needs, weakest first
   const need = chs.slice().sort((a, b) => a.pct - b.pct).map((c) => {
@@ -5613,10 +5614,10 @@ function testPlanSheet(p, chs, aim, fc) {
   });
   // the task list, in the order a tutor would go: new chapters, then the weakest, then tests, then mixed practice
   const tasks = [];
-  need.filter((x) => x.act[0] === 'learn').forEach((x) => { tasks.push([PT(`Lesson: ${nm(x.c.unit)}`, `上課：${nm(x.c.unit)}`), x.act[2]]); tasks.push([PT(`Practise ${nm(x.c.unit)}`, `練習：${nm(x.c.unit)}`), () => startUnits(book, [x.c.unit], n)]); });
-  need.filter((x) => x.act[0] === 'practise').forEach((x) => { tasks.push([PT(`Practise ${nm(x.c.unit)} · ${x.c.pct}%`, `練習：${nm(x.c.unit)} · ${x.c.pct}%`), x.act[2]]); });
-  need.filter((x) => !x.c.passes).forEach((x) => tasks.push([PT(`Chapter test: ${nm(x.c.unit)}`, `章節測驗：${nm(x.c.unit)}`), () => startChapterTest(book, [x.c.unit])]));
-  const filler = () => { const w = need[0]; return [PT(`Mixed practice · weakest first`, '混合練習 · 先做最弱'), () => startUnits(book, units, n)]; };
+  need.filter((x) => x.act[0] === 'learn').forEach((x) => { tasks.push([PT(`Lesson: ${nm(x.c.unit)}`, `上課：${nm(x.c.unit)}`), x.act[2], 'learn']); tasks.push([PT(`Practise ${nm(x.c.unit)}`, `練習：${nm(x.c.unit)}`), () => startUnits(book, [x.c.unit], n), 'practise']); });
+  need.filter((x) => x.act[0] === 'practise').forEach((x) => { tasks.push([PT(`Practise ${nm(x.c.unit)} · ${x.c.pct}%`, `練習：${nm(x.c.unit)} · ${x.c.pct}%`), x.act[2], 'practise']); });
+  need.filter((x) => !x.c.passes).forEach((x) => tasks.push([PT(`Chapter test: ${nm(x.c.unit)}`, `章節測驗：${nm(x.c.unit)}`), () => startChapterTest(book, [x.c.unit]), 'test']));
+  const filler = () => { const w = need[0]; return [PT(`Mixed practice · weakest first`, '混合練習 · 先做最弱'), () => startUnits(book, units, n), 'mixed']; };
   // lay out the days up to the test
   const days = [];
   for (let d = 0; d <= left; d++) {
@@ -5627,6 +5628,14 @@ function testPlanSheet(p, chs, aim, fc) {
     else task = tasks.shift() || filler();
     days.push({ t, d, task });
   }
+  return { need, days };
+}
+function testPlanSheet(p, chs, aim, fc) {
+  const book = p.book, units = p.units, n = local.count || sessionSize();
+  const fmt = (t, o) => new Date(t).toLocaleDateString(LOCALE(), o || { weekday: 'short', day: 'numeric', month: 'short' });
+  const t0 = dayStart(), tday = testDay(p.x), left = p.left;
+  const nm = (u) => shortTitle(u.title);
+  const { need, days } = testDayPlan(p, chs, aim);
   const weekly = left > 14;
   const rows = weekly
     ? Array.from({ length: Math.ceil((left + 1) / 7) }, (_, w) => { const part = days.slice(w * 7, w * 7 + 7); return `<div class="tp-row ${w === 0 ? 'now' : ''}"><span class="tp-d"><b>${PT(`Week ${w + 1}`, `第 ${w + 1} 週`)}</b><small>${fmt(part[0].t, { day: 'numeric', month: 'short' })}–${fmt(part[part.length - 1].t, { day: 'numeric', month: 'short' })}</small></span><ul>${[...new Set(part.map((x) => x.task[0]))].slice(0, 4).map((x) => `<li data-raw>${esc(x)}</li>`).join('')}</ul></div>`; }).join('')
