@@ -2762,6 +2762,18 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 }
 
 @media (max-width:600px){.pv-tile.more{background:none!important;border:0!important;border-top:1px dashed var(--line)!important;border-radius:0!important;color:var(--accent)!important;font-weight:700;padding:10px 0 2px!important}}
+
+/* subject header: a small readiness ring instead of plain text */
+.pv-subj-h{align-items:center!important}
+.pv-sr{display:flex;align-items:center;gap:8px;flex:none}.pv-sr svg{width:40px;height:40px;transform:rotate(-90deg)}
+.pv-sr circle{fill:none;stroke-width:4.5;stroke-linecap:round}.pv-sr .tr{stroke:#E6EAF4}.pv-sr.lo .fg{stroke:#F08A5D}.pv-sr.mid .fg{stroke:#F2B705}.pv-sr.hi .fg{stroke:#2FB173}
+.pv-sr>span{display:flex;flex-direction:column;line-height:1.1}.pv-sr b{font-family:'Lexend',sans-serif;font-size:17px;color:var(--ink)}.pv-sr small{font-size:11.5px;color:var(--text-2)}
+.pv-subj-n{font-size:12px;font-weight:500;color:var(--muted)}
+/* chapter tiles: lighter text so more of the name fits; up to two lines on phones */
+.pv-tile b{font-weight:600!important}
+@media (max-width:600px){.pv-tile b{font-size:13.5px!important;font-weight:500!important;-webkit-line-clamp:2!important;white-space:normal!important}.pv-tile{padding:9px 12px!important}.pv-tile span{font-size:12.5px!important;font-weight:700}}
+
+.pv-subj-h{margin-bottom:6px}
 </style>
 </head>
 <body>

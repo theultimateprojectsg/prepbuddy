@@ -5928,7 +5928,7 @@ async function renderProgress() {
         if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`); }, 'pv-tile more') : ''}</div>`;
     };
     const one = g.list[0].b;
-    return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(one))}${!many && one.subject && one.title && one.title !== sname(one) ? `<small class="pv-subj-bk">${esc(one.title)}</small>` : many ? `<small class="pv-subj-bk">${PT(`${g.list.length} textbooks`, `${g.list.length} 本課本`)}</small>` : ''}</b><span>${PT(`${gp}% ready · ${nch} chapters`, `準備度 ${gp}% · ${nch} 章`)}</span></div>
+    return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(one))}${!many && one.subject && one.title && one.title !== sname(one) ? `<small class="pv-subj-bk">${esc(one.title)}</small><small class="pv-subj-n">${PT(`${nch} chapters`, `${nch} 章`)}</small>` : many ? `<small class="pv-subj-bk">${PT(`${g.list.length} textbooks · ${nch} chapters`, `${g.list.length} 本課本 · ${nch} 章`)}</small>` : `<small class="pv-subj-n">${PT(`${nch} chapters`, `${nch} 章`)}</small>`}</b><span class="pv-sr ${gp >= 70 ? 'hi' : gp >= 40 ? 'mid' : 'lo'}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" class="tr"/><circle cx="18" cy="18" r="15" class="fg" stroke-dasharray="${(gp * 0.943).toFixed(1)} 94.3"/></svg><span><b>${gp}%</b><small>${PT('ready', '準備度')}</small></span></span></div>
       ${g.list.map(bookHTML).join('')}</div>`;
   }).join('');
   const next = [];
@@ -5945,7 +5945,7 @@ async function renderProgress() {
   const gapNote = best && worst && best.i !== worst.i && best.a - worst.a >= 15
     ? PT(`Strongest at “${names[best.i].toLowerCase()}”. “${names[worst.i]}” questions are the gap, and that’s where test marks are.`, `最擅長「${names[best.i]}」；「${names[worst.i]}」是弱項，也是考試失分的地方。`) : rated.length ? PT('Fairly even across question types.', '各類題型表現大致平均。') : '';
   const sec3 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('What should I work on?', '要加強甚麼？')}${ib('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'))}</h2>
-      <span class="pv-legend"><i class="good"></i>${PT('Strong', '強')}<i class="mid"></i>${PT('Getting there', '漸入佳境')}<i class="low"></i>${PT('Needs work', '需加強')}<i class="none"></i>${PT('Not started', '未開始')}</span></div>
+      <span class="pv-legend"><i class="good"></i>${PT('Strong', '強')}<i class="mid"></i>${PT('Getting there', '漸入佳境')}<i class="low"></i>${PT('Needs work', '需加強')}</span></div>
     ${how('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it (or to start its lesson).', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習（或開始上課）。')}</p>
       <p><b>${PT('Most useful next', '下一步')}</b> · ${PT('in order: what your nearest test needs, then this week’s weakest chapter, then mistakes to fix, then reviews due.', '次序：最近的測驗需要的、本週最弱的章節、要改正的錯題、到期的溫習。')}</p>
       <p><b>${PT('Types of question', '題型')}</b> · ${PT('every question has a level: 1 remember facts, 2 understand, 3 use it, 4 think it through. This is your score on each, over the last 30 days.', '每題都有級別：1 記憶、2 理解、3 應用、4 深入思考。這是過去 30 日各級的得分。')}</p>`)}
