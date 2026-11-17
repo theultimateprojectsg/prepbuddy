@@ -5931,14 +5931,18 @@ async function renderProgress() {
     return `<div class="pv-subj"><div class="pv-subj-h"><b data-raw>${esc(sname(one))}${!many && one.subject && one.title && one.title !== sname(one) ? `<small class="pv-subj-bk">${esc(one.title)}</small><small class="pv-subj-n">${PT(`${nch} chapters`, `${nch} 章`)}</small>` : many ? `<small class="pv-subj-bk">${PT(`${g.list.length} textbooks · ${nch} chapters`, `${g.list.length} 本課本 · ${nch} 章`)}</small>` : `<small class="pv-subj-n">${PT(`${nch} chapters`, `${nch} 章`)}</small>`}</b><span class="pv-sr ${gp >= 70 ? 'hi' : gp >= 40 ? 'mid' : 'lo'}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" class="tr"/><circle cx="18" cy="18" r="15" class="fg" stroke-dasharray="${(gp * 0.943).toFixed(1)} 94.3"/></svg><span><b>${gp}%</b><small>${PT('ready', '準備度')}</small></span></span></div>
       ${g.list.map(bookHTML).join('')}</div>`;
   }).join('');
+  // Each next step says why it was picked: a short reason tag and one plain sentence with the real number.
   const next = [];
   const nt = tests.steps.find((p) => p.step && p.step.u);
-  if (nt) next.push([nt.step.t, PT(`For ${nt.x.name}, ${leftText(nt.left)}`, `為「${nt.x.name}」準備，${leftText(nt.left)}`), nt.step.run]);
-  if (D.weak) next.push([PT(`Practise ${chName(D.weak.unit)}`, `練習「${chName(D.weak.unit)}」`), PT(`Weakest chapter this week · ${D.weak.a}%`, `本週最弱的章節 · ${D.weak.a}%`), () => startUnits(D.weak.book, [D.weak.unit], local.count || sessionSize())]);
-  if (D.mistakes) { const top = MK.slice().sort((a, b) => b.items.length - a.items.length).slice(0, 2).filter((g) => g.unit);
-    next.push([PT(`Fix ${D.mistakes} mistake${D.mistakes === 1 ? '' : 's'}`, `改正 ${D.mistakes} 題錯題`), top.length ? top.map((g) => `${g.items.length} ${PT('in', '題在')} ${chName(g.unit)}`).join(', ') : PT('Questions not fully right yet', '未完全答對的題目'), () => go({ name: 'mistakes' })]); }
-  if (D.due) next.push([PT(`${D.due} review${D.due === 1 ? '' : 's'} due`, `${D.due} 題要溫習`), PT('Just before you’d forget them', '在快要忘記之前溫習'), () => startReview('spaced')]);
-  if (!next.length) next.push([PT('Practise a chapter', '練習一個章節'), PT('Pick any chapter to start', '選一個章節開始'), () => go({ name: 'books' })]);
+  if (nt) { const uu = nt.book && nt.book.units.find((u) => u.id === nt.step.u), cc = uu && MB.get(nt.book.id).chapters.find((c) => c.unit.id === uu.id);
+    next.push([nt.step.t, uu && cc && !cc.done && !cc.learned ? PT(`Your ${nt.x.name} is ${leftText(nt.left)} and covers ${chName(uu)}, which you haven’t started yet.`, `「${nt.x.name}」${leftText(nt.left)}，範圍包括「${chName(uu)}」，你還未開始。`)
+      : PT(`Your ${nt.x.name} is ${leftText(nt.left)}. This is the chapter in it that needs the most work${cc ? ` (${cc.pct}% ready)` : ''}.`, `「${nt.x.name}」${leftText(nt.left)}。這是範圍內最需要加強的章節${cc ? `（準備度 ${cc.pct}%）` : ''}。`), nt.step.run, ['test', PT(`Test ${leftText(nt.left)}`, `${leftText(nt.left)}測驗`)]]); }
+  if (D.weak && !(nt && nt.step.u === D.weak.unit.id)) { const cc = MB.get(D.weak.book.id).chapters.find((c) => c.unit.id === D.weak.unit.id);
+    next.push([PT(`Practise ${chName(D.weak.unit)}`, `練習「${chName(D.weak.unit)}」`), PT(`You got ${D.weak.a}% right on it this week, your lowest of any chapter${cc ? `. It’s ${cc.pct}% ready` : ''}.`, `本週這一章只答對 ${D.weak.a}%，是所有章節中最低${cc ? `，準備度 ${cc.pct}%` : ''}。`), () => startUnits(D.weak.book, [D.weak.unit], local.count || sessionSize()), ['weak', PT('Weakest chapter', '最弱章節')]]); }
+  if (D.mistakes) { const top = MK.slice().sort((a, b) => b.items.length - a.items.length)[0];
+    next.push([PT(`Fix your mistakes${top && top.unit ? ` in ${chName(top.unit)}` : ''}`, `改正${top && top.unit ? `「${chName(top.unit)}」的` : ''}錯題`), PT(`${D.mistakes} questions you got wrong are waiting${top && top.unit ? `, ${top.items.length} of them in this chapter` : ''}. Fixing them is the quickest way to win marks back.`, `有 ${D.mistakes} 題答錯的題目等你改正${top && top.unit ? `，其中 ${top.items.length} 題在這一章` : ''}。改正錯題是最快拿回分數的方法。`), () => go({ name: 'mistakes', book: top && top.book ? top.book.id : undefined }), ['mistakes', PT(`${D.mistakes} mistakes`, `${D.mistakes} 題錯題`)]]); }
+  if (D.due) next.push([PT(`Do ${D.due} review${D.due === 1 ? '' : 's'}`, `溫習 ${D.due} 題`), PT('These questions are due back today. Getting them right now is what makes them stick.', '這些題目今天到期。現在答對，才會記得牢。'), () => startReview('spaced'), ['review', PT('Due today', '今日到期')]]);
+  if (!next.length) next.push([PT('Practise a chapter', '練習一個章節'), PT('Pick any chapter to start. Buddy will suggest more as you go.', '選一個章節開始，Buddy 之後會給你更多建議。'), () => go({ name: 'books' }), ['learn', PT('Get started', '開始')]]);
   const names = SKILL_PLAIN();
   const rated = r.sk.map(([a, n], i) => ({ a, n, i })).filter((x) => x.n >= 5 && x.a !== null);
   const best = rated.slice().sort((x, y) => y.a - x.a)[0], worst = rated.slice().sort((x, y) => x.a - y.a)[0];
@@ -5949,7 +5953,7 @@ async function renderProgress() {
     ${how('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it (or to start its lesson).', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習（或開始上課）。')}</p>
       <p><b>${PT('Most useful next', '下一步')}</b> · ${PT('in order: what your nearest test needs, then this week’s weakest chapter, then mistakes to fix, then reviews due.', '次序：最近的測驗需要的、本週最弱的章節、要改正的錯題、到期的溫習。')}</p>
       <p><b>${PT('Types of question', '題型')}</b> · ${PT('every question has a level: 1 remember facts, 2 understand, 3 use it, 4 think it through. This is your score on each, over the last 30 days.', '每題都有級別：1 記憶、2 理解、3 應用、4 深入思考。這是過去 30 日各級的得分。')}</p>`)}
-    <div class="pv-next2"><b class="pv-nh">${PT('Do these next', '下一步先做這些')}</b>${next.slice(0, 3).map(([t, s2, run], i) => btn(`<i class="pv-nn">${i + 1}</i><span><b data-raw>${esc(t)}</b><small data-raw>${esc(s2)}</small></span><em>›</em>`, run, 'pv-nrow')).join('')}</div>
+    <div class="pv-next2"><div class="pv-nh"><b>${PT('Do these next', '下一步先做這些')}</b><span>${PT('Buddy picked these from your tests, weakest chapters and mistakes.', 'Buddy 根據你的測驗、最弱章節和錯題挑選。')}</span></div>${next.slice(0, 3).map(([t, s2, run, tg], i) => btn(`<span class="pv-nt">${actionTile(tg ? tg[0] : 'practise', 34)}<i class="pv-nn">${i + 1}</i></span><span><em class="pv-tag2 ${tg ? tg[0] : ''}">${tg ? tg[1] : ''}</em><b data-raw>${esc(t)}</b><small data-raw>${esc(s2)}</small></span><em class="pv-ch">›</em>`, run, 'pv-nrow')).join('')}</div>
     ${subjHTML ? `<div class="pv-subjs">${subjHTML}</div>` : ''}
     </section>`;
 
