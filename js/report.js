@@ -216,7 +216,9 @@ export function reportHTML(r, opts = {}) {
       ${nt.pl && nt.pl.length ? `<div class="rp-plan">${nt.pl.map(([t, x]) => `<span><b>${fmtDate(t, { weekday: 'short', day: 'numeric' })}</b> · ${esc(x)}</span>`).join('')}</div>` : ''}
       ${op(T('planned from their own textbook and test date', '按自己的課本和考試日期安排'))}</section>`; })() : '';
   // what Buddy noticed
-  const notes = [...(X && X.mx ? X.mx.map(([t, d], i) => `<div class="rp-nb red"><b>${esc(t)}</b>${d ? `<p>${esc(d)}</p>` : ''}${i === 0 ? op(T('found by reading their answers', '從答案中找出')) : ''}</div>`) : []),
+  // Buddy's findings from the Progress page, worded for parents; the older built-in notes fill in when there aren't any
+  const nbs = X && X.nb && X.nb.length ? X.nb.map(([c, t, d]) => `<div class="rp-nb ${esc(c)}"><b>${esc(t)}</b>${d ? `<p>${esc(d)}</p>` : ''}</div>`) : null;
+  const notes = nbs ? nbs.slice(0, 5) : [...(X && X.mx ? X.mx.map(([t, d], i) => `<div class="rp-nb red"><b>${esc(t)}</b>${d ? `<p>${esc(d)}</p>` : ''}${i === 0 ? op(T('found by reading their answers', '從答案中找出')) : ''}</div>`) : []),
     ...(X && X.hi && X.hi[0] - X.hi[1] >= 8 ? [`<div class="rp-nb green"><b>${T('Needs hints far less', '越來越少需要提示')}</b><p>${T(`${X.hi[0]}% of answers without help, up from ${X.hi[1]}% before. Working things out on their own.`, `現在 ${X.hi[0]}% 的題目不用提示，之前是 ${X.hi[1]}%。越來越能自己想通。`)}</p></div>`] : []),
     ...(r.up ? [`<div class="rp-nb green"><b>${T('Getting better', '有進步')}</b><p>${esc(r.up)}</p></div>`] : []),
     ...(r.weak ? [`<div class="rp-nb orange"><b>${T('Needs more practice', '需要多加練習')}</b><p>${esc(r.weak)}</p></div>`] : [])].slice(0, 4);

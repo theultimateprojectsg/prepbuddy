@@ -5187,7 +5187,8 @@ async function reportExtras(books, gs) {
   const ge = gName && gs && gs.s ? gs.s.filter((x) => x[1] != null).slice(0, 4).map((x) => [x[0], x[1] >= 3 ? 'above' : x[1] >= 2 ? 'meet' : 'build']) : [];
   const ML = marksList(), mB = ML.find((m) => m.kind === 'before'), mL = ML.filter((m) => m.kind === 'later').pop();
   const mk = mB && mL ? MARK_SUBJ().filter(([k]) => typeof mB.s[k] === 'number' && typeof mL.s[k] === 'number').map(([k, z, e]) => [LANG === 'zh' ? z : e, mB.s[k], mL.s[k]]).slice(0, 4) : [];
-  return { dw, nt, mx, hi, pc, gn: gName, ge, mk };
+  const nb = local.noticed && local.noticed.lang === LANG && Date.now() - local.noticed.t < 8 * DAY ? local.noticed.list : null;
+  return { nb, dw, nt, mx, hi, pc, gn: gName, ge, mk };
 }
 async function currentReport() {
   const books = await getBooks();
@@ -5713,7 +5714,7 @@ async function renderProgress() {
       <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('your goal or more by test day (80% unless you drag the goal line)', '考試時達到你的目標或以上（預設 80%，可拖動目標線）')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('65–79%', '65–79%')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('under 65%', '低於 65%')}</li></ul></div></details></section>`;
 
   // ---------- 2. What Buddy has noticed ----------
-  const cards = [], add = (pri, html, win = false) => cards.push({ pri, html, win });
+  const cards = [], add = (pri, html, win = false, par = null) => cards.push({ pri, html, win, par });
   const card = (tag, cls, title, detail, button = '') => `<div class="pv-ins"><em class="pv-tag ${cls}">${tag}</em><b data-raw>${esc(title)}</b><p class="pv-p" data-raw>${esc(detail)}</p>${button}</div>`;
   const ins = local.insights && local.insights.lang === LANG ? local.insights : null;
   const MK = await mistakeItems(false), mkAll = MK.flatMap((g) => g.items.map((x) => ({ ...x, g })));
@@ -5722,7 +5723,7 @@ async function renderProgress() {
     const g = qs[0] ? qs[0].g : null;
     const run = qs.length >= 2 ? () => { S = newSession({ mode: 'mistakes', title: m.title, qs: shuffle(qs.map((x) => x.q)).map(shuffleOptions), target: qs.length }); renderQuestion(); }
       : g && g.unit ? () => startUnits(g.book, [g.unit], 8) : null;
-    add(15, card(PT('Mix-up', '常見混淆'), 'red', m.title, m.detail, `${run ? btn(PT('Practise this', '練習這個'), run, 'pv-btn soft') : ''}`));
+    add(15, card(PT('Mix-up', '常見混淆'), 'red', m.title, m.detail, `${run ? btn(PT('Practise this', '練習這個'), run, 'pv-btn soft') : ''}`), false, ['red', m.title, m.detail]);
   });
   // rushing: multiple-choice sets answered too fast to be thinking, in the last 2 weeks
   const ss = (local.sess || []).filter((x) => x.t > now - 14 * DAY);
@@ -5732,20 +5733,20 @@ async function renderProgress() {
     const avg = (xs) => Math.round(xs.reduce((a, x) => a + (x.p || 0), 0) / Math.max(1, xs.length)), steady = ss.filter((x) => !x.r);
     const gap = steady.length ? avg(steady) - avg(rushed) : 0;
     add(45, card(PT('Habit', '習慣'), 'orange', late >= 2 ? PT('Rushes multiple choice late at night', '夜晚做選擇題太快') : PT('Rushes some multiple-choice sets', '有時做選擇題太快'),
-      PT(`${rushed.length} of ${ss.length} sets in the last 2 weeks were answered too fast to think${late >= 2 ? `, ${late} of them after 9pm` : ''}${gap >= 5 ? `, scoring ${gap}% lower than steady sets` : ''}.`, `過去兩星期 ${ss.length} 次練習中有 ${rushed.length} 次答得太快${late >= 2 ? `，其中 ${late} 次在晚上 9 時後` : ''}${gap >= 5 ? `，分數比慢慢做時低 ${gap}%` : ''}。`)));
+      PT(`${rushed.length} of ${ss.length} sets in the last 2 weeks were answered too fast to think${late >= 2 ? `, ${late} of them after 9pm` : ''}${gap >= 5 ? `, scoring ${gap}% lower than steady sets` : ''}.`, `過去兩星期 ${ss.length} 次練習中有 ${rushed.length} 次答得太快${late >= 2 ? `，其中 ${late} 次在晚上 9 時後` : ''}${gap >= 5 ? `，分數比慢慢做時低 ${gap}%` : ''}。`)), false, ['orange', PT('Rushes multiple-choice sets', '做選擇題太快'), PT(`${rushed.length} of ${ss.length} sets in 2 weeks were answered too fast to think.`, `兩星期內 ${ss.length} 次練習中有 ${rushed.length} 次答得太快。`)]);
   }
   // independence: answers without Buddy's help, last 2 weeks vs the 6 weeks before
   const lw = local.log.filter((e) => e.t > now - 14 * DAY), lp = local.log.filter((e) => e.t <= now - 14 * DAY && e.t > now - 56 * DAY);
   const own = (es) => Math.round(100 * es.filter((e) => !e.h).length / es.length);
   if (lw.length >= 30) {
     const a = own(lw), b = lp.length >= 30 ? own(lp) : null;
-    if (b != null && a - b >= 8) add(8, card(PT('Growing', '進步'), 'green', PT('Needs Buddy’s hints less', '越來越少需要提示'), PT(`${a}% of answers now without hints, up from ${b}%. Working things out alone.`, `現在 ${a}% 的題目不用提示，之前是 ${b}%。越來越能自己想通。`)), true);
-    else if (a < 60) add(50, card(PT('Habit', '習慣'), 'orange', PT('Leans on hints a lot', '經常依賴提示'), PT(`Only ${a}% of answers in the last 2 weeks were without Buddy’s help. Try first, then ask.`, `過去兩星期只有 ${a}% 的題目不用 Buddy 幫忙。先自己試，再問。`)));
+    if (b != null && a - b >= 8) add(8, card(PT('Growing', '進步'), 'green', PT('Needs Buddy’s hints less', '越來越少需要提示'), PT(`${a}% of answers now without hints, up from ${b}%. Working things out alone.`, `現在 ${a}% 的題目不用提示，之前是 ${b}%。越來越能自己想通。`)), true, ['green', PT('Needs hints far less', '越來越少需要提示'), PT(`${a}% of answers without help, up from ${b}%.`, `現在 ${a}% 的題目不用提示，之前是 ${b}%。`)]);
+    else if (a < 60) add(50, card(PT('Habit', '習慣'), 'orange', PT('Leans on hints a lot', '經常依賴提示'), PT(`Only ${a}% of answers in the last 2 weeks were without Buddy’s help. Try first, then ask.`, `過去兩星期只有 ${a}% 的題目不用 Buddy 幫忙。先自己試，再問。`)), false, ['orange', PT('Leans on Buddy’s hints', '經常依賴提示'), PT(`Only ${a}% of answers in 2 weeks were without help. Encourage trying first.`, `兩星期內只有 ${a}% 的題目不用幫忙。鼓勵先自己試。`)]);
   }
   // memory: reviews answered right after a gap (from the level model)
   const kt = GS && GS.kt; const ret = kt && kt[1] >= 15 ? Math.round(100 * kt[0] / kt[1]) : null;
   if (ret != null) add(ret >= 75 ? 9 : 35, ret >= 75 ? card(PT('Growing', '進步'), 'green', PT('What’s learned is sticking', '學過的記得牢'), PT(`${ret}% of review questions right days later. ${D.longTerm} questions remembered for a week or more.`, `${ret}% 的溫習題幾天後仍答對。${D.longTerm} 題已記得一星期或以上。`))
-    : card(PT('Memory', '記憶'), 'orange', PT('Forgets some things after a few days', '有些內容過幾天就忘記'), PT(`Only ${ret}% of review questions right days later. Doing reviews when they’re due fixes this.`, `只有 ${ret}% 的溫習題幾天後仍答對。按時溫習就能改善。`), btn(PT('Do reviews now', '現在溫習'), () => startReview('spaced'), 'pv-btn soft')));
+    : card(PT('Memory', '記憶'), 'orange', PT('Forgets some things after a few days', '有些內容過幾天就忘記'), PT(`Only ${ret}% of review questions right days later. Doing reviews when they’re due fixes this.`, `只有 ${ret}% 的溫習題幾天後仍答對。按時溫習就能改善。`), btn(PT('Do reviews now', '現在溫習'), () => startReview('spaced'), 'pv-btn soft')), false, ret >= 75 ? ['green', PT('What’s learned is sticking', '學過的記得牢'), PT(`${ret}% of review questions right days later.`, `${ret}% 的溫習題幾天後仍答對。`)] : ['orange', PT('Forgets some things after a few days', '有些內容過幾天就忘記'), PT(`Only ${ret}% of review questions right days later. Reviews on time fix this.`, `只有 ${ret}% 的溫習題幾天後仍答對。按時溫習可改善。`)]);
   // writing: which rubric parts are strong and which keep losing marks (last 3 months)
   const drafts = (local.wr || []).flatMap((w) => (w.drafts || []).filter((d) => d.fb && d.fb.criteria && d.t > now - 90 * DAY).map((d) => ({ w, d })));
   if (drafts.length >= 2) {
@@ -5754,7 +5755,7 @@ async function renderProgress() {
     if (rows.length >= 2 && rows[0][1] - rows[rows.length - 1][1] >= 1) {
       const w = drafts[drafts.length - 1].w;
       add(40, card(PT('Writing', '寫作'), 'blue', PT(`${rows[0][0]} strong, ${rows[rows.length - 1][0]} weakest`, `「${rows[0][0]}」最好，「${rows[rows.length - 1][0]}」最弱`),
-        PT(`Across ${drafts.length} drafts, ${rows[rows.length - 1][0].toLowerCase()} has lost the most marks.`, `${drafts.length} 份草稿中，「${rows[rows.length - 1][0]}」失分最多。`), btn(PT('Practise writing', '練習寫作'), () => go({ name: 'writing', id: w.id }), 'pv-btn soft')));
+        PT(`Across ${drafts.length} drafts, ${rows[rows.length - 1][0].toLowerCase()} has lost the most marks.`, `${drafts.length} 份草稿中，「${rows[rows.length - 1][0]}」失分最多。`), btn(PT('Practise writing', '練習寫作'), () => go({ name: 'writing', id: w.id }), 'pv-btn soft')), false, ['blue', PT(`Writing: ${rows[rows.length - 1][0]} is weakest`, `寫作：「${rows[rows.length - 1][0]}」最弱`), PT(`Across ${drafts.length} drafts it has lost the most marks.`, `${drafts.length} 份草稿中失分最多。`)]);
     }
   }
   // dictation: the words that keep tripping them up
@@ -5762,7 +5763,7 @@ async function renderProgress() {
   (local.dict || []).forEach((L) => (L.items || []).forEach((w, i) => { const x = (L.res || {})[i]; if (x && x.wrong >= 2) words.push({ w, n: x.wrong, L }); }));
   if (words.length) {
     words.sort((a, b) => b.n - a.n); const top = words.slice(0, 3);
-    add(40, card(PT('Dictation', '默書'), 'blue', PT(`${top.length} word${top.length === 1 ? '' : 's'} keep tripping you up`, `${top.length} 個詞語經常寫錯`), top.map((x) => x.w).join(' · '), btn(PT('Practise these', '練習這些'), () => go({ name: 'dictation', id: top[0].L.id, sub: 'run' }), 'pv-btn soft')));
+    add(40, card(PT('Dictation', '默書'), 'blue', PT(`${top.length} word${top.length === 1 ? '' : 's'} keep tripping you up`, `${top.length} 個詞語經常寫錯`), top.map((x) => x.w).join(' · '), btn(PT('Practise these', '練習這些'), () => go({ name: 'dictation', id: top[0].L.id, sub: 'run' }), 'pv-btn soft')), false, ['blue', PT('Dictation words keep slipping', '默書詞語經常寫錯'), top.map((x) => x.w).join(' · ')]);
   }
 
   // ----- more noticings, from data already recorded (no extra AI) -----
@@ -5778,49 +5779,49 @@ async function renderProgress() {
   { const c = firsts.filter((e) => e.ty === 'c'), w = firsts.filter((e) => e.ty === 'w');
     if (c.length >= 15 && w.length >= 8) { const ac = accP(c), aw = accP(w), tu = topUnit(w);
       if (ac - aw >= 25) add(30, card(PT('Answers', '作答'), 'orange', PT('Strong on multiple choice, weaker on written answers', '選擇題強，文字題較弱'), PT(`${ac}% on multiple choice but ${aw}% on written answers. In tests, the marks are in explaining.`, `選擇題 ${ac}%，文字題只有 ${aw}%。考試的分數多數在解釋題。`),
-        tu && tu.book && tu.unit ? btn(PT('Practise written answers', '練習文字題'), () => startUnits(tu.book, [tu.unit], nQ, { types: 'written' }), 'pv-btn soft') : '')); } }
+        tu && tu.book && tu.unit ? btn(PT('Practise written answers', '練習文字題'), () => startUnits(tu.book, [tu.unit], nQ, { types: 'written' }), 'pv-btn soft') : ''), false, ['orange', PT('Strong on multiple choice, weaker on written answers', '選擇題強，文字題較弱'), PT(`${ac}% vs ${aw}%. Test marks are mostly in explaining.`, `${ac}% 對 ${aw}%。考試分數多數在解釋題。`)]); } }
   // 2. hits a ceiling at the harder levels
   { const lo = firsts.filter((e) => (e.l || 2) <= 2), hi = firsts.filter((e) => (e.l || 2) >= 3);
     if (lo.length >= 15 && hi.length >= 8) { const al = accP(lo), ah = accP(hi), tu = topUnit(hi);
       if (al >= 75 && ah <= 50) add(28, card(PT('Level', '程度'), 'orange', PT('Gets stuck at the harder questions', '較深的題目卡住了'), PT(`${al}% on remember and understand questions, but ${ah}% on apply and analyse. That’s where the top marks are.`, `記憶和理解題 ${al}%，應用和分析題只有 ${ah}%。高分就在這裡。`),
-        tu && tu.book && tu.unit ? btn(PT('Practise harder questions', '練習較深題目'), () => startUnits(tu.book, [tu.unit], nQ, { diff: 'hard' }), 'pv-btn soft') : '')); } }
+        tu && tu.book && tu.unit ? btn(PT('Practise harder questions', '練習較深題目'), () => startUnits(tu.book, [tu.unit], nQ, { diff: 'hard' }), 'pv-btn soft') : ''), false, ['orange', PT('Gets stuck at the harder questions', '較深題目卡住了'), PT(`${al}% on recall and understanding, ${ah}% on apply and analyse.`, `記憶和理解 ${al}%，應用和分析 ${ah}%。`)]); } }
   // 3. tires in long sessions: answers after 20 minutes vs the first 15, across 3+ long sessions
   { const sess2 = []; let cur = null;
     for (const e of L30) { if (cur && e.t - cur.end < 20 * 60000) { cur.end = e.t; cur.es.push(e); } else { cur = { start: e.t, end: e.t, es: [e] }; sess2.push(cur); } }
     const long = sess2.filter((x) => x.end - x.start >= 30 * 60000 && x.es.length >= 20);
     if (long.length >= 3) { const early = long.flatMap((x) => x.es.filter((e) => e.t - x.start < 15 * 60000)), late = long.flatMap((x) => x.es.filter((e) => e.t - x.start >= 20 * 60000));
       if (early.length >= 20 && late.length >= 20) { const ae = accP(early), al = accP(late);
-        if (ae - al >= 15) add(55, card(PT('Tip', '小貼士'), 'blue', PT('Scores drop in long sessions', '長時間練習後分數下降'), PT(`${ae}% in the first 15 minutes, ${al}% after 20 minutes. Shorter sets with a break work better.`, `頭 15 分鐘 ${ae}%，20 分鐘後只有 ${al}%。短一點、中間休息會更好。`))); } } }
+        if (ae - al >= 15) add(55, card(PT('Tip', '小貼士'), 'blue', PT('Scores drop in long sessions', '長時間練習後分數下降'), PT(`${ae}% in the first 15 minutes, ${al}% after 20 minutes. Shorter sets with a break work better.`, `頭 15 分鐘 ${ae}%，20 分鐘後只有 ${al}%。短一點、中間休息會更好。`)), false, ['blue', PT('Scores drop in long sessions', '長時間練習後分數下降'), PT(`${ae}% in the first 15 minutes, ${al}% after 20. Shorter sets with a break help.`, `頭 15 分鐘 ${ae}%，20 分鐘後 ${al}%。短一點、中間休息會更好。`)]); } } }
   // 4. late-night dip: after 10pm vs 2pm–8pm
   { const late = L30.filter((e) => new Date(e.t).getHours() >= 22 || new Date(e.t).getHours() < 5), day = L30.filter((e) => { const h = new Date(e.t).getHours(); return h >= 14 && h < 20; });
     if (late.length >= 40 && day.length >= 40) { const al = accP(late), ad = accP(day);
-      if (ad - al >= 15) add(55, card(PT('Tip', '小貼士'), 'blue', PT('Late nights cost marks', '太夜練習會失分'), PT(`${al}% after 10pm vs ${ad}% in the afternoon and early evening. Earlier is better when you can.`, `晚上 10 點後 ${al}%，下午至傍晚 ${ad}%。可以的話，早一點練習。`))); } }
+      if (ad - al >= 15) add(55, card(PT('Tip', '小貼士'), 'blue', PT('Late nights cost marks', '太夜練習會失分'), PT(`${al}% after 10pm vs ${ad}% in the afternoon and early evening. Earlier is better when you can.`, `晚上 10 點後 ${al}%，下午至傍晚 ${ad}%。可以的話，早一點練習。`)), false, ['blue', PT('Late nights cost marks', '太夜練習會失分'), PT(`${al}% after 10pm vs ${ad}% in the afternoon.`, `晚上 10 點後 ${al}%，下午 ${ad}%。`)]); } }
   // 5. careless slips: wrong first time, then fully right on the very next try
   { const byQ = {}; for (const e of L30) (byQ[e.q] || (byQ[e.q] = [])).push(e);
     const slips = Object.values(byQ).filter((es) => es.length >= 2 && es[0].g < es[0].m && es[1].g >= es[1].m && es[1].t - es[0].t < 3 * DAY).length;
     const wrongs = Object.values(byQ).filter((es) => es[0].g < es[0].m).length;
-    if (slips >= 6 && slips / Math.max(1, wrongs) >= 0.3) add(32, card(PT('Habit', '習慣'), 'orange', PT('Some mistakes are careless slips', '有些錯誤是粗心'), PT(`${slips} wrong answers were right on the very next try. You knew them: slow down and check before moving on.`, `${slips} 題答錯後，下一次就答對了。其實你懂，答完前慢一點檢查。`), btn(PT('Fix my mistakes', '改正錯題'), () => go({ name: 'mistakes' }), 'pv-btn soft'))); }
+    if (slips >= 6 && slips / Math.max(1, wrongs) >= 0.3) add(32, card(PT('Habit', '習慣'), 'orange', PT('Some mistakes are careless slips', '有些錯誤是粗心'), PT(`${slips} wrong answers were right on the very next try. You knew them: slow down and check before moving on.`, `${slips} 題答錯後，下一次就答對了。其實你懂，答完前慢一點檢查。`), btn(PT('Fix my mistakes', '改正錯題'), () => go({ name: 'mistakes' }), 'pv-btn soft')), false, ['orange', PT('Some mistakes are careless slips', '有些錯誤是粗心'), PT(`${slips} wrong answers were right on the very next try. Checking before moving on would help.`, `${slips} 題答錯後下一次就答對。答完前檢查會有幫助。`)]); }
   // 6. old mistakes left open
   { const old = Object.values(local.mistakes || {}).filter((m) => !m.done && m.t < now - 14 * DAY).length;
-    if (old >= 8) add(34, card(PT('Mistakes', '錯題'), 'red', PT(`${old} mistakes are over 2 weeks old`, `${old} 題錯題已超過兩星期`), PT('Old mistakes tend to show up again in tests. Fixing a few a day clears them.', '舊錯題很容易在考試再出現。每天改正幾題就能清完。'), btn(PT('Fix them', '改正'), () => go({ name: 'mistakes' }), 'pv-btn soft'))); }
+    if (old >= 8) add(34, card(PT('Mistakes', '錯題'), 'red', PT(`${old} mistakes are over 2 weeks old`, `${old} 題錯題已超過兩星期`), PT('Old mistakes tend to show up again in tests. Fixing a few a day clears them.', '舊錯題很容易在考試再出現。每天改正幾題就能清完。'), btn(PT('Fix them', '改正'), () => go({ name: 'mistakes' }), 'pv-btn soft')), false, ['red', PT(`${old} mistakes over 2 weeks old`, `${old} 題錯題超過兩星期`), PT('Old mistakes tend to come back in tests.', '舊錯題很容易在考試再出現。')]); }
   // 7. reviews piling up
   { const od = (await dueItems()).filter((x) => local.stats[x.q.id] && local.stats[x.q.id].due < now - 2 * DAY).length;
-    if (od >= 10) add(25, card(PT('Memory', '記憶'), 'red', PT(`${od} reviews are overdue`, `${od} 題溫習已過期`), PT('These are the ones about to be forgotten. A few minutes now saves relearning them later.', '這些就快忘記了。現在花幾分鐘，好過之後重新學。'), btn(PT('Review now', '現在溫習'), () => startReview('spaced'), 'pv-btn soft'))); }
+    if (od >= 10) add(25, card(PT('Memory', '記憶'), 'red', PT(`${od} reviews are overdue`, `${od} 題溫習已過期`), PT('These are the ones about to be forgotten. A few minutes now saves relearning them later.', '這些就快忘記了。現在花幾分鐘，好過之後重新學。'), btn(PT('Review now', '現在溫習'), () => startReview('spaced'), 'pv-btn soft')), false, ['red', PT(`${od} reviews overdue`, `${od} 題溫習已過期`), PT('These are the ones about to be forgotten.', '這些就快忘記了。')]); }
   // 8. avoiding the subject with the nearest test
   { const wk7 = local.log.filter((e) => e.t > now - 7 * DAY && e.q);
     const soon = tests.steps.find((p) => p.book && p.left >= 1 && p.left <= 10 && (p.x.kind || 'test') !== 'dict');
     if (soon && wk7.length >= 30) { const share = wk7.filter((e) => e.q.startsWith(soon.book.id + ':')).length / wk7.length;
-      if (share < 0.2) add(10, card(PT('Tests', '測驗'), 'red', PT(`${soon.x.name} is ${leftText(soon.left)}, but little practice on it`, `「${soon.x.name}」${leftText(soon.left)}，但很少練習`), PT(`Only ${Math.round(share * 100)}% of this week’s questions were ${sname(soon.book)}. Switch some practice over now.`, `本週只有 ${Math.round(share * 100)}% 的題目是${sname(soon.book)}。現在多練習一點。`), btn(PT(`Practise ${sname(soon.book)}`, `練習${sname(soon.book)}`), () => startUnits(soon.book, soon.units, nQ), 'pv-btn soft'))); } }
+      if (share < 0.2) add(10, card(PT('Tests', '測驗'), 'red', PT(`${soon.x.name} is ${leftText(soon.left)}, but little practice on it`, `「${soon.x.name}」${leftText(soon.left)}，但很少練習`), PT(`Only ${Math.round(share * 100)}% of this week’s questions were ${sname(soon.book)}. Switch some practice over now.`, `本週只有 ${Math.round(share * 100)}% 的題目是${sname(soon.book)}。現在多練習一點。`), btn(PT(`Practise ${sname(soon.book)}`, `練習${sname(soon.book)}`), () => startUnits(soon.book, soon.units, nQ), 'pv-btn soft')), false, ['red', PT(`Little practice for the ${soon.x.name}`, `「${soon.x.name}」練習不足`), PT(`It’s ${leftText(soon.left)}, and only ${Math.round(share * 100)}% of this week’s questions were ${sname(soon.book)}.`, `${leftText(soon.left)}考試，本週只有 ${Math.round(share * 100)}% 的題目是${sname(soon.book)}。`)]); } }
   // 9. practising a chapter without its lesson, and struggling
   { const byU = {}; firsts.forEach((e) => { const k = String(e.q).split(':').slice(0, 2).join(':'); (byU[k] || (byU[k] = [])).push(e); });
     const cand = Object.entries(byU).filter(([k, es]) => es.length >= 5 && accP(es) < 50 && !(local.learned || {})[k]).sort((x, y) => accP(x[1]) - accP(y[1]))[0];
     if (cand) { const bk = bookOf(cand[0]), u = unitOf(cand[0]);
-      if (bk && u) add(26, card(PT('Lessons', '課堂'), 'orange', PT(`Practising ${chName(u)} without the lesson`, `未上課就練習「${chName(u)}」`), PT(`${accP(cand[1])}% so far. The lesson explains it step by step and usually lifts scores a lot.`, `目前 ${accP(cand[1])}%。課堂會一步步講解，通常能大大提升分數。`), btn(PT('Take the lesson', '上課'), () => go({ name: 'learn', bookId: bk.id, unitId: u.id }), 'pv-btn soft'))); } }
+      if (bk && u) add(26, card(PT('Lessons', '課堂'), 'orange', PT(`Practising ${chName(u)} without the lesson`, `未上課就練習「${chName(u)}」`), PT(`${accP(cand[1])}% so far. The lesson explains it step by step and usually lifts scores a lot.`, `目前 ${accP(cand[1])}%。課堂會一步步講解，通常能大大提升分數。`), btn(PT('Take the lesson', '上課'), () => go({ name: 'learn', bookId: bk.id, unitId: u.id }), 'pv-btn soft')), false, ['orange', PT(`Practising ${chName(u)} without the lesson`, `未上課就練習「${chName(u)}」`), PT(`${accP(cand[1])}% so far. The lesson usually lifts scores a lot.`, `目前 ${accP(cand[1])}%。上課通常能大大提升分數。`)]); } }
   // 10. strong in practice, weaker when timed
   { const tt = (local.tests || []).filter((x) => x.t > now - 30 * DAY && x.m);
     if (tt.length >= 2 && firsts.length >= 20) { const at = Math.round(100 * tt.reduce((a, x) => a + x.g, 0) / tt.reduce((a, x) => a + x.m, 0)), ap = accP(firsts);
       if (ap - at >= 15) { const k = Object.keys(tt[tt.length - 1].per || {})[0], bk = k && bookOf(k), u = k && unitOf(k);
-        add(30, card(PT('Tests', '測驗'), 'orange', PT('Scores drop when the clock is running', '限時下分數下降'), PT(`${ap}% in practice but ${at}% in timed tests. More timed practice builds speed and calm.`, `練習 ${ap}%，限時測驗只有 ${at}%。多做限時練習，會更快更冷靜。`), bk && u ? btn(PT('Try a timed chapter test', '做限時章節測驗'), () => startChapterTest(bk, [u]), 'pv-btn soft') : '')); } } }
+        add(30, card(PT('Tests', '測驗'), 'orange', PT('Scores drop when the clock is running', '限時下分數下降'), PT(`${ap}% in practice but ${at}% in timed tests. More timed practice builds speed and calm.`, `練習 ${ap}%，限時測驗只有 ${at}%。多做限時練習，會更快更冷靜。`), bk && u ? btn(PT('Try a timed chapter test', '做限時章節測驗'), () => startChapterTest(bk, [u]), 'pv-btn soft') : ''), false, ['orange', PT('Scores drop when timed', '限時下分數下降'), PT(`${ap}% in practice, ${at}% in timed tests.`, `練習 ${ap}%，限時測驗 ${at}%。`)]); } } }
   // 11 & 12. long, wordy questions and diagram questions (need the question text)
   if (firsts.length >= 30) {
     const QM = new Map(); for (const x of await allQuestions()) QM.set(x.q.id, x.q);
@@ -5830,22 +5831,25 @@ async function renderProgress() {
       const sorted = withQ.map(([e, q]) => len(q)).sort((x, y) => x - y), cut = sorted[Math.floor(sorted.length * 0.75)];
       const longQ = withQ.filter(([, q]) => len(q) >= Math.max(cut, 220)).map(([e]) => e), shortQ = withQ.filter(([, q]) => len(q) < cut).map(([e]) => e);
       if (longQ.length >= 12 && shortQ.length >= 12) { const al = accP(longQ), as = accP(shortQ);
-        if (as - al >= 20) add(52, card(PT('Tip', '小貼士'), 'blue', PT('Long questions are harder for you', '長題目比較難'), PT(`${al}% on long, wordy questions vs ${as}% on short ones. Underline the key words and what it’s asking before answering.`, `長題目 ${al}%，短題目 ${as}%。作答前先劃出關鍵字和題目要求。`))); }
+        if (as - al >= 20) add(52, card(PT('Tip', '小貼士'), 'blue', PT('Long questions are harder for you', '長題目比較難'), PT(`${al}% on long, wordy questions vs ${as}% on short ones. Underline the key words and what it’s asking before answering.`, `長題目 ${al}%，短題目 ${as}%。作答前先劃出關鍵字和題目要求。`)), false, ['blue', PT('Long questions are harder', '長題目比較難'), PT(`${al}% on long questions vs ${as}% on short ones.`, `長題目 ${al}%，短題目 ${as}%。`)]); }
       const fig = withQ.filter(([, q]) => q.figure || (q.graphs && q.graphs.length)).map(([e]) => e), nof = withQ.filter(([, q]) => !(q.figure || (q.graphs && q.graphs.length))).map(([e]) => e);
       if (fig.length >= 8 && nof.length >= 20) { const af = accP(fig), an = accP(nof), tu = topUnit(fig);
-        if (an - af >= 25) add(50, card(PT('Tip', '小貼士'), 'blue', PT('Diagram questions are a weak spot', '圖表題是弱項'), PT(`${af}% on questions with a diagram vs ${an}% without. Read the labels and units on the diagram first.`, `有圖的題目 ${af}%，沒有圖的 ${an}%。先看清圖上的標籤和單位。`), tu && tu.book && tu.unit ? btn(PT('Practise this chapter', '練習這一章'), () => startUnits(tu.book, [tu.unit], nQ), 'pv-btn soft') : '')); }
+        if (an - af >= 25) add(50, card(PT('Tip', '小貼士'), 'blue', PT('Diagram questions are a weak spot', '圖表題是弱項'), PT(`${af}% on questions with a diagram vs ${an}% without. Read the labels and units on the diagram first.`, `有圖的題目 ${af}%，沒有圖的 ${an}%。先看清圖上的標籤和單位。`), tu && tu.book && tu.unit ? btn(PT('Practise this chapter', '練習這一章'), () => startUnits(tu.book, [tu.unit], nQ), 'pv-btn soft') : ''), false, ['blue', PT('Diagram questions are a weak spot', '圖表題是弱項'), PT(`${af}% with a diagram vs ${an}% without.`, `有圖 ${af}%，沒有圖 ${an}%。`)]); }
     }
   }
   // 13. wins: a chapter that jumped this week, chapters newly mastered
-  if (D.up && D.up.was != null && D.up.a - D.up.was >= 15) add(5, card(PT('Win', '進步'), 'green', PT(`${chName(D.up.unit)} jumped up`, `「${chName(D.up.unit)}」大進步`), PT(`From ${D.up.was}% last week to ${D.up.a}% this week. That practice paid off.`, `由上週 ${D.up.was}% 升到本週 ${D.up.a}%。練習有成果！`)), true);
+  if (D.up && D.up.was != null && D.up.a - D.up.was >= 15) add(5, card(PT('Win', '進步'), 'green', PT(`${chName(D.up.unit)} jumped up`, `「${chName(D.up.unit)}」大進步`), PT(`From ${D.up.was}% last week to ${D.up.a}% this week. That practice paid off.`, `由上週 ${D.up.was}% 升到本週 ${D.up.a}%。練習有成果！`)), true, ['green', PT(`${chName(D.up.unit)} jumped up`, `「${chName(D.up.unit)}」大進步`), PT(`From ${D.up.was}% last week to ${D.up.a}% this week.`, `由上週 ${D.up.was}% 升到本週 ${D.up.a}%。`)]);
   { const k7 = (local.kpi || []).filter((k) => k.d <= t0 - 6 * DAY).pop(), chNow = (local.kpi || []).slice(-1)[0];
-    if (k7 && chNow && chNow.c > k7.c) add(6, card(PT('Win', '進步'), 'green', PT(chNow.c - k7.c === 1 ? 'A chapter mastered this week' : `${chNow.c - k7.c} chapters mastered this week`, `本週掌握了 ${chNow.c - k7.c} 章`), PT('Passed the test, right first time on harder questions and still remembered. Well done!', '通過測驗、較深題目第一次就答對，而且記得牢。做得好！')), true); }
+    if (k7 && chNow && chNow.c > k7.c) add(6, card(PT('Win', '進步'), 'green', PT(chNow.c - k7.c === 1 ? 'A chapter mastered this week' : `${chNow.c - k7.c} chapters mastered this week`, `本週掌握了 ${chNow.c - k7.c} 章`), PT('Passed the test, right first time on harder questions and still remembered. Well done!', '通過測驗、較深題目第一次就答對，而且記得牢。做得好！')), true, ['green', PT(chNow.c - k7.c === 1 ? 'A chapter mastered this week' : `${chNow.c - k7.c} chapters mastered this week`, `本週掌握了 ${chNow.c - k7.c} 章`), PT('Passed the test and still remembered.', '通過測驗而且記得牢。')]); }
   // order: most important first; always keep one win near the top if there is one
   cards.sort((x, y) => x.pri - y.pri);
   // the most important thing first, then the best win, then the rest in order
   const firstIssue = cards.find((c) => !c.win), winC = cards.find((c) => c.win);
   const ordered = [firstIssue, winC, ...cards.filter((c) => c !== firstIssue && c !== winC)].filter(Boolean);
-  const SHOW = 6, cardsHTML = ordered.map((c, i) => (i < SHOW ? c.html : c.html.replace('class="pv-ins"', 'class="pv-ins pv-hid"')));
+  // the same findings, worded for parents, go in the weekly report (top 5)
+  local.noticed = { t: now, lang: LANG, list: ordered.filter((c) => c.par).slice(0, 5).map((c) => [c.par[0], String(c.par[1] || '').slice(0, 90), String(c.par[2] || '').slice(0, 160)]) }; saveLocal();
+  // show two full rows at whatever width (4, 3, 2 or 1 across)
+  const cols = innerWidth >= 1650 ? 4 : innerWidth >= 1100 ? 3 : innerWidth >= 700 ? 2 : 1, SHOW = Math.max(4, cols * 2), cardsHTML = ordered.map((c, i) => (i < SHOW ? c.html : c.html.replace('class="pv-ins"', 'class="pv-ins pv-hid"')));
   const sec2 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('What Buddy has noticed', 'Buddy 的觀察')}${ib('howNotP', PT('Where do these come from?', '這些從哪裡來？'))}</h2><span>${PT('From your wrong answers, hints, timing and reviews', '根據答錯的題目、提示、時間和溫習')}</span></div>
     ${cards.length ? `<div class="pv-grid3" id="pv-ins">${cardsHTML.join('')}</div>${cards.length > SHOW ? btn(PT(`Show ${cards.length - SHOW} more`, `再顯示 ${cards.length - SHOW} 項`), () => { const el = document.getElementById('pv-ins'), open = el.classList.toggle('open'); const bt = el.nextElementSibling; if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : PT(`Show ${cards.length - SHOW} more`, `再顯示 ${cards.length - SHOW} 項`); }, 'pv-btn quiet pv-insmore') : ''}` : `<p class="pv-empty">${PT('Buddy needs about a week of practice to spot patterns. Keep going!', 'Buddy 需要大約一星期的練習才能看出規律。繼續加油！')}</p>`}
     ${how('howNotP', PT('Where do these come from?', '這些從哪裡來？'), `<p>${PT('Each card appears only when the numbers really show something. Nothing here is guessed.', '只有數據真的顯示出規律，才會出現卡片，不會憑空估計。')}</p><ul>
