@@ -2398,6 +2398,7 @@ function missionHowHTML(id = 'howMission') {
   return howPanel(id, 'How does this work?', '這是怎樣運作的？', [
     ['📋', 'Up to 5 jobs a day, most important first.', '每天最多 5 項，最重要的排先。', 'Try to finish them all. Each one ticks itself off when it’s done.', '盡量全部完成，做完會自動打勾。'],
     ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'A lesson for a chapter you haven’t started, or your weakest one. A practice test the day before.', '先上還未開始的章節，或練最弱的一章。考試前一天做模擬測驗。'],
+    ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
     ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
     ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
@@ -2473,6 +2474,25 @@ async function renderHome() {
   const cands = []; // { key, icon, t, s, attr, chk }
   for (const p of tests.steps.filter((q) => q.left <= 14 && q.step).slice(0, 2)) {
     { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
+  // behind pace for a test's goal: add catch-up jobs for it (its weakest chapters), so the daily amount matches what the goal needs
+  let extraJobs = 0;
+  for (const p of tests.steps.filter((q) => q.left >= 1 && q.left <= 14 && q.step && q.book && q.ready != null && (q.x.kind || 'test') !== 'dict').slice(0, 2)) {
+    const aim = p.x.aim || 80; if (p.ready >= aim) continue;
+    const m = await bookMastery(p.book), chs = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)); if (!chs.length) continue;
+    const habit = practiceHabit(), fc = planForecast(p.ready, chs, p.left, habit); if (fc >= aim) continue; // the usual pace gets there
+    const N = planNeeds(p.ready, chs.map((c) => c.pct || 0), p.left, aim), perDay = Math.ceil(N.sets / Math.max(1, p.left));
+    const want = Math.min(3, perDay) - 1; if (want <= 0) continue;
+    const taken = new Set(cands.flatMap((c) => (c.chk && c.chk.u ? [c.chk.u] : c.chk && c.chk.us ? c.chk.us : [])));
+    const pick = chs.filter((c) => !taken.has(c.unit.id)).sort((a, b) => a.pct - b.pct).slice(0, want);
+    for (const c of pick) {
+      const fresh = !c.done && !c.learned, nm = shortTitle(c.unit.title);
+      cands.push({ key: `c:${p.x.id}:${c.unit.id}`, icon: fresh ? 'learn' : 'practise', t: fresh ? Z(`Learn: ${nm}`, `學習：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`),
+        s: Z(`To reach your ${aim}% goal for the ${p.x.name}, Buddy added this. At your usual pace you’d get about ${fc}%.`, `為了在「${p.x.name}」達到 ${aim}% 目標，Buddy 加了這一項。照平時的步伐約 ${fc}%。`),
+        attr: fresh ? `data-mlearn="${esc(p.book.id)}:${esc(c.unit.id)}"` : `data-weak="${esc(p.book.id)}:${esc(c.unit.id)}"`,
+        chk: fresh ? { y: 'learn', b: p.book.id, u: c.unit.id } : { y: 'log', b: p.book.id, us: [c.unit.id] }, tag: ['test', Z(`Catch up · ${p.x.name}`, `追進度 ·「${p.x.name}」`)] });
+      extraJobs++;
+    }
+  }
   // school 默書 in the next 2 days, and a writing test in the next 3, go straight into the mission
   for (const x of (local.sched || []).filter((x) => x.kind === 'dict' && testLeft(x) >= 0 && testLeft(x) <= 2)) {
     if (cands.some((c) => c.key === `t:${x.id}`)) continue;
@@ -2501,6 +2521,7 @@ async function renderHome() {
   } else cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z('Practise your first chapter', '練習第一章'), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-book="${esc(books[0].id)}"`, chk: { y: 'log', b: books[0].id, us: null } });
   // every mission step says why it's there: a coloured reason tag and one plain sentence
   for (const c of cands) {
+    if (c.key.startsWith('c:')) continue;
     if (c.key.startsWith('t:')) { const p = tests.steps.find((q) => `t:${q.x.id}` === c.key);
       if (p) { c.tag = ['test', p.left === 0 ? Z('Test today', '今天測驗') : Z(`Test ${leftText(p.left)}`, `${leftText(p.left)}測驗`)]; c.s = p.step.icon === 'learn' && p.step.u ? Z(`Your ${p.x.name} is ${leftText(p.left)} and covers this chapter. You haven’t started it yet, so begin with the lesson.`, `「${p.x.name}」${leftText(p.left)}，範圍包括這一章。你還未開始，先上課。`) : Z(`Your ${p.x.name} is ${leftText(p.left)}. ${p.step.s}.`, `「${p.x.name}」${leftText(p.left)}。${p.step.s}。`).replace(/\.\.$/, '.'); } }
     else if (c.key === 'mk') { c.tag = ['mistakes', Z(`${mk} mistakes`, `${mk} 題錯題`)]; c.s = Z('Questions you got wrong. Fixing them is the quickest way to win marks back.', '你答錯的題目。改正它們是最快拿回分數的方法。'); }
@@ -2510,8 +2531,8 @@ async function renderHome() {
     else if (!c.tag) c.tag = ['learn', Z('Get started', '開始')];
   }
   const t0 = dayStart();
-  const nSteps = 5;
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 2) { local.mission = { v: 2, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag }) => ({ key, icon, t, s, chk, attr, tag })) }; saveLocal(); }
+  const nSteps = Math.min(8, 5 + extraJobs); // up to 5, plus catch-up jobs when behind pace for a test
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 3) { local.mission = { v: 3, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag }) => ({ key, icon, t, s, chk, attr, tag })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
@@ -2799,6 +2820,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-tplan]').forEach((b) => (b.onclick = () => { const f = tdPlans[+b.dataset.tplan]; if (f) f(); }));
   $app.querySelectorAll('[data-dictgo]').forEach((b) => (b.onclick = () => go(b.dataset.dictgo === 'new' ? { name: 'dictation', id: 'new' } : { name: 'dictation', id: b.dataset.dictgo, sub: 'run' })));
   $app.querySelectorAll('[data-wrgo]').forEach((b) => (b.onclick = () => go({ name: 'writing' })));
+  $app.querySelectorAll('[data-mlearn]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.mlearn.split(':'); go({ name: 'learn', bookId: bid, unitId: uid }); }));
   $app.querySelectorAll('[data-weak]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.weak.split(':'), bk = books.find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
