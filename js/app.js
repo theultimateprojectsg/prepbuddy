@@ -2573,15 +2573,25 @@ async function renderHome() {
     { const ys = local.log.filter((e) => e.q && e.m && e.t >= t0 - DAY && e.t < t0), right = ys.filter((e) => e.g >= e.m).length;
       if (ys.length >= 5 && right / ys.length >= 0.7) add(8, 'check', Z(`Yesterday you got ${right} of ${ys.length} right`, `昨天答對 ${right}／${ys.length} 題`), Z('Nice work. Keep it rolling today.', '做得好，今天繼續！')); }
     W.sort((a, b) => a.pri - b.pri);
+    const SV = { trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3"/>', medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8"/>', up: '<path d="M4 16l5-5 4 4 7-7"/><path d="M15 8h5v5"/>', sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', check: '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>', star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.5 2.9 1-6.1L3.2 9.5l6.1-.9z"/>', target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/>', flame: '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 2.5 2.5 3 4 .5-3-1-5 0-7z"/>', chart: '<path d="M5 20V10M12 20V4M19 20v-7"/>', brain: '<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/>' };
+    const ic = (k) => `<svg class="tw-i ${k}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SV[k] || SV.check}</svg>`;
     if (W.length) {
-      const IC = { trophy: 'trophy', medal: 'award', up: 'trending-up', sparkle: 'sparkles', check: 'circle-check', star: 'star', target: 'target', flame: 'flame', chart: 'chart-bar', brain: 'brain' };
-      const SV = { trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3"/>', medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8"/>', up: '<path d="M4 16l5-5 4 4 7-7"/><path d="M15 8h5v5"/>', sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', check: '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>', star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.5 2.9 1-6.1L3.2 9.5l6.1-.9z"/>', target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/>', flame: '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 2.5 2.5 3 4 .5-3-1-5 0-7z"/>', chart: '<path d="M5 20V10M12 20V4M19 20v-7"/>', brain: '<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/>' };
-      const ic = (k) => `<svg class="tw-i ${k}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SV[k] || SV.check}</svg>`;
       const top = W[0], rest = W.slice(1).filter((x) => x.t !== top.t).slice(0, 2);
       winHTML = `<section class="td-wins" aria-label="${Z('Your wins', '你的進步')}"><span class="tw-conf" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
         <div class="tw-top"><span class="tw-bud">${buddySVG('happy', 56)}</span><div><small>${Z('Your wins', '你的進步')}</small><b data-raw>${esc(top.t)}</b></div></div>
         <p class="tw-d">${esc(top.d)}</p>${rest.length ? `<div class="tw-more">${rest.map((x) => `<div>${ic(x.icon)}<span data-raw>${esc(x.t)}</span></div>`).join('')}</div>` : ''}</section>`;
-      void IC;
+    } else {
+      // nothing to celebrate yet: point at the nearest win, in the same cheerful card
+      const days = new Set(local.log.map((e) => dayStart(e.t))), didToday = days.has(t0), didY = days.has(t0 - DAY), mkN = mistakeCount();
+      const ideas = [];
+      if (!didToday && didY) ideas.push([Z('Practise today to make it 2 days in a row', '今天練習，就連續 2 日了'), 'flame']);
+      else if (!didToday) ideas.push([Z('Practise today to start a streak', '今天練習，開始連續紀錄'), 'flame']);
+      if (mkN >= 3) ideas.push([Z('Fix 3 mistakes and that’s a win', '改正 3 題錯題就是一個進步'), 'check']);
+      ideas.push([Z('Get 5 or more questions right in today’s mission', '在今日任務答對 5 題或以上'), 'star']);
+      const head = didToday ? Z('Your next win is close!', '下一個進步就快到了！') : Z('Your first win of the week is one session away!', '再練習一次，就有本週第一個進步！');
+      winHTML = `<section class="td-wins tw-next" aria-label="${Z('Your next win', '你的下一個進步')}">
+        <div class="tw-top"><span class="tw-bud">${buddySVG('happy', 56)}</span><div><small>${Z('Your next win', '你的下一個進步')}</small><b>${head}</b></div></div>
+        <p class="tw-d">${Z('Here’s how to earn one today:', '今天這樣做就可以：')}</p><div class="tw-more">${ideas.slice(0, 2).map(([t, k]) => `<div>${ic(k)}<span>${esc(t)}</span></div>`).join('')}</div></section>`;
     } }
   // a subject left alone for 5+ days
   // A lesson left part-way (from the last 7 days): carry on, or close it.
@@ -2650,7 +2660,7 @@ async function renderHome() {
       : first ? Z(`Today: ${first.now.t}.`, `今天：${first.now.t}。`) : Z('Today’s mission is done. Nice work!', '今日任務完成，做得好！'); }
   const missionHTML = allDone
     ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
-    : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span>${Z(`about ${mins} min`, `約 ${mins} 分鐘`)}</span></div>
+    : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2></div>
       <div class="ms-time" role="radiogroup" aria-label="${Z('How much time do you have?', '你有多少時間？')}"><span>${Z('Time today:', '今天有：')}</span>${[5, 15, 30].map((n) => `<button type="button" role="radio" aria-checked="${(local.mtime || 30) === n}" class="${(local.mtime || 30) === n ? 'on' : ''}" data-mtime="${n}">${Z(`${n} min`, `${n} 分鐘`)}</button>`).join('')}</div>
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
       ${missionHowHTML()}
