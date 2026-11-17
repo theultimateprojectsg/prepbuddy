@@ -5903,7 +5903,7 @@ async function renderProgress() {
   // one plain sentence under each test bar: where it's heading, or why there's no forecast yet, and what it would take
   // under each test bar, Buddy as a coach: honest about where the usual pace lands, then the plan to make the goal
   const fcLine = (ready, aim, left, I) => {
-    const E = esc, li = (t) => `<li>${t}</li>`, box = (head, steps, extra = '') => `<div class="pv-coach">${buddySVG('happy', 34)}<div><b>${head}</b>${steps.length ? `<ol>${steps.map(li).join('')}</ol>` : ''}${extra}</div></div>`;
+    const E = esc, li = (t) => `<li>${t}</li>`, box = (head, steps, extra = '') => `<div class="pv-coach"><div><b>${head}</b>${steps.length ? `<ol>${steps.map(li).join('')}</ol>` : ''}${extra}</div></div>`;
     if (ready >= aim) return box(E(PT(`You’ve reached your ${aim}% goal. Nice work!`, `已達到 ${aim}% 目標，做得好！`)), [E(PT('Keep it there with short reviews every few days.', '每隔幾日做短時間溫習，保持狀態。'))]);
     const ord = I.names.map((n, k) => [n, I.pcts[k]]).sort((a, b) => a[1] - b[1]);
     const todayStep = ord.length ? (ord[0][1] === 0 ? PT(`Today: take the lesson on ${ord[0][0]}. It’s not started yet.`, `今天：先上「${ord[0][0]}」這一課，還未開始。`) : PT(`Today: practise ${ord[0][0]}, your weakest chapter (${ord[0][1]}%).`, `今天：練習最弱的「${ord[0][0]}」（${ord[0][1]}%）。`)) : '';
