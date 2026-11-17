@@ -5958,7 +5958,7 @@ async function renderProgress() {
   const best = rated.slice().sort((x, y) => y.a - x.a)[0], worst = rated.slice().sort((x, y) => x.a - y.a)[0];
   const gapNote = best && worst && best.i !== worst.i && best.a - worst.a >= 15
     ? PT(`Strongest at “${names[best.i].toLowerCase()}”. “${names[worst.i]}” questions are the gap, and that’s where test marks are.`, `最擅長「${names[best.i]}」；「${names[worst.i]}」是弱項，也是考試失分的地方。`) : rated.length ? PT('Fairly even across question types.', '各類題型表現大致平均。') : '';
-  const sec3 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('My subjects', '我的科目')}${ib('howWorkP', PT('How to read this', '怎樣看'))}</h2>
+  const sec3 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('Am I mastering my subjects?', '我掌握了各科嗎？')}${ib('howWorkP', PT('How to read this', '怎樣看'))}</h2>
       <span class="pv-legend"><span class="pv-lsub">${PT('How well you know each textbook, chapter by chapter', '你對每本課本、每一章的掌握程度')}</span><i class="good"></i>${PT('Strong', '強')}<i class="mid"></i>${PT('Getting there', '漸入佳境')}<i class="low"></i>${PT('Needs work', '需加強')}</span></div>
     ${how('howWorkP', PT('How to read this', '怎樣看'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it (or to start its lesson).', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習（或開始上課）。')}</p>
       <p><b>${PT('Most useful next', '下一步')}</b> · ${PT('in order: what your nearest test needs, then this week’s weakest chapter, then mistakes to fix, then reviews due.', '次序：最近的測驗需要的、本週最弱的章節、要改正的錯題、到期的溫習。')}</p>
