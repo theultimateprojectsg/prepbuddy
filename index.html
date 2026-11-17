@@ -2438,6 +2438,15 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 @keyframes boottw{0%,100%{transform:scale(.6) rotate(0);opacity:.3}50%{transform:scale(1.15) rotate(20deg);opacity:1}}
 @keyframes bootmsg{0%{opacity:0;transform:translateY(6px)}5%,22%{opacity:1;transform:none}27%,100%{opacity:0;transform:translateY(-6px)}}
 @media (prefers-reduced-motion:reduce){.boot-bud,.boot-shadow,.boot-star{animation-duration:2.4s}}
+
+/* aim slider on each test's bar */
+.pv-bar{position:relative}
+.pv-aim{position:absolute;left:0;right:0;top:50%;width:100%;height:28px;margin:-14px 0 0;background:transparent;-webkit-appearance:none;appearance:none;cursor:ew-resize;z-index:3}
+.pv-aim::-webkit-slider-runnable-track{background:transparent;height:28px}.pv-aim::-moz-range-track{background:transparent;height:28px}
+.pv-aim::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:5px;border-radius:50%;background:#FFFFFF;border:3px solid var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:grab}
+.pv-aim::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#FFFFFF;border:3px solid var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:grab}
+.pv-aim:focus-visible::-webkit-slider-thumb{outline:3px solid var(--accent-tint,#C9D3F0)}
+.pv-aimhint{margin:2px 0 0;font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>

@@ -5499,6 +5499,8 @@ function chapterSheet(book, c) {
   box.onclick = (e) => { if (e.target === box) close(); };
   box.querySelector('.cs2-go').focus({ preventScroll: true });
 }
+// On track / close / at risk, against the target the parent set for that test (default 80%).
+const aimTone = (v, aim = 80) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
 async function renderProgress() {
   // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
   // what should I work on, is it working, and am I putting in the effort. Every card has a number,
@@ -5538,10 +5540,11 @@ async function renderProgress() {
     const other = MB.get(p.book.id).chapters.filter((c) => (c.done || c.learned) && !p.units.some((u) => u.id === c.unit.id));
     if (!other.length || cs.some((c) => c.done)) return '';
     return `<p class="pv-out">ⓘ ${PT(`Your practice so far was on ${other.slice(0, 2).map((c) => chName(c.unit)).join(' and ')}, which ${other.length > 1 ? 'aren’t' : 'isn’t'} in this test. If the test covers ${other.length > 1 ? 'them' : 'it'}, tap Edit and add ${other.length > 1 ? 'them' : 'it'}.`, `你目前練習的是${other.slice(0, 2).map((c) => `「${chName(c.unit)}」`).join('和')}，不在這個測驗範圍內。如果測驗包括，請按「修改」加入。`)}</p>`; };
-  const testCards = tests.steps.slice(0, 3).map((p) => {
+  const testCards = tests.steps.map((p, ti) => {
     const h = p.book ? RH.find((x) => x.b.id === p.book.id) : null;
     const fc = p.ready == null ? null : h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(p.ready + h.rate * p.left)) : p.ready;
-    const st = p.ready == null ? 'none' : (fc ?? p.ready) >= 80 ? 'ok' : (fc ?? p.ready) >= 65 ? 'close' : 'risk';
+    const aim = p.x.aim || 80; // the parent's target for this test, set with the slider
+    const st = p.ready == null ? 'none' : aimTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
     const steps = [];
     if (p.book && p.units && p.units.length && (p.x.kind || 'test') !== 'dict') {
@@ -5556,11 +5559,10 @@ async function renderProgress() {
       : st === 'ok' ? PT(`At this pace you’ll reach about ${fc}%. Short reviews keep it there; Today’s mission takes care of it.`, `按現時進度，考試時約 ${fc}%。今日任務會安排溫習，保持狀態。`)
       : PT(`At this pace you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
-      <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:80%"></s><small style="left:80%">${PT('aim 80%', '目標 80%')}</small></div>
+      <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:${aim}%"></s><small style="left:${aim}%">${PT(`aim ${aim}%`, `目標 ${aim}%`)}</small><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Target for this test', '這個測驗的目標')}"></div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${bar}${chipsOf(p)}<p class="pv-p">${what}${p.left >= 2 && p.book && (p.x.kind || 'test') !== 'dict' ? ` ${PT(`Practice test on ${fmtDay(testDay(p.x) - DAY)}.`, `${fmtDay(testDay(p.x) - DAY)} 做模擬測驗。`)}` : ''}</p>${outside(p)}
-      ${p.ready != null ? `<span class="pv-op">${PT('Only PrepBuddy · forecast to your test date', '只有 PrepBuddy · 按你的考試日期預測')}</span>` : ''}
+      ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Drag the aim line to set your own target for this test.', '拖動目標線，為這個測驗設定你自己的目標。')}</p>` : ''}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}${outside(p)}
       <div class="pv-test-f">${p.step ? btn(esc(p.step.t), p.step.run, `pv-btn ${st === 'ok' ? '' : 'primary'}`) : ''}${btn(PT('Edit', '修改'), () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet')}</div></div>`;
   });
   const testedBooks = new Set(tests.steps.map((p) => p.book && p.book.id).filter(Boolean));
@@ -5861,6 +5863,16 @@ async function renderProgress() {
     ${kpiHTML}${didHTML}${sec1}${sec2}${sec3}${sec4}${sec5}
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
+  // aim sliders: move the line and the status live; save when let go
+  $app.querySelectorAll('.pv-aim').forEach((r) => {
+    const card = r.closest('.pv-test'), bar = r.closest('.pv-bar'), fc = +r.dataset.fc;
+    const LAB = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') };
+    const show = () => { if (+r.value < 50) r.value = 50; const a = +r.value, t = aimTone(fc, a); bar.querySelector('s').style.left = a + '%'; const sm = bar.querySelector('small'); sm.style.left = a + '%'; sm.textContent = PT(`aim ${a}%`, `目標 ${a}%`);
+      ['ok', 'close', 'risk'].forEach((k) => { card.classList.toggle(k, k === t); bar.classList.toggle(k, k === t); }); const pill = card.querySelector('.pv-pill'); if (pill) { pill.className = `pv-pill ${t}`; pill.textContent = LAB[t]; }
+      const f = card.querySelector('.pv-num .fc'); if (f) f.className = `fc ${t}`; };
+    r.oninput = show;
+    r.onchange = () => { show(); const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = +r.value; saveLocal(); } };
+  });
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
   on('goal-edit', () => goalDialog());
   on('goal-set', () => goalDialog());
@@ -6879,7 +6891,7 @@ function testDialog(edit) {
 }
 // Today: a "School tests" section, and how-did-it-go for tests just passed.
 async function schoolTestsHTML() {
-  const up = upcomingTests().slice(0, 4);
+  const up = upcomingTests().slice(0, 12);
   const steps = (await Promise.all(up.map(testStep))).filter(Boolean)
     .sort((a, b) => a.left - b.left || (a.ready ?? 101) - (b.ready ?? 101)); // same day (e.g. exams): weakest first
   const past = schoolTests().filter((x) => testLeft(x) < 0 && testLeft(x) >= -21 && x.score === undefined); // papers often come back 1-2 weeks later
