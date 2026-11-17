@@ -2840,6 +2840,30 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 .qwhere{display:flex;align-items:center;gap:8px;margin:0 0 -8px;font-size:13px;color:var(--text-2);min-width:0}.qwhere span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.qwhere b{flex:none;font-size:12px;padding:3px 9px;border-radius:999px;background:#EEF1FB;color:var(--accent)}
 .rvs .cs2-pick{position:sticky;bottom:0;background:#fff;padding-top:10px;margin-bottom:0!important;padding-bottom:18px;z-index:2}
 @media (max-width:560px){.rvs-how{grid-template-columns:1fr}}
+
+/* chapters as a list on every screen: one row each, 5 then "+N more" */
+.pv-tiles{display:flex!important;flex-direction:column;gap:6px}
+.pv-tile{flex-direction:row!important;align-items:center!important;gap:10px!important;min-height:0!important;padding:10px 12px!important;background:#FFFFFF!important;border:1.5px solid var(--line)!important;color:var(--ink)!important;border-radius:12px!important}
+.pv-tile.good,.pv-tile.mid,.pv-tile.low{background:#FFFFFF!important;border:1.5px solid var(--line)!important}
+.pv-tiles .pv-tile:hover{border-color:var(--accent)!important;filter:none}
+.pv-tile .pv-tdot{flex:none;width:10px;height:10px;border-radius:50%;background:#C9D0E0}
+.pv-tile.good .pv-tdot{background:#2FB173}.pv-tile.mid .pv-tdot{background:#F2B705}.pv-tile.low .pv-tdot{background:#E5604A}
+.pv-tile .pv-tn{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;margin:0!important}
+.pv-tile .pv-tn b{font-size:14px!important;font-weight:600!important;line-height:1.3;color:var(--ink);-webkit-line-clamp:2!important;white-space:normal!important}
+.pv-tile .pv-tn small{font-size:12px;color:var(--text-2);font-weight:500}
+.pv-tile.good .pv-tn small{color:#0E6E4D}.pv-tile.mid .pv-tn small{color:#8A5D00}.pv-tile.low .pv-tn small{color:#A8321F}
+.pv-tile .pv-tp{flex:none;display:flex;align-items:center;gap:8px;margin:0!important;font-size:13px!important}
+.pv-tile .pv-tp i{display:block;width:64px;height:6px;border-radius:9px;background:#EEF0F6;overflow:hidden}.pv-tile .pv-tp i b{display:block;height:100%;border-radius:9px;background:#C9D0E0}
+.pv-tile.good .pv-tp i b{background:#2FB173}.pv-tile.mid .pv-tp i b{background:#F2B705}.pv-tile.low .pv-tp i b{background:#E5604A}
+.pv-tile .pv-tp em{font-style:normal;font-weight:700;min-width:34px;text-align:right;color:var(--ink)}
+.pv-tile .pv-tgo{flex:none;font-style:normal;font-size:18px;color:var(--muted)}
+.pv-tiles .pv-tile.pv-hid{display:none!important}.pv-tiles.open .pv-tile.pv-hid{display:flex!important}
+.pv-tile.more{justify-content:center!important;background:none!important;border:0!important;border-top:1px dashed var(--line)!important;border-radius:0!important;color:var(--accent)!important;font-weight:700;font-size:14px;padding:10px 0 2px!important}
+@media (max-width:600px){.pv-tile .pv-tp i{display:none}}
+
+.pv-legend i.good{background:#2FB173!important;border-color:#2FB173!important}.pv-legend i.mid{background:#F2B705!important;border-color:#F2B705!important}.pv-legend i.low{background:#E5604A!important;border-color:#E5604A!important}
+.pv-legend i.good,.pv-legend i.mid,.pv-legend i.low{border-radius:50%!important}
+.pv-subjs{align-items:start}
 </style>
 </head>
 <body>

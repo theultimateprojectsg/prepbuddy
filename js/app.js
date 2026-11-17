@@ -5974,9 +5974,10 @@ async function renderProgress() {
     for (const x of g.list) for (const c of MB.get(x.b.id).chapters) { w += c.weight; sum += c.pct * c.weight; nch++; }
     const gp = w ? Math.round(sum / w) : 0;
     const bookHTML = (x) => {
-      const chs = MB.get(x.b.id).chapters, phone = innerWidth < 600, max = phone ? (chs.length > 6 ? 5 : 6) : many ? (chs.length > 6 ? 5 : 6) : (chs.length > 12 ? 11 : 12);
+      const chs = MB.get(x.b.id).chapters, max = chs.length > 6 ? 5 : 6; // a list on every screen: 5 chapters, then "+N more"
       const tile = (c) => { const st = fresh(c) ? 'none' : c.pct >= 80 ? 'good' : c.pct >= 60 ? 'mid' : 'low';
-        return btn(`<b data-raw>${esc(chName(c.unit))}</b><span>${fresh(c) ? PT('not started', '未開始') : c.pct + '%'}</span>`, () => chapterSheet(x.b, c), `pv-tile ${st}`); };
+        const word = { none: PT('Not started', '未開始'), good: PT('Strong', '掌握'), mid: PT('Getting there', '漸入佳境'), low: PT('Needs work', '要加強') }[st];
+        return btn(`<i class="pv-tdot"></i><span class="pv-tn"><b data-raw>${esc(chName(c.unit))}</b><small>${word}${c.learned && !c.done ? ` · ${PT('lesson done', '已上課')}` : ''}</small></span>${fresh(c) ? '' : `<span class="pv-tp"><i><b style="width:${Math.max(3, c.pct)}%"></b></i><em>${c.pct}%</em></span>`}<em class="pv-tgo">›</em>`, () => chapterSheet(x.b, c), `pv-tile ${st}`); };
       return `${many ? `<div class="pv-bk-h"><b data-raw>${esc(x.b.title)}</b><span>${PT(`${x.pct}% · ${chs.length} chapters`, `${x.pct}% · ${chs.length} 章`)}</span></div>` : ''}
       <div class="pv-tiles" id="pvt-${esc(x.b.id)}">${chs.map((c, i) => (i < max ? tile(c) : tile(c).replace('class="pv-tile', 'class="pv-tile pv-hid'))).join('')}${chs.length > max ? btn(PT(`+${chs.length - max} more`, `還有 ${chs.length - max} 章`), () => {
         const el = document.getElementById(`pvt-${x.b.id}`), open = el.classList.toggle('open'), bt = el.querySelector('.pv-tile.more');
