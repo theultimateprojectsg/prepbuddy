@@ -729,6 +729,25 @@ function schedule(s, full) {
   for (const s of Object.values(local.stats)) if (!s.due) { schedule(s, s.last >= 1); changed = true; }
   if (changed) saveLocal();
 })();
+/* ---------- test-day forecast ----------
+   Works from the first day: how often this child usually practises, and what Buddy's plan for the
+   test chapters adds per practice day (lesson first, then practice sets, then the chapter test). */
+function practiceHabit() {
+  const t0 = startOfToday(), days = new Set();
+  let first = Infinity;
+  for (const e of local.log || []) if (e.t) { first = Math.min(first, e.t); if (e.t > t0 - 13 * DAY) days.add(new Date(e.t).setHours(0, 0, 0, 0)); }
+  if (first === Infinity) return 0.6; // nothing yet: assume most days
+  const span = Math.min(14, Math.max(1, Math.round((t0 - new Date(first).setHours(0, 0, 0, 0)) / DAY) + 1));
+  return Math.max(0.3, Math.min(1, days.size / span));
+}
+function planForecast(ready, chs, left, habit = practiceHabit()) {
+  if (ready == null || !chs || !chs.length || left < 1) return ready;
+  const cap = left >= 7 ? 80 : 70, sets = Math.round(Math.max(1, left) * habit * 2);
+  const pc = chs.map((c) => c.pct || 0), before = pc.reduce((a, b) => a + b, 0) / pc.length;
+  for (let k = 0; k < sets; k++) { let i = -1; pc.forEach((v, j) => { if (v < cap && (i < 0 || v < pc[i])) i = j; }); if (i < 0) break; pc[i] = Math.min(cap, pc[i] + 15); }
+  const after = pc.reduce((a, b) => a + b, 0) / pc.length;
+  return Math.min(100, Math.max(ready, Math.round(ready + after - before)));
+}
 async function dueItems() {
   const now = Date.now();
   return (await allQuestions()).filter((x) => { const s = local.stats[x.q.id]; return s && s.due <= now; })
@@ -5167,7 +5186,8 @@ async function reportExtras(books, gs) {
   const T = await schoolTestsHTML(); const p = T.steps.find((x) => x.ready != null) || T.steps[0];
   if (p) {
     const RH = await readyHist(books), h = p.book ? RH.find((y) => y.b.id === p.book.id) : null;
-    const fc = p.ready == null || locked('forecast') ? null : h && h.rate > 0 ? Math.min(100, Math.round(p.ready + h.rate * p.left)) : p.ready;
+    const fcCh = p.book && p.units && p.units.length ? (await bookMastery(p.book)).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : [];
+    const fc = p.ready == null || locked('forecast') ? null : planForecast(p.ready, fcCh, p.left);
     const v = fc ?? p.ready, st = v == null ? 'none' : v >= 80 ? 'ok' : v >= 65 ? 'close' : 'risk';
     const plan = [];
     if (p.book && p.units && p.units.length && (p.x.kind || 'test') !== 'dict') {
@@ -5548,7 +5568,7 @@ function testPlanSheet(p, chs, aim, fc) {
   box.innerHTML = `<div class="cdlg tp" role="dialog" aria-modal="true" aria-labelledby="tp-t">
     <header class="tp-h"><div><small>${fmt(tday, { weekday: 'long', day: 'numeric', month: 'long' })} · ${leftText(left)}</small><b id="tp-t" data-raw>${esc(p.x.name)}</b></div><span class="pv-pill ${tone}">${{ ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') }[tone]}</span><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="tp-body"><div class="tp-col">
-      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${fc ?? p.ready}%</b><span>${PT('on test day at this pace', '按現時進度考試當日')}</span></div><i>·</i><div><b>${aim}%</b><span>${PT('your goal', '你的目標')}</span></div></div>
+      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${fc ?? p.ready}%</b><span>${PT('on test day with the plan', '跟著計劃考試當日')}</span></div><i>·</i><div><b>${aim}%</b><span>${PT('your goal', '你的目標')}</span></div></div>
       <p class="tp-p">${gap ? PT(`About ${gap} points short of your goal at the current pace. Follow the plan and most of that gap closes.`, `按現時進度，距離目標約 ${gap} 分。跟著計劃做，大部分差距都能補回。`) : PT('On course for your goal. The plan keeps it there with practice and a final practice test.', '正朝目標前進。計劃會用練習和最後一次模擬測驗保持狀態。')}</p>
       <h3>${PT('What each chapter needs', '每章需要做甚麼')}</h3>
       <div class="tp-ch">${need.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${x.c.pct}%"></em><s style="left:${aim}%"></s></i></span><strong>${x.c.pct}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
@@ -5763,18 +5783,18 @@ async function renderProgress() {
     if (!other.length || cs.some((c) => c.done)) return '';
     return `<p class="pv-out">ⓘ ${PT(`Your practice so far was on ${other.slice(0, 2).map((c) => chName(c.unit)).join(' and ')}, which ${other.length > 1 ? 'aren’t' : 'isn’t'} in this test. If the test covers ${other.length > 1 ? 'them' : 'it'}, tap Edit and add ${other.length > 1 ? 'them' : 'it'}.`, `你目前練習的是${other.slice(0, 2).map((c) => `「${chName(c.unit)}」`).join('和')}，不在這個測驗範圍內。如果測驗包括，請按「修改」加入。`)}</p>`; };
   // one plain sentence under each test bar: where it's heading, or why there's no forecast yet, and what it would take
-  const fcLine = (ready, fc, aim, left, lock = false) => {
+  const fcLine = (ready, fc, aim, left, lock = false, all = null, habit = 1) => {
     const per = Math.max(1, Math.ceil((aim - ready) / Math.max(1, left)));
     if (ready >= aim) return PT(`You’ve reached your ${aim}% goal. Short reviews keep it there.`, `已達到 ${aim}% 目標。短時間溫習保持狀態。`);
-    if (lock) return PT(`To reach your ${aim}% goal by test day, you’d need about ${per}% more each day.`, `要在考試前達到 ${aim}% 目標，每天大約要提升 ${per}%。`);
-    if (fc == null) return PT(`Too early to predict test day: Buddy needs about 2 weeks of practice first. To reach ${aim}%, you’d need about ${per}% more each day.`, `現在預測考試當日還太早：Buddy 需要大約兩星期的練習。要達到 ${aim}%，每天大約要提升 ${per}%。`);
-    if (fc >= aim) return PT(`At this pace you’ll reach about ${fc}% by test day, above your ${aim}% goal.`, `按現時進度，考試時約 ${fc}%，高於 ${aim}% 目標。`);
-    return PT(`At this pace you’ll reach about ${fc}% by test day, ${aim - fc}% short of your ${aim}% goal. About ${per}% more each day would get you there.`, `按現時進度，考試時約 ${fc}%，比 ${aim}% 目標少 ${aim - fc}%。每天多提升大約 ${per}% 就能達到。`);
+    if (lock || fc == null) return PT(`To reach your ${aim}% goal by test day, you’d need about ${per}% more each day.`, `要在考試前達到 ${aim}% 目標，每天大約要提升 ${per}%。`);
+    const n = Math.max(1, Math.round(left * habit)), how = n >= left ? PT(`practising every day until the test`, `考試前每天練習`) : PT(`practising on about ${n} of the ${left} days left (like you usually do)`, `在餘下 ${left} 日中約 ${n} 日練習（和平時一樣）`);
+    if (fc >= aim) return PT(`If you keep ${how} and follow Buddy’s plan, you’ll reach about ${fc}%, above your ${aim}% goal.`, `如果${how}並跟著 Buddy 的計劃，考試時約 ${fc}%，高於 ${aim}% 目標。`);
+    const more = all != null && all - fc >= 5 && n < left ? PT(` Practising every day would get you to about ${all}%.`, `每天練習可以達到約 ${all}%。`) : '';
+    return PT(`If you keep ${how} and follow Buddy’s plan, you’ll reach about ${fc}%, ${aim - fc}% short of your ${aim}% goal.${more}`, `如果${how}並跟著 Buddy 的計劃，考試時約 ${fc}%，比 ${aim}% 目標少 ${aim - fc}%。${more}`);
   };
   const testCards = tests.steps.map((p, ti) => {
     const h = p.book ? RH.find((x) => x.b.id === p.book.id) : null;
-    const trend = !!(h && h.rate != null && h.rate > 0); // enough weeks of practice to see how fast readiness is rising
-    const fc = p.ready == null ? null : trend ? Math.min(100, Math.round(p.ready + h.rate * p.left)) : p.ready;
+    const habit = practiceHabit(), fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, habit), fcAll = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, 1);
     const aim = p.x.aim || 80; // the parent's target for this test, set with the slider
     const st = p.ready == null ? 'none' : aimTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
@@ -5788,12 +5808,12 @@ async function renderProgress() {
     }
     const what = p.ready == null ? PT('Add the textbook so Buddy can get you ready.', '加入課本，Buddy 便可幫你準備。')
       : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT(`Aim for 80% by test day.`, '目標：考試前達到 80%。'))
-      : st === 'ok' ? PT(`At this pace you’ll reach about ${fc}%. Short reviews keep it there; Today’s mission takes care of it.`, `按現時進度，考試時約 ${fc}%。今日任務會安排溫習，保持狀態。`)
-      : PT(`At this pace you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
+      : st === 'ok' ? PT(`With the plan you’ll reach about ${fc}%. Short reviews keep it there; Today’s mission takes care of it.`, `按現時進度，考試時約 ${fc}%。今日任務會安排溫習，保持狀態。`)
+      : PT(`With the plan you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<span class="pv-flag" style="left:${aim}%;--a:${aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${PT(`Goal ${aim}%`, `目標 ${aim}%`)}</b></span><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Goal for this test', '這個測驗的目標')}"></div>
-      ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : trend ? `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>` : `<div class="pv-num pv-nofc"><b class="fc ${st}">?</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>
-      <p class="pv-fcline" data-ready="${p.ready}" data-fc="${trend && !fcLocked ? fc : ''}" data-left="${p.left}" data-lock="${fcLocked ? 1 : ''}">${fcLine(p.ready, trend && !fcLocked ? fc : null, aim, p.left, !!fcLocked)}</p>`;
+      ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>
+      <p class="pv-fcline" data-ready="${p.ready}" data-fc="${fcLocked ? '' : fc}" data-all="${fcAll}" data-left="${p.left}" data-h="${habit}" data-lock="${fcLocked ? 1 : ''}">${fcLine(p.ready, fcLocked ? null : fc, aim, p.left, !!fcLocked, fcAll, habit)}</p>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Slide Buddy to set your own goal for this test.', '拖動 Buddy，為這個測驗設定你自己的目標。')}</p>` : ''}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
       <div class="pv-test-f">${p.book && p.ready != null && (p.x.kind || 'test') !== 'dict' ? btn(PT('My plan for this test', '這個測驗的計劃'), () => testPlanSheet(p, chOf(p), (local.sched || []).find((y) => y.id === p.x.id)?.aim || 80, fc), 'pv-btn primary') : p.step ? btn(esc(p.step.t), p.step.run, 'pv-btn primary') : ''}${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
@@ -5807,8 +5827,8 @@ async function renderProgress() {
     <details class="ms-how how-panel" id="howTestP"><summary>${PT('How is this worked out?', '這是怎樣計算的？')}</summary><div>
       <p>${PT('Ready now is the readiness of the chapters in the test (or everything practised so far, if you didn’t choose chapters).', '「現在」是測驗範圍內各章節的準備度（未選章節的話，就是所有練習過的內容）。')}</p>
       <p>${PT('Finishing a chapter’s lesson counts as 10%. Practice, reviews and chapter tests take it the rest of the way. Practice on chapters that aren’t in the test doesn’t change this number.', '完成一章的課堂計 10%，之後靠練習、溫習和章節測驗提升。練習測驗範圍以外的章節不會影響這個數字。')}</p>
-      <p>${PT('On test day is a forecast: how fast readiness has been rising over the last 4 weeks, carried forward to the test date.', '「考試當日」是預測：按過去 4 星期準備度上升的速度，推算到考試日期。')}</p>
-      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('your goal or more by test day (80% unless you drag the goal line)', '考試時達到你的目標或以上（預設 80%，可拖動目標線）')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('within 15% of your goal', '與目標相差 15% 以內')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('more than 15% below your goal', '比目標低超過 15%')}</li><li><b>?</b> · ${PT('too early to predict: Buddy needs about 2 weeks of practice first. Until then, the colour compares where you are now with your goal.', '現在預測還太早：Buddy 需要大約兩星期的練習。在此之前，顏色會比較你現在的程度和目標。')}</li></ul></div></details></section>`;
+      <p>${PT('On test day is where Buddy expects you to be if you practise as often as you usually do and follow its plan for these chapters. It works from day one, even for a test that’s only days away.', '「考試當日」是預計：如果你像平時一樣經常練習，並跟著 Buddy 為這些章節訂的計劃，考試時會到達的程度。由第一日就有，即使測驗只剩幾日。')}</p>
+      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('your goal or more by test day (80% unless you drag the goal line)', '考試時達到你的目標或以上（預設 80%，可拖動目標線）')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('within 15% of your goal', '與目標相差 15% 以內')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('more than 15% below your goal', '比目標低超過 15%')}</li></ul></div></details></section>`;
 
   // ---------- 2. What Buddy has noticed ----------
   const cards = [], add = (pri, html, win = false, par = null) => cards.push({ pri, html, win, par });
@@ -6216,7 +6236,7 @@ ${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題�
   const nx = next[0];
   const jump = (id) => () => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   const goodRun = rising.length ? jump('pv-s4') : jump('pv-s5');
-  const watchRun = close ? () => { const h = RH.find((x) => x.b.id === close.book.id); const fc = h && h.rate > 0 ? Math.min(100, Math.round(close.ready + h.rate * close.left)) : close.ready; testPlanSheet(close, chOf(close), closeAim, fc); }
+  const watchRun = close ? () => { const h = RH.find((x) => x.b.id === close.book.id); const fc = planForecast(close.ready, chOf(close), close.left); testPlanSheet(close, chOf(close), closeAim, fc); }
     : quiet ? jump('pv-s3') : D.weak ? () => { const c = MB.get(D.weak.book.id).chapters.find((y) => y.unit.id === D.weak.unit.id); if (c) chapterSheet(D.weak.book, c); } : null;
   const row = (cls, ic, lab, tx, run, go) => { const inner = `<i>${ic}</i><span><small>${lab}</small><b data-raw>${esc(tx)}</b></span>${go ? `<em class="pv-sum-go">${go}</em>` : '<em class="pv-sum-ch">›</em>'}`;
     return run ? btn(inner, run, `pv-sum-row ${cls}`) : `<div class="pv-sum-row ${cls}">${inner}</div>`; };
@@ -6294,7 +6314,7 @@ ${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題�
     const show = () => { if (+r.value < 50) r.value = 50; const a = +r.value, t = aimTone(fc, a); const fl = bar.querySelector('.pv-flag'); fl.style.left = a + '%'; fl.style.setProperty('--a', a); fl.querySelector('b').textContent = PT(`Goal ${a}%`, `目標 ${a}%`);
       ['ok', 'close', 'risk'].forEach((k) => { card.classList.toggle(k, k === t); bar.classList.toggle(k, k === t); }); const pill = card.querySelector('.pv-pill'); if (pill) { pill.className = `pv-pill ${t}`; pill.textContent = LAB[t]; }
       const f = card.querySelector('.pv-num .fc'); if (f) f.className = `fc ${t}`;
-      const ln = card.querySelector('.pv-fcline'); if (ln) ln.textContent = fcLine(+ln.dataset.ready, ln.dataset.fc === '' ? null : +ln.dataset.fc, a, +ln.dataset.left, !!ln.dataset.lock); };
+      const ln = card.querySelector('.pv-fcline'); if (ln) ln.textContent = fcLine(+ln.dataset.ready, ln.dataset.fc === '' ? null : +ln.dataset.fc, a, +ln.dataset.left, !!ln.dataset.lock, +ln.dataset.all, +ln.dataset.h); };
     r.oninput = show; r.onpointerdown = () => bar.classList.add('drag'); r.onpointerup = r.onblur = () => bar.classList.remove('drag');
     r.onchange = () => { show(); const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = +r.value; saveLocal(); } };
   });
