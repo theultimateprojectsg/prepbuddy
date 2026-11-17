@@ -2599,6 +2599,12 @@ em.pv-sum-go{background:var(--accent);color:#FFFFFF;font-weight:700;font-size:14
 .ds-goal{display:flex;flex-direction:column;gap:4px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}.ds-goal b{font-size:15px}.ds-goal span{font-size:13px;color:var(--text-2)}.ds-goal .btn-sm{align-self:flex-start;margin-top:4px}
 .ds .ds-best{margin:0;font-size:13.5px;color:var(--ink)}
 .ds .ds-go{margin:0 20px 20px}
+
+/* the Progress page's main shares the old .pv class name: undo that rule's dashed line, small padding and 12px text */
+main.pv{border-top:0!important;padding-top:24px!important;font-size:inherit!important}
+@media (min-width:700px){main.pv{padding-top:32px!important}}
+
+.pv-top p{font-size:14px!important}
 </style>
 </head>
 <body>
