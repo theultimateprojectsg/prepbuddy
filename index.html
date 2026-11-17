@@ -2377,6 +2377,26 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
   .cs2 .cs2-more button[data-o]{min-height:48px;padding:7px 12px}
   .cs2-sec:last-child{padding-bottom:0}
 }
+
+/* status as a proper badge beside the title */
+.cs2-h .cs2-pill{align-self:center;display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;padding:8px 16px;border-radius:999px;flex:none;white-space:nowrap}
+.cs2-pill i{width:9px;height:9px;border-radius:50%;background:currentColor}
+.cs2-pill.lo{background:#FDEDE7;color:#B4531A}.cs2-pill.mid{background:#FFF3D1;color:#8A6A00}.cs2-pill.hi{background:var(--good-soft);color:var(--good-dark)}
+.cs2-ht b{font-size:22px}
+@media (max-width:600px){.cs2-h{flex-wrap:wrap}.cs2-h .cs2-pill{order:5;margin-left:74px;font-size:13px;padding:5px 12px}.cs2-ht b{font-size:18px}}
+/* desktop: the step tiles stretch to fill the panel's height */
+@media (min-width:900px){
+  .cs2-body{align-items:stretch}
+  .cs2-col:first-child>.cs2-sec{flex:1;display:flex;flex-direction:column}
+  .cs2-col:first-child .cs2-steps{flex:1;grid-auto-rows:1fr}
+  .cs2 .cs2-st{align-items:center}.cs2 .cs2-st>i{top:50%;transform:translateY(-50%)}
+}
+
+@media (max-width:600px){
+  .cs2-h{display:grid!important;grid-template-columns:auto 1fr auto;grid-template-areas:'r t x' 'r p x';column-gap:12px;row-gap:6px;align-items:center}
+  .cs2-h .rsg-meter{grid-area:r}.cs2-h .cs2-ht{grid-area:t}.cs2-h .cs2-x{grid-area:x;align-self:start}
+  .cs2-h .cs2-pill{grid-area:p;order:0;margin-left:0!important;justify-self:start;align-self:start}
+}
 </style>
 </head>
 <body>
