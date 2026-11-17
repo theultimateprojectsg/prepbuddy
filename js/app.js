@@ -400,6 +400,7 @@ function partOf(q, ntext, parts) {
 function testsFor(key) {
   return (local.tests || []).map((t) => ({ t: t.t, r: t.per && t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
 }
+const LESSON_CREDIT = 10; // readiness for a chapter whose lesson is done, before any practice
 function chapterMastery(book, u, qs, text, ntextPre) {
   const T = chapterTarget(u), now = Date.now();
   const key = `${book.id}:${u.id}`;
@@ -434,9 +435,11 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const score = { tested, covered, accurate, deep, remembered, fixed };
   let pct = Math.round(AREAS.reduce((t, [k, , w]) => t + w * score[k], 0));
   if (!passDays) pct = Math.min(pct, 70); // not proven in a test yet
+  const learnedIt = !!(local.learned || {})[key];
+  if (learnedIt) pct = Math.max(pct, LESSON_CREDIT); // a finished lesson is a real first step
   else if (passDays < 2 || !lastPass) pct = Math.min(pct, 95);
   return {
-    pct, score, target: T, done: done.length, parts, uncovered: parts - hit.size,
+    pct, score, target: T, done: done.length, learned: learnedIt, parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: !l3, needL4: !l4, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -5415,7 +5418,7 @@ async function renderProgress() {
   const chName = (u) => shortTitle(u.title);
   const acts = []; // [run] for every button on the page, bound by index
   const btn = (label, run, cls = 'pv-btn') => { acts.push(run); return `<button class="${cls}" data-pv="${acts.length - 1}">${label}</button>`; };
-  const fresh = (c) => !c.done && !c.tests;
+  const fresh = (c) => !c.done && !c.tests && !c.learned;
   const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
   // ⓘ pop-ups: how each number is worked out, in plain words
   const how = (id, title, body) => `<details class="ms-how how-panel" id="${id}"><summary>${title}</summary><div>${body}</div></details>`;
@@ -5425,6 +5428,15 @@ async function renderProgress() {
   const tests = await schoolTestsHTML();
   const fcLocked = locked('forecast');
   const fmtDay = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+  // each test chapter with its own readiness, so it's clear what the number is made of
+  const chOf = (p) => (p.book && p.units && p.units.length ? MB.get(p.book.id).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : []);
+  const chipsOf = (p) => { const cs = chOf(p); if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
+    return `<div class="pv-tch">${cs.map((c) => `<span class="${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}"><b data-raw>${esc(chName(c.unit))}</b><em>${c.done ? `${c.pct}%` : c.learned ? PT(`Lesson done · ${c.pct}%`, `已上課 · ${c.pct}%`) : PT('Not started', '未開始')}</em></span>`).join('')}</div>`; };
+  // practice that went on other chapters of the same book doesn't move this test's number: say so
+  const outside = (p) => { if (!p.book || p.all) return ''; const cs = chOf(p); if (!cs.length) return '';
+    const other = MB.get(p.book.id).chapters.filter((c) => (c.done || c.learned) && !p.units.some((u) => u.id === c.unit.id));
+    if (!other.length || cs.some((c) => c.done)) return '';
+    return `<p class="pv-out">ⓘ ${PT(`Your practice so far was on ${other.slice(0, 2).map((c) => chName(c.unit)).join(' and ')}, which ${other.length > 1 ? 'aren’t' : 'isn’t'} in this test. If the test covers ${other.length > 1 ? 'them' : 'it'}, tap Edit and add ${other.length > 1 ? 'them' : 'it'}.`, `你目前練習的是${other.slice(0, 2).map((c) => `「${chName(c.unit)}」`).join('和')}，不在這個測驗範圍內。如果測驗包括，請按「修改」加入。`)}</p>`; };
   const testCards = tests.steps.slice(0, 3).map((p) => {
     const h = p.book ? RH.find((x) => x.b.id === p.book.id) : null;
     const fc = p.ready == null ? null : h && h.rate != null && h.rate > 0 ? Math.min(100, Math.round(p.ready + h.rate * p.left)) : p.ready;
@@ -5446,7 +5458,7 @@ async function renderProgress() {
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:80%"></s><small style="left:80%">${PT('aim 80%', '目標 80%')}</small></div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${bar}<p class="pv-p">${what}</p>${st !== 'ok' && steps.length ? `<ul class="pv-steps">${steps.map((s) => `<li data-raw>${esc(s)}</li>`).join('')}</ul>` : ''}
+      ${bar}${chipsOf(p)}<p class="pv-p">${what}</p>${outside(p)}${st !== 'ok' && steps.length ? `<ul class="pv-steps">${steps.map((s) => `<li data-raw>${esc(s)}</li>`).join('')}</ul>` : ''}
       ${p.ready != null ? `<span class="pv-op">${PT('Only PrepBuddy · forecast to your test date', '只有 PrepBuddy · 按你的考試日期預測')}</span>` : ''}
       <div class="pv-test-f">${p.step ? btn(esc(p.step.t), p.step.run, `pv-btn ${st === 'ok' ? '' : 'primary'}`) : ''}${btn(PT('Edit', '修改'), () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet')}</div></div>`;
   });
@@ -5458,6 +5470,7 @@ async function renderProgress() {
     <div class="pv-grid3">${testCards.join('') + noTest.join('') || `<div class="pv-test none"><b>${PT('Got a test coming up?', '快要測驗？')}</b><p class="pv-p">${PT('Add it and Buddy plans backwards from the date: new chapters first, then the weakest, then a practice test the day before.', '加入後，Buddy 會按日期倒數安排：先學新章節，再練最弱的，前一天做模擬測驗。')}</p>${btn(`+ ${PT('Add a test', '加入測驗')}`, () => testDialog())}</div>`}</div>
     <details class="ms-how how-panel" id="howTestP"><summary>${PT('How is this worked out?', '這是怎樣計算的？')}</summary><div>
       <p>${PT('Ready now is the readiness of the chapters in the test (or everything practised so far, if you didn’t choose chapters).', '「現在」是測驗範圍內各章節的準備度（未選章節的話，就是所有練習過的內容）。')}</p>
+      <p>${PT('Finishing a chapter’s lesson counts as 10%. Practice, reviews and chapter tests take it the rest of the way. Practice on chapters that aren’t in the test doesn’t change this number.', '完成一章的課堂計 10%，之後靠練習、溫習和章節測驗提升。練習測驗範圍以外的章節不會影響這個數字。')}</p>
       <p>${PT('On test day is a forecast: how fast readiness has been rising over the last 4 weeks, carried forward to the test date.', '「考試當日」是預測：按過去 4 星期準備度上升的速度，推算到考試日期。')}</p>
       <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('80% or more by test day', '考試時達 80% 或以上')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('65–79%', '65–79%')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('under 65%', '低於 65%')}</li></ul></div></details></section>`;
 
