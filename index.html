@@ -2992,9 +2992,11 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-whyd .ms-why{margin-top:4px}
 /* Buddy peeks over the bubble's top-right corner, so the reason uses the bubble's full width */
 .ms-why{position:relative;display:block;padding:10px 26px 10px 12px;margin-top:6px}
-.ms-why .ms-bud{position:absolute;z-index:1;top:-16px;right:6px;width:32px;height:32px;margin:0;display:block;line-height:0}
-.ms-why .ms-bud svg{width:32px!important;height:32px!important;overflow:visible}
-.ms-why{padding-right:40px}
+.ms-why .ms-bud{position:absolute;z-index:1;top:8px;right:10px;width:28px;height:28px;margin:0;display:block;line-height:0}
+.ms-why .ms-bud svg{width:28px!important;height:28px!important}
+.ms-why{padding:10px 46px 10px 12px}
+.ms-why>span[data-raw]{display:block;position:relative;padding-left:16px}
+.ms-why>span[data-raw]::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
 </style>
 </head>
 <body>
