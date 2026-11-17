@@ -2606,6 +2606,10 @@ main.pv{border-top:0!important;padding-top:24px!important;font-size:inherit!impo
 #pv-ins .pv-ins.pv-hid{display:none}#pv-ins.open .pv-ins.pv-hid{display:flex}
 .pv-insmore{align-self:flex-start;margin-top:10px}
 .pv-tag.green{background:var(--good-soft);color:var(--good-dark)}
+
+/* noticing cards: the action sits at the bottom, full width, so every card lines up */
+.pv-ins .pv-btn.soft{margin-top:auto;align-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left}
+.pv-ins .pv-btn.soft::after{content:'›';font-size:20px;line-height:1;opacity:.6}
 </style>
 </head>
 <body>

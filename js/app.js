@@ -5728,7 +5728,9 @@ async function renderProgress() {
   // rushing: multiple-choice sets answered too fast to be thinking, in the last 2 weeks
   const ss = (local.sess || []).filter((x) => x.t > now - 14 * DAY);
   const rushed = ss.filter((x) => x.r);
-  if (rushed.length >= 2 && rushed.length / ss.length >= 0.3) {
+  // only worth raising when rushing costs marks: fast and right just means they know it well
+  const avgP = (xs) => Math.round(xs.reduce((a, x) => a + (x.p || 0), 0) / Math.max(1, xs.length)), steadyS = ss.filter((x) => !x.r);
+  if (rushed.length >= 2 && rushed.length / ss.length >= 0.3 && steadyS.length >= 2 && avgP(steadyS) - avgP(rushed) >= 10) {
     const late = rushed.filter((x) => new Date(x.t).getHours() >= 21).length;
     const avg = (xs) => Math.round(xs.reduce((a, x) => a + (x.p || 0), 0) / Math.max(1, xs.length)), steady = ss.filter((x) => !x.r);
     const gap = steady.length ? avg(steady) - avg(rushed) : 0;
@@ -5775,6 +5777,8 @@ async function renderProgress() {
   const unitOf = (id) => { const bk = bookOf(id), u = String(id).split(':')[1]; return bk ? bk.units.find((x) => x.id === u) : null; };
   const topUnit = (es) => { const c = {}; es.forEach((e) => { const k = String(e.q).split(':').slice(0, 2).join(':'); c[k] = (c[k] || 0) + 1; }); const k = Object.keys(c).sort((x, y) => c[y] - c[x])[0]; return k ? { book: bookOf(k), unit: unitOf(k) } : null; };
   const nQ = local.count || sessionSize();
+  const runSet = (qs, title, mode = 'mistakes') => () => { const pick = shuffle(qs).slice(0, 15); S = newSession({ mode, title, qs: pick.map(shuffleOptions), target: pick.length }); renderQuestion(); };
+  const QM = new Map(); for (const x of await allQuestions()) QM.set(x.q.id, x.q);
   // 1. multiple choice vs written answers
   { const c = firsts.filter((e) => e.ty === 'c'), w = firsts.filter((e) => e.ty === 'w');
     if (c.length >= 15 && w.length >= 8) { const ac = accP(c), aw = accP(w), tu = topUnit(w);
@@ -5798,12 +5802,12 @@ async function renderProgress() {
       if (ad - al >= 15) add(55, card(PT('Tip', '小貼士'), 'blue', PT('Late nights cost marks', '太夜練習會失分'), PT(`${al}% after 10pm vs ${ad}% in the afternoon and early evening. Earlier is better when you can.`, `晚上 10 點後 ${al}%，下午至傍晚 ${ad}%。可以的話，早一點練習。`)), false, ['blue', PT('Late nights cost marks', '太夜練習會失分'), PT(`${al}% after 10pm vs ${ad}% in the afternoon.`, `晚上 10 點後 ${al}%，下午 ${ad}%。`)]); } }
   // 5. careless slips: wrong first time, then fully right on the very next try
   { const byQ = {}; for (const e of L30) (byQ[e.q] || (byQ[e.q] = [])).push(e);
-    const slips = Object.values(byQ).filter((es) => es.length >= 2 && es[0].g < es[0].m && es[1].g >= es[1].m && es[1].t - es[0].t < 3 * DAY).length;
+    const slipQ = Object.values(byQ).filter((es) => es.length >= 2 && es[0].g < es[0].m && es[1].g >= es[1].m && es[1].t - es[0].t < 3 * DAY).map((es) => QM.get(es[0].q)).filter(Boolean), slips = slipQ.length;
     const wrongs = Object.values(byQ).filter((es) => es[0].g < es[0].m).length;
-    if (slips >= 6 && slips / Math.max(1, wrongs) >= 0.3) add(32, card(PT('Habit', '習慣'), 'orange', PT('Some mistakes are careless slips', '有些錯誤是粗心'), PT(`${slips} wrong answers were right on the very next try. You knew them: slow down and check before moving on.`, `${slips} 題答錯後，下一次就答對了。其實你懂，答完前慢一點檢查。`), btn(PT('Fix my mistakes', '改正錯題'), () => go({ name: 'mistakes' }), 'pv-btn soft')), false, ['orange', PT('Some mistakes are careless slips', '有些錯誤是粗心'), PT(`${slips} wrong answers were right on the very next try. Checking before moving on would help.`, `${slips} 題答錯後下一次就答對。答完前檢查會有幫助。`)]); }
+    if (slips >= 6 && slips / Math.max(1, wrongs) >= 0.3) add(32, card(PT('Habit', '習慣'), 'orange', PT('Some mistakes are careless slips', '有些錯誤是粗心'), PT(`${slips} wrong answers were right on the very next try. You knew them: slow down and check before moving on.`, `${slips} 題答錯後，下一次就答對了。其實你懂，答完前慢一點檢查。`), btn(PT('Redo them, checking each one', '重做這些題目，逐題檢查'), runSet(slipQ, PT('Slow down and check', '慢慢做，檢查清楚')), 'pv-btn soft')), false, ['orange', PT('Some mistakes are careless slips', '有些錯誤是粗心'), PT(`${slips} wrong answers were right on the very next try. Checking before moving on would help.`, `${slips} 題答錯後下一次就答對。答完前檢查會有幫助。`)]); }
   // 6. old mistakes left open
   { const old = Object.values(local.mistakes || {}).filter((m) => !m.done && m.t < now - 14 * DAY).length;
-    if (old >= 8) add(34, card(PT('Mistakes', '錯題'), 'red', PT(`${old} mistakes are over 2 weeks old`, `${old} 題錯題已超過兩星期`), PT('Old mistakes tend to show up again in tests. Fixing a few a day clears them.', '舊錯題很容易在考試再出現。每天改正幾題就能清完。'), btn(PT('Fix them', '改正'), () => go({ name: 'mistakes' }), 'pv-btn soft')), false, ['red', PT(`${old} mistakes over 2 weeks old`, `${old} 題錯題超過兩星期`), PT('Old mistakes tend to come back in tests.', '舊錯題很容易在考試再出現。')]); }
+    if (old >= 8) add(34, card(PT('Mistakes', '錯題'), 'red', PT(`${old} mistakes are over 2 weeks old`, `${old} 題錯題已超過兩星期`), PT('Old mistakes tend to show up again in tests. Fixing a few a day clears them.', '舊錯題很容易在考試再出現。每天改正幾題就能清完。'), btn(PT('Fix the old ones', '改正舊錯題'), runSet(mkAll.filter((x) => (local.mistakes[x.q.id] || {}).t < now - 14 * DAY).map((x) => x.q), PT('Old mistakes', '舊錯題')), 'pv-btn soft')), false, ['red', PT(`${old} mistakes over 2 weeks old`, `${old} 題錯題超過兩星期`), PT('Old mistakes tend to come back in tests.', '舊錯題很容易在考試再出現。')]); }
   // 7. reviews piling up
   { const od = (await dueItems()).filter((x) => local.stats[x.q.id] && local.stats[x.q.id].due < now - 2 * DAY).length;
     if (od >= 10) add(25, card(PT('Memory', '記憶'), 'red', PT(`${od} reviews are overdue`, `${od} 題溫習已過期`), PT('These are the ones about to be forgotten. A few minutes now saves relearning them later.', '這些就快忘記了。現在花幾分鐘，好過之後重新學。'), btn(PT('Review now', '現在溫習'), () => startReview('spaced'), 'pv-btn soft')), false, ['red', PT(`${od} reviews overdue`, `${od} 題溫習已過期`), PT('These are the ones about to be forgotten.', '這些就快忘記了。')]); }
@@ -5824,7 +5828,6 @@ async function renderProgress() {
         add(30, card(PT('Tests', '測驗'), 'orange', PT('Scores drop when the clock is running', '限時下分數下降'), PT(`${ap}% in practice but ${at}% in timed tests. More timed practice builds speed and calm.`, `練習 ${ap}%，限時測驗只有 ${at}%。多做限時練習，會更快更冷靜。`), bk && u ? btn(PT('Try a timed chapter test', '做限時章節測驗'), () => startChapterTest(bk, [u]), 'pv-btn soft') : ''), false, ['orange', PT('Scores drop when timed', '限時下分數下降'), PT(`${ap}% in practice, ${at}% in timed tests.`, `練習 ${ap}%，限時測驗 ${at}%。`)]); } } }
   // 11 & 12. long, wordy questions and diagram questions (need the question text)
   if (firsts.length >= 30) {
-    const QM = new Map(); for (const x of await allQuestions()) QM.set(x.q.id, x.q);
     const withQ = firsts.map((e) => [e, QM.get(e.q)]).filter(([, q]) => q);
     const len = (q) => String(q.stem || '').length + (q.parts || []).reduce((a, p) => a + String(p.prompt || '').length, 0);
     if (withQ.length >= 30) {
@@ -5834,7 +5837,7 @@ async function renderProgress() {
         if (as - al >= 20) add(52, card(PT('Tip', '小貼士'), 'blue', PT('Long questions are harder for you', '長題目比較難'), PT(`${al}% on long, wordy questions vs ${as}% on short ones. Underline the key words and what it’s asking before answering.`, `長題目 ${al}%，短題目 ${as}%。作答前先劃出關鍵字和題目要求。`)), false, ['blue', PT('Long questions are harder', '長題目比較難'), PT(`${al}% on long questions vs ${as}% on short ones.`, `長題目 ${al}%，短題目 ${as}%。`)]); }
       const fig = withQ.filter(([, q]) => q.figure || (q.graphs && q.graphs.length)).map(([e]) => e), nof = withQ.filter(([, q]) => !(q.figure || (q.graphs && q.graphs.length))).map(([e]) => e);
       if (fig.length >= 8 && nof.length >= 20) { const af = accP(fig), an = accP(nof), tu = topUnit(fig);
-        if (an - af >= 25) add(50, card(PT('Tip', '小貼士'), 'blue', PT('Diagram questions are a weak spot', '圖表題是弱項'), PT(`${af}% on questions with a diagram vs ${an}% without. Read the labels and units on the diagram first.`, `有圖的題目 ${af}%，沒有圖的 ${an}%。先看清圖上的標籤和單位。`), tu && tu.book && tu.unit ? btn(PT('Practise this chapter', '練習這一章'), () => startUnits(tu.book, [tu.unit], nQ), 'pv-btn soft') : ''), false, ['blue', PT('Diagram questions are a weak spot', '圖表題是弱項'), PT(`${af}% with a diagram vs ${an}% without.`, `有圖 ${af}%，沒有圖 ${an}%。`)]); }
+        if (an - af >= 25) add(50, card(PT('Tip', '小貼士'), 'blue', PT('Diagram questions are a weak spot', '圖表題是弱項'), PT(`${af}% on questions with a diagram vs ${an}% without. Read the labels and units on the diagram first.`, `有圖的題目 ${af}%，沒有圖的 ${an}%。先看清圖上的標籤和單位。`), btn(PT('Practise diagram questions', '練習圖表題'), () => { const dq = [...QM.values()].filter((q) => (q.figure || (q.graphs && q.graphs.length)) && !blocked(q)).sort((x, y) => ((local.stats[x.id] || {}).last ?? 0.5) - ((local.stats[y.id] || {}).last ?? 0.5)); runSet(dq.slice(0, 20), PT('Diagram questions', '圖表題'), 'weak')(); }, 'pv-btn soft')), false, ['blue', PT('Diagram questions are a weak spot', '圖表題是弱項'), PT(`${af}% with a diagram vs ${an}% without.`, `有圖 ${af}%，沒有圖 ${an}%。`)]); }
     }
   }
   // 13. wins: a chapter that jumped this week, chapters newly mastered
