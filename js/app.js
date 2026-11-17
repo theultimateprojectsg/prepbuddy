@@ -5555,6 +5555,31 @@ function testPlanSheet(p, chs, aim, fc) {
   box.querySelectorAll('[data-tc]').forEach((b) => (b.onclick = () => { close(); need[+b.dataset.tc].act[2](); }));
   const st = box.querySelector('[data-tp]'); if (st) st.onclick = () => { close(); days[0].task[1](); };
 }
+// Tapping "In long-term memory": what it means, where it stands, and the reviews that grow it (nothing starts until asked).
+async function memorySheet() {
+  const due = (await dueItems()).length, st = Object.values(local.stats || {});
+  const lt = st.filter((x) => (x.box || 0) >= 3).length, twk = st.filter((x) => (x.box || 0) >= 5).length;
+  const learning = st.filter((x) => (x.box || 0) >= 1 && (x.box || 0) < 3).length;
+  const next = st.reduce((m, x) => (x.due && x.due > Date.now() ? Math.min(m, x.due) : m), Infinity);
+  const fmt = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  box.innerHTML = `<div class="cdlg cs2 mem" role="dialog" aria-modal="true" aria-labelledby="mem-t">
+    <header class="cs2-h"><div class="cs2-ht"><b id="mem-t">${PT('In long-term memory', '長期記憶')}</b><small>${PT('Things you still get right a week or more later', '一星期或更久之後仍然答對的題目')}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <section class="cs2-sec" style="padding-top:0"><div class="mem-g">
+      <div><b>${learning}</b><span>${PT('still settling in', '正在鞏固')}</span></div>
+      <div class="ok"><b>${lt}</b><span>${PT('in long-term memory', '已進入長期記憶')}</span></div>
+      <div class="ok2"><b>${twk}</b><span>${PT('of those, still right after 2+ weeks', '其中兩星期後仍答對')}</span></div>
+    </div>
+    <p class="cs2-sub">${PT('Questions come back after 1, 3, 7, 14 and 30 days. Each time you get one right it waits longer; get it wrong and it starts again. Once a question has been right on its first try and in the next two reviews, it counts as in long-term memory.', '題目會在 1、3、7、14、30 日後再出現。答對了，下次會隔更久；答錯了就重新開始。這樣才能把知識存進長期記憶。')}</p></section>
+    <section class="cs2-pick" style="margin-top:14px;margin-bottom:20px">${due ? `<button class="cs2-go" data-o="0">${actionTile('review', 36)}<span><b>${PT(`Review ${due} due now`, `溫習 ${due} 題到期題目`)}</b><em>${PT('A few minutes · just before you’d forget them', '幾分鐘 · 在快忘記之前')}</em></span><i>›</i></button>`
+      : `<p class="mem-none">${next < Infinity ? PT(`Nothing due right now. Next review: ${fmt(next)}.`, `暫時沒有到期的題目。下次溫習：${fmt(next)}。`) : PT('Practise a chapter and its questions start coming back for review.', '練習一個章節後，題目就會開始回來讓你溫習。')}</p>`}</section>
+  </div>`;
+  document.body.appendChild(box);
+  const close = () => box.remove();
+  box.querySelector('.cs2-x').onclick = close;
+  box.onclick = (e) => { if (e.target === box) close(); };
+  const go = box.querySelector('[data-o]'); if (go) { go.onclick = () => { close(); startReview('spaced'); }; go.focus({ preventScroll: true }); }
+}
 // On track / close / at risk, against the target the parent set for that test (default 80%).
 const aimTone = (v, aim = 80) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
 async function renderProgress() {
@@ -5957,7 +5982,7 @@ async function renderProgress() {
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
   // headline numbers lead somewhere: readiness and chapters to what to work on, memory to reviews, days to the calendar
   { const go2 = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-    const KT = { 'k-ring': () => go2('pv-s3'), 'k-book': () => go2('pv-s3'), 'k-brain': () => startReview('spaced'), 'k-cal': () => go2('pv-s5') };
+    const KT = { 'k-ring': () => go2('pv-s3'), 'k-book': () => go2('pv-s3'), 'k-brain': () => memorySheet(), 'k-cal': () => go2('pv-s5') };
     $app.querySelectorAll('.pv-sum .pv-kpi').forEach((k) => { const key = Object.keys(KT).find((c) => k.classList.contains(c)); if (!key) return;
       k.classList.add('pv-click'); k.setAttribute('role', 'button'); k.tabIndex = 0;
       const run = (e) => { if (e.target.closest('.info-btn')) return; KT[key](); };
