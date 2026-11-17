@@ -2394,13 +2394,13 @@ const infoBtn = (id, label) => `<button type="button" class="info-btn" data-how=
 function missionHowHTML(id = 'howMission') {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
   return `<details class="ms-how how-panel" id="${id}"><summary>${Z('How does this work?', '這是怎樣運作的？')}</summary><div>
-    <p>${Z('Each morning Buddy picks up to 3 steps for today, most important first:', '每天早上，Buddy 會按重要程度，為你選最多 3 個步驟：')}</p>
+    <p>${Z('Each day Buddy builds a list of up to 5 jobs, most important first. Try to finish them all:', '每天 Buddy 會按重要程度，列出最多 5 項任務。盡量全部完成：')}</p>
     <ol>
-      <li><b>${Z('A school test in the next 2 weeks.', '兩星期內的學校測驗。')}</b> ${Z('Learn any chapter you haven’t started, then practise your weakest one, then mix them all. A practice test the day before, and a warm-up on the day.', '先學還未開始的章節，再練最弱的一章，然後混合練習。考試前一天做模擬測驗，當天做熱身。')}</li>
-      <li><b>${Z('Mistakes to fix.', '要改正的錯題。')}</b> ${Z('Questions you didn’t get fully right.', '未完全答對的題目。')}</li>
+      <li><b>${Z('School tests in the next 2 weeks.', '兩星期內的學校測驗。')}</b> ${Z('One job for each of the next two tests: learn a chapter you haven’t started, then practise the weakest one. A practice test the day before.', '最近兩個測驗各一項：先學還未開始的章節，再練最弱的一章。考試前一天做模擬測驗。')}</li>
       <li><b>${Z('Reviews due.', '到期的溫習。')}</b> ${Z('Questions from before, just as you’re about to forget them.', '以前做過的題目，在你快要忘記時再出現。')}</li>
-      <li><b>${Z('A new book.', '新的課本。')}</b> ${Z('A 5-minute level check, so questions start at the right level.', '5 分鐘程度評估，讓題目由合適的難度開始。')}</li>
-      <li><b>${Z('Keep going.', '繼續學習。')}</b> ${Z('The chapter you were working on.', '你正在學的章節。')}</li>
+      <li><b>${Z('Mistakes to fix.', '要改正的錯題。')}</b> ${Z('Up to 5 a day, so the pile keeps shrinking.', '每天最多 5 題，錯題會越來越少。')}</li>
+      <li><b>${Z('Your weakest chapter.', '最弱的一章。')}</b> ${Z('The chapter you’ve found hardest lately, if it’s not already in the list.', '最近最難的一章（如果未在清單內）。')}</li>
+      <li><b>${Z('A new book, or keep going.', '新課本，或者繼續。')}</b> ${Z('A 5-minute level check for a new book, or the chapter you were working on.', '新課本先做 5 分鐘程度評估，或者繼續你正在學的章節。')}</li>
     </ol>
     <p><b>${Z('How it adapts to you', '它如何配合你')}</b></p>
     <ul>
@@ -2489,11 +2489,20 @@ async function renderHome() {
   const tests = await schoolTestsHTML();
   // ---- Today's mission: up to 3 steps in order, fixed for the day, ticked off as they get done ----
   const cands = []; // { key, icon, t, s, attr, chk }
-  { const p = tests.steps.find((q) => q.left <= 14);
-    if (p) { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
-  if (mk) cands.push({ key: 'mk', icon: 'mistakes', t: Z(`Fix ${mk} mistake${mk > 1 ? 's' : ''}`, `改正 ${mk} 題錯題`), s: Z('Questions you didn’t get fully right', '未完全答對的題目'), attr: 'id="mistakes"', chk: { y: 'mk', n: mk } });
+  for (const p of tests.steps.filter((q) => q.left <= 14 && q.step).slice(0, 2)) {
+    { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
+  // reviews come before mistakes: they're due today and slip if they wait
   if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Review 10 questions now', '先複習 10 題'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
   else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Review ${due.length} question${due.length > 1 ? 's' : ''}`, `複習 ${due.length} 題`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
+  if (mk) { const n = Math.min(5, mk); cands.push({ key: 'mk', icon: 'mistakes', t: mk > n ? Z(`Fix ${n} of your ${mk} mistakes`, `改正 ${n} 題錯題（共 ${mk} 題）`) : Z(`Fix ${mk} mistake${mk > 1 ? 's' : ''}`, `改正 ${mk} 題錯題`), s: Z('Questions you didn’t get fully right', '未完全答對的題目'), attr: 'id="mistakes"', chk: { y: 'mk', n: mk, k: n } }); }
+  // the weakest chapter practised lately (first tries, last 2 weeks), if it isn't already in the list
+  { const by = {}, wk2 = Date.now() - 14 * DAY, seen = new Set();
+    for (const e of local.log) { if (!e.q || !e.m || seen.has(e.q)) continue; seen.add(e.q); if (e.t < wk2 || e.k === 'mistakes' || e.k === 'spaced') continue; const k = String(e.q).split(':').slice(0, 2).join(':'); (by[k] || (by[k] = [])).push(e); }
+    const acc = (es) => Math.round(100 * es.reduce((x, e) => x + e.g, 0) / es.reduce((x, e) => x + e.m, 0));
+    const inList = new Set(cands.map((c) => (c.chk && c.chk.u ? `${c.chk.b}:${c.chk.u}` : '')).concat(cands.flatMap((c) => (c.chk && c.chk.us ? c.chk.us.map((u) => `${c.chk.b}:${u}`) : []))));
+    const w = Object.entries(by).filter(([k, es]) => es.length >= 5 && acc(es) < 70 && !inList.has(k)).sort((a, b) => acc(a[1]) - acc(b[1]))[0];
+    if (w) { const [bid, uid] = w[0].split(':'), b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === uid);
+      if (u) cands.push({ key: `w:${w[0]}`, icon: 'weak', t: Z(`Practise ${shortTitle(u.title)}`, `練習「${shortTitle(u.title)}」`), s: Z(`${acc(w[1])}% right on first tries lately, your weakest chapter. A short set makes it stronger.`, `最近第一次作答只答對 ${acc(w[1])}%，是最弱的一章。做一組就會進步。`), attr: `data-weak="${esc(w[0])}"`, chk: { y: 'log', b: bid, us: [uid] }, tag: ['weak', Z('Weak spot', '弱項')] }); } }
   { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
     if (nb) cands.push({ key: `lv:${nb.id}`, icon: 'level', t: Z('Find your level', '找出你的程度'), s: Z(`${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · about 5 min`, `${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · 約 5 分鐘`), attr: `data-lv="${esc(nb.id)}"`, chk: { y: 'lv', b: nb.id } }); }
   if (last) {
@@ -2508,15 +2517,15 @@ async function renderHome() {
     else if (c.key === 'rv') { c.tag = ['review', Z('Due today', '今日到期')]; c.s = Z(`Due back today. Getting them right now is what makes them stick · about ${Math.max(2, Math.round(Math.min(10, due.length) * 0.6))} min`, `今天到期。現在答對才會記得牢 · 約 ${Math.max(2, Math.round(Math.min(10, due.length) * 0.6))} 分鐘`); }
     else if (c.key.startsWith('lv:')) { c.tag = ['level', Z('New book', '新課本')]; c.s = Z('A 5-minute check so Buddy starts you at the right level.', '5 分鐘的評估，讓 Buddy 從適合你的程度開始。'); }
     else if (c.key.startsWith('u:')) { c.tag = ['practise', Z('Keep going', '繼續')]; c.s = c.s.replace(/^Keep going( · )?/, Z('Pick up where you left off', '從上次的地方繼續') + '$1').replace(/^繼續( · )?/, '從上次的地方繼續$1'); }
-    else c.tag = ['learn', Z('Get started', '開始')];
+    else if (!c.tag) c.tag = ['learn', Z('Get started', '開始')];
   }
   const t0 = dayStart();
-  const nSteps = local.mtime === 5 ? 1 : local.mtime === 15 ? 2 : 3;
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length) { local.mission = { d: t0, at: Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag }) => ({ key, icon, t, s, chk, attr, tag })) }; saveLocal(); }
+  const nSteps = 5;
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 2) { local.mission = { v: 2, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag }) => ({ key, icon, t, s, chk, attr, tag })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
-    if (c.y === 'mk') return mistakeCount() < c.n;
+    if (c.y === 'mk') return mistakeCount() <= c.n - (c.k || 1);
     if (c.y === 'rv') return c.n ? due.length <= Math.max(0, c.n - 10) : !due.length;
     if (c.y === 'learn') return !!(local.learned || {})[`${c.b}:${c.u}`];
     if (c.y === 'dict') { const L = (local.dict || []).find((d) => d.id === c.L); return !!(L && (L.runs || []).some((r) => r.t >= M.at)); }
@@ -2662,7 +2671,6 @@ async function renderHome() {
   const missionHTML = allDone
     ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2></div>
-      <div class="ms-time" role="radiogroup" aria-label="${Z('How much time do you have?', '你有多少時間？')}"><span>${Z('Time today:', '今天有：')}</span>${[5, 15, 30].map((n) => `<button type="button" role="radio" aria-checked="${(local.mtime || 30) === n}" class="${(local.mtime || 30) === n ? 'on' : ''}" data-mtime="${n}">${Z(`${n} min`, `${n} 分鐘`)}</button>`).join('')}</div>
       <div class="ms-list">${steps.map(stepRow).join('')}</div>
       ${missionHowHTML()}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
@@ -2796,7 +2804,8 @@ async function renderHome() {
   $app.querySelectorAll('[data-qgo]').forEach((b) => (b.onclick = () => go({ name: b.dataset.qgo })));
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
-  $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps.filter((q) => q.left <= 14)[+b.dataset.tstep]; if (p) p.step.run(); }));
+  $app.querySelectorAll('[data-weak]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.weak.split(':'), bk = books.find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
+  $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
   bindPracticeTiles(); bindGear();
   window.scrollTo(0, 0);
