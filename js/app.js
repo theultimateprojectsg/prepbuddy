@@ -5931,13 +5931,19 @@ async function renderProgress() {
   const watchTx = close ? PT(`${close.x.name} ${leftText(close.left)}: ${close.ready}% ready, goal ${closeAim}%`, `「${close.x.name}」${leftText(close.left)}：準備度 ${close.ready}%，目標 ${closeAim}%`)
     : quiet ? PT(`${sname(quiet)} has been quiet for a few days`, `${sname(quiet)}已經幾天沒有練習`) : D.weak ? PT(`Weakest chapter: ${chName(D.weak.unit)} · ${D.weak.a}%`, `最弱的章節：${chName(D.weak.unit)} · ${D.weak.a}%`) : '';
   const nx = next[0];
+  const jump = (id) => () => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const goodRun = rising.length ? jump('pv-s4') : jump('pv-s5');
+  const watchRun = close ? () => { const h = RH.find((x) => x.b.id === close.book.id); const fc = h && h.rate > 0 ? Math.min(100, Math.round(close.ready + h.rate * close.left)) : close.ready; testPlanSheet(close, chOf(close), closeAim, fc); }
+    : quiet ? jump('pv-s3') : D.weak ? () => { const c = MB.get(D.weak.book.id).chapters.find((y) => y.unit.id === D.weak.unit.id); if (c) chapterSheet(D.weak.book, c); } : null;
+  const row = (cls, ic, lab, tx, run, go) => { const inner = `<i>${ic}</i><span><small>${lab}</small><b data-raw>${esc(tx)}</b></span>${go ? `<em class="pv-sum-go">${go}</em>` : '<em class="pv-sum-ch">›</em>'}`;
+    return run ? btn(inner, run, `pv-sum-row ${cls}`) : `<div class="pv-sum-row ${cls}">${inner}</div>`; };
   const sumHTML = `<section class="pv-sum">
     <div class="pv-sum-l">
-      <div class="pv-sum-h">${buddySVG(local.log.length ? 'happy' : 'think', 52)}<div><small>${PT('At a glance', '一覽')}</small><b data-raw>${esc(head)}</b></div></div>
+      <div class="pv-sum-h">${buddySVG(local.log.length ? 'happy' : 'think', 52)}<div><b data-raw>${esc(head)}</b></div></div>
       ${local.log.length ? `<div class="pv-sum-t">
-        ${goodTx ? `<div class="g"><i>✓</i><span><small>${PT('Going well', '做得好')}</small><b data-raw>${esc(goodTx)}</b></span></div>` : ''}
-        ${watchTx ? `<div class="w"><i>!</i><span><small>${PT('Keep an eye on', '要留意')}</small><b data-raw>${esc(watchTx)}</b></span></div>` : ''}
-        ${nx ? `<div class="n"><i>→</i><span><small>${PT('Do next', '下一步')}</small><b data-raw>${esc(nx[0])}</b></span>${btn(PT('Start', '開始'), nx[2], 'pv-btn primary pv-sum-go')}</div>` : ''}
+        ${goodTx ? row('g', '✓', PT('Going well', '做得好'), goodTx, goodRun) : ''}
+        ${watchTx ? row('w', '!', PT('Keep an eye on', '要留意'), watchTx, watchRun) : ''}
+        ${nx ? row('n', '→', PT('Do next', '下一步'), nx[0], nx[2], PT('Start', '開始')) : ''}
       </div>` : ''}
     </div>
     <div class="pv-sum-r">${kpiHTML}</div>
@@ -5946,9 +5952,17 @@ async function renderProgress() {
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(PT('Weekly report', '每週報告'), () => reportDialog(), 'pv-btn quiet')}${btn(`${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}`, () => openParent(), 'pv-btn quiet')}</div></div>
-    ${sumHTML}${didHTML}${sec1}${sec2}${sec3}${sec4}${sec5}
+    <section class="pv-sec pv-sumsec"><div class="pv-h"><h2>${PT('Your week at a glance', '本週一覽')}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}</section>
+    ${didHTML}<div id="pv-s1">${sec1}</div><div id="pv-s2">${sec2}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
+  // headline numbers lead somewhere: readiness and chapters to what to work on, memory to reviews, days to the calendar
+  { const go2 = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    const KT = { 'k-ring': () => go2('pv-s3'), 'k-book': () => go2('pv-s3'), 'k-brain': () => startReview('spaced'), 'k-cal': () => go2('pv-s5') };
+    $app.querySelectorAll('.pv-sum .pv-kpi').forEach((k) => { const key = Object.keys(KT).find((c) => k.classList.contains(c)); if (!key) return;
+      k.classList.add('pv-click'); k.setAttribute('role', 'button'); k.tabIndex = 0;
+      const run = (e) => { if (e.target.closest('.info-btn')) return; KT[key](); };
+      k.onclick = run; k.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); run(e); } }; }); }
   // aim sliders: move the line and the status live; save when let go
   $app.querySelectorAll('.pv-aim').forEach((r) => {
     const card = r.closest('.pv-test'), bar = r.closest('.pv-bar'), fc = +r.dataset.fc;
