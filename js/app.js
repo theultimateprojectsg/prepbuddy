@@ -2391,48 +2391,31 @@ async function todayReadyHTML(books) {
 // A small round "i" button beside a heading; it opens the explainer with that id (see the click handler near the end).
 const infoBtn = (id, label) => `<button type="button" class="info-btn" data-how="${id}" aria-controls="${id}" aria-expanded="false" aria-label="${esc(label)}" title="${esc(label)}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.2" fill="currentColor" stroke="none"/></svg></button>`;
 // "How does Today's mission work?": a short fold-out on the mission card.
+// Info pop-ups on Today, in the same style as Progress: a few rows, each an icon, one plain line and a short detail.
+const easyRows = (rows) => `<ul class="how-easy">${rows.map(([i, en, zh, den, dzh]) => `<li><span>${i}</span><div><p>${LANG === 'zh' ? zh : en}</p>${den ? `<small>${LANG === 'zh' ? dzh : den}</small>` : ''}</div></li>`).join('')}</ul>`;
+const howPanel = (id, en, zh, rows) => `<details class="ms-how how-panel" id="${id}"><summary>${LANG === 'zh' ? zh : en}</summary><div>${easyRows(rows)}</div></details>`;
 function missionHowHTML(id = 'howMission') {
-  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
-  return `<details class="ms-how how-panel" id="${id}"><summary>${Z('How does this work?', '這是怎樣運作的？')}</summary><div>
-    <p>${Z('Each day Buddy builds a list of up to 5 jobs, most important first. Try to finish them all:', '每天 Buddy 會按重要程度，列出最多 5 項任務。盡量全部完成：')}</p>
-    <ol>
-      <li><b>${Z('School tests in the next 2 weeks.', '兩星期內的學校測驗。')}</b> ${Z('One job for each of the next two tests: learn a chapter you haven’t started, then practise the weakest one. A practice test the day before.', '最近兩個測驗各一項：先學還未開始的章節，再練最弱的一章。考試前一天做模擬測驗。')}</li>
-      <li><b>${Z('Reviews due.', '到期的溫習。')}</b> ${Z('Questions from before, just as you’re about to forget them.', '以前做過的題目，在你快要忘記時再出現。')}</li>
-      <li><b>${Z('Mistakes to fix.', '要改正的錯題。')}</b> ${Z('Up to 5 a day, so the pile keeps shrinking.', '每天最多 5 題，錯題會越來越少。')}</li>
-      <li><b>${Z('Your weakest chapter.', '最弱的一章。')}</b> ${Z('The chapter you’ve found hardest lately, if it’s not already in the list.', '最近最難的一章（如果未在清單內）。')}</li>
-      <li><b>${Z('A new book, or keep going.', '新課本，或者繼續。')}</b> ${Z('A 5-minute level check for a new book, or the chapter you were working on.', '新課本先做 5 分鐘程度評估，或者繼續你正在學的章節。')}</li>
-    </ol>
-    <p><b>${Z('How it adapts to you', '它如何配合你')}</b></p>
-    <ul>
-      <li>${Z('Get questions right and they get harder; get them wrong and they get easier, chapter by chapter.', '答對了，題目會變難；答錯了，題目會變易，每章分開計算。')}</li>
-      <li>${Z('Your weakest chapter changes as you improve, so tomorrow’s steps follow today’s results.', '你進步後，最弱的章節也會改變，所以明天的步驟會跟隨今天的表現。')}</li>
-      <li>${Z('Things you forget come back sooner; things you remember come back later.', '忘記了的會較快再出現，記得的會遲些才出現。')}</li>
-      <li>${Z('A step ticks itself off when it’s done (for practice, after 3 questions). The list stays the same all day, but adding a school test updates it straight away.', '完成後步驟會自動打剔（練習的話，做完 3 題）。清單全日不變，但加入學校測驗後會即時更新。')}</li>
-    </ul></div></details>`;
+  return howPanel(id, 'How does this work?', '這是怎樣運作的？', [
+    ['📋', 'Up to 5 jobs a day, most important first.', '每天最多 5 項，最重要的排先。', 'Try to finish them all. Each one ticks itself off when it’s done.', '盡量全部完成，做完會自動打勾。'],
+    ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'A lesson for a chapter you haven’t started, or your weakest one. A practice test the day before.', '先上還未開始的章節，或練最弱的一章。考試前一天做模擬測驗。'],
+    ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
+    ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
+    ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
 }
-// Info pop-ups for the School tests and Also for tonight cards on Today.
 function testsHowHTML(id = 'howTests') {
-  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
-  return `<details class="ms-how how-panel" id="${id}"><summary>${Z('How do school tests work?', '學校測驗是怎樣運作的？')}</summary><div>
-    <p>${Z('Add each test or quiz, exam or dictation from school, with its date. Pick the textbook and chapters if you know them.', '加入學校的每個測驗、考試或默書和日期。知道的話，可選課本和章節。')}</p>
-    <ul>
-      <li>${Z('Two weeks before a test, Today’s mission starts getting you ready for it: first lessons on chapters you haven’t learned, then your weakest chapter, then mixed practice.', '測驗前兩星期，「今日任務」會開始幫你準備：先學未學的章節，再練最弱的一章，然後混合練習。')}</li>
-      <li>${Z('The day before, a practice test. On the day, a short warm-up.', '前一天做模擬測驗；當天做簡短熱身。')}</li>
-      <li>${Z('Each test shows how ready you are and what to do next. For dictation, readiness is your latest score on the word list.', '每個測驗都會顯示準備程度和下一步。默書的準備度是你最近一次在詞語表的分數。')}</li>
-      <li>${Z('Not sure which chapters? Leave them out: Buddy uses everything you’ve practised in that subject.', '不清楚範圍？可以不填：Buddy 會用你在該科練習過的所有內容。')}</li>
-    </ul></div></details>`;
+  return howPanel(id, 'How do school tests work?', '學校測驗是怎樣運作的？', [
+    ['➕', 'Add each school test, exam or 默書 with its date.', '加入學校的每個測驗、考試或默書和日期。', 'Pick the chapters if you know them. If not, Buddy uses everything practised in that subject.', '知道範圍就選章節；不知道的話，Buddy 會用該科練習過的所有內容。'],
+    ['📊', 'The bar shows how ready you are, and your goal.', '進度條顯示準備度和你的目標。', 'Set the goal by sliding Buddy on the Progress page.', '在「進度」頁拖動 Buddy 設定目標。'],
+    ['▶️', 'Today shows one job for each test, with Start.', '每個測驗今天都有一項任務，按「開始」。', 'It’s the same job as in Today’s mission.', '和今日任務的那一項一樣。'],
+    ['📝', 'A practice test the day before.', '考試前一天做模擬測驗。', 'Tap Full plan to see every day until the test.', '按「完整計劃」看每一天的安排。']]);
 }
 function quickHowHTML(id = 'howQuick') {
-  const Z = (en, zh) => (LANG === 'zh' ? zh : en);
-  return `<details class="ms-how how-panel" id="${id}"><summary>${Z('How are these chosen?', '這些是怎樣選出來的？')}</summary><div>
-    <p>${Z('Work outside your textbooks that’s waiting for you. It only shows when there’s something real to do:', '課本以外、正在等你的功課。只有真的有事要做時才會出現：')}</p>
-    <ol>
-      <li><b>${Z('A dictation coming up.', '快要默書。')}</b> ${Z('Practise that word list, or add the words if you haven’t yet.', '練習那個詞語表；未加入詞語的話，先加入。')}</li>
-      <li><b>${Z('A writing test coming up.', '快要寫作測驗。')}</b> ${Z('Practise writing with Buddy’s feedback.', '練習寫作，Buddy 會給評語。')}</li>
-      <li><b>${Z('Unfinished work.', '未完成的功課。')}</b> ${Z('Writing to finish or redraft, or homework you snapped today.', '要完成或修改的寫作，或今天拍下的功課。')}</li>
-      <li><b>${Z('Words to get right.', '要寫對的詞語。')}</b> ${Z('A word list with words you missed last time.', '上次寫錯詞語的詞語表。')}</li>
-    </ol>
-    <p>${Z('A 默書 in the next 2 days or a writing test in the next 3 goes into Today’s mission instead.', '兩日內的默書或三日內的寫作測驗，會放進今日任務。')}</p></div></details>`;
+  return howPanel(id, 'What’s this?', '這是甚麼？', [
+    ['📚', 'Work outside your textbooks that’s waiting for you.', '課本以外、正在等你的功課。', 'It only shows when there’s something real to do.', '只有真的有事要做時才會出現。'],
+    ['✍️', 'Writing to finish, or to redraft with Buddy’s feedback.', '要完成的寫作，或按 Buddy 的評語修改。'],
+    ['📷', 'Homework you snapped today or yesterday.', '今天或昨天拍下的功課。'],
+    ['🔤', 'Words you got wrong last time in 默書 practice.', '上次默書練習寫錯的詞語。'],
+    ['⏰', 'Something due very soon goes into Today’s mission instead.', '很快要到的，會放進今日任務。', 'A 默書 in the next 2 days, or a writing test in the next 3.', '兩日內的默書，或三日內的寫作測驗。']]);
 }
 // "How is 'how ready' worked out?\": a short fold-out under the readiness rings (Today and Progress).
 function readyHowHTML(id = 'howReady') {
