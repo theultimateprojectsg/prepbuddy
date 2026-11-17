@@ -2614,6 +2614,11 @@ main.pv{border-top:0!important;padding-top:24px!important;font-size:inherit!impo
 /* glance: the left side fills the card's height, so no empty gap under the takeaways */
 @media (min-width:1100px){.pv-sum{align-items:stretch}.pv-sum-l{height:100%}.pv-sum-h{flex:1;min-height:0}.pv-sum-t>.pv-sum-row{min-height:58px}}
 .pv-sum-h svg{margin-left:-4px}
+
+/* action buttons in noticing cards and Add a test: the same dark blue as every other main button */
+.pv-ins .pv-btn.soft,.pv-btn.pv-addt{background:var(--accent)!important;color:#FFFFFF!important;border-color:var(--accent)!important}
+.pv-ins .pv-btn.soft:hover,.pv-btn.pv-addt:hover{filter:brightness(1.12)}
+.pv-ins .pv-btn.soft::after{opacity:.85}
 </style>
 </head>
 <body>
