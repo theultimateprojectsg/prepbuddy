@@ -2727,6 +2727,25 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 .how-easy li p{margin:0!important;font-size:15px!important;line-height:1.4!important;font-weight:600;color:var(--ink)}
 .how-easy li p b{font-weight:700}
 .how-easy li small{margin:0!important;font-size:13.5px!important;line-height:1.45!important;font-weight:400;color:var(--text-2)}
+
+/* glance card v3 (option B): the verdict and a short summary on top, then six equal tiles — the two notes are tiles too */
+.pv-sum{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-areas:'h h h' 'g r b' 'w m d';gap:12px!important}
+.pv-sum-l,.pv-sum-t,.pv-sum-r,.pv-sum .pv-kpis{display:contents!important}
+.pv-sum .how-panel{display:none!important}
+.pv-sum-h{grid-area:h;flex:none!important;padding:16px 18px!important}
+.pv-sum-h b{font-size:20px!important}.pv-sum-h span{display:block;margin-top:4px;font-size:14.5px;line-height:1.5;color:var(--text-2);max-width:80ch}
+.pv-sum .pv-sum-row.g{grid-area:g}.pv-sum .pv-sum-row.w{grid-area:w}
+.pv-sum .k-ring{grid-area:r}.pv-sum .k-book{grid-area:b}.pv-sum .k-brain{grid-area:m}.pv-sum .k-cal{grid-area:d}
+.pv-sum .pv-sum-row{flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start;gap:8px!important;padding:14px 16px!important;border-radius:16px!important;min-height:0!important;position:relative}
+.pv-sum .pv-sum-row.g{background:#E8F7EF!important;border:1px solid #BFE6D1!important}.pv-sum .pv-sum-row.w{background:#FFF6DC!important;border:1px solid #F3DE9A!important}
+.pv-sum .pv-sum-row>span{gap:4px!important}.pv-sum .pv-sum-row small{font-size:13px!important;font-weight:700!important}
+.pv-sum .pv-sum-row.g small{color:var(--good-dark)!important}.pv-sum .pv-sum-row.w small{color:#8A6A00!important}
+.pv-sum .pv-sum-row b{font-family:'Lexend',sans-serif;font-size:17px!important;line-height:1.35!important}
+.pv-sum .pv-sum-row i{width:34px!important;height:34px!important}.pv-sum .pv-sum-row.g i{background:#FFFFFF!important}.pv-sum .pv-sum-row.w i{background:#FFFFFF!important}
+.pv-sum .pv-sum-ch{position:absolute;top:12px;right:14px}
+@media (max-width:700px){.pv-sum{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:'h h' 'g w' 'r b' 'm d'}}
+
+@media (max-width:700px){.pv-sum .pv-sum-row b{font-size:15px!important}.pv-sum .pv-sum-row{padding:12px!important}.pv-sum-h{padding:14px!important;align-items:flex-start!important}.pv-sum-h svg{width:40px;height:40px}.pv-sum-h b{font-size:17px!important}.pv-sum-h span{font-size:14px}}
 </style>
 </head>
 <body>

@@ -6146,9 +6146,12 @@ async function renderProgress() {
     : quiet ? jump('pv-s3') : D.weak ? () => { const c = MB.get(D.weak.book.id).chapters.find((y) => y.unit.id === D.weak.unit.id); if (c) chapterSheet(D.weak.book, c); } : null;
   const row = (cls, ic, lab, tx, run, go) => { const inner = `<i>${ic}</i><span><small>${lab}</small><b data-raw>${esc(tx)}</b></span>${go ? `<em class="pv-sum-go">${go}</em>` : '<em class="pv-sum-ch">›</em>'}`;
     return run ? btn(inner, run, `pv-sum-row ${cls}`) : `<div class="pv-sum-row ${cls}">${inner}</div>`; };
+  // a longer summary under the verdict: how much was done, how it went, and what's coming
+  const sumLine = !local.log.length ? '' : [r.q ? PT(`You practised on ${r.dp} of the last 7 days and answered ${r.q} questions${r.a != null ? `, getting ${r.a}% right` : ''}.`, `過去 7 日中你練習了 ${r.dp} 日，答了 ${r.q} 題${r.a != null ? `，答對 ${r.a}%` : ''}。`) : PT('No practice in the last 7 days yet.', '過去 7 日還沒有練習。'),
+    close ? PT(`The ${close.x.name} is ${leftText(close.left)}, so that’s the one to focus on next.`, `「${close.x.name}」${leftText(close.left)}，下一步先集中準備它。`) : rising.length ? PT(`${rising[0]} is improving: keep it going.`, `${rising[0]}正在進步，繼續努力。`) : ''].filter(Boolean).join(' ');
   const sumHTML = `<section class="pv-sum">
     <div class="pv-sum-l">
-      <div class="pv-sum-h">${buddySVG(local.log.length ? 'happy' : 'think', 52)}<div><b data-raw>${esc(head)}</b></div></div>
+      <div class="pv-sum-h">${buddySVG(local.log.length ? 'happy' : 'think', 52)}<div><b data-raw>${esc(head)}</b>${sumLine ? `<span data-raw>${esc(sumLine)}</span>` : ''}</div></div>
       ${local.log.length ? `<div class="pv-sum-t">
         ${goodTx ? row('g', '✓', PT('Going well', '做得好'), goodTx, goodRun) : ''}
         ${watchTx ? row('w', '!', PT('Keep an eye on', '要留意'), watchTx, watchRun) : ''}
