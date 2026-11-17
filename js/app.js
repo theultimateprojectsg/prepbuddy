@@ -5949,9 +5949,9 @@ async function renderProgress() {
     ${how('howWorkP', PT('How are these chosen?', '這些是怎樣選出來的？'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it (or to start its lesson).', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習（或開始上課）。')}</p>
       <p><b>${PT('Most useful next', '下一步')}</b> · ${PT('in order: what your nearest test needs, then this week’s weakest chapter, then mistakes to fix, then reviews due.', '次序：最近的測驗需要的、本週最弱的章節、要改正的錯題、到期的溫習。')}</p>
       <p><b>${PT('Types of question', '題型')}</b> · ${PT('every question has a level: 1 remember facts, 2 understand, 3 use it, 4 think it through. This is your score on each, over the last 30 days.', '每題都有級別：1 記憶、2 理解、3 應用、4 深入思考。這是過去 30 日各級的得分。')}</p>`)}
+    <div class="pv-next2"><b class="pv-nh">${PT('Do these next', '下一步先做這些')}</b>${next.slice(0, 3).map(([t, s2, run], i) => btn(`<i class="pv-nn">${i + 1}</i><span><b data-raw>${esc(t)}</b><small data-raw>${esc(s2)}</small></span><em>›</em>`, run, 'pv-nrow')).join('')}</div>
     ${subjHTML ? `<div class="pv-subjs">${subjHTML}</div>` : ''}
-    <div class="pv-next"><b>${PT('Most useful next, in order', '下一步（按重要次序）')}</b><div class="pv-grid4">${next.slice(0, 4).map(([t, s, run]) => btn(`<b data-raw>${esc(t)}</b><span data-raw>${esc(s)}</span>`, run, 'pv-act')).join('')}</div></div>
-    ${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題型')}</b><span>${PT('last 30 days', '過去 30 日')}</span></div><div class="pv-tgrid">${r.sk.map(([a, n], i) => n >= 3 ? `<span>${names[i]} <b class="${tone(a)}">${a}%</b></span>` : '').join('')}</div>${gapNote ? `<p class="pv-p">${gapNote}</p>` : ''}</div>` : ''}</section>`;
+    </section>`;
 
   // ---------- 4. Is it working? ----------
   const spark = (pts, cls) => { if (!pts || pts.length < 2) return ''; const lo = Math.min(...pts) - 0.2, hi = Math.max(...pts) + 0.2, W = 110, H = 30;
@@ -6095,7 +6095,8 @@ async function renderProgress() {
       <div class="pv-callg"><i style="background:#26357A;border-radius:50%"></i><span>${PT('Open', '未改正')}</span><i style="background:#18966A"></i><span>${PT('Fixed', '已改正')}</span><i style="background:#F0A35E"></i><span>${PT('New', '新錯題')}</span></div>
       ${how('howMk', PT('How to read this', '怎樣看這個圖'), `<p>${PT('The blue line is how many mistakes were still open (not yet got right) at the end of each week. Green bars are mistakes fixed that week; orange bars are new mistakes that week.', '藍線是每星期結束時仍未改正的錯題數。綠色棒是當星期改正的錯題，橙色棒是當星期新增的錯題。')}</p><p>${PT('Every wrong answer goes into the mistake book; getting it fully right later fixes it. A falling blue line means the gaps are closing.', '每題答錯都會放進錯題簿；之後完全答對就算改正。藍線下降，代表漏洞正在補上。')}</p>`)}</div>`; })() : '';
   const sec4 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('Proof that practice is paying off', '練習有沒有效果')}</span></div>
-    <div class="pv-grid3">${levelCard}${pcCard}${readyCard}${mixCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div></section>`;
+    <div class="pv-grid3">${levelCard}${pcCard}${readyCard}${mixCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div>
+${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題型')}</b><span>${PT('last 30 days', '過去 30 日')}</span></div><div class="pv-tgrid">${r.sk.map(([a, n], i) => n >= 3 ? `<span>${names[i]} <b class="${tone(a)}">${a}%</b></span>` : '').join('')}</div>${gapNote ? `<p class="pv-p">${gapNote}</p>` : ''}</div>` : ''}</section>`;
 
   // ---------- 5. Effort and habits ----------
   const mins = r.days.reduce((a, m) => a + m, 0), hmOf = (m) => (m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : PT(`${m} min`, `${m} 分鐘`));

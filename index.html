@@ -2774,6 +2774,17 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 @media (max-width:600px){.pv-tile b{font-size:13.5px!important;font-weight:500!important;-webkit-line-clamp:2!important;white-space:normal!important}.pv-tile{padding:9px 12px!important}.pv-tile span{font-size:12.5px!important;font-weight:700}}
 
 .pv-subj-h{margin-bottom:6px}
+
+/* "Do these next": three numbered rows at the top of What should I work on */
+.pv-next2{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.pv-nh{font-size:14px;font-weight:700;color:var(--text-2)}
+.pv-nrow{display:flex!important;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;padding:11px 14px;border-radius:14px;border:1.5px solid var(--line);background:#FFFFFF;color:var(--ink);cursor:pointer}
+.pv-nrow:hover{border-color:var(--accent)}
+.pv-nn{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#FFFFFF;font-style:normal;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.pv-nrow>span{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}.pv-nrow b{font-size:15px}.pv-nrow small{font-size:13px;color:var(--text-2)}
+.pv-nrow>em{font-style:normal;font-size:20px;color:var(--muted)}
+@media (min-width:1100px){.pv-next2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.pv-next2 .pv-nh{grid-column:1/-1}}
+.pv-sec .pv-types{margin-top:14px}
 </style>
 </head>
 <body>
