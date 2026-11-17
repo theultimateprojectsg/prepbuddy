@@ -2921,24 +2921,27 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .tw-x:hover{background:#FFFFFF}.tw-x:focus-visible{outline:2px solid #C78A00;outline-offset:2px}
 .td-wins .tw-top{padding-right:28px}
 
-/* Today: test countdown cards */
-.tdc{display:flex;flex-direction:column;gap:12px}
+/* Today: test cards */
+.tdc{display:flex;flex-direction:column;gap:12px;padding:14px!important}
 .tdc-h{display:flex;align-items:center;gap:12px}
-.tdc-t{all:unset;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;cursor:pointer}
-.tdc-t b{font-size:17px;font-weight:700;color:var(--ink)}.tdc-t small{font-size:13.5px;color:#B4531A;font-weight:600}
+.tdc-t{all:unset;flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;cursor:pointer}
+.tdc-t b{font-size:16.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tdc-t small{font-size:13px;color:var(--muted)}
 .tdc-t:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
-.tdc-r{display:flex;flex-direction:column;align-items:flex-end;flex:none}.tdc-r b{font-family:'Lexend',sans-serif;font-size:22px;color:var(--ink)}.tdc-r small{font-size:12px;color:var(--muted)}
-.tdc-strip{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:4px}
-.tdc-d{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 7px;border-radius:10px;background:#F4F6FA;color:var(--muted)}
-.tdc-d small{font-size:11px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
-.tdc-d.now{background:#DCE3FA;color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
-.tdc-d.mock{background:#FFF4D6;color:#8A5D00}.tdc-d.end{background:#FDECE8;color:#A8321F}
-.tdc-job{display:flex;align-items:center;gap:10px;background:#EEF1FB;border-radius:12px;padding:12px}
-.tdc-job>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.tdc-job small{font-size:12.5px;color:#3C4C9A}.tdc-job b{font-size:15px;color:var(--ink);line-height:1.35}
-.tdc-job .btn-sm{flex:none;min-height:40px;padding:0 18px}
-.tdc-f{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;color:var(--text-2)}
-.tdc-f .linkbtn{font-weight:700;color:var(--accent)}
+.tdc-left{flex:none;display:flex;flex-direction:column;align-items:center;min-width:58px;padding:4px 10px;border-radius:12px;background:#F4F6FA}
+.tdc-left b{font-family:'Lexend',sans-serif;font-size:20px;line-height:1.15;color:var(--ink)}.tdc-left small{font-size:11px;color:var(--muted);white-space:nowrap}
+.tdc-left.soon{background:#FDECE8}.tdc-left.soon b{color:#A8321F}.tdc-left.soon small{color:#B4531A}
+.tdc-bl{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:5px}.tdc-bl b{color:var(--ink)}
+.tdc-tr{position:relative;height:8px;border-radius:8px;background:#EEF0F6}
+.tdc-tr i{display:block;height:100%;border-radius:8px;background:#E5604A}.tdc-tr i.mid{background:#F2B705}.tdc-tr i.ok{background:#2FB173}
+.tdc-tr em{position:absolute;top:-4px;width:3px;height:16px;margin-left:-1.5px;border-radius:2px;background:var(--accent)}
+.tdc-job{display:flex;align-items:center;gap:10px;background:#EEF1FB;border-radius:12px;padding:10px 12px}
+.tdc-ji{flex:none;width:36px;height:36px;border-radius:10px;background:#FFFFFF;display:grid;place-items:center}
+.tdc-job>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.tdc-job small{font-size:12.5px;color:#4B4FA8}.tdc-job b{font-size:15px;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdc-job .btn-sm{flex:none;min-height:38px;padding:0 16px}
+.tdc-f{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;color:var(--text-2);white-space:nowrap}
+.tdc-f>span{display:inline-flex;align-items:center;gap:5px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.tdc-f .linkbtn{flex:none;font-weight:700;color:var(--accent);border:0!important;background:none!important;padding:4px 0!important;min-height:0!important}
 
 /* results: score ring coloured by how it went; answers as compact lines */
 .rtop .ring{--c:#E5604A!important}.rtop .ring.mid{--c:#F2B705!important}.rtop .ring.good{--c:#2FB173!important}
@@ -2952,8 +2955,10 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .rfx-a s{color:#A8321F;text-decoration-thickness:1.5px}.rfx-a b{color:#0E6E4D;font-weight:700}.rfx-line.ok .rfx-a b{color:var(--ink);font-weight:600}
 .rfx-a i{color:var(--muted)}.rfx-arr{color:var(--muted)}.rfx-a em{flex-basis:100%;font-style:normal;font-size:12.5px;color:var(--text-2)}
 
-.tdc-tot{margin:0;padding:10px 14px;border-radius:12px;background:#EEF1FB;font-size:14.5px;font-weight:700;color:var(--ink);display:flex;flex-direction:column;gap:2px}
-.tdc-tot.hi{background:#FFF4D6;color:#5A3A00}.tdc-tot small{font-size:13px;font-weight:500;color:#7A5200}
+.starchip .sc-lbl{display:none!important}
+.tdc-tot{margin:0;padding:9px 12px;border-radius:12px;background:#EEF1FB;font-size:13.5px;line-height:1.4;color:var(--text-2);display:flex;align-items:flex-start;gap:8px}
+.tdc-tot svg{flex:none;margin-top:1px;color:var(--accent)}.tdc-tot b{color:var(--ink)}
+.tdc-tot.hi{background:#FFF4D6;color:#7A5200}.tdc-tot.hi b{color:#412402}.tdc-tot.hi svg{color:#8A5D00}
 </style>
 </head>
 <body>

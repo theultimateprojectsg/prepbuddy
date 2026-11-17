@@ -2741,21 +2741,25 @@ async function renderHome() {
         strip = `<div class="tdc-strip" style="--n:${shown.length + (more ? 1 : 0)}">${shown.map((x) => tile(x, x.d === 0 ? 'now' : x.d === p.left ? 'end' : x.d === p.left - 1 ? 'mock' : '')).join('')}${more ? tile(plan.days[plan.days.length - 1], 'end') : ''}</div>`;
       }
       let mins = '';
-      if (plan && p.ready != null && p.ready < aim) { const N = planNeeds(p.ready, chs.map((c) => c.pct || 0), Math.max(1, p.left), aim); tdMins.push(Math.max(10, Math.round((N.sets * SET_MIN) / Math.max(1, p.left) / 5) * 5)); mins = ` · ${Z(`about ${Math.max(10, Math.round((N.sets * SET_MIN) / Math.max(1, p.left) / 5) * 5)} min a day`, `每天約 ${Math.max(10, Math.round((N.sets * SET_MIN) / Math.max(1, p.left) / 5) * 5)} 分鐘`)}`; }
-      const job = p.step ? `<div class="tdc-job"><div><small>${Z('Today for this test', '今天為這個測驗')}${mins}</small><b data-raw>${esc(p.step.t)}</b></div><button class="btn-sm primary" data-tstep="${k}">${Z('Start', '開始')}</button></div>` : '';
+      if (plan && p.ready != null && p.ready < aim) { const N = planNeeds(p.ready, chs.map((c) => c.pct || 0), Math.max(1, p.left), aim); tdMins.push(Math.max(10, Math.round((N.sets * SET_MIN) / Math.max(1, p.left) / 5) * 5)); mins = ` · ${Z(`${tdMins[tdMins.length - 1]} min`, `${tdMins[tdMins.length - 1]} 分鐘`)}`; }
+      const job = p.step ? `<div class="tdc-job"><span class="tdc-ji">${actionIcon(p.step.icon || 'practise', 20)}</span><div><small>${Z('Today', '今天')}${mins}</small><b data-raw>${esc(p.step.t)}</b></div><button class="btn-sm primary" data-tstep="${k}">${Z('Start', '開始')}</button></div>` : '';
       const next = plan && p.left >= 2 ? plan.days[p.left - 1] : null;
       if (plan) tdPlans[k] = () => testPlanSheet(p, chs, aim, planForecast(p.ready, chs, p.left));
+      const icon = p.book ? subjectTile(p.book.subject, 44, p.book.title) : actionTile(p.x.kind === 'dict' ? 'dictation' : 'test', 44);
+      const r = p.ready == null ? null : Math.max(0, Math.min(100, p.ready)), tone = r == null ? '' : r >= aim ? 'ok' : r >= aim - 15 ? 'mid' : 'low';
+      const bar = r == null ? '' : `<div class="tdc-bar"><div class="tdc-bl"><span><b>${r}%</b> ${Z('ready', '準備度')}</span><span>${Z(`goal ${aim}%`, `目標 ${aim}%`)}</span></div><div class="tdc-tr"><i class="${tone}" style="width:${Math.max(2, r)}%"></i><em style="left:${aim}%"></em></div></div>`;
+      const pDay = next ? new Date(next.t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric' }) : '';
       return `<div class="td-test tdc">
-        <div class="tdc-h">${calTile(testDay(p.x))}<button class="tdc-t" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><small class="${p.left <= 2 ? 'soon' : ''}">${leftText(p.left)}${p.ready != null ? ` · ${Z(`goal ${aim}%`, `目標 ${aim}%`)}` : ''}</small></button><span class="tdc-r"><b>${p.ready == null ? '–' : p.ready + '%'}</b><small>${Z('ready', '準備度')}</small></span></div>
+        <div class="tdc-h">${icon}<button class="tdc-t" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><small>${day}</small></button><span class="tdc-left ${p.left <= 7 ? 'soon' : ''}"><b>${p.left}</b><small>${p.left === 0 ? Z('today', '今天') : p.left === 1 ? Z('day left', '日') : Z('days left', '日')}</small></span></div>
         ${!p.book ? `<small class="muted" data-raw>${esc(testScope(p))}${p.last ? ' · ' + SCH(`${p.last.g} of ${p.last.n} right last time`, `上次 ${p.last.n} 個中寫對 ${p.last.g} 個`) : ''}</small>` : ''}
-        ${job}
-        ${plan ? `<div class="tdc-f"><span>${next ? Z(`${new Date(next.t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}: practice test`, `${new Date(next.t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}：模擬測驗`) : day}</span><button class="linkbtn" data-tplan="${k}">${Z('See the full plan', '查看完整計劃')} ›</button></div>` : ''}
+        ${bar}${job}
+        ${plan ? `<div class="tdc-f"><span>${next ? `${pIcon('check', 15)} ${Z(`Practice test ${pDay}`, `${pDay} 模擬測驗`)}` : ''}</span><button class="linkbtn" data-tplan="${k}">${Z('Full plan', '完整計劃')} ›</button></div>` : ''}
       </div>`;
     };
     const cards = [];
     for (const p of tests.steps) cards.push(await card(p));
     const tot = tdMins.reduce((a, b) => a + b, 0);
-    const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${Z(`Today for your tests: about ${tot} min`, `今天為測驗練習：約 ${tot} 分鐘`)}${tot > 60 ? `<small>${Z('That’s a lot for one day. A parent can lower a goal on Progress to lighten it.', '一天之內有點多。家長可以在「進度」把目標調低一點。')}</small>` : ''}</p>` : '';
+    const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Lower a goal on Progress to lighten it.', '有點多，可以在「進度」把目標調低。') : ''}</span></p>` : '';
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>`;
   }
 
