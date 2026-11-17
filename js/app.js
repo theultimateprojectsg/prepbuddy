@@ -5646,7 +5646,7 @@ function readySheet(subs, overall) {
   box.innerHTML = `<div class="cdlg cs2 rs" role="dialog" aria-modal="true" aria-labelledby="rs-t">
     <header class="cs2-h"><div class="rsg-meter ${tone(overall)}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(overall * 0.974).toFixed(1)} 100"/></svg><b>${overall}%</b></div>
       <div class="cs2-ht"><b id="rs-t">${PT('Overall readiness', '整體準備度')}</b><small>${PT('How much of your textbooks you really know. Subjects with a test coming up count more.', '你真正掌握多少課本內容。快要考試的科目佔比較大。')}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
-    <section class="cs2-sec" style="padding-top:0"><h3>${PT('By subject', '各科')}</h3><div class="rs-subs">${subs.map((x) => `<div><span data-raw>${esc(sname2(x.b))}</span><i><em class="${tone(x.pct)}" style="width:${x.pct}%"></em></i><b>${x.pct}%</b></div>`).join('')}</div></section>
+    <section class="cs2-sec" style="padding-top:0"><h3>${PT('Readiness in each subject', '各科準備度')}</h3><div class="rs-subs">${subs.map((x) => `<span data-raw>${esc(sname2(x.b))}</span><i><em class="${tone(x.pct)}" style="width:${x.pct}%"></em></i><b>${PT(`${x.pct}% ready`, `準備度 ${x.pct}%`)}</b>`).join('')}</div></section>
     ${acts.length ? `<section class="cs2-sec"><h3>${PT('Best next steps', '最好的下一步')}</h3><div class="cs2-more">${acts.map(([x, ic, t, sub], i) => `<button data-o="${i}">${actionTile(ic === 'up' ? 'test' : ic === 'book' ? 'learn' : 'practise', 32)}<span><b data-raw>${esc(t)}</b><em data-raw>${esc(sub)}</em></span><i>›</i></button>`).join('')}</div></section>` : ''}
   </div>`;
   document.body.appendChild(box);
@@ -5661,9 +5661,9 @@ function masteredSheet(subs, done, all) {
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   box.innerHTML = `<div class="cdlg cs2 rs" role="dialog" aria-modal="true" aria-labelledby="ms-t">
     <header class="cs2-h"><div class="cs2-ht"><b id="ms-t">${PT(`${done} of ${all} chapters mastered`, `${all} 章中掌握了 ${done} 章`)}</b><small>${PT('Mastered means passed the test, handled the harder questions, and still remembered it later. It takes a few weeks per chapter, on purpose.', '掌握代表通過測驗、應付到較深題目，而且之後仍記得。每章需要幾個星期，這是刻意的。')}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
-    <section class="cs2-sec" style="padding-top:0"><h3>${PT('By subject', '各科')}</h3><div class="rs-subs">${subs.map((x) => { const n = x.m.chapters.length, d = x.m.chapters.filter((c) => c.pct >= 80).length;
-      return `<div><span data-raw>${esc(sname2(x.b))}</span><i><em class="hi" style="width:${n ? Math.round(100 * d / n) : 0}%"></em></i><b>${d}/${n}</b></div>`; }).join('')}</div></section>
-    ${near.length ? `<section class="cs2-sec"><h3>${PT('Closest to mastered', '最接近掌握')}</h3><div class="cs2-more">${near.map((x, i) => `<button data-o="${i}">${actionTile('test', 32)}<span><b data-raw>${esc(nm(x.c.unit))} · ${x.c.pct}%</b><em data-raw>${esc(sname2(x.b))} · ${PT('see what it needs', '看看需要甚麼')}</em></span><i>›</i></button>`).join('')}</div></section>`
+    <section class="cs2-sec" style="padding-top:0"><h3>${PT('Chapters mastered in each subject', '各科已掌握的章節')}</h3><div class="rs-subs">${subs.map((x) => { const n = x.m.chapters.length, d = x.m.chapters.filter((c) => c.pct >= 80).length;
+      return `<span data-raw>${esc(sname2(x.b))}</span><i><em class="hi" style="width:${n ? Math.round(100 * d / n) : 0}%"></em></i><b>${PT(`${d} of ${n}`, `${d}／${n}`)}</b>`; }).join('')}</div></section>
+    ${near.length ? `<section class="cs2-sec"><h3>${PT('Closest to mastered', '最接近掌握')}</h3><div class="cs2-more">${near.map((x, i) => `<button data-o="${i}">${actionTile('test', 32)}<span><b data-raw>${esc(nm(x.c.unit))}</b><em data-raw>${esc(sname2(x.b))}</em></span><strong class="rs-pct">${x.c.pct}%</strong><i>›</i></button>`).join('')}</div></section>`
       : `<section class="cs2-sec"><p class="cs2-sub">${PT('Start practising a chapter and it will show up here.', '開始練習一章，就會在這裡出現。')}</p></section>`}
   </div>`;
   document.body.appendChild(box);

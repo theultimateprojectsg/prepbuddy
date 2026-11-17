@@ -2671,6 +2671,17 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
 /* Progress header buttons */
 .pv-topbtn{display:inline-flex!important;align-items:center;gap:8px}
 @media (max-width:600px){.pv-top{gap:14px!important}.pv-topb{display:grid!important;grid-template-columns:1fr 1fr;gap:10px;width:100%}.pv-topbtn{justify-content:center;padding:12px 10px!important;font-size:14px!important}.pv-top p{line-height:1.45}}
+
+/* subject rows: one shared grid so every bar starts and ends in the same place */
+.rs-subs{display:grid!important;grid-template-columns:auto minmax(60px,1fr) auto;column-gap:12px;row-gap:12px;align-items:center}
+.rs-subs>span{font-weight:600;font-size:14.5px;color:var(--ink);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs-subs>i{height:10px;border-radius:999px;background:#E6EAF4;overflow:hidden;display:block}.rs-subs>i>em{display:block;height:100%;border-radius:999px}
+.rs-subs>b{font-size:13.5px;font-weight:600;color:var(--text-2);text-align:right;white-space:nowrap}
+.rs .cs2-sec h3{margin-bottom:12px}
+.rs .cs2-sec{padding-top:20px}
+.rs-pct{flex:none;font-size:13px;font-weight:700;color:#8A6A00;background:#FFF4D6;border-radius:999px;padding:3px 9px}
+.rs button[data-o]{min-width:0}.rs button[data-o]>span:not(.atile){min-width:0}.rs button[data-o]>span:not(.atile) b{overflow-wrap:break-word}
+@media (max-width:600px){.rs .cs2-ht b{font-size:19px}.rs .cs2-ht small{font-size:13.5px}}
 </style>
 </head>
 <body>
