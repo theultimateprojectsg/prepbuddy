@@ -3024,6 +3024,11 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 /* scrolling past the goal bar with a thumb shouldn't drag it */
 .pv-aim{touch-action:pan-y}
 @keyframes aimsaved{from{box-shadow:0 0 0 3px var(--accent)}to{box-shadow:0 0 0 0 transparent}}.pv-test.aim-saved{animation:aimsaved 1.2s ease-out}
+.pv-tbars{display:flex;flex-direction:column;gap:10px}
+.pv-tb{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}
+.pv-tb span{font-size:14px;color:var(--ink)}.pv-tb b{font-size:14px}
+.pv-tb i{grid-column:1/-1;height:6px;border-radius:999px;background:#E6EAF4;overflow:hidden}.pv-tb s{display:block;height:100%;border-radius:999px;text-decoration:none;background:var(--accent)}
+.pv-tb.good b{color:var(--good-dark)}.pv-tb.good s{background:#2FB173}.pv-tb.mid b{color:#8A6A00}.pv-tb.mid s{background:#F2B705}.pv-tb.low b{color:var(--miss-dark)}.pv-tb.low s{background:#F08A5D}
 </style>
 </head>
 <body>

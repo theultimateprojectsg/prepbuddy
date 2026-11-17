@@ -6404,9 +6404,11 @@ async function renderProgress() {
       <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${PT('Open mistakes each week, with mistakes fixed and new', '每星期未改正的錯題，以及改正和新增的錯題')}"><line x1="0" y1="${H - 18}" x2="${W}" y2="${H - 18}" stroke="#E6EAF2"/>${bars}${line}<text x="4" y="${H - 4}" font-size="10" fill="#5A6380">${PT('8 wks ago', '8 週前')}</text><text x="${W - 4}" y="${H - 4}" font-size="10" fill="#5A6380" text-anchor="end">${PT('This wk', '本週')}</text></svg>
       <div class="pv-callg"><i style="background:#26357A;border-radius:50%"></i><span>${PT('Open', '未改正')}</span><i style="background:#18966A"></i><span>${PT('Fixed', '已改正')}</span><i style="background:#F0A35E"></i><span>${PT('New', '新錯題')}</span></div>
       ${how('howMk', PT('How to read this', '怎樣看這個圖'), `<p>${PT('The blue line is how many mistakes were still open (not yet got right) at the end of each week. Green bars are mistakes fixed that week; orange bars are new mistakes that week.', '藍線是每星期結束時仍未改正的錯題數。綠色棒是當星期改正的錯題，橙色棒是當星期新增的錯題。')}</p><p>${PT('Every wrong answer goes into the mistake book; getting it fully right later fixes it. A falling blue line means the gaps are closing.', '每題答錯都會放進錯題簿；之後完全答對就算改正。藍線下降，代表漏洞正在補上。')}</p>`)}</div>`; })() : '';
+  const typesCard = rated.length ? `<div class="pv-card pv-typescard"><b class="pv-ct">${PT('Types of question', '題型')}</b><p class="pv-sm">${PT('How often you get each kind right, last 30 days.', '過去 30 日各類題目的答對率。')}</p>
+    <div class="pv-tbars">${r.sk.map(([a, n], i) => (n >= 3 ? `<div class="pv-tb ${tone(a)}"><span>${names[i]}</span><b>${a}%</b><i><s style="width:${a}%"></s></i></div>` : '')).join('')}</div>${gapNote ? `<p class="pv-sm" style="margin:0">${gapNote}</p>` : ''}</div>` : '';
   const sec4 = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('Proof that practice is paying off', '練習有沒有效果')}</span></div>
-    <div class="pv-grid3">${levelCard}${pcCard}${readyCard}${mixCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div>
-${rated.length ? `<div class="pv-types"><div><b>${PT('Types of question', '題型')}</b><span>${PT('last 30 days', '過去 30 日')}</span></div><div class="pv-tgrid">${r.sk.map(([a, n], i) => n >= 3 ? `<span>${names[i]} <b class="${tone(a)}">${a}%</b></span>` : '').join('')}</div>${gapNote ? `<p class="pv-p">${gapNote}</p>` : ''}</div>` : ''}</section>`;
+    <div class="pv-grid3">${levelCard}${pcCard}${readyCard}${mixCard}${typesCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div>
+</section>`;
 
   // ---------- 5. Effort and habits ----------
   const mins = r.days.reduce((a, m) => a + m, 0), hmOf = (m) => (m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : PT(`${m} min`, `${m} 分鐘`));
