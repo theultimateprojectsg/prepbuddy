@@ -2537,16 +2537,52 @@ async function renderHome() {
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
     if (p) { const m = await bookMastery(p.book); const ch = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)).sort((a, b) => a.pct - b.pct)[0];
       if (ch && ch.pct < 90) extra = { label: Z(`Extra for ${p.x.name}: ${shortTitle(ch.unit.title)} (${ch.pct}%)`, `為「${p.x.name}」加練：${shortTitle(ch.unit.title)}（${ch.pct}%）`), run: () => { pick = { bookId: p.book.id, ids: new Set([ch.unit.id]) }; startUnits(p.book, [ch.unit], 10); } }; } }
-  // yesterday's win: one encouraging line
+  // Wins: a cheerful card above the mission with the best recent win (and up to two smaller ones).
+  // Only real wins, only recent ones; nothing to celebrate means no card.
   let winHTML = '';
-  { const y0 = t0 - DAY, ys = local.log.filter((e) => e.t >= y0 && e.t < t0), right = ys.filter((e) => e.m && e.g >= e.m).length;
-    const passed = (local.tests || []).filter((x) => x.t >= y0 && x.t < t0 && x.m && x.g / x.m >= 0.8).length;
-    const dl = (local.dict || []).flatMap((L) => (L.runs || []).filter((r) => r.t >= y0 && r.t < t0).map((r) => r.n ? Math.round(100 * r.g / r.n) : 0));
-    const bits = [];
-    if (ys.length) bits.push(Z(`${ys.length} question${ys.length > 1 ? 's' : ''}, ${right} fully right`, `${ys.length} 題，全對 ${right} 題`));
-    if (passed) bits.push(Z(`passed ${passed > 1 ? passed + ' chapter tests' : 'a chapter test'}`, `通過 ${passed} 個章節測驗`));
-    if (dl.length) bits.push(Z(`默書 ${Math.max(...dl)}%`, `默書 ${Math.max(...dl)}%`));
-    if (bits.length) winHTML = `<div class="td-win"><span aria-hidden="true">🎉</span><span><b>${Z('Yesterday', '昨天')}</b> · ${bits.join(' · ')}</span></div>`; }
+  { const W = [], now = Date.now(), wk = now - 7 * DAY, d3 = now - 3 * DAY;
+    const add = (pri, icon, t, d) => W.push({ pri, icon, t, d });
+    const accP = (es) => { const m = es.reduce((x, e) => x + e.m, 0); return m ? Math.round(100 * es.reduce((x, e) => x + e.g, 0) / m) : null; };
+    const unitName = (key) => { const [b, u] = String(key).split(':'); const bk = books.find((x) => x.id === b), un = bk && bk.units.find((x) => x.id === u); return un ? shortTitle(un.title) : ''; };
+    // chapters mastered this week (from the daily snapshot)
+    { const k7 = (local.kpi || []).filter((k) => k.d <= t0 - 6 * DAY).pop(), kn = (local.kpi || []).slice(-1)[0];
+      if (k7 && kn && kn.c > k7.c) { const n = kn.c - k7.c; add(1, 'trophy', n === 1 ? Z('You mastered a chapter this week!', '本週掌握了一章！') : Z(`You mastered ${n} chapters this week!`, `本週掌握了 ${n} 章！`), Z('Passed the test, got the harder questions right, and still remembered it later. That’s the real deal.', '通過測驗、答對較深的題目，而且之後仍然記得。真正學會了！')); }
+      if (k7 && kn && kn.m - k7.m >= 5) add(6, 'brain', Z(`${kn.m - k7.m} more questions are now in long-term memory`, `本週多了 ${kn.m - k7.m} 題進入長期記憶`), Z('Still right a week later, so they’ve really stuck.', '一星期後仍然答對，真的記住了。')); }
+    // chapter tests passed in the last 3 days
+    for (const x of (local.tests || []).filter((x) => x.t > d3 && x.m && x.g / x.m >= 0.8).slice(-2)) {
+      const nm = (x.title && String(x.title).replace(/^chapter test[:·\s-]*/i, '')) || unitName(Object.keys(x.per || {})[0]);
+      add(2, 'medal', Z(`You passed ${nm ? `the ${nm} test` : 'a chapter test'} with ${Math.round(100 * x.g / x.m)}%!`, `${nm ? `「${nm}」測驗` : '章節測驗'}考了 ${Math.round(100 * x.g / x.m)}%，合格了！`), Z('Under time, first try. That’s test-ready.', '限時、第一次就合格，準備好考試了。')); }
+    // a chapter that jumped: this week vs the week before
+    { const by = {}; for (const e of local.log) { if (!e.q || !e.m || e.t < wk - 7 * DAY) continue; const k = String(e.q).split(':').slice(0, 2).join(':'); const o = by[k] || (by[k] = { now: [], prev: [] }); (e.t >= wk ? o.now : o.prev).push(e); }
+      const best = Object.entries(by).map(([k, o]) => ({ k, a: o.now.length >= 4 ? accP(o.now) : null, b: o.prev.length >= 4 ? accP(o.prev) : null })).filter((x) => x.a != null && x.b != null && x.a - x.b >= 15).sort((x, y) => (y.a - y.b) - (x.a - x.b))[0];
+      if (best) add(3, 'up', Z(`${unitName(best.k)} jumped from ${best.b}% to ${best.a}%`, `「${unitName(best.k)}」由 ${best.b}% 升到 ${best.a}%`), Z('All that practice is paying off.', '練習有成果了！')); }
+    // mistakes fixed this week
+    { const fixed = Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > wk).length;
+      if (fixed && !mistakeCount()) add(3, 'sparkle', Z('You cleared your whole Mistake book!', '錯題簿全部清完！'), Z(`${fixed} mistake${fixed === 1 ? '' : 's'} fixed this week. Nothing left to trip you up.`, `本週改正了 ${fixed} 題，再沒有錯題了。`));
+      else if (fixed >= 3) add(5, 'check', Z(`You fixed ${fixed} mistakes this week`, `本週改正了 ${fixed} 題錯題`), Z('Each one is a mark you won’t lose again.', '每一題都是不會再失的分數。')); }
+    // 默書 practice: full marks in the last 3 days
+    { const full = (local.dict || []).find((L) => (L.runs || []).some((r) => r.t > d3 && r.n && r.g >= r.n));
+      if (full) add(4, 'star', Z(`100% in 默書 practice: ${shortTitle(full.title || '')}!`, `默書練習「${shortTitle(full.title || '')}」全對！`), Z('Every word right.', '每個詞語都寫對了。')); }
+    // weekly goal reached, streak, best week
+    { const G = goalWeek(); if (G && G.reached) add(5, 'target', Z('You hit your weekly goal!', '本週目標達成！'), Z(`${G.days} days of ${G.mins} minutes. Great habit.`, `${G.days} 日，每次 ${G.mins} 分鐘，好習慣！`)); }
+    { const days = new Set(local.log.map((e) => dayStart(e.t))); let st = 0; for (let d = days.has(t0) ? t0 : t0 - DAY; days.has(d); d -= DAY) st++;
+      if (st >= 3) add(st >= 7 ? 4 : 7, 'flame', Z(`${st} days in a row!`, `連續 ${st} 日！`), Z('A little every day is how it sticks.', '每天一點點，最能記得牢。')); }
+    { const cnt = (a, b) => local.log.filter((e) => e.q && e.t >= a && e.t < b).length, thisW = cnt(wk, now + 1), prev = Array.from({ length: 5 }, (_, k) => cnt(wk - (k + 1) * 7 * DAY, wk - k * 7 * DAY));
+      if (thisW >= 40 && prev.some((x) => x > 0) && thisW > Math.max(...prev)) add(6, 'chart', Z(`Your best week yet: ${thisW} questions`, `最勤力的一星期：${thisW} 題`), Z('More practice than any week before.', '比之前任何一星期都多。')); }
+    // a strong yesterday
+    { const ys = local.log.filter((e) => e.q && e.m && e.t >= t0 - DAY && e.t < t0), right = ys.filter((e) => e.g >= e.m).length;
+      if (ys.length >= 5 && right / ys.length >= 0.7) add(8, 'check', Z(`Yesterday you got ${right} of ${ys.length} right`, `昨天答對 ${right}／${ys.length} 題`), Z('Nice work. Keep it rolling today.', '做得好，今天繼續！')); }
+    W.sort((a, b) => a.pri - b.pri);
+    if (W.length) {
+      const IC = { trophy: 'trophy', medal: 'award', up: 'trending-up', sparkle: 'sparkles', check: 'circle-check', star: 'star', target: 'target', flame: 'flame', chart: 'chart-bar', brain: 'brain' };
+      const SV = { trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3"/>', medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8"/>', up: '<path d="M4 16l5-5 4 4 7-7"/><path d="M15 8h5v5"/>', sparkle: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', check: '<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>', star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.5 2.9 1-6.1L3.2 9.5l6.1-.9z"/>', target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/>', flame: '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 2.5 2.5 3 4 .5-3-1-5 0-7z"/>', chart: '<path d="M5 20V10M12 20V4M19 20v-7"/>', brain: '<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/>' };
+      const ic = (k) => `<svg class="tw-i ${k}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SV[k] || SV.check}</svg>`;
+      const top = W[0], rest = W.slice(1).filter((x) => x.t !== top.t).slice(0, 2);
+      winHTML = `<section class="td-wins" aria-label="${Z('Your wins', '你的進步')}"><span class="tw-conf" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        <div class="tw-top"><span class="tw-bud">${buddySVG('happy', 56)}</span><div><small>${Z('Your wins', '你的進步')}</small><b data-raw>${esc(top.t)}</b></div></div>
+        <p class="tw-d">${esc(top.d)}</p>${rest.length ? `<div class="tw-more">${rest.map((x) => `<div>${ic(x.icon)}<span data-raw>${esc(x.t)}</span></div>`).join('')}</div>` : ''}</section>`;
+      void IC;
+    } }
   // a subject left alone for 5+ days
   // A lesson left part-way (from the last 7 days): carry on, or close it.
   let lessonHTML = '', lessonLeft = null;
