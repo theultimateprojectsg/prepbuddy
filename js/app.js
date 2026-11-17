@@ -5464,6 +5464,14 @@ function chapterSheet(book, c) {
     c.open ? ['fix', 'mistakes', PT(`Fix ${c.open} mistakes`, `改正 ${c.open} 題錯題`), PT('Try the ones you got wrong again', '再做一次答錯的題目'), () => go({ name: 'mistakes', book: book.id })] : null,
     c.done ? ['review', 'review', PT(c.due ? `Review ${c.due} due` : 'Review', c.due ? `溫習 ${c.due} 題` : '溫習'), PT('Questions from before, just before you’d forget', '在快忘記前再做以前的題目'), () => startReview('spaced', book.id)] : null,
     ['test', 'test', PT('Chapter test', '章節測驗'), c.lastTest && Date.now() - c.lastTest < 7 * DAY ? PT(`You did one ${new Date(c.lastTest).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}. Another now is fine for practice; the one that proves it stuck is from ${new Date(c.lastTest + 7 * DAY).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}`, `你在${new Date(c.lastTest).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}做過。現在再做可當練習；${new Date(c.lastTest + 7 * DAY).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}起再做才能證明記得`) : PT('Timed, like a mock exam · 80% passes', '限時，像模擬試 · 80% 合格'), () => startChapterTest(book, [c.unit])],
+    c.done >= 3 ? ['drill', 'weak', PT('Drill my weak spots', '針對弱項練習'), PT('New questions on the ideas you got wrong', '針對你答錯的概念出新題目'), async () => {
+      const qs = (await getQs(book.id, c.unit.id)).filter((q) => local.stats[q.id] && (local.stats[q.id].last || 0) < 1 && canDrill(q))
+        .sort((a, b) => (local.stats[a.id].last || 0) - (local.stats[b.id].last || 0)).slice(0, 6);
+      if (!qs.length) return toast(PT('No weak spots in this chapter right now. Nice!', '這一章暫時沒有弱項，做得好！'));
+      const idea = (q) => choiceType(q) ? `Question: ${q.stem}\nCorrect answer: ${(q.options || [])['ABCD'.indexOf(q.correct_option)] || ''}\nWhy: ${q.explanation || ''}`
+        : `Question: ${writtenStem(q)}\nMarks were for: ${(q.parts || []).flatMap((p) => p.mark_scheme || []).slice(0, 4).join('; ')}\nWhy: ${q.explanation || ''}`;
+      startDrills(qs.map((q) => ({ q, idea: idea(q) })), book, 'mix');
+    }] : null,
     ['cards', 'flashcards', PT('Flashcards', '閃卡'), PT('Key words and ideas, quick fire', '重點詞語和概念，快速溫習'), () => go({ name: 'cards', bookId: book.id })],
     ['notes', 'notes', PT('Revision notes', '溫習筆記'), PT('The chapter on one page', '一頁看完整章'), () => go({ name: 'notes', bookId: book.id })],
   ].filter(Boolean);
@@ -5474,12 +5482,15 @@ function chapterSheet(book, c) {
     <header class="cs2-h"><div class="rsg-meter ${tone}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(c.pct * 0.974).toFixed(1)} 100"/></svg><b>${c.pct}%</b></div>
       <div class="cs2-ht"><small data-raw>${esc(book.subject ? subj(book.subject) : book.title)}</small><b id="chs-t" data-raw>${esc(name)}</b><span class="cs2-pill ${tone}">${esc(masteryLabel(c.pct))}</span></div>
       <button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <div class="cs2-body"><div class="cs2-col">
     <section class="cs2-pick"><div class="cs2-pk-h">${buddySVG('happy', 40)}<div><small>${PT('Buddy suggests', 'Buddy 建議')}</small><p>${why}</p></div></div>
       <button class="cs2-go" data-o="0">${actionTile(best[1], 36)}<span><b>${best[2]}</b><em>${best[3]}</em></span><i>›</i></button></section>
     <section class="cs2-sec"><h3>${left ? PT(`${6 - left} of 6 steps to 100%`, `100% 的 6 步中完成了 ${6 - left} 步`) : PT('All 6 steps done: mastered', '6 步全部完成：已掌握')}</h3>
       <div class="cs2-steps">${steps.map(([ic, l, st3, v]) => `<div class="cs2-st s-${st3}"><span class="cs2-ic">${pIcon({ learn: 'book', practise: 'target', level: 'bars', mistakes: 'pencil', review: 'memory', test: 'check' }[ic], 18)}</span><div><b>${l}</b><em>${v}</em></div><i aria-label="${st3}">${st3 === 'done' ? '✓' : ''}</i></div>`).join('')}</div></section>
+    </div><div class="cs2-col">
     ${ladder}
     <section class="cs2-sec"><h3>${PT('Or choose for yourself', '或自己選擇')}</h3><div class="cs2-more">${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 32)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div></section>
+    </div></div>
   </div>`;
   document.body.appendChild(box);
   const all = [best, ...rest], close = () => box.remove();

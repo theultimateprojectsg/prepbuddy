@@ -2363,6 +2363,20 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 @media (min-width:900px){.cdlg.cs2{max-width:560px;width:560px}}
 .cs2 .cs2-steps,.cs2 .cs2-more{grid-template-columns:1fr!important;gap:6px}
 .cs2 .cs2-st{align-items:center;padding:9px 12px}.cs2 .cs2-st>i{top:50%;transform:translateY(-50%);right:12px}.cs2 .cs2-st>div{padding-right:26px}
+
+/* chapter sheet desktop: two panels side by side so everything fits without scrolling */
+.cs2-body{display:flex;flex-direction:column}
+.cs2-col{display:flex;flex-direction:column;min-width:0}
+@media (min-width:900px){
+  .cdlg.cs2{max-width:940px!important;width:min(940px,calc(100vw - 48px))!important;max-height:calc(100vh - 40px)}
+  .cs2-body{display:grid;grid-template-columns:1fr 1fr;gap:0 4px;padding-bottom:20px}
+  .cs2-col:first-child .cs2-pick{margin-right:4px}.cs2-col:last-child .cs2-sec:first-child{padding-top:0}
+  .cs2 .cs2-steps{grid-template-columns:1fr 1fr!important}
+  .cs2 .cs2-st{align-items:flex-start}.cs2 .cs2-st>i{top:8px;transform:none;right:8px}.cs2 .cs2-st>div{padding-right:18px}
+  .cs2-col:last-child .cs2-sec{padding-left:16px}.cs2-col:first-child .cs2-sec{padding-right:16px}
+  .cs2 .cs2-more button[data-o]{min-height:48px;padding:7px 12px}
+  .cs2-sec:last-child{padding-bottom:0}
+}
 </style>
 </head>
 <body>
