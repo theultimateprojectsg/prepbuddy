@@ -6428,40 +6428,18 @@ async function renderProgress() {
   // the mistake book over time: open mistakes at the end of each week, and fixed vs new that week
   const firstWrong = new Map(); local.log.forEach((e) => { if (e.g < e.m && !firstWrong.has(e.q)) firstWrong.set(e.q, e.t); });
   const MKE = Object.entries(local.mistakes || {}).map(([id, m]) => ({ made: Math.min(firstWrong.get(id) || m.t, m.t), done: m.done ? m.doneAt || m.t : null }));
-  const mkWk = Array.from({ length: 8 }, (_, i) => { const end = t0 + DAY - (7 - i) * WK, start = end - WK;
+  const mkW = Array.from({ length: 8 }, (_, i) => { const end = t0 + DAY - (7 - i) * WK, start = end - WK;
     return { open: MKE.filter((x) => x.made < end && (!x.done || x.done >= end)).length, fixed: MKE.filter((x) => x.done && x.done >= start && x.done < end).length, made: MKE.filter((x) => x.made >= start && x.made < end).length }; });
-  // the chart starts at the child's first week with mistakes, not with empty weeks before they began
-  const mkFirst = mkWk.findIndex((w) => w.open || w.fixed || w.made), mkW = mkFirst < 0 ? [] : mkWk.slice(mkFirst);
   const mkMax = Math.max(1, ...mkW.map((w) => Math.max(w.open, w.fixed, w.made)));
-  const mkCard = MKE.length && mkW.length ? (() => {
-    const n = mkW.length, wk = mkW[n - 1], a = mkW[0].open, b = wk.open;
-    const openL = MKE.filter((x) => !x.done), oldest = openL.length ? Math.round((now - Math.min(...openL.map((x) => x.made))) / DAY) : 0;
-    const fresh = n <= 3; // first few weeks: practising creates mistakes; that's how Buddy finds what to work on
-    const say = fresh ? PT('Wrong answers are how Buddy finds what to practise. Fixing them in Today’s mission turns them into marks.', '答錯的題目讓 Buddy 知道要練習甚麼。在今日任務改正它們，就能變成分數。')
-      : b < a ? PT(`Down from ${a} to ${b} open: gaps are closing.`, `未改正的由 ${a} 減至 ${b}：漏洞正在補上。`)
-      : b > a ? PT(`Up from ${a} to ${b} open. Fixing a few each day turns it around.`, `未改正的由 ${a} 增至 ${b}。每天改正幾題就能扭轉。`)
-      : PT('About the same as before. Keep fixing a few each day.', '和之前差不多。每天繼續改正幾題。');
-    // open mistakes, week by week: one soft area line
-    const W = 300, H = 96, top = Math.max(4, ...mkW.map((w) => w.open)) * 1.15, X = (i) => (n === 1 ? W - 24 : 12 + i * (W - 40) / (n - 1)), Y = (v) => H - 22 - (v / top) * (H - 34);
-    const pts = mkW.map((w, i) => [X(i), Y(w.open)]);
-    const area = n > 1 ? `<path d="M${pts[0][0].toFixed(1)},${(H - 22)} ${pts.map(([px, py]) => `L${px.toFixed(1)},${py.toFixed(1)}`).join(' ')} L${pts[n - 1][0].toFixed(1)},${H - 22} Z" fill="url(#mkg)"/><polyline points="${pts.map(([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`).join(' ')}" fill="none" stroke="#26357A" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>` : '';
-    const [lx, ly] = pts[n - 1];
-    const fmtW = (k) => { const t = t0 - (n - 1 - k) * WK; return k === n - 1 ? PT('This week', '本週') : new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' }); };
-    const chart = `<svg class="mk-chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${PT(`Open mistakes each week, now ${b}`, `每星期未改正的錯題，現在 ${b} 題`)}"><defs><linearGradient id="mkg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26357A" stop-opacity=".18"/><stop offset="1" stop-color="#26357A" stop-opacity="0"/></linearGradient></defs>
-      <line x1="0" x2="${W}" y1="${H - 22}" y2="${H - 22}" stroke="#E6EAF2"/>${area}<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="#26357A" stroke="#FFFFFF" stroke-width="2"/>
-      <text x="${(lx - 8).toFixed(1)}" y="${(ly - 9).toFixed(1)}" font-size="13" font-weight="700" fill="#1E2A5A" text-anchor="end">${b}</text>
-      ${n > 1 ? `<text x="${pts[0][0].toFixed(1)}" y="${H - 6}" font-size="11" fill="#5A6380">${fmtW(0)}</text>` : ''}<text x="${W - 2}" y="${H - 6}" font-size="11" fill="#5A6380" text-anchor="end">${fmtW(n - 1)}</text></svg>`;
-    // this week: fixed vs new, as one split bar
-    const tot = wk.fixed + wk.made, fp = tot ? Math.round(100 * wk.fixed / tot) : 0;
-    const split = `<div class="mk-split"><div class="mk-split-l"><span><i class="g"></i>${PT(`${wk.fixed} fixed`, `改正 ${wk.fixed} 題`)}</span><span><i class="o"></i>${PT(`${wk.made} new`, `新增 ${wk.made} 題`)}</span></div>
-      <div class="mk-bar" aria-hidden="true">${tot ? `<b style="width:${fp}%"></b><s style="width:${100 - fp}%"></s>` : ''}</div><small>${tot ? (wk.fixed >= wk.made ? PT('Fixing faster than new ones arrive. Brilliant.', '改正得比新增快，很好！') : PT('Aim for the green to catch up with the orange.', '目標：綠色追上橙色。')) : PT('No mistakes made or fixed yet this week.', '本週仍未有新錯題或改正。')}</small></div>`;
-    return `<div class="pv-card mk-card"><b class="pv-ct h-info">${PT('Mistake book over time', '錯題簿的變化')}${ib('howMk', PT('How to read this', '怎樣看這個圖'))}</b>
-      <div class="mk-top"><div><b>${b}</b><span>${PT('still open', '未改正')}</span></div>${oldest >= 3 ? `<div><b>${oldest}<small>${PT('d', '日')}</small></b><span>${PT('oldest one', '最舊的一題')}</span></div>` : ''}<div><b class="g">${wk.fixed}</b><span>${PT('fixed this week', '本週改正')}</span></div></div>
-      <p class="pv-sm" style="margin:0">${say}</p>
-      ${chart}
-      <div class="mk-wk">${PT('This week', '本週')}</div>${split}
-      ${openL.length ? btn(PT('Fix mistakes now', '現在改正錯題'), () => go({ name: 'mistakes' }), 'pv-btn soft') : ''}
-      ${how('howMk', PT('How to read this', '怎樣看這個圖'), `<p>${PT('The line is how many mistakes were still open (not yet got right) at the end of each week. Under it, this week’s mistakes fixed (green) against new ones (orange).', '線是每星期結束時仍未改正的錯題數。下面是本週改正（綠色）與新增（橙色）的錯題。')}</p><p>${PT('Every wrong answer goes into the mistake book; getting it fully right later fixes it. Practising more always makes some new ones: what matters is that the green keeps up with the orange.', '每題答錯都會放進錯題簿；之後完全答對就算改正。練習多了一定會有新錯題：重要的是綠色追得上橙色。')}</p>`)}</div>`; })() : '';
+  const mkCard = MKE.length ? (() => { const W = 300, H = 120, x = (i) => 14 + i * (W - 28) / 7, y = (v) => H - 18 - v / mkMax * (H - 30);
+    const bars = mkW.map((w, i) => `<rect x="${(x(i) - 9).toFixed(1)}" y="${y(w.fixed).toFixed(1)}" width="8" height="${(H - 18 - y(w.fixed)).toFixed(1)}" rx="2" fill="#18966A"/><rect x="${(x(i) + 1).toFixed(1)}" y="${y(w.made).toFixed(1)}" width="8" height="${(H - 18 - y(w.made)).toFixed(1)}" rx="2" fill="#F0A35E"/>`).join('');
+    const line = `<polyline points="${mkW.map((w, i) => `${x(i).toFixed(1)},${y(w.open).toFixed(1)}`).join(' ')}" fill="none" stroke="#26357A" stroke-width="2.5" stroke-linejoin="round"/>${mkW.map((w, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(w.open).toFixed(1)}" r="3" fill="#26357A"/>`).join('')}`;
+    const a = mkW[0].open, b = mkW[7].open;
+    return `<div class="pv-card"><b class="pv-ct h-info">${PT('Mistake book over time', '錯題簿的變化')}${ib('howMk', PT('How to read this', '怎樣看這個圖'))}</b>
+      <p class="pv-sm">${b < a ? PT(`Down from ${a} to ${b} open mistakes in 8 weeks: gaps are closing.`, `8 星期內未改正的錯題由 ${a} 減至 ${b}，漏洞正在補上。`) : b > a ? PT(`Up from ${a} to ${b} open mistakes in 8 weeks. Fixing a few each day turns it around.`, `8 星期內未改正的錯題由 ${a} 增至 ${b}。每天改正幾題就能扭轉。`) : PT(`${b} open mistakes, about the same as 8 weeks ago.`, `未改正的錯題 ${b} 題，和 8 星期前差不多。`)}</p>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${PT('Open mistakes each week, with mistakes fixed and new', '每星期未改正的錯題，以及改正和新增的錯題')}"><line x1="0" y1="${H - 18}" x2="${W}" y2="${H - 18}" stroke="#E6EAF2"/>${bars}${line}<text x="4" y="${H - 4}" font-size="10" fill="#5A6380">${PT('8 wks ago', '8 週前')}</text><text x="${W - 4}" y="${H - 4}" font-size="10" fill="#5A6380" text-anchor="end">${PT('This wk', '本週')}</text></svg>
+      <div class="pv-callg"><i style="background:#26357A;border-radius:50%"></i><span>${PT('Open', '未改正')}</span><i style="background:#18966A"></i><span>${PT('Fixed', '已改正')}</span><i style="background:#F0A35E"></i><span>${PT('New', '新錯題')}</span></div>
+      ${how('howMk', PT('How to read this', '怎樣看這個圖'), `<p>${PT('The blue line is how many mistakes were still open (not yet got right) at the end of each week. Green bars are mistakes fixed that week; orange bars are new mistakes that week.', '藍線是每星期結束時仍未改正的錯題數。綠色棒是當星期改正的錯題，橙色棒是當星期新增的錯題。')}</p><p>${PT('Every wrong answer goes into the mistake book; getting it fully right later fixes it. A falling blue line means the gaps are closing.', '每題答錯都會放進錯題簿；之後完全答對就算改正。藍線下降，代表漏洞正在補上。')}</p>`)}</div>`; })() : '';
   // first tries only (reviews and redone mistakes are mostly remembering questions seen before), last 30 days
   const tySeen = new Set(), FT = [];
   for (const e of local.log) { if (!e.q || !e.m || tySeen.has(e.q)) continue; tySeen.add(e.q); if (e.t >= now - 30 * DAY && e.k !== 'mistakes' && e.k !== 'spaced') FT.push(e); }
