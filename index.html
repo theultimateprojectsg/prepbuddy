@@ -2495,6 +2495,11 @@ button.chip{background:#fff;border:1px solid var(--line);color:var(--ink);cursor
 @media (min-width:700px){.pv-grid3{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media (min-width:1100px){.pv-grid3{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media (min-width:1700px){.pv-grid3{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+
+/* keep the goal tag inside the bar near the ends: slide it left as the goal rises, tail stays on the line */
+.pv-flag b{transform:translateX(calc(var(--a,50) * -1%))!important}
+.pv-bar:hover .pv-flag b,.pv-bar.drag .pv-flag b{transform:translateX(calc(var(--a,50) * -1%)) scale(1.06)!important}
+.pv-flag b::after{left:calc(var(--a,50) * 1%)!important}
 </style>
 </head>
 <body>
