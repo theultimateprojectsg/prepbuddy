@@ -6123,10 +6123,34 @@ async function renderProgress() {
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(PT('Weekly report', '每週報告'), () => reportDialog(), 'pv-btn quiet')}${btn(`${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}`, () => openParent(), 'pv-btn quiet')}</div></div>
-    <section class="pv-sec pv-sumsec"><div class="pv-h"><h2>${PT('Your week at a glance', '本週一覽')}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}</section>
+    <section class="pv-sec pv-sumsec"><div class="pv-h"><h2 class="h-info">${PT('Your week at a glance', '本週一覽')}${ib('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'))}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}${how('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'), '')}</section>
     <div id="pv-s2">${sec2}</div><div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
+  // Info pop-ups in plain words: a few short lines with a picture each, for kids and parents alike
+  { const L = (rows) => `<ul class="how-easy">${rows.map(([i, en, zh]) => `<li><span>${i}</span><p>${PT(en, zh)}</p></li>`).join('')}</ul>`;
+    const HOW = {
+      howGlance: L([['🙂', 'Buddy’s one-line verdict on your week.', 'Buddy 對你這星期的一句總結。'], ['✅', '<b>Going well</b>: something to be proud of.', '<b>做得好</b>：值得開心的事。'], ['⚠️', '<b>Keep an eye on</b>: the one thing that needs you most.', '<b>要留意</b>：最需要你注意的一件事。'], ['👆', 'Tap any of it, or the 4 numbers, to see more.', '按任何一項或 4 個數字，看詳情。']]),
+      howNotP: L([['🔍', 'Buddy looks at your answers, hints, timing and reviews.', 'Buddy 會看你的答案、提示、時間和溫習。'], ['🧩', 'A card only shows when there’s a clear pattern.', '只有看到清楚的規律才會出現卡片。'], ['👉', 'Most important first. Tap the button to fix it.', '最重要的排第一。按按鈕去改善。'], ['🎉', 'Green cards are wins!', '綠色卡片是你的進步！']]),
+      howTestP: L([['📊', '<b>Ready now</b>: how well you know the chapters in this test.', '<b>現在</b>：你對這個測驗的章節有多熟。'], ['🔮', '<b>On test day</b>: where you’ll be if you keep going like this.', '<b>考試當日</b>：照現在的速度，考試時會到哪裡。'], ['🎯', '<b>Goal</b>: slide Buddy to set it. It’s 80% until you change it.', '<b>目標</b>：拖動 Buddy 設定，預設 80%。'], ['🚦', 'Green = on track · Yellow = close · Red = at risk', '綠色 = 理想 · 黃色 = 接近 · 紅色 = 要加把勁']]),
+      howWorkP: L([['🟩', 'Each box is a chapter. Green strong, yellow getting there, red needs work, white not started.', '每格是一章。綠色好、黃色漸入佳境、紅色要加油、白色未開始。'], ['👆', 'Tap a chapter to see what to do next.', '按一章看看下一步做甚麼。'], ['💯', '100% = passed tests a week apart, harder questions right, and still remembered 2 weeks later.', '100% = 相隔一星期兩次合格、較深題目答對，而且兩星期後仍記得。']]),
+      howLevelP: L([['📈', 'How hard a question you can get right, out of 10.', '你能答對多難的題目（滿分 10）。'], ['🧗', 'Get harder questions right and it goes up. It won’t drop just because questions got harder.', '答對較深題目就會上升。題目變難也不會因此下跌。'], ['📍', 'The small line shows what’s expected for your grade.', '小直線是你年級的預期程度。']]),
+      howRwP: L([['📈', 'One line per subject, one dot per week.', '每科一條線，每星期一點。'], ['⬆️', 'Going up = you know more of the textbook.', '向上 = 你掌握更多課本內容。']]),
+      howMkP: L([['📝', 'Real school test marks, added by a parent.', '家長輸入的學校測驗成績。'], ['🔁', 'Before PrepBuddy vs now, so you can see the change.', '用 PrepBuddy 前後對比，看看變化。']]),
+      howGrP: L([['🌱', 'The question level each chapter gives you now, compared with when you started.', '每章現在給你的題目程度，與剛開始時比較。'], ['⬆️', 'A bigger jump = more growth.', '升得越多 = 進步越大。']]),
+      howPc: L([['🧪', 'A short quiz at the same level as your first level check.', '與第一次程度評估同樣難度的小測。'], ['⚖️', 'Same difficulty, so any change is real progress.', '難度一樣，所以分數變化就是真正的進步。']]),
+      howMemP: L([['🔁', 'Questions come back after 1, 3, 7 and 14 days.', '題目會在 1、3、7、14 日後再出現。'], ['🧠', 'Still right days later = really remembered.', '幾天後仍答對 = 真的記住了。']]),
+      howTmP: L([['⏱️', 'Your practice scores vs your timed test scores.', '練習分數對比限時測驗分數。'], ['😌', 'Close together = you stay calm under time pressure.', '兩者接近 = 限時下也能保持冷靜。']]),
+      howK1: L([['🎯', 'How much of your textbooks you really know, out of 100%.', '你真正掌握多少課本內容（滿分 100%）。'], ['📅', 'Subjects with a test coming up count more.', '快要考試的科目佔比較大。']]),
+      howK2: L([['📚', 'Chapters at 80% or more.', '準備度 80% 或以上的章節。'], ['✅', 'That takes a passed test, harder questions right, and remembering it.', '需要通過測驗、答對較深題目，而且記得。']]),
+      howK3: L([['🧠', 'Questions you still get right a week or more later.', '一星期或更久之後仍答對的題目。'], ['🔁', 'It grows when you do your reviews.', '做溫習就會增加。']]),
+      howK4: L([['📅', 'Days with any practice in the last 4 weeks.', '過去 4 星期有練習的日數。'], ['🐢', 'A little most days beats a lot once a week.', '每天少少，勝過一星期一次做很多。']]),
+      howCal: L([['🟦', 'Each square is a day. Darker = more questions.', '每格是一日，顏色越深 = 題目越多。'], ['📆', 'Each column is a week, Monday at the top.', '每一列是一星期，星期一在最上面。']]),
+      howMix: L([['📊', 'Each bar is a week of questions.', '每條是一星期的題目。'], ['🟦', 'Darker blue = harder questions. More dark = taking on harder work.', '深藍 = 較深題目。深色越多 = 挑戰越難。']]),
+      howMk: L([['🔵', 'Blue line = mistakes still to fix. You want it going down.', '藍線 = 未改正的錯題，越低越好。'], ['🟢', 'Green = fixed · Orange = new ones.', '綠色 = 已改正 · 橙色 = 新錯題。']]),
+      howEffP: L([['📅', 'Days, minutes and questions this week, compared with last week.', '本週的日數、分鐘和題目，與上週比較。'], ['🔥', 'Streak = days in a row with practice.', '連續 = 連續有練習的日數。'], ['⏰', 'Best time = when your scores are highest.', '最好時段 = 你分數最高的時候。']]),
+    };
+    Object.entries(HOW).forEach(([id, html]) => { const d = document.getElementById(id); const b = d && d.querySelector(':scope > div'); if (b) b.innerHTML = html; }); }
   // headline numbers lead somewhere: readiness and chapters to what to work on, memory to reviews, days to the calendar
   { const go2 = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     const KT = { 'k-ring': () => go2('pv-s3'), 'k-book': () => go2('pv-s3'), 'k-brain': () => memorySheet(), 'k-cal': () => daysSheet() };
