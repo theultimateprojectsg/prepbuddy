@@ -2563,8 +2563,8 @@ async function renderHome() {
     return 10; };
   const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
   const stepRow = (x, k) => x.done || !x.now
-    ? `<div class="ms-row done"><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
-    : `<button class="ms-row" ${x.now.attr}><span class="pi-icon">${actionIcon(x.icon, 24)}</span><span class="ms-t">${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}<b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
+    ? `<div class="ms-row done"><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span></span><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
+    : `<button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
@@ -5671,6 +5671,9 @@ function testPlanSheet(p, chs, aim, fc) {
   const t0 = dayStart(), tday = testDay(p.x), left = p.left;
   const nm = (u) => shortTitle(u.title);
   const { need, days } = testDayPlan(p, chs, aim);
+  // chapters listed in textbook order (Unit 1, 2, 3…), not by how much each one needs
+  const uIdx = (u) => { const k = (p.book && p.book.units || []).findIndex((x) => x.id === u.id); return k < 0 ? 999 : k; };
+  const needInOrder = need.slice().sort((a, b) => uIdx(a.c.unit) - uIdx(b.c.unit));
   const weekly = left > 14;
   const rows = weekly
     ? Array.from({ length: Math.ceil((left + 1) / 7) }, (_, w) => { const part = days.slice(w * 7, w * 7 + 7); return `<div class="tp-row ${w === 0 ? 'now' : ''}"><span class="tp-d"><b>${PT(`Week ${w + 1}`, `第 ${w + 1} 週`)}</b><small>${fmt(part[0].t, { day: 'numeric', month: 'short' })}–${fmt(part[part.length - 1].t, { day: 'numeric', month: 'short' })}</small></span><ul>${[...new Set(part.map((x) => x.task[0]))].slice(0, 4).map((x) => `<li data-raw>${esc(x)}</li>`).join('')}</ul></div>`; }).join('')
@@ -5684,7 +5687,7 @@ function testPlanSheet(p, chs, aim, fc) {
       <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${fc ?? p.ready}%</b><span>${PT('on test day with the plan', '跟著計劃考試當日')}</span></div><i>·</i><div><b>${aim}%</b><span>${PT('your goal', '你的目標')}</span></div></div>
       <p class="tp-p">${gap ? PT(`About ${gap} points short of your goal at the current pace. Follow the plan and most of that gap closes.`, `按現時進度，距離目標約 ${gap} 分。跟著計劃做，大部分差距都能補回。`) : PT('On course for your goal. The plan keeps it there with practice and a final practice test.', '正朝目標前進。計劃會用練習和最後一次模擬測驗保持狀態。')}</p>
       <h3>${PT('What each chapter needs', '每章需要做甚麼')}</h3>
-      <div class="tp-ch">${need.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${x.c.pct}%"></em><s style="left:${aim}%"></s></i></span><strong>${x.c.pct}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
+      <div class="tp-ch">${needInOrder.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${x.c.pct}%"></em><s style="left:${aim}%"></s></i></span><strong>${x.c.pct}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
     </div><div class="tp-col">
       <h3>${weekly ? PT('Week by week', '每週計劃') : PT('Day by day', '每日計劃')}</h3>
       <div class="tp-plan">${rows}</div>
@@ -5693,7 +5696,7 @@ function testPlanSheet(p, chs, aim, fc) {
   const close = () => box.remove();
   box.querySelector('.cs2-x').onclick = close;
   box.onclick = (e) => { if (e.target === box) close(); };
-  box.querySelectorAll('[data-tc]').forEach((b) => (b.onclick = () => { close(); need[+b.dataset.tc].act[2](); }));
+  box.querySelectorAll('[data-tc]').forEach((b) => (b.onclick = () => { close(); needInOrder[+b.dataset.tc].act[2](); }));
   const st = box.querySelector('[data-tp]'); if (st) st.onclick = () => { close(); days[0].task[1](); };
 }
 // Tapping "In long-term memory": what it means, where it stands, and the reviews that grow it (nothing starts until asked).
