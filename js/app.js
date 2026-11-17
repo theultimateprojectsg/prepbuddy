@@ -2775,10 +2775,18 @@ async function renderHome() {
       const fcT = r == null || !chs.length ? null : planForecast(p.ready, chs, p.left, practiceHabit());
       const st = r == null ? '' : aimTone(fcT ?? r, aim);
       const stPill = st ? `<em class="pv-pill tdc-pill ${st}">${{ ok: Z('On track', '進度理想'), close: Z('Close', '接近'), risk: Z('At risk', '需要加把勁') }[st]}</em>` : '';
+      // the test's chapters as slim rows, like Progress: in book order, the 3 weakest shown, the rest one tap away
+      let chRows = '';
+      if (chs.length && (p.x.kind || 'test') !== 'dict') {
+        const order = p.book.units.map((u) => u.id), weak = new Set(chs.slice().sort((a, b) => (a.pct || 0) - (b.pct || 0)).slice(0, 3).map((c) => c.unit.id));
+        const cs = chs.slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id)), more = cs.length - weak.size;
+        const row = (c) => `<div class="pv-tr ${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}${weak.has(c.unit.id) ? '' : ' hid'}"><span data-raw>${esc(shortTitle(c.unit.title))}</span><em>${c.done ? `${c.pct}%` : c.learned ? Z(`Lesson · ${c.pct}%`, `已上課 · ${c.pct}%`) : Z('Not started', '未開始')}</em><i><b style="width:${c.pct}%"></b></i></div>`;
+        chRows = `<div class="pv-tch tdc-ch">${cs.map(row).join('')}<div class="tdc-chf">${more > 0 ? `<button type="button" class="pv-tmore tdc-more" data-more="${Z(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`)}">${Z(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`)}</button>` : '<div></div>'}<button type="button" class="tdc-prog">${Z('Details in Progress', '在「進度」看詳情')} ›</button></div></div>`;
+      }
       return `<div class="td-test tdc">
         <div class="tdc-h">${icon}<button class="tdc-t" data-tedit="${esc(p.x.id)}"><b data-raw>${esc(p.x.name)}</b><span class="tdc-st"><small>${day}</small>${stPill}</span></button><span class="tdc-left ${p.left <= 7 ? 'soon' : ''}"><b>${p.left}</b><small>${p.left === 0 ? Z('today', '今天') : p.left === 1 ? Z('day left', '日') : Z('days left', '日')}</small></span></div>
         ${!p.book ? `<small class="muted" data-raw>${esc(testScope(p))}${p.last ? ' · ' + SCH(`${p.last.g} of ${p.last.n} right last time`, `上次 ${p.last.n} 個中寫對 ${p.last.g} 個`) : ''}</small>` : ''}
-        ${bar}${job}
+        ${bar}${chRows}${job}
         ${plan ? `<div class="tdc-f"><span>${next ? `${pIcon('check', 15)} ${Z(`Practice test ${pDay}`, `${pDay} 模擬測驗`)}` : ''}</span><button class="linkbtn" data-tplan="${k}">${Z('Full plan', '完整計劃')} ›</button></div>` : ''}
       </div>`;
     };
@@ -2824,6 +2832,8 @@ async function renderHome() {
     const first = card.querySelector('button.ms-row'); if (first) setTimeout(() => first.focus({ preventScroll: true }), 450);
   }; }
   bindSchoolTests();
+  $app.querySelectorAll('.tdc-more').forEach((b) => (b.onclick = () => { const el = b.closest('.tdc-ch'), open = el.classList.toggle('open'); b.textContent = open ? Z('Show fewer', '顯示較少') : b.dataset.more; }));
+  $app.querySelectorAll('.tdc-prog').forEach((b) => (b.onclick = () => go({ name: 'progress' })));
   { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('button.ms-row'); if (r) r.click(); }; }
   { const b = document.getElementById('twX'); if (b) b.onclick = () => { const c = b.closest('.td-wins'); local.winsHid = { d: dayStart(), k: c.dataset.k }; saveLocal(); c.remove(); }; }
   $app.querySelectorAll('[data-mtime]').forEach((b) => (b.onclick = () => { local.mtime = +b.dataset.mtime; local.mission = null; saveLocal(); renderHome(); }));
