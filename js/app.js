@@ -754,7 +754,7 @@ let S = null; // current practice session
 let navStack = [], navPopping = false, navCur = null;
 const navKey = (v) => JSON.stringify(v || {});
 // Each screen has its own address (#/book?bookId=…), so a refresh, a bookmark or a shared link opens the same screen.
-const URL_OK = ['about', 'guide', 'chapters', 'practice', 'privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
+const URL_OK = ['about', 'chapters', 'practice', 'privacy', 'listening', 'home', 'books', 'book', 'library', 'usage', 'settings', 'progress', 'stars', 'homework', 'dictation', 'writing', 'speaking', 'plans', 'learn', 'paper', 'pick', 'worksheets', 'notes', 'edit', 'mistakes', 'cards'];
 function viewUrl(v) {
   if (!v || !URL_OK.includes(v.name)) return '#/' + (v && v.name === 'parent' ? 'progress' : 'home');
   const q = new URLSearchParams();
@@ -838,7 +838,6 @@ async function go(v) {
   if (v.name === 'library') return renderLibrary(v.query || '');
   if (v.name === 'usage') return renderUsage();
   if (v.name === 'about') return renderAbout();
-  if (v.name === 'guide') return renderGuide(v.sec);
   if (v.name === 'privacy') return renderPrivacy();
   if (v.name === 'settings') return renderSettings(v.sec);
   if (v.name === 'progress') return renderProgress();
@@ -2964,46 +2963,6 @@ async function renderBooks() {
 // Settings: a menu of blocks; each block opens its own short page (view.sec).
 /* ---------- Why PrepBuddy (from Settings): what it does that a tutor, a learning centre or a workbook can't ----------
    Every claim here is something the app does today. Things not built yet sit under "Coming next". */
-// The full guide: every rule behind the Progress numbers, for parents who want to check the working.
-function renderGuide(sec) {
-  const S = [
-    ['ready', PT('Chapter readiness', '章節準備度'), [
-      PT('Every chapter scores out of 100, from six things:', '每章滿分 100，由六部分組成：'),
-      `<ul><li><b>30</b> · ${PT('Chapter tests: pass with 80% or more, twice, at least a week apart. One pass gives half.', '章節測驗：80% 或以上合格，相隔最少一星期兩次。合格一次得一半。')}</li>
-      <li><b>15</b> · ${PT('Whole chapter: right answers from every part of the chapter.', '整章：章節每部分都有答對。')}</li>
-      <li><b>15</b> · ${PT('Right first try: first attempts only, over 8–20 questions depending on chapter length.', '第一次就答對：只計第一次作答，視乎章節長度 8–20 題。')}</li>
-      <li><b>15</b> · ${PT('Harder questions: 3 apply and 2 analyse questions right first try, and full marks on 2 written answers.', '較深題目：第一次就答對 3 題應用和 2 題分析，以及 2 題文字題滿分。')}</li>
-      <li><b>15</b> · ${PT('Remembered: still right in reviews a week later (half) and two weeks later (full).', '記得：一星期後溫習仍答對（一半），兩星期後（全部）。')}</li>
-      <li><b>10</b> · ${PT('Mistakes fixed: no mistakes left open.', '改正錯題：沒有未改正的錯題。')}</li></ul>`,
-      PT('Limits keep it honest: 70% max until a timed test is passed, 85% until passed again a week later, 95% until remembered after two weeks. A finished lesson counts 10%.', '限制確保分數真實：未通過限時測驗最多 70%；一星期後再合格前最多 85%；兩星期後仍記得前最多 95%。上完課計 10%。'),
-      PT('A subject’s readiness is its chapters averaged, longer chapters counting more. Overall readiness averages the subjects, counting double any with a test in the next 30 days.', '科目準備度是各章平均，較長章節佔比較大。整體準備度是各科平均，30 日內有測驗的科目計雙倍。')]],
-    ['tests', PT('Tests', '測驗'), [
-      PT('Ready now is the readiness of the chapters the test covers.', '「現在」是測驗範圍內章節的準備度。'),
-      PT('On test day takes how fast readiness rose over the last 4 weeks and carries it on to the test date.', '「考試當日」按過去 4 星期準備度上升的速度，推算到考試日期。'),
-      PT('Goal is 80% unless you slide Buddy. On track = forecast at or above the goal; close = within 15 points; at risk = further below.', '目標預設 80%，可拖動 Buddy 修改。理想 = 預測達到目標；接近 = 相差 15 分以內；需要加把勁 = 更低。'),
-      PT('The plan goes: lessons for new chapters, practice on the weakest, chapter tests, a timed practice test the day before, and a 5-question warm-up on the day.', '計劃：先上新章節的課、練習最弱的、章節測驗、前一天限時模擬測驗、考試當日 5 題熱身。')]],
-    ['memory', PT('Memory', '記憶'), [
-      PT('Every question comes back for review after 1, 3, 7, 14 and 30 days. Right moves it up a step; wrong sends it back to day 1.', '每題都會在 1、3、7、14、30 日後再出現。答對升一級；答錯回到第 1 日。'),
-      PT('In long-term memory = right first time and again in the 1-day and 3-day reviews (now waiting a week or more).', '長期記憶 = 第一次答對，並在 1 日和 3 日溫習都答對（之後隔一星期或以上）。')]],
-    ['level', PT('Level', '程度'), [
-      PT('Questions have 4 levels: remember, understand, apply, analyse. Your level is the hardest you get right about 2 times in 3, shown out of 10 (level 1 = 0, level 4 = 10).', '題目分 4 級：記憶、理解、應用、分析。程度是你大約答對三分之二的最難級別，以 10 分顯示（第 1 級 = 0，第 4 級 = 10）。'),
-      PT('First tries only, allowing for lucky guesses and Buddy’s hints. Level 2 is what the grade expects.', '只計第一次作答，並考慮猜中和提示。第 2 級是年級預期。'),
-      PT('Buddy adapts as you go: 80% right on the last 15 answers in a chapter moves the questions up a level; under 50% eases them off.', 'Buddy 會隨時調整：一章最近 15 題答對 80% 就升一級；低於 50% 就調低。')]],
-    ['noticed', PT('What Buddy notices', 'Buddy 的觀察'), [
-      PT('Cards come from the last 30 days, first tries only, and only show with enough answers and a clear gap, for example:', '卡片根據過去 30 日的第一次作答，只有題目足夠、差距明顯才會出現，例如：'),
-      `<ul><li>${PT('Multiple choice vs written: 15+ and 8+ answers, 25-point gap.', '選擇題對文字題：15 題以上和 8 題以上，相差 25 分。')}</li><li>${PT('Harder questions: 75%+ on levels 1–2 but 50% or less on 3–4.', '較深題目：第 1–2 級 75% 以上，但第 3–4 級 50% 或以下。')}</li>
-      <li>${PT('Careless slips: 6+ answers wrong then right on the very next try.', '粗心：6 題以上答錯後下一次就答對。')}</li><li>${PT('Late nights: 15+ points lower after 10pm (40+ answers each).', '太夜：晚上 10 點後低 15 分以上（各 40 題以上）。')}</li>
-      <li>${PT('Rushing: only when rushed sets score 10+ points lower than steady ones.', '太快：只有答得太快時分數低 10 分以上才會出現。')}</li><li>${PT('Mix-ups: found by AI reading wrong answers about once a week.', '混淆：AI 大約每星期一次閱讀答錯的題目找出。')}</li></ul>`]],
-    ['effort', PT('Days, minutes and streaks', '日數、分鐘和連續'), [
-      PT('A day counts if at least one question was answered.', '有答至少一題的日子就算。'),
-      PT('Minutes come from the time between answers; any gap over 5 minutes counts as 1, so breaks aren’t counted.', '分鐘按答題之間的時間計算；超過 5 分鐘的空檔只計 1 分鐘，休息不計在內。'),
-      PT('Best time is the 2-hour slot with the highest score over 30 days (20+ answers in it).', '最好時段是 30 日內分數最高的 2 小時時段（至少 20 題）。')]],
-  ];
-  $app.innerHTML = `${backTop({ name: 'progress' }, PT('Progress', '進度'))}<main class="pad stack g18 guide" data-view="guide" style="flex:1">
-    <div class="greet"><h1 class="pagetitle" style="margin:0">${PT('How PrepBuddy measures progress', 'PrepBuddy 怎樣衡量進度')}</h1><p>${PT('Every rule behind the numbers on the Progress page.', '進度頁每個數字背後的規則。')}</p></div>
-    ${S.map(([id, t, ps]) => `<section class="card gd-sec" id="gd-${id}"><h2>${t}</h2>${ps.map((x) => (x.startsWith('<') ? x : `<p>${x}</p>`)).join('')}</section>`).join('')}</main>`;
-  const el = sec && document.getElementById(`gd-${sec}`); if (el) { el.classList.add('gd-on'); setTimeout(() => el.scrollIntoView({ block: 'start' }), 50); } else window.scrollTo(0, 0);
-}
 function renderAbout() {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
   const Y = '<span class="ab-y" aria-label="yes">✓</span>', N = '<span class="ab-n" aria-label="no">✕</span>', P = (t) => `<span class="ab-p">${t}</span>`;
@@ -6171,93 +6130,41 @@ async function renderProgress() {
   // Info pop-ups in plain words: a few short lines with a picture each, for kids and parents alike
   { const L = (rows) => `<ul class="how-easy">${rows.map(([i, en, zh, den, dzh]) => `<li><span>${i}</span><div><p>${PT(en, zh)}</p>${den ? `<small>${PT(den, dzh)}</small>` : ''}</div></li>`).join('')}</ul>`;
     const HOW = {
-      howGlance: L([['🙂', 'Buddy’s one-line verdict on your week.', 'Buddy 對你這星期的一句總結。', 'Based on days practised, which subjects are improving and any test coming up.', '根據練習日數、哪些科目在進步，以及快到的測驗。'],
-        ['✅', '<b>Going well</b>: something to be proud of.', '<b>做得好</b>：值得開心的事。', 'A subject whose level is rising, else days practised in the last 4 weeks, else questions in long-term memory.', '程度上升的科目；否則是過去 4 星期練習日數；否則是長期記憶的題目數。'],
-        ['⚠️', '<b>Keep an eye on</b>: the one thing that needs you most.', '<b>要留意</b>：最需要你注意的一件事。', 'A test within 14 days that’s under its goal, else a subject with no practice for 4+ days, else the weakest chapter.', '14 日內未達目標的測驗；否則是 4 日以上沒練習的科目；否則是最弱的章節。'],
+      howGlance: L([['🙂', 'Buddy’s one-line verdict on your week.', 'Buddy 對你這星期的一句總結。', 'It weighs up how often you practised, what’s improving and what’s coming up.', '會綜合你練習的次數、進步的地方和快到的事情。'],
+        ['✅', '<b>Going well</b>: something to be proud of.', '<b>做得好</b>：值得開心的事。', 'The strongest good news this week, like a subject that’s levelling up.', '本週最好的消息，例如某科程度上升。'],
+        ['⚠️', '<b>Keep an eye on</b>: the one thing that needs you most.', '<b>要留意</b>：最需要你注意的一件事。', 'Usually a test that needs more work, or a subject that’s gone quiet.', '通常是需要多準備的測驗，或者很久沒練習的科目。'],
         ['👆', 'Tap any of it, or the 4 numbers, to see more.', '按任何一項或 4 個數字，看詳情。']]),
-      howNotP: L([['🔍', 'Buddy looks at your answers, hints, timing and reviews.', 'Buddy 會看你的答案、提示、時間和溫習。', 'Mostly the last 30 days, and only your first try at each question, so redoing one doesn’t count twice.', '主要是過去 30 日，而且只計每題的第一次作答。'],
-        ['🧩', 'A card only shows when there’s a clear pattern.', '只有看到清楚的規律才會出現卡片。', 'Each needs enough answers and a real gap, e.g. 15+ multiple-choice and 8+ written answers with a 25-point difference.', '每張卡都要有足夠題目和明顯差距，例如 15 題以上選擇題和 8 題以上文字題，相差 25 分。'],
-        ['🧠', '<b>Mix-ups</b> are found by AI reading your wrong answers.', '<b>混淆</b>由 AI 閱讀你答錯的題目找出。', 'About once a week, looking for the same wrong idea in 2 or more answers.', '大約每星期一次，找出在 2 題或以上出現的同一個錯誤概念。'],
-        ['👉', 'Most important first, with a win near the top.', '最重要的排第一，進步排在前面。', 'Order: a test with little practice, mix-ups, overdue reviews, skipped lessons… tips last.', '次序：很少練習的測驗、混淆、過期溫習、未上課…小貼士最後。']]),
-      howTestP: L([['📊', '<b>Ready now</b>: how well you know the chapters in this test.', '<b>現在</b>：你對這個測驗的章節有多熟。', 'The average readiness of those chapters, out of 100%. A finished lesson counts 10%.', '這些章節準備度的平均（滿分 100%）。上完課計 10%。'],
-        ['🔮', '<b>On test day</b>: where you’ll be at this pace.', '<b>考試當日</b>：照現在的速度會到哪裡。', 'How fast readiness rose over the last 4 weeks, carried on to the test date.', '過去 4 星期準備度上升的速度，推算到考試日期。'],
-        ['🎯', '<b>Goal</b>: slide Buddy to set it.', '<b>目標</b>：拖動 Buddy 設定。', '80% unless you change it. Each test keeps its own goal.', '預設 80%，每個測驗各有自己的目標。'],
-        ['🚦', 'Green = on track · Yellow = close · Red = at risk', '綠色 = 理想 · 黃色 = 接近 · 紅色 = 要加把勁', 'On track: test-day forecast at or above the goal. Close: within 15 points of it.', '理想：考試當日預測達到目標。接近：相差 15 分以內。']]),
-      howWorkP: L([['🟩', 'Each box is a chapter, coloured by readiness.', '每格是一章，按準備度上色。', 'Green 80%+, yellow 60–79%, red under 60%, white not started.', '綠色 80% 以上，黃色 60–79%，紅色低於 60%，白色未開始。'],
-        ['💯', 'Readiness is out of 100, from six things.', '準備度滿分 100，由六部分組成。', 'Chapter tests passed a week apart (30), whole chapter covered (15), right first try (15), harder questions (15), remembered after 2 weeks (15), mistakes fixed (10).', '相隔一星期兩次合格（30）、涵蓋全章（15）、第一次就答對（15）、較深題目（15）、兩星期後仍記得（15）、改正錯題（10）。'],
-        ['🔒', 'It can’t be rushed.', '不能一蹴而就。', 'Max 70% until a timed test is passed, 85% until passed again a week later, 95% until remembered after 2 weeks.', '未通過限時測驗最多 70%；一星期後再合格前最多 85%；兩星期後仍記得前最多 95%。'],
+      howNotP: L([['🔍', 'Buddy watches how you answer, not just what you get right.', 'Buddy 會留意你怎樣作答，不只是對錯。', 'Your answers, hints, timing and reviews all feed in.', '你的答案、提示、時間和溫習都會考慮。'],
+        ['🧩', 'A card only appears when the pattern is clear.', '只有規律清楚才會出現卡片。', 'One bad day won’t trigger a card. It needs to keep happening.', '一次失手不會出現卡片，要持續出現才會。'],
+        ['🧠', '<b>Mix-ups</b> are found by AI reading your wrong answers.', '<b>混淆</b>由 AI 閱讀你答錯的題目找出。', 'It looks for the same wrong idea showing up more than once.', '找出重複出現的同一個錯誤概念。'],
+        ['👉', 'Most important first, with a win near the top.', '最重要的排第一，進步排在前面。', 'Tap the button on a card to fix it straight away.', '按卡片上的按鈕，馬上去改善。']]),
+      howTestP: L([['📊', '<b>Ready now</b>: how well you know the chapters in this test.', '<b>現在</b>：你對這個測驗的章節有多熟。', 'Built from your practice, chapter tests and reviews on those chapters only.', '只根據這些章節的練習、章節測驗和溫習計算。'],
+        ['🔮', '<b>On test day</b>: where you’ll be if you keep going like this.', '<b>考試當日</b>：照現在的速度會到哪裡。', 'Based on how fast you’ve been improving recently.', '根據你最近進步的速度推算。'],
+        ['🎯', '<b>Goal</b>: slide Buddy to set your own.', '<b>目標</b>：拖動 Buddy 設定你自己的目標。', 'Each test keeps its own goal. It starts at 80%.', '每個測驗各有目標，預設 80%。'],
+        ['🚦', 'Green = on track · Yellow = close · Red = at risk', '綠色 = 理想 · 黃色 = 接近 · 紅色 = 要加把勁', 'Compares where you’re heading with your goal.', '比較預測結果和你的目標。']]),
+      howWorkP: L([['🟩', 'Each box is a chapter, coloured by how ready you are.', '每格是一章，按準備度上色。', 'Green strong, yellow getting there, red needs work, white not started.', '綠色好、黃色漸入佳境、紅色要加油、白色未開始。'],
+        ['💯', 'Readiness is more than getting questions right.', '準備度不只是答對題目。', 'It also checks you can handle harder questions, pass a timed test and still remember it later.', '還要能應付較深的題目、通過限時測驗，而且之後仍然記得。'],
+        ['🔒', 'It can’t be rushed.', '不能一蹴而就。', 'The top scores only come with proof over time, so 100% really means ready.', '最高分要經過一段時間證明，所以 100% 是真正準備好。'],
         ['👆', 'Tap a chapter to see what to do next.', '按一章看看下一步做甚麼。']]),
-      howLevelP: L([['📈', 'How hard a question you can get right, out of 10.', '你能答對多難的題目（滿分 10）。', 'The hardest level you get right about 2 times in 3. Level 1 (remember) = 0, level 4 (analyse) = 10.', '大約答對三分之二的最難級別。第 1 級（記憶）= 0，第 4 級（分析）= 10。'],
-        ['🧗', 'Harder questions right = it goes up.', '答對較深題目就會上升。', 'First tries only, allowing for lucky guesses and Buddy’s hints. It doesn’t drop just because questions got harder.', '只計第一次作答，並考慮猜中和 Buddy 的提示。題目變難不會令它下跌。'],
-        ['📍', 'The small line is what’s expected for your grade.', '小直線是你年級的預期程度。', 'Level 2 (understand) is what the grade expects; above it is ahead.', '第 2 級（理解）是年級預期；高於它就是超前。']]),
-      howRwP: L([['📈', 'One line per subject, one dot per week.', '每科一條線，每星期一點。', 'Each dot is the subject’s readiness that week: its chapters averaged, longer chapters counting more.', '每點是該科當週的準備度：各章平均，較長的章節佔比較大。'], ['⬆️', 'Going up = you know more of the textbook.', '向上 = 你掌握更多課本內容。']]),
-      howMkP: L([['📝', 'Real school test marks, added by a parent.', '家長輸入的學校測驗成績。', 'Entered in the parent area: the last results before PrepBuddy, then each new test.', '在家長專區輸入：用 PrepBuddy 前的成績，以及之後每次測驗。'], ['🔁', 'Before PrepBuddy vs the latest, per subject.', '每科用 PrepBuddy 前後對比。', 'The only number here not made by PrepBuddy, which is why it matters.', '這是唯一不是 PrepBuddy 計算的數字，所以特別重要。']]),
-      howGrP: L([['🌱', 'The question level each chapter gives you now, vs when you started.', '每章現在給你的題目程度，與剛開始時比較。', 'Start = your level check result. Now = the level Buddy serves after your recent answers.', '開始 = 程度評估結果。現在 = 根據你最近答題，Buddy 給你的程度。']]),
-      howPc: L([['🧪', 'A short quiz at the same level as your first level check.', '與第一次程度評估同樣難度的小測。', 'About 5 minutes, multiple choice, questions you may have seen before.', '大約 5 分鐘的選擇題，可能有見過的題目。'], ['⚖️', 'Same difficulty, so any change is real progress.', '難度一樣，所以分數變化就是真正的進步。', 'Suggested once a month per textbook.', '建議每本課本每月做一次。']]),
-      howMemP: L([['🔁', 'Questions come back after 1, 3, 7, 14 and 30 days.', '題目會在 1、3、7、14、30 日後再出現。', 'Right = it waits longer next time. Wrong = it starts again tomorrow.', '答對 = 下次隔更久。答錯 = 明天重新開始。'], ['🧠', 'The % is reviews you got right days later.', '百分比是幾天後溫習仍答對的比例。', 'Remembered for a week = right first try plus the 1-day and 3-day reviews.', '記得一星期 = 第一次答對，加上 1 日和 3 日的溫習都答對。']]),
-      howTmP: L([['⏱️', 'Your practice scores vs your timed test scores.', '練習分數對比限時測驗分數。', 'Last 30 days: first tries in practice vs chapter tests and mock exams.', '過去 30 日：練習的第一次作答對比章節測驗和模擬試。'], ['😌', 'Close together = calm under time pressure.', '兩者接近 = 限時下也能保持冷靜。', 'A gap of 15+ points means timed practice would help.', '相差 15 分以上，代表需要多做限時練習。']]),
-      howK1: L([['🎯', 'How much of your textbooks you really know, out of 100%.', '你真正掌握多少課本內容（滿分 100%）。', 'Each textbook’s readiness, averaged. Subjects with a test in the next 30 days count double.', '每本課本準備度的平均。30 日內有測驗的科目計雙倍。'], ['📉', 'The change shows the last 4 weeks.', '變化是過去 4 星期的。']]),
-      howK2: L([['📚', 'Chapters at 80% readiness or more.', '準備度 80% 或以上的章節。', 'Out of every chapter in the textbooks you’ve started.', '在你已開始的課本所有章節中。'], ['✅', 'That needs a passed test, harder questions right first time, and remembering it.', '需要通過測驗、較深題目第一次就答對，而且記得。']]),
-      howK3: L([['🧠', 'Questions still right a week or more later.', '一星期或更久之後仍答對的題目。', 'Right first time, then right again in the 1-day and 3-day reviews.', '第一次答對，之後 1 日和 3 日的溫習也答對。'], ['🔁', 'It only grows when you do your reviews.', '只有做溫習才會增加。']]),
-      howK4: L([['📅', 'Days with any practice in the last 4 weeks.', '過去 4 星期有練習的日數。', 'Any day with at least one question answered counts.', '有答至少一題的日子都計算在內。'], ['🐢', 'A little most days beats a lot once a week.', '每天少少，勝過一星期一次做很多。', 'Memory works best with short, spaced practice.', '短時間、分散的練習最能幫助記憶。']]),
-      howCal: L([['🟦', 'Each square is a day. Darker = more questions.', '每格是一日，顏色越深 = 題目越多。', 'Shades: 1–9, 10–19, 20–39 and 40+ questions.', '深淺：1–9、10–19、20–39 和 40 題以上。'], ['📆', 'Each column is a week, Monday at the top.', '每一列是一星期，星期一在最上面。', 'The last 12 weeks.', '過去 12 星期。']]),
-      howMix: L([['📊', 'Each bar is a week of questions, split by level.', '每條是一星期的題目，按程度分。', 'Light = remember, then understand, use it, and darkest = think it through.', '淺色 = 記憶，然後理解、應用，最深 = 深入思考。'], ['🟦', 'More dark = taking on harder work.', '深色越多 = 挑戰越難。', 'Buddy moves you up when you get 80% right.', '答對 80%，Buddy 就會升你一級。']]),
-      howMk: L([['🔵', 'Blue line = mistakes still to fix.', '藍線 = 未改正的錯題。', 'Each week over the last 8 weeks. You want it going down.', '過去 8 星期每週的數字，越低越好。'], ['🟢', 'Green = fixed that week · Orange = new that week.', '綠色 = 當週改正 · 橙色 = 當週新增。', 'Fixed means right on a later try, on a different day.', '改正 = 在另一日再做時答對。']]),
-      howEffP: L([['📅', 'Days, minutes and questions this week vs last.', '本週的日數、分鐘和題目，與上週比較。', 'Minutes come from the time between answers; gaps over 5 minutes count as 1, so breaks aren’t counted.', '分鐘按答題之間的時間計算；超過 5 分鐘的空檔只計 1 分鐘，休息不計在內。'], ['🔥', 'Streak = days in a row with practice.', '連續 = 連續有練習的日數。'], ['⏰', 'Best time = when your scores are highest.', '最好時段 = 你分數最高的時候。', 'The 2-hour slot with the best score in the last 30 days (20+ answers in it).', '過去 30 日分數最高的 2 小時時段（至少 20 題）。']]),
+      howLevelP: L([['📈', 'How hard a question you can get right, out of 10.', '你能答對多難的題目（滿分 10）。', 'From remembering facts up to analysing and explaining.', '由記住事實，到分析和解釋。'],
+        ['🧗', 'Harder questions right = it goes up.', '答對較深題目就會上升。', 'It won’t drop just because the questions got harder.', '題目變難也不會因此下跌。'],
+        ['📍', 'The small line is what’s expected for your grade.', '小直線是你年級的預期程度。', 'To the right of it means you’re ahead.', '在它右邊就是超前。']]),
+      howRwP: L([['📈', 'One line per subject, one dot per week.', '每科一條線，每星期一點。', 'Each dot is how ready you were in that subject that week.', '每點是當週該科的準備度。'], ['⬆️', 'Going up = you know more of the textbook.', '向上 = 你掌握更多課本內容。']]),
+      howMkP: L([['📝', 'Real school test marks, added by a parent.', '家長輸入的學校測驗成績。', 'Before PrepBuddy, then each new test.', '用 PrepBuddy 前，以及之後每次測驗。'], ['🔁', 'The before-and-after you can see for yourself.', '你自己就能看到的前後對比。', 'The one number here that isn’t worked out by PrepBuddy.', '這是唯一不是 PrepBuddy 計算的數字。']]),
+      howGrP: L([['🌱', 'How much harder each chapter’s questions are now, vs when you started.', '每章現在的題目比剛開始時難了多少。', 'Buddy raises the level as you get things right.', '你答對了，Buddy 就會提升程度。']]),
+      howPc: L([['🧪', 'A short quiz at the same level as your first level check.', '與第一次程度評估同樣難度的小測。', 'About 5 minutes.', '大約 5 分鐘。'], ['⚖️', 'Same difficulty, so any change is real progress.', '難度一樣，所以分數變化就是真正的進步。', 'Worth doing about once a month.', '大約每月做一次。']]),
+      howMemP: L([['🔁', 'Questions come back after a few days, then longer and longer.', '題目會隔幾天再出現，之後越隔越久。', 'Get it right and it waits longer; get it wrong and it comes back soon.', '答對就隔更久；答錯就很快再出現。'], ['🧠', 'The % is how many you still got right days later.', '百分比是幾天後仍答對的比例。']]),
+      howTmP: L([['⏱️', 'Your practice scores vs your timed test scores.', '練習分數對比限時測驗分數。'], ['😌', 'Close together = calm under time pressure.', '兩者接近 = 限時下也能保持冷靜。', 'A big gap means more timed practice would help.', '差距大代表需要多做限時練習。']]),
+      howK1: L([['🎯', 'How much of your textbooks you really know, out of 100%.', '你真正掌握多少課本內容（滿分 100%）。', 'Not just questions right, but harder questions, tests passed and things remembered.', '不只是答對，還包括較深題目、通過測驗和記得。'], ['📅', 'Subjects with a test coming up count more.', '快要考試的科目佔比較大。']]),
+      howK2: L([['📚', 'Chapters you’ve truly got.', '真正掌握的章節。', 'Passed the test, handled the harder questions, and still remembered it later.', '通過測驗、應付到較深題目，而且之後仍記得。'], ['⏳', 'This takes a few weeks per chapter.', '每章需要幾個星期。', 'That’s on purpose: it shows learning that lasts.', '這是刻意的：顯示能持久的學習。']]),
+      howK3: L([['🧠', 'Things you still get right a week or more later.', '一星期或更久之後仍答對的內容。', 'Learning for tomorrow is easy; this shows it stuck.', '明天記得很容易，這個顯示真的記住了。'], ['🔁', 'It grows when you do your reviews.', '做溫習就會增加。']]),
+      howK4: L([['📅', 'Days with any practice in the last 4 weeks.', '過去 4 星期有練習的日數。'], ['🐢', 'A little most days beats a lot once a week.', '每天少少，勝過一星期一次做很多。', 'Short, regular practice is how memory works best.', '短時間、有規律的練習最能幫助記憶。']]),
+      howCal: L([['🟦', 'Each square is a day. Darker = more questions.', '每格是一日，顏色越深 = 題目越多。'], ['📆', 'Each column is a week, Monday at the top.', '每一列是一星期，星期一在最上面。']]),
+      howMix: L([['📊', 'Each bar is a week of questions, by how hard they were.', '每條是一星期的題目，按難度分。', 'Light = remembering facts; darkest = thinking it through.', '淺色 = 記住事實；最深 = 深入思考。'], ['🟦', 'More dark = taking on harder work.', '深色越多 = 挑戰越難。']]),
+      howMk: L([['🔵', 'Blue line = mistakes still to fix.', '藍線 = 未改正的錯題。', 'You want it heading down.', '越低越好。'], ['🟢', 'Green = fixed · Orange = new ones.', '綠色 = 已改正 · 橙色 = 新錯題。']]),
+      howEffP: L([['📅', 'Days, minutes and questions this week vs last.', '本週的日數、分鐘和題目，與上週比較。', 'Minutes count time spent answering, not breaks.', '分鐘只計作答時間，休息不計。'], ['🔥', 'Streak = days in a row with practice.', '連續 = 連續有練習的日數。'], ['⏰', 'Best time = when your scores tend to be highest.', '最好時段 = 你分數通常最高的時候。']]),
     };
-    // Personal versions: where you are on a scale, then 2–3 tappable steps to move up (Khan/IXL style).
-    const fmtD2 = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
-    const scale = (zones, pos, goal) => { const n = zones.length, at = Math.min(n - 1, zones.findIndex((z) => pos < z[0]) < 0 ? n - 1 : zones.findIndex((z) => pos < z[0]));
-      return `<div class="ix-scale"><div class="ix-bar" style="grid-template-columns:repeat(${n},1fr)">${zones.map((z, i) => `<i class="${i <= at ? 'on' : ''}"></i>`).join('')}<span class="ix-you" style="left:${Math.max(4, Math.min(96, pos))}%">${PT('You', '你')} · ${esc(String(Math.round(pos)))}${zones.pct === false ? '' : '%'}</span>${goal != null ? `<span class="ix-goal" style="left:${goal}%"></span>` : ''}</div>
-        <div class="ix-lab" style="grid-template-columns:repeat(${n},1fr)">${zones.map((z, i) => `<span class="${i === at ? 'here' : ''}">${z[1]}</span>`).join('')}</div>${goal != null ? `<p class="ix-note">${PT(`The black line is your goal: ${goal}%`, `黑線是你的目標：${goal}%`)}</p>` : ''}</div>`; };
-    const RZ = [[25, PT('Just started', '剛起步')], [50, PT('Building up', '建立中')], [70, PT('Getting there', '漸入佳境')], [85, PT('Well versed', '熟練')], [101, PT('Exam ready', '準備應考')]];
-    const step = (icon, t, sub, run) => run ? btn(`<i class="ix-ic">${pIcon(icon, 18)}</i><span><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</span><em>›</em>`, run, 'ix-step') : `<div class="ix-step"><i class="ix-ic">${pIcon(icon, 18)}</i><span><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</span></div>`;
-    const steps = (rows) => rows.filter(Boolean).length ? `<div class="ix-steps"><small class="ix-h">${PT('How to move up', '怎樣進步')}</small>${rows.filter(Boolean).slice(0, 3).join('')}</div>` : '';
-    const guide = (sec, label) => `<button class="ix-guide" data-guide="${sec}">${label} ›</button>`;
-    const P = {};
-    const nn = local.count || sessionSize();
-    // a test
-    { const p = tests.steps.find((q) => q.book && q.ready != null && (q.x.kind || 'test') !== 'dict');
-      if (p) { const aim = ((local.sched || []).find((y) => y.id === p.x.id) || {}).aim || 80, chs = chOf(p).slice().sort((a, b) => a.pct - b.pct);
-        const fr = chs.find((c) => !c.done && !c.learned), wk = chs.find((c) => c !== fr && (c.done || c.learned) && c.pct < aim);
-        P.howTestP = `<p class="ix-sub">${esc(p.x.name)} · ${fmtD2(testDay(p.x))}</p>${scale(RZ, p.ready, aim)}${steps([
-          fr ? step('book', PT(`Learn ${chName(fr.unit)}`, `學習「${chName(fr.unit)}」`), PT('Not started yet', '未開始'), () => go({ name: 'learn', bookId: p.book.id, unitId: fr.unit.id })) : null,
-          wk ? step('target', PT(`Practise ${chName(wk.unit)} · ${wk.pct}%`, `練習「${chName(wk.unit)}」· ${wk.pct}%`), PT('Your weakest chapter in this test', '這個測驗最弱的章節'), () => startUnits(p.book, [wk.unit], nn)) : null,
-          p.left >= 2 ? step('check', PT(`Practice test on ${fmtD2(testDay(p.x) - DAY)}`, `${fmtD2(testDay(p.x) - DAY)} 模擬測驗`), PT('Timed, all the test chapters', '限時，包括所有考試章節'), () => startChapterTest(p.book, p.units)) : null])}${guide('tests', PT('How readiness and the forecast work', '準備度和預測怎樣計算'))}`; } }
-    // overall readiness and what to work on: the weakest started chapters, a new one, and reviews
-    { const all = used.flatMap((x) => MB.get(x.b.id).chapters.map((c) => ({ b: x.b, c }))), weak = all.filter((x) => x.c.done && x.c.pct < 80).sort((a, b) => a.c.pct - b.c.pct);
-      const fresh1 = all.find((x) => !x.c.done && !x.c.learned), close1 = all.filter((x) => x.c.pct >= 55 && x.c.pct < 80).sort((a, b) => b.c.pct - a.c.pct)[0];
-      const rows = [weak[0] ? step('target', PT(`Practise ${chName(weak[0].c.unit)} · ${weak[0].c.pct}%`, `練習「${chName(weak[0].c.unit)}」· ${weak[0].c.pct}%`), PT(`Your weakest chapter (${sname(weak[0].b)})`, `最弱的章節（${sname(weak[0].b)}）`), () => chapterSheet(weak[0].b, weak[0].c)) : null,
-        close1 ? step('check', PT(`${chName(close1.c.unit)} is close · ${close1.c.pct}%`, `「${chName(close1.c.unit)}」快到了 · ${close1.c.pct}%`), PT('Closest chapter to mastered', '最接近掌握的章節'), () => chapterSheet(close1.b, close1.c)) : null,
-        fresh1 ? step('book', PT(`Start ${chName(fresh1.c.unit)}`, `開始「${chName(fresh1.c.unit)}」`), PT(`A new chapter (${sname(fresh1.b)})`, `新章節（${sname(fresh1.b)}）`), () => chapterSheet(fresh1.b, fresh1.c)) : null];
-      P.howK1 = `${scale(RZ, overall)}${steps(rows)}${guide('ready', PT('How readiness is worked out', '準備度怎樣計算'))}`;
-      P.howWorkP = `<p class="ix-sub">${PT('Each box is a chapter. Tap one to see what it needs.', '每格是一章，按一下看看需要甚麼。')}</p><div class="ix-key"><span class="g">${PT('Strong 80%+', '好 80%+')}</span><span class="m">${PT('Getting there 60–79%', '漸入佳境 60–79%')}</span><span class="r">${PT('Needs work', '要加油')}</span><span class="n">${PT('Not started', '未開始')}</span></div>${steps(rows)}${guide('ready', PT('How chapter readiness works', '章節準備度怎樣計算'))}`;
-      // chapters mastered
-      const nearM = all.filter((x) => x.c.pct < 80).sort((a, b) => b.c.pct - a.c.pct).slice(0, 3);
-      P.howK2 = `<div class="ix-num"><b>${chDone}</b><span>${PT(`of ${chAll} chapters mastered (80% or more)`, `／${chAll} 章已掌握（80% 或以上）`)}</span></div><div class="ix-prog"><i style="width:${chAll ? Math.round(100 * chDone / chAll) : 0}%"></i></div>${steps(nearM.map((x) => step('up', PT(`${chName(x.c.unit)} · ${x.c.pct}%`, `「${chName(x.c.unit)}」· ${x.c.pct}%`), PT(`${80 - x.c.pct} points to mastered`, `距離掌握還差 ${80 - x.c.pct} 分`), () => chapterSheet(x.b, x.c))).map((h, i) => (i === 0 ? h.replace('<span><b>', `<span><small class="ix-h2">${PT('Closest to mastered', '最接近掌握')}</small><b>`) : h)))}${guide('ready', PT('What counts as mastered', '怎樣才算掌握'))}`; }
-    // long-term memory: the review ladder with counts
-    { const st2 = Object.values(local.stats || {}), cnt = [1, 2, 3, 4].map((b) => st2.filter((x) => (b < 4 ? (x.box || 0) === b : (x.box || 0) >= 4)).length);
-      const due2 = (await dueItems()).length, next2 = st2.reduce((m, x) => (x.due && x.due > Date.now() ? Math.min(m, x.due) : m), Infinity);
-      const lad = [PT('Day 1', '第 1 日'), PT('Day 3', '第 3 日'), PT('Week 1', '第 1 週'), PT('Week 2+', '第 2 週+')];
-      P.howK3 = `<div class="ix-num"><b>${D.longTerm}</b><span>${PT('questions in long-term memory', '題在長期記憶')}</span></div><div class="ix-ladder">${lad.map((l, i) => `<div class="${i >= 2 ? 'lt' : ''}"><b>${cnt[i]}</b><span>${l}</span></div>`).join('<i>›</i>')}</div><p class="ix-note">${PT('Each question climbs this ladder. Right = it waits longer; wrong = back to day 1. Week 1 and up counts as long-term.', '每題都會爬這條梯。答對 = 隔更久；答錯 = 回到第 1 日。第 1 週或以上算長期記憶。')}</p>${steps([
-        due2 ? step('repeat', PT(`Do ${due2} review${due2 === 1 ? '' : 's'} due now`, `溫習 ${due2} 題到期題目`), PT('A few minutes', '幾分鐘'), () => startReview('spaced')) : null,
-        next2 < Infinity ? step('clock', PT(`Next reviews come back ${fmtD2(next2)}`, `下次溫習：${fmtD2(next2)}`), PT('Come back then to climb the ladder', '到時回來繼續爬梯'), null) : null])}${guide('memory', PT('How memory is measured', '記憶怎樣計算'))}`; }
-    // days practised
-    { const today2 = dayMap.has(t0), DZ = [[8, PT('Now and then', '偶爾')], [15, PT('Sometimes', '有時')], [22, PT('Most days', '大部分日子')], [29, PT('Every day', '每天')]]; DZ.pct = false;
-      const G2 = goalWeek();
-      P.howK4 = `${scale(DZ, days28 * 100 / 28).replace(/You · \d+/, `${PT('You', '你')} · ${days28}/28`)}${steps([
-        !today2 ? step('target', PT('Practise today', '今日練習'), PT('Today’s mission keeps the streak going', '完成今日任務，保持連續'), () => go({ name: 'home' })) : null,
-        step('clock', G2 ? PT(`Weekly goal: ${G2.met} of ${G2.days} days`, `每週目標：${G2.met}／${G2.days} 日`) : PT('Set a weekly goal', '設定每週目標'), PT('Reaching it earns bonus stars', '達成可得額外星星'), () => goalDialog()),
-        step('ring', PT('See your practice calendar', '查看練習日曆'), PT('Minutes and questions each day', '每日分鐘和題目'), () => daysSheet())])}${guide('effort', PT('How days and minutes are counted', '日數和分鐘怎樣計算'))}`; }
-    // level by subject
-    { const L0 = lv[0];
-      if (L0) { const t10 = (v) => Math.max(0, Math.min(10, Math.round(((v - 1) / 3) * 100) / 10)), now10 = t10(L0[1]), LZ = [[3.4, PT('Remember', '記憶')], [6.7, PT('Understand', '理解')], [9.9, PT('Apply', '應用')], [10.1, PT('Analyse', '分析')]].map(([a, b]) => [a * 10, b]); LZ.pct = false;
-        const bk2 = used.map((x) => x.b).find((b) => sname(b) === L0[0]) || (used[0] && used[0].b), wc = bk2 && MB.get(bk2.id).chapters.filter((c) => c.done).sort((a, b) => b.done - a.done)[0];
-        P.howLevelP = `<p class="ix-sub">${esc(L0[0])} · ${now10.toFixed(1)}/10</p>${scale(LZ, now10 * 10).replace(/You · \d+/, `${PT('You', '你')} · ${now10.toFixed(1)}`)}${steps([
-          bk2 && wc ? step('up', PT('Practise harder questions', '練習較深題目'), PT(`${chName(wc.unit)} · apply and analyse`, `「${chName(wc.unit)}」· 應用和分析`), () => startUnits(bk2, [wc.unit], nn, { diff: 'hard' })) : null,
-          step('brain', PT('Answer first, then ask Buddy', '先自己答，再問 Buddy'), PT('Answers without hints count more', '不用提示的答案更有份量'), null)])}${guide('level', PT('How level is measured', '程度怎樣計算'))}`; } }
-    Object.entries(HOW).forEach(([id, html]) => { if (!P[id]) P[id] = html + guide(id === 'howNotP' ? 'noticed' : id === 'howEffP' || id === 'howCal' ? 'effort' : id === 'howMemP' ? 'memory' : id === 'howLevelP' || id === 'howGrP' || id === 'howPc' || id === 'howMix' ? 'level' : 'ready', PT('Full details', '詳細說明')); });
-    Object.entries(P).forEach(([id, html]) => { const d = document.getElementById(id); const b = d && d.querySelector(':scope > div'); if (b) b.innerHTML = html; });
+    Object.entries(HOW).forEach(([id, html]) => { const d = document.getElementById(id); const b = d && d.querySelector(':scope > div'); if (b) b.innerHTML = html; });
     window.__pvActs = acts; }
   // headline numbers lead somewhere: readiness and chapters to what to work on, memory to reviews, days to the calendar
   { const go2 = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
@@ -9227,7 +9134,6 @@ document.addEventListener('click', (e) => {
   w.querySelector('.how-x').onclick = done; w.querySelector('.how-ok').onclick = done;
   // buttons inside a pop-up (steps on the Progress page, the guide link) act and close it
   w.querySelectorAll('[data-pv]').forEach((x) => (x.onclick = (ev) => { ev.preventDefault(); const f = (window.__pvActs || [])[+x.dataset.pv]; done(); if (f) f(); }));
-  w.querySelectorAll('[data-guide]').forEach((x) => (x.onclick = () => { done(); go({ name: 'guide', sec: x.dataset.guide }); }));
   document.body.appendChild(w);
   // open at the top: the title first, not scrolled down to the button
   const bd = w.querySelector('.how-dlg-b'); if (bd) bd.scrollTop = 0; w.querySelector('.how-dlg').scrollTop = 0;
