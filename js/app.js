@@ -5486,25 +5486,6 @@ const PI = {
 };
 const pIcon = (k, size = 20) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PI[k]}</svg>`;
 const PT = (en, zh) => (LANG === 'zh' ? zh : en);
-// Weak areas across a test, as one short summary: the weakest kind of question, written vs multiple choice, the weakest chapter.
-function weakSummary(book, chs, aim) {
-  const Z = (en, zh) => (LANG === 'zh' ? zh : en), ids = new Set(chs.map((c) => c.unit.id));
-  const E = local.log.filter((e) => e.q && e.m && e.k !== 'spaced' && qUnit(e.q)[0] === book.id && ids.has(qUnit(e.q)[1]));
-  const acc = (es) => { const m = es.reduce((a, e) => a + e.m, 0); return m ? Math.round(100 * es.reduce((a, e) => a + e.g, 0) / m) : null; };
-  const weakCh = chs.filter((c) => c.pct < aim).sort((a, b) => a.pct - b.pct);
-  if (!weakCh.length) return null;
-  const B = (t) => `<b>${esc(t)}</b>`, nm = (c) => shortTitle(c.unit.title).replace(/^(Unit|Chapter|Ch\.?|第)\s*[\w.]+\s*[·:：章]?\s*/i, '');
-  if (E.length < 5) { const n = weakCh.filter((c) => !c.pct).length; return { html: n ? Z(`Not much practice yet: ${B(`${n} chapter${n > 1 ? 's' : ''}`)} still to start. Begin with ${B(nm(weakCh[0]))}.`, `練習還不多：還有 ${B(`${n} 章`)}未開始，先由${B(nm(weakCh[0]))}開始。`) : Z(`Not enough answers yet to spot a pattern. ${B(nm(weakCh[0]))} needs the most work.`, `答題還不夠多，看不出規律。${B(nm(weakCh[0]))}最需要加強。`), units: weakCh.slice(0, 2).map((c) => c.unit), opts: {} }; }
-  const lv = [1, 2, 3, 4].map((l) => { const es = E.filter((e) => Math.max(1, Math.min(4, Math.round(e.l || 2))) === l); return { l, n: es.length, a: acc(es) }; }).filter((x) => x.n >= 3).sort((a, b) => a.a - b.a)[0];
-  const LV = [Z('remembering facts', '記憶事實'), Z('understanding the ideas', '理解概念'), Z('using it in new questions', '應用在新題目'), Z('“explain why” questions', '「解釋原因」題')];
-  const C = E.filter((e) => e.ty === 'c'), W = E.filter((e) => e.ty === 'w'), ca = C.length >= 3 ? acc(C) : null, wa = W.length >= 3 ? acc(W) : null;
-  const fmt = ca != null && wa != null && Math.abs(ca - wa) >= 20 && Math.min(ca, wa) < 70 ? (wa < ca ? Z('written answers', '文字題') : Z('multiple choice', '選擇題')) : '';
-  const parts = [];
-  if (lv && lv.a < 70) parts.push(Z(`Finds ${B(LV[lv.l - 1])} hardest${fmt ? `, especially in ${B(fmt)}` : ''}.`, `最弱的是${B(LV[lv.l - 1])}${fmt ? `，尤其是${B(fmt)}` : ''}。`));
-  else if (fmt) parts.push(Z(`Loses most marks on ${B(fmt)}.`, `最多失分在${B(fmt)}。`));
-  parts.push(Z(`${B(nm(weakCh[0]))} needs the most work.`, `${B(nm(weakCh[0]))}最需要加強。`));
-  return { html: parts.join(' '), units: weakCh.slice(0, 2).map((c) => c.unit), opts: lv && lv.a < 70 ? { diff: `l${lv.l}` } : fmt ? { types: wa < ca ? 'written' : 'mcq' } : {} };
-}
 const SKILL_PLAIN = () => (LANG === 'zh' ? ['記憶事實', '理解', '應用', '深入思考'] : ['Remembering facts', 'Understanding', 'Using it', 'Thinking it through']);
 
 // Weekly goal (days × minutes), counted Monday to Sunday.
@@ -6143,19 +6124,14 @@ async function renderProgress() {
     const aim = p.x.aim || 80, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
     const st = p.ready == null ? 'none' : aimTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
-    // Weak areas Buddy noticed: a short summary for the whole test
-    let weakHTML = '';
-    if (p.ready == null) weakHTML = `<p class="pv-p">${PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')}</p>`;
-    else {
-      const chs = chOf(p).length ? chOf(p) : p.book ? MB.get(p.book.id).chapters : [];
-      const W = chs.length ? weakSummary(p.book, chs, aim) : null;
-      weakHTML = !chs.length ? '' : !W ? `<p class="pv-strong">${ICON.check}<span>${PT('No weak spots right now. Keep it ticking over.', '暫時沒有弱項，保持下去！')}</span></p>`
-        : `<div class="pv-wsum"><div class="pv-wsum-t"><small>${PT('Buddy noticed', 'Buddy 發現')}</small><p data-raw>${W.html}</p>${btn(`${PT('Practise weak areas', '練習弱項')} ›`, () => { pick = { bookId: p.book.id, ids: new Set(W.units.map((x) => x.id)) }; startUnits(p.book, W.units, 10, W.opts); }, 'linkbtn pv-wlink')}</div>${buddySVG('think', 40)}</div>`;
-    }
+    const say = p.ready == null ? PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')
+      : st === 'ok' ? PT(`Heading for about ${fc}% on test day, at or above the ${aim}% goal.`, `考試當日預計約 ${fc}%，達到 ${aim}% 目標。`)
+      : st === 'close' ? PT(`Heading for about ${fc}%, a little short of the ${aim}% goal.`, `考試當日預計約 ${fc}%，略低於 ${aim}% 目標。`)
+      : PT(`Heading for about ${fc}%, well short of the ${aim}% goal. Today’s plan steps it up.`, `考試當日預計約 ${fc}%，離 ${aim}% 目標較遠，今日的計劃會加把勁。`);
     const nums = p.ready == null ? '' : `<div class="pv-snum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i aria-hidden="true">→</i><div><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div><div><b>${aim}%</b><span>${PT('goal', '目標')}</span></div></div>
       <div class="pv-sbar ${st}"><i style="width:${p.ready}%"></i>${fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:${aim}%"></s></div>`;
     return `<div class="pv-test pv-simple ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${nums}${weakHTML}</div>`;
+      ${nums}<p class="pv-p">${say}</p>${btn(`${PT('Plan and today’s step on Today', '計劃和今天的步驟在「今日」')} ›`, () => { go({ name: 'home' }); setTimeout(() => { const el = document.querySelector('.td-sec'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400); }, 'linkbtn pv-tolink')}</div>`;
   });
   const testedBooks = new Set(tests.steps.map((p) => p.book && p.book.id).filter(Boolean));
   const noTest = RH.filter((x) => x.used && !testedBooks.has(x.b.id)).slice(0, Math.max(1, 3 - testCards.length)).map((x) => `<div class="pv-test none"><b data-raw>${esc(sname(x.b))} · ${PT('no test added', '未加入測驗')}</b>
