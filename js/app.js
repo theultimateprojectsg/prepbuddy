@@ -348,7 +348,10 @@ async function refreshLibBooks() {
       if (!add.length) continue;
       const existing = await getQs(b.id, u.id); const have = new Set(existing.map((q) => q.id));
       const fresh = add.filter((q) => !have.has(q.id));
-      if (fresh.length) await setQs(b.id, u.id, existing.concat(fresh));
+      // starter questions we've corrected since (wording, mark scheme, explanation) replace the old copy; stats and mistakes are kept by id
+      const fix = new Map(add.map((q) => [q.id, q])); let fixed = false;
+      const merged = existing.map((q) => { const n = fix.get(q.id); if (!n || JSON.stringify([n.stem, n.parts, n.options, n.answer, n.explanation]) === JSON.stringify([q.stem, q.parts, q.options, q.answer, q.explanation])) return q; fixed = true; return { ...q, ...n }; });
+      if (fresh.length || fixed) await setQs(b.id, u.id, merged.concat(fresh));
     }
     b.units = e.units.map((u) => ({ ...u })); b.pageCount = e.pageCount; b.rev = e.rev; changed = true;
   }

@@ -542,7 +542,7 @@
      "prompt": "Write the correct word.",
      "marks": 1,
      "mark_scheme": [
-      "Answer: are going to visit"
+      "Answer: is going to visit (accept 'are going to visit')"
      ],
      "blank": true
     },
@@ -574,7 +574,7 @@
      "blank": true
     }
    ],
-   "explanation": "(1) and (2) are plans made before, so we use going to. (3) is a guess with 'I think' → will be. (4) is an offer decided now → will ask.",
+   "explanation": "(1) and (2) are plans made before, so we use going to. In (1), 'my family' can take 'is' or 'are': both are correct. (3) is a guess with 'I think' → will be. (4) is an offer decided now → will ask.",
    "id": "pbu206",
    "checked": "human"
   },
