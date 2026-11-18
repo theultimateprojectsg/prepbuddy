@@ -7812,15 +7812,16 @@ async function mistakeItems(done) {
   return groups.sort((a, b) => Math.max(...b.items.map((x) => x.m.t)) - Math.max(...a.items.map((x) => x.m.t)));
 }
 // A hint, never the answer: the answer is only shown after they try the question again.
-const mkHintHTML = (t) => `<div class="mk-hinttxt"><div class="stack g4"><b>${LANG === 'zh' ? 'Buddy 的提示' : 'Buddy’s hint'}</b><div class="tmsg ai" data-raw>${tutorMd(t)}</div></div>${buddySVG('happy', 36)}</div>`;
+const mkHintHTML = (t) => `<div class="mk-hinttxt"><div class="mk-hinthd"><b>${LANG === 'zh' ? 'Buddy 的提示' : 'Buddy’s hint'}</b>${readAloudOn() ? `<button class="mk-say" type="button" data-sayhint aria-label="${LANG === 'zh' ? '讀出來' : 'Read this to me'}">🔊</button>` : ''}<span class="mk-hintbud">${buddySVG('happy', 32)}</span></div><div class="mk-hintbody" data-raw>${tutorMd(t)}</div></div>`;
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-sayhint]'); if (b) { e.preventDefault(); sayAloud(b.closest('.mk-hinttxt').querySelector('.mk-hintbody').textContent); } });
 async function getMkHint(q) {
-  const m = local.mistakes[q.id]; if (m && m.hint) return m.hint;
+  const m = local.mistakes[q.id]; if (m && m.hint2) return m.hint2;
   const [bookId, unitId] = qUnit(q.id);
   const chapter = await store.get(`text:${bookId}:${unitId}`, '');
   if (!chapter) throw new Error(LANG === 'zh' ? '這部機上找不到這一章的內容。' : 'This chapter’s text is missing on this device.');
   const r = await api('explain', { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: '', before: true, history: [], lang: LANG === 'zh' ? 'zh-HK' : langOf(chapter),
-    ask: 'I got this question wrong before. Give me one short hint (1-3 sentences) to help me try again: point me to the idea or the first step. Do not give the answer or say which option is right.' });
-  if (m && r.reply) { m.hint = r.reply; saveLocal(); }
+    ask: 'I got this question wrong before. Give me ONE short hint, at most 2 short sentences (about 30 words), to help me try again: point me to the idea or the first step. Do not give the answer, do not work it out, and do not say which option is right.' });
+  if (m && r.reply) { m.hint2 = r.reply; delete m.hint; saveLocal(); }
   return r.reply;
 }
 function mistakeCard(q, m) {
@@ -7834,7 +7835,7 @@ function mistakeCard(q, m) {
     ${!choiceType(q) ? q.parts.map((p) => `<p class="mprompt">${esc(p.label)} ${esc(p.prompt)}</p>`).join('') : ''}
     <div class="mrow bad"><span>${LANG === 'zh' ? '你的答案' : 'Your answer'}</span><p class="nomath">${esc(yours)}</p></div>
     ${m.done ? `${right ? `<div class="mrow good"><span>${LANG === 'zh' ? '答案' : 'Answer'}</span><p>${esc(right)}</p></div>` : ''}
-    <p class="expl">${esc(q.explanation || '')}</p>` : `<div class="mk-hint" data-hintbox="${esc(q.id)}">${m.hint ? mkHintHTML(m.hint) : `<button class="mk-hintbtn" data-hint="${esc(q.id)}">${buddySVG('think', 28)}<span>${LANG === 'zh' ? '請 Buddy 給提示' : 'Get a hint from Buddy'}</span></button>`}</div>`}
+    <p class="expl">${esc(q.explanation || '')}</p>` : `<div class="mk-hint" data-hintbox="${esc(q.id)}">${m.hint2 ? mkHintHTML(m.hint2) : `<button class="mk-hintbtn" data-hint="${esc(q.id)}">${buddySVG('think', 28)}<span>${LANG === 'zh' ? '請 Buddy 給提示' : 'Get a hint from Buddy'}</span></button>`}</div>`}
     ${m.done && m.chat && m.chat.length ? `<details class="mchat"><summary>${LANG === 'zh' ? '你和 AI 導師的對話' : 'Your chat with the tutor'} (${m.chat.length})</summary>${m.chat.map((x) => x.role === 'user' ? `<div class="tmsg me nomath">${esc(x.text)}</div>` : `<div class="tmsg ai">${tutorMd(x.text)}</div>`).join('')}</details>` : ''}
     ${m.done ? '' : `<div class="mfoot"><button class="btn-sm primary" data-redo1="${esc(q.id)}">${LANG === 'zh' ? '再試這一題' : 'Try it again'}</button></div><div class="mk-rbox"><button class="mk-rm" data-mkreport="${esc(q.id)}">${LANG === 'zh' ? '這題有問題？' : 'Something wrong with this question?'}</button></div>`}
   </div>`;
@@ -7922,7 +7923,7 @@ async function renderMistakes(tab, openBook) {
   $app.querySelectorAll('[data-more]').forEach((b) => (b.onclick = () => { const box = b.previousElementSibling; box.hidden = false; b.remove(); }));
   $app.querySelectorAll('[data-hint]').forEach((b) => (b.onclick = async (e) => {
     e.preventDefault(); const id = b.dataset.hint, box = b.parentElement, q = all.find((x) => x.id === id); if (!q) return;
-    box.innerHTML = `<div class="mk-hinttxt"><div class="stack g4"><b>${zh ? 'Buddy 正在想…' : 'Buddy is thinking…'}</b><span class="mk-dots"><i></i><i></i><i></i></span></div>${buddySVG('think', 36)}</div>`;
+    box.innerHTML = `<div class="mk-hinttxt"><div class="mk-hinthd"><b>${zh ? 'Buddy 正在想…' : 'Buddy is thinking…'}</b><span class="mk-dots"><i></i><i></i><i></i></span><span class="mk-hintbud">${buddySVG('think', 32)}</span></div></div>`;
     try { const t = await getMkHint(q); box.innerHTML = mkHintHTML(t); renderMath(box); }
     catch (err) { box.innerHTML = `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(err.message || (zh ? '暫時未能給提示，請稍後再試。' : 'Couldn’t get a hint right now. Please try again.'))}</p>`; }
   }));
