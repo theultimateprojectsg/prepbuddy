@@ -2453,13 +2453,18 @@ async function renderHome() {
   const dateText = new Date().toLocaleDateString(LOCALE(), { weekday: 'long', day: 'numeric', month: 'long' });
   const who = name || (KIDS.list.length > 1 && KID && KID.nick) || '';
   // Buddy's line under the date: the most useful thing about today (a test, the streak, a win), else a friendly line that changes daily
-  const cheerHTML = (c) => (Array.isArray(c) ? `<ul class="gr-pts">${c.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : esc(c));
+  // A list item can carry an icon: [icon, text, urgent?]
+  const cheerHTML = (c) => (Array.isArray(c) ? `<ul class="gr-pts">${c.map((x) => Array.isArray(x) ? `<li class="ic ${x[2] ? 'soon' : ''}"><span class="gr-ic">${actionIcon(x[0], 16)}</span><span>${esc(x[1])}</span></li>` : `<li>${esc(x)}</li>`).join('')}</ul>` : esc(c));
   const cheerFor = (F) => {
     const Z = (en, zh) => (LANG === 'zh' ? zh : en), nt = F.test, ch = nt && nt.step ? String(nt.step.t || '').replace(/^(Learn|Practise|Practice)\s*:?\s*/i, '').replace(/^(學習|練習)[：:「]?/, '').replace(/」$/, '') : '';
-    if (nt && nt.left === 0) return [Z(`${nt.x.name} today. You’ve got this!`, `今天「${nt.x.name}」，你一定得！`), Z('A quick warm-up first?', '先熱熱身？')];
-    if (nt && nt.left === 1) return [Z(`${nt.x.name} tomorrow`, `明天「${nt.x.name}」`), Z('A practice run tonight, then a good sleep', '今晚做一次模擬，然後好好睡一覺')];
+    // upcoming tests in the next week, each with its own icon (默書 or test)
+    const tIc = (q) => (q.dict || (q.x && q.x.kind === 'dict') ? 'dictation' : 'test');
+    const soon = (F.tests || []).filter((q) => q.left >= 0 && q.left <= 7).slice(0, 3);
+    const tLine = (q) => [tIc(q), q.left === 0 ? Z(`${q.x.name} today`, `今天「${q.x.name}」`) : q.left === 1 ? Z(`${q.x.name} tomorrow`, `明天「${q.x.name}」`) : Z(`${q.x.name} in ${q.left} days`, `「${q.x.name}」還有 ${q.left} 日`), q.left <= 2];
+    if (nt && nt.left === 0) return [...soon.map(tLine), ['practise', Z('A quick warm-up first? You’ve got this!', '先熱熱身？你一定得！')]];
+    if (nt && nt.left === 1) return [...soon.map(tLine), ['practise', Z('A practice run tonight, then a good sleep', '今晚做一次模擬，然後好好睡一覺')]];
     if (F.allDone) return F.streak >= 2 ? Z(`Mission done, and ${F.streak} days in a row. Brilliant!`, `任務完成，已連續 ${F.streak} 日，太棒了！`) : Z('Mission done for today. Brilliant work!', '今天的任務完成了，做得好！');
-    if (nt && nt.left <= 7 && ch) return [Z(`${nt.x.name} in ${nt.left} days`, `「${nt.x.name}」還有 ${nt.left} 日`), Z(`Today: ${ch}`, `今天：${ch}`)];
+    if (nt && nt.left <= 7) return soon.map(tLine);
     if (F.streak >= 2 && !F.doneToday) return Z(`${F.streak} days in a row! Keep the flame going today.`, `已連續 ${F.streak} 日！今天也要保持。`);
     if (F.fixedY >= 3) return Z(`You fixed ${F.fixedY} mistakes yesterday. Nice!`, `昨天你改正了 ${F.fixedY} 題錯題，做得好！`);
     if (F.gw && !F.gw.reached && F.gw.met === F.gw.days - 1) return Z('One more day and you hit this week’s goal!', '再多一日就達到本週目標！');
@@ -2759,7 +2764,7 @@ async function renderHome() {
   const nOn = wk.filter((x) => x.on).length, gw = goalWeek();
   const doneToday = daysSet.has(t0);
   const fixedY = local.log.filter((e) => e.k === 'mistakes' && e.t >= t0 - DAY && e.t < t0 && e.m && e.g >= e.m).length;
-  const cheer = cheerFor({ test: tests.steps.find((q) => q.left >= 0), allDone, streak, doneToday, fixedY, gw });
+  const cheer = cheerFor({ test: tests.steps.find((q) => q.left >= 0), tests: tests.steps, allDone, streak, doneToday, fixedY, gw });
   // a line of encouragement for the streak (computers; phones show the "See today's mission" button instead)
   const encHTML = doneToday
     ? (streak >= 2 ? Z(`${streak} days in a row. Brilliant! Come back tomorrow for day ${streak + 1}.`, `已連續 ${streak} 日，太棒了！明天回來挑戰第 ${streak + 1} 日。`) : Z('Great start! Come back tomorrow and it becomes a streak.', '好開始！明天再來，就開始連續練習了。'))
