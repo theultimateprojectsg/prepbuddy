@@ -2593,8 +2593,27 @@ async function renderHome() {
     if (ic === 'test' || ic === 'mock') return 15;
     return 10; };
   const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
+  // A done step opens to show what was done today, with a way to go back to it.
+  const doneInfo = (x) => {
+    const c = x.chk || {}, today = local.log.filter((e) => e.t >= M.at);
+    const tally = (L) => { const n = L.length, r = L.filter((e) => e.g >= e.m).length; return n ? Z(`${n} question${n > 1 ? 's' : ''} · ${r} right`, `${n} 題 · 答對 ${r} 題`) : ''; };
+    const bk = c.b && books.find((b) => b.id === c.b), un = (id) => bk && bk.units.find((u) => u.id === id);
+    let lines = [], btn = '';
+    if (c.y === 'log') { const L = today.filter((e) => e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1])));
+      const chs = [...new Set(L.map((e) => qUnit(e.q)[1]))].map(un).filter(Boolean).map((u) => shortTitle(u.title));
+      lines = [Z('You practised', '你練習了') + ' ' + tally(L), chs.length ? chs.join(' · ') : ''];
+      const wrong = L.filter((e) => e.g < e.m).length; if (wrong) btn = `<button class="btn-sm" data-go="mistakes">${Z(`See the ${wrong} you got wrong`, `看看答錯的 ${wrong} 題`)}</button>`; }
+    else if (c.y === 'learn') { const u = un(c.u); lines = [Z('You finished the lesson', '你完成了課堂'), u ? shortTitle(u.title) : '']; btn = `<button class="btn-sm" data-mlearn="${esc(c.b)}:${esc(c.u)}">${Z('Open the lesson again', '再看一次課堂')}</button>`; }
+    else if (c.y === 'rv') lines = [Z('You reviewed', '你複習了') + ' ' + tally(today.filter((e) => e.k === 'review'))];
+    else if (c.y === 'mk') { const L = today.filter((e) => e.k === 'mistakes'); lines = [Z('You redid mistakes', '你重做了錯題') + (L.length ? ': ' + tally(L) : '')]; btn = `<button class="btn-sm" data-go="mistakes">${Z('Open the Mistake book', '打開錯題簿')}</button>`; }
+    else if (c.y === 'lv') lines = [Z('You did the level check', '你做了程度測試'), bk ? (bk.subject ? subj(bk.subject) : shortTitle(bk.title)) : ''];
+    else if (c.y === 'dict') lines = [Z('You practised your 默書 words', '你練習了默書')];
+    else if (c.y === 'wr') lines = [Z('You wrote a piece and got Buddy’s feedback', '你寫了一篇並收到 Buddy 的意見')];
+    else lines = [Z('Done today', '今日已完成')];
+    return `<div class="msd-body">${lines.filter(Boolean).map((l, i) => i ? `<span class="muted">${esc(l)}</span>` : `<b>${esc(l)}</b>`).join('')}${btn ? `<div class="msd-btns">${btn}</div>` : ''}</div>`;
+  };
   const stepRow = (x, k) => x.done || !x.now
-    ? `<div class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
+    ? `<details class="msd"><summary class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></summary>${doneInfo(x)}</details>`
     : `<div class="ms-item ${k === firstOpen ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
@@ -2720,7 +2739,7 @@ async function renderHome() {
     coach.brief = p ? Z(`${p.x.name} is ${leftText(p.left)}${p.ready != null ? ` and you’re ${p.ready}% ready` : ''}.${first ? ` Today: ${first.now.t}.` : ''}`, `「${p.x.name}」${leftText(p.left)}${p.ready != null ? `，你現時準備度 ${p.ready}%` : ''}。${first ? `今天：${first.now.t}。` : ''}`)
       : first ? Z(`Today: ${first.now.t}.`, `今天：${first.now.t}。`) : Z('Today’s mission is done. Nice work!', '今日任務完成，做得好！'); }
   const missionHTML = allDone
-    ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
+    ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
       <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)), done = idx.filter(([x]) => x.done || !x.now);
         return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
@@ -2901,6 +2920,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-dictgo]').forEach((b) => (b.onclick = () => go(b.dataset.dictgo === 'new' ? { name: 'dictation', id: 'new' } : { name: 'dictation', id: b.dataset.dictgo, sub: 'run' })));
   $app.querySelectorAll('[data-wrgo]').forEach((b) => (b.onclick = () => go({ name: 'writing' })));
   $app.querySelectorAll('[data-mlearn]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.mlearn.split(':'); go({ name: 'learn', bookId: bid, unitId: uid }); }));
+  $app.querySelectorAll('.msd [data-go]').forEach((b) => (b.onclick = () => go({ name: b.dataset.go, tab: 'todo' })));
   $app.querySelectorAll('[data-weak]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.weak.split(':'), bk = books.find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));

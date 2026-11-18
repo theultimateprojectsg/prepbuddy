@@ -3113,6 +3113,17 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .mk-say{all:unset;cursor:pointer;font-size:14px;line-height:1;padding:6px;border-radius:8px;background:#FFFFFF;border:1px solid #F1E0A6}
 .mk-hintbody{margin-top:6px;font-size:15px;line-height:1.55;color:var(--ink)}.mk-hintbody p{margin:0 0 6px}.mk-hintbody p:last-child{margin:0}
 .mk-hintbody strong,.mk-hintbody b{color:var(--ink);font-weight:700}
+/* Today's mission: done steps are plain (no strike-through) and open to show what was done */
+.ms-row.done .ms-t b{text-decoration:none;color:var(--ink);font-weight:500}
+.msd>summary{list-style:none;cursor:pointer}.msd>summary::-webkit-details-marker{display:none}
+.msd>summary.ms-row.done{cursor:pointer}
+.msd-body{display:flex;flex-direction:column;gap:3px;margin:2px 0 8px 32px;padding:10px 12px;border-radius:10px;background:#F4F6FA;font-size:14px;line-height:1.45}
+.msd-body b{font-weight:600;color:var(--ink)}.msd-body .muted{font-size:13px}
+.msd-btns{margin-top:6px}
+.ms-done:has(.msd-all){flex-wrap:wrap}
+.msd-all{flex-basis:100%;border-top:1px solid var(--line);padding-top:4px}
+.msd-all>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:8px 0;font-size:14px;font-weight:600;color:var(--accent)}
+.msd-all>summary::-webkit-details-marker{display:none}.msd-all .mq-chev{font-size:20px;transition:transform .15s}.msd-all[open]>summary .mq-chev{transform:rotate(90deg)}
 </style>
 </head>
 <body>
