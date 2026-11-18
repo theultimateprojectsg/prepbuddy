@@ -3395,6 +3395,20 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .td-opt{font-weight:500;color:var(--muted);font-size:12.5px}
 .td-aims{display:grid!important;grid-template-columns:repeat(5,1fr);gap:6px}.td-aims button{min-height:44px;font-weight:700}
 @media (max-width:600px){.tdlg .td-two{grid-template-columns:1fr!important}.tdlg .td-two>div:nth-child(2){order:-1}}
+/* Welcome card on phones: shorter. Streak on one row (small flame and count, then the week), smaller Buddy, less padding */
+@media (max-width:1023.98px){
+  .today .gr-hero{padding:14px 16px 12px!important;gap:6px!important}
+  .today .gr-hero h1{font-size:24px!important}
+  .today .gr-buddy svg{width:52px!important;height:52px!important}
+  .today .gr-strip.gr-btn{flex-wrap:nowrap!important;align-items:center;margin-top:8px!important;padding-top:10px!important;gap:10px}
+  .today .gr-btn .gr-streak{flex:1 1 auto;min-width:0;flex-direction:row!important;align-items:center}
+  .today .gr-btn .gr-cta,.today .gr-btn .sk-next{display:none!important}
+  .today .gr-sk{gap:6px}.today .sk-flame{width:20px!important;height:25px!important}
+  .today .gr-sk-n b{font-size:18px!important}.today .gr-sk-n span{font-size:13px!important;white-space:nowrap}
+  .today .gr-btn .gr-week{flex:none!important;display:flex!important;gap:3px!important}
+  .today .gr-btn .gr-week i{width:25px!important;height:25px!important;font-size:10px!important}
+}
+@media (max-width:379px){.today .gr-strip.gr-btn{flex-wrap:wrap!important}.today .gr-btn .gr-week{flex:1 1 100%!important;justify-content:space-between}}
 </style>
 </head>
 <body>

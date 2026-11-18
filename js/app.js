@@ -2465,12 +2465,11 @@ async function renderHome() {
     if (nt && nt.left === 0) return [...soon.map(tLine), ['practise', Z('A quick warm-up first? You’ve got this!', '先熱熱身？你一定得！')]];
     if (nt && nt.left === 1) return [...soon.map(tLine), ['practise', Z('A practice run tonight, then a good sleep', '今晚做一次模擬，然後好好睡一覺')]];
     if (F.allDone) return F.streak >= 2 ? Z(`Mission done, and ${F.streak} days in a row. Brilliant!`, `任務完成，已連續 ${F.streak} 日，太棒了！`) : Z('Mission done for today. Brilliant work!', '今天的任務完成了，做得好！');
-    if (nt && nt.left <= 7) return soon.map(tLine);
+    // tests further off aren't repeated here: the goals card right below shows each one with its countdown
     if (F.streak >= 2 && !F.doneToday) return Z(`${F.streak} days in a row! Keep the flame going today.`, `已連續 ${F.streak} 日！今天也要保持。`);
     if (F.fixedY >= 3) return Z(`You fixed ${F.fixedY} mistakes yesterday. Nice!`, `昨天你改正了 ${F.fixedY} 題錯題，做得好！`);
     if (F.gw && !F.gw.reached && F.gw.met === F.gw.days - 1) return Z('One more day and you hit this week’s goal!', '再多一日就達到本週目標！');
     if (F.streak >= 2) return Z(`${F.streak} days in a row. Come back tomorrow for day ${F.streak + 1}!`, `已連續 ${F.streak} 日，明天回來挑戰第 ${F.streak + 1} 日！`);
-    if (nt && nt.left <= 14) return Z(`${nt.x.name} in ${nt.left} days. A little each day beats a lot the night before.`, `「${nt.x.name}」還有 ${nt.left} 日。每天一點點，好過考前一晚臨急抱佛腳。`);
     const L = LANG === 'zh'
       ? (hr < 12 ? ['新的一天，先做一點點吧！', '早上的腦袋最清醒，來幾題吧！', '先做一點點，今天就輕鬆得多。'] : hr < 18 ? ['今天也來練習一下吧！', '放學後做一個小任務？', '十分鐘就夠，開始吧！'] : ['睡前做十分鐘，明天更有信心。', '今晚做一點，明天記得更牢。', '一個小任務，然後好好休息。'])
       : (hr < 12 ? ['A little practice now, a lot easier later.', 'Fresh brain, fresh start. Let’s go!', 'A few questions before the day gets busy?'] : hr < 18 ? ['Ready for a quick practice?', 'A short mission after school?', 'Ten minutes is all it takes. Let’s go!'] : ['Ten minutes before bed goes a long way.', 'A little tonight helps it stick tomorrow.', 'One small mission, then time to relax.']);
