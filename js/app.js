@@ -5547,6 +5547,27 @@ const PI = {
 const pIcon = (k, size = 20) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PI[k]}</svg>`;
 const PT = (en, zh) => (LANG === 'zh' ? zh : en);
 // A few short points under a test card: the pace, the trend, then the biggest habit or gap for this test's chapters.
+// habits and gaps in a set of log entries (one test's chapters, or everything): biggest first
+function habitGaps(E, inT = () => true) {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), gaps = [], now = Date.now();
+  const acc = (es) => { const m = es.reduce((a, e) => a + e.m, 0); return m ? Math.round(100 * es.reduce((a, e) => a + e.g, 0) / m) : null; };
+  { const open = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && inT(id)), rep2 = open.filter(([, m]) => (m.n || 1) >= 2).length;
+    if (rep2 >= 3 && rep2 >= open.length * 0.3) gaps.push(['weak', Z('Repeating the same mistakes', '重複犯同樣的錯')]); }
+  { const practised = new Set(E.filter((e) => e.k !== 'spaced').map((e) => qUnit(e.q).join(':'))), skipped = [...practised].filter((u) => !(local.learned || {})[u]);
+    if (skipped.length >= 2 || (skipped.length === 1 && practised.size <= 2)) gaps.push(['weak', Z('Skipping lessons before practising', '未上課就直接練習')]); }
+  { const R = E.filter((e) => e.k === 'spaced' && e.t > now - 30 * DAY);
+    if (R.length >= 4 && acc(R) < 60) gaps.push(['weak', Z('Seems to forget after a week or so', '過了一星期左右就忘記')]); }
+  { const T = E.filter((e) => e.s && e.t > now - 30 * DAY), M = T.filter((e) => e.k === 'mock' || e.k === 'dse'), use = M.length >= 5 ? M : T;
+    if (use.length >= 6) { const r = use.map((e) => e.s / ((e.ty === 'w' ? 90 : 60) * Math.max(1, e.m))).sort((a, b) => a - b)[Math.floor(use.length / 2)];
+      if (r > 1.6) gaps.push(['pace', use === M ? Z('A bit slow in tests: may run out of time', '測驗時偏慢：可能做不完') : Z('A bit slow: takes longer than usual per question', '偏慢：每題用的時間較長')]); } }
+  { const R = E.filter((e) => e.t > now - 14 * DAY && e.k !== 'spaced');
+    if (R.length >= 6 && R.filter((e) => e.h).length / R.length >= 0.4) gaps.push(['weak', Z('Using Buddy’s hints a lot before answering', '經常要 Buddy 提示才作答')]); }
+  { const C = E.filter((e) => e.ty === 'c'), W = E.filter((e) => e.ty === 'w');
+    const lv = [1, 2, 3, 4].map((l) => { const es = E.filter((e) => Math.max(1, Math.min(4, Math.round(e.l || 2))) === l); return { l, n: es.length, a: acc(es) }; }).filter((x) => x.n >= 3).sort((a, b) => a.a - b.a)[0];
+    if (C.length >= 3 && W.length >= 3 && Math.abs(acc(C) - acc(W)) >= 20) gaps.push(['weak', acc(W) < acc(C) ? Z('Weaker in written questions', '文字題較弱') : Z('Weaker in multiple choice', '選擇題較弱')]);
+    else if (lv && lv.a < 60) gaps.push(['weak', [Z('Weaker at remembering facts', '記憶事實較弱'), Z('Weaker at understanding the ideas', '理解概念較弱'), Z('Weaker at using it in new questions', '應用題較弱'), Z('Weaker at “explain why” questions', '「解釋原因」題較弱')][lv.l - 1]]); }
+  return gaps;
+}
 function testPoints(p, chs, aim, fc, st) {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en), pts = [];
   const habit = practiceHabit(), dpw = Math.max(1, Math.round(habit * 7));
@@ -5567,21 +5588,7 @@ function testPoints(p, chs, aim, fc, st) {
   const gaps = [];
   const notStarted = chs.filter((c) => !c.pct);
   if (notStarted.length) gaps.push(['ch', notStarted.length === 1 ? Z('1 chapter not started yet', '還有 1 章未開始') : Z(`${notStarted.length} chapters not started yet`, `還有 ${notStarted.length} 章未開始`)]);
-  { const open = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && inT(id)), rep2 = open.filter(([, m]) => (m.n || 1) >= 2).length;
-    if (rep2 >= 3 && rep2 >= open.length * 0.3) gaps.push(['weak', Z('Repeating the same mistakes', '重複犯同樣的錯')]); }
-  { const practised = new Set(E.filter((e) => e.k !== 'spaced').map((e) => qUnit(e.q)[1])), skipped = [...practised].filter((u) => !(local.learned || {})[`${p.book.id}:${u}`]);
-    if (skipped.length >= 2 || (skipped.length === 1 && practised.size <= 2)) gaps.push(['weak', Z('Skipping lessons before practising', '未上課就直接練習')]); }
-  { const R = E.filter((e) => e.k === 'spaced' && e.t > now - 30 * DAY);
-    if (R.length >= 4 && acc(R) < 60) gaps.push(['weak', Z('Seems to forget after a week or so', '過了一星期左右就忘記')]); }
-  { const T = E.filter((e) => e.s && e.t > now - 30 * DAY), M = T.filter((e) => e.k === 'mock' || e.k === 'dse'), use = M.length >= 5 ? M : T;
-    if (use.length >= 6) { const r = use.map((e) => e.s / ((e.ty === 'w' ? 90 : 60) * Math.max(1, e.m))).sort((a, b) => a - b)[Math.floor(use.length / 2)];
-      if (r > 1.6) gaps.push(['pace', use === M ? Z('A bit slow in tests: may run out of time', '測驗時偏慢：可能做不完') : Z('A bit slow: takes longer than usual per question', '偏慢：每題用的時間較長')]); } }
-  { const R = E.filter((e) => e.t > now - 14 * DAY && e.k !== 'spaced');
-    if (R.length >= 6 && R.filter((e) => e.h).length / R.length >= 0.4) gaps.push(['weak', Z('Using Buddy’s hints a lot before answering', '經常要 Buddy 提示才作答')]); }
-  { const C = E.filter((e) => e.ty === 'c'), W = E.filter((e) => e.ty === 'w');
-    const lv = [1, 2, 3, 4].map((l) => { const es = E.filter((e) => Math.max(1, Math.min(4, Math.round(e.l || 2))) === l); return { l, n: es.length, a: acc(es) }; }).filter((x) => x.n >= 3).sort((a, b) => a.a - b.a)[0];
-    if (C.length >= 3 && W.length >= 3 && Math.abs(acc(C) - acc(W)) >= 20) gaps.push(['weak', acc(W) < acc(C) ? Z('Weaker in written questions', '文字題較弱') : Z('Weaker in multiple choice', '選擇題較弱')]);
-    else if (lv && lv.a < 60) gaps.push(['weak', [Z('Weaker at remembering facts', '記憶事實較弱'), Z('Weaker at understanding the ideas', '理解概念較弱'), Z('Weaker at using it in new questions', '應用題較弱'), Z('Weaker at “explain why” questions', '「解釋原因」題較弱')][lv.l - 1]]); }
+  gaps.push(...habitGaps(E, inT));
   pts.push(...gaps);
   return list(pts);
   function list(x) {
@@ -7022,8 +7029,47 @@ async function renderProgress() {
   </section>`;
   const sumSec = `<section class="pv-sec pv-sumsec"><div class="pv-h"><h2 class="h-info">${PT('Your week at a glance', '本週一覽')}${ib('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'))}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}${how('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'), '')}</section>`;
   // DEV: the new order (goals, what Buddy noticed, this week, subjects, is it working), switchable with the current page
-  const PNEW = DEV && localStorage.getItem('pb.prog') !== 'old';
-  const pvDev = DEV ? `<div class="cb-dev"><b>DEV preview: Progress</b><span>Same data. Only you see this.</span><div class="cb-modes">${[['new', 'New order'], ['old', 'Current']].map(([k, t]) => `<button class="btn-sm ${(PNEW ? 'new' : 'old') === k ? 'primary' : ''}" data-pvmode="${k}">${t}</button>`).join('')}</div></div>` : '';
+  const PMODE = DEV ? localStorage.getItem('pb.prog') || 'parent' : 'old', PNEW = PMODE === 'new', PPAR = PMODE === 'parent';
+  const pvDev = DEV ? `<div class="cb-dev"><b>DEV preview: Progress</b><span>Same data. Only you see this.</span><div class="cb-modes">${[['parent', 'Parent view'], ['new', 'New order'], ['old', 'Current']].map(([k, t]) => `<button class="btn-sm ${PMODE === k ? 'primary' : ''}" data-pvmode="${k}">${t}</button>`).join('')}</div></div>` : '';
+  // DEV: the parent view. Four questions a parent asks, one clear answer each: are they doing it,
+  // will they be ready, is it working, is anything going wrong (and what can I do)
+  let parBody = '';
+  if (PPAR) {
+    const X = r.x || {}, who = (local.name || '').trim() || PT('your child', '你的孩子');
+    const mins = r.days.reduce((a, b) => a + b, 0), dm = r.pm != null ? mins - r.pm : null;
+    const chg = (d, unit) => (d == null || (!d && d !== 0) ? '' : d === 0 ? `<em>${PT('same as last week', '與上週相同')}</em>` : `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d)}${unit} ${PT('vs last week', '對比上週')}</em>`);
+    const dayL = (i) => new Date(r.from + i * DAY).toLocaleDateString(LOCALE(), { weekday: 'narrow' });
+    const ml = local.msLeft && local.msLeft.d === startOfToday() ? local.msLeft.n : null, todayMin = r.days[6] || 0;
+    const todayTxt = ml === 0 ? `<b class="ok">${ICON.check} ${PT('Today’s mission done', '今日任務已完成')}</b>` : todayMin ? PT(`Practised ${todayMin} min today · ${ml || 'a few'} mission step${ml === 1 ? '' : 's'} left`, `今日練習了 ${todayMin} 分鐘 · 任務還有 ${ml || '幾'} 步`) : PT('Not started today yet', '今日還未開始');
+    const sHead = `<section class="pv-sec pp-head"><small class="pp-k">${PT('This week', '本週')}</small><h2 class="pp-hl">${esc(headline(r))}</h2>
+      <div class="pp-week" aria-label="${PT(`Practised ${r.dp} of 7 days`, `7 日中練習了 ${r.dp} 日`)}">${r.days.map((m, i) => `<span class="${m ? 'on' : ''}${i === 6 ? ' td' : ''}"><i>${m ? ICON.check : ''}</i><small>${dayL(i)}</small></span>`).join('')}</div>
+      <div class="pp-stats"><div><b>${r.dp}<small>/7</small></b><span>${PT('days practised', '練習日數')}</span></div><div><b>${mins}<small> ${PT('min', '分鐘')}</small></b><span>${PT('time practising', '練習時間')}</span>${chg(dm, PT(' min', ' 分鐘'))}</div><div><b>${r.a == null ? '–' : `${r.a}%`}</b><span>${PT('marks scored', '得分率')}</span>${r.a != null && r.pa != null ? chg(r.a - r.pa, PT(' pts', ' 分')) : ''}</div></div>
+      <p class="pp-today">${todayTxt}</p></section>`;
+    const tBodyP = (g) => { const chs = chOf(g.p).length ? chOf(g.p) : g.p.book ? MB.get(g.p.book.id).chapters : [];
+      return goalProgressHTML(g, g.p.ready == null ? '' : testPoints(g.p, chs, g.aim, g.fc, g.st), false, true); };
+    const sGoals = GDp ? `<div class="pp-goals">${goalsCardHTML(GDp, { progress: true, testBody: tBodyP, title: PT('Will they be ready?', '準備得好嗎？') })}</div>` : '';
+    const proof = [marksCard, levelCard, memCard].filter(Boolean);
+    const sWork = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('School marks, level and memory: the proof that counts', '學校成績、程度和記憶：最實在的證明')}</span></div>
+      <div class="pv-grid3">${proof.join('')}</div>
+      <details class="pp-all"><summary>${PT('See all charts and subjects', '查看所有圖表及科目')}</summary><div class="pv-grid3">${readyCard}${pcCard}${growCard}${mixCard}${typesCard}${mkCard}${timedCard}${calCard}</div>${sec3}</details></section>`;
+    const E30 = local.log.filter((e) => e.m && e.t > Date.now() - 30 * DAY), flags = habitGaps(E30);
+    const lastT = local.log.reduce((m, e) => Math.max(m, e.t || 0), 0), gapD = lastT ? Math.floor((startOfToday() - dayStart(lastT)) / DAY) : null;
+    if (gapD != null && gapD >= 3) flags.unshift(['weak', PT(`No practice for ${gapD} days`, `已經 ${gapD} 日沒有練習`)]);
+    const low = (r.ch || []).filter((c) => c[2] >= 3 && c[1] < 60).sort((a, b) => a[1] - b[1])[0];
+    const help = !r.q ? PT(`A short routine helps most: 15 minutes at the same time each day. Ask ${who} to show you the app.`, `建立習慣最有用：每天固定時間練習 15 分鐘，並請${who}示範一下這個應用程式。`)
+      : low ? PT(`Ask ${who} to explain one idea from “${low[0]}” to you in their own words. Teaching it back is one of the best ways to learn it.`, `請${who}用自己的話，向你解釋「${low[0]}」中的一個概念。把內容教給別人，是最有效的學習方法之一。`)
+      : PT(`Ask ${who} which question was hardest this week, and praise the effort as well as the score.`, `問問${who}本週哪一題最難，並稱讚付出的努力，而不只是分數。`);
+    const item = (k, t, sub = '') => `<li class="pp-i ${k}"><span class="pp-dot" aria-hidden="true"></span><div><b data-raw>${esc(t)}</b>${sub ? `<small data-raw>${esc(sub)}</small>` : ''}</div></li>`;
+    const good = [r.up ? ['good', PT('Getting better', '有進步'), r.up] : null, X.hi && X.hi[0] - X.hi[1] >= 8 ? ['good', PT('Needs hints far less', '越來越少需要提示'), PT(`${X.hi[0]}% answered without help, up from ${X.hi[1]}%`, `現在 ${X.hi[0]}% 不用提示，之前 ${X.hi[1]}%`)] : null].filter(Boolean).slice(0, 2);
+    const watch = [...flags.slice(0, 3).map(([, t]) => ['warn', t, '']), ...(r.weak ? [['warn', PT('Needs more practice', '需要多加練習'), r.weak]] : [])].slice(0, 4);
+    const sWatch = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Anything to step in on?', '有甚麼要留意？')}</h2><span>${PT('Habits and weak spots from the last 30 days', '過去 30 日的習慣和弱項')}</span></div>
+      <ul class="pp-list">${watch.length ? watch.map((x) => item(...x)).join('') : item('good', PT('Nothing worrying right now', '暫時沒有要擔心的地方'), PT('Practice habits look healthy.', '練習習慣良好。'))}${good.map((x) => item(...x)).join('')}</ul>
+      <div class="pp-help"><b>${PT('How you can help this week', '本週家長可以怎樣幫忙')}</b><p data-raw>${esc(help)}</p></div></section>`;
+    const dw = X.dw || {}, did = [[dw.q, PT('questions from their own textbooks', '條題目來自自己的課本')], [dw.w, PT('written answers marked', '條文字答案已批改')], [dw.rv, PT('reviews brought back before they’d forget', '條溫習題在快忘記前出現')], [dw.fx, PT('mistakes fixed', '題錯題已改正')], [dw.ls, PT('lessons taught by Buddy', '堂 Buddy 課堂')], [dw.mx, PT('mix-ups found', '個混淆被找出')]].filter(([n]) => n > 0);
+    const sDid = `<section class="pv-sec pp-did"><div class="pv-h"><h2>${PT('What PrepBuddy did this week', 'PrepBuddy 本週做了甚麼')}</h2></div>${did.length ? `<div class="pp-chips">${did.map(([n, t]) => `<span><b>${n}</b> ${t}</span>`).join('')}</div>` : `<p class="pv-p">${PT('This fills in as practice happens.', '開始練習後就會顯示。')}</p>`}
+      ${btn(PT('Send as weekly report', '以每週報告發送'), () => reportDialog(), 'pv-btn primary pp-send')}</section>`;
+    parBody = `${sHead}${sGoals}${sWork}${sWatch}${sDid}`;
+  }
   let newBody = '';
   if (PNEW) {
     // 1 week at a glance · 2 goals · 3 tests · 4 subject mastery · 5 what Buddy noticed (with the readiness and is-it-working charts) · 6 effort and habits
@@ -7044,13 +7090,13 @@ async function renderProgress() {
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${PT('Weekly report', '每週報告')}</span>`, () => reportDialog(), 'pv-btn primary pv-topbtn')}${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5"/></svg><span>${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}</span>`, () => openParent(), 'pv-btn primary pv-topbtn')}</div></div>
-    ${pvDev}${PNEW ? newBody : `${goalPHTML}
+    ${pvDev}${PPAR ? parBody : PNEW ? newBody : `${goalPHTML}
     ${sumSec}
     <div id="pv-s2">${sec2}</div><div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>`}
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
   $app.querySelectorAll('[data-pvmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.prog', b.dataset.pvmode); renderProgress(); }));
-  if (PNEW) { $app.querySelector('main').classList.add('pvnew'); ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); }); }
+  if (PNEW || PPAR) { $app.querySelector('main').classList.add(PPAR ? 'pvpar' : 'pvnew'); ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); }); }
   // Info pop-ups in plain words: a few short lines with a picture each, for kids and parents alike
   { const L = (rows) => `<ul class="how-easy">${rows.map(([i, en, zh, den, dzh]) => `<li><span>${i}</span><div><p>${PT(en, zh)}</p>${den ? `<small>${PT(den, dzh)}</small>` : ''}</div></li>`).join('')}</ul>`;
     const HOW = {
