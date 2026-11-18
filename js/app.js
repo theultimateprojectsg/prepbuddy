@@ -5486,27 +5486,45 @@ const PI = {
 };
 const pIcon = (k, size = 20) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PI[k]}</svg>`;
 const PT = (en, zh) => (LANG === 'zh' ? zh : en);
-// A few short points under a test card: the pace, the weaker kind of question, the chapters that need work.
+// A few short points under a test card: the pace, the trend, then the biggest habit or gap for this test's chapters.
 function testPoints(p, chs, aim, fc, st) {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en), pts = [];
   const habit = practiceHabit(), dpw = Math.max(1, Math.round(habit * 7));
+  // 1. pace
   if (st === 'ok') pts.push(['good', Z('On pace. Keep practising like you are', '進度理想，保持現在的節奏')]);
   else { const best = planForecast(p.ready, chs, p.left, 1);
-    pts.push(['pace', best >= aim && habit < 0.95 ? Z(`Pick up the pace: practise every day (about ${dpw} days a week now)`, `要加快：每天練習（現在約每週 ${dpw} 日）`) : Z('Practise every day and add extra sets', '每天練習，再加練幾組')]); }
-  if (p.book && chs.length) {
-    const ids = new Set(chs.map((c) => c.unit.id));
-    const E = local.log.filter((e) => e.q && e.m && e.k !== 'spaced' && qUnit(e.q)[0] === p.book.id && ids.has(qUnit(e.q)[1]));
-    const acc = (es) => { const m = es.reduce((a, e) => a + e.m, 0); return m ? Math.round(100 * es.reduce((a, e) => a + e.g, 0) / m) : null; };
-    const C = E.filter((e) => e.ty === 'c'), W = E.filter((e) => e.ty === 'w');
+    pts.push(['pace', best >= aim && habit < 0.95 ? Z(`Pick up the pace: practise every day (about ${dpw} days a week now)`, `要加快：每天練習（現在約每週 ${dpw} 日）`) : Z('Needs more practice: every day, with extra sets', '要多練習：每天練，再加練幾組')]); }
+  if (!p.book || !chs.length) return list(pts);
+  const ids = new Set(chs.map((c) => c.unit.id)), inT = (id) => id && qUnit(id)[0] === p.book.id && ids.has(qUnit(id)[1]);
+  const E = local.log.filter((e) => e.m && inT(e.q)), now = Date.now();
+  const acc = (es) => { const m = es.reduce((a, e) => a + e.m, 0); return m ? Math.round(100 * es.reduce((a, e) => a + e.g, 0) / m) : null; };
+  // 2. trend: this week against last week, on this test's chapters
+  { const tw = E.filter((e) => e.t > now - 7 * DAY && e.k !== 'spaced'), lw = E.filter((e) => e.t <= now - 7 * DAY && e.t > now - 14 * DAY && e.k !== 'spaced');
+    if (tw.length >= 5 && lw.length >= 5) { const a = acc(tw), b = acc(lw);
+      pts.push(a - b >= 8 ? ['up', Z(`Improving: ${a}% right this week, up from ${b}% last week`, `進步中：本週答對 ${a}%，上週 ${b}%`)] : b - a >= 8 ? ['down', Z(`Dipped this week: ${a}% right, down from ${b}% last week`, `本週退步：答對 ${a}%，上週 ${b}%`)] : ['flat', Z(`Steady: about the same as last week (${a}% right)`, `穩定：與上週差不多（答對 ${a}%）`)]); }
+    else if (tw.length >= 5 && !lw.length) pts.push(['up', Z(`Started this week: ${acc(tw)}% right so far`, `本週開始：暫時答對 ${acc(tw)}%`)]); }
+  // 3. habits and gaps, biggest first
+  const gaps = [];
+  const notStarted = chs.filter((c) => !c.pct);
+  if (notStarted.length) gaps.push(['ch', notStarted.length === 1 ? Z('1 chapter not started yet', '還有 1 章未開始') : Z(`${notStarted.length} chapters not started yet`, `還有 ${notStarted.length} 章未開始`)]);
+  { const open = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && inT(id)), rep2 = open.filter(([, m]) => (m.n || 1) >= 2).length;
+    if (rep2 >= 3 && rep2 >= open.length * 0.3) gaps.push(['weak', Z('Repeating the same mistakes', '重複犯同樣的錯')]); }
+  { const practised = new Set(E.filter((e) => e.k !== 'spaced').map((e) => qUnit(e.q)[1])), skipped = [...practised].filter((u) => !(local.learned || {})[`${p.book.id}:${u}`]);
+    if (skipped.length >= 2 || (skipped.length === 1 && practised.size <= 2)) gaps.push(['weak', Z('Skipping lessons before practising', '未上課就直接練習')]); }
+  { const R = E.filter((e) => e.k === 'spaced' && e.t > now - 30 * DAY);
+    if (R.length >= 4 && acc(R) < 60) gaps.push(['weak', Z('Seems to forget after a week or so', '過了一星期左右就忘記')]); }
+  { const T = E.filter((e) => e.s && e.t > now - 30 * DAY), M = T.filter((e) => e.k === 'mock' || e.k === 'dse'), use = M.length >= 5 ? M : T;
+    if (use.length >= 6) { const r = use.map((e) => e.s / ((e.ty === 'w' ? 90 : 60) * Math.max(1, e.m))).sort((a, b) => a - b)[Math.floor(use.length / 2)];
+      if (r > 1.6) gaps.push(['pace', use === M ? Z('A bit slow in tests: may run out of time', '測驗時偏慢：可能做不完') : Z('A bit slow: takes longer than usual per question', '偏慢：每題用的時間較長')]); } }
+  { const R = E.filter((e) => e.t > now - 14 * DAY && e.k !== 'spaced');
+    if (R.length >= 6 && R.filter((e) => e.h).length / R.length >= 0.4) gaps.push(['weak', Z('Using Buddy’s hints a lot before answering', '經常要 Buddy 提示才作答')]); }
+  { const C = E.filter((e) => e.ty === 'c'), W = E.filter((e) => e.ty === 'w');
     const lv = [1, 2, 3, 4].map((l) => { const es = E.filter((e) => Math.max(1, Math.min(4, Math.round(e.l || 2))) === l); return { l, n: es.length, a: acc(es) }; }).filter((x) => x.n >= 3).sort((a, b) => a.a - b.a)[0];
-    if (C.length >= 3 && W.length >= 3 && Math.abs(acc(C) - acc(W)) >= 20) pts.push(['weak', acc(W) < acc(C) ? Z('Weaker in written questions', '文字題較弱') : Z('Weaker in multiple choice', '選擇題較弱')]);
-    else if (lv && lv.a < 60) pts.push(['weak', [Z('Weaker at remembering facts', '記憶事實較弱'), Z('Weaker at understanding the ideas', '理解概念較弱'), Z('Weaker at using it in new questions', '應用題較弱'), Z('Weaker at “explain why” questions', '「解釋原因」題較弱')][lv.l - 1]]);
-    const nm = (c) => shortTitle(c.unit.title).replace(/^(Unit|Chapter|Ch\.?)\s*[\w.]+\s*[·:]?\s*/i, '');
-    const notStarted = chs.filter((c) => !c.pct), low = chs.filter((c) => c.pct && c.pct < aim).sort((a, b) => a.pct - b.pct);
-    if (notStarted.length) pts.push(['ch', notStarted.length === 1 ? Z(`${nm(notStarted[0])} not started yet`, `「${nm(notStarted[0])}」還未開始`) : Z(`${notStarted.length} chapters not started yet`, `還有 ${notStarted.length} 章未開始`)]);
-    else if (low.length) pts.push(['ch', Z(`Weakest chapter: ${nm(low[0])} (${low[0].pct}%)`, `最弱的章節：${nm(low[0])}（${low[0].pct}%）`)]);
-  }
-  return `<ul class="pv-pts">${pts.slice(0, 3).map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join('')}</ul>`;
+    if (C.length >= 3 && W.length >= 3 && Math.abs(acc(C) - acc(W)) >= 20) gaps.push(['weak', acc(W) < acc(C) ? Z('Weaker in written questions', '文字題較弱') : Z('Weaker in multiple choice', '選擇題較弱')]);
+    else if (lv && lv.a < 60) gaps.push(['weak', [Z('Weaker at remembering facts', '記憶事實較弱'), Z('Weaker at understanding the ideas', '理解概念較弱'), Z('Weaker at using it in new questions', '應用題較弱'), Z('Weaker at “explain why” questions', '「解釋原因」題較弱')][lv.l - 1]]); }
+  pts.push(...gaps);
+  return list(pts);
+  function list(x) { return `<ul class="pv-pts">${x.slice(0, 3).map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join('')}</ul>`; }
 }
 const SKILL_PLAIN = () => (LANG === 'zh' ? ['記憶事實', '理解', '應用', '深入思考'] : ['Remembering facts', 'Understanding', 'Using it', 'Thinking it through']);
 
@@ -8697,7 +8715,8 @@ function renderQuestion() {
   S.waiting = false;
   navSession();
   const q = S.qs[S.i];
-  if (renderQuestion.last !== q) { if (renderQuestion.last && sayingText) stopSaying(); renderQuestion.last = q; } // a new question stops reading the old one
+  if (renderQuestion.last !== q) { if (renderQuestion.last && sayingText) stopSaying(); renderQuestion.last = q; }
+  if (S.phase !== 'revealed' && (!S.qShown || S.qShown.q !== q)) S.qShown = { q, t: Date.now() }; // a new question stops reading the old one
   if (S.mode === 'unit' && !S.placement && !S.review && !q.recap) { S.metered = S.metered || new Set(); if (!S.metered.has(q.id)) { S.metered.add(q.id); meter('q'); if (!choiceType(q)) meter('written'); } }
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
@@ -9300,7 +9319,8 @@ function record(q, got) {
   schedule(s, got >= marksOf(q));
   local.stats[q.id] = s;
   // Activity log for progress reports: when, which question/chapter, marks, and how it was practised.
-  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '', ty, ...(helped ? { h: 1 } : {}) });
+  const secs = S && S.qShown && S.qShown.q === q ? Math.round((Date.now() - S.qShown.t) / 1000) : 0;
+  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '', ty, ...(helped ? { h: 1 } : {}), ...(secs > 0 && secs < 900 ? { s: secs } : {}) });
   // Mistake book: every question not fully right goes in; getting it fully right later marks it mastered.
   const mk = local.mistakes[q.id];
   if (got < marksOf(q)) {
