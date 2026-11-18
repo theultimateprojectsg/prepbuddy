@@ -2656,7 +2656,7 @@ async function renderHome() {
     // mistakes fixed this week
     { const fixed = Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && (m.doneAt || 0) > wk).length;
       if (fixed && !mistakeCount()) add(3, 'sparkle', Z('You cleared your whole Mistake book!', '錯題簿全部清完！'), Z(`${fixed} mistake${fixed === 1 ? '' : 's'} fixed this week. Nothing left to trip you up.`, `本週改正了 ${fixed} 題，再沒有錯題了。`));
-      else if (fixed >= 3) add(5, 'check', Z(`You fixed ${fixed} mistakes this week`, `本週改正了 ${fixed} 題錯題`), Z('Each one is a mark you won’t lose again.', '每一題都是不會再失的分數。')); }
+      else if (fixed >= 3) add(5, 'check', Z(`You fixed ${fixed} mistakes this week`, `本週改正了 ${fixed} 題錯題`), (() => { const g = fixedForGood().good; return g ? Z(`${g} now fixed for good: right again days later.`, `${g} 題已真正掌握：幾天後再答對。`) : Z('Buddy brings them back in a few days to check they stick.', 'Buddy 幾天後會再出這些題，確認真的記住了。'); })()); }
     // 默書 practice: full marks in the last 3 days
     { const full = (local.dict || []).find((L) => (L.runs || []).some((r) => r.t > d3 && r.n && r.g >= r.n));
       if (full) add(4, 'star', Z(`100% in 默書 practice: ${shortTitle(full.title || '')}!`, `默書練習「${shortTitle(full.title || '')}」全對！`), Z('Every word right.', '每個詞語都寫對了。')); }
@@ -6165,6 +6165,7 @@ const goalText = () => { const g = local.goal; if (!g || !g.kind) return PT('Not
   if (g.kind === 'test') { const x = (local.sched || []).find((y) => y.id === g.testId); return x ? PT(`Do well in ${x.name}`, `「${x.name}」考好`) : PT('Do well in the nearest test', '最近的測驗考好'); }
   return PT(`Get stronger in ${g.subj || 'your main subject'} · level ${(g.target || 6.7).toFixed(1)}`, `${g.subj || '主要科目'}持續進步 · 目標程度 ${(g.target || 6.7).toFixed(1)}`); };
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('#sgoal'); if (!b) return; goalSheet(() => { const t = document.getElementById('sgoalTxt'); if (t) t.textContent = goalText(); }); });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('#glpChange'); if (b) goalSheet(() => renderProgress()); });
 async function fullTestCards(tests, btn) {
   const MB = new Map(); for (const p of tests.steps) if (p.book && !MB.has(p.book.id)) MB.set(p.book.id, await bookMastery(p.book));
   const chName = (u) => shortTitle(u.title);
@@ -6269,6 +6270,47 @@ function bindTestCards(root) {
 }
 // On track / close / at risk, against the target the parent set for that test (default 80%).
 const aimTone = (v, aim = 80) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
+// Mistakes fixed for good: fixed, then right again on a later day (2+ days after fixing). Fixed once may just be memory.
+function fixedForGood() {
+  const M = Object.entries(local.mistakes || {}), byQ = new Map();
+  for (const e of local.log || []) if (e.q && e.m && e.g >= e.m) (byQ.get(e.q) || byQ.set(e.q, []).get(e.q)).push(e.t);
+  let good = 0, wait = 0, open = 0;
+  for (const [id, m] of M) { if (!m.done) { open++; continue; } if (m.manual) continue; const at = m.doneAt || m.t || 0; if ((byQ.get(id) || []).some((t) => t >= at + 2 * DAY)) good++; else wait++; }
+  return { good, wait, open };
+}
+// The goal at the top of Progress: a chart against the goal line, a few points, and mistakes fixed for good.
+function goalProgressHTML(G, pts) {
+  const Z = PT, ST = GOAL_ST();
+  let body = '', title = '', sub = '', st = G.st;
+  if (G.kind === 'test') {
+    const x = G.p.x, td = testDay(x), t0 = dayStart(), H = G.hist.filter((h) => h[0] <= t0).sort((a, b) => a[0] - b[0]);
+    const from = Math.min(H[0][0], t0 - 6 * DAY), span = Math.max(DAY, td - from), W = 300, X = (t) => (34 + ((t - from) / span) * (W - 44)).toFixed(1), Y = (v) => (130 - (v / 100) * 112).toFixed(1);
+    const line = H.map((h) => `${X(h[0])},${Y(h[1])}`).join(' '), last = H[H.length - 1];
+    const fmt = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
+    title = `${esc(x.name)} · ${G.aim}%`; sub = leftText(G.p.left);
+    body = `<svg class="glp-chart" width="100%" viewBox="0 0 ${W} 160" role="img" aria-label="${esc(Z(`Readiness ${G.ready}% now${G.fc != null ? `, heading for ${G.fc}% on test day` : ''}, goal ${G.aim}%`, `現在準備度 ${G.ready}%${G.fc != null ? `，考試當日預計 ${G.fc}%` : ''}，目標 ${G.aim}%`))}">
+      <g class="glp-ax"><text x="0" y="${+Y(100) + 4}">100%</text><text x="0" y="${+Y(50) + 4}">50%</text><text x="0" y="${+Y(0) + 4}">0%</text></g>
+      <line x1="34" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="#E3E7F1"></line><line x1="34" x2="${W}" y1="${Y(50)}" y2="${Y(50)}" stroke="#EEF1F6"></line>
+      <line x1="34" x2="${W}" y1="${Y(G.aim)}" y2="${Y(G.aim)}" stroke="#1B2559" stroke-width="1.5" stroke-dasharray="5 4"></line><text class="glp-goal" x="${W}" y="${+Y(G.aim) - 5}" text-anchor="end">${Z(`Goal ${G.aim}%`, `目標 ${G.aim}%`)}</text>
+      <line x1="${X(td)}" x2="${X(td)}" y1="${Y(100)}" y2="${Y(0)}" stroke="#F2661E" stroke-width="1.5"></line>
+      ${H.length > 1 ? `<polyline points="${line}" fill="none" stroke="#26357A" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></polyline>` : ''}
+      ${G.fc != null ? `<line x1="${X(last[0])}" y1="${Y(last[1])}" x2="${X(td)}" y2="${Y(G.fc)}" stroke="#26357A" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"></line><circle cx="${X(td)}" cy="${Y(G.fc)}" r="5" fill="#FFFFFF" stroke="#26357A" stroke-width="2.5"></circle>` : ''}
+      <circle cx="${X(last[0])}" cy="${Y(last[1])}" r="5" fill="#26357A"></circle>
+      <g class="glp-ax"><text x="34" y="150">${fmt(from)}</text><text x="${X(t0)}" y="150" text-anchor="middle">${Z('Today', '今日')} ${G.ready}%</text>${G.fc != null ? `<text x="${W}" y="158" text-anchor="end">${Z('Test day', '考試日')} ${G.fc}%</text>` : ''}</g></svg>
+      ${H.length < 3 ? `<p class="glp-note">${Z('The line fills in day by day as you practise.', '每天練習，線圖就會逐日畫出來。')}</p>` : ''}`;
+  } else if (G.kind === 'long') {
+    title = Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`); sub = Z(`Target: level ${G.target.toFixed(1)} out of 10`, `目標：程度 ${G.target.toFixed(1)}`); st = G.now >= G.target ? 'done' : G.st;
+    body = `<div class="gl-lvh"><span>${Z('Level now', '現在程度')}</span><b>${G.now.toFixed(1)}<small>/10</small></b></div>${goalLevelBar(G.now, G.start, G.target)}
+      ${G.line.filter((v) => v != null).length >= 2 ? `<div class="gl-sp"><div class="gl-sph"><span>${Z('Week by week', '每週變化')}</span></div>${goalSpark(G.line, G.target)}</div>` : `<p class="glp-note">${Z('A line of your level week by week appears after a couple of weeks.', '練習兩三星期後，會顯示每週程度的線圖。')}</p>`}
+      ${G.others.length ? `<div class="glp-oth"><b>${Z('Other subjects', '其他科目')}</b>${G.others.map((o) => `<div class="glp-o"><span data-raw>${esc(o.lab)}</span><i><em style="width:${o.now * 10}%"></em></i><b>${o.now.toFixed(1)}</b></div>`).join('')}</div>` : ''}`;
+  } else return '';
+  const F = fixedForGood(), tot = F.good + F.wait + F.open;
+  const fixed = tot ? `<div class="glp-fix"><div class="glp-fixh"><b>${Z('Mistakes fixed for good', '真正改正的錯題')}</b><strong>${F.good}</strong></div>
+    <div class="glp-fixb" aria-hidden="true"><i style="width:${(100 * F.good) / tot}%"></i><i class="w" style="width:${(100 * F.wait) / tot}%"></i></div>
+    <div class="glp-fixl"><span><i></i>${Z(`${F.good} right again days later`, `${F.good} 題幾天後再答對`)}</span><span><i class="w"></i>${Z(`${F.wait} fixed, checking again soon`, `${F.wait} 題已改正，稍後再測`)}</span><span>${Z(`${F.open} still to fix`, `${F.open} 題未改正`)}</span></div></div>` : '';
+  return `<section class="pv-sec glp"><div class="gl-card ${G.kind} ${st}"><div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b data-raw>${title}</b><span data-raw>${sub}</span></div><em class="gl-st ${st}">${ST[st]}</em></div>
+    ${body}${pts || ''}<button class="linkbtn gl-chg" id="glpChange">${Z('Change goal', '更改目標')}</button></div>${fixed}</section>`;
+}
 async function renderProgress() {
   // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
   // what should I work on, is it working, and am I putting in the effort. Every card has a number,
@@ -6292,6 +6334,7 @@ async function renderProgress() {
 
   // ---------- 1. Am I on track for my tests? ----------
   const tests = await schoolTestsHTML();
+  const goalP = await goalData(tests).catch(() => null), goalPHTML = goalP ? goalProgressHTML(goalP, goalP.kind === 'test' ? testPoints(goalP.p, goalP.chs, goalP.aim, goalP.fc, goalP.st) : '') : '';
   const fmtDay = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
   const chOf = (p) => (p.book && p.units && p.units.length ? MB.get(p.book.id).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : []);
   // Progress only reports: on track or not, ready now, where it's heading, the goal. Acting on it happens on Today.
@@ -6764,6 +6807,7 @@ async function renderProgress() {
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${PT('Weekly report', '每週報告')}</span>`, () => reportDialog(), 'pv-btn primary pv-topbtn')}${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5"/></svg><span>${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}</span>`, () => openParent(), 'pv-btn primary pv-topbtn')}</div></div>
+    ${goalPHTML}
     <section class="pv-sec pv-sumsec"><div class="pv-h"><h2 class="h-info">${PT('Your week at a glance', '本週一覽')}${ib('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'))}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}${how('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'), '')}</section>
     <div id="pv-s2">${sec2}</div><div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>
   </main>`;
