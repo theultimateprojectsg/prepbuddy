@@ -5502,7 +5502,7 @@ function testPoints(p, chs, aim, fc, st) {
   { const tw = E.filter((e) => e.t > now - 7 * DAY && e.k !== 'spaced'), lw = E.filter((e) => e.t <= now - 7 * DAY && e.t > now - 14 * DAY && e.k !== 'spaced');
     if (tw.length >= 5 && lw.length >= 5) { const a = acc(tw), b = acc(lw);
       pts.push(a - b >= 8 ? ['up', Z(`Improving: ${a}% right this week, up from ${b}% last week`, `進步中：本週答對 ${a}%，上週 ${b}%`)] : b - a >= 8 ? ['down', Z(`Dipped this week: ${a}% right, down from ${b}% last week`, `本週退步：答對 ${a}%，上週 ${b}%`)] : ['flat', Z(`Steady: about the same as last week (${a}% right)`, `穩定：與上週差不多（答對 ${a}%）`)]); }
-    else if (tw.length >= 5 && !lw.length) pts.push(['up', Z(`Started this week: ${acc(tw)}% right so far`, `本週開始：暫時答對 ${acc(tw)}%`)]); }
+    else if (tw.length >= 5 && !lw.length) pts.push(['flat', Z(`Started this week: ${acc(tw)}% right so far`, `本週開始：暫時答對 ${acc(tw)}%`)]); }
   // 3. habits and gaps, biggest first
   const gaps = [];
   const notStarted = chs.filter((c) => !c.pct);
@@ -5524,7 +5524,10 @@ function testPoints(p, chs, aim, fc, st) {
     else if (lv && lv.a < 60) gaps.push(['weak', [Z('Weaker at remembering facts', '記憶事實較弱'), Z('Weaker at understanding the ideas', '理解概念較弱'), Z('Weaker at using it in new questions', '應用題較弱'), Z('Weaker at “explain why” questions', '「解釋原因」題較弱')][lv.l - 1]]); }
   pts.push(...gaps);
   return list(pts);
-  function list(x) { return `<ul class="pv-pts">${x.slice(0, 3).map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join('')}</ul>`; }
+  function list(x) {
+    const li = (y) => y.map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join(''), more = x.slice(3);
+    return `<ul class="pv-pts">${li(x.slice(0, 3))}</ul>${more.length ? `<details class="pv-more"><summary><span class="sh">${Z(`See ${more.length} more`, `再看 ${more.length} 項`)}</span><span class="hd">${Z('Show less', '收起')}</span></summary><ul class="pv-pts">${li(more)}</ul></details>` : ''}`;
+  }
 }
 const SKILL_PLAIN = () => (LANG === 'zh' ? ['記憶事實', '理解', '應用', '深入思考'] : ['Remembering facts', 'Understanding', 'Using it', 'Thinking it through']);
 

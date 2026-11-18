@@ -3138,6 +3138,9 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .pv-pts li::before{content:"";position:absolute;left:2px;top:.55em;width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .pv-pts li.pace::before{background:#E07A2E}.pv-pts li.weak::before{background:#E05A43}.pv-pts li.good::before{background:#18966A}
 .pv-pts li.up::before{background:#18966A}.pv-pts li.down::before{background:#E05A43}.pv-pts li.flat::before{background:#8A93AD}
+.pv-more>summary{list-style:none;cursor:pointer;display:inline-block;margin-top:2px;font-size:13px;font-weight:700;color:var(--accent);padding:4px 0}
+.pv-more>summary::-webkit-details-marker{display:none}.pv-more .hd{display:none}.pv-more[open] .hd{display:inline}.pv-more[open] .sh{display:none}
+.pv-more[open]{display:flex;flex-direction:column-reverse;gap:6px}.pv-more[open]>summary{align-self:flex-start}
 </style>
 </head>
 <body>
