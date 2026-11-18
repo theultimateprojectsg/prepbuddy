@@ -3517,6 +3517,29 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .pi-subs em.good{background:#EAF7F1;color:#11774F}.pi-subs em.warn{background:#FFF1E6;color:#B4500F}.pi-subs em.bad{background:#FDECEC;color:#B42318}
 .pi-subs b{text-align:right}
 .pi-th{margin:16px 0 8px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pi-read{border:1px solid #DCE3F5;background:linear-gradient(180deg,#F6F8FF,#FFFFFF);border-radius:16px;padding:14px}
+.pi-rh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.pi-rh b{font-size:16px;color:var(--text)}
+.pi-read ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.pi-read li{display:flex;gap:10px;align-items:flex-start}
+.pi-ric{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-size:16px;background:#EEF1F6}
+.pi-read li.good .pi-ric{background:#EAF7F1}.pi-read li.warn .pi-ric{background:#FFF1E6}.pi-read li.act .pi-ric{background:#EEF1FB}
+.pi-read small{display:block;font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.pi-read li b{display:block;font-size:14.5px;line-height:1.4;color:var(--text);font-weight:600}
+.pi-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:760px){.pi-tiles{grid-template-columns:repeat(4,1fr)}}
+.pi-tile{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:14px;border:1px solid var(--line);background:#fff;min-width:0;min-height:92px}
+.pi-tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pi-tile.warn{background:#FFF8F1;border-color:#F7D9C0}.pi-tile.good{background:#F3FBF7;border-color:#CBEBDB}
+.pi-tile[aria-expanded="true"]{box-shadow:0 0 0 2px #26357A}
+.pi-tn{font-size:12.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px}
+.pi-new{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:#26357A;color:#fff;border-radius:99px;padding:1px 6px}
+.pi-tile b{font-size:15px;line-height:1.25;color:var(--text);display:flex;gap:6px;align-items:baseline}
+.pi-tile b i{flex:none;width:8px;height:8px;border-radius:50%;background:#9AA3B8;transform:translateY(-1px)}
+.pi-tile.warn b i{background:#F2661E}.pi-tile.good b i{background:#18966A}
+.pi-tile small{margin-top:auto;font-size:12px;color:var(--accent);font-weight:700}
+.pi-panel .pi-th{margin-top:4px}
+.pi-card.isnew{box-shadow:inset 3px 0 0 #26357A}
 </style>
 </head>
 <body>
