@@ -3293,7 +3293,6 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ag-card .cb-hb .linkbtn{border:0;background:none;font-size:14px;font-weight:700;padding:4px 6px;min-height:0}
 .ag-list{display:flex;flex-direction:column;gap:10px}
 .ag-sc{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-radius:14px;background:#F7F9FD;border:1px solid #E3E7F1}
-.ag-sc.t[open]{background:#FFFFFF}
 .ag-sc>summary{list-style:none;display:flex;flex-direction:column;gap:10px;cursor:pointer}.ag-sc>summary::-webkit-details-marker{display:none}
 .ag-h{display:flex;align-items:center;gap:10px}
 .ag-h .gl-ric{width:34px;height:34px}.ag-sc.l .gl-ric{background:#E8F7EF}
@@ -3323,7 +3322,6 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ag-sc.ok,.ag-sc.done{background:#F1FAF5;border-color:#C9EBD8}
 .ag-sc.close{background:#FFF8EC;border-color:#F3DDB0}
 .ag-sc.risk{background:#FEF3F1;border-color:#F4CFC8}
-.ag-sc.t[open]{background:#FFFFFF}
 .ag-sc.t.ok .gl-ric,.ag-sc.t.done .gl-ric{background:#E1F4EA}.ag-sc.t.close .gl-ric{background:#FCEBCB}.ag-sc.t.risk .gl-ric{background:#FBE1DC}
 .ag-sc .gl-ric{background:#FFFFFF}
 .ag-mt{padding:0!important}.ag-mt .pv-bar small{top:-17px;font-size:11px;font-weight:600}
@@ -3331,6 +3329,35 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ag-sc{padding:12px 14px}
 .ag-sc>summary{gap:14px}.ag-sc.l{gap:14px}
 .ag-lvb .gl-lv{flex-direction:column-reverse}.ag-lvb .gl-lvl{font-size:11px;font-weight:600;color:var(--text-2)}
+/* All goals v4 */
+
+.ag-ib{display:flex;gap:8px}
+.ag-icb{all:unset;box-sizing:border-box;width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:#EEF1FB;color:#26357A;cursor:pointer}
+.ag-icb:hover{background:#E1E6F7}.ag-icb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ag-sc>summary{gap:12px}.ag-sc.l{gap:12px}
+.ag-body{margin-top:10px}.ag-body .pv-coach{background:#FFFFFF}
+.ag-body .pv-track{padding-top:22px!important}
+/* My goals sheet */
+.mg{gap:16px}
+.mg-grp{display:flex;flex-direction:column;gap:2px}
+.mg-gh{display:flex;justify-content:space-between;align-items:center;padding-bottom:4px}.mg-gh small{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mg-add{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:#EEF1FB;color:#26357A;font-size:13px;font-weight:700}
+.mg-add.l{background:#E8F7EF;color:#1E7A46}.mg-add svg{width:15px;height:15px}
+.mg-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #EEF1F6}
+.mg-row .gl-ric{width:34px;height:34px}.mg-row .gl-ric.l{background:#E8F7EF}
+.mg-t{display:flex;flex-direction:column;gap:1px;min-width:0}.mg-t b{font-size:15px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mg-t small{font-size:12.5px;color:var(--text-2)}
+.mg-sel{display:flex;flex-direction:column;align-items:center;gap:1px}.mg-sel span{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.mg-sel select{font:inherit;font-size:14px;font-weight:700;color:#26357A;background:#FFFFFF;border:1px solid #CFD7F2;border-radius:10px;padding:5px 6px;min-height:34px}
+.mg-acts{display:flex;gap:4px}
+.mg-ic{all:unset;box-sizing:border-box;width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2);cursor:pointer}
+.mg-ic:hover{background:#F1F3F9}.mg-ic.pin.on{background:#26357A;color:#FFFFFF}.mg-ic:focus-visible{outline:2px solid var(--accent)}
+.mg-key{display:flex;flex-wrap:wrap;gap:4px 12px;margin:6px 0 0;font-size:12px;color:var(--muted)}.mg-key b{color:var(--text-2)}
+.mg-row{grid-template-columns:34px minmax(0,1fr) auto}
+.mg-t{gap:4px}.mg-t b{white-space:normal}
+.mg-m{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px}
+.mg-sel{flex-direction:row;align-items:center;gap:6px}.mg-sel span{font-size:11px}
+.mg-sel select{min-height:32px;padding:3px 6px;font-size:13.5px}
+.mg-key{display:block;line-height:1.5;font-size:12px!important;color:var(--muted)!important}
 </style>
 </head>
 <body>
