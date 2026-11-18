@@ -1,7 +1,7 @@
 // PrepBuddy's logo (the speech-bubble P) and Buddy, the character inside the app, as inline SVG.
 // Buddy has four faces: happy (right answer, the coach), listen, think, done (well done!).
 
-const P_PARTS = '<circle cx="53" cy="40" r="26" fill="#FFFFFF"/><path d="M27 40 H40 V73 L27 86 Z" fill="#FFFFFF"/><circle cx="53" cy="40" r="11" fill="#FFE066"/>';
+const P_PARTS = '<circle cx="53" cy="40" r="26" fill="#FFFFFF"/><path d="M27 40 H40 V73 L27 86 Z" fill="#FFFFFF"/><g transform="translate(53 40) scale(0.4118) translate(-50 -50)"><path d="M50 14 C50 9 52 6 57 5 C57 10 54 13 50 14 Z" fill="#18966A"/><path d="M50 13 V17" stroke="#18966A" stroke-width="2.5" stroke-linecap="round"/><circle cx="50" cy="50" r="34" fill="#FFE066"/><ellipse cx="29" cy="60" rx="5.5" ry="3.4" fill="#FF8F8F" opacity="0.65"/><ellipse cx="71" cy="60" rx="5.5" ry="3.4" fill="#FF8F8F" opacity="0.65"/><ellipse cx="38" cy="47" rx="6.5" ry="8" fill="#26357A"/><ellipse cx="62" cy="47" rx="6.5" ry="8" fill="#26357A"/><circle cx="40.5" cy="43.5" r="2.4" fill="#FFFFFF"/><circle cx="64.5" cy="43.5" r="2.4" fill="#FFFFFF"/><path d="M44 61 L49 66 L58 57" fill="none" stroke="#26357A" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></g>';
 // The logo on its navy tile; `bare` draws only the P, for navy backgrounds.
 export function logoSVG(size = 28, bare = false, label = '') {
   const a = label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"';
