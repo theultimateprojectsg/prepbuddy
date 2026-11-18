@@ -7809,7 +7809,7 @@ function mistakeCard(q, m) {
     : (Array.isArray(m.ans) ? m.ans.filter((a) => a && a.trim()).join('\n') : '') || 'No answer written';
   const right = choiceType(q) ? `${(q.options || [])['ABCD'.indexOf(q.correct_option)] || ''}`
     : q.type === 'essay' ? '' : q.parts.map((p) => `${p.label ? p.label + ' ' : ''}${p.mark_scheme.map((x) => '• ' + x).join('\n')}`).join('\n');
-  const missed = m.done ? '' : `<div class="mk-missed ${m.n > 1 ? 'often' : ''}"><b>${LANG === 'zh' ? (m.n > 1 ? `錯了 ${m.n} 次` : '錯了 1 次') : m.n > 1 ? `Missed ${m.n} times` : 'Missed once'}</b><span>${LANG === 'zh' ? '答對之前，Buddy 會不時再出這題。' : 'Buddy brings it back until you get it right.'}</span></div>`;
+  const missed = m.done ? '' : `<div class="mk-missed ${m.n > 1 ? 'often' : ''}"><b>${LANG === 'zh' ? (m.n > 1 ? `錯了 ${m.n} 次` : '錯了 1 次') : m.n > 1 ? `Missed ${m.n} times` : 'Missed once'}<em> · ${esc(agoText(m.t))}</em></b><span>${LANG === 'zh' ? '答對之前，Buddy 會不時再出這題。' : 'Buddy brings it back until you get it right.'}</span></div>`;
   return `<div class="mcard" data-raw>
     ${missed}${figHTML(q)}${renderStem(q.type === 'graph' || choiceType(q) ? q.stem : writtenStem(q), 'stem')}
     ${!choiceType(q) ? q.parts.map((p) => `<p class="mprompt">${esc(p.label)} ${esc(p.prompt)}</p>`).join('') : ''}
@@ -7817,7 +7817,7 @@ function mistakeCard(q, m) {
     ${right ? `<div class="mrow good"><span>${LANG === 'zh' ? '答案' : 'Answer'}</span><p>${esc(right)}</p></div>` : ''}
     <p class="expl">${esc(q.explanation || '')}</p>
     ${m.chat && m.chat.length ? `<details class="mchat"><summary>${LANG === 'zh' ? '你和 AI 導師的對話' : 'Your chat with the tutor'} (${m.chat.length})</summary>${m.chat.map((x) => x.role === 'user' ? `<div class="tmsg me nomath">${esc(x.text)}</div>` : `<div class="tmsg ai">${tutorMd(x.text)}</div>`).join('')}</details>` : ''}
-    ${m.done ? '' : `<div class="mfoot"><button class="btn-sm primary" data-redo1="${esc(q.id)}">${LANG === 'zh' ? '再試這一題' : 'Try it again'}</button><button class="mk-rm" data-dismiss="${esc(q.id)}">${LANG === 'zh' ? '我已明白，移除' : 'I get it now, remove'}</button></div>`}
+    ${m.done ? '' : `<div class="mfoot"><button class="btn-sm primary" data-redo1="${esc(q.id)}">${LANG === 'zh' ? '再試這一題' : 'Try it again'}</button></div><div class="mk-rbox"><button class="mk-rm" data-mkreport="${esc(q.id)}">${LANG === 'zh' ? '這題有問題？' : 'Something wrong with this question?'}</button></div>`}
   </div>`;
 }
 async function renderMistakes(tab, openBook) {
@@ -7843,7 +7843,7 @@ async function renderMistakes(tab, openBook) {
     return `<details class="mq ${m.n > 1 ? 'often' : ''}"><summary>
         <span class="mq-dot" aria-hidden="true"></span>
         <span class="mq-text" data-raw>${esc(String(ask || '').replace(/\s*\n+\s*/g, ' '))}</span>
-        <span class="mq-meta">${m.n > 1 ? `<b>${zh ? `錯了 ${m.n} 次` : `Missed ${m.n}×`}</b>` : ''}<span>${esc(agoText(m.done ? m.doneAt || m.t : m.t))}</span></span>
+        ${m.done ? `<span class="mq-meta"><span>${esc(agoText(m.doneAt || m.t))}</span></span>` : m.n > 1 ? `<span class="mq-pill">${zh ? `錯 ${m.n} 次` : `${m.n}×`}</span>` : ''}
         <span class="mq-chev" aria-hidden="true">›</span></summary>
       <div class="mq-body">${mistakeCard(q, m)}</div></details>`;
   };
@@ -7900,7 +7900,25 @@ async function renderMistakes(tab, openBook) {
   $app.querySelectorAll('[data-redobook]').forEach((b) => (b.onclick = () => { const x = subjects.find((y) => y.book.id === b.dataset.redobook); start(x.chs.flatMap((c) => c.g.items.map((i) => i.q)), (zh ? '錯題簿 · ' : 'Mistake book · ') + sname(x.book)); }));
   $app.querySelectorAll('[data-more]').forEach((b) => (b.onclick = () => { const box = b.previousElementSibling; box.hidden = false; b.remove(); }));
   $app.querySelectorAll('[data-redo1]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const q = all.find((x) => x.id === b.dataset.redo1); if (q) start([q], zh ? '錯題簿' : 'Mistake book'); }));
-  $app.querySelectorAll('[data-dismiss]').forEach((b) => (b.onclick = () => { if (!b.dataset.sure) { b.dataset.sure = '1'; b.classList.add('sure'); b.textContent = zh ? '再按一次移除（不算改正）' : 'Tap again to remove (won’t count as fixed)'; return; } const m = local.mistakes[b.dataset.dismiss]; if (m) { m.done = true; m.doneAt = Date.now(); m.manual = true; saveLocal(); } const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }));
+  $app.querySelectorAll('[data-mkreport]').forEach((b) => (b.onclick = () => {
+    const id = b.dataset.mkreport, box = b.parentElement, g = groups.find((x) => x.items.some((y) => y.q.id === id)); if (!g) return;
+    const q = g.items.find((y) => y.q.id === id).q, m = local.mistakes[id] || {}; let reason = '';
+    box.innerHTML = `<div class="rform"><b>${zh ? '這題有甚麼問題？' : 'What’s wrong with this question?'}</b>
+      <div class="rreasons" role="radiogroup">${REPORT_REASONS.map(([k, t]) => `<button type="button" role="radio" aria-checked="false" data-reason="${k}">${t}</button>`).join('')}</div>
+      <textarea class="input mk-rnote" rows="2" maxlength="1000" placeholder="${zh ? '補充（可選）' : 'Tell us more (optional)'}"></textarea>
+      <p class="muted" style="font-size:13px;margin:0">${zh ? '送出後，這題會從錯題簿移除，你不會再見到它。' : 'Once sent, it comes off your Mistake book and you won’t see it again.'}</p>
+      <div class="rbtns"><button class="btn ghost" data-rc>${zh ? '取消' : 'Cancel'}</button><button class="btn" data-rs disabled>${zh ? '送出' : 'Send report'}</button></div></div>`;
+    box.querySelectorAll('[data-reason]').forEach((r) => (r.onclick = () => { reason = r.dataset.reason; box.querySelectorAll('[data-reason]').forEach((x) => x.setAttribute('aria-checked', String(x === r))); box.querySelector('[data-rs]').disabled = false; }));
+    box.querySelector('[data-rc]').onclick = () => { const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); };
+    box.querySelector('[data-rs]').onclick = async () => {
+      const s2 = box.querySelector('[data-rs]'); s2.disabled = true; s2.textContent = zh ? '送出中…' : 'Sending…';
+      await sendReport({ reason, note: box.querySelector('.mk-rnote').value.trim(), lang: LANG, from: 'mistakes', book: { id: g.book.id, title: g.book.title, library: g.book.library, code: g.book.code }, unit: { id: g.unit && g.unit.id, title: g.unit && g.unit.title }, q, answer: m.ansText || (Array.isArray(m.ans) ? m.ans.join('\n') : String(m.ans || '')) });
+      local.reports = local.reports || []; if (!local.reports.includes(id)) local.reports.push(id);
+      delete local.mistakes[id]; saveLocal();
+      box.innerHTML = `<p class="rdone">${ICON.check} ${zh ? '謝謝，已交給 PrepBuddy 團隊檢查。' : 'Thanks. The PrepBuddy team will check it.'}</p>`;
+      setTimeout(() => { const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }, 1600);
+    };
+  }));
 }
 function agoText(t) {
   const d = Math.floor((Date.now() - (t || 0)) / 864e5), zh = LANG === 'zh';
