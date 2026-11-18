@@ -2900,15 +2900,21 @@ async function renderHome() {
       const rank = { risk: 0, close: 1, ok: 2, done: 3 };
       const all = GD.list.filter((g) => ['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab))
         .sort((a, b) => (b.kind === 'test') - (a.kind === 'test') || (b.score || 0) - (a.score || 0) || (a.kind === 'test' && b.kind === 'test' ? a.p.left - b.p.left : rank[a.st] - rank[b.st]));
-      const longCard = (G) => G.kind === 'longnew' ? `<div class="ag-long"><div class="gl-h"><div class="gl-ht"><b data-raw>${Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`)}</b><span>${Z('Practise a little and the level shows here', '練習一下，程度就會顯示在這裏')}</span></div></div></div>`
-        : `<div class="ag-long"><div class="gl-h"><div class="gl-ht"><b data-raw>${Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`)}</b><span>${Z(`Target: level ${G.target.toFixed(1)} out of 10`, `目標：程度 ${G.target.toFixed(1)}`)}</span></div><em class="gl-st ${G.st}">${GOAL_ST()[G.st]}</em></div>
-          <div class="gl-lvh"><span>${Z('Level now', '現在程度')}</span><b>${G.now.toFixed(1)}<small>/10</small></b></div>${goalLevelBar(G.now, G.start, G.target)}
-          ${G.change != null && Math.abs(G.change) >= 0.1 ? `<span class="gl-wk ${G.change > 0 ? 'up' : 'down'}">${G.change > 0 ? '▲' : '▼'} ${Math.abs(G.change).toFixed(1)} ${Z('since you started', '自開始以來')}</span>` : ''}</div>`;
-      comboHTML = `${devBar('all')}<section class="ag" aria-label="${Z('My goals', '我的目標')}"><div class="gl-oh"><h2>${Z('My goals', '我的目標')}</h2><span class="cb-hb"><button class="linkbtn" id="addTest3">+ ${SCH('Add a test', '加入測驗')}</button><button class="linkbtn" data-mygoals>${Z('Edit', '修改')} ›</button></span></div>
-        ${all.map((g, i) => { const mis = inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
-          // tests fold to one row (name, status, bar); tap to open the full card. The one needing the most work starts open.
-          return g.kind === 'test' ? `<details class="ag-item ag-t" ${i === 0 ? 'open' : ''}>${goalRowHTML(g, '', false, 'summary').replace('<span class="gl-rh">', `${mis}<span class="gl-rh">`)}<div class="ag-body">${cardOf(g)}</div></details>`
-            : `<div class="ag-item">${mis}${longCard(g)}</div>`; }).join('')}</section>`;
+      // one goal = one sub-card, all the same shape: icon, name, when or target, status; then its measure
+      const ST = GOAL_ST();
+      const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}${chev ? '<i class="ag-chev" aria-hidden="true">›</i>' : ''}</span>`;
+      const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<s style="left:${g.aim}%"></s><small style="left:${g.aim}%">${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</small></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>`;
+      const sub = (g, i) => {
+        const mis = inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
+        if (g.kind === 'test') return `<details class="ag-sc t" ${i === 0 ? 'open' : ''}><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`, true)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
+        const name = Z(`Stronger in ${esc(g.lab)}`, `${esc(g.lab)}更進一步`);
+        if (g.kind === 'longnew') return `<div class="ag-sc l">${subHead(g, GIC.long, name, Z('Practise a little and the level shows here', '練習一下，程度就會顯示在這裏'))}</div>`;
+        return `<div class="ag-sc l">${mis}${subHead(g, GIC.long, name, Z(`Target: level ${g.target.toFixed(1)} out of 10`, `目標：程度 ${g.target.toFixed(1)}（滿分 10）`))}
+          <div class="ag-lv"><div class="pv-num"><b>${g.now.toFixed(1)}</b><span>${Z('level now', '現在程度')}</span></div><div class="ag-lvb">${goalLevelBar(g.now, g.start, g.target)}</div>${g.change != null && Math.abs(g.change) >= 0.1 ? `<span class="gl-wk ${g.change > 0 ? 'up' : 'down'}">${g.change > 0 ? '▲' : '▼'} ${Math.abs(g.change).toFixed(1)}</span>` : ''}</div></div>`;
+      };
+      const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
+      comboHTML = `${devBar('all')}<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2>${who}</h2><span class="cb-hb"><button class="linkbtn" id="addTest3">+ ${SCH('Add a test', '加入測驗')}</button><button class="linkbtn" data-mygoals>${Z('Edit', '修改')}</button></span></div>
+        <div class="ag-list">${all.map(sub).join('')}</div></section>`;
     }
     if (DEV && goalG && DMODE === '1') {
       const cardOf = (G) => { const k = tests.steps.indexOf(G.p); return k >= 0 ? cards[k] : ''; };

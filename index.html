@@ -3288,6 +3288,27 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ag-t[open]>summary .gl-rb{display:none}.ag-t[open] .ag-body .pv-test-h{display:none}.ag-t[open]>summary{padding-bottom:4px!important}
 .ag-body{padding:0}.ag-body .pv-test{border:0!important;border-radius:0!important;margin:0}
 .ag-t[open] .ag-body{position:relative}
+/* All goals v2: one card like Today's mission, a sub-card per goal, all the same shape */
+.ag-card .ms-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.ag-card .cb-hb .linkbtn{border:0;background:none;font-size:14px;font-weight:700;padding:4px 6px;min-height:0}
+.ag-list{display:flex;flex-direction:column;gap:10px}
+.ag-sc{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-radius:14px;background:#F7F9FD;border:1px solid #E3E7F1}
+.ag-sc.t[open]{background:#FFFFFF}
+.ag-sc>summary{list-style:none;display:flex;flex-direction:column;gap:10px;cursor:pointer}.ag-sc>summary::-webkit-details-marker{display:none}
+.ag-h{display:flex;align-items:center;gap:10px}
+.ag-h .gl-ric{width:34px;height:34px}.ag-sc.l .gl-ric{background:#E8F7EF}
+.ag-ht{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.ag-ht b{font-size:15px;line-height:1.3;color:var(--ink)}.ag-ht small{font-size:12.5px;color:var(--text-2)}
+.ag-h .gl-st{font-size:12px;padding:3px 10px}
+.ag-chev{font-style:normal;font-size:22px;color:var(--muted);transition:transform .15s;flex:none;width:14px;text-align:center}
+.ag-sc[open] .ag-chev{transform:rotate(90deg)}
+.ag-mt{padding:0 0 16px!important;gap:10px!important}.ag-mt .pv-num b{font-size:18px!important}.ag-mt .pv-num span{font-size:11px}
+.ag-mt .pv-bar{height:10px}
+.ag-sc[open] .ag-mt{display:none}
+.ag-body .pv-test{border:0!important;border-radius:0!important;margin:0;padding:0!important;background:none!important;box-shadow:none!important}.ag-body .pv-test-h{display:none}
+.ag-body .pv-coach ol li:nth-child(n+3){display:none}
+.ag-lv{display:flex;align-items:center;gap:12px}.ag-lv .pv-num b{font-size:18px}.ag-lv .pv-num span{font-size:11px}
+.ag-lvb{flex:1;min-width:0}.ag-lvb .gl-lvl{font-size:11px}
+.ag-sc .ag-mis{align-self:flex-start}
 </style>
 </head>
 <body>
