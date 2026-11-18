@@ -3034,6 +3034,14 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .rw-demo span{font-size:12px;color:var(--muted);margin-right:4px}
 .rw-demo button{font:inherit;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:#FFFFFF;color:var(--ink);cursor:pointer;min-height:32px}
 .rw-demo button.on{background:var(--accent);border-color:var(--accent);color:#FFFFFF}
+/* Buddy's line as two short points when there's a test coming */
+.gr-sub:has(.gr-pts){display:block}
+.gr-pts{margin:2px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}
+.gr-pts li{position:relative;padding-left:16px}
+.gr-pts li::before{content:"";position:absolute;left:2px;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+/* streak days: a soft peach circle so the orange flame stands out */
+.gr-week i.on{background:#FFEBD2!important;border:1.5px solid #FFB869!important}
+.gr-week i.on svg{width:68%!important;height:68%!important}
 </style>
 </head>
 <body>
