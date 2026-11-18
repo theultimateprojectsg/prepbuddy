@@ -2891,7 +2891,23 @@ async function renderHome() {
     const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Slide Buddy to a lower goal on a test card to lighten it.', '時間較多，可在測驗卡上把 Buddy 拖到較低的目標。') : ''}</span></p>` : '';
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>`;
     // DEV only: preview of the combined design (the focus test as its full test card; other tests as rows that open their card)
-    if (DEV && goalG && localStorage.getItem('pb.combo') !== '0') {
+    const DMODE = DEV ? (localStorage.getItem('pb.combo') || 'all') : '';
+    const devBar = (cur) => `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes" role="group" aria-label="Design">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${cur === k ? 'primary' : ''}" data-cbmode="${k}" aria-pressed="${cur === k}">${t}</button>`).join('')}</div></div>`;
+    // DEV only: every goal shown the same way, most work needed first; no focus, no picking. Today's mission says what to do.
+    if (DEV && GD && DMODE === 'all') {
+      const cardOf = (G) => { const k = tests.steps.indexOf(G.p); return k >= 0 ? cards[k] : ''; };
+      const inMission = (G) => G.kind === 'test' && steps.some((x) => !x.done && x.now && String(x.key).startsWith(`c:${G.p.x.id}:`));
+      const rank = { risk: 0, close: 1, ok: 2, done: 3 };
+      const all = GD.list.filter((g) => ['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab))
+        .sort((a, b) => (b.kind === 'test') - (a.kind === 'test') || (b.score || 0) - (a.score || 0) || (a.kind === 'test' && b.kind === 'test' ? a.p.left - b.p.left : rank[a.st] - rank[b.st]));
+      const longCard = (G) => G.kind === 'longnew' ? `<div class="ag-long"><div class="gl-h"><div class="gl-ht"><b data-raw>${Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`)}</b><span>${Z('Practise a little and the level shows here', '練習一下，程度就會顯示在這裏')}</span></div></div></div>`
+        : `<div class="ag-long"><div class="gl-h"><div class="gl-ht"><b data-raw>${Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`)}</b><span>${Z(`Target: level ${G.target.toFixed(1)} out of 10`, `目標：程度 ${G.target.toFixed(1)}`)}</span></div><em class="gl-st ${G.st}">${GOAL_ST()[G.st]}</em></div>
+          <div class="gl-lvh"><span>${Z('Level now', '現在程度')}</span><b>${G.now.toFixed(1)}<small>/10</small></b></div>${goalLevelBar(G.now, G.start, G.target)}
+          ${G.change != null && Math.abs(G.change) >= 0.1 ? `<span class="gl-wk ${G.change > 0 ? 'up' : 'down'}">${G.change > 0 ? '▲' : '▼'} ${Math.abs(G.change).toFixed(1)} ${Z('since you started', '自開始以來')}</span>` : ''}</div>`;
+      comboHTML = `${devBar('all')}<section class="ag" aria-label="${Z('My goals', '我的目標')}"><div class="gl-oh"><h2>${Z('My goals', '我的目標')}</h2><span class="cb-hb"><button class="linkbtn" id="addTest3">+ ${SCH('Add a test', '加入測驗')}</button><button class="linkbtn" data-mygoals>${Z('Edit', '修改')} ›</button></span></div>
+        ${all.map((g) => `<div class="ag-item">${inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : ''}${g.kind === 'test' ? cardOf(g) : longCard(g)}</div>`).join('')}</section>`;
+    }
+    if (DEV && goalG && DMODE === '1') {
       const cardOf = (G) => { const k = tests.steps.indexOf(G.p); return k >= 0 ? cards[k] : ''; };
       const nOpen = firstOpen >= 0 ? steps[firstOpen] : null;
       const nextB = nOpen ? `<button class="gl-next" id="glNext"><span><small>${Z('Next step', '下一步')} · ${Z(`${jobMin(nOpen)} min`, `${jobMin(nOpen)} 分鐘`)}</small><b data-raw>${esc(nOpen.now.t)}</b></span><i aria-hidden="true">›</i></button>` : '';
@@ -2900,7 +2916,7 @@ async function renderHome() {
         ? `<section class="cb-focus"><div class="cb-tag">${n > 1 ? Z(`Focus today · 1 of ${n} goals`, `今日重點 · ${n} 個目標之一`) : Z('Your goal', '你的目標')}${n > 1 && goalG.why ? `<i class="gl-why">${esc(goalG.why)}</i>` : ''}</div>${cardOf(goalG)}${nextB}</section>`
         : goalTopHTML(goalG, nOpen ? { t: nOpen.now.t, min: jobMin(nOpen) } : null, n);
       const rows = all.filter((g) => g !== goalG).map((g) => g.kind === 'test' ? `<details class="cb-row">${goalRowHTML(g, '', false, 'summary')}<div class="cb-open">${cardOf(g)}<button class="linkbtn cb-mk" data-gfocus="${esc(g.id)}">${Z('Make this today’s focus', '設為今日重點')}</button></div></details>` : goalRowHTML(g, 'data-gfocus')).join('');
-      comboHTML = `<div class="cb-dev"><b>DEV preview: combined design</b><span>Same data as now. Only you see this.</span><button class="btn-sm" id="cbOff">Show the current design</button></div>${focusHTML}
+      comboHTML = `${devBar('1')}${focusHTML}
         <section class="gl-others"><div class="gl-oh"><b>${Z('Other goals', '其他目標')}</b><span class="cb-hb"><button class="linkbtn" id="addTest3">+ ${SCH('Add a test', '加入測驗')}</button><button class="linkbtn" data-mygoals>${Z('My goals', '我的目標')} ›</button></span></div>${rows || `<p class="gl-none" style="padding:0 14px 12px">${Z('No other goals.', '沒有其他目標。')}</p>`}</section>`;
     }
   }
@@ -2909,7 +2925,7 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${comboHTML || goalHTML}${DEV && !comboHTML && localStorage.getItem('pb.combo') === '0' ? '<div class="cb-dev"><b>DEV: current design</b><button class="btn-sm" id="cbOn">Show the combined preview</button></div>' : ''}
+    ${DEV && !comboHTML ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
     ${installTip()}
     ${winHTML}
     ${lessonHTML}
@@ -2925,8 +2941,7 @@ async function renderHome() {
   { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-row') || $app.querySelector('.ms-item .ms-row'); if (r) r.click(); }; }
   { const a = document.getElementById('glAddTest'); if (a) a.onclick = () => testDialog(); }
   { const a = document.getElementById('addTest3'); if (a) a.onclick = () => testDialog(); }
-  { const o = document.getElementById('cbOff'); if (o) o.onclick = () => { localStorage.setItem('pb.combo', '0'); renderHome(); }; }
-  { const o = document.getElementById('cbOn'); if (o) o.onclick = () => { localStorage.removeItem('pb.combo'); renderHome(); }; }
+  $app.querySelectorAll('[data-cbmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.combo', b.dataset.cbmode); renderHome(); }));
   bindCoach();
   { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
   { const pl = document.getElementById('profLater'); if (pl) pl.onclick = () => { local.profSkip = Date.now(); saveLocal(); go({ name: 'home' }); }; }
