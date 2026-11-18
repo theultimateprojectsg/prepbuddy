@@ -2601,8 +2601,10 @@ async function renderHome() {
     return 10; };
   const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
   // the goal card on top: the goal, how far along, and today's next mission step as the one next step
-  const goalG = await goalData(tests).catch((e) => { console.warn(e); return null; });
-  const goalHTML = goalG ? goalTopHTML(goalG, firstOpen >= 0 ? { t: steps[firstOpen].now.t, min: jobMin(steps[firstOpen]) } : null) : '';
+  const GD = await goalsData(tests).catch((e) => { console.warn(e); return null; });
+  const goalG = GD && GD.focus, gOthers = GD ? GD.list.filter((g) => g !== goalG && (['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab))) : [];
+  const goalHTML = goalG ? goalTopHTML(goalG, firstOpen >= 0 ? { t: steps[firstOpen].now.t, min: jobMin(steps[firstOpen]) } : null, gOthers.length + 1)
+    + (gOthers.length ? `<section class="gl-others" aria-label="${Z('Other goals', '其他目標')}"><div class="gl-oh"><b>${Z('Other goals', '其他目標')}</b><button class="linkbtn" data-mygoals>${Z('My goals', '我的目標')} ›</button></div>${gOthers.map((g) => goalRowHTML(g, 'data-gfocus')).join('')}</section>` : '') : '';
   // A done step opens to show what was done today, with a way to go back to it.
   const doneInfo = (x) => {
     const c = x.chk || {}, today = local.log.filter((e) => e.t >= M.at);
@@ -2874,7 +2876,8 @@ async function renderHome() {
     };
     for (const p of tests.steps) await card(p); // works out today's job and minutes for each test
     // the full test card; today's job for it is already in Buddy's plan box and in Today's mission, so no extra Start row
-    const cards = (await fullTestCards(tests, tdBtn)).filter((_, k) => !(goalG && goalG.kind === 'test' && tests.steps[k] === goalG.p));
+    // every test with a textbook is a goal (the focus card, or a row under Other goals): only the others get a full card here
+    const cards = (await fullTestCards(tests, tdBtn)).filter((_, k) => !(GD && GD.list.some((g) => g.kind === 'test' && g.p === tests.steps[k])));
     const tot = tdMins.reduce((a, b) => a + b, 0);
     const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Slide Buddy to a lower goal on a test card to lighten it.', '時間較多，可在測驗卡上把 Buddy 拖到較低的目標。') : ''}</span></p>` : '';
     testHTML = cards.length ? `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>` : '';
@@ -2898,7 +2901,6 @@ async function renderHome() {
   { const co = document.getElementById('coachOpen'); if (co) co.onclick = () => { document.getElementById('coach').classList.remove('folded'); const q = document.getElementById('coachQ'); if (q) q.focus({ preventScroll: true }); document.getElementById('coach').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
   bindHomeCommon();
   { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-row') || $app.querySelector('.ms-item .ms-row'); if (r) r.click(); }; }
-  { const c = document.getElementById('glChange'); if (c) c.onclick = () => goalSheet(() => renderHome()); }
   { const a = document.getElementById('glAddTest'); if (a) a.onclick = () => testDialog(); }
   bindCoach();
   { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
@@ -3324,7 +3326,7 @@ function renderSettings(sec) {
       <span class="muted" style="font-size:14px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">${PLT('Goal', '目標')}</b><button class="btn-sm quiet" id="sgoal">${PLT('Change', '更改')}</button></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">${PLT('My goals', '我的目標')}</b><button class="btn-sm quiet" id="sgoal">${PLT('Edit', '修改')}</button></div>
       <span class="muted" style="font-size:14px;line-height:1.5" id="sgoalTxt" data-raw>${esc(goalText())}</span>
     </section>
     <section class="card stack g10" style="padding:16px">
@@ -3715,7 +3717,7 @@ const gradeName = (g, c) => COUNTRIES[c || country()].name(g);
 function profileScreen({ first } = {}) {
   return new Promise((resolve) => {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
-    const L = { grade: gradeNow(), pace: '', medium: '', goals: [], likes: '', vrate: '', ...(local.learner || {}) }; L.grade = gradeNow() || ''; L.mainGoal = (local.goal && local.goal.kind) || '';
+    const L = { grade: gradeNow(), pace: '', medium: '', goals: [], likes: '', vrate: '', ...(local.learner || {}) }; L.grade = gradeNow() || ''; L.mainGoal = myGoals().main || '';
     // First run sets everything up front: the child's name, the details below, and stars on or off.
     // First run: four short pages (basics, school, reading aloud, goals) instead of one long one.
     let step = 1; const STEPS = 4;
@@ -3811,7 +3813,7 @@ function profileScreen({ first } = {}) {
         if (first && step < STEPS) { keep(); step++; draw(); window.scrollTo(0, 0); return; }
         if (first) { keep(); local.name = nameV.replace(/[<>]/g, '').trim().slice(0, 30); if (cap('stars')) local.starsOn = starsV; }
         { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.replace(/[<>]/g, '').trim().slice(0, 12); }
-        if (L.mainGoal && (!local.goal || local.goal.kind !== L.mainGoal)) local.goal = { kind: L.mainGoal };
+        if (L.mainGoal) { const MG = myGoals(); MG.main = L.mainGoal; if (L.mainGoal === 'long' && !(MG.longs || []).length) MG.longs = [{ subj: null, target: 6.7 }]; local.mygoals = MG; }
         local.learner = { grade: L.grade, country: countryOf(L), at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', voices: L.voices || {}, vrate: L.vrate || '', autoread: L.autoread || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
         delete local.needProfile; saveLocal(); track('profile'); kidMeta();
         if (first && nav) nav.style.display = '';
@@ -6050,32 +6052,51 @@ function masteredSheet(subs, done, all) {
 // The full school-test card (goal slider with Buddy, test-day forecast, Buddy's plan, chapter rows, My plan, edit).
 // It lives on Today, where the child acts on it; Progress shows a simpler on-track summary.
 let tcFcLine = null;
-/* ---------- the goal: what the family is working towards ----------
-   local.goal = { kind: 'test' | 'long', testId?, subj?, target? }. A test goal follows one school test (the
-   nearest by default) against the target score set for it; a long-term goal follows one subject's level out of 10
-   against a target level. With no goal set yet: the nearest test if there is one, else the long-term goal. */
+/* ---------- goals: what the family is working towards ----------
+   Every upcoming school test (with its textbook) is a goal, against the target score set for it. Long-term goals
+   are subjects to get stronger in, against a target level out of 10: local.mygoals = { main, longs: [{ subj, target }] }.
+   (local.goal is the separate weekly practice goal.) Each day one goal is the focus: one the child tapped today,
+   else a test in the next 2 weeks that's behind (nearest first), else the nearest such test, else the long-term goal
+   furthest from its target, else the nearest later test. */
 const GOAL_ST = () => ({ done: PT('Goal reached', '已達目標'), ok: PT('On track', '進度理想'), close: PT('A little behind', '稍為落後'), risk: PT('Behind', '落後') });
 const lv10 = (v) => Math.max(0, Math.min(10, Math.round(((v - 1) / 3) * 100) / 10));
-async function goalData(tests) {
-  const g = local.goal || {};
-  const pool = tests.steps.filter((p) => p.book && p.ready != null && (p.x.kind || 'test') !== 'dict');
-  const tp = pool.find((p) => p.x.id === g.testId) || pool[0] || null;
-  const kind = g.kind || (tp ? 'test' : 'long');
-  if (kind === 'test') {
-    if (!tp) return { kind: 'needtest' };
-    const chs = (await bookMastery(tp.book)).chapters.filter((c) => tp.units.some((u) => u.id === c.unit.id));
-    const fc = locked('forecast') ? null : planForecast(tp.ready, chs, tp.left), aim = tp.x.aim || 80;
-    // a daily record of this test's readiness: the chart on Progress and "this week" come from it
-    local.thist = local.thist || {}; const t0 = dayStart(); const h = (local.thist[tp.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, tp.ready]); local.thist[tp.x.id] = h.slice(-90); saveLocal();
+function myGoals() {
+  // an earlier version kept this in local.goal; move it out of the weekly goal's way
+  if (local.goal && local.goal.kind) { const g = local.goal; local.mygoals = { main: g.kind, longs: g.kind === 'long' ? [{ subj: g.subj || null, target: g.target || 6.7 }] : [] }; local.goal = null; saveLocal(); }
+  return local.mygoals || (local.mygoals = { main: '', longs: [] });
+}
+async function goalsData(tests) {
+  const MG = myGoals(), t0 = dayStart(), out = [];
+  for (const p of tests.steps.filter((q) => q.book && q.ready != null && (q.x.kind || 'test') !== 'dict')) {
+    const chs = (await bookMastery(p.book)).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id));
+    const fc = locked('forecast') ? null : planForecast(p.ready, chs, p.left), aim = p.x.aim || 80;
+    // a daily record of each test's readiness: the chart on Progress and "this week" come from it
+    local.thist = local.thist || {}; const h = (local.thist[p.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, p.ready]); local.thist[p.x.id] = h.slice(-90);
     const old = h.filter((x) => x[0] <= t0 - 5 * DAY).sort((a, b) => Math.abs(a[0] - (t0 - 7 * DAY)) - Math.abs(b[0] - (t0 - 7 * DAY)))[0];
-    return { kind: 'test', p: tp, ready: tp.ready, fc, aim, st: aimTone(fc ?? tp.ready, aim), wk: old ? tp.ready - old[1] : null, hist: h, chs };
+    out.push({ kind: 'test', id: 't:' + p.x.id, p, ready: p.ready, fc, aim, st: aimTone(fc ?? p.ready, aim), wk: old ? p.ready - old[1] : null, hist: h, chs });
   }
+  saveLocal();
+  let longs = MG.longs || [];
   const GS = await gsData().catch(() => null), S = GS ? GS.s.filter((x) => x[1] != null) : [];
-  if (!S.length) return { kind: 'longnew' };
-  const x = S.find((y) => y[0] === g.subj) || S.slice().sort((a, b) => (b[8] || 0) - (a[8] || 0))[0];
-  const now = lv10(x[1]), target = g.target || 6.7;
-  return { kind: 'long', lab: x[0], now, target, start: x[3] != null ? lv10(x[1] - x[3]) : null, change: x[3] != null ? Math.round((x[3] / 3) * 100) / 10 : null,
-    st: now >= target || x[2] === 'rising' ? 'ok' : x[2] === 'dipping' ? 'risk' : 'close', line: (x[5] || []).map(lv10), others: S.filter((y) => y !== x).slice(0, 3).map((y) => ({ lab: y[0], now: lv10(y[1]) })) };
+  if (!longs.length && !out.length && MG.main !== 'test') longs = [{ subj: null, target: 6.7 }]; // nothing chosen and no tests: get stronger in the main subject
+  const used = new Set();
+  for (const lg of longs) {
+    const x = S.find((y) => y[0] === lg.subj) || (!lg.subj ? S.filter((y) => !used.has(y[0])).sort((a, b) => (b[8] || 0) - (a[8] || 0))[0] : null);
+    if (x && used.has(x[0])) continue; // the same subject twice: once is enough
+    if (!x) { out.push({ kind: 'longnew', id: 'l:' + (lg.subj || ''), lab: lg.subj, target: lg.target || 6.7 }); continue; }
+    used.add(x[0]);
+    const now = lv10(x[1]), target = lg.target || 6.7;
+    out.push({ kind: 'long', id: 'l:' + (lg.subj || ''), lab: x[0], now, target, start: x[3] != null ? lv10(x[1] - x[3]) : null, change: x[3] != null ? Math.round((x[3] / 3) * 100) / 10 : null,
+      st: now >= target ? 'done' : x[2] === 'rising' ? 'ok' : x[2] === 'dipping' ? 'risk' : 'close', line: (x[5] || []).map(lv10), others: S.filter((y) => y !== x).slice(0, 3).map((y) => ({ lab: y[0], now: lv10(y[1]) })) });
+  }
+  if (!out.length) out.push({ kind: MG.main === 'test' ? 'needtest' : 'longnew', id: 'none' });
+  // the focus for today
+  const F = local.goalFocus && local.goalFocus.d === t0 && out.find((g) => g.id === local.goalFocus.id);
+  const rank = { risk: 0, close: 1, ok: 2, done: 3 };
+  const soon = out.filter((g) => g.kind === 'test' && g.p.left <= 14);
+  const focus = F || soon.filter((g) => g.st !== 'ok').sort((a, b) => a.p.left - b.p.left)[0] || soon.sort((a, b) => a.p.left - b.p.left)[0]
+    || out.filter((g) => g.kind === 'long').sort((a, b) => rank[a.st] - rank[b.st] || (a.now - a.target) - (b.now - b.target))[0] || out[0];
+  return { list: out, focus };
 }
 function goalRingSVG(now, fc, aim) {
   const r = 52, c = 2 * Math.PI * r, at = (p, rr) => [75 + rr * Math.sin((2 * Math.PI * p) / 100), 75 - rr * Math.cos((2 * Math.PI * p) / 100)];
@@ -6097,16 +6118,18 @@ function goalSpark(vals, target) {
   const pts = v.map((x, i) => `${((i * 300) / (v.length - 1)).toFixed(1)},${y(x)}`).join(' ');
   return `<svg class="gl-spark" width="100%" height="58" viewBox="0 0 300 58" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="300" y1="${y(target)}" y2="${y(target)}" stroke="#1B2559" stroke-width="1.5" stroke-dasharray="4 4"></line><polyline points="${pts}" fill="none" stroke="#18966A" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline></svg>`;
 }
-// The goal card at the top of Today: the goal, how far along, and one next step (today's next mission step).
-function goalTopHTML(G, next) {
+
+// The focus goal card at the top of Today: the goal, how far along, and one next step (today's next mission step).
+function goalTopHTML(G, next, n = 1) {
   const Z = PT, ST = GOAL_ST();
-  const head = (title, sub, st) => `<div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b data-raw>${title}</b><span data-raw>${sub}</span></div>${st ? `<em class="gl-st ${st}">${ST[st]}</em>` : ''}</div>`;
+  const tag = n > 1 ? Z(`Focus today · 1 of ${n} goals`, `今日重點 · ${n} 個目標之一`) : Z('Your goal', '你的目標');
+  const head = (title, sub, st) => `<div class="gl-h"><div class="gl-ht"><small>${tag}</small><b data-raw>${title}</b><span data-raw>${sub}</span></div>${st ? `<em class="gl-st ${st}">${ST[st]}</em>` : ''}</div>`;
   const nxt = next ? `<button class="gl-next" id="glNext"><span><small>${Z('Next step', '下一步')}${next.min ? ` · ${Z(`${next.min} min`, `${next.min} 分鐘`)}` : ''}</small><b data-raw>${esc(next.t)}</b></span><i aria-hidden="true">›</i></button>`
     : `<p class="gl-done">${ICON.check}<span>${Z('Today’s mission is done. Nice work!', '今日任務已完成，做得好！')}</span></p>`;
-  const foot = `<button class="linkbtn gl-chg" id="glChange">${Z('Change goal', '更改目標')}</button>`;
+  const foot = n > 1 ? '' : `<button class="linkbtn gl-chg" data-mygoals>${Z('My goals', '我的目標')}</button>`;
   if (G.kind === 'test') {
     const x = G.p.x, wk = G.wk != null && Math.abs(G.wk) >= 1 ? `<span class="gl-wk ${G.wk > 0 ? 'up' : 'down'}">${G.wk > 0 ? '▲' : '▼'} ${Math.abs(G.wk)}% ${Z('this week', '本週')}</span>` : '';
-    return `<section class="gl-card test ${G.st}" aria-label="${Z('Your goal', '你的目標')}">
+    return `<section class="gl-card test ${G.st}" aria-label="${tag}">
       ${head(`${esc(x.name)} · ${G.aim}%`, `${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(G.p.left)}`, G.st)}
       <div class="gl-body">${goalRingSVG(G.ready, G.fc, G.aim)}<div class="gl-nums">
         ${G.fc != null ? `<div><b class="fc ${G.st}">${G.fc}%</b><span>${Z('on test day, at this pace', '照現時步伐，考試當日')}</span></div>` : ''}
@@ -6115,57 +6138,71 @@ function goalTopHTML(G, next) {
   }
   if (G.kind === 'long') {
     const ch = G.change != null && Math.abs(G.change) >= 0.1 ? `<span class="gl-wk ${G.change > 0 ? 'up' : 'down'}">${G.change > 0 ? '▲' : '▼'} ${Math.abs(G.change).toFixed(1)} ${Z('since you started', '自開始以來')}</span>` : '';
-    return `<section class="gl-card long ${G.st}" aria-label="${Z('Your goal', '你的目標')}">
-      ${head(Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`), Z(`Target: level ${G.target.toFixed(1)} out of 10`, `目標：程度 ${G.target.toFixed(1)}（滿分 10）`), G.now >= G.target ? 'done' : G.st)}
+    return `<section class="gl-card long ${G.st}" aria-label="${tag}">
+      ${head(Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`), Z(`Target: level ${G.target.toFixed(1)} out of 10`, `目標：程度 ${G.target.toFixed(1)}（滿分 10）`), G.st)}
       <div class="gl-lvh"><span>${Z('Level now', '現在程度')}</span><b>${G.now.toFixed(1)}<small>/10</small></b></div>
       ${goalLevelBar(G.now, G.start, G.target)}
       ${G.line.filter((v) => v != null).length >= 2 ? `<div class="gl-sp"><div class="gl-sph"><span>${Z('Week by week', '每週變化')}</span>${ch}</div>${goalSpark(G.line, G.target)}</div>` : ch ? `<div class="gl-sph">${ch}</div>` : ''}
       ${nxt}${foot}</section>`;
   }
-  if (G.kind === 'needtest') return `<section class="gl-card test close"><div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b>${Z('Do well in a test', '測驗考好')}</b><span>${Z('Add the test and Buddy will show how ready you are and plan each day.', '加入測驗，Buddy 會顯示準備度並安排每天的溫習。')}</span></div></div>
+  if (G.kind === 'needtest') return `<section class="gl-card test close"><div class="gl-h"><div class="gl-ht"><small>${tag}</small><b>${Z('Do well in a test', '測驗考好')}</b><span>${Z('Add the test and Buddy will show how ready you are and plan each day.', '加入測驗，Buddy 會顯示準備度並安排每天的溫習。')}</span></div></div>
     <button class="gl-next" id="glAddTest"><span><b>${Z('+ Add the test', '+ 加入測驗')}</b></span><i aria-hidden="true">›</i></button>${foot}</section>`;
-  return `<section class="gl-card long"><div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b>${Z('Get stronger over time', '持續進步')}</b><span>${Z('After a few days of practice Buddy shows your level here, and how it’s rising.', '練習幾天後，Buddy 會在這裏顯示你的程度和進步。')}</span></div></div>${nxt}${foot}</section>`;
+  return `<section class="gl-card long"><div class="gl-h"><div class="gl-ht"><small>${tag}</small><b>${G.lab ? Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`) : Z('Get stronger over time', '持續進步')}</b><span>${Z('After a few days of practice Buddy shows the level here, and how it’s rising.', '練習幾天後，Buddy 會在這裏顯示程度和進步。')}</span></div></div>${nxt}${foot}</section>`;
 }
-// Choose or change the goal: a test (which one, and its target score) or a subject over time (and a target level).
-async function goalSheet(onDone) {
-  const Z = PT, g = { ...(local.goal || {}) };
+// one goal as a slim row: icon, name, when or target, status, and a thin bar (now, forecast, goal)
+const GIC = { test: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#26357A" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 10h18M9 15l2 2 4-4"></path></svg>',
+  long: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#18966A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>' };
+function goalRowHTML(G, attr, on = false) {
+  const Z = PT, ST = GOAL_ST(), t = G.kind === 'test';
+  if (G.kind === 'longnew' && G.lab) return `<button class="gl-row long" ${attr}="${esc(G.id)}"><span class="gl-rh"><span class="gl-ric">${GIC.long}</span><span class="gl-rt"><b data-raw>${Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`)}</b><small>${Z('Practise a little and the level shows here', '練習一下，程度就會顯示在這裏')}</small></span></span></button>`;
+  if (!['test', 'long'].includes(G.kind)) return '';
+  const name = t ? esc(G.p.x.name) : Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`);
+  const meta = t ? `${new Date(testDay(G.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(G.p.left)}` : Z(`Target level ${G.target.toFixed(1)}`, `目標程度 ${G.target.toFixed(1)}`);
+  const now = t ? G.ready : G.now * 10, fc = t && G.fc != null ? G.fc : now, aim = t ? G.aim : G.target * 10;
+  const nums = t ? (G.fc != null && G.fc !== G.ready ? `${G.ready}% → ${G.fc}% · ${Z('goal', '目標')} ${G.aim}%` : `${G.ready}% · ${Z('goal', '目標')} ${G.aim}%`) : `${G.now.toFixed(1)}/10${G.change != null && Math.abs(G.change) >= 0.1 ? ` · ${G.change > 0 ? '▲' : '▼'} ${Math.abs(G.change).toFixed(1)}` : ''}`;
+  return `<button class="gl-row ${G.kind} ${on ? 'on' : ''}" ${attr}="${esc(G.id)}"><span class="gl-rh"><span class="gl-ric">${GIC[G.kind]}</span><span class="gl-rt"><b data-raw>${name}</b><small data-raw>${meta}</small></span><em class="gl-st ${G.st}">${ST[G.st]}</em></span>
+    <span class="gl-rb"><span class="gl-bar" aria-hidden="true"><i class="f" style="width:${fc}%"></i><i style="width:${now}%"></i><u style="left:${aim}%"></u></span><small>${nums}</small></span></button>`;
+}
+// My goals: tests (with their target score) and subjects to get stronger in (with a target level). Add, edit, remove.
+async function myGoalsSheet(onDone) {
+  const Z = PT, MG = myGoals(), longs = (MG.longs || []).map((x) => ({ ...x }));
   const tests = upcomingTests().filter((x) => x.b && (x.kind || 'test') !== 'dict');
-  const GS = await gsData().catch(() => null), subs = GS ? GS.s.filter((x) => x[1] != null).map((x) => x[0]) : [];
-  if (!g.kind) g.kind = tests.length ? 'test' : 'long';
+  const GS = await gsData().catch(() => null), books = await getBooks();
+  { const top = GS ? GS.s.filter((x) => x[1] != null).sort((a, b) => (b[8] || 0) - (a[8] || 0))[0] : null; longs.forEach((x) => { if (!x.subj && top) x.subj = top[0]; }); }
+  const subs = [...new Set([...(GS ? GS.s.map((x) => x[0]) : []), ...books.map((b) => (b.subject ? subj(b.subject) : '')).filter(Boolean)])];
   const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
+  const aims = Object.fromEntries(tests.map((x) => [x.id, x.aim || 80]));
+  let adding = false;
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   const draw = () => {
-    box.innerHTML = `<div class="cdlg gl-dlg" role="dialog" aria-modal="true" aria-labelledby="gl-t"><header class="gl-dh"><b id="gl-t">${Z('What are we working towards?', '我們的目標是甚麼？')}</b><button class="cs2-x" aria-label="${Z('Close', '關閉')}">✕</button></header>
-      <div class="gl-opts">
-        <button class="gl-opt ${g.kind === 'test' ? 'on' : ''}" data-gk="test" aria-pressed="${g.kind === 'test'}"><b>${Z('Do well in a test', '測驗考好')}</b><span>${Z('A school test or exam coming up, against a target score.', '快要來的校內測驗或考試，以目標分數衡量。')}</span></button>
-        <button class="gl-opt ${g.kind === 'long' ? 'on' : ''}" data-gk="long" aria-pressed="${g.kind === 'long'}"><b>${Z('Get stronger over time', '持續進步')}</b><span>${Z('Build up a subject through the year, test or no test.', '全年逐步提升一科，不論有沒有測驗。')}</span></button></div>
-      ${g.kind === 'test' ? `<div class="gl-sub"><b>${Z('Which test?', '哪一個測驗？')}</b><div class="gl-chips">${tests.map((x, i) => `<button class="fchip ${(g.testId ? g.testId === x.id : i === 0) ? 'on' : ''}" data-gt="${esc(x.id)}" data-raw>${esc(x.name)} · ${new Date(testDay(x)).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}</button>`).join('')}<button class="fchip" id="glAdd">+ ${Z('Add a test', '加入測驗')}</button></div>
-        <span class="hint" style="margin:0;text-align:left">${Z('The target score is set on the test card (slide Buddy).', '目標分數在測驗卡上設定（拖動 Buddy）。')}</span></div>`
-      : `<div class="gl-sub"><b>${Z('Which subject?', '哪一科？')}</b><div class="gl-chips">${subs.length ? subs.map((x, i) => `<button class="fchip ${(g.subj ? g.subj === x : i === 0) ? 'on' : ''}" data-gs="${esc(x)}" data-raw>${esc(x)}</button>`).join('') : `<span class="muted" style="font-size:14px">${Z('Buddy picks the subject you practise most once there’s a little practice.', '練習一段時間後，Buddy 會選你最常練習的一科。')}</span>`}</div>
-        <b>${Z('Target level', '目標程度')}</b><div class="gl-chips">${TG.map(([v, t]) => `<button class="fchip ${(g.target || 6.7) === v ? 'on' : ''}" data-gv="${v}">${t} · ${v.toFixed(1)}</button>`).join('')}</div></div>`}
-      <div class="gl-dbtns"><button class="btn" id="glSave">${Z('Save goal', '儲存目標')}</button></div></div>`;
+    box.innerHTML = `<div class="cdlg gl-dlg" role="dialog" aria-modal="true" aria-labelledby="gl-t"><header class="gl-dh"><div><b id="gl-t">${Z('My goals', '我的目標')}</b><span>${Z('Buddy focuses on the one that needs it most each day. Tests near the date come first.', 'Buddy 每天會集中在最需要的目標，臨近的測驗優先。')}</span></div><button class="cs2-x" aria-label="${Z('Close', '關閉')}">✕</button></header>
+      <div class="gl-grp"><small>${Z('Tests', '測驗')}</small>${tests.length ? tests.map((x) => `<div class="gl-gi"><span class="gl-ric">${GIC.test}</span><span class="gl-rt"><b data-raw>${esc(x.name)}</b><small>${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${Z('target', '目標')} <label class="gl-aim"><select data-aimfor="${esc(x.id)}" aria-label="${Z('Target score', '目標分數')}">${[60, 70, 75, 80, 85, 90, 95, 100].map((v) => `<option value="${v}" ${aims[x.id] === v ? 'selected' : ''}>${v}%</option>`).join('')}${[60, 70, 75, 80, 85, 90, 95, 100].includes(aims[x.id]) ? '' : `<option selected value="${aims[x.id]}">${aims[x.id]}%</option>`}</select></label></small></span><button class="linkbtn" data-tedit2="${esc(x.id)}">${Z('Edit', '修改')}</button></div>`).join('') : `<p class="gl-none">${Z('No tests yet. Add one and it becomes a goal.', '還沒有測驗。加入後就會成為目標。')}</p>`}</div>
+      <div class="gl-grp"><small>${Z('Getting stronger', '持續進步')}</small>${longs.length ? longs.map((x, i) => `<div class="gl-gi"><span class="gl-ric">${GIC.long}</span><span class="gl-rt"><b data-raw>${esc(x.subj || Z('Main subject', '主要科目'))}</b><small>${Z('target', '目標')} <label class="gl-aim"><select data-tgfor="${i}" aria-label="${Z('Target level', '目標程度')}">${TG.map(([v, t]) => `<option value="${v}" ${(x.target || 6.7) === v ? 'selected' : ''}>${t} · ${v.toFixed(1)}</option>`).join('')}</select></label></small></span><button class="linkbtn" data-lrm="${i}">${Z('Remove', '移除')}</button></div>`).join('') : `<p class="gl-none">${Z('None yet.', '暫時沒有。')}</p>`}
+        ${adding ? `<div class="gl-add"><b>${Z('Get stronger in…', '想加強…')}</b><div class="gl-chips">${subs.filter((x) => !longs.some((y) => y.subj === x)).map((x) => `<button class="fchip" data-addl="${esc(x)}" data-raw>${esc(x)}</button>`).join('') || `<span class="muted" style="font-size:14px">${Z('Add a textbook first.', '請先加入課本。')}</span>`}</div></div>` : ''}</div>
+      <div class="gl-addb"><button class="gl-ab t" id="glAddT">+ ${Z('Add a test', '加入測驗')}</button><button class="gl-ab l" id="glAddL">+ ${Z('Get stronger in…', '持續進步…')}</button></div>
+      <button class="btn" id="glSave">${Z('Done', '完成')}</button></div>`;
     const close = () => box.remove();
     box.querySelector('.cs2-x').onclick = close;
-    box.querySelectorAll('[data-gk]').forEach((b) => (b.onclick = () => { g.kind = b.dataset.gk; draw(); }));
-    box.querySelectorAll('[data-gt]').forEach((b) => (b.onclick = () => { g.testId = b.dataset.gt; draw(); }));
-    box.querySelectorAll('[data-gs]').forEach((b) => (b.onclick = () => { g.subj = b.dataset.gs; draw(); }));
-    box.querySelectorAll('[data-gv]').forEach((b) => (b.onclick = () => { g.target = +b.dataset.gv; draw(); }));
-    { const a = box.querySelector('#glAdd'); if (a) a.onclick = () => { close(); testDialog(); }; }
-    box.querySelector('#glSave').onclick = () => {
-      if (g.kind === 'test' && !g.testId && tests[0]) g.testId = tests[0].id;
-      if (g.kind === 'long' && !g.subj && subs[0]) g.subj = subs[0];
-      local.goal = { kind: g.kind, ...(g.kind === 'test' ? { testId: g.testId || null } : { subj: g.subj || null, target: g.target || 6.7 }) };
-      saveLocal(); close(); toast(Z('Goal saved', '目標已儲存')); onDone && onDone();
-    };
+    box.querySelectorAll('[data-aimfor]').forEach((s) => (s.onchange = () => { aims[s.dataset.aimfor] = +s.value; }));
+    box.querySelectorAll('[data-tgfor]').forEach((s) => (s.onchange = () => { longs[+s.dataset.tgfor].target = +s.value; }));
+    box.querySelectorAll('[data-lrm]').forEach((b) => (b.onclick = () => { longs.splice(+b.dataset.lrm, 1); draw(); }));
+    box.querySelectorAll('[data-addl]').forEach((b) => (b.onclick = () => { longs.push({ subj: b.dataset.addl, target: 6.7 }); adding = false; draw(); }));
+    box.querySelectorAll('[data-tedit2]').forEach((b) => (b.onclick = () => { save(); close(); testDialog((local.sched || []).find((y) => y.id === b.dataset.tedit2)); }));
+    box.querySelector('#glAddT').onclick = () => { save(); close(); testDialog(); };
+    box.querySelector('#glAddL').onclick = () => { adding = !adding; draw(); };
+    const save = () => { local.mygoals = { ...myGoals(), longs }; (local.sched || []).forEach((y) => { if (aims[y.id] != null) y.aim = aims[y.id]; }); saveLocal(); };
+    box.querySelector('#glSave').onclick = () => { save(); close(); toast(Z('Goals saved', '目標已儲存')); onDone && onDone(); };
   };
   box.onclick = (e) => { if (e.target === box) box.remove(); };
   draw(); document.body.appendChild(box);
 }
-const goalText = () => { const g = local.goal; if (!g || !g.kind) return PT('Not set yet: Buddy follows your nearest test', '未設定：Buddy 會跟進最近的測驗');
-  if (g.kind === 'test') { const x = (local.sched || []).find((y) => y.id === g.testId); return x ? PT(`Do well in ${x.name}`, `「${x.name}」考好`) : PT('Do well in the nearest test', '最近的測驗考好'); }
-  return PT(`Get stronger in ${g.subj || 'your main subject'} · level ${(g.target || 6.7).toFixed(1)}`, `${g.subj || '主要科目'}持續進步 · 目標程度 ${(g.target || 6.7).toFixed(1)}`); };
-document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('#sgoal'); if (!b) return; goalSheet(() => { const t = document.getElementById('sgoalTxt'); if (t) t.textContent = goalText(); }); });
-document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('#glpChange'); if (b) goalSheet(() => renderProgress()); });
+const goalText = () => { const MG = myGoals(), nt = upcomingTests().filter((x) => x.b && (x.kind || 'test') !== 'dict').length, nl = (MG.longs || []).length;
+  return !nt && !nl ? PT('No goals yet: add a test or a subject to get stronger in.', '還沒有目標：加入測驗或想加強的科目。')
+    : [nt ? PT(`${nt} test${nt > 1 ? 's' : ''}`, `${nt} 個測驗`) : '', nl ? PT(`${nl} subject${nl > 1 ? 's' : ''} to get stronger in`, `${nl} 科持續進步`) : ''].filter(Boolean).join(' · '); };
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-mygoals], #sgoal'); if (!b) return;
+  myGoalsSheet(() => { if (view && view.name === 'home') renderHome(); else if (view && view.name === 'progress') renderProgress(); const t = document.getElementById('sgoalTxt'); if (t) t.textContent = goalText(); }); });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-gfocus]'); if (!b) return;
+  local.goalFocus = { id: b.dataset.gfocus, d: dayStart() }; saveLocal(); if (view && view.name === 'progress') renderProgress(); else renderHome(); });
 async function fullTestCards(tests, btn) {
   const MB = new Map(); for (const p of tests.steps) if (p.book && !MB.has(p.book.id)) MB.set(p.book.id, await bookMastery(p.book));
   const chName = (u) => shortTitle(u.title);
@@ -6279,8 +6316,9 @@ function fixedForGood() {
   return { good, wait, open };
 }
 // The goal at the top of Progress: a chart against the goal line, a few points, and mistakes fixed for good.
-function goalProgressHTML(G, pts) {
+function goalProgressHTML(G, pts, gl1 = false) {
   const Z = PT, ST = GOAL_ST();
+  if (!['test', 'long'].includes(G.kind)) return '';
   let body = '', title = '', sub = '', st = G.st;
   if (G.kind === 'test') {
     const x = G.p.x, td = testDay(x), t0 = dayStart(), H = G.hist.filter((h) => h[0] <= t0).sort((a, b) => a[0] - b[0]);
@@ -6309,7 +6347,7 @@ function goalProgressHTML(G, pts) {
     <div class="glp-fixb" aria-hidden="true"><i style="width:${(100 * F.good) / tot}%"></i><i class="w" style="width:${(100 * F.wait) / tot}%"></i></div>
     <div class="glp-fixl"><span><i></i>${Z(`${F.good} right again days later`, `${F.good} 題幾天後再答對`)}</span><span><i class="w"></i>${Z(`${F.wait} fixed, checking again soon`, `${F.wait} 題已改正，稍後再測`)}</span><span>${Z(`${F.open} still to fix`, `${F.open} 題未改正`)}</span></div></div>` : '';
   return `<section class="pv-sec glp"><div class="gl-card ${G.kind} ${st}"><div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b data-raw>${title}</b><span data-raw>${sub}</span></div><em class="gl-st ${st}">${ST[st]}</em></div>
-    ${body}${pts || ''}<button class="linkbtn gl-chg" id="glpChange">${Z('Change goal', '更改目標')}</button></div>${fixed}</section>`;
+    ${body}${pts || ''}${gl1 ? `<button class="linkbtn gl-chg" data-mygoals>${Z('My goals', '我的目標')}</button>` : ''}</div>${fixed}</section>`;
 }
 async function renderProgress() {
   // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
@@ -6334,7 +6372,8 @@ async function renderProgress() {
 
   // ---------- 1. Am I on track for my tests? ----------
   const tests = await schoolTestsHTML();
-  const goalP = await goalData(tests).catch(() => null), goalPHTML = goalP ? goalProgressHTML(goalP, goalP.kind === 'test' ? testPoints(goalP.p, goalP.chs, goalP.aim, goalP.fc, goalP.st) : '') : '';
+  const GDp = await goalsData(tests).catch(() => null), goalP = GDp && GDp.focus, gRows = GDp ? GDp.list.filter((g) => ['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab)) : [];
+  const goalPHTML = goalP ? `${gRows.length > 1 || gRows.length === 1 ? `<section class="pv-sec glp-all"><div class="gl-oh"><h2>${PT('My goals', '我的目標')}</h2><button class="linkbtn" data-mygoals>${PT('Edit', '修改')} ›</button></div>${gRows.length > 1 ? gRows.map((g) => goalRowHTML(g, 'data-gfocus', g === goalP)).join('') : ''}</section>` : ''}${goalProgressHTML(goalP, goalP.kind === 'test' ? testPoints(goalP.p, goalP.chs, goalP.aim, goalP.fc, goalP.st) : '')}` : '';
   const fmtDay = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
   const chOf = (p) => (p.book && p.units && p.units.length ? MB.get(p.book.id).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : []);
   // Progress only reports: on track or not, ready now, where it's heading, the goal. Acting on it happens on Today.

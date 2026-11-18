@@ -3228,6 +3228,32 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .glp-fixh{display:flex;justify-content:space-between;align-items:center}.glp-fixh b{font-size:14.5px;color:#1E7A46}.glp-fixh strong{font-family:'Lexend',sans-serif;font-size:24px;color:#1E7A46}
 .glp-fixb{display:flex;height:10px;border-radius:99px;background:#FFFFFF;overflow:hidden}.glp-fixb i{background:#18966A}.glp-fixb i.w{background:#9ED8BC}
 .glp-fixl{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--text-2)}.glp-fixl i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#18966A;margin-right:5px}.glp-fixl i.w{background:#9ED8BC}
+/* several goals: other goals as slim rows, My goals sheet */
+.gl-others,.glp-all{display:flex;flex-direction:column;border-radius:18px;background:#FFFFFF;border:1px solid #E3E7F1;overflow:hidden}
+.glp-all{padding:0 0 4px}
+.gl-oh{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px}.gl-oh b,.gl-oh h2{margin:0;font-family:'Lexend',sans-serif;font-size:16px;color:var(--ink)}
+.gl-oh .linkbtn{font-size:13px;font-weight:700;border:0;background:none;padding:4px}
+.gl-row{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:7px;padding:11px 14px;border-top:1px solid #EEF1F6;cursor:pointer}
+.gl-row:hover{background:#F7F9FD}.gl-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.gl-row.on{background:#EEF1FB;box-shadow:inset 3px 0 0 #26357A}.gl-row.long.on{background:#E8F7EF;box-shadow:inset 3px 0 0 #18966A}
+.gl-rh{display:flex;align-items:center;gap:10px}
+.gl-ric{flex:none;width:32px;height:32px;border-radius:50%;background:#EEF1FB;display:inline-flex;align-items:center;justify-content:center}.gl-row.long .gl-ric,.gl-gi .gl-ric:has(path[d^="M3 17"]){background:#E8F7EF}
+.gl-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.gl-rt b{font-size:14.5px;color:var(--ink)}.gl-rt small{font-size:12px;color:var(--text-2)}
+.gl-row .gl-st{font-size:11.5px;padding:3px 9px}
+.gl-rb{display:flex;align-items:center;gap:10px;padding-left:42px}.gl-rb small{flex:none;font-size:12px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.gl-bar{position:relative;flex:1;height:8px;border-radius:99px;background:#E3E7F1}
+.gl-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:#26357A}.gl-bar i.f{opacity:.28}.gl-row.long .gl-bar i{background:#18966A}
+.gl-bar u{position:absolute;top:-4px;width:3px;height:16px;margin-left:-1.5px;border-radius:2px;background:#1B2559}
+.gl-dh>div{display:flex;flex-direction:column;gap:4px}.gl-dh span{font-size:13px;line-height:1.45;color:var(--text-2)}
+.gl-grp{display:flex;flex-direction:column}.gl-grp>small{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 0 4px}
+.gl-gi{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #EEF1F6}.gl-gi .linkbtn{font-size:13px;font-weight:700;border:0;background:none}
+.gl-aim select{font:inherit;font-size:12.5px;font-weight:700;color:var(--accent);border:1px solid var(--line);border-radius:8px;padding:2px 4px;background:#FFFFFF}
+.gl-none{margin:4px 0;font-size:13.5px;color:var(--muted)}
+.gl-add{display:flex;flex-direction:column;gap:8px;padding:10px 0}
+.gl-addb{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gl-ab{all:unset;box-sizing:border-box;min-height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;text-align:center;padding:0 8px}
+.gl-ab.t{background:#EEF1FB;border:1.5px solid #CFD7F2;color:#26357A}.gl-ab.l{background:#E8F7EF;border:1.5px solid #BFE6D1;color:#1E7A46}
+.gl-dlg .btn{width:100%}
 </style>
 </head>
 <body>
