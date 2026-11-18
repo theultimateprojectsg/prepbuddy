@@ -3167,6 +3167,12 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
   .pv-sum .pv-kpi .pv-kdots i{width:auto!important;height:10px!important;aspect-ratio:auto!important;max-height:none!important;border-radius:2px}
   .pv-sum .pv-kpi .pv-kspark{max-width:100%;height:28px}
 }
+/* glance tiles in the same style as Going well / Keep an eye on: a soft tint of their colour, a matching border, a white icon circle, no stripe on top */
+.pv-sum .pv-kpi::before{display:none!important}
+.pv-sum .pv-kpi{background:var(--kt)!important;border:1px solid var(--kb)!important;border-radius:16px!important;box-shadow:none!important}
+.pv-sum .pv-kpi.k-ring{--kb:#CFD7F2}.pv-sum .pv-kpi.k-book{--kb:#BFE6D1;--kt:#E8F7EF}.pv-sum .pv-kpi.k-brain{--kb:#DCCFF5;--kt:#F3EEFC}.pv-sum .pv-kpi.k-cal{--kb:#F7D3B5;--kt:#FFF3E9}
+.pv-sum .pv-kpi .pv-kic{background:#FFFFFF!important;border-radius:50%!important;width:30px!important;height:30px!important}
+.pv-sum .pv-kpi .pv-ktrack,.pv-sum .pv-kpi .pv-kbar i:not(.on),.pv-sum .pv-kpi .pv-kdots i:not(.on){background:rgba(255,255,255,.9)!important}
 </style>
 </head>
 <body>
