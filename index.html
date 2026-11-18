@@ -3064,6 +3064,14 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-party .conf{position:absolute;left:50%;top:70px;width:8px;height:12px;border-radius:2px;opacity:0;animation:confy 1.4s ease-out .15s forwards}
 @keyframes confy{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 160px)) rotate(var(--r))}}
 @media (prefers-reduced-motion:reduce){.ms-party .conf,.ms-pbud{animation:none}}
+/* Mistake book: how often it was missed, at the top of each question */
+.mk-missed{display:flex;flex-direction:column;gap:2px;padding:8px 12px;margin-bottom:10px;border-radius:10px;background:#FDF1E7;border:1px solid #F6D3B6}
+.mk-missed b{font-size:14px;color:#8A3A10}.mk-missed span{font-size:13px;color:var(--text-2)}
+.mk-missed.often{background:#FDECEA;border-color:#F5C6C0}.mk-missed.often b{color:var(--miss-dark)}
+.mfoot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-top:4px}
+.mk-rm{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:8px 2px;text-decoration:underline;text-underline-offset:3px}
+.mk-rm.sure{color:var(--miss-dark)}
+.mk-list .mk-redo{width:100%;margin:12px 0 4px;min-height:48px}
 </style>
 </head>
 <body>

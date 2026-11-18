@@ -7809,14 +7809,15 @@ function mistakeCard(q, m) {
     : (Array.isArray(m.ans) ? m.ans.filter((a) => a && a.trim()).join('\n') : '') || 'No answer written';
   const right = choiceType(q) ? `${(q.options || [])['ABCD'.indexOf(q.correct_option)] || ''}`
     : q.type === 'essay' ? '' : q.parts.map((p) => `${p.label ? p.label + ' ' : ''}${p.mark_scheme.map((x) => '• ' + x).join('\n')}`).join('\n');
+  const missed = m.done ? '' : `<div class="mk-missed ${m.n > 1 ? 'often' : ''}"><b>${LANG === 'zh' ? (m.n > 1 ? `錯了 ${m.n} 次` : '錯了 1 次') : m.n > 1 ? `Missed ${m.n} times` : 'Missed once'}</b><span>${LANG === 'zh' ? '答對之前，Buddy 會不時再出這題。' : 'Buddy brings it back until you get it right.'}</span></div>`;
   return `<div class="mcard" data-raw>
-    ${figHTML(q)}${renderStem(q.type === 'graph' || choiceType(q) ? q.stem : writtenStem(q), 'stem')}
+    ${missed}${figHTML(q)}${renderStem(q.type === 'graph' || choiceType(q) ? q.stem : writtenStem(q), 'stem')}
     ${!choiceType(q) ? q.parts.map((p) => `<p class="mprompt">${esc(p.label)} ${esc(p.prompt)}</p>`).join('') : ''}
     <div class="mrow bad"><span>${LANG === 'zh' ? '你的答案' : 'Your answer'}</span><p class="nomath">${esc(yours)}</p></div>
     ${right ? `<div class="mrow good"><span>${LANG === 'zh' ? '答案' : 'Answer'}</span><p>${esc(right)}</p></div>` : ''}
     <p class="expl">${esc(q.explanation || '')}</p>
     ${m.chat && m.chat.length ? `<details class="mchat"><summary>${LANG === 'zh' ? '你和 AI 導師的對話' : 'Your chat with the tutor'} (${m.chat.length})</summary>${m.chat.map((x) => x.role === 'user' ? `<div class="tmsg me nomath">${esc(x.text)}</div>` : `<div class="tmsg ai">${tutorMd(x.text)}</div>`).join('')}</details>` : ''}
-    <div class="mfoot"><span class="hint">${m.n > 1 ? `${LANG === 'zh' ? `錯了 ${m.n} 次` : `Missed ${m.n} times`}` : ''}</span>${m.done ? '' : `<button class="btn-sm quiet" data-dismiss="${esc(q.id)}" >${LANG === 'zh' ? '我已明白，移除' : 'I understand it now'}</button>`}</div>
+    ${m.done ? '' : `<div class="mfoot"><button class="btn-sm primary" data-redo1="${esc(q.id)}">${LANG === 'zh' ? '再試這一題' : 'Try it again'}</button><button class="mk-rm" data-dismiss="${esc(q.id)}">${LANG === 'zh' ? '我已明白，移除' : 'I get it now, remove'}</button></div>`}
   </div>`;
 }
 async function renderMistakes(tab, openBook) {
@@ -7858,7 +7859,7 @@ async function renderMistakes(tab, openBook) {
       <span class="mk-count ${tab === 'done' ? 'ok' : ''}">${g.items.length}</span>
       <span class="mk-gt"><b data-raw>${esc(g.unit ? shortTitle(g.unit.title) : '')}</b><span class="muted">${often ? `${often} ${zh ? '題錯了多次' : 'missed more than once'} · ` : ''}${zh ? '最近' : 'latest'} ${esc(agoText(Math.max(...g.items.map((i) => (tab === 'done' ? i.m.doneAt || i.m.t : i.m.t)))))}</span></span>
       <span class="mq-chev" aria-hidden="true">›</span></summary>
-      <div class="mk-list">${tab === 'todo' ? `<button class="btn-sm primary mk-redo" data-redo="${gi}">${zh ? `重做這 ${g.items.length} 題` : `Redo these ${g.items.length}`}</button>` : ''}${g.items.map(line).join('')}</div></details>`; };
+      <div class="mk-list">${g.items.map(line).join('')}${tab === 'todo' ? `<button class="btn mk-redo" data-redo="${gi}">${zh ? `重做這一章的 ${g.items.length} 題` : `Redo all ${g.items.length} in this chapter`}</button>` : ''}</div></details>`; };
   const mkBody = open
     ? `${subjects.length > 1 ? `<button class="mk-backsub" data-mkopen="">${ICON.back} ${zh ? '所有科目' : 'All subjects'}</button>` : ''}
       <section class="mk-sub-open"><div class="mk-ghead">${subjectTile(open.book.subject, 44, open.book.title)}<div class="mk-gt"><b data-raw>${esc(sname(open.book))}</b>${sname(open.book) !== open.book.title ? `<span class="muted" data-raw>${esc(open.book.title)}</span>` : ''}</div>
@@ -7898,7 +7899,8 @@ async function renderMistakes(tab, openBook) {
   $app.querySelectorAll('[data-mkopen]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab, book: b.dataset.mkopen || undefined })));
   $app.querySelectorAll('[data-redobook]').forEach((b) => (b.onclick = () => { const x = subjects.find((y) => y.book.id === b.dataset.redobook); start(x.chs.flatMap((c) => c.g.items.map((i) => i.q)), (zh ? '錯題簿 · ' : 'Mistake book · ') + sname(x.book)); }));
   $app.querySelectorAll('[data-more]').forEach((b) => (b.onclick = () => { const box = b.previousElementSibling; box.hidden = false; b.remove(); }));
-  $app.querySelectorAll('[data-dismiss]').forEach((b) => (b.onclick = () => { const m = local.mistakes[b.dataset.dismiss]; if (m) { m.done = true; m.doneAt = Date.now(); m.manual = true; saveLocal(); } const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }));
+  $app.querySelectorAll('[data-redo1]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const q = all.find((x) => x.id === b.dataset.redo1); if (q) start([q], zh ? '錯題簿' : 'Mistake book'); }));
+  $app.querySelectorAll('[data-dismiss]').forEach((b) => (b.onclick = () => { if (!b.dataset.sure) { b.dataset.sure = '1'; b.classList.add('sure'); b.textContent = zh ? '再按一次移除（不算改正）' : 'Tap again to remove (won’t count as fixed)'; return; } const m = local.mistakes[b.dataset.dismiss]; if (m) { m.done = true; m.doneAt = Date.now(); m.manual = true; saveLocal(); } const y = window.scrollY; renderMistakes(tab).then(() => window.scrollTo(0, y)); }));
 }
 function agoText(t) {
   const d = Math.floor((Date.now() - (t || 0)) / 864e5), zh = LANG === 'zh';
