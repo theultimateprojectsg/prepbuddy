@@ -6728,7 +6728,7 @@ function fixedGoodHTML() {
     <div class="glp-fixb" aria-hidden="true"><i style="width:${(100 * F.good) / tot}%"></i><i class="w" style="width:${(100 * F.wait) / tot}%"></i></div>
     <div class="glp-fixl"><span><i></i>${Z(`${F.good} right again days later`, `${F.good} 題幾天後再答對`)}</span><span><i class="w"></i>${Z(`${F.wait} fixed, checking again soon`, `${F.wait} 題已改正，稍後再測`)}</span><span>${Z(`${F.open} still to fix`, `${F.open} 題未改正`)}</span></div></div>` : '';
 }
-async function renderProgress() {
+async function renderProgress(PO = {}) {
   // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
   // what should I work on, is it working, and am I putting in the effort. Every card has a number,
   // one line on what it means, and (where there's something to do) a button.
@@ -7223,25 +7223,27 @@ async function renderProgress() {
   </section>`;
   const sumSec = `<section class="pv-sec pv-sumsec"><div class="pv-h"><h2 class="h-info">${PT('Your week at a glance', '本週一覽')}${ib('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'))}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}${how('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'), '')}</section>`;
   // DEV: the new order (goals, what Buddy noticed, this week, subjects, is it working), switchable with the current page
-  const PMODE = DEV ? localStorage.getItem('pb.prog') || 'parent' : 'old', PNEW = PMODE === 'new', PPAR = PMODE === 'parent';
-  const pvDev = DEV ? `<div class="cb-dev"><b>DEV preview: Progress</b><span>Same data. Only you see this.</span><div class="cb-modes">${[['parent', 'Parent view'], ['new', 'New order'], ['old', 'Current']].map(([k, t]) => `<button class="btn-sm ${PMODE === k ? 'primary' : ''}" data-pvmode="${k}">${t}</button>`).join('')}</div></div>` : '';
+  // DEV: who reads it. Student view on Progress (simple for primary, full for secondary); parent view in the parent dashboard
+  const PMODE = PO.parent ? 'parent' : DEV ? localStorage.getItem('pb.prog') || 'student' : 'old', PNEW = PMODE === 'new', PPAR = PMODE === 'parent', PSTU = PMODE === 'student';
+  const AUD = localStorage.getItem('pb.aud') || 'auto', PRI = PSTU && (AUD === 'pri' || (AUD === 'auto' && isPrimaryKid())), YOU = PSTU;
+  const pvDev = DEV ? `<div class="cb-dev"><b>DEV preview: Progress</b><span>Same data. Only you see this.</span><div class="cb-modes">${[['student', 'Student view'], ['parent', 'Parent view'], ['new', 'New order'], ['old', 'Current']].map(([k, t]) => `<button class="btn-sm ${PMODE === k ? 'primary' : ''}" data-pvmode="${k}">${t}</button>`).join('')}</div>${PSTU ? `<div class="cb-modes">${[['auto', `Auto (${isPrimaryKid() ? 'primary' : 'secondary'})`], ['pri', 'Primary'], ['sec', 'Secondary']].map(([k, t]) => `<button class="btn-sm ${AUD === k ? 'primary' : ''}" data-pvaud="${k}">${t}</button>`).join('')}</div>` : ''}</div>` : '';
   // DEV: the parent view. Four questions a parent asks, one clear answer each: are they doing it,
   // will they be ready, is it working, is anything going wrong (and what can I do)
   let parBody = '';
-  if (PPAR) {
-    const X = r.x || {}, who = (local.name || '').trim() || PT('your child', '你的孩子');
+  if (PPAR || PSTU) {
+    const X = r.x || {}, who = YOU ? PT('you', '你') : (local.name || '').trim() || PT('your child', '你的孩子');
     const mins = r.days.reduce((a, b) => a + b, 0), dm = r.pm != null ? mins - r.pm : null;
     const chg = (d, unit) => (d == null || (!d && d !== 0) ? '' : d === 0 ? `<em>${PT('same as last week', '與上週相同')}</em>` : `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d)}${unit} ${PT('vs last week', '對比上週')}</em>`);
     const dayL = (i) => new Date(r.from + i * DAY).toLocaleDateString(LOCALE(), { weekday: 'narrow' });
     const ml = local.msLeft && local.msLeft.d === startOfToday() ? local.msLeft.n : null, todayMin = r.days[6] || 0;
     const todayTxt = ml === 0 ? `<b class="ok">${ICON.check} ${PT('Today’s mission done', '今日任務已完成')}</b>` : todayMin ? PT(`Practised ${todayMin} min today · ${ml || 'a few'} mission step${ml === 1 ? '' : 's'} left`, `今日練習了 ${todayMin} 分鐘 · 任務還有 ${ml || '幾'} 步`) : PT('Not started today yet', '今日還未開始');
-    const sHead = `<section class="pv-sec pp-head"><small class="pp-k">${PT('This week', '本週')}</small><h2 class="pp-hl">${esc(headline(r))}</h2>
+    const sHead = `<section class="pv-sec pp-head"><small class="pp-k">${PT('This week', '本週')}</small><h2 class="pp-hl">${esc(YOU ? headline({ ...r, n: PT('You', '你') }).replace(/^You is /, 'You’re ').replace(/^You needs /, 'You need ').replace(/^You didn't/, 'You didn’t') : headline(r))}</h2>
       <div class="pp-week" aria-label="${PT(`Practised ${r.dp} of 7 days`, `7 日中練習了 ${r.dp} 日`)}">${r.days.map((m, i) => `<span class="${m ? 'on' : ''}${i === 6 ? ' td' : ''}"><i>${m ? ICON.check : ''}</i><small>${dayL(i)}</small></span>`).join('')}</div>
       <div class="pp-stats"><div><b>${r.dp}<small>/7</small></b><span>${PT('days practised', '練習日數')}</span></div><div><b>${mins}<small> ${PT('min', '分鐘')}</small></b><span>${PT('time practising', '練習時間')}</span>${chg(dm, PT(' min', ' 分鐘'))}</div><div><b>${r.a == null ? '–' : `${r.a}%`}</b><span>${PT('marks scored', '得分率')}</span>${r.a != null && r.pa != null ? chg(r.a - r.pa, PT(' pts', ' 分')) : ''}</div></div>
       <p class="pp-today">${todayTxt}</p></section>`;
     const tBodyP = (g) => { const chs = chOf(g.p).length ? chOf(g.p) : g.p.book ? MB.get(g.p.book.id).chapters : [];
       return goalProgressHTML(g, g.p.ready == null ? '' : testPoints(g.p, chs, g.aim, g.fc, g.st), false, true); };
-    const sGoals = GDp ? `<div class="pp-goals">${goalsCardHTML(GDp, { progress: true, testBody: tBodyP, title: PT('Will they be ready?', '準備得好嗎？') })}</div>` : '';
+    const sGoals = GDp ? `<div class="pp-goals">${goalsCardHTML(GDp, { progress: true, testBody: tBodyP, title: PRI ? PT('My goals', '我的目標') : YOU ? PT('Will you be ready?', '準備得好嗎？') : PT('Will they be ready?', '準備得好嗎？') })}</div>` : '';
     const proof = [marksCard, levelCard, memCard].filter(Boolean);
     const sWork = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('School marks, level and memory: the proof that counts', '學校成績、程度和記憶：最實在的證明')}</span></div>
       <div class="pv-grid3">${proof.join('')}</div>
@@ -7256,17 +7258,22 @@ async function renderProgress() {
     const item = (k, t, sub = '') => `<li class="pp-i ${k}"><span class="pp-dot" aria-hidden="true"></span><div><b data-raw>${esc(t)}</b>${sub ? `<small data-raw>${esc(sub)}</small>` : ''}</div></li>`;
     const good = [r.up ? ['good', PT('Getting better', '有進步'), r.up] : null, X.hi && X.hi[0] - X.hi[1] >= 8 ? ['good', PT('Needs hints far less', '越來越少需要提示'), PT(`${X.hi[0]}% answered without help, up from ${X.hi[1]}%`, `現在 ${X.hi[0]}% 不用提示，之前 ${X.hi[1]}%`)] : null].filter(Boolean).slice(0, 2);
     const watch = [...flags.slice(0, 3).map(([, t]) => ['warn', t, '']), ...(r.weak ? [['warn', PT('Needs more practice', '需要多加練習'), r.weak]] : [])].slice(0, 4);
-    const sWatch = `<section class="pv-sec"><div class="pv-h"><h2>${PT('Anything to step in on?', '有甚麼要留意？')}</h2><span>${PT('Habits and weak spots from the last 30 days', '過去 30 日的習慣和弱項')}</span></div>
+    const sWatch = `<section class="pv-sec"><div class="pv-h"><h2>${YOU ? PT('Anything to work on?', '有甚麼要改善？') : PT('Anything to step in on?', '有甚麼要留意？')}</h2><span>${PT('Habits and weak spots from the last 30 days', '過去 30 日的習慣和弱項')}</span></div>
       <ul class="pp-list">${watch.length ? watch.map((x) => item(...x)).join('') : item('good', PT('Nothing worrying right now', '暫時沒有要擔心的地方'), PT('Practice habits look healthy.', '練習習慣良好。'))}${good.map((x) => item(...x)).join('')}</ul>
-      <div class="pp-help"><b>${PT('How you can help this week', '本週家長可以怎樣幫忙')}</b><p data-raw>${esc(help)}</p></div></section>`;
+      ${YOU ? '' : `<div class="pp-help"><b>${PT('How you can help this week', '本週家長可以怎樣幫忙')}</b><p data-raw>${esc(help)}</p></div>`}</section>`;
     const dw = X.dw || {}, did = [[dw.q, PT('questions from their own textbooks', '條題目來自自己的課本')], [dw.w, PT('written answers marked', '條文字答案已批改')], [dw.rv, PT('reviews brought back before they’d forget', '條溫習題在快忘記前出現')], [dw.fx, PT('mistakes fixed', '題錯題已改正')], [dw.ls, PT('lessons taught by Buddy', '堂 Buddy 課堂')], [dw.mx, PT('mix-ups found', '個混淆被找出')]].filter(([n]) => n > 0);
     const sDid = `<section class="pv-sec pp-did"><div class="pv-h"><h2>${PT('What PrepBuddy did this week', 'PrepBuddy 本週做了甚麼')}</h2></div>${did.length ? `<div class="pp-chips">${did.map(([n, t]) => `<span><b>${n}</b> ${t}</span>`).join('')}</div>` : `<p class="pv-p">${PT('This fills in as practice happens.', '開始練習後就會顯示。')}</p>`}
       ${btn(PT('Send as weekly report', '以每週報告發送'), () => reportDialog(), 'pv-btn primary pp-send')}</section>`;
     const PSAM = DEV && localStorage.getItem('pb.pisample') !== 'off', PI = parentInsights(who, { X, GS, books, sample: PSAM }), dw7 = X.dw || {};
-    const sOnly = `<section class="pv-sec pi-sec"><div class="pv-h"><h2>${PT('What only PrepBuddy can tell you', '只有 PrepBuddy 看得到')}</h2>${DEV ? `<button class="btn-sm pi-samb ${PSAM ? 'primary' : ''}" data-pisam>${PSAM ? 'Sample data: on' : 'Sample data: off'}</button>` : ''}<span>${PT(`Found in every answer ${who} gave: the timing, hints, kind of question and what was remembered days later`, `從${who}每一個答案中找出：用時、提示、題型，以及幾天後還記不記得`)}</span></div>
+    // the student's own page talks to them: "you", and tips they can act on themselves
+    const youify = (t) => (LANG === 'zh' || !t ? t : [[/At dinner, ask “why does that work\?” about something from school\./g, 'When you learn something new, ask yourself “why does that work?”.'], [/At dinner, ask “why does that work\?”\./g, 'Ask yourself “why does that work?”.'],
+      [/Encourage a first try before asking Buddy\./g, 'Have a go first before asking Buddy.'], [/Agree a rule:/g, 'Make it a rule:'], [/Agree a fixed time each day\./g, 'Pick a fixed time each day.'], [/Praise the strong one, and keep an eye on the weakest\./g, 'Keep an eye on the weakest one.'],
+      [/Ask them to tell you about their day in English for two minutes\./g, 'Talk about your day in English, out loud, for two minutes.'], [/\bthey’d\b/g, 'you’d'], [/\bthey\b/g, 'you'], [/\bThey\b/g, 'You'], [/\bthem\b/g, 'you'], [/\btheir\b/g, 'your']].reduce((a, [re, to]) => a.replace(re, to), t));
+    if (YOU) PI.forEach((x) => { x.html = youify(x.html); x.title = youify(x.title); x.todo = youify(x.todo); x.verdict = youify(x.verdict); });
+    const sOnly = `<section class="pv-sec pi-sec"><div class="pv-h"><h2>${YOU ? PT('What Buddy has learned about you', 'Buddy 對你的了解') : PT('What only PrepBuddy can tell you', '只有 PrepBuddy 看得到')}</h2>${DEV ? `<button class="btn-sm pi-samb ${PSAM ? 'primary' : ''}" data-pisam>${PSAM ? 'Sample data: on' : 'Sample data: off'}</button>` : ''}<span>${PT(`Found in every answer ${who} gave: the timing, hints, kind of question and what was remembered days later`, `從${who}每一個答案中找出：用時、提示、題型，以及幾天後還記不記得`)}</span></div>
       ${PI.length ? (() => {
         // three layers: Buddy's read in three lines; four topics with a one-word verdict; tap a topic for the evidence
-        const TH = [[PT('How they think', '思考方式'), ['careless', 'think', 'writing', 'essays', 'second', 'stuck']], [PT('How they learn', '學習習慣'), ['stick', 'fixed', 'alone', 'helpdepth', 'time', 'tire', 'missions', 'quit']], [PT('Ready for exams?', '應試準備'), ['forecast', 'speed', 'guess', 'grade', 'pcheck']], [PT('Subjects and skills', '各科及技能'), ['subjects', 'speaking', 'dictation', 'homework']]];
+        const TH = [[YOU ? PT('How you think', '思考方式') : PT('How they think', '思考方式'), ['careless', 'think', 'writing', 'essays', 'second', 'stuck']], [YOU ? PT('How you learn', '學習習慣') : PT('How they learn', '學習習慣'), ['stick', 'fixed', 'alone', 'helpdepth', 'time', 'tire', 'missions', 'quit']], [PT('Ready for exams?', '應試準備'), ['forecast', 'speed', 'guess', 'grade', 'pcheck']], [PT('Subjects and skills', '各科及技能'), ['subjects', 'speaking', 'dictation', 'homework']]];
         // new this week: a finding that appeared or changed tone since last week's snapshot
         const cur = {}; PI.filter((x) => !x.html.includes('pi-card sam')).forEach((x) => (cur[x.id] = x.tone));
         let snap = local.pisnap; if (!snap || Date.now() - snap.t > 7 * DAY) { local.pisnap = snap = { t: Date.now(), m: cur, prev: snap ? snap.m : null }; saveLocal(); }
@@ -7275,7 +7282,7 @@ async function renderProgress() {
         const good = PI.filter((x) => x.tone === 'good' && !['forecast', 'homework', 'time'].includes(x.id)).sort((a, b) => a.pri - b.pri), warn = PI.filter((x) => x.tone === 'warn').sort((a, b) => a.pri - b.pri);
         const act = (warn[0] && warn[0].todo) || (PI.find((x) => x.todo) || {}).todo;
         const line = (ic, cls, lab, t) => `<li class="${cls}"><span class="pi-ric" aria-hidden="true">${ic}</span><div><small>${lab}</small><b data-raw>${esc(t)}</b></div></li>`;
-        const read = `<div class="pi-read"><div class="pi-rh">${buddySVG('happy', 40)}<b>${PT(`Buddy’s read on ${who}`, `Buddy 對${who}的看法`)}</b></div><ul>
+        const read = `<div class="pi-read"><div class="pi-rh">${buddySVG('happy', 40)}<b>${YOU ? PT('Buddy’s read on you', 'Buddy 對你的看法') : PT(`Buddy’s read on ${who}`, `Buddy 對${who}的看法`)}</b></div><ul>
           ${good[0] ? line('💪', 'good', PT('Going well', '做得好'), good[0].title) : ''}${warn[0] ? line('⚠️', 'warn', PT('Watch out for', '要留意'), warn[0].title) : ''}${act ? line('👉', 'act', PT('This week, try', '本週可以'), act) : ''}</ul></div>`;
         const groups = TH.map(([h, ids], i) => { const xs = PI.filter((x) => ids.includes(x.id)).sort(byPri); return { h, xs, i }; }).filter((g) => g.xs.length);
         const tile = (g) => { const w = g.xs.find((x) => x.tone === 'warn'), top = w || g.xs.find((x) => x.tone === 'good') || g.xs[0], nw = g.xs.some(isNew);
@@ -7283,8 +7290,12 @@ async function renderProgress() {
         const panels = groups.map((g) => `<div class="pi-panel" data-pip="${g.i}" hidden><h3 class="pi-th">${g.h}</h3><div class="pi-grid">${g.xs.map((x) => x.html.replace('<div class="pi-card', `<div class="pi-card ${x.tone}${isNew(x) ? ' isnew' : ''}`)).join('')}</div></div>`).join('');
         return `${read}<div class="pi-tiles">${groups.map(tile).join('')}</div>${panels}`;
       })()
-        : `<p class="pv-p">${PT(`After a week or two of practice, Buddy shows what it has learned about how ${who} thinks, remembers and works: careless slips or real gaps, the best time of day, when focus drops, and speed against the test clock.`, `練習一兩星期後，Buddy 會顯示它對${who}的了解：粗心還是不明白、最佳溫習時間、甚麼時候開始累，以及速度夠不夠。`)}</p>`}${dw7.q ? `<p class="pi-vs">${PT(`This week Buddy marked <b>${dw7.q}</b> answers${dw7.rv ? `, brought back <b>${dw7.rv}</b> reviews before they were forgotten` : ''}${dw7.mx ? ` and found <b>${dw7.mx}</b> mix-up${dw7.mx === 1 ? '' : 's'}` : ''}. A one-hour tutor lesson covers about 10–15 questions.`, `本週 Buddy 批改了 <b>${dw7.q}</b> 個答案${dw7.rv ? `，在快忘記前安排了 <b>${dw7.rv}</b> 次溫習` : ''}${dw7.mx ? `，並找出 <b>${dw7.mx}</b> 個混淆` : ''}。一堂一小時的補習大約只做 10–15 題。`)}</p>` : ''}</section>`;
-    parBody = `${sHead}${sOnly}${sGoals}${sWork}${sWatch}${sDid}`;
+        : `<p class="pv-p">${PT(`After a week or two of practice, Buddy shows what it has learned about how ${who} thinks, remembers and works: careless slips or real gaps, the best time of day, when focus drops, and speed against the test clock.`, `練習一兩星期後，Buddy 會顯示它對${who}的了解：粗心還是不明白、最佳溫習時間、甚麼時候開始累，以及速度夠不夠。`)}</p>`}${dw7.q ? `<p class="pi-vs">${PT(`This week Buddy marked <b>${dw7.q}</b> answers${dw7.rv ? `, brought back <b>${dw7.rv}</b> reviews just before they’d be forgotten` : ''}${dw7.mx ? ` and found <b>${dw7.mx}</b> mix-up${dw7.mx === 1 ? '' : 's'}` : ''}. A one-hour tutor lesson covers about 10–15 questions.`, `本週 Buddy 批改了 <b>${dw7.q}</b> 個答案${dw7.rv ? `，在快忘記前安排了 <b>${dw7.rv}</b> 次溫習` : ''}${dw7.mx ? `，並找出 <b>${dw7.mx}</b> 個混淆` : ''}。一堂一小時的補習大約只做 10–15 題。`)}</p>` : ''}</section>`;
+    // primary children get a short, happy page: this week, their goals, what's getting better, their levels
+    const wins = [...(r.up ? [r.up] : []), ...PI.filter((x) => x.tone === 'good' && !x.html.includes('pi-card sam') && !['forecast', 'homework', 'time'].includes(x.id)).map((x) => x.title)].slice(0, 3);
+    const sWins = `<section class="pv-sec"><div class="pv-h"><h2>${PT('You’re getting better!', '你進步了！')}</h2></div><ul class="pp-list">${wins.length ? wins.map((t) => item('good', t)).join('') : item('good', PT('Keep practising and Buddy will show what’s getting better.', '繼續練習，Buddy 會告訴你哪裡進步了。'))}</ul></section>`;
+    parBody = PRI ? `${sHead}${sGoals}${sWins}<section class="pv-sec"><div class="pv-h"><h2>${PT('Your levels', '你的程度')}</h2></div>${levelCard}</section>`
+      : YOU ? `${sHead}${sOnly}${sGoals}${sWork}${sWatch}` : `${sHead}${sOnly}${sGoals}${sWork}${sWatch}${sDid}`;
   }
   let newBody = '';
   if (PNEW) {
@@ -7304,9 +7315,9 @@ async function renderProgress() {
 
   $app.innerHTML = `
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
-    <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
-      <div class="pv-topb">${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${PT('Weekly report', '每週報告')}</span>`, () => reportDialog(), 'pv-btn primary pv-topbtn')}${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5"/></svg><span>${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}</span>`, () => openParent(), 'pv-btn primary pv-topbtn')}</div></div>
-    ${pvDev}${PPAR ? parBody : PNEW ? newBody : `${goalPHTML}
+    <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PO.parent ? PT('Parent dashboard', '家長主頁') : PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
+      <div class="pv-topb">${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${PT('Weekly report', '每週報告')}</span>`, () => reportDialog(), 'pv-btn primary pv-topbtn')}${PO.parent ? `<button class="pv-btn pv-topbtn" id="pdLock2">🔒 <span>${PT('Lock', '鎖上')}</span></button>` : btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5"/></svg><span>${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}</span>`, () => openParent(), 'pv-btn primary pv-topbtn')}</div></div>
+    ${pvDev}${PPAR || PSTU ? parBody : PNEW ? newBody : `${goalPHTML}
     ${sumSec}
     <div id="pv-s2">${sec2}</div><div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>`}
   </main>`;
@@ -7316,8 +7327,10 @@ async function renderProgress() {
     $app.querySelectorAll('[data-pith]').forEach((x) => x.setAttribute('aria-expanded', 'false')); $app.querySelectorAll('[data-pip]').forEach((x) => (x.hidden = true));
     if (open) { b.setAttribute('aria-expanded', 'true'); const pnl = $app.querySelector(`[data-pip="${b.dataset.pith}"]`); if (pnl) { pnl.hidden = false; } } }));
   $app.querySelectorAll('[data-pisam]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.pisample', localStorage.getItem('pb.pisample') === 'off' ? 'on' : 'off'); renderProgress(); }));
+  $app.querySelectorAll('[data-pvaud]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.aud', b.dataset.pvaud); renderProgress(); }));
+  if (PO.parent) { const lk = document.getElementById('pdLock2'); if (lk) lk.onclick = () => { parentUntil = 0; go({ name: 'progress' }); }; }
   $app.querySelectorAll('[data-pvmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.prog', b.dataset.pvmode); renderProgress(); }));
-  if (PNEW || PPAR) { $app.querySelector('main').classList.add(PPAR ? 'pvpar' : 'pvnew'); ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); }); }
+  if (PNEW || PPAR || PSTU) { $app.querySelector('main').classList.add(PNEW ? 'pvnew' : 'pvpar'); ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); }); }
   // Info pop-ups in plain words: a few short lines with a picture each, for kids and parents alike
   { const L = (rows) => `<ul class="how-easy">${rows.map(([i, en, zh, den, dzh]) => `<li><span>${i}</span><div><p>${PT(en, zh)}</p>${den ? `<small>${PT(den, dzh)}</small>` : ''}</div></li>`).join('')}</ul>`;
     const HOW = {
@@ -8120,6 +8133,7 @@ const agoWords = (t) => {
 async function renderParent() {
   const subj_ = (x) => subjectName(x, LANG);
   if (locked('parent') || Date.now() > parentUntil) return go({ name: 'progress' });
+  if (DEV && localStorage.getItem('pb.pdold') !== '1') return renderProgress({ parent: true }); // DEV: the parent dashboard is the parent view
   const books = await getBooks();
   const r = await currentReport();
   const t0 = dayStart(), log = local.log || [];
