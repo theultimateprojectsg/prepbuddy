@@ -2843,7 +2843,7 @@ async function renderHome() {
   const tdPlans = [], tdMins = [], jobsT = [], tdActs = [];
   const tdBtn = (label, run, cls = 'pv-btn') => { tdActs.push(run); return `<button class="${cls}" data-tdact="${tdActs.length - 1}">${label}</button>`; };
   let cards = [];
-  const DMODE = DEV ? (localStorage.getItem('pb.combo') || 'all') : '';
+  const DMODE = 'all'; // the All goals design is live; the comparison switch is gone
   const devBar = (cur) => `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes" role="group" aria-label="Design">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${cur === k ? 'primary' : ''}" data-cbmode="${k}" aria-pressed="${cur === k}">${t}</button>`).join('')}</div></div>`;
   if (nt) {
     // each test: a countdown card with a strip of days to the test, today's job for it, and the full plan one tap away
@@ -2933,7 +2933,7 @@ async function renderHome() {
             ${g.nx ? `<p class="ag-nx"><b>${Z('Buddy suggests', 'Buddy 建議')}</b> <span data-raw>${esc(g.nx)}</span></p>` : ''}${toProg}</div></details>`;
       };
       const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
-      comboHTML = `${DEV ? devBar('all') : ''}<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2>${who}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
+      comboHTML = `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2>${who}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
         ${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`}</section>`;
     }
 
@@ -2941,7 +2941,7 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${DEV && !comboHTML ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
+    ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
     ${installTip()}
     ${winHTML}
     ${lessonHTML}
