@@ -1,7 +1,7 @@
 // PrepBuddy's logo (the speech-bubble P) and Buddy, the character inside the app, as inline SVG.
 // Buddy has four faces: happy (right answer, the coach), listen, think, done (well done!).
 
-const P_PARTS = '<circle cx="57" cy="44" r="26" fill="#FFFFFF"/><path d="M31 44 H44 V77 L31 90 Z" fill="#FFFFFF"/><circle cx="57" cy="44" r="11" fill="#FFE066"/>';
+const P_PARTS = '<circle cx="50" cy="40" r="26" fill="#FFFFFF"/><path d="M24 40 H37 V73 L24 86 Z" fill="#FFFFFF"/><circle cx="50" cy="40" r="11" fill="#FFE066"/>';
 // The logo on its navy tile; `bare` draws only the P, for navy backgrounds.
 export function logoSVG(size = 28, bare = false, label = '') {
   const a = label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"';

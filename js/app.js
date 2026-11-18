@@ -2410,6 +2410,15 @@ const infoBtn = (id, label) => `<button type="button" class="info-btn" data-how=
 // Info pop-ups on Today, in the same style as Progress: a few rows, each an icon, one plain line and a short detail.
 const easyRows = (rows) => `<ul class="how-easy">${rows.map(([i, en, zh, den, dzh]) => `<li><span>${i}</span><div><p>${LANG === 'zh' ? zh : en}</p>${den ? `<small>${LANG === 'zh' ? dzh : den}</small>` : ''}</div></li>`).join('')}</ul>`;
 const howPanel = (id, en, zh, rows) => `<details class="ms-how how-panel" id="${id}"><summary>${LANG === 'zh' ? zh : en}</summary><div>${easyRows(rows)}</div></details>`;
+function goalsHowHTML(id = 'howGoals') {
+  return howPanel(id, 'How do goals work?', '目標是怎樣運作的？', [
+    ['🎯', 'Every test you add is a goal.', '每個加入的測驗都是一個目標。', 'With the score you’re aiming for. Add subjects to get stronger in over the year too.', '並有想考到的分數。也可加入全年想加強的科目。'],
+    ['📊', 'The bar: ready now, where you’re heading, the goal.', '進度條：現在、走向、目標。', 'Solid is how ready you are today. Stripes are where your usual pace gets you by test day. The line is the goal.', '實色是今天的準備度，條紋是照平時步伐考試當日會到的位置，直線是目標。'],
+    ['🚦', 'Green, amber or red: on track, a little behind, behind.', '綠、橙、紅：進度理想、稍為落後、落後。', 'For a test, from where you’re heading by test day. For a subject, from whether your level is rising.', '測驗看考試當日預計到哪裏；科目看程度是否上升。'],
+    ['📈', 'Subjects show a level out of 10.', '科目以 10 分為滿分顯示程度。', '5.0 is keeping up, 6.7 above grade level, 8.5 top of the class.', '5.0 跟上進度，6.7 高於年級水平，8.5 名列前茅。'],
+    ['✅', '“In today’s mission” is today’s work for that goal.', '「已在今日任務中」是這個目標今天要做的。', 'The goal that needs the most work comes first, in the list and in the mission.', '最需要努力的目標排最先，清單和任務都一樣。'],
+    ['✏️', 'Tap a goal to open it. The pencil changes goals.', '按目標可打開詳情，鉛筆可修改目標。', 'Tests open to their full plan; subjects to their level week by week.', '測驗會顯示完整計劃；科目會顯示每週程度。']]);
+}
 function missionHowHTML(id = 'howMission') {
   return howPanel(id, 'How does this work?', '這是怎樣運作的？', [
     ['📋', 'Up to 5 jobs a day, most important first.', '每天最多 5 項，最重要的排先。', 'Try to finish them all. Each one ticks itself off when it’s done.', '盡量全部完成，做完會自動打勾。'],
@@ -2920,7 +2929,7 @@ async function renderHome() {
       const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<s style="left:${g.aim}%"></s><small style="left:${g.aim}%;transform:translateX(${g.aim >= 80 ? '-100%' : g.aim <= 20 ? '0' : '-50%'})">${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</small></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>`;
       const sub = (g, i) => {
         const mis = inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
-        if (g.kind === 'test') return `<details class="ag-sc t ${g.st}" ${i === 0 ? 'open' : ''}><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
+        if (g.kind === 'test') return `<details class="ag-sc t ${g.st}"><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
         const name = esc(g.lab);
         // subject goals open too: the level week by week, how far it has come, and what Buddy suggests next
         const toProg = `<button class="linkbtn ag-more" data-gfocus2="${esc(g.id)}">${Z('See it on Progress', '在「進度」查看')} ›</button>`;
@@ -2934,8 +2943,8 @@ async function renderHome() {
             ${g.nx ? `<p class="ag-nx"><b>${Z('Buddy suggests', 'Buddy 建議')}</b> <span data-raw>${esc(g.nx)}</span></p>` : ''}${toProg}</div></details>`;
       };
       const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
-      comboHTML = `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2>${who}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
-        ${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`}</section>`;
+      comboHTML = `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
+        ${goalsHowHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`}</section>`;
     }
 
   $app.innerHTML = `

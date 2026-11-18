@@ -234,7 +234,7 @@ export function reportHTML(r, opts = {}) {
   const ring = (p, size = 64) => `<span class="rp-ring ${tone(p)}" style="--p:${p};width:${size}px;height:${size}px"><b>${p}%</b></span>`;
   return `<div class="rp">
   <header class="rp-head">
-    <div class="rp-brand"><span class="rp-logo"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><circle cx="57" cy="44" r="26" fill="#FFFFFF"/><path d="M31 44 H44 V77 L31 90 Z" fill="#FFFFFF"/><circle cx="57" cy="44" r="11" fill="#FFE066"/></svg>PrepBuddy</span><span>${opts.live ? `<i class="rp-live">●</i> ${T('Live dashboard', '即時主頁')} · ${T(`last 7 days to ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })}`, `截至 ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })} 的 7 日`)}` : `${r.sm ? `${T('Sample report', '報告樣本')} · ` : ''}${T('Weekly report', '每週報告')} · ${range}`}</span></div>
+    <div class="rp-brand"><span class="rp-logo"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="40" r="26" fill="#FFFFFF"/><path d="M24 40 H37 V73 L24 86 Z" fill="#FFFFFF"/><circle cx="50" cy="40" r="11" fill="#FFE066"/></svg>PrepBuddy</span><span>${opts.live ? `<i class="rp-live">●</i> ${T('Live dashboard', '即時主頁')} · ${T(`last 7 days to ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })}`, `截至 ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })} 的 7 日`)}` : `${r.sm ? `${T('Sample report', '報告樣本')} · ` : ''}${T('Weekly report', '每週報告')} · ${range}`}</span></div>
     <div class="rp-hero">
       <div class="rp-title">
         <h1>${esc(headline(r))}</h1>
