@@ -2897,7 +2897,7 @@ async function renderHome() {
       const nextB = nOpen ? `<button class="gl-next" id="glNext"><span><small>${Z('Next step', '下一步')} · ${Z(`${jobMin(nOpen)} min`, `${jobMin(nOpen)} 分鐘`)}</small><b data-raw>${esc(nOpen.now.t)}</b></span><i aria-hidden="true">›</i></button>` : '';
       const all = GD.list.filter((g) => ['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab)), n = all.length;
       const focusHTML = goalG.kind === 'test'
-        ? `<section class="cb-focus"><div class="cb-tag">${n > 1 ? Z(`Focus today · 1 of ${n} goals`, `今日重點 · ${n} 個目標之一`) : Z('Your goal', '你的目標')}</div>${cardOf(goalG)}${nextB}</section>`
+        ? `<section class="cb-focus"><div class="cb-tag">${n > 1 ? Z(`Focus today · 1 of ${n} goals`, `今日重點 · ${n} 個目標之一`) : Z('Your goal', '你的目標')}${n > 1 && goalG.why ? `<i class="gl-why">${esc(goalG.why)}</i>` : ''}</div>${cardOf(goalG)}${nextB}</section>`
         : goalTopHTML(goalG, nOpen ? { t: nOpen.now.t, min: jobMin(nOpen) } : null, n);
       const rows = all.filter((g) => g !== goalG).map((g) => g.kind === 'test' ? `<details class="cb-row">${goalRowHTML(g, '', false, 'summary')}<div class="cb-open">${cardOf(g)}<button class="linkbtn cb-mk" data-gfocus="${esc(g.id)}">${Z('Make this today’s focus', '設為今日重點')}</button></div></details>` : goalRowHTML(g, 'data-gfocus')).join('');
       comboHTML = `<div class="cb-dev"><b>DEV preview: combined design</b><span>Same data as now. Only you see this.</span><button class="btn-sm" id="cbOff">Show the current design</button></div>${focusHTML}
@@ -6115,12 +6115,39 @@ async function goalsData(tests) {
       st: now >= target ? 'done' : x[2] === 'rising' ? 'ok' : x[2] === 'dipping' ? 'risk' : 'close', line: (x[5] || []).map(lv10), others: S.filter((y) => y !== x).slice(0, 3).map((y) => ({ lab: y[0], now: lv10(y[1]) })) });
   }
   if (!out.length) out.push({ kind: MG.main === 'test' ? 'needtest' : 'longnew', id: 'none' });
-  // the focus for today
-  const F = local.goalFocus && local.goalFocus.d === t0 && out.find((g) => g.id === local.goalFocus.id);
-  const rank = { risk: 0, close: 1, ok: 2, done: 3 };
-  const soon = out.filter((g) => g.kind === 'test' && g.p.left <= 14);
-  const focus = F || soon.filter((g) => g.st !== 'ok').sort((a, b) => a.p.left - b.p.left)[0] || soon.sort((a, b) => a.p.left - b.p.left)[0]
-    || out.filter((g) => g.kind === 'long').sort((a, b) => rank[a.st] - rank[b.st] || (a.now - a.target) - (b.now - b.target))[0] || out[0];
+  // The focus for today, and why. A goal pinned in My goals, else one the child tapped today, else the test that
+  // needs the most work per day (practice sets to reach its goal ÷ days left; exams count 1.5×). A test already
+  // worked on today (a lesson, or 5+ answers in its chapters) steps aside for the next one. With no test needing
+  // work: the subject goal furthest from its target, else the nearest test.
+  const Z = PT, sod = startOfToday();
+  const workedToday = (g) => { if (g.kind === 'test') { const ids = new Set(g.p.units.map((u) => `${g.p.book.id}:${u.id}`));
+      if (Object.entries(local.learned || {}).some(([k, t]) => ids.has(k) && (typeof t === 'number' ? t : (t && t.t) || 0) >= sod)) return true;
+      return (local.log || []).filter((e) => e.t >= sod && e.q && ids.has(qUnit(e.q).slice(0, 2).join(':'))).length >= 5; }
+    return false; };
+  for (const g of out) if (g.kind === 'test') {
+    const sets = g.ready >= g.aim ? 0 : planNeeds(g.ready, g.chs.map((c) => c.pct || 0), Math.max(1, g.p.left), g.aim).sets, days = Math.max(1, g.p.left);
+    g.perDay = sets / days; g.score = g.perDay * (g.p.x.kind === 'exam' ? 1.5 : 1); g.mins = Math.round((g.perDay * SET_MIN) / 5) * 5; g.worked = workedToday(g);
+  }
+  const named = (g) => (g.kind === 'test' ? g.p.x.name : g.lab ? Z(`Stronger in ${g.lab}`, `${g.lab}更進一步`) : Z('your goal', '你的目標'));
+  const pin = MG.pin && out.find((g) => g.id === MG.pin), tap = local.goalFocus && local.goalFocus.d === t0 && out.find((g) => g.id === local.goalFocus.id);
+  const needy = out.filter((g) => g.kind === 'test' && g.p.left <= 21 && g.score > 0).sort((a, b) => b.score - a.score || a.p.left - b.p.left);
+  const fresh = needy.filter((g) => !g.worked);
+  let focus, why;
+  if (pin) { focus = pin; why = Z('Pinned by you in My goals', '你在「我的目標」中置頂'); }
+  else if (tap) { focus = tap; why = Z('You picked this for today', '你今天選了這個'); }
+  else if (fresh.length) {
+    focus = fresh[0];
+    const doneOne = needy[0] !== fresh[0] ? needy[0] : null;
+    why = doneOne ? Z(`${doneOne.p.x.name} is done for today, so this is next`, `「${doneOne.p.x.name}」今天已做完，下一個是這個`)
+      : focus.mins >= 10 ? Z(`Needs the most work: about ${focus.mins} min a day for ${focus.p.left} day${focus.p.left === 1 ? '' : 's'}`, `最需要努力：之後 ${focus.p.left} 天每天約 ${focus.mins} 分鐘`)
+      : Z(`Needs the most work of your goals, ${leftText(focus.p.left)}`, `你的目標中最需要努力的，${leftText(focus.p.left)}`);
+  } else if (needy.length) { focus = needy[0]; why = Z('All your tests have had work today. Extra practice still helps this one most.', '今天每個測驗都做過了。多練這個最有幫助。'); }
+  else {
+    const rank = { risk: 0, close: 1, ok: 2, done: 3 }, lg = out.filter((g) => g.kind === 'long' && g.st !== 'done').sort((a, b) => rank[a.st] - rank[b.st] || (a.now - a.target) - (b.now - b.target))[0];
+    if (lg) { focus = lg; why = Z(`No test needs extra work right now, so: ${named(lg)}`, `暫時沒有測驗需要額外努力，所以：${named(lg)}`); }
+    else { focus = out.filter((g) => g.kind === 'test').sort((a, b) => a.p.left - b.p.left)[0] || out[0]; why = focus.kind === 'test' ? Z('Your nearest test, and it’s on track', '最近的測驗，進度理想') : ''; }
+  }
+  focus.why = why;
   return { list: out, focus };
 }
 function goalRingSVG(now, fc, aim) {
@@ -6148,7 +6175,7 @@ function goalSpark(vals, target) {
 function goalTopHTML(G, next, n = 1) {
   const Z = PT, ST = GOAL_ST();
   const tag = n > 1 ? Z(`Focus today · 1 of ${n} goals`, `今日重點 · ${n} 個目標之一`) : Z('Your goal', '你的目標');
-  const head = (title, sub, st) => `<div class="gl-h"><div class="gl-ht"><small>${tag}</small><b data-raw>${title}</b><span data-raw>${sub}</span></div>${st ? `<em class="gl-st ${st}">${ST[st]}</em>` : ''}</div>`;
+  const head = (title, sub, st) => `<div class="gl-h"><div class="gl-ht"><small>${tag}</small>${n > 1 && G.why ? `<i class="gl-why">${esc(G.why)}</i>` : ''}<b data-raw>${title}</b><span data-raw>${sub}</span></div>${st ? `<em class="gl-st ${st}">${ST[st]}</em>` : ''}</div>`;
   const nxt = next ? `<button class="gl-next" id="glNext"><span><small>${Z('Next step', '下一步')}${next.min ? ` · ${Z(`${next.min} min`, `${next.min} 分鐘`)}` : ''}</small><b data-raw>${esc(next.t)}</b></span><i aria-hidden="true">›</i></button>`
     : `<p class="gl-done">${ICON.check}<span>${Z('Today’s mission is done. Nice work!', '今日任務已完成，做得好！')}</span></p>`;
   const foot = n > 1 ? '' : `<button class="linkbtn gl-chg" data-mygoals>${Z('My goals', '我的目標')}</button>`;
@@ -6197,12 +6224,14 @@ async function myGoalsSheet(onDone) {
   const subs = [...new Set([...(GS ? GS.s.map((x) => x[0]) : []), ...books.map((b) => (b.subject ? subj(b.subject) : '')).filter(Boolean)])];
   const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
   const aims = Object.fromEntries(tests.map((x) => [x.id, x.aim || 80]));
+  let pin = MG.pin || null;
+  const pinB = (id) => `<button class="gl-pin ${pin === id ? 'on' : ''}" data-pin="${esc(id)}" aria-pressed="${pin === id}" title="${Z('Always the focus', '一直作為重點')}">${pin === id ? Z('Pinned', '已置頂') : Z('Pin', '置頂')}</button>`;
   let adding = false;
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   const draw = () => {
-    box.innerHTML = `<div class="cdlg gl-dlg" role="dialog" aria-modal="true" aria-labelledby="gl-t"><header class="gl-dh"><div><b id="gl-t">${Z('My goals', '我的目標')}</b><span>${Z('Buddy focuses on the one that needs it most each day. Tests near the date come first.', 'Buddy 每天會集中在最需要的目標，臨近的測驗優先。')}</span></div><button class="cs2-x" aria-label="${Z('Close', '關閉')}">✕</button></header>
-      <div class="gl-grp"><small>${Z('Tests', '測驗')}</small>${tests.length ? tests.map((x) => `<div class="gl-gi"><span class="gl-ric">${GIC.test}</span><span class="gl-rt"><b data-raw>${esc(x.name)}</b><small>${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${Z('target', '目標')} <label class="gl-aim"><select data-aimfor="${esc(x.id)}" aria-label="${Z('Target score', '目標分數')}">${[60, 70, 75, 80, 85, 90, 95, 100].map((v) => `<option value="${v}" ${aims[x.id] === v ? 'selected' : ''}>${v}%</option>`).join('')}${[60, 70, 75, 80, 85, 90, 95, 100].includes(aims[x.id]) ? '' : `<option selected value="${aims[x.id]}">${aims[x.id]}%</option>`}</select></label></small></span><button class="linkbtn" data-tedit2="${esc(x.id)}">${Z('Edit', '修改')}</button></div>`).join('') : `<p class="gl-none">${Z('No tests yet. Add one and it becomes a goal.', '還沒有測驗。加入後就會成為目標。')}</p>`}</div>
-      <div class="gl-grp"><small>${Z('Getting stronger', '持續進步')}</small>${longs.length ? longs.map((x, i) => `<div class="gl-gi"><span class="gl-ric">${GIC.long}</span><span class="gl-rt"><b data-raw>${esc(x.subj || Z('Main subject', '主要科目'))}</b><small>${Z('target', '目標')} <label class="gl-aim"><select data-tgfor="${i}" aria-label="${Z('Target level', '目標程度')}">${TG.map(([v, t]) => `<option value="${v}" ${(x.target || 6.7) === v ? 'selected' : ''}>${t} · ${v.toFixed(1)}</option>`).join('')}</select></label></small></span><button class="linkbtn" data-lrm="${i}">${Z('Remove', '移除')}</button></div>`).join('') : `<p class="gl-none">${Z('None yet.', '暫時沒有。')}</p>`}
+    box.innerHTML = `<div class="cdlg gl-dlg" role="dialog" aria-modal="true" aria-labelledby="gl-t"><header class="gl-dh"><div><b id="gl-t">${Z('My goals', '我的目標')}</b><span>${Z('Each day Buddy focuses on the goal that needs the most work per day. Pin one to keep it as the focus.', 'Buddy 每天會集中在每日最需要努力的目標。置頂一個，就會一直以它為重點。')}</span></div><button class="cs2-x" aria-label="${Z('Close', '關閉')}">✕</button></header>
+      <div class="gl-grp"><small>${Z('Tests', '測驗')}</small>${tests.length ? tests.map((x) => `<div class="gl-gi"><span class="gl-ric">${GIC.test}</span><span class="gl-rt"><b data-raw>${esc(x.name)}</b><small>${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${Z('target', '目標')} <label class="gl-aim"><select data-aimfor="${esc(x.id)}" aria-label="${Z('Target score', '目標分數')}">${[60, 70, 75, 80, 85, 90, 95, 100].map((v) => `<option value="${v}" ${aims[x.id] === v ? 'selected' : ''}>${v}%</option>`).join('')}${[60, 70, 75, 80, 85, 90, 95, 100].includes(aims[x.id]) ? '' : `<option selected value="${aims[x.id]}">${aims[x.id]}%</option>`}</select></label></small></span>${pinB('t:' + x.id)}<button class="linkbtn" data-tedit2="${esc(x.id)}">${Z('Edit', '修改')}</button></div>`).join('') : `<p class="gl-none">${Z('No tests yet. Add one and it becomes a goal.', '還沒有測驗。加入後就會成為目標。')}</p>`}</div>
+      <div class="gl-grp"><small>${Z('Getting stronger', '持續進步')}</small>${longs.length ? longs.map((x, i) => `<div class="gl-gi"><span class="gl-ric">${GIC.long}</span><span class="gl-rt"><b data-raw>${esc(x.subj || Z('Main subject', '主要科目'))}</b><small>${Z('target', '目標')} <label class="gl-aim"><select data-tgfor="${i}" aria-label="${Z('Target level', '目標程度')}">${TG.map(([v, t]) => `<option value="${v}" ${(x.target || 6.7) === v ? 'selected' : ''}>${t} · ${v.toFixed(1)}</option>`).join('')}</select></label></small></span>${pinB('l:' + (x.subj || ''))}<button class="linkbtn" data-lrm="${i}">${Z('Remove', '移除')}</button></div>`).join('') : `<p class="gl-none">${Z('None yet.', '暫時沒有。')}</p>`}
         ${adding ? `<div class="gl-add"><b>${Z('Get stronger in…', '想加強…')}</b><div class="gl-chips">${subs.filter((x) => !longs.some((y) => y.subj === x)).map((x) => `<button class="fchip" data-addl="${esc(x)}" data-raw>${esc(x)}</button>`).join('') || `<span class="muted" style="font-size:14px">${Z('Add a textbook first.', '請先加入課本。')}</span>`}</div></div>` : ''}</div>
       <div class="gl-addb"><button class="gl-ab t" id="glAddT">+ ${Z('Add a test', '加入測驗')}</button><button class="gl-ab l" id="glAddL">+ ${Z('Get stronger in…', '持續進步…')}</button></div>
       <button class="btn" id="glSave">${Z('Done', '完成')}</button></div>`;
@@ -6211,11 +6240,12 @@ async function myGoalsSheet(onDone) {
     box.querySelectorAll('[data-aimfor]').forEach((s) => (s.onchange = () => { aims[s.dataset.aimfor] = +s.value; }));
     box.querySelectorAll('[data-tgfor]').forEach((s) => (s.onchange = () => { longs[+s.dataset.tgfor].target = +s.value; }));
     box.querySelectorAll('[data-lrm]').forEach((b) => (b.onclick = () => { longs.splice(+b.dataset.lrm, 1); draw(); }));
+    box.querySelectorAll('[data-pin]').forEach((b) => (b.onclick = () => { pin = pin === b.dataset.pin ? null : b.dataset.pin; draw(); }));
     box.querySelectorAll('[data-addl]').forEach((b) => (b.onclick = () => { longs.push({ subj: b.dataset.addl, target: 6.7 }); adding = false; draw(); }));
     box.querySelectorAll('[data-tedit2]').forEach((b) => (b.onclick = () => { save(); close(); testDialog((local.sched || []).find((y) => y.id === b.dataset.tedit2)); }));
     box.querySelector('#glAddT').onclick = () => { save(); close(); testDialog(); };
     box.querySelector('#glAddL').onclick = () => { adding = !adding; draw(); };
-    const save = () => { local.mygoals = { ...myGoals(), longs }; (local.sched || []).forEach((y) => { if (aims[y.id] != null) y.aim = aims[y.id]; }); saveLocal(); };
+    const save = () => { local.mygoals = { ...myGoals(), longs, pin }; (local.sched || []).forEach((y) => { if (aims[y.id] != null) y.aim = aims[y.id]; }); saveLocal(); };
     box.querySelector('#glSave').onclick = () => { save(); close(); toast(Z('Goals saved', '目標已儲存')); onDone && onDone(); };
   };
   box.onclick = (e) => { if (e.target === box) box.remove(); };
