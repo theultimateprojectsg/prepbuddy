@@ -2828,6 +2828,7 @@ async function renderHome() {
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
   const testHead = `<div class="sect-head"><h2 class="h-info">${SCH('School tests', '學校測驗')}${infoBtn('howTests', SCH('How do school tests work?', '學校測驗是怎樣運作的？'))}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>${testsHowHTML()}`;
+  let comboHTML = '';
   let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s mission will get you ready, day by day.', '加入後，今日任務會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
   const tdPlans = [], tdMins = [], jobsT = [], tdActs = [];
   const tdBtn = (label, run, cls = 'pv-btn') => { tdActs.push(run); return `<button class="${cls}" data-tdact="${tdActs.length - 1}">${label}</button>`; };
@@ -2880,20 +2881,33 @@ async function renderHome() {
     const tot = tdMins.reduce((a, b) => a + b, 0);
     const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Slide Buddy to a lower goal on a test card to lighten it.', '時間較多，可在測驗卡上把 Buddy 拖到較低的目標。') : ''}</span></p>` : '';
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>`;
+    // DEV only: preview of the combined design (the focus test as its full test card; other tests as rows that open their card)
+    if (DEV && goalG && localStorage.getItem('pb.combo') !== '0') {
+      const cardOf = (G) => { const k = tests.steps.indexOf(G.p); return k >= 0 ? cards[k] : ''; };
+      const nOpen = firstOpen >= 0 ? steps[firstOpen] : null;
+      const nextB = nOpen ? `<button class="gl-next" id="glNext"><span><small>${Z('Next step', '下一步')} · ${Z(`${jobMin(nOpen)} min`, `${jobMin(nOpen)} 分鐘`)}</small><b data-raw>${esc(nOpen.now.t)}</b></span><i aria-hidden="true">›</i></button>` : '';
+      const all = GD.list.filter((g) => ['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab)), n = all.length;
+      const focusHTML = goalG.kind === 'test'
+        ? `<section class="cb-focus"><div class="cb-tag">${n > 1 ? Z(`Focus today · 1 of ${n} goals`, `今日重點 · ${n} 個目標之一`) : Z('Your goal', '你的目標')}</div>${cardOf(goalG)}${nextB}</section>`
+        : goalTopHTML(goalG, nOpen ? { t: nOpen.now.t, min: jobMin(nOpen) } : null, n);
+      const rows = all.filter((g) => g !== goalG).map((g) => g.kind === 'test' ? `<details class="cb-row">${goalRowHTML(g, '', false, 'summary')}<div class="cb-open">${cardOf(g)}<button class="linkbtn cb-mk" data-gfocus="${esc(g.id)}">${Z('Make this today’s focus', '設為今日重點')}</button></div></details>` : goalRowHTML(g, 'data-gfocus')).join('');
+      comboHTML = `<div class="cb-dev"><b>DEV preview: combined design</b><span>Same data as now. Only you see this.</span><button class="btn-sm" id="cbOff">Show the current design</button></div>${focusHTML}
+        <section class="gl-others"><div class="gl-oh"><b>${Z('Other goals', '其他目標')}</b><span class="cb-hb"><button class="linkbtn" id="addTest3">+ ${SCH('Add a test', '加入測驗')}</button><button class="linkbtn" data-mygoals>${Z('My goals', '我的目標')} ›</button></span></div>${rows || `<p class="gl-none" style="padding:0 14px 12px">${Z('No other goals.', '沒有其他目標。')}</p>`}</section>`;
+    }
   }
 
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${goalHTML}
+    ${comboHTML || goalHTML}${DEV && !comboHTML && localStorage.getItem('pb.combo') === '0' ? '<div class="cb-dev"><b>DEV: current design</b><button class="btn-sm" id="cbOn">Show the combined preview</button></div>' : ''}
     ${installTip()}
     ${winHTML}
     ${lessonHTML}
     ${slipHTML}
     ${missionHTML}
     ${tests.pastHTML}
-    ${testHTML}
+    ${comboHTML ? '' : testHTML}
     ${quickHTML}
   </main>
   <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
@@ -2901,6 +2915,9 @@ async function renderHome() {
   bindHomeCommon();
   { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-row') || $app.querySelector('.ms-item .ms-row'); if (r) r.click(); }; }
   { const a = document.getElementById('glAddTest'); if (a) a.onclick = () => testDialog(); }
+  { const a = document.getElementById('addTest3'); if (a) a.onclick = () => testDialog(); }
+  { const o = document.getElementById('cbOff'); if (o) o.onclick = () => { localStorage.setItem('pb.combo', '0'); renderHome(); }; }
+  { const o = document.getElementById('cbOn'); if (o) o.onclick = () => { localStorage.removeItem('pb.combo'); renderHome(); }; }
   bindCoach();
   { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
   { const pl = document.getElementById('profLater'); if (pl) pl.onclick = () => { local.profSkip = Date.now(); saveLocal(); go({ name: 'home' }); }; }
@@ -6151,7 +6168,7 @@ function goalTopHTML(G, next, n = 1) {
 // one goal as a slim row: icon, name, when or target, status, and a thin bar (now, forecast, goal)
 const GIC = { test: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#26357A" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 10h18M9 15l2 2 4-4"></path></svg>',
   long: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#18966A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>' };
-function goalRowHTML(G, attr, on = false) {
+function goalRowHTML(G, attr, on = false, tag = 'button') {
   const Z = PT, ST = GOAL_ST(), t = G.kind === 'test';
   if (G.kind === 'longnew' && G.lab) return `<button class="gl-row long" ${attr}="${esc(G.id)}"><span class="gl-rh"><span class="gl-ric">${GIC.long}</span><span class="gl-rt"><b data-raw>${Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`)}</b><small>${Z('Practise a little and the level shows here', '練習一下，程度就會顯示在這裏')}</small></span></span></button>`;
   if (!['test', 'long'].includes(G.kind)) return '';
@@ -6159,8 +6176,8 @@ function goalRowHTML(G, attr, on = false) {
   const meta = t ? `${new Date(testDay(G.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(G.p.left)}` : Z(`Target level ${G.target.toFixed(1)}`, `目標程度 ${G.target.toFixed(1)}`);
   const now = t ? G.ready : G.now * 10, fc = t && G.fc != null ? G.fc : now, aim = t ? G.aim : G.target * 10;
   const nums = t ? (G.fc != null && G.fc !== G.ready ? `${G.ready}% → ${G.fc}% · ${Z('goal', '目標')} ${G.aim}%` : `${G.ready}% · ${Z('goal', '目標')} ${G.aim}%`) : `${G.now.toFixed(1)}/10${G.change != null && Math.abs(G.change) >= 0.1 ? ` · ${G.change > 0 ? '▲' : '▼'} ${Math.abs(G.change).toFixed(1)}` : ''}`;
-  return `<button class="gl-row ${G.kind} ${on ? 'on' : ''}" ${attr}="${esc(G.id)}"><span class="gl-rh"><span class="gl-ric">${GIC[G.kind]}</span><span class="gl-rt"><b data-raw>${name}</b><small data-raw>${meta}</small></span><em class="gl-st ${G.st}">${ST[G.st]}</em></span>
-    <span class="gl-rb"><span class="gl-bar" aria-hidden="true"><i class="f" style="width:${fc}%"></i><i style="width:${now}%"></i><u style="left:${aim}%"></u></span><small>${nums}</small></span></button>`;
+  return `<${tag} class="gl-row ${G.kind} ${on ? 'on' : ''}" ${attr ? `${attr}="${esc(G.id)}"` : ''}><span class="gl-rh"><span class="gl-ric">${GIC[G.kind]}</span><span class="gl-rt"><b data-raw>${name}</b><small data-raw>${meta}</small></span><em class="gl-st ${G.st}">${ST[G.st]}</em></span>
+    <span class="gl-rb"><span class="gl-bar" aria-hidden="true"><i class="f" style="width:${fc}%"></i><i style="width:${now}%"></i><u style="left:${aim}%"></u></span><small>${nums}</small></span></${tag}>`;
 }
 // My goals: tests (with their target score) and subjects to get stronger in (with a target level). Add, edit, remove.
 async function myGoalsSheet(onDone) {
