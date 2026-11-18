@@ -2600,6 +2600,9 @@ async function renderHome() {
     if (ic === 'test' || ic === 'mock') return 15;
     return 10; };
   const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
+  // the goal card on top: the goal, how far along, and today's next mission step as the one next step
+  const goalG = await goalData(tests).catch((e) => { console.warn(e); return null; });
+  const goalHTML = goalG ? goalTopHTML(goalG, firstOpen >= 0 ? { t: steps[firstOpen].now.t, min: jobMin(steps[firstOpen]) } : null) : '';
   // A done step opens to show what was done today, with a way to go back to it.
   const doneInfo = (x) => {
     const c = x.chk || {}, today = local.log.filter((e) => e.t >= M.at);
@@ -2871,16 +2874,17 @@ async function renderHome() {
     };
     for (const p of tests.steps) await card(p); // works out today's job and minutes for each test
     // the full test card; today's job for it is already in Buddy's plan box and in Today's mission, so no extra Start row
-    const cards = await fullTestCards(tests, tdBtn);
+    const cards = (await fullTestCards(tests, tdBtn)).filter((_, k) => !(goalG && goalG.kind === 'test' && tests.steps[k] === goalG.p));
     const tot = tdMins.reduce((a, b) => a + b, 0);
     const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Slide Buddy to a lower goal on a test card to lighten it.', '時間較多，可在測驗卡上把 Buddy 拖到較低的目標。') : ''}</span></p>` : '';
-    testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>`;
+    testHTML = cards.length ? `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>` : '';
   }
 
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
+    ${goalHTML}
     ${installTip()}
     ${winHTML}
     ${lessonHTML}
@@ -2893,6 +2897,9 @@ async function renderHome() {
   <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
   { const co = document.getElementById('coachOpen'); if (co) co.onclick = () => { document.getElementById('coach').classList.remove('folded'); const q = document.getElementById('coachQ'); if (q) q.focus({ preventScroll: true }); document.getElementById('coach').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
   bindHomeCommon();
+  { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-row') || $app.querySelector('.ms-item .ms-row'); if (r) r.click(); }; }
+  { const c = document.getElementById('glChange'); if (c) c.onclick = () => goalSheet(() => renderHome()); }
+  { const a = document.getElementById('glAddTest'); if (a) a.onclick = () => testDialog(); }
   bindCoach();
   { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
   { const pl = document.getElementById('profLater'); if (pl) pl.onclick = () => { local.profSkip = Date.now(); saveLocal(); go({ name: 'home' }); }; }
@@ -3317,6 +3324,10 @@ function renderSettings(sec) {
       <span class="muted" style="font-size:14px;line-height:1.5">${gradeNow() ? `<b data-raw>${esc(gradeName(gradeNow()))}</b> · ` : ''}${PLT('Buddy uses the grade and these details to explain and set questions at the right level.', 'Buddy 會按年級及這些資料，用合適的程度講解和出題。')}</span>
     </section>` : ''}
     <section class="card stack g10" style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">${PLT('Goal', '目標')}</b><button class="btn-sm quiet" id="sgoal">${PLT('Change', '更改')}</button></div>
+      <span class="muted" style="font-size:14px;line-height:1.5" id="sgoalTxt" data-raw>${esc(goalText())}</span>
+    </section>
+    <section class="card stack g10" style="padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Standard</span>' : ''}</b>
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:14px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
@@ -3704,7 +3715,7 @@ const gradeName = (g, c) => COUNTRIES[c || country()].name(g);
 function profileScreen({ first } = {}) {
   return new Promise((resolve) => {
     const C = (en, zh) => (LANG === 'zh' ? zh : en);
-    const L = { grade: gradeNow(), pace: '', medium: '', goals: [], likes: '', vrate: '', ...(local.learner || {}) }; L.grade = gradeNow() || '';
+    const L = { grade: gradeNow(), pace: '', medium: '', goals: [], likes: '', vrate: '', ...(local.learner || {}) }; L.grade = gradeNow() || ''; L.mainGoal = (local.goal && local.goal.kind) || '';
     // First run sets everything up front: the child's name, the details below, and stars on or off.
     // First run: four short pages (basics, school, reading aloud, goals) instead of one long one.
     let step = 1; const STEPS = 4;
@@ -3754,6 +3765,9 @@ function profileScreen({ first } = {}) {
           <div class="prof-opts two">${opt('vrate', '', C('Normal speed', '正常速度'), '')}${opt('vrate', 'slower', C('A bit slower', '慢一點'), C('Good for younger children', '適合年紀較小的孩子'))}</div>
           <div class="prof-opts two">${opt('autoread', '', C('Read questions only when tapped', '按 🔊 才朗讀題目'), C('Tap 🔊 on a question', '在題目按 🔊'))}${opt('autoread', 'on', C('Read each question automatically', '自動朗讀每一題'), C(`Good for ${COUNTRIES[countryOf(L)].chip('P1')}–${COUNTRIES[countryOf(L)].chip('P2')}`, `適合${gradeName('P1', countryOf(L))}至${gradeName('P2', countryOf(L))}`))}</div>
         </section>
+        <section class="stack g10" data-st="4"><b>${C('Main goal right now', '現在的主要目標')}</b>
+          <div class="prof-opts">${opt('mainGoal', 'test', C('Do well in a test', '測驗考好'), C('A school test or exam coming up. Add it on Today and Buddy counts down to it.', '快要測驗或考試。在「今日」加入，Buddy 會為它倒數。'))}${opt('mainGoal', 'long', C('Get stronger over time', '持續進步'), C('Build up subjects through the year, test or no test.', '全年逐步提升，不論有沒有測驗。'))}</div>
+          <span class="hint" style="margin:0;text-align:left">${C('Today and Progress show how you’re doing against it. Change it any time.', '「今日」和「進度」會顯示距離目標有多遠，隨時可以更改。')}</span></section>
         ${L.grade ? `<section class="stack g10" data-st="4"><b>${C('What are they working towards?', '孩子現在的目標？')} <span class="muted" style="font-weight:500">${C('(pick any)', '（可選多項）')}</span></b>
           <div class="prof-grades">${GOALS(L.grade).map(([k, t]) => `<button class="fchip ${L.goals.includes(k) ? 'on' : ''}" data-goal="${k}" aria-pressed="${L.goals.includes(k)}">${t}</button>`).join('')}</div></section>` : ''}
         `}
@@ -3797,6 +3811,7 @@ function profileScreen({ first } = {}) {
         if (first && step < STEPS) { keep(); step++; draw(); window.scrollTo(0, 0); return; }
         if (first) { keep(); local.name = nameV.replace(/[<>]/g, '').trim().slice(0, 30); if (cap('stars')) local.starsOn = starsV; }
         { const nk = document.getElementById('pnick'); if (nk) KID.nick = nk.value.replace(/[<>]/g, '').trim().slice(0, 12); }
+        if (L.mainGoal && (!local.goal || local.goal.kind !== L.mainGoal)) local.goal = { kind: L.mainGoal };
         local.learner = { grade: L.grade, country: countryOf(L), at: Date.now(), pace: L.pace || '', medium: L.medium || '', zhLang: L.zhLang || '', explain: L.explain || '', voices: L.voices || {}, vrate: L.vrate || '', autoread: L.autoread || '', goals: L.goals, likes: likes.value.replace(/[<>]/g, '').trim().slice(0, 80) };
         delete local.needProfile; saveLocal(); track('profile'); kidMeta();
         if (first && nav) nav.style.display = '';
@@ -6035,6 +6050,121 @@ function masteredSheet(subs, done, all) {
 // The full school-test card (goal slider with Buddy, test-day forecast, Buddy's plan, chapter rows, My plan, edit).
 // It lives on Today, where the child acts on it; Progress shows a simpler on-track summary.
 let tcFcLine = null;
+/* ---------- the goal: what the family is working towards ----------
+   local.goal = { kind: 'test' | 'long', testId?, subj?, target? }. A test goal follows one school test (the
+   nearest by default) against the target score set for it; a long-term goal follows one subject's level out of 10
+   against a target level. With no goal set yet: the nearest test if there is one, else the long-term goal. */
+const GOAL_ST = () => ({ done: PT('Goal reached', '已達目標'), ok: PT('On track', '進度理想'), close: PT('A little behind', '稍為落後'), risk: PT('Behind', '落後') });
+const lv10 = (v) => Math.max(0, Math.min(10, Math.round(((v - 1) / 3) * 100) / 10));
+async function goalData(tests) {
+  const g = local.goal || {};
+  const pool = tests.steps.filter((p) => p.book && p.ready != null && (p.x.kind || 'test') !== 'dict');
+  const tp = pool.find((p) => p.x.id === g.testId) || pool[0] || null;
+  const kind = g.kind || (tp ? 'test' : 'long');
+  if (kind === 'test') {
+    if (!tp) return { kind: 'needtest' };
+    const chs = (await bookMastery(tp.book)).chapters.filter((c) => tp.units.some((u) => u.id === c.unit.id));
+    const fc = locked('forecast') ? null : planForecast(tp.ready, chs, tp.left), aim = tp.x.aim || 80;
+    // a daily record of this test's readiness: the chart on Progress and "this week" come from it
+    local.thist = local.thist || {}; const t0 = dayStart(); const h = (local.thist[tp.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, tp.ready]); local.thist[tp.x.id] = h.slice(-90); saveLocal();
+    const old = h.filter((x) => x[0] <= t0 - 5 * DAY).sort((a, b) => Math.abs(a[0] - (t0 - 7 * DAY)) - Math.abs(b[0] - (t0 - 7 * DAY)))[0];
+    return { kind: 'test', p: tp, ready: tp.ready, fc, aim, st: aimTone(fc ?? tp.ready, aim), wk: old ? tp.ready - old[1] : null, hist: h, chs };
+  }
+  const GS = await gsData().catch(() => null), S = GS ? GS.s.filter((x) => x[1] != null) : [];
+  if (!S.length) return { kind: 'longnew' };
+  const x = S.find((y) => y[0] === g.subj) || S.slice().sort((a, b) => (b[8] || 0) - (a[8] || 0))[0];
+  const now = lv10(x[1]), target = g.target || 6.7;
+  return { kind: 'long', lab: x[0], now, target, start: x[3] != null ? lv10(x[1] - x[3]) : null, change: x[3] != null ? Math.round((x[3] / 3) * 100) / 10 : null,
+    st: now >= target || x[2] === 'rising' ? 'ok' : x[2] === 'dipping' ? 'risk' : 'close', line: (x[5] || []).map(lv10), others: S.filter((y) => y !== x).slice(0, 3).map((y) => ({ lab: y[0], now: lv10(y[1]) })) };
+}
+function goalRingSVG(now, fc, aim) {
+  const r = 52, c = 2 * Math.PI * r, at = (p, rr) => [75 + rr * Math.sin((2 * Math.PI * p) / 100), 75 - rr * Math.cos((2 * Math.PI * p) / 100)];
+  const [a1, b1] = at(aim, r - 12), [a2, b2] = at(aim, r + 12);
+  return `<svg class="gl-ring" width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="${esc(PT(`${now}% ready now${fc != null ? `, heading for ${fc}% on test day` : ''}, goal ${aim}%`, `現在準備度 ${now}%${fc != null ? `，考試當日預計 ${fc}%` : ''}，目標 ${aim}%`))}">
+    <circle cx="75" cy="75" r="${r}" fill="none" stroke="#E3E7F1" stroke-width="13"></circle>
+    ${fc != null && fc > now ? `<circle cx="75" cy="75" r="${r}" fill="none" stroke="#26357A" stroke-opacity=".28" stroke-width="13" stroke-dasharray="${((c * fc) / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 75 75)" stroke-linecap="round"></circle>` : ''}
+    ${now > 0 ? `<circle cx="75" cy="75" r="${r}" fill="none" stroke="#26357A" stroke-width="13" stroke-dasharray="${((c * now) / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 75 75)" stroke-linecap="round"></circle>` : ''}
+    <line x1="${a1.toFixed(1)}" y1="${b1.toFixed(1)}" x2="${a2.toFixed(1)}" y2="${b2.toFixed(1)}" stroke="#1B2559" stroke-width="3.5" stroke-linecap="round"></line>
+    <text x="75" y="76" text-anchor="middle" class="gl-rv">${now}%</text><text x="75" y="96" text-anchor="middle" class="gl-rl">${PT('ready now', '現在')}</text></svg>`;
+}
+function goalLevelBar(now, start, target, cls = '') {
+  return `<div class="gl-lv ${cls}"><div class="gl-lvb"><i style="width:${now * 10}%"></i>${start != null && Math.abs(start - now) >= 0.1 ? `<s style="left:${start * 10}%" title="${PT('Started', '起點')}"></s>` : ''}<u style="left:${target * 10}%"></u></div>
+    <div class="gl-lvl"><span>${start != null ? PT(`Started at ${start.toFixed(1)}`, `起點 ${start.toFixed(1)}`) : PT('Out of 10', '滿分 10')}</span><span>${PT(`Target ${target.toFixed(1)}`, `目標 ${target.toFixed(1)}`)}</span></div></div>`;
+}
+function goalSpark(vals, target) {
+  const v = vals.filter((x) => x != null); if (v.length < 2) return '';
+  const lo = Math.max(0, Math.min(...v, target) - 0.5), hi = Math.min(10, Math.max(...v, target) + 0.5), y = (x) => (52 - ((x - lo) / (hi - lo || 1)) * 44).toFixed(1);
+  const pts = v.map((x, i) => `${((i * 300) / (v.length - 1)).toFixed(1)},${y(x)}`).join(' ');
+  return `<svg class="gl-spark" width="100%" height="58" viewBox="0 0 300 58" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="300" y1="${y(target)}" y2="${y(target)}" stroke="#1B2559" stroke-width="1.5" stroke-dasharray="4 4"></line><polyline points="${pts}" fill="none" stroke="#18966A" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline></svg>`;
+}
+// The goal card at the top of Today: the goal, how far along, and one next step (today's next mission step).
+function goalTopHTML(G, next) {
+  const Z = PT, ST = GOAL_ST();
+  const head = (title, sub, st) => `<div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b data-raw>${title}</b><span data-raw>${sub}</span></div>${st ? `<em class="gl-st ${st}">${ST[st]}</em>` : ''}</div>`;
+  const nxt = next ? `<button class="gl-next" id="glNext"><span><small>${Z('Next step', '下一步')}${next.min ? ` · ${Z(`${next.min} min`, `${next.min} 分鐘`)}` : ''}</small><b data-raw>${esc(next.t)}</b></span><i aria-hidden="true">›</i></button>`
+    : `<p class="gl-done">${ICON.check}<span>${Z('Today’s mission is done. Nice work!', '今日任務已完成，做得好！')}</span></p>`;
+  const foot = `<button class="linkbtn gl-chg" id="glChange">${Z('Change goal', '更改目標')}</button>`;
+  if (G.kind === 'test') {
+    const x = G.p.x, wk = G.wk != null && Math.abs(G.wk) >= 1 ? `<span class="gl-wk ${G.wk > 0 ? 'up' : 'down'}">${G.wk > 0 ? '▲' : '▼'} ${Math.abs(G.wk)}% ${Z('this week', '本週')}</span>` : '';
+    return `<section class="gl-card test ${G.st}" aria-label="${Z('Your goal', '你的目標')}">
+      ${head(`${esc(x.name)} · ${G.aim}%`, `${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(G.p.left)}`, G.st)}
+      <div class="gl-body">${goalRingSVG(G.ready, G.fc, G.aim)}<div class="gl-nums">
+        ${G.fc != null ? `<div><b class="fc ${G.st}">${G.fc}%</b><span>${Z('on test day, at this pace', '照現時步伐，考試當日')}</span></div>` : ''}
+        <div><b>${G.aim}%</b><span>${Z('goal', '目標')}</span></div>${wk}</div></div>
+      ${nxt}${foot}</section>`;
+  }
+  if (G.kind === 'long') {
+    const ch = G.change != null && Math.abs(G.change) >= 0.1 ? `<span class="gl-wk ${G.change > 0 ? 'up' : 'down'}">${G.change > 0 ? '▲' : '▼'} ${Math.abs(G.change).toFixed(1)} ${Z('since you started', '自開始以來')}</span>` : '';
+    return `<section class="gl-card long ${G.st}" aria-label="${Z('Your goal', '你的目標')}">
+      ${head(Z(`Stronger in ${esc(G.lab)}`, `${esc(G.lab)}更進一步`), Z(`Target: level ${G.target.toFixed(1)} out of 10`, `目標：程度 ${G.target.toFixed(1)}（滿分 10）`), G.now >= G.target ? 'done' : G.st)}
+      <div class="gl-lvh"><span>${Z('Level now', '現在程度')}</span><b>${G.now.toFixed(1)}<small>/10</small></b></div>
+      ${goalLevelBar(G.now, G.start, G.target)}
+      ${G.line.filter((v) => v != null).length >= 2 ? `<div class="gl-sp"><div class="gl-sph"><span>${Z('Week by week', '每週變化')}</span>${ch}</div>${goalSpark(G.line, G.target)}</div>` : ch ? `<div class="gl-sph">${ch}</div>` : ''}
+      ${nxt}${foot}</section>`;
+  }
+  if (G.kind === 'needtest') return `<section class="gl-card test close"><div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b>${Z('Do well in a test', '測驗考好')}</b><span>${Z('Add the test and Buddy will show how ready you are and plan each day.', '加入測驗，Buddy 會顯示準備度並安排每天的溫習。')}</span></div></div>
+    <button class="gl-next" id="glAddTest"><span><b>${Z('+ Add the test', '+ 加入測驗')}</b></span><i aria-hidden="true">›</i></button>${foot}</section>`;
+  return `<section class="gl-card long"><div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b>${Z('Get stronger over time', '持續進步')}</b><span>${Z('After a few days of practice Buddy shows your level here, and how it’s rising.', '練習幾天後，Buddy 會在這裏顯示你的程度和進步。')}</span></div></div>${nxt}${foot}</section>`;
+}
+// Choose or change the goal: a test (which one, and its target score) or a subject over time (and a target level).
+async function goalSheet(onDone) {
+  const Z = PT, g = { ...(local.goal || {}) };
+  const tests = upcomingTests().filter((x) => x.b && (x.kind || 'test') !== 'dict');
+  const GS = await gsData().catch(() => null), subs = GS ? GS.s.filter((x) => x[1] != null).map((x) => x[0]) : [];
+  if (!g.kind) g.kind = tests.length ? 'test' : 'long';
+  const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  const draw = () => {
+    box.innerHTML = `<div class="cdlg gl-dlg" role="dialog" aria-modal="true" aria-labelledby="gl-t"><header class="gl-dh"><b id="gl-t">${Z('What are we working towards?', '我們的目標是甚麼？')}</b><button class="cs2-x" aria-label="${Z('Close', '關閉')}">✕</button></header>
+      <div class="gl-opts">
+        <button class="gl-opt ${g.kind === 'test' ? 'on' : ''}" data-gk="test" aria-pressed="${g.kind === 'test'}"><b>${Z('Do well in a test', '測驗考好')}</b><span>${Z('A school test or exam coming up, against a target score.', '快要來的校內測驗或考試，以目標分數衡量。')}</span></button>
+        <button class="gl-opt ${g.kind === 'long' ? 'on' : ''}" data-gk="long" aria-pressed="${g.kind === 'long'}"><b>${Z('Get stronger over time', '持續進步')}</b><span>${Z('Build up a subject through the year, test or no test.', '全年逐步提升一科，不論有沒有測驗。')}</span></button></div>
+      ${g.kind === 'test' ? `<div class="gl-sub"><b>${Z('Which test?', '哪一個測驗？')}</b><div class="gl-chips">${tests.map((x, i) => `<button class="fchip ${(g.testId ? g.testId === x.id : i === 0) ? 'on' : ''}" data-gt="${esc(x.id)}" data-raw>${esc(x.name)} · ${new Date(testDay(x)).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}</button>`).join('')}<button class="fchip" id="glAdd">+ ${Z('Add a test', '加入測驗')}</button></div>
+        <span class="hint" style="margin:0;text-align:left">${Z('The target score is set on the test card (slide Buddy).', '目標分數在測驗卡上設定（拖動 Buddy）。')}</span></div>`
+      : `<div class="gl-sub"><b>${Z('Which subject?', '哪一科？')}</b><div class="gl-chips">${subs.length ? subs.map((x, i) => `<button class="fchip ${(g.subj ? g.subj === x : i === 0) ? 'on' : ''}" data-gs="${esc(x)}" data-raw>${esc(x)}</button>`).join('') : `<span class="muted" style="font-size:14px">${Z('Buddy picks the subject you practise most once there’s a little practice.', '練習一段時間後，Buddy 會選你最常練習的一科。')}</span>`}</div>
+        <b>${Z('Target level', '目標程度')}</b><div class="gl-chips">${TG.map(([v, t]) => `<button class="fchip ${(g.target || 6.7) === v ? 'on' : ''}" data-gv="${v}">${t} · ${v.toFixed(1)}</button>`).join('')}</div></div>`}
+      <div class="gl-dbtns"><button class="btn" id="glSave">${Z('Save goal', '儲存目標')}</button></div></div>`;
+    const close = () => box.remove();
+    box.querySelector('.cs2-x').onclick = close;
+    box.querySelectorAll('[data-gk]').forEach((b) => (b.onclick = () => { g.kind = b.dataset.gk; draw(); }));
+    box.querySelectorAll('[data-gt]').forEach((b) => (b.onclick = () => { g.testId = b.dataset.gt; draw(); }));
+    box.querySelectorAll('[data-gs]').forEach((b) => (b.onclick = () => { g.subj = b.dataset.gs; draw(); }));
+    box.querySelectorAll('[data-gv]').forEach((b) => (b.onclick = () => { g.target = +b.dataset.gv; draw(); }));
+    { const a = box.querySelector('#glAdd'); if (a) a.onclick = () => { close(); testDialog(); }; }
+    box.querySelector('#glSave').onclick = () => {
+      if (g.kind === 'test' && !g.testId && tests[0]) g.testId = tests[0].id;
+      if (g.kind === 'long' && !g.subj && subs[0]) g.subj = subs[0];
+      local.goal = { kind: g.kind, ...(g.kind === 'test' ? { testId: g.testId || null } : { subj: g.subj || null, target: g.target || 6.7 }) };
+      saveLocal(); close(); toast(Z('Goal saved', '目標已儲存')); onDone && onDone();
+    };
+  };
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+  draw(); document.body.appendChild(box);
+}
+const goalText = () => { const g = local.goal; if (!g || !g.kind) return PT('Not set yet: Buddy follows your nearest test', '未設定：Buddy 會跟進最近的測驗');
+  if (g.kind === 'test') { const x = (local.sched || []).find((y) => y.id === g.testId); return x ? PT(`Do well in ${x.name}`, `「${x.name}」考好`) : PT('Do well in the nearest test', '最近的測驗考好'); }
+  return PT(`Get stronger in ${g.subj || 'your main subject'} · level ${(g.target || 6.7).toFixed(1)}`, `${g.subj || '主要科目'}持續進步 · 目標程度 ${(g.target || 6.7).toFixed(1)}`); };
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('#sgoal'); if (!b) return; goalSheet(() => { const t = document.getElementById('sgoalTxt'); if (t) t.textContent = goalText(); }); });
 async function fullTestCards(tests, btn) {
   const MB = new Map(); for (const p of tests.steps) if (p.book && !MB.has(p.book.id)) MB.set(p.book.id, await bookMastery(p.book));
   const chName = (u) => shortTitle(u.title);

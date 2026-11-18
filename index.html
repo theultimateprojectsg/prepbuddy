@@ -3173,6 +3173,50 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .pv-sum .pv-kpi.k-ring{--kb:#CFD7F2}.pv-sum .pv-kpi.k-book{--kb:#BFE6D1;--kt:#E8F7EF}.pv-sum .pv-kpi.k-brain{--kb:#DCCFF5;--kt:#F3EEFC}.pv-sum .pv-kpi.k-cal{--kb:#F7D3B5;--kt:#FFF3E9}
 .pv-sum .pv-kpi .pv-kic{background:#FFFFFF!important;border-radius:50%!important;width:30px!important;height:30px!important}
 .pv-sum .pv-kpi .pv-ktrack,.pv-sum .pv-kpi .pv-kbar i:not(.on),.pv-sum .pv-kpi .pv-kdots i:not(.on){background:rgba(255,255,255,.9)!important}
+/* Your goal: the card at the top of Today */
+.gl-card{display:flex;flex-direction:column;gap:12px;padding:16px 16px 12px;border-radius:22px;background:#FFFFFF;border:1.5px solid #CFD7F2;box-shadow:0 6px 20px rgba(38,53,122,.07)}
+.gl-card.long{border-color:#BFE6D1;box-shadow:0 6px 20px rgba(24,150,106,.07)}
+.gl-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.gl-ht{display:flex;flex-direction:column;gap:2px;min-width:0}
+.gl-ht small{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.gl-ht b{font-family:'Lexend',sans-serif;font-size:20px;line-height:1.25;color:var(--ink)}
+.gl-ht span{font-size:13.5px;line-height:1.45;color:var(--text-2)}
+.gl-st{flex:none;font-style:normal;font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;background:#E8F7EF;color:#1E7A46}
+.gl-st.close{background:#FFF1DC;color:#9A5A00}.gl-st.risk{background:#FDECEA;color:#B23A26}
+.gl-body{display:flex;align-items:center;gap:8px}
+.gl-ring{flex:none}.gl-rv{font-family:'Lexend',sans-serif;font-weight:700;font-size:30px;fill:#1B2559}.gl-rl{font-family:'Inter',sans-serif;font-size:11.5px;fill:#4A5478}
+.gl-nums{display:flex;flex-direction:column;gap:10px;min-width:0}
+.gl-nums b{font-family:'Lexend',sans-serif;font-size:22px;line-height:1.1;color:var(--ink)}.gl-nums b.fc{color:#26357A}.gl-nums b.fc.close{color:#B26A00}.gl-nums b.fc.risk{color:#C23A26}
+.gl-nums span{display:block;font-size:12.5px;color:var(--text-2)}
+.gl-wk{font-size:13px;font-weight:700}.gl-wk.up{color:#18966A}.gl-wk.down{color:#C23A26}
+.gl-lvh{display:flex;justify-content:space-between;align-items:baseline}.gl-lvh span{font-size:14px;font-weight:600;color:var(--text-2)}
+.gl-lvh b{font-family:'Lexend',sans-serif;font-size:28px;color:#18966A}.gl-lvh small{font-size:14px;color:var(--text-2)}
+.gl-lv{display:flex;flex-direction:column;gap:5px}
+.gl-lvb{position:relative;height:12px;border-radius:99px;background:#E3E7F1}
+.gl-lvb i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:#18966A}
+.gl-lvb s{position:absolute;top:-3px;width:3px;height:18px;margin-left:-1.5px;border-radius:2px;background:#FFFFFF;box-shadow:0 0 0 1px #18966A}
+.gl-lvb u{position:absolute;top:-5px;width:4px;height:22px;margin-left:-2px;border-radius:2px;background:#1B2559}
+.gl-lvl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.gl-sp{display:flex;flex-direction:column;gap:2px}.gl-sph{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--text-2)}
+.gl-spark{display:block}
+.gl-next{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:8px 16px;border-radius:14px;background:#26357A;color:#FFFFFF;cursor:pointer}
+.gl-card.long .gl-next{background:#18966A}
+.gl-next>span{display:flex;flex-direction:column;gap:1px;min-width:0}.gl-next small{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.85}
+.gl-next b{font-size:15px;line-height:1.3}.gl-next i{font-style:normal;font-size:22px;flex:none}
+.gl-next:focus-visible{outline:3px solid #FFD54A;outline-offset:2px}
+.gl-done{display:flex;align-items:center;gap:8px;margin:0;padding:12px 14px;border-radius:14px;background:#E8F7EF;color:#1E7A46;font-weight:600;font-size:14px}.gl-done svg{width:18px;height:18px}
+.gl-chg{align-self:center;font-size:13px;font-weight:700;padding:4px 8px}
+/* goal sheet */
+.gl-dlg{max-width:460px;width:calc(100% - 32px);display:flex;flex-direction:column;gap:14px;padding:18px}
+.gl-dh{display:flex;justify-content:space-between;align-items:center;gap:10px}.gl-dh b{font-family:'Lexend',sans-serif;font-size:19px}
+.gl-opts{display:flex;flex-direction:column;gap:10px}
+.gl-opt{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:3px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:#F7F9FD;cursor:pointer}
+.gl-opt b{font-size:16px;color:var(--ink)}.gl-opt span{font-size:13.5px;line-height:1.45;color:var(--text-2)}
+.gl-opt.on{border:2px solid #26357A;background:#EEF1FB}.gl-opt[data-gk="long"].on{border-color:#18966A;background:#E8F7EF}
+.gl-sub{display:flex;flex-direction:column;gap:8px}.gl-chips{display:flex;flex-wrap:wrap;gap:8px}
+.gl-dbtns{display:flex;justify-content:flex-end}
+.gl-st.done{background:#18966A;color:#FFFFFF}
+.gl-card .gl-chg{border:0!important;background:none!important;box-shadow:none!important;min-height:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 </style>
 </head>
 <body>
