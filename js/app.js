@@ -833,6 +833,7 @@ function dockBack() {
   const row = document.createElement('div'); row.className = 'pt-row'; h.replaceWith(row); row.append(h, btn); bar.remove();
 }
 new MutationObserver(() => { if ($app.querySelector('.pagetop .backbtn') && $app.querySelector('.pagetitle')) dockBack(); }).observe($app, { childList: true });
+document.addEventListener('input', () => { try { if (S && S.qShown && !S.qShown.f) S.qShown.f = Date.now(); } catch (e) {} }, true);
 document.addEventListener('input', (e) => { const w = e.target.closest && e.target.closest('.cdlg-wrap'); if (w) w.dataset.dirty = '1'; }, true);
 document.addEventListener('click', (e) => {
   const w = e.target;
@@ -5642,6 +5643,70 @@ function parentInsights(who, C = {}) {
     if (Wr.length >= 10) { const full = Wr.filter((e) => e.g >= e.m).length, none = Wr.filter((e) => !e.g).length, part = Wr.length - full - none, pc = (n) => Math.round((100 * n) / Wr.length);
       add(pc(part) >= 40 ? 3 : 7, Z('Written answers', '文字題'), pc(part) >= 40 ? Z(`${pc(part)}% of written answers get part marks: knows the idea, leaves out steps or reasons`, `${pc(part)}% 文字題只得部分分數：明白概念，但漏了步驟或原因`) : Z(`${pc(full)}% of written answers get full marks`, `${pc(full)}% 文字題拿滿分`),
         bars([[Z('Full marks', '滿分'), pc(full), 'good'], [Z('Part marks', '部分分數'), pc(part), 'warn'], [Z('No marks', '零分'), pc(none), 'bad']]), pc(part) >= 40 ? Z('Before handing in, ask: “Did I say why?” Buddy’s feedback shows exactly what was missing.', '交之前問自己：「我有沒有寫原因？」Buddy 的評語會指出漏了甚麼。') : ''); } }
+  // 14. Buddy's readiness against the real school mark
+  cid = 'forecast';
+  { const done = schoolTests().filter((x) => typeof x.score === 'number' && testDay(x) <= now).map((x) => { const h = ((local.thist || {})[x.id] || []).filter((p) => p[0] <= testDay(x)).pop(); return h ? [x.name, h[1], Math.round(x.score)] : null; }).filter(Boolean).slice(-3);
+    if (done.length) { const diff = Math.round(done.reduce((a, d) => a + Math.abs(d[2] - d[1]), 0) / done.length), hi = done.filter((d) => d[2] > d[1]).length;
+      add(2, Z('Buddy’s read against the real result', 'Buddy 的判斷與真實成績'), diff <= 10 ? Z(`Buddy’s readiness matched the school marks within ${diff} points`, `Buddy 的準備度與學校成績相差只有 ${diff} 分`) : hi > done.length / 2 ? Z('School marks came in higher than Buddy’s readiness', '學校成績比 Buddy 的準備度高') : Z('School marks came in lower than Buddy’s readiness', '學校成績比 Buddy 的準備度低'),
+        bars(done.flatMap(([n, a, b2]) => [[Z(`${n} · Buddy said`, `${n} · Buddy 預計`), a, ''], [Z(`${n} · school mark`, `${n} · 學校成績`), b2, b2 >= a - 5 ? 'good' : 'warn']])), Z('The closer these match, the more you can trust the forecast for the next test.', '兩者越接近，越可以相信下一次的預測。')); } }
+  // 15. following the daily plan
+  cid = 'missions';
+  { const md = local.mdone || {}, ds = Object.keys(md).map(Number).filter((d) => d > now - 14 * DAY && d < startOfToday());
+    if (ds.length >= 5) { const full = ds.filter((d) => md[d][0] >= md[d][1] && md[d][1]).length, part = ds.filter((d) => md[d][0] && md[d][0] < md[d][1]).length, none = ds.length - full - part, pc = (n) => Math.round((100 * n) / ds.length);
+      add(full / ds.length < 0.5 ? 3 : 7, Z('Following the plan', '跟隨計劃'), Z(`Finished the whole daily mission on ${full} of the last ${ds.length} days`, `過去 ${ds.length} 日中，有 ${full} 日完成整個任務`),
+        bars([[Z('Whole mission', '完成整個任務'), pc(full), 'good'], [Z('Part of it', '完成部分'), pc(part), ''], [Z('Not started', '未開始'), pc(none), 'warn']]), full / ds.length < 0.5 ? Z('Agree a fixed time each day. The mission is built to fit it.', '約定每天固定時間，任務會配合這個時間安排。') : ''); } }
+  // 16. second-guessing: changing a first answer
+  cid = 'second';
+  { const Cg = L.filter((e) => e.cg);
+    if (Cg.length >= 5) { const rw = Cg.filter((e) => e.c1 && e.g < e.m).length, wr = Cg.filter((e) => !e.c1 && e.g >= e.m).length;
+      add(rw > wr ? 4 : 8, Z('Changing answers', '改答案'), rw > wr ? Z(`Changed ${rw} right answers to wrong ones, and only ${wr} the other way`, `把 ${rw} 個正確答案改錯，只有 ${wr} 個改對`) : Z(`Changing answers helps: ${wr} fixed, ${rw} made worse`, `改答案有幫助：${wr} 個改對，${rw} 個改錯`),
+        bars([[Z('Right → wrong', '對改錯'), Math.round((100 * rw) / Cg.length), 'warn'], [Z('Wrong → right', '錯改對'), Math.round((100 * wr) / Cg.length), 'good']]), rw > wr ? Z('First instincts are usually right. Only change an answer with a clear reason.', '第一直覺通常是對的，有清楚理由才改答案。') : ''); } }
+  // 17. getting started on written answers
+  cid = 'stuck';
+  { const F = L.filter((e) => e.fi);
+    if (F.length >= 8) { const slow = F.filter((e) => e.fi >= 60).length, pc = Math.round((100 * slow) / F.length), med = F.map((e) => e.fi).sort((a, b) => a - b)[Math.floor(F.length / 2)];
+      add(pc >= 30 ? 4 : 9, Z('Getting started', '開始作答'), pc >= 30 ? Z(`Takes over a minute to start ${pc}% of written answers`, `${pc}% 的文字題要超過一分鐘才開始寫`) : Z(`Starts written answers quickly (about ${med} seconds)`, `很快開始寫文字題（約 ${med} 秒）`),
+        bars([[Z('Starts within a minute', '一分鐘內開始'), 100 - pc, 'good'], [Z('Takes over a minute', '超過一分鐘'), pc, 'warn']]), pc >= 30 ? Z('Try “write the first step, then think”. A plan in a few words beats a blank page.', '先寫第一步再想。寫下幾個字的計劃，好過面對空白。') : ''); } }
+  // 18. finishing what they start
+  cid = 'quit';
+  { const ss = (local.sess || []).filter((x) => x.t > now - 30 * DAY);
+    if (ss.length >= 6) { const e = ss.filter((x) => x.e).length, rr = ss.filter((x) => x.r).length, pc = (n) => Math.round((100 * n) / ss.length);
+      if (pc(e) >= 20 || pc(rr) >= 20) add(4, Z('Finishing sets', '完成練習'), pc(e) >= 20 ? Z(`Stopped ${e} of ${ss.length} practice sets partway`, `${ss.length} 組練習中有 ${e} 組中途停止`) : Z(`Rushed through ${rr} of ${ss.length} sets`, `${ss.length} 組中有 ${rr} 組做得太急`),
+        bars([[Z('Finished', '完成'), 100 - pc(e), 'good'], [Z('Stopped partway', '中途停止'), pc(e), 'warn'], [Z('Rushed', '太急'), pc(rr), 'warn']]), Z('Shorter sets that get finished beat long ones that don’t.', '短而完成的練習，好過長而做不完的。'));
+      else add(9, Z('Finishing sets', '完成練習'), Z(`Finishes what they start: ${100 - pc(e)}% of sets completed`, `做事有始有終：${100 - pc(e)}% 的練習完成`), bars([[Z('Finished', '完成'), 100 - pc(e), 'good']]), ''); } }
+  // 19. how much help: one nudge, or walked through it
+  cid = 'helpdepth';
+  { const Hh = L.filter((e) => e.h && e.t > now - 30 * DAY);
+    if (Hh.length >= 8) { const one = Hh.filter((e) => e.h === 1).length, deep = Hh.filter((e) => e.h >= 3).length, pc = (n) => Math.round((100 * n) / Hh.length);
+      add(pc(deep) >= 40 ? 4 : 8, Z('How much help they need', '需要多少幫助'), pc(deep) >= 40 ? Z('When stuck, often needs walking through step by step', '卡住時，經常要一步一步帶著做') : Z('When stuck, usually one nudge is enough', '卡住時，通常一點提示就夠'),
+        bars([[Z('One hint', '一個提示'), pc(one), 'good'], [Z('Two hints', '兩個提示'), pc(Hh.length - one - deep), ''], [Z('Walked through it', '一步步帶著做'), pc(deep), 'warn']]), pc(deep) >= 40 ? Z('Buddy will reteach these chapters with a lesson before more practice.', 'Buddy 會先用課堂重教這些章節，再練習。') : ''); } }
+  // 20. speaking: pace and fillers over time
+  cid = 'speaking';
+  { const T = (local.sp || []).flatMap((it) => (it.tries || []).filter((t) => t.secs >= 10 && t.words)).sort((a, b) => a.t - b.t);
+    if (T.length >= 3) { const wpm = (t) => Math.round((t.words / t.secs) * 60), fpm = (ts) => Math.round((10 * ts.reduce((a, t) => a + (t.fillers || 0), 0)) / Math.max(1, ts.reduce((a, t) => a + t.secs, 0) / 60)) / 10;
+      const h = Math.ceil(T.length / 2), A = T.slice(0, h), B = T.slice(h), wa = Math.round(A.reduce((a, t) => a + wpm(t), 0) / A.length), wb = B.length ? Math.round(B.reduce((a, t) => a + wpm(t), 0) / B.length) : wa;
+      add(6, Z('Speaking', '說話'), wb - wa >= 8 ? Z(`Speaks more fluently: ${wb} words a minute, up from ${wa}`, `說得更流利：每分鐘 ${wb} 字，之前 ${wa} 字`) : Z(`${wb} words a minute, about ${fpm(B.length ? B : A)} fillers a minute`, `每分鐘 ${wb} 字，每分鐘約 ${fpm(B.length ? B : A)} 個「嗯、呃」`),
+        bars([[Z('Recent', '最近'), Math.min(100, Math.round(wb / 1.6)), 'good', Z(`${wb} wpm`, `${wb} 字/分`)], [Z('Earlier', '之前'), Math.min(100, Math.round(wa / 1.6)), '', Z(`${wa} wpm`, `${wa} 字/分`)]], 'lv'), Z('Ask them to tell you about their day in English for two minutes.', '請孩子用英文講兩分鐘今天的事。')); } }
+  // 21. dictation: right first time, and words that keep coming back
+  cid = 'dictation';
+  { const D = local.dict || [], runs = D.flatMap((d) => d.runs || []).filter((r) => r.n).sort((a, b) => a.t - b.t);
+    if (runs.length >= 3) { const accR = (rs) => Math.round((100 * rs.reduce((a, r) => a + r.g, 0)) / Math.max(1, rs.reduce((a, r) => a + r.n, 0))), m = now - 30 * DAY, A = runs.filter((r) => r.t < m), B = runs.filter((r) => r.t >= m);
+      const hard = D.reduce((a, d) => a + Object.values(d.res || {}).filter((r) => r.wrong >= 2).length, 0), b = accR(B.length ? B : runs), a = A.length ? accR(A) : null;
+      add(7, Z('Spelling and dictation', '默書'), a != null && b - a >= 5 ? Z(`${b}% of words right, up from ${a}%`, `${b}% 的字寫對，之前 ${a}%`) : Z(`${b}% of words right${hard ? `; ${hard} words keep tripping them up` : ''}`, `${b}% 的字寫對${hard ? `；有 ${hard} 個字經常寫錯` : ''}`),
+        bars([[Z('Last 30 days', '最近 30 日'), b, b >= 85 ? 'good' : 'warn'], ...(a != null ? [[Z('Before', '之前'), a, '']] : [])]), hard ? Z('Buddy puts the tricky words first in the next dictation.', 'Buddy 會在下次默書先考難寫的字。') : ''); } }
+  // 22. homework brought to Buddy, by subject
+  cid = 'homework';
+  { const H = (local.hw || []).filter((h) => h.t > now - 30 * DAY);
+    if (H.length >= 2) { const by = {}; H.forEach((h) => { const k = h.subject ? subj(h.subject) : Z('Other', '其他'); by[k] = (by[k] || 0) + 1; }); const top = Object.entries(by).sort((a, b) => b[1] - a[1]);
+      add(8, Z('Homework help', '功課協助'), Z(`Brought ${H.length} homework sheets to Buddy, mostly ${top[0][0]}`, `問了 Buddy ${H.length} 份功課，大多是${top[0][0]}`),
+        bars(top.slice(0, 4).map(([n, c]) => [n, Math.round((100 * c) / H.length), '', Z(`${c} sheet${c === 1 ? '' : 's'}`, `${c} 份`)]), 'lv'), Z('Getting stuck on the same subject at home is an early sign. Buddy adds more of it to practice.', '在家常卡在同一科，是早期訊號。Buddy 會在練習中加多這科。')); } }
+  // 23. essays: which part of writing is strongest and weakest across marked pieces
+  cid = 'essays';
+  { const Dr = (local.wr || []).flatMap((it) => (it.drafts || []).filter((d) => d.fb && d.fb.criteria).map((d) => ({ d, k: WR_KINDS[it.kind] }))).filter((x) => x.k);
+    if (Dr.length >= 2) { const sum = {}; Dr.forEach(({ d, k }) => d.fb.criteria.forEach((c, i) => { const n = k.crit[i]; if (n && typeof c.band === 'number') { sum[n] = sum[n] || [0, 0]; sum[n][0] += c.band; sum[n][1]++; } }));
+      const rows = Object.entries(sum).map(([n, [a, c]]) => [n, a / c]).sort((a, b) => b[1] - a[1]);
+      if (rows.length >= 2) add(5, Z('Writing', '寫作'), Z(`Writing: strongest in ${rows[0][0]}, weakest in ${rows[rows.length - 1][0]}`, `寫作：${rows[0][0]}最強，${rows[rows.length - 1][0]}最弱`),
+        bars(rows.map(([n, v], i) => [n, Math.round((v / 7) * 100), i === 0 ? 'good' : i === rows.length - 1 ? 'warn' : '', Z(`band ${v.toFixed(1)}`, `${v.toFixed(1)} 級`)]), 'lv'), Z(`Across ${Dr.length} marked pieces. Buddy’s feedback on the next piece will focus on the weakest part.`, `根據 ${Dr.length} 篇已批改的文章。下一篇的評語會集中在最弱的部分。`)); } }
   // sample findings (DEV): fill every finding that has no real data yet, so the full section can be seen
   if (C.sample) {
     const SM = [
@@ -5660,6 +5725,13 @@ function parentInsights(who, C = {}) {
       ['guess', 7, Z('Guessing', '亂猜'), Z('9 multiple-choice answers were wrong in under 5 seconds', '9 題選擇題在 5 秒內答錯'), `<p class="pi-p">${Z('Too fast to have read the question. Usually a sign of rushing to finish.', '快得不像有看清題目，通常是想快點做完。')}</p>`, Z('Agree a rule: read every option before choosing.', '約定規則：看完所有選項才作答。')],
       ['speaking', 7, Z('Speaking', '說話'), Z('Speaks more fluently: 92 words a minute, up from 74', '說得更流利：每分鐘 92 字，之前 74 字'), bars([[Z('Fluency now', '現在流暢度'), 77, 'good', Z('92 wpm', '92 字/分')], [Z('A month ago', '一個月前'), 62, '', Z('74 wpm', '74 字/分')]], 'lv'), Z('Ask them to tell you about their day in English for two minutes.', '請孩子用英文講兩分鐘今天的事。')],
       ['dictation', 8, Z('Spelling and dictation', '默書'), Z('86% of words right first time, up from 70%', '86% 的字第一次就寫對，之前 70%'), bars([[Z('This month', '本月'), 86, 'good'], [Z('Last month', '上月'), 70, '']]), ''],
+      ['forecast', 2, Z('Buddy’s read against the real result', 'Buddy 的判斷與真實成績'), Z('Buddy’s readiness matched the school marks within 4 points', 'Buddy 的準備度與學校成績相差只有 4 分'), bars([[Z('Maths quiz · Buddy said', '數學小測 · Buddy 預計'), 78, ''], [Z('Maths quiz · school mark', '數學小測 · 學校成績'), 81, 'good'], [Z('English test · Buddy said', '英文測驗 · Buddy 預計'), 70, ''], [Z('English test · school mark', '英文測驗 · 學校成績'), 66, 'good']]), Z('The closer these match, the more you can trust the forecast for the next test.', '兩者越接近，越可以相信下一次的預測。')],
+      ['missions', 4, Z('Following the plan', '跟隨計劃'), Z('Finished the whole daily mission on 9 of the last 14 days', '過去 14 日中，有 9 日完成整個任務'), bars([[Z('Whole mission', '完成整個任務'), 64, 'good'], [Z('Part of it', '完成部分'), 22, ''], [Z('Not started', '未開始'), 14, 'warn']]), ''],
+      ['second', 5, Z('Changing answers', '改答案'), Z('Changed 7 right answers to wrong ones, and only 2 the other way', '把 7 個正確答案改錯，只有 2 個改對'), bars([[Z('Right → wrong', '對改錯'), 64, 'warn'], [Z('Wrong → right', '錯改對'), 18, 'good']]), Z('First instincts are usually right. Only change an answer with a clear reason.', '第一直覺通常是對的，有清楚理由才改答案。')],
+      ['stuck', 6, Z('Getting started', '開始作答'), Z('Takes over a minute to start 35% of written answers', '35% 的文字題要超過一分鐘才開始寫'), bars([[Z('Starts within a minute', '一分鐘內開始'), 65, 'good'], [Z('Takes over a minute', '超過一分鐘'), 35, 'warn']]), Z('Try “write the first step, then think”.', '先寫第一步再想。')],
+      ['quit', 6, Z('Finishing sets', '完成練習'), Z('Stopped 4 of 18 practice sets partway', '18 組練習中有 4 組中途停止'), bars([[Z('Finished', '完成'), 78, 'good'], [Z('Stopped partway', '中途停止'), 22, 'warn'], [Z('Rushed', '太急'), 6, '']]), Z('Shorter sets that get finished beat long ones that don’t.', '短而完成的練習，好過長而做不完的。')],
+      ['helpdepth', 7, Z('How much help they need', '需要多少幫助'), Z('When stuck, usually one nudge is enough', '卡住時，通常一點提示就夠'), bars([[Z('One hint', '一個提示'), 62, 'good'], [Z('Two hints', '兩個提示'), 24, ''], [Z('Walked through it', '一步步帶著做'), 14, 'warn']]), ''],
+      ['essays', 5, Z('Writing', '寫作'), Z('Writing: strongest in Content, weakest in Organisation', '寫作：內容最強，結構最弱'), bars([[Z('Content', '內容'), 74, 'good', Z('band 5.2', '5.2 級')], [Z('Language', '語言'), 63, '', Z('band 4.4', '4.4 級')], [Z('Organisation', '結構'), 51, 'warn', Z('band 3.6', '3.6 級')]], 'lv'), Z('Buddy’s feedback on the next piece will focus on the weakest part.', '下一篇的評語會集中在最弱的部分。')],
       ['homework', 8, Z('Homework help', '功課協助'), Z('Asked Buddy about 6 homework sheets, mostly Maths word problems', '問了 Buddy 6 份功課，大多是數學應用題'), `<p class="pi-p">${Z('Getting stuck on the same kind of question at home is a useful early sign. Buddy adds more of these to practice.', '在家常卡在同一類題目，是值得留意的早期訊號。Buddy 會在練習中加多這類題目。')}</p>`, ''],
     ];
     const have = new Set(out.map((x) => x.id));
@@ -7191,7 +7263,12 @@ async function renderProgress() {
     const PSAM = DEV && localStorage.getItem('pb.pisample') !== 'off', PI = parentInsights(who, { X, GS, books, sample: PSAM }), dw7 = X.dw || {};
     const sOnly = `<section class="pv-sec pi-sec"><div class="pv-h"><h2>${PT('What only PrepBuddy can tell you', '只有 PrepBuddy 看得到')}</h2>${DEV ? `<button class="btn-sm pi-samb ${PSAM ? 'primary' : ''}" data-pisam>${PSAM ? 'Sample data: on' : 'Sample data: off'}</button>` : ''}<span>${PT(`Found in every answer ${who} gave: the timing, hints, kind of question and what was remembered days later`, `從${who}每一個答案中找出：用時、提示、題型，以及幾天後還記不記得`)}</span></div>
       ${dw7.q ? `<p class="pi-vs">${PT(`This week Buddy marked <b>${dw7.q}</b> answers${dw7.rv ? `, brought back <b>${dw7.rv}</b> reviews before they were forgotten` : ''}${dw7.mx ? ` and found <b>${dw7.mx}</b> mix-up${dw7.mx === 1 ? '' : 's'}` : ''}. A one-hour tutor lesson covers about 10–15 questions.`, `本週 Buddy 批改了 <b>${dw7.q}</b> 個答案${dw7.rv ? `，在快忘記前安排了 <b>${dw7.rv}</b> 次溫習` : ''}${dw7.mx ? `，並找出 <b>${dw7.mx}</b> 個混淆` : ''}。一堂一小時的補習大約只做 10–15 題。`)}</p>` : ''}
-      ${PI.length ? `<div class="pi-grid">${PI.slice(0, 4).map((x) => x.html).join('')}</div>${PI.length > 4 ? `<details class="pp-all pi-more"><summary>${PT(`See ${PI.length - 4} more finding${PI.length - 4 === 1 ? '' : 's'}`, `再看 ${PI.length - 4} 項發現`)}</summary><div class="pi-grid">${PI.slice(4).map((x) => x.html).join('')}</div></details>` : ''}`
+      ${PI.length ? `<div class="pi-grid">${PI.slice(0, 4).map((x) => x.html).join('')}</div>${PI.length > 4 ? `<details class="pp-all pi-more"><summary>${PT(`See all ${PI.length} findings`, `查看全部 ${PI.length} 項發現`)}</summary>${(() => {
+          // the rest, grouped so a parent can find a topic: how they think, how they learn, exam readiness, subjects and skills
+          const TH = [[PT('How they think', '思考方式'), ['careless', 'think', 'writing', 'essays', 'second', 'stuck']], [PT('How they learn', '學習習慣'), ['stick', 'fixed', 'alone', 'helpdepth', 'time', 'tire', 'missions', 'quit']], [PT('Ready for exams?', '應試準備'), ['forecast', 'speed', 'guess', 'grade', 'pcheck']], [PT('Subjects and skills', '各科及技能'), ['subjects', 'speaking', 'dictation', 'homework']]];
+          const rest = PI.slice(4), used = new Set();
+          return TH.map(([h, ids]) => { const xs = rest.filter((x) => ids.includes(x.id)); xs.forEach((x) => used.add(x)); return xs.length ? `<h3 class="pi-th">${h}</h3><div class="pi-grid">${xs.map((x) => x.html).join('')}</div>` : ''; }).join('') + (rest.some((x) => !used.has(x)) ? `<div class="pi-grid">${rest.filter((x) => !used.has(x)).map((x) => x.html).join('')}</div>` : '');
+        })()}</details>` : ''}`
         : `<p class="pv-p">${PT(`After a week or two of practice, Buddy shows what it has learned about how ${who} thinks, remembers and works: careless slips or real gaps, the best time of day, when focus drops, and speed against the test clock.`, `練習一兩星期後，Buddy 會顯示它對${who}的了解：粗心還是不明白、最佳溫習時間、甚麼時候開始累，以及速度夠不夠。`)}</p>`}</section>`;
     parBody = `${sHead}${sOnly}${sGoals}${sWork}${sWatch}${sDid}`;
   }
@@ -9628,6 +9705,7 @@ function mcqBody(q, revealed) {
   else if (isExam()) footer = `<div class="pad" style="padding-top:0"><button class="btn" id="next" ${picked ? '' : 'disabled'}>${nextLabel()}</button></div>`;
   return { main, footer, bind() {
     $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => {
+      if (S.answers[S.i] && S.answers[S.i] !== b.dataset.opt) { S.chg = S.chg || {}; if (!(S.i in S.chg)) S.chg[S.i] = S.answers[S.i]; } // second-guessing: keep the first choice
       S.answers[S.i] = b.dataset.opt;
       if (!isExam()) { S.phase = 'revealed'; S.got[S.i] = b.dataset.opt === q.correct_option ? 1 : 0; record(q, S.got[S.i]); }
       renderQuestion();
@@ -9914,7 +9992,11 @@ function record(q, got) {
   local.stats[q.id] = s;
   // Activity log for progress reports: when, which question/chapter, marks, and how it was practised.
   const secs = S && S.qShown && S.qShown.q === q ? Math.round((Date.now() - S.qShown.t) / 1000) : 0;
-  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '', ty, ...(helped ? { h: 1 } : {}), ...(secs > 0 && secs < 900 ? { s: secs } : {}) });
+  // extra signals for the parent view: how much help (child messages to Buddy), a changed answer (was the first choice right?), and time before starting to write
+  const hN = helped ? Math.min(9, S.chat[k_].msgs.filter((m) => m.role === 'user').length || 1) : 0;
+  const ch = S && S.chg && k_ >= 0 && k_ in S.chg ? { cg: 1, c1: S.chg[k_] === q.correct_option ? 1 : 0 } : {};
+  const fi = ty === 'w' && S && S.qShown && S.qShown.q === q && S.qShown.f ? Math.round((S.qShown.f - S.qShown.t) / 1000) : 0;
+  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '', ty, ...(helped ? { h: hN } : {}), ...(secs > 0 && secs < 900 ? { s: secs } : {}), ...ch, ...(fi > 0 && fi < 900 ? { fi } : {}) });
   // Mistake book: every question not fully right goes in; getting it fully right later marks it mastered.
   const mk = local.mistakes[q.id];
   if (got < marksOf(q)) {
