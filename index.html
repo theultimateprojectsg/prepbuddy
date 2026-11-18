@@ -3279,6 +3279,15 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ag-long{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:18px;background:#FFFFFF;border:1.5px solid #BFE6D1}
 .ag-long .gl-ht b{font-family:'Lexend',sans-serif;font-size:18px}
 .ag-item .pv-coach ol,.cb-focus .pv-coach ol{display:block!important}.ag-item .pv-coach ol li:nth-child(n+3),.cb-focus .pv-coach ol li:nth-child(n+3){display:none}
+/* All goals: tests fold to a row */
+.ag-t{border-radius:18px;background:#FFFFFF;border:1px solid #E3E7F1;overflow:hidden}
+.ag-t>summary{list-style:none;border-top:0!important;position:relative;padding-right:38px!important}.ag-t>summary::-webkit-details-marker{display:none}
+.ag-t>summary::after{content:"›";position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:22px;color:var(--muted);transition:transform .15s}
+.ag-t[open]>summary::after{transform:translateY(-50%) rotate(90deg)}
+.ag-t>summary .ag-mis{margin-bottom:2px}
+.ag-t[open]>summary .gl-rb{display:none}.ag-t[open] .ag-body .pv-test-h{display:none}.ag-t[open]>summary{padding-bottom:4px!important}
+.ag-body{padding:0}.ag-body .pv-test{border:0!important;border-radius:0!important;margin:0}
+.ag-t[open] .ag-body{position:relative}
 </style>
 </head>
 <body>

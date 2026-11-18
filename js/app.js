@@ -2905,7 +2905,10 @@ async function renderHome() {
           <div class="gl-lvh"><span>${Z('Level now', '現在程度')}</span><b>${G.now.toFixed(1)}<small>/10</small></b></div>${goalLevelBar(G.now, G.start, G.target)}
           ${G.change != null && Math.abs(G.change) >= 0.1 ? `<span class="gl-wk ${G.change > 0 ? 'up' : 'down'}">${G.change > 0 ? '▲' : '▼'} ${Math.abs(G.change).toFixed(1)} ${Z('since you started', '自開始以來')}</span>` : ''}</div>`;
       comboHTML = `${devBar('all')}<section class="ag" aria-label="${Z('My goals', '我的目標')}"><div class="gl-oh"><h2>${Z('My goals', '我的目標')}</h2><span class="cb-hb"><button class="linkbtn" id="addTest3">+ ${SCH('Add a test', '加入測驗')}</button><button class="linkbtn" data-mygoals>${Z('Edit', '修改')} ›</button></span></div>
-        ${all.map((g) => `<div class="ag-item">${inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : ''}${g.kind === 'test' ? cardOf(g) : longCard(g)}</div>`).join('')}</section>`;
+        ${all.map((g, i) => { const mis = inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
+          // tests fold to one row (name, status, bar); tap to open the full card. The one needing the most work starts open.
+          return g.kind === 'test' ? `<details class="ag-item ag-t" ${i === 0 ? 'open' : ''}>${goalRowHTML(g, '', false, 'summary').replace('<span class="gl-rh">', `${mis}<span class="gl-rh">`)}<div class="ag-body">${cardOf(g)}</div></details>`
+            : `<div class="ag-item">${mis}${longCard(g)}</div>`; }).join('')}</section>`;
     }
     if (DEV && goalG && DMODE === '1') {
       const cardOf = (G) => { const k = tests.steps.indexOf(G.p); return k >= 0 ? cards[k] : ''; };
