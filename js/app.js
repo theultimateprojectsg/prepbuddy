@@ -5486,6 +5486,45 @@ const PI = {
 };
 const pIcon = (k, size = 20) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PI[k]}</svg>`;
 const PT = (en, zh) => (LANG === 'zh' ? zh : en);
+// What kind of weakness a chapter has, from the child's answers: not started, too few answers, remembering facts,
+// understanding, using it in new questions, thinking it through, or written answers vs multiple choice.
+function weakWhy(book, unit) {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), names = SKILL_PLAIN();
+  const E = local.log.filter((e) => e.q && e.m && e.k !== 'spaced' && qUnit(e.q)[0] === book.id && qUnit(e.q)[1] === unit.id);
+  const acc = (es) => { const m = es.reduce((a, e) => a + e.m, 0); return m ? Math.round(100 * es.reduce((a, e) => a + e.g, 0) / m) : null; };
+  const go1 = (o) => () => { pick = { bookId: book.id, ids: new Set([unit.id]) }; startUnits(book, [unit], 8, o); };
+  const learnIt = () => go({ name: 'learn', bookId: book.id, unitId: unit.id });
+  if (!E.length) return { tags: [['new', Z('Not started', '未開始')]], say: Z('No questions answered here yet. Start with the lesson, then a few questions.', '這一章還未做過題目。先上課，再做幾題。'), act: [Z('Start the lesson', '開始上課'), learnIt] };
+  const all = acc(E);
+  if (E.length < 4) return { tags: [['few', Z('Only a few tries', '做得太少')]], say: Z(`${E.length} question${E.length > 1 ? 's' : ''} so far, ${all}% right. A few more and Buddy can see what’s tricky.`, `暫時做了 ${E.length} 題，答對 ${all}%。多做幾題，Buddy 就看得出難在哪裡。`), act: [Z('Practise 8 questions', '練習 8 題'), go1({})] };
+  const lv = [1, 2, 3, 4].map((l) => { const es = E.filter((e) => Math.max(1, Math.min(4, Math.round(e.l || 2))) === l); return { l, n: es.length, a: acc(es) }; }).filter((x) => x.n >= 2);
+  const C = E.filter((e) => e.ty === 'c'), W = E.filter((e) => e.ty === 'w'), ca = C.length >= 2 ? acc(C) : null, wa = W.length >= 2 ? acc(W) : null;
+  const helped = E.filter((e) => e.h).length / E.length;
+  const tags = [], worst = lv.slice().sort((a, b) => a.a - b.a)[0], best = lv.slice().sort((a, b) => b.a - a.a)[0];
+  const LV = [['rem', Z('Remembering facts', '記憶事實')], ['und', Z('Understanding', '理解')], ['use', Z('Using it', '應用')], ['deep', Z('Thinking it through', '深入思考')]];
+  let say = '', act = null;
+  const fmtGap = ca != null && wa != null && Math.abs(ca - wa) >= 20, fmtLow = fmtGap ? Math.min(ca, wa) : 101;
+  const lvFirst = worst && worst.a < 70 && worst.a <= fmtLow;
+  const doFmt = () => {
+    const w = wa < ca; tags.push(w ? ['wr', Z('Written answers', '文字題')] : ['mc', Z('Multiple choice', '選擇題')]);
+    if (!say) say = w ? Z(`Multiple choice ${ca}% right, written answers only ${wa}%.`, `選擇題答對 ${ca}%，文字題只有 ${wa}%。`) : Z(`Written answers ${wa}% right, multiple choice only ${ca}%: read every option carefully.`, `文字題答對 ${wa}%，選擇題只有 ${ca}%：要細心看每個選項。`);
+    if (!act) act = w ? [Z('Practise written answers', '練習文字題'), go1({ types: 'written' })] : [Z('Practise multiple choice', '練習選擇題'), go1({ types: 'mcq' })];
+  };
+  if (fmtGap && !lvFirst) doFmt();
+  if (worst && worst.a < 70) {
+    tags.push(LV[worst.l - 1]);
+    if (!say) { const vs = best && best.l !== worst.l && best.a - worst.a >= 20 ? Z(`, but ${best.a}% on ${names[best.l - 1].toLowerCase()}`, `，但「${names[best.l - 1]}」有 ${best.a}%`) : '';
+    say = [Z(`Forgets key facts and words: ${worst.a}% right on these${vs}.`, `記不牢重點和詞語：這類題答對 ${worst.a}%${vs}。`),
+      Z(`Knows the facts but mixes up what they mean: ${worst.a}% right${vs}.`, `記得事實但未完全明白：答對 ${worst.a}%${vs}。`),
+      Z(`Gets the basics, slips when a question is new or has steps: ${worst.a}% right${vs}.`, `基本題做得到，題目一變或要分步驟就出錯：答對 ${worst.a}%${vs}。`),
+      Z(`Harder “explain why” questions: ${worst.a}% right${vs}.`, `較難的「解釋原因」題：答對 ${worst.a}%${vs}。`)][worst.l - 1]; }
+    if (!act) act = worst.l === 1 ? [Z('Go over the lesson', '重溫課堂'), learnIt] : [Z(`Practise ${names[worst.l - 1].toLowerCase()} questions`, `練習「${names[worst.l - 1]}」題`), go1({ diff: `l${worst.l}` })];
+  }
+  if (fmtGap && lvFirst) doFmt();
+  if (helped >= 0.4) { tags.push(['help', Z('Needs Buddy to start', '要 Buddy 幫忙')]); if (!say) say = Z('Often asks Buddy for help before answering. A quick lesson recap may help.', '經常要先問 Buddy 才作答。重溫一下課堂會有幫助。'); }
+  if (!tags.length) { tags.push(['mix', Z('A bit of everything', '各方面都要加強')]); say = Z(`${all}% right across ${E.length} questions, with no one type much harder. More practice will lift it.`, `${E.length} 題中答對 ${all}%，沒有特別弱的題型，多練習就會進步。`); }
+  return { tags: tags.slice(0, 2), say, act: act || [Z('Practise 8 questions', '練習 8 題'), go1({})] };
+}
 const SKILL_PLAIN = () => (LANG === 'zh' ? ['記憶事實', '理解', '應用', '深入思考'] : ['Remembering facts', 'Understanding', 'Using it', 'Thinking it through']);
 
 // Weekly goal (days × minutes), counted Monday to Sunday.
@@ -6124,16 +6163,21 @@ async function renderProgress() {
     const aim = p.x.aim || 80, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
     const st = p.ready == null ? 'none' : aimTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
-    // the chapters in this test that still need the most work (weakest first)
+    // Weak areas Buddy noticed: the chapters still below the goal, and what kind of weakness it is
     let weakHTML = '';
     if (p.ready == null) weakHTML = `<p class="pv-p">${PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')}</p>`;
     else {
       const chs = (chOf(p).length ? chOf(p) : p.book ? MB.get(p.book.id).chapters : []).slice().sort((a, b) => a.pct - b.pct);
-      const weak = chs.filter((c) => c.pct < aim).slice(0, 3);
+      const below = chs.filter((c) => c.pct < aim), weak = below.slice(0, 3), ok = chs.length - below.length;
+      const item = (c) => {
+        const d = weakWhy(p.book, c.unit), nw = d.tags[0][0] === 'new', pc = nw ? PT('New', '未開始') : `${c.pct}%`;
+        return `<div class="pv-wa"><div class="pv-wa-h"><b data-raw>${esc(chName(c.unit))}</b><em class="${nw ? 'new' : tone(c.pct)}">${pc}</em></div>
+          <div class="pv-wa-tags">${(nw ? [] : d.tags).map((t) => `<span class="pv-wtag ${t[0]}">${t[1]}</span>`).join('')}</div>
+          <p>${d.say}</p>${btn(`${d.act[0]} ›`, d.act[1], 'pv-wbtn')}</div>`;
+      };
       weakHTML = !chs.length ? '' : !weak.length ? `<p class="pv-strong">${ICON.check}<span>${PT(`Every chapter is at ${aim}% or more. Keep it ticking over.`, `每一章都達到 ${aim}% 或以上，保持下去！`)}</span></p>`
-        : `<div class="pv-weak"><b class="pv-weak-h">${PT(weak.length === 1 ? 'Still weak at' : 'Still weak at these', '仍然較弱的章節')}</b>${weak.map((c) => `<div class="pv-wr"><span class="pv-wn" data-raw>${esc(chName(c.unit))}</span><i><b class="${tone(c.pct)}" style="width:${Math.max(3, c.pct)}%"></b></i><em>${fresh(c) ? PT('Not started', '未開始') : `${c.pct}%`}</em>${btn(PT('Practise', '練習'), () => { pick = { bookId: p.book.id, ids: new Set([c.unit.id]) }; startUnits(p.book, [c.unit], 10); }, 'pv-wbtn')}</div>`).join('')}
-          ${(() => { const more = chs.filter((c) => c.pct < aim).length - weak.length, ok = chs.filter((c) => c.pct >= aim).length;
-            const t = [more ? PT(`${more} more to work on`, `還有 ${more} 章要加強`) : '', ok ? PT(`${ok} at ${aim}% or more`, `${ok} 章已達 ${aim}% 或以上`) : ''].filter(Boolean).join(' · ');
+        : `<div class="pv-weak"><div class="pv-weak-hd"><b>${PT('Weak areas Buddy noticed', 'Buddy 發現的弱項')}</b>${buddySVG('think', 28)}</div>${weak.map(item).join('')}
+          ${(() => { const t = [below.length > weak.length ? PT(`${below.length - weak.length} more to work on`, `還有 ${below.length - weak.length} 章要加強`) : '', ok ? PT(`${ok} at ${aim}% or more`, `${ok} 章已達 ${aim}% 或以上`) : ''].filter(Boolean).join(' · ');
             return t ? `<small class="pv-weak-n">${t}</small>` : ''; })()}</div>`;
     }
     const nums = p.ready == null ? '' : `<div class="pv-snum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i aria-hidden="true">→</i><div><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div><div><b>${aim}%</b><span>${PT('goal', '目標')}</span></div></div>

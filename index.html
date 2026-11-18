@@ -3146,6 +3146,19 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .pv-wr{grid-template-columns:minmax(0,1fr) auto auto;row-gap:4px;column-gap:10px;padding:2px 0}
 .pv-wr .pv-wn{grid-column:1/-1;white-space:normal;font-size:14px;line-height:1.35}
 .pv-wr i{grid-column:1}
+/* Weak areas Buddy noticed */
+.pv-weak{gap:10px}
+.pv-weak-hd{display:flex;align-items:center;justify-content:space-between}.pv-weak-hd b{font-size:15px;font-weight:700;color:var(--ink)}
+.pv-wa{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:14px;background:#FFFFFF;border:1px solid rgba(38,53,122,.1)}
+.pv-wa-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.pv-wa-h b{font-size:15px;line-height:1.35;color:var(--ink)}
+.pv-wa-h em{flex:none;font-style:normal;font-size:13px;font-weight:700;padding:2px 9px;border-radius:999px;background:#FDECEA;color:#B23A26}
+.pv-wa-h em.mid{background:#FFF1DC;color:#9A5A00}.pv-wa-h em.good{background:#E6F4EC;color:#1E7A46}.pv-wa-h em.new{background:#EEF1F6;color:var(--muted)}
+.pv-wa-tags:empty{display:none}.pv-wa-tags{display:flex;flex-wrap:wrap;gap:6px}
+.pv-wtag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:#EEF1F6;color:var(--ink)}
+.pv-wtag.rem{background:#EAF0FF;color:#2C4BB0}.pv-wtag.und{background:#F1EAFE;color:#6A3BC0}.pv-wtag.use{background:#FFF1DC;color:#9A5A00}.pv-wtag.deep{background:#FDECEA;color:#B23A26}
+.pv-wtag.wr{background:#E8F6F3;color:#0F7462}.pv-wtag.mc{background:#E8F6F3;color:#0F7462}.pv-wtag.help{background:#FFF8DB;color:#7A5A00}
+.pv-wa p{margin:0;font-size:14px;line-height:1.45;color:var(--text-2)}
+.pv-wa .pv-wbtn{align-self:flex-start;margin-top:2px;background:var(--accent-soft,#EEF2FF);border-color:transparent}
 </style>
 </head>
 <body>
