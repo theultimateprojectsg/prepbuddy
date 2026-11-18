@@ -2534,8 +2534,8 @@ async function renderHome() {
   { const x = (local.sched || []).find((x) => x.kind !== 'dict' && /writ|compos|essay|作文|寫作/i.test(x.name || '') && testLeft(x) >= 0 && testLeft(x) <= 3);
     if (x && !cands.some((c) => c.key === `t:${x.id}`)) cands.push({ key: `wt:${x.id}`, icon: 'writing', t: Z('Practise writing', '練習寫作'), s: Z('Write a piece, Buddy gives feedback', '寫一篇，Buddy 給意見'), why: Z(`${x.name} is ${leftText(testLeft(x))}. Write a piece and Buddy marks it with feedback.`, `「${x.name}」${leftText(testLeft(x))}。寫一篇，Buddy 會批改並給意見。`), attr: 'data-wrgo="1"', chk: { y: 'wr' }, tag: ['test', Z(`Writing ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}寫作`)] }); }
   // reviews come before mistakes: they're due today and slip if they wait
-  if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Review 10 questions now', '先複習 10 題'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
-  else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Review ${due.length} question${due.length > 1 ? 's' : ''}`, `複習 ${due.length} 題`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
+  if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Go over 10 questions from before', '溫習 10 題舊題目'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
+  else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Go over ${due.length} question${due.length > 1 ? 's' : ''} from before`, `溫習 ${due.length} 題舊題目`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
   if (mk) { const n = Math.min(5, mk); cands.push({ key: 'mk', icon: 'mistakes', t: mk > n ? Z(`Fix ${n} of your ${mk} mistakes`, `改正 ${n} 題錯題（共 ${mk} 題）`) : Z(`Fix ${mk} mistake${mk > 1 ? 's' : ''}`, `改正 ${mk} 題錯題`), s: Z('Questions you didn’t get fully right', '未完全答對的題目'), attr: 'id="mistakes"', chk: { y: 'mk', n: mk, k: n } }); }
   // the weakest chapter practised lately (first tries, last 2 weeks), if it isn't already in the list
   { const by = {}, wk2 = Date.now() - 14 * DAY, seen = new Set();
@@ -2596,21 +2596,25 @@ async function renderHome() {
   // A done step opens to show what was done today, with a way to go back to it.
   const doneInfo = (x) => {
     const c = x.chk || {}, today = local.log.filter((e) => e.t >= M.at);
-    const tally = (L) => { const n = L.length, r = L.filter((e) => e.g >= e.m).length; return n ? Z(`${n} question${n > 1 ? 's' : ''} · ${r} right`, `${n} 題 · 答對 ${r} 題`) : ''; };
-    const bk = c.b && books.find((b) => b.id === c.b), un = (id) => bk && bk.units.find((u) => u.id === id);
-    let lines = [], btn = '';
-    if (c.y === 'log') { const L = today.filter((e) => e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1])));
-      const chs = [...new Set(L.map((e) => qUnit(e.q)[1]))].map(un).filter(Boolean).map((u) => shortTitle(u.title));
-      lines = [Z('You practised', '你練習了') + ' ' + tally(L), chs.length ? chs.join(' · ') : ''];
-      const wrong = L.filter((e) => e.g < e.m).length; if (wrong) btn = `<button class="btn-sm" data-go="mistakes">${Z(`See the ${wrong} you got wrong`, `看看答錯的 ${wrong} 題`)}</button>`; }
-    else if (c.y === 'learn') { const u = un(c.u); lines = [Z('You finished the lesson', '你完成了課堂'), u ? shortTitle(u.title) : '']; btn = `<button class="btn-sm" data-mlearn="${esc(c.b)}:${esc(c.u)}">${Z('Open the lesson again', '再看一次課堂')}</button>`; }
-    else if (c.y === 'rv') lines = [Z('You reviewed', '你複習了') + ' ' + tally(today.filter((e) => e.k === 'review'))];
-    else if (c.y === 'mk') { const L = today.filter((e) => e.k === 'mistakes'); lines = [Z('You redid mistakes', '你重做了錯題') + (L.length ? ': ' + tally(L) : '')]; btn = `<button class="btn-sm" data-go="mistakes">${Z('Open the Mistake book', '打開錯題簿')}</button>`; }
-    else if (c.y === 'lv') lines = [Z('You did the level check', '你做了程度測試'), bk ? (bk.subject ? subj(bk.subject) : shortTitle(bk.title)) : ''];
-    else if (c.y === 'dict') lines = [Z('You practised your 默書 words', '你練習了默書')];
-    else if (c.y === 'wr') lines = [Z('You wrote a piece and got Buddy’s feedback', '你寫了一篇並收到 Buddy 的意見')];
-    else lines = [Z('Done today', '今日已完成')];
-    return `<div class="msd-body">${lines.filter(Boolean).map((l, i) => i ? `<span class="muted">${esc(l)}</span>` : `<b>${esc(l)}</b>`).join('')}${btn ? `<div class="msd-btns">${btn}</div>` : ''}</div>`;
+    const bk = c.b && books.find((b) => b.id === c.b);
+    const chName = (q) => { const [bid, uid] = qUnit(q); const b = books.find((y) => y.id === bid), u = b && b.units.find((y) => y.id === uid); return u ? shortTitle(u.title) : ''; };
+    // what was answered: how many, how many right, which chapters, and the wrong ones (or a well done)
+    const sum = (L, head) => {
+      if (!L.length) return { lines: [head] };
+      const n = L.length, r = L.filter((e) => e.g >= e.m).length, w = n - r, chs = [...new Set(L.map((e) => chName(e.q)).filter(Boolean))];
+      return { lines: [`${head} ${Z(`${n} question${n > 1 ? 's' : ''} · ${r} right`, `${n} 題 · 答對 ${r} 題`)}`, chs.join(' · ')],
+        good: w ? '' : Z(n > 1 ? `All ${n} right. Nothing to fix!` : 'Right first time. Nothing to fix!', `全部答對，沒有要改正的！`),
+        btn: w ? `<button class="btn-sm" data-go="mistakes">${Z(`See the ${w} you got wrong`, `看看答錯的 ${w} 題`)}</button>` : '' };
+    };
+    let o = { lines: [Z('Done today', '今日已完成')] };
+    if (c.y === 'log') o = sum(today.filter((e) => e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))), Z('You practised', '你練習了'));
+    else if (c.y === 'learn') { const u = bk && bk.units.find((y) => y.id === c.u); o = { lines: [Z('You finished the lesson', '你完成了課堂'), u ? shortTitle(u.title) : ''], btn: `<button class="btn-sm" data-mlearn="${esc(c.b)}:${esc(c.u)}">${Z('Open the lesson again', '再看一次課堂')}</button>` }; }
+    else if (c.y === 'rv') { o = sum(today.filter((e) => e.k === 'spaced'), Z('You went over', '你溫習了')); o.note = Z('Questions you did on earlier days come back at the right time, so you don’t forget them.', '以前做過的題目會在適當時候再出現，幫你記牢。'); }
+    else if (c.y === 'mk') { o = sum(today.filter((e) => e.k === 'mistakes'), Z('You redid mistakes:', '你重做了錯題：')); if (!o.btn) o.btn = `<button class="btn-sm" data-go="mistakes">${Z('Open the Mistake book', '打開錯題簿')}</button>`; }
+    else if (c.y === 'lv') o = { lines: [Z('You did the level check', '你做了程度測試'), bk ? (bk.subject ? subj(bk.subject) : shortTitle(bk.title)) : ''] };
+    else if (c.y === 'dict') o = { lines: [Z('You practised your 默書 words', '你練習了默書')] };
+    else if (c.y === 'wr') o = { lines: [Z('You wrote a piece and got Buddy’s feedback', '你寫了一篇並收到 Buddy 的意見')] };
+    return `<div class="msd-body">${o.lines.filter(Boolean).map((l, i) => i ? `<span class="muted">${esc(l)}</span>` : `<b>${esc(l)}</b>`).join('')}${o.note ? `<span class="msd-note">${esc(o.note)}</span>` : ''}${o.good ? `<span class="msd-good">${ICON.check}${esc(o.good)}</span>` : ''}${o.btn ? `<div class="msd-btns">${o.btn}</div>` : ''}</div>`;
   };
   const stepRow = (x, k) => x.done || !x.now
     ? `<details class="msd"><summary class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></summary>${doneInfo(x)}</details>`
