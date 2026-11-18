@@ -2876,11 +2876,10 @@ async function renderHome() {
     };
     for (const p of tests.steps) await card(p); // works out today's job and minutes for each test
     // the full test card; today's job for it is already in Buddy's plan box and in Today's mission, so no extra Start row
-    // every test with a textbook is a goal (the focus card, or a row under Other goals): only the others get a full card here
-    const cards = (await fullTestCards(tests, tdBtn)).filter((_, k) => !(GD && GD.list.some((g) => g.kind === 'test' && g.p === tests.steps[k])));
+    const cards = await fullTestCards(tests, tdBtn);
     const tot = tdMins.reduce((a, b) => a + b, 0);
     const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Slide Buddy to a lower goal on a test card to lighten it.', '時間較多，可在測驗卡上把 Buddy 拖到較低的目標。') : ''}</span></p>` : '';
-    testHTML = cards.length ? `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>` : '';
+    testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>`;
   }
 
   $app.innerHTML = `
