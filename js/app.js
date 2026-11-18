@@ -352,6 +352,9 @@ async function refreshLibBooks() {
       const fix = new Map(add.map((q) => [q.id, q])); let fixed = false;
       const merged = existing.map((q) => { const n = fix.get(q.id); if (!n || JSON.stringify([n.stem, n.parts, n.options, n.answer, n.explanation]) === JSON.stringify([q.stem, q.parts, q.options, q.answer, q.explanation])) return q; fixed = true; return { ...q, ...n }; });
       if (fresh.length || fixed) await setQs(b.id, u.id, merged.concat(fresh));
+      // a corrected question re-marks the child's last answer: if it's now fully right, that mistake is cleared
+      if (fixed) for (const q of merged) { const mk = (local.mistakes || {})[q.id]; if (!mk || mk.done || !fix.has(q.id) || !Array.isArray(mk.ans)) continue;
+        const r = localMark(q, mk.ans); if (r && r.parts.every((x) => x.awarded.length)) { mk.done = true; mk.doneAt = Date.now(); mk.cleared = 'corrected'; saveLocal(); } }
     }
     b.units = e.units.map((u) => ({ ...u })); b.pageCount = e.pageCount; b.rev = e.rev; changed = true;
   }
@@ -6989,7 +6992,7 @@ async function renderPrint(book, units, paper, mins, existing) {
   const lines = (n) => `<div class="lines">${'<div></div>'.repeat(n)}</div>`;
   const mcq = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">1 mark</span></div>${figHTML(q, 'pfig')}${q.type === 'graph' ? graphStem(q) : renderStem(q.stem, 'pstem')}
     ${q.type === 'graph' ? graphOptions(q, true) : `<ol type="A" class="popts">${(q.options || []).map((o) => `<li>${esc(o)}</li>`).join('')}</ol>`}</div>`;
-  const written = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">${marksOf(q)} marks</span></div>${figHTML(q, 'pfig')}${q.stem ? renderStem(writtenStem(q), 'pstem') : ''}
+  const written = (q, n) => `<div class="pq"><div class="pqh"><b>${n}.</b><span class="pm">${marksOf(q)} mark${marksOf(q) === 1 ? '' : 's'}</span></div>${figHTML(q, 'pfig')}${q.stem ? renderStem(writtenStem(q), 'pstem') : ''}
     ${q.parts.map((p) => `<div class="ppart"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="pm">(${p.marks})</span></div>${lines(Math.max(2, p.marks + 1))}`).join('')}</div>`;
   const draw = () => {
     const who = (local.name || '').trim();
@@ -9056,7 +9059,7 @@ function writtenBody(q, revealed) {
   const note = m.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(m.error)} Tick the points you made instead.</p>`
     : m.local ? '<p class="hint" style="margin:0">Checked against the answer. Think it got one wrong? Tap a point to change it.</p>'
     : ai ? '<p class="hint" style="margin:0">Marked by AI. Think it got one wrong? Tap a point to change it.</p>' : '';
-  const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} marks</span>
+  const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} mark${marksOf(q) === 1 ? '' : 's'}</span>
     ${m.tip ? `<p class="tipline"><b>Tip:</b> <span data-raw>${esc(m.tip)}</span></p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
   return { main: `${stem}${partHtml}${note}`, footer, bind() {
     $app.querySelectorAll('.point').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, j = +b.dataset.j; ticks[k][j] = !ticks[k][j]; const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }));
@@ -9168,7 +9171,7 @@ function essayRevealed(q, m, ans, stem) {
   const crit = e.criteria.map((c) => `<div class="crit"><div class="crit-top"><b data-raw>${esc(c.criterion)}</b><span>${c.score} / ${c.max}</span></div>
     <div class="bar ${c.score / c.max < 0.5 ? 'warn' : ''}"><i style="width:${Math.round(100 * c.score / c.max)}%"></i></div><p data-raw>${esc(c.feedback)}</p></div>`).join('');
   const imp = e.improvements.length ? `<div class="stack g6"><span class="hint" style="font-weight:600">How to improve it</span><ul class="improve" data-raw>${e.improvements.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
-  const footer = `<div class="sheet"><span class="verdict ${m.total >= max * 0.7 ? 'ok' : 'no'}">${m.total} / ${max} marks</span>
+  const footer = `<div class="sheet"><span class="verdict ${m.total >= max * 0.7 ? 'ok' : 'no'}">${m.total} / ${max} mark${max === 1 ? '' : 's'}</span>
     ${e.tip ? `<p class="tipline"><b>Tip:</b> <span data-raw>${esc(e.tip)}</span></p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
   return { main: `${stem}${task}<p class="hint" style="margin:0">Marked by AI against the rubric.</p><div class="card stack g14" style="padding:14px 16px">${crit}</div>${imp}`, footer };
 }
@@ -9358,7 +9361,7 @@ function renderSummary() {
     <section class="rhero ${band}">
       <span class="rmeta">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span>
       <div class="rtop"><div class="ring ${band}" style="--p:${pct}" role="img" aria-label="${pct}%"><span>${pct}%</span></div>
-        <div class="rhead"><b>${head}</b><span>${got} of ${total} marks</span></div>
+        <div class="rhead"><b>${head}</b><span>${got} of ${total} mark${total === 1 ? '' : 's'}</span></div>
         <span class="rbuddy">${buddySVG(pct >= 85 ? 'done' : pct >= 50 ? 'happy' : 'think', 76)}</span></div>
       <p class="rsub">${sub}</p>
       <div class="rcounts"><span class="right">${V} ${nRight} right</span>${nPart ? `<span class="part">${H} ${nPart} partly</span>` : ''}<span class="miss">${X} ${nMiss} missed</span></div>
