@@ -2908,8 +2908,8 @@ async function renderHome() {
         const mis = inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
         if (g.kind === 'test') return `<details class="ag-sc t ${g.st}" ${i === 0 ? 'open' : ''}><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`, true)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
         const name = esc(g.lab);
-        if (g.kind === 'longnew') return `<div class="ag-sc l">${subHead(g, GIC.long, name, Z('Getting stronger · practise a little to see the level', '持續進步 · 練習一下就會顯示程度'))}</div>`;
-        return `<div class="ag-sc l ${g.st}">${mis}${subHead(g, GIC.long, name, Z(`Getting stronger · target ${g.target.toFixed(1)}/10`, `持續進步 · 目標 ${g.target.toFixed(1)}/10`))}
+        if (g.kind === 'longnew') return `<div class="ag-sc l">${subHead(g, GIC.long, name, Z('Getting stronger · not started yet', '持續進步 · 未開始'))}</div>`;
+        return `<div class="ag-sc l ${g.st}">${mis}${subHead(g, GIC.long, name, Z(`Getting stronger`, `持續進步`))}
           <div class="ag-lv"><div class="pv-num"><b>${g.now.toFixed(1)}</b><span>${Z('level now', '現在程度')}</span></div><div class="ag-lvb">${goalLevelBar(g.now, g.start, g.target)}</div>${g.change != null && Math.abs(g.change) >= 0.1 ? `<span class="gl-wk ${g.change > 0 ? 'up' : 'down'}">${g.change > 0 ? '▲' : '▼'} ${Math.abs(g.change).toFixed(1)}</span>` : ''}</div></div>`;
       };
       const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');

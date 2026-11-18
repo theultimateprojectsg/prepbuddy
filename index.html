@@ -3358,6 +3358,11 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .mg-sel{flex-direction:row;align-items:center;gap:6px}.mg-sel span{font-size:11px}
 .mg-sel select{min-height:32px;padding:3px 6px;font-size:13.5px}
 .mg-key{display:block;line-height:1.5;font-size:12px!important;color:var(--muted)!important}
+/* All goals v5: a closed <details> keeps an empty content slot that adds a gap in newer browsers */
+.ag-sc.t{gap:0}.ag-sc.t[open]>.ag-body{margin-top:12px}
+.ag-mt .pv-bar small{top:-20px}
+.ag-h .gl-st{white-space:nowrap}
+.ag-lv .pv-num{align-self:flex-end}
 </style>
 </head>
 <body>
