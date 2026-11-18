@@ -6373,7 +6373,7 @@ function goalsCardHTML(GD, o = {}) {
         ${g.change != null && Math.abs(g.change) >= 0.1 ? `<p><b class="gl-wk ${g.change > 0 ? 'up' : 'down'}">${g.change > 0 ? '▲' : '▼'} ${Math.abs(g.change).toFixed(1)}</b> ${Z('since you started', '自開始以來')}</p>` : ''}
         ${g.nx ? `<p class="ag-nx"><b>${Z('Buddy suggests', 'Buddy 建議')}</b> <span data-raw>${esc(g.nx)}</span></p>` : ''}${toProg}</div></details>`;
   };
-  const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
+  const who = o.title ? o.title : local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
   return `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
     ${goalsHowHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`}</section>`;
 }
@@ -7027,10 +7027,17 @@ async function renderProgress() {
   let newBody = '';
   if (PNEW) {
     // 1 week at a glance · 2 goals · 3 tests · 4 subject mastery · 5 what Buddy noticed (with the readiness and is-it-working charts) · 6 effort and habits
-    const goalsSec = goalPHTML.replace(`<h2>${PT('My goals', '我的目標')}</h2>`, `<h2>${PT('Am I on track for my goals?', '我的目標進度如何？')}</h2>`);
+    // goals and tests in one place, in Today's card: folded it answers "on track?", opened it shows the detail
+    const chList = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
+      if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
+      return `<details class="pvn-ch"><summary>${PT(`Chapters in this test (${cs.length})`, `測驗範圍內的章節（${cs.length}）`)}</summary><div class="pv-tch open">${cs.map((c) => `<div class="pv-tr ${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.pct}%` : c.learned ? PT(`Lesson · ${c.pct}%`, `已上課 · ${c.pct}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.pct}%"></b></i></div>`).join('')}</div></details>`; };
+    const tBody = (g) => { const chs = chOf(g.p).length ? chOf(g.p) : g.p.book ? MB.get(g.p.book.id).chapters : [];
+      return `${goalProgressHTML(g, g.p.ready == null ? '' : testPoints(g.p, chs, g.aim, g.fc, g.st), false, true)}${chList(g.p)}`; };
+    const gCard = GDp ? goalsCardHTML(GDp, { progress: true, testBody: tBody, title: PT('Am I on track for my goals?', '我的目標進度如何？') }) : '';
+    const goalsSec = `<section class="pv-sec pvn-goals">${gCard}${fixedGoodHTML()}</section>`;
     const grid4 = `<div class="pv-grid3 pvn-in">${levelCard}${pcCard}${readyCard}${mixCard}${typesCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div>`;
     const k2 = sec2.lastIndexOf('</section>'), s2 = k2 >= 0 ? sec2.slice(0, k2) + grid4 + sec2.slice(k2) : sec2 + grid4;
-    newBody = `${sumSec}${goalsSec}<div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s2">${s2}</div><div id="pv-s5">${sec5}</div>`;
+    newBody = `${sumSec}${goalsSec}<div id="pv-s3">${sec3}</div><div id="pv-s2">${s2}</div><div id="pv-s5">${sec5}</div>`;
   }
 
   $app.innerHTML = `
@@ -7043,7 +7050,7 @@ async function renderProgress() {
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
   $app.querySelectorAll('[data-pvmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.prog', b.dataset.pvmode); renderProgress(); }));
-  if (PNEW) $app.querySelector('main').classList.add('pvnew');
+  if (PNEW) { $app.querySelector('main').classList.add('pvnew'); ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); }); }
   // Info pop-ups in plain words: a few short lines with a picture each, for kids and parents alike
   { const L = (rows) => `<ul class="how-easy">${rows.map(([i, en, zh, den, dzh]) => `<li><span>${i}</span><div><p>${PT(en, zh)}</p>${den ? `<small>${PT(den, dzh)}</small>` : ''}</div></li>`).join('')}</ul>`;
     const HOW = {
