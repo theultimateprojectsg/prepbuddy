@@ -2902,15 +2902,20 @@ async function renderHome() {
         .sort((a, b) => (b.kind === 'test') - (a.kind === 'test') || (b.score || 0) - (a.score || 0) || (a.kind === 'test' && b.kind === 'test' ? a.p.left - b.p.left : rank[a.st] - rank[b.st]));
       // one goal = one sub-card, all the same shape: icon, name, when or target, status; then its measure
       const ST = GOAL_ST();
-      const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}${chev ? '<i class="ag-chev" aria-hidden="true">›</i>' : ''}</span>`;
+      const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}</span>`;
       const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<s style="left:${g.aim}%"></s><small style="left:${g.aim}%;transform:translateX(${g.aim >= 80 ? '-100%' : g.aim <= 20 ? '0' : '-50%'})">${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</small></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>`;
       const sub = (g, i) => {
         const mis = inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
-        if (g.kind === 'test') return `<details class="ag-sc t ${g.st}" ${i === 0 ? 'open' : ''}><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`, true)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
+        if (g.kind === 'test') return `<details class="ag-sc t ${g.st}" ${i === 0 ? 'open' : ''}><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
         const name = esc(g.lab);
-        if (g.kind === 'longnew') return `<div class="ag-sc l">${subHead(g, GIC.long, name, Z('Getting stronger · not started yet', '持續進步 · 未開始'))}</div>`;
-        return `<div class="ag-sc l ${g.st}">${mis}${subHead(g, GIC.long, name, Z(`Getting stronger`, `持續進步`))}
-          <div class="ag-lv"><div class="pv-num"><b>${g.now.toFixed(1)}</b><span>${Z('level now', '現在程度')}</span></div><div class="ag-lvb">${goalLevelBar(g.now, g.start, g.target)}</div>${g.change != null && Math.abs(g.change) >= 0.1 ? `<span class="gl-wk ${g.change > 0 ? 'up' : 'down'}">${g.change > 0 ? '▲' : '▼'} ${Math.abs(g.change).toFixed(1)}</span>` : ''}</div></div>`;
+        // subject goals open too: the level week by week, how far it has come, and what Buddy suggests next
+        const toProg = `<button class="linkbtn ag-more" data-gfocus2="${esc(g.id)}">${Z('See it on Progress', '在「進度」查看')} ›</button>`;
+        if (g.kind === 'longnew') return `<details class="ag-sc t l"><summary>${subHead(g, GIC.long, name, Z('Getting stronger · not started yet', '持續進步 · 未開始'))}</summary><div class="ag-body ag-lbody"><p>${Z(`Practise a few sets in ${esc(g.lab)} and Buddy will work out the level, out of 10, and show how it rises week by week.`, `在${esc(g.lab)}練習幾組，Buddy 就會算出程度（滿分 10），並顯示每週的進步。`)}</p></div></details>`;
+        return `<details class="ag-sc t l ${g.st}"><summary>${mis}${subHead(g, GIC.long, name, Z(`Getting stronger`, `持續進步`))}
+          <div class="ag-lv"><div class="pv-num"><b>${g.now.toFixed(1)}</b><span>${Z('level now', '現在程度')}</span></div><div class="ag-lvb">${goalLevelBar(g.now, g.start, g.target)}</div></div></summary>
+          <div class="ag-body ag-lbody">${g.line.filter((v) => v != null).length >= 2 ? `<div class="gl-sp"><div class="gl-sph"><span>${Z('Week by week', '每週變化')}</span></div>${goalSpark(g.line, g.target)}</div>` : `<p>${Z('A line of the level week by week shows after a couple of weeks of practice.', '練習兩三星期後，會顯示每週程度的線圖。')}</p>`}
+            ${g.change != null && Math.abs(g.change) >= 0.1 ? `<p><b class="gl-wk ${g.change > 0 ? 'up' : 'down'}">${g.change > 0 ? '▲' : '▼'} ${Math.abs(g.change).toFixed(1)}</b> ${Z('since you started', '自開始以來')}</p>` : ''}
+            ${g.nx ? `<p class="ag-nx"><b>${Z('Buddy suggests', 'Buddy 建議')}</b> <span data-raw>${esc(g.nx)}</span></p>` : ''}${toProg}</div></details>`;
       };
       const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
       comboHTML = `${devBar('all')}<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2>${who}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
@@ -6136,7 +6141,7 @@ async function goalsData(tests) {
     used.add(x[0]);
     const now = lv10(x[1]), target = lg.target || 6.7;
     out.push({ kind: 'long', id: 'l:' + (lg.subj || ''), lab: x[0], now, target, start: x[3] != null ? lv10(x[1] - x[3]) : null, change: x[3] != null ? Math.round((x[3] / 3) * 100) / 10 : null,
-      st: now >= target ? 'done' : x[2] === 'rising' ? 'ok' : x[2] === 'dipping' ? 'risk' : 'close', line: (x[5] || []).map(lv10), others: S.filter((y) => y !== x).slice(0, 3).map((y) => ({ lab: y[0], now: lv10(y[1]) })) });
+      st: now >= target ? 'done' : x[2] === 'rising' ? 'ok' : x[2] === 'dipping' ? 'risk' : 'close', line: (x[5] || []).map(lv10), nx: x[10] ? x[10][0] : null, others: S.filter((y) => y !== x).slice(0, 3).map((y) => ({ lab: y[0], now: lv10(y[1]) })) });
   }
   if (!out.length) out.push({ kind: MG.main === 'test' ? 'needtest' : 'longnew', id: 'none' });
   // The focus for today, and why. A goal pinned in My goals, else one the child tapped today, else the test that
@@ -6292,6 +6297,7 @@ const goalText = () => { const MG = myGoals(), nt = upcomingTests().filter((x) =
     : [nt ? PT(`${nt} test${nt > 1 ? 's' : ''}`, `${nt} 個測驗`) : '', nl ? PT(`${nl} subject${nl > 1 ? 's' : ''} to get stronger in`, `${nl} 科持續進步`) : ''].filter(Boolean).join(' · '); };
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-mygoals], #sgoal'); if (!b) return;
   myGoalsSheet(() => { if (view && view.name === 'home') renderHome(); else if (view && view.name === 'progress') renderProgress(); const t = document.getElementById('sgoalTxt'); if (t) t.textContent = goalText(); }); });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-gfocus2]'); if (!b) return; local.goalFocus = { id: b.dataset.gfocus2, d: dayStart() }; saveLocal(); go({ name: 'progress' }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-gfocus]'); if (!b) return;
   local.goalFocus = { id: b.dataset.gfocus, d: dayStart() }; saveLocal(); if (view && view.name === 'progress') renderProgress(); else renderHome(); });
 async function fullTestCards(tests, btn) {
