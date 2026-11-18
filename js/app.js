@@ -2919,32 +2919,7 @@ async function renderHome() {
     // Every goal shown the same way, most work needed first; no focus, no picking. Today's mission says what to do.
     if (GD && (!DEV || DMODE === 'all')) {
       const cardOf = (G) => { const k = tests.steps.indexOf(G.p); return k >= 0 ? cards[k] : ''; };
-      const inMission = (G) => G.kind === 'test' && steps.some((x) => !x.done && x.now && String(x.key).startsWith(`c:${G.p.x.id}:`));
-      const rank = { risk: 0, close: 1, ok: 2, done: 3 };
-      const all = GD.list.filter((g) => ['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab))
-        .sort((a, b) => (b.kind === 'test') - (a.kind === 'test') || (b.score || 0) - (a.score || 0) || (a.kind === 'test' && b.kind === 'test' ? a.p.left - b.p.left : rank[a.st] - rank[b.st]));
-      // one goal = one sub-card, all the same shape: icon, name, when or target, status; then its measure
-      const ST = GOAL_ST();
-      const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}</span>`;
-      const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<s style="left:${g.aim}%"></s><small style="left:${g.aim}%;transform:translateX(${g.aim >= 80 ? '-100%' : g.aim <= 20 ? '0' : '-50%'})">${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</small></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>`;
-      const sub = (g, i) => {
-        const mis = inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
-        if (g.kind === 'test') return `<details class="ag-sc t ${g.st}"><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
-        const name = esc(g.lab);
-        // subject goals open too: the level week by week, how far it has come, and what Buddy suggests next
-        const toProg = `<button class="linkbtn ag-more" data-gfocus2="${esc(g.id)}">${Z('See it on Progress', '在「進度」查看')} ›</button>`;
-        if (g.kind === 'longnew') return `<details class="ag-sc t l"><summary>${subHead(g, GIC.long, name, Z('Getting stronger · not started yet', '持續進步 · 未開始'))}</summary><div class="ag-body ag-lbody"><p>${Z(`Practise a few sets in ${esc(g.lab)} and Buddy will work out the level, out of 10, and show how it rises week by week.`, `在${esc(g.lab)}練習幾組，Buddy 就會算出程度（滿分 10），並顯示每週的進步。`)}</p></div></details>`;
-        return `<details class="ag-sc t l ${g.st}"><summary>${mis}${subHead(g, GIC.long, name, Z(`Getting stronger`, `持續進步`))}
-          ${(() => { const bst = g.st === 'done' ? 'ok' : g.st, ch = g.change != null && Math.abs(g.change) >= 0.1 ? g.change : null, ta = g.target * 10;
-            // the same bar as the tests: level now on the left, the target line with its label, the change since starting on the right
-            return `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.now.toFixed(1)}</b><span>${Z('level now', '現在程度')}</span></div><div class="pv-bar ${bst}"><i style="width:${Math.max(2, g.now * 10)}%"></i><s style="left:${ta}%"></s><small style="left:${ta}%;transform:translateX(${ta >= 80 ? '-100%' : ta <= 20 ? '0' : '-50%'})">${Z(`Target ${g.target.toFixed(1)}`, `目標 ${g.target.toFixed(1)}`)}</small></div><div class="pv-num"><b class="fc ${bst}">${ch == null ? '–' : `${ch > 0 ? '+' : '−'}${Math.abs(ch).toFixed(1)}`}</b><span>${Z('since start', '自開始')}</span></div></div>`; })()}</summary>
-          <div class="ag-body ag-lbody">${g.line.filter((v) => v != null).length >= 2 ? `<div class="gl-sp"><div class="gl-sph"><span>${Z('Week by week', '每週變化')}</span></div>${goalSpark(g.line, g.target)}</div>` : `<p>${Z('A line of the level week by week shows after a couple of weeks of practice.', '練習兩三星期後，會顯示每週程度的線圖。')}</p>`}
-            ${g.change != null && Math.abs(g.change) >= 0.1 ? `<p><b class="gl-wk ${g.change > 0 ? 'up' : 'down'}">${g.change > 0 ? '▲' : '▼'} ${Math.abs(g.change).toFixed(1)}</b> ${Z('since you started', '自開始以來')}</p>` : ''}
-            ${g.nx ? `<p class="ag-nx"><b>${Z('Buddy suggests', 'Buddy 建議')}</b> <span data-raw>${esc(g.nx)}</span></p>` : ''}${toProg}</div></details>`;
-      };
-      const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
-      comboHTML = `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
-        ${goalsHowHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`}</section>`;
+      comboHTML = goalsCardHTML(GD, { testBody: cardOf, inMission: (G) => G.kind === 'test' && steps.some((x) => !x.done && x.now && String(x.key).startsWith(`c:${G.p.x.id}:`)) });
     }
 
   $app.innerHTML = `
@@ -6372,6 +6347,36 @@ function goalEditDialog(id, { subs = [] }) {
   box.onclick = (e) => { if (e.target === box) box.remove(); };
   draw(); document.body.appendChild(box);
 }
+// The goals card (Today and Progress): every goal as the same-shaped card, most work needed first, tap to open.
+// o.testBody(g): what an opened test shows; o.inMission(g): has a step in today's mission; o.progress: on the Progress page.
+function goalsCardHTML(GD, o = {}) {
+  const Z = PT;
+  const rank = { risk: 0, close: 1, ok: 2, done: 3 };
+  const all = GD.list.filter((g) => ['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab))
+    .sort((a, b) => (b.kind === 'test') - (a.kind === 'test') || (b.score || 0) - (a.score || 0) || (a.kind === 'test' && b.kind === 'test' ? a.p.left - b.p.left : rank[a.st] - rank[b.st]));
+  // one goal = one sub-card, all the same shape: icon, name, when or target, status; then its measure
+  const ST = GOAL_ST();
+  const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}</span>`;
+  const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<s style="left:${g.aim}%"></s><small style="left:${g.aim}%;transform:translateX(${g.aim >= 80 ? '-100%' : g.aim <= 20 ? '0' : '-50%'})">${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</small></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>`;
+  const sub = (g, i) => {
+    const mis = (o.inMission ? o.inMission(g) : false) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
+    if (g.kind === 'test') return `<details class="ag-sc t ${g.st}"><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${o.testBody ? o.testBody(g) : ''}</div></details>`;
+    const name = esc(g.lab);
+    // subject goals open too: the level week by week, how far it has come, and what Buddy suggests next
+    const toProg = o.progress ? '' : `<button class="linkbtn ag-more" data-gfocus2="${esc(g.id)}">${Z('See it on Progress', '在「進度」查看')} ›</button>`;
+    if (g.kind === 'longnew') return `<details class="ag-sc t l"><summary>${subHead(g, GIC.long, name, Z('Getting stronger · not started yet', '持續進步 · 未開始'))}</summary><div class="ag-body ag-lbody"><p>${Z(`Practise a few sets in ${esc(g.lab)} and Buddy will work out the level, out of 10, and show how it rises week by week.`, `在${esc(g.lab)}練習幾組，Buddy 就會算出程度（滿分 10），並顯示每週的進步。`)}</p></div></details>`;
+    return `<details class="ag-sc t l ${g.st}"><summary>${mis}${subHead(g, GIC.long, name, Z(`Getting stronger`, `持續進步`))}
+      ${(() => { const bst = g.st === 'done' ? 'ok' : g.st, ch = g.change != null && Math.abs(g.change) >= 0.1 ? g.change : null, ta = g.target * 10;
+        // the same bar as the tests: level now on the left, the target line with its label, the change since starting on the right
+        return `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.now.toFixed(1)}</b><span>${Z('level now', '現在程度')}</span></div><div class="pv-bar ${bst}"><i style="width:${Math.max(2, g.now * 10)}%"></i><s style="left:${ta}%"></s><small style="left:${ta}%;transform:translateX(${ta >= 80 ? '-100%' : ta <= 20 ? '0' : '-50%'})">${Z(`Target ${g.target.toFixed(1)}`, `目標 ${g.target.toFixed(1)}`)}</small></div><div class="pv-num"><b class="fc ${bst}">${ch == null ? '–' : `${ch > 0 ? '+' : '−'}${Math.abs(ch).toFixed(1)}`}</b><span>${Z('since start', '自開始')}</span></div></div>`; })()}</summary>
+      <div class="ag-body ag-lbody">${g.line.filter((v) => v != null).length >= 2 ? `<div class="gl-sp"><div class="gl-sph"><span>${Z('Week by week', '每週變化')}</span></div>${goalSpark(g.line, g.target)}</div>` : `<p>${Z('A line of the level week by week shows after a couple of weeks of practice.', '練習兩三星期後，會顯示每週程度的線圖。')}</p>`}
+        ${g.change != null && Math.abs(g.change) >= 0.1 ? `<p><b class="gl-wk ${g.change > 0 ? 'up' : 'down'}">${g.change > 0 ? '▲' : '▼'} ${Math.abs(g.change).toFixed(1)}</b> ${Z('since you started', '自開始以來')}</p>` : ''}
+        ${g.nx ? `<p class="ag-nx"><b>${Z('Buddy suggests', 'Buddy 建議')}</b> <span data-raw>${esc(g.nx)}</span></p>` : ''}${toProg}</div></details>`;
+  };
+  const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
+  return `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
+    ${goalsHowHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`}</section>`;
+}
 async function fullTestCards(tests, btn) {
   const MB = new Map(); for (const p of tests.steps) if (p.book && !MB.has(p.book.id)) MB.set(p.book.id, await bookMastery(p.book));
   const chName = (u) => shortTitle(u.title);
@@ -6485,7 +6490,7 @@ function fixedForGood() {
   return { good, wait, open };
 }
 // The goal at the top of Progress: a chart against the goal line, a few points, and mistakes fixed for good.
-function goalProgressHTML(G, pts, gl1 = false) {
+function goalProgressHTML(G, pts, gl1 = false, bodyOnly = false) {
   const Z = PT, ST = GOAL_ST();
   if (!['test', 'long'].includes(G.kind)) return '';
   let body = '', title = '', sub = '', st = G.st;
@@ -6511,12 +6516,16 @@ function goalProgressHTML(G, pts, gl1 = false) {
       ${G.line.filter((v) => v != null).length >= 2 ? `<div class="gl-sp"><div class="gl-sph"><span>${Z('Week by week', '每週變化')}</span></div>${goalSpark(G.line, G.target)}</div>` : `<p class="glp-note">${Z('A line of your level week by week appears after a couple of weeks.', '練習兩三星期後，會顯示每週程度的線圖。')}</p>`}
       ${G.others.length ? `<div class="glp-oth"><b>${Z('Other subjects', '其他科目')}</b>${G.others.map((o) => `<div class="glp-o"><span data-raw>${esc(o.lab)}</span><i><em style="width:${o.now * 10}%"></em></i><b>${o.now.toFixed(1)}</b></div>`).join('')}</div>` : ''}`;
   } else return '';
-  const F = fixedForGood(), tot = F.good + F.wait + F.open;
-  const fixed = tot ? `<div class="glp-fix"><div class="glp-fixh"><b>${Z('Mistakes fixed for good', '真正改正的錯題')}</b><strong>${F.good}</strong></div>
-    <div class="glp-fixb" aria-hidden="true"><i style="width:${(100 * F.good) / tot}%"></i><i class="w" style="width:${(100 * F.wait) / tot}%"></i></div>
-    <div class="glp-fixl"><span><i></i>${Z(`${F.good} right again days later`, `${F.good} 題幾天後再答對`)}</span><span><i class="w"></i>${Z(`${F.wait} fixed, checking again soon`, `${F.wait} 題已改正，稍後再測`)}</span><span>${Z(`${F.open} still to fix`, `${F.open} 題未改正`)}</span></div></div>` : '';
+  if (bodyOnly) return `<div class="glp-body">${body}${pts || ''}</div>`;
+  const fixed = fixedGoodHTML();
   return `<section class="pv-sec glp"><div class="gl-card ${G.kind} ${st}"><div class="gl-h"><div class="gl-ht"><small>${Z('Your goal', '你的目標')}</small><b data-raw>${title}</b><span data-raw>${sub}</span></div><em class="gl-st ${st}">${ST[st]}</em></div>
     ${body}${pts || ''}${gl1 ? `<button class="linkbtn gl-chg" data-mygoals>${Z('My goals', '我的目標')}</button>` : ''}</div>${fixed}</section>`;
+}
+function fixedGoodHTML() {
+  const Z = PT, F = fixedForGood(), tot = F.good + F.wait + F.open;
+  return tot ? `<div class="glp-fix"><div class="glp-fixh"><b>${Z('Mistakes fixed for good', '真正改正的錯題')}</b><strong>${F.good}</strong></div>
+    <div class="glp-fixb" aria-hidden="true"><i style="width:${(100 * F.good) / tot}%"></i><i class="w" style="width:${(100 * F.wait) / tot}%"></i></div>
+    <div class="glp-fixl"><span><i></i>${Z(`${F.good} right again days later`, `${F.good} 題幾天後再答對`)}</span><span><i class="w"></i>${Z(`${F.wait} fixed, checking again soon`, `${F.wait} 題已改正，稍後再測`)}</span><span>${Z(`${F.open} still to fix`, `${F.open} 題未改正`)}</span></div></div>` : '';
 }
 async function renderProgress() {
   // The Progress page answers five questions, in order: am I on track for my tests, what has Buddy noticed,
@@ -7011,15 +7020,29 @@ async function renderProgress() {
     </div>
     <div class="pv-sum-r">${kpiHTML}</div>
   </section>`;
+  const sumSec = `<section class="pv-sec pv-sumsec"><div class="pv-h"><h2 class="h-info">${PT('Your week at a glance', '本週一覽')}${ib('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'))}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}${how('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'), '')}</section>`;
+  // DEV: the new order (goals, what Buddy noticed, this week, subjects, is it working), switchable with the current page
+  const PNEW = DEV && localStorage.getItem('pb.prog') !== 'old';
+  const pvDev = DEV ? `<div class="cb-dev"><b>DEV preview: Progress</b><span>Same data. Only you see this.</span><div class="cb-modes">${[['new', 'New order'], ['old', 'Current']].map(([k, t]) => `<button class="btn-sm ${(PNEW ? 'new' : 'old') === k ? 'primary' : ''}" data-pvmode="${k}">${t}</button>`).join('')}</div></div>` : '';
+  let newBody = '';
+  if (PNEW) {
+    const gCard = GDp ? goalsCardHTML(GDp, { progress: true, testBody: (g) => goalProgressHTML(g, testPoints(g.p, g.chs, g.aim, g.fc, g.st), false, true) }) : '';
+    const s3 = sec3.replace(/<\/h2>([\s\S]*?)<\/div>/, (m) => `${m}${levelCard}`);
+    const s4 = `<details class="pv-sec pv-fold"><summary><span class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('Proof that practice is paying off: readiness over time, harder questions, question types, school marks', '練習有沒有效果：準備度變化、較難題目、題型、學校成績')}</span></span><i aria-hidden="true">›</i></summary>
+      <div class="pv-grid3">${pcCard}${readyCard}${mixCard}${typesCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div></details>`;
+    newBody = `${gCard}<div id="pv-s2">${sec2}</div>${sumSec}<div class="pvn-fix">${fixedGoodHTML()}</div><div id="pv-s5">${sec5}</div><div id="pv-s3">${s3}</div><div id="pv-s4">${s4}</div>`;
+  }
   $app.innerHTML = `
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
       <div class="pv-topb">${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${PT('Weekly report', '每週報告')}</span>`, () => reportDialog(), 'pv-btn primary pv-topbtn')}${btn(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2a5 5 0 0 1 5.5 5"/></svg><span>${PT('Parent dashboard', '家長主頁')}${locked('parent') ? ' 🔒' : ''}</span>`, () => openParent(), 'pv-btn primary pv-topbtn')}</div></div>
-    ${goalPHTML}
-    <section class="pv-sec pv-sumsec"><div class="pv-h"><h2 class="h-info">${PT('Your week at a glance', '本週一覽')}${ib('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'))}</h2><span>${PT('The big picture first. Tap anything for the details.', '先看大局，按任何一項看詳情。')}</span></div>${sumHTML}${how('howGlance', PT('What’s in this summary?', '這個總結有甚麼？'), '')}</section>
-    <div id="pv-s2">${sec2}</div><div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>
+    ${pvDev}${PNEW ? newBody : `${goalPHTML}
+    ${sumSec}
+    <div id="pv-s2">${sec2}</div><div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>`}
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
+  $app.querySelectorAll('[data-pvmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.prog', b.dataset.pvmode); renderProgress(); }));
+  if (PNEW) $app.querySelector('main').classList.add('pvnew');
   // Info pop-ups in plain words: a few short lines with a picture each, for kids and parents alike
   { const L = (rows) => `<ul class="how-easy">${rows.map(([i, en, zh, den, dzh]) => `<li><span>${i}</span><div><p>${PT(en, zh)}</p>${den ? `<small>${PT(den, dzh)}</small>` : ''}</div></li>`).join('')}</ul>`;
     const HOW = {
