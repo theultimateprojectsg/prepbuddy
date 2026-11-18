@@ -887,6 +887,7 @@ async function go(v) {
   if (v.name === 'settings') return renderSettings(v.sec);
   if (v.name === 'progress') return renderProgress();
   if (v.name === 'stars') return renderStars();
+  if (v.name === 'goals') return renderGoals();
   if (v.name === 'homework') return renderHomework(v.id);
   if (v.name === 'dictation') return renderDictation(v.id, v.sub);
   if (v.name === 'writing') return renderWriting(v.id, v.sub);
@@ -4725,7 +4726,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock exams, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { mistakes: 'practice', chapters: 'practice', practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'books', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'practice', worksheets: 'practice', usage: 'home' };
+const TAB_OF = { goals: 'home', mistakes: 'practice', chapters: 'practice', practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'books', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'practice', worksheets: 'practice', usage: 'home' };
 const MAIN_TABS = ['home', 'books', 'practice', 'progress', 'settings'];
 function tabFor(v) {
   if (!v) return 'home';
@@ -6295,11 +6296,71 @@ async function myGoalsSheet(onDone) {
 const goalText = () => { const MG = myGoals(), nt = upcomingTests().filter((x) => x.b && (x.kind || 'test') !== 'dict').length, nl = (MG.longs || []).length;
   return !nt && !nl ? PT('No goals yet: add a test or a subject to get stronger in.', '還沒有目標：加入測驗或想加強的科目。')
     : [nt ? PT(`${nt} test${nt > 1 ? 's' : ''}`, `${nt} 個測驗`) : '', nl ? PT(`${nl} subject${nl > 1 ? 's' : ''} to get stronger in`, `${nl} 科持續進步`) : ''].filter(Boolean).join(' · '); };
-document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-mygoals], #sgoal'); if (!b) return;
-  myGoalsSheet(() => { if (view && view.name === 'home') renderHome(); else if (view && view.name === 'progress') renderProgress(); const t = document.getElementById('sgoalTxt'); if (t) t.textContent = goalText(); }); });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-mygoals], #sgoal'); if (!b) return; go({ name: 'goals' }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-gfocus2]'); if (!b) return; local.goalFocus = { id: b.dataset.gfocus2, d: dayStart() }; saveLocal(); go({ name: 'progress' }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-gfocus]'); if (!b) return;
   local.goalFocus = { id: b.dataset.gfocus, d: dayStart() }; saveLocal(); if (view && view.name === 'progress') renderProgress(); else renderHome(); });
+/* ---------- My goals page: laid out like the Settings pages ---------- */
+async function renderGoals() {
+  const Z = PT, MG = myGoals(), longs = MG.longs || [];
+  const tests = upcomingTests().filter((x) => x.b && (x.kind || 'test') !== 'dict');
+  const GS = await gsData().catch(() => null), books = await getBooks();
+  { const top = GS ? GS.s.filter((x) => x[1] != null).sort((a, b) => (b[8] || 0) - (a[8] || 0))[0] : null; let ch = false; longs.forEach((x) => { if (!x.subj && top) { x.subj = top[0]; ch = true; } }); if (ch) { local.mygoals = { ...MG, longs }; saveLocal(); } }
+  const lvOf = (subj) => { const x = GS && GS.s.find((y) => y[0] === subj && y[1] != null); return x ? lv10(x[1]) : null; };
+  const TG = { 5: Z('Keeping up', '跟上進度'), 6.7: Z('Above grade level', '高於年級水平'), 8.5: Z('Top of the class', '名列前茅') };
+  const pinTag = (id) => (MG.pin === id ? `<em class="mgp-pin">${GICON.pin}${Z('Focus', '重點')}</em>` : '');
+  const row = (id, ic, cls, name, sub) => `<button class="mgp-row" data-gedit="${esc(id)}"><span class="atile mgp-ic ${cls}" aria-hidden="true">${ic}</span><span class="mgp-t"><b data-raw>${name}</b><small data-raw>${sub}</small></span>${pinTag(id)}<i aria-hidden="true">›</i></button>`;
+  const tRows = tests.map((x) => row('t:' + x.id, GIC.test, 'blue', esc(x.name), `${Z('Goal', '目標')} ${x.aim || 80}% · ${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(testLeft(x))}`)).join('');
+  const lRows = longs.map((x) => { const lv = lvOf(x.subj); return row('l:' + (x.subj || ''), GIC.long, 'green', esc(x.subj || Z('Main subject', '主要科目')), `${Z('Target', '目標')} ${(x.target || 6.7).toFixed(1)} · ${TG[x.target || 6.7] || ''}${lv != null ? ` · ${Z('now', '現在')} ${lv.toFixed(1)}` : ''}`); }).join('');
+  $app.innerHTML = `<main class="pad stack g14 mgp-page" style="flex:1">
+    ${backTop({ name: 'home' }, 'Today')}<h1 class="pagetitle">${Z('My goals', '我的目標')}</h1>
+    <p class="pagesub">${Z('Every test you add is a goal. Add subjects to get stronger in over the year.', '每個加入的測驗都是一個目標。也可加入全年想加強的科目。')}</p>
+    <section class="card mgp-card"><div class="mgp-h"><b>${Z('Tests', '測驗')}</b><button class="btn-sm" id="mgAddT">+ ${Z('Add test', '加入測驗')}</button></div>
+      ${tRows || `<p class="mgp-none">${Z('No tests coming up. Add one and Buddy will plan each day for it.', '暫時沒有測驗。加入後，Buddy 會為它安排每天的溫習。')}</p>`}</section>
+    <section class="card mgp-card"><div class="mgp-h"><b>${Z('Getting stronger', '持續進步')}</b><button class="btn-sm" id="mgAddL">+ ${Z('Add subject', '加入科目')}</button></div>
+      ${lRows || `<p class="mgp-none">${Z('None yet. Pick a subject to build up through the year.', '暫時沒有。選一科全年逐步提升。')}</p>`}
+      <p class="mgp-key">${Z('Levels are out of 10: 5.0 keeping up, 6.7 above grade level, 8.5 top of the class.', '程度滿分 10：5.0 跟上進度，6.7 高於年級水平，8.5 名列前茅。')}</p></section>
+  </main>`;
+  document.getElementById('mgAddT').onclick = () => testDialog();
+  document.getElementById('mgAddL').onclick = () => goalEditDialog(null, { subs: [...new Set([...(GS ? GS.s.map((x) => x[0]) : []), ...books.map((b) => (b.subject ? subj(b.subject) : '')).filter(Boolean)])].filter((x) => !longs.some((y) => y.subj === x)) });
+  $app.querySelectorAll('[data-gedit]').forEach((b) => (b.onclick = () => goalEditDialog(b.dataset.gedit, {})));
+}
+// One goal's settings, in the same dialog style as Add a school test: the goal (or target level), pin as the focus, edit or remove.
+function goalEditDialog(id, { subs = [] }) {
+  const Z = PT, MG = myGoals(), longs = (MG.longs || []).map((x) => ({ ...x }));
+  const isT = id && id.startsWith('t:'), x = isT ? (local.sched || []).find((y) => y.id === id.slice(2)) : null, li = !isT && id ? longs.findIndex((y) => 'l:' + (y.subj || '') === id) : -1;
+  const st = { aim: x ? x.aim || 80 : 80, target: li >= 0 ? longs[li].target || 6.7 : 6.7, pin: id ? MG.pin === id : false, subj: subs[0] || '' };
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  const draw = () => {
+    const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
+    box.innerHTML = `<div class="cdlg rdlg tdlg" role="dialog" aria-modal="true" aria-labelledby="gd-t" data-raw>
+      <div class="td-head"><b id="gd-t">${isT ? esc(x.name) : id ? esc(longs[li].subj || Z('Main subject', '主要科目')) : Z('Get stronger in a subject', '加強一科')}</b>${li >= 0 ? `<button type="button" class="btn-sm danger td-delbtn" id="gd-del">${GICON.trash} ${Z('Remove', '移除')}</button>` : ''}</div>
+      ${!id ? `<label>${Z('Subject', '科目')}</label>${subs.length ? `<div class="td-kinds">${subs.map((v) => `<button type="button" data-sub="${esc(v)}" class="${st.subj === v ? 'on' : ''}" aria-pressed="${st.subj === v}"><b data-raw>${esc(v)}</b></button>`).join('')}</div>` : `<span class="td-hint">${Z('Every subject with a textbook is already a goal, or add a textbook first.', '有課本的科目都已經是目標，或請先加入課本。')}</span>`}` : ''}
+      ${isT ? `<label>${Z('Goal for this test', '這個測驗的目標')}</label><div class="td-seg gd-seg">${[60, 70, 80, 85, 90, 100].map((v) => `<button type="button" data-aim="${v}" class="${st.aim === v ? 'on' : ''}" aria-pressed="${st.aim === v}">${v}%</button>`).join('')}</div>`
+        : `<label>${Z('Target level, out of 10', '目標程度（滿分 10）')}</label><div class="td-kinds">${TG.map(([v, t]) => `<button type="button" data-tg="${v}" class="${st.target === v ? 'on' : ''}" aria-pressed="${st.target === v}"><b>${v.toFixed(1)}</b><small>${t}</small></button>`).join('')}</div>`}
+      <div class="gd-pin"><span><b>${Z('Make this the focus every day', '每天以這個為重點')}</b><small>${Z('Otherwise Buddy picks the goal that needs the most work each day.', '否則 Buddy 每天會選最需要努力的目標。')}</small></span><button class="switch ${st.pin ? 'on' : ''}" id="gd-pin" role="switch" aria-checked="${st.pin}" aria-label="${Z('Make this the focus every day', '每天以這個為重點')}"><i></i></button></div>
+      ${isT ? `<button type="button" class="linkbtn gd-edit" id="gd-edit">${GICON.edit} ${Z('Edit the test: name, date, chapters', '修改測驗：名稱、日期、範圍')}</button>` : ''}
+      <div class="rd-row"><button class="btn ghost" id="gd-cancel">${Z('Cancel', '取消')}</button><button class="btn" id="gd-save" ${!id && !st.subj ? 'disabled' : ''}>${!id ? Z('Add', '加入') : Z('Save', '儲存')}</button></div></div>`;
+    const $ = (q) => box.querySelector(q), close = () => box.remove();
+    box.querySelectorAll('[data-aim]').forEach((b) => (b.onclick = () => { st.aim = +b.dataset.aim; draw(); }));
+    box.querySelectorAll('[data-tg]').forEach((b) => (b.onclick = () => { st.target = +b.dataset.tg; draw(); }));
+    box.querySelectorAll('[data-sub]').forEach((b) => (b.onclick = () => { st.subj = b.dataset.sub; draw(); }));
+    $('#gd-pin').onclick = () => { st.pin = !st.pin; draw(); };
+    $('#gd-cancel').onclick = close;
+    { const d = $('#gd-del'); if (d) d.onclick = () => { longs.splice(li, 1); local.mygoals = { ...MG, longs, pin: MG.pin === id ? null : MG.pin }; saveLocal(); close(); toast(Z('Goal removed', '已移除目標')); renderGoals(); }; }
+    { const e = $('#gd-edit'); if (e) e.onclick = () => { close(); testDialog(x); }; }
+    $('#gd-save').onclick = () => {
+      let gid = id;
+      if (isT) x.aim = st.aim;
+      else if (li >= 0) longs[li].target = st.target;
+      else { if (!st.subj) return; longs.push({ subj: st.subj, target: st.target }); gid = 'l:' + st.subj; }
+      const pin = st.pin ? gid : MG.pin === gid ? null : MG.pin;
+      local.mygoals = { ...MG, longs, pin }; saveLocal(); close(); toast(Z('Goal saved', '目標已儲存')); renderGoals();
+    };
+  };
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+  draw(); document.body.appendChild(box);
+}
 async function fullTestCards(tests, btn) {
   const MB = new Map(); for (const p of tests.steps) if (p.book && !MB.has(p.book.id)) MB.set(p.book.id, await bookMastery(p.book));
   const chName = (u) => shortTitle(u.title);
