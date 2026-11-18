@@ -5549,17 +5549,13 @@ const PT = (en, zh) => (LANG === 'zh' ? zh : en);
 // A few short points under a test card: the pace, the trend, then the biggest habit or gap for this test's chapters.
 // Parent view: what only PrepBuddy can tell you. Each finding needs enough answers behind it, says it in one plain
 // sentence, shows the evidence, and says what to do. Strongest findings first.
-function parentInsights(who) {
+function parentInsights(who, C = {}) {
+  let cid = '';
   const Z = PT, now = Date.now(), L = local.log.filter((e) => e.m && e.t > now - 60 * DAY), out = [];
   const acc = (es) => { const m = es.reduce((a, e) => a + e.m, 0); return m ? Math.round(100 * es.reduce((a, e) => a + e.g, 0) / m) : null; };
   const bars = (rows, unit = '%') => `<div class="pi-bars">${rows.map(([l, v, t, sub]) => `<div class="pi-br ${t || ''}"><span>${esc(l)}</span><i><b style="width:${Math.max(3, Math.min(100, v))}%"></b></i><em>${unit === '%' ? `${v}%` : sub}</em></div>`).join('')}</div>`;
-  const add = (pri, tag, title, ev, todo) => out.push({ pri, html: `<div class="pi-card"><em class="pi-tag">${tag}</em><b class="pi-t" data-raw>${esc(title)}</b>${ev}${todo ? `<p class="pi-do"><b>${Z('Try this:', '建議：')}</b> <span data-raw>${esc(todo)}</span></p>` : ''}</div>` });
-  // 1. a mix-up, in the child's own words
-  { const ins = local.insights && local.insights.lang === LANG ? local.insights.list : [];
-    const m = ins.find((x) => (x.ids || []).some((id) => (local.mistakes[id] || {}).ansText)) || ins[0];
-    if (m) { const id = (m.ids || []).find((i) => (local.mistakes[i] || {}).ansText), at = id ? String(local.mistakes[id].ansText) : '';
-      add(1, Z('A mix-up, in their own words', '混淆了甚麼'), m.title, `${at.length > 2 ? `<div class="pi-q" data-raw>“${esc(at.slice(0, 140))}”<small>${Z(`${who}’s answer`, `${who}的答案`)}</small></div>` : ''}<p class="pi-p" data-raw>${esc(m.detail || '')}</p>`,
-        Z('Ask them to explain the idea back to you. Buddy has already put these questions in the Mistake book.', '請孩子向你解釋這個概念。Buddy 已把這些題目放進錯題簿。')); } }
+  const add = (pri, tag, title, ev, todo, sam = false) => out.push({ pri, id: cid, html: `<div class="pi-card${sam ? ' sam' : ''}"><em class="pi-tag">${tag}${sam ? ` <span class="pi-sam">${Z('Sample', '示例')}</span>` : ''}</em><b class="pi-t" data-raw>${esc(title)}</b>${ev}${todo ? `<p class="pi-do"><b>${Z('Try this:', '建議：')}</b> <span data-raw>${esc(todo)}</span></p>` : ''}</div>` });
+  cid = 'careless';
   // 2. careless slips or real gaps: a wrong answer on a question they've got right before is a slip
   { const W = L.filter((e) => e.k !== 'spaced' && e.g < e.m && e.t > now - 30 * DAY);
     if (W.length >= 8) { const firstRight = new Map(); for (const e of local.log) if (e.g >= e.m && !firstRight.has(e.q)) firstRight.set(e.q, e.t);
@@ -5569,12 +5565,14 @@ function parentInsights(who) {
       add(sp >= 35 ? 2 : 6, Z('Careless or a real gap?', '粗心還是不明白？'), sp >= 35 ? Z(`${sp}% of marks lost were slips on questions ${who} can already do`, `${sp}% 失分是粗心：題目其實已經會做`) : Z(`Most mistakes are real gaps, not carelessness`, '大部分錯誤是真的不明白，不是粗心'),
         bars([[Z('Slips: got it right before', '粗心：以前答對過'), sp, 'warn'], [Z('Gaps: wrong more than once', '不明白：錯了不止一次'), pc(gap), 'bad'], [Z('New: first try', '新題：第一次做'), pc(fresh), '']]),
         sp >= 35 ? Z('Slow down and check each answer before moving on. Buddy brings these back so the habit sticks.', '每題做完先檢查再繼續。Buddy 會再出這些題目，幫助養成習慣。') : Z('These need re-teaching, not more practice of the same. Buddy’s lessons on these chapters are the place to start.', '這些需要重新學，而不是重複練習。先從這些章節的 Buddy 課堂開始。')); } }
+  cid = 'think';
   // 3. thinking skills: four kinds of question
   { const N = SKILL_PLAIN(), lv = [1, 2, 3, 4].map((l) => { const es = L.filter((e) => Math.max(1, Math.min(4, Math.round(e.l || 2))) === l); return { l, n: es.length, a: acc(es) }; });
     const ok = lv.filter((x) => x.n >= 5); if (ok.length >= 3) { const hi = ok.reduce((a, b) => (b.a > a.a ? b : a)), lo = ok.reduce((a, b) => (b.a < a.a ? b : a)), spread = hi.a - lo.a;
       add(spread >= 20 ? 3 : 8, Z('How they think', '思考方式'), spread >= 15 ? Z(`Strong at ${N[hi.l - 1].toLowerCase()}, weaker at ${N[lo.l - 1].toLowerCase()}`, `${N[hi.l - 1]}較強，${N[lo.l - 1]}較弱`) : Z('Even across all four kinds of thinking', '四種思考能力都很平均'),
         bars(lv.filter((x) => x.n >= 5).map((x) => [N[x.l - 1], x.a, x.a >= 75 ? 'good' : x.a >= 55 ? '' : 'warn'])),
         lo.l >= 3 && spread >= 15 ? Z('Exams give the most marks for these. At dinner, ask “why does that work?” about something from school.', '考試這類題目分數最多。吃飯時可問問「為甚麼會這樣？」。') : lo.l <= 2 && spread >= 15 ? Z('The basics need to be solid first. Short daily reviews fix this fastest.', '先打好基礎。每天短時間溫習最有效。') : ''); } }
+  cid = 'stick';
   // 4. the forgetting curve: how much comes back right after 1, 3, 7 and 14+ days
   { const prev = new Map(), B = [[1, 2, Z('1–2 days later', '1–2 日後')], [3, 6, Z('3–6 days later', '3–6 日後')], [7, 13, Z('1–2 weeks later', '1–2 星期後')], [14, 999, Z('2+ weeks later', '2 星期以上')]].map((x) => ({ x, es: [] }));
     for (const e of local.log) { const p = prev.get(e.q); if (p && e.k === 'spaced' && e.t > now - 90 * DAY) { const d = (e.t - p) / DAY, b = B.find((y) => d >= y.x[0] && d < y.x[1] + 1); if (b) b.es.push(e); } prev.set(e.q, e.t); }
@@ -5582,29 +5580,91 @@ function parentInsights(who) {
       add(wa != null && wa < 60 ? 3 : 7, Z('How well it sticks', '記得多牢'), wa != null ? Z(`Remembers ${wa}% of what was learned a week or more ago`, `一星期前學的，記得 ${wa}%`) : Z(`Remembers ${acc(ok[ok.length - 1].es)}% ${ok[ok.length - 1].x[2].toLowerCase()}`, `${ok[ok.length - 1].x[2]}記得 ${acc(ok[ok.length - 1].es)}%`),
         bars(ok.map((b) => [b.x[2], acc(b.es), acc(b.es) >= 75 ? 'good' : acc(b.es) >= 55 ? '' : 'warn'])),
         wa != null && wa < 60 ? Z('Do the review step in each day’s mission. That’s what moves things into long-term memory.', '每天完成任務中的溫習部分，這樣才能記入長期記憶。') : Z('Daily reviews are working. Keep them in the routine.', '每日溫習有效，繼續保持。')); } }
+  cid = 'time';
   // 5. best time of day
   { const S = [[0, 12, Z('Morning', '早上')], [12, 17, Z('Afternoon', '下午')], [17, 20, Z('Early evening', '傍晚')], [20, 24, Z('After 8pm', '晚上 8 時後')]].map(([a, b, n]) => { const es = L.filter((e) => { const h = new Date(e.t).getHours(); return h >= a && h < b; }); return { n, c: es.length, a: acc(es) }; });
     const ok = S.filter((x) => x.c >= 10); if (ok.length >= 2) { const hi = ok.reduce((a, b) => (b.a > a.a ? b : a)), lo = ok.reduce((a, b) => (b.a < a.a ? b : a));
       if (hi.a - lo.a >= 10) add(4, Z('Best time to study', '最佳溫習時間'), Z(`Scores ${hi.a - lo.a}% higher in the ${hi.n.toLowerCase()} than ${lo.n === S[3].n ? 'after 8pm' : `in the ${lo.n.toLowerCase()}`}`, `${hi.n}的得分比${lo.n}高 ${hi.a - lo.a}%`),
         bars(ok.map((x) => [x.n, x.a, x === hi ? 'good' : x === lo ? 'warn' : ''])), Z(`Move practice to the ${hi.n.toLowerCase()} where you can.`, `盡量安排在${hi.n}練習。`)); } }
+  cid = 'tire';
   // 6. when they tire: accuracy early in a session against after 25 minutes
   { const sorted = L.slice().sort((a, b) => a.t - b.t), early = [], late = []; let st = 0, last = 0;
     for (const e of sorted) { if (e.t - last > 10 * 60000) st = e.t; last = e.t; const m = (e.t - st) / 60000; if (m < 15) early.push(e); else if (m >= 25) late.push(e); }
     if (late.length >= 12 && early.length >= 12) { const a = acc(early), b = acc(late);
       if (a - b >= 10) add(4, Z('When they tire', '甚麼時候開始累'), Z(`Accuracy drops from ${a}% to ${b}% after about 25 minutes`, `大約 25 分鐘後，答對率由 ${a}% 跌至 ${b}%`), bars([[Z('First 15 minutes', '頭 15 分鐘'), a, 'good'], [Z('After 25 minutes', '25 分鐘後'), b, 'warn']]), Z('Two short sessions beat one long one. Stop at 20–25 minutes and come back later.', '兩次短時間比一次長時間好。做 20–25 分鐘就休息，稍後再做。'));
       else if (late.length >= 20 && b >= a - 3) add(9, Z('Focus', '專注力'), Z('Keeps focus through longer sessions', '長時間練習也能保持專注'), bars([[Z('First 15 minutes', '頭 15 分鐘'), a, ''], [Z('After 25 minutes', '25 分鐘後'), b, 'good']]), ''); } }
+  cid = 'speed';
   // 7. speed against the test clock, and quick guesses on multiple choice
   { const T = L.filter((e) => e.s && e.k !== 'spaced'); if (T.length >= 15) { const r = T.map((e) => e.s / ((e.ty === 'w' ? 90 : 60) * Math.max(1, e.m))).sort((a, b) => a - b)[Math.floor(T.length / 2)], paper = Math.round(60 * r / 5) * 5;
       if (r > 1.25 || r < 0.6) add(r > 1.25 ? 3 : 6, Z('Speed against the test clock', '速度夠不夠'), r > 1.25 ? Z(`At this pace, a 60-minute paper would take about ${paper} minutes`, `以這個速度，60 分鐘的試卷大約要 ${paper} 分鐘`) : Z(`Fast: a 60-minute paper would take about ${Math.max(20, paper)} minutes`, `速度快：60 分鐘的試卷大約 ${Math.max(20, paper)} 分鐘完成`),
         bars([[Z('Time allowed', '考試時間'), Math.round(100 / Math.max(1, r * 1.2)), '', Z('60 min', '60 分鐘')], [Z('At this pace', '以這個速度'), Math.round((100 * r) / Math.max(1, r * 1.2)), r > 1.25 ? 'warn' : 'good', Z(`${paper} min`, `${paper} 分鐘`)]], 'min'),
         r > 1.25 ? Z('A timed chapter test once a week builds speed without stress.', '每週做一次計時章節測驗，慢慢提升速度。') : Z('Use the spare time to check answers. Fast plus careful gets top marks.', '用多出的時間檢查答案，又快又細心就能拿高分。')); }
-    const Q = L.filter((e) => e.ty === 'c' && e.s), G = Q.filter((e) => e.s <= 4 && e.g < e.m);
+    cid = 'guess'; const Q = L.filter((e) => e.ty === 'c' && e.s), G = Q.filter((e) => e.s <= 4 && e.g < e.m);
     if (Q.length >= 20 && G.length >= 5 && G.length / Q.filter((e) => e.g < e.m).length >= 0.3) add(3, Z('Guessing', '亂猜'), Z(`${G.length} multiple-choice answers were wrong in under 5 seconds`, `${G.length} 題選擇題在 5 秒內答錯`), `<p class="pi-p">${Z('Too fast to have read the question. Usually a sign of rushing to finish.', '快得不像有看清題目，通常是想快點做完。')}</p>`, Z('Agree a rule: read every option before choosing.', '約定規則：看完所有選項才作答。')); }
+  cid = 'alone';
   // 8. working on their own: answers without Buddy’s help, recent against before
   { const R = L.filter((e) => e.t > now - 14 * DAY && e.k !== 'spaced'), P = L.filter((e) => e.t <= now - 14 * DAY && e.k !== 'spaced');
     if (R.length >= 15) { const own = (es) => Math.round((100 * es.filter((e) => !e.h).length) / es.length), a = own(R), b = P.length >= 15 ? own(P) : null;
       if (a < 75 || (b != null && Math.abs(a - b) >= 8)) add(a < 70 ? 4 : 7, Z('Working it out alone', '獨立解題'), b != null && a - b >= 8 ? Z(`Needs hints less: ${a}% answered alone, up from ${b}%`, `越來越少需要提示：${a}% 自己作答，之前 ${b}%`) : Z(`${a}% of answers without asking Buddy first`, `${a}% 的題目不用先問 Buddy`),
         bars([[Z('Last 2 weeks', '最近 2 星期'), a, a >= 75 ? 'good' : 'warn'], ...(b != null ? [[Z('Before', '之前'), b, '']] : [])]), a < 70 ? Z('Encourage a first try before asking Buddy. A wrong try teaches more than a hint.', '鼓勵先自己試，再問 Buddy。答錯也比直接看提示學得多。') : ''); } }
+  // 9. level against what's expected for their grade
+  cid = 'grade';
+  { const X = C.X || {}, ge = X.ge || [], gn = X.gn, S = (C.GS && C.GS.s) || [];
+    if (gn && ge.length) { const lab = { above: Z('Above', '高於'), meet: Z('At', '達到'), build: Z('Building to', '正邁向') }, top = ge.filter((g) => g[1] === 'above');
+      add(top.length ? 3 : 6, Z('Against their grade', '對比年級水平'), top.length === ge.length ? Z(`Working above ${gn} level in every subject`, `各科都高於${gn}水平`) : top.length ? Z(`Working above ${gn} level in ${top.map((g) => g[0]).join(' and ')}`, `${top.map((g) => g[0]).join('和')}高於${gn}水平`) : Z(`Building towards ${gn} level`, `正邁向${gn}水平`),
+        bars(ge.map(([n, k]) => { const lv = (S.find((x) => x[0] === n) || [])[1] || 0; return [n, Math.round(lv * 10), k === 'above' ? 'good' : k === 'meet' ? '' : 'warn', `${lv.toFixed(1)}/10 · ${lab[k]}`]; }), 'lv'),
+        Z('Level is out of 10 and doesn’t drop when questions get harder. The expected level for the grade is around 6.', '程度滿分 10，題目變難也不會下降。年級預期程度約為 6。')); } }
+  // 10. the same-level progress check: before and now
+  cid = 'pcheck';
+  { const pc = ((C.X || {}).pc || []).filter((x) => x[1] != null && x[2] != null);
+    if (pc.length) { const best = pc.reduce((a, b) => (b[2] - b[1] > a[2] - a[1] ? b : a));
+      add(best[2] - best[1] >= 10 ? 2 : 6, Z('Same test, before and now', '同一水平：之前與現在'), Z(`${best[0]}: ${best[1]}% → ${best[2]}% on a check at the same level`, `${best[0]}：同一水平測驗由 ${best[1]}% 升至 ${best[2]}%`),
+        bars(pc.flatMap(([n, a, b2]) => [[Z(`${n} · before`, `${n} · 之前`), a, ''], [Z(`${n} · now`, `${n} · 現在`), b2, b2 > a ? 'good' : 'warn']])), Z('A progress check every few weeks shows real change, not just easier questions.', '每隔幾星期做一次進度測驗，看到的是真正的進步。')); } }
+  // 11. mistakes fixed for good
+  cid = 'fixed';
+  { const F = fixedForGood(), tot = F.good + F.wait + F.open;
+    if (tot >= 8) { const pc = (n) => Math.round((100 * n) / tot);
+      add(F.good >= F.open ? 7 : 4, Z('Mistakes, fixed for good', '真正改正的錯誤'), Z(`${F.good} of ${tot} mistakes now answered right days later`, `${tot} 個錯誤中，${F.good} 個幾天後再答對`),
+        bars([[Z('Fixed for good', '真正改正'), pc(F.good), 'good'], [Z('Fixed, checking again soon', '已改正，稍後再測'), pc(F.wait), ''], [Z('Still to fix', '未改正'), pc(F.open), 'warn']]),
+        F.open > F.good ? Z('A few minutes in the Mistake book each day clears these fastest.', '每天花幾分鐘做錯題簿，最快清完。') : ''); } }
+  // 12. subject by subject: each one can need something different
+  cid = 'subjects';
+  { const bs = C.books || [], name = (id) => { const b = bs.find((x) => x.id === id); return b ? (b.subject ? subj(b.subject) : b.title) : null; };
+    const by = new Map(); for (const e of L) { const n = name(qUnit(e.q)[0]); if (n) { if (!by.has(n)) by.set(n, []); by.get(n).push(e); } }
+    const firstRight = new Map(); for (const e of local.log) if (e.g >= e.m && !firstRight.has(e.q)) firstRight.set(e.q, e.t);
+    const rows = [...by].filter(([, es]) => es.length >= 15).map(([n, es]) => { const a = acc(es), W = es.filter((e) => e.g < e.m), sl = W.length ? W.filter((e) => (firstRight.get(e.q) || Infinity) < e.t).length / W.length : 0, hi = es.filter((e) => e.h).length / es.length;
+      const v = a >= 80 ? ['good', Z('Strong', '強')] : sl >= 0.4 ? ['warn', Z('Careless slips', '粗心')] : hi >= 0.35 ? ['warn', Z('Leans on hints', '依賴提示')] : a < 60 ? ['bad', Z('Real gaps', '未掌握')] : ['', Z('Steady', '穩定')]; return [n, a, v]; });
+    if (rows.length >= 2) add(5, Z('Subject by subject', '各科情況'), new Set(rows.map((r) => r[2][1])).size > 1 ? Z('Each subject needs something different', '每科需要的幫助都不同') : Z(`${rows[0][2][1]} across subjects`, `各科都是：${rows[0][2][1]}`),
+      `<div class="pi-subs">${rows.map(([n, a, [t, l]]) => `<div><span data-raw>${esc(n)}</span><em class="${t}">${l}</em><b>${a}%</b></div>`).join('')}</div>`, Z('Buddy’s plan already weights each subject differently. Praise the strong one, and keep an eye on the weakest.', 'Buddy 的計劃已按各科情況調整。稱讚強項，多留意最弱的一科。')); }
+  // 13. written answers: full, part or no marks
+  cid = 'writing';
+  { const Wr = L.filter((e) => e.ty === 'w' && e.m >= 2 && e.k !== 'spaced');
+    if (Wr.length >= 10) { const full = Wr.filter((e) => e.g >= e.m).length, none = Wr.filter((e) => !e.g).length, part = Wr.length - full - none, pc = (n) => Math.round((100 * n) / Wr.length);
+      add(pc(part) >= 40 ? 3 : 7, Z('Written answers', '文字題'), pc(part) >= 40 ? Z(`${pc(part)}% of written answers get part marks: knows the idea, leaves out steps or reasons`, `${pc(part)}% 文字題只得部分分數：明白概念，但漏了步驟或原因`) : Z(`${pc(full)}% of written answers get full marks`, `${pc(full)}% 文字題拿滿分`),
+        bars([[Z('Full marks', '滿分'), pc(full), 'good'], [Z('Part marks', '部分分數'), pc(part), 'warn'], [Z('No marks', '零分'), pc(none), 'bad']]), pc(part) >= 40 ? Z('Before handing in, ask: “Did I say why?” Buddy’s feedback shows exactly what was missing.', '交之前問自己：「我有沒有寫原因？」Buddy 的評語會指出漏了甚麼。') : ''); } }
+  // sample findings (DEV): fill every finding that has no real data yet, so the full section can be seen
+  if (C.sample) {
+    const SM = [
+      ['careless', 2, Z('Careless or a real gap?', '粗心還是不明白？'), Z(`42% of marks lost were slips on questions ${who} can already do`, `42% 失分是粗心：題目其實已經會做`), bars([[Z('Slips: got it right before', '粗心：以前答對過'), 42, 'warn'], [Z('Gaps: wrong more than once', '不明白：錯了不止一次'), 35, 'bad'], [Z('New: first try', '新題：第一次做'), 23, '']]), Z('Slow down and check each answer before moving on.', '每題做完先檢查再繼續。')],
+      ['think', 3, Z('How they think', '思考方式'), Z('Strong at remembering facts, weaker at explaining why', '記憶事實較強，解釋原因較弱'), bars([[SKILL_PLAIN()[0], 86, 'good'], [SKILL_PLAIN()[1], 74, ''], [SKILL_PLAIN()[2], 63, ''], [SKILL_PLAIN()[3], 48, 'warn']]), Z('Exams give the most marks for these. At dinner, ask “why does that work?”.', '考試這類題目分數最多。吃飯時可問問「為甚麼會這樣？」。')],
+      ['stick', 4, Z('How well it sticks', '記得多牢'), Z('Remembers 78% of what was learned a week or more ago', '一星期前學的，記得 78%'), bars([[Z('1–2 days later', '1–2 日後'), 91, 'good'], [Z('3–6 days later', '3–6 日後'), 84, 'good'], [Z('1–2 weeks later', '1–2 星期後'), 78, ''], [Z('2+ weeks later', '2 星期以上'), 72, '']]), Z('Daily reviews are working. Keep them in the routine.', '每日溫習有效，繼續保持。')],
+      ['grade', 3, Z('Against their grade', '對比年級水平'), Z('Working above Primary 4 level in Maths', '數學高於小四水平'), bars([[Z('Maths', '數學'), 74, 'good', Z('7.4/10 · Above', '7.4/10 · 高於')], [Z('English', '英文'), 61, '', Z('6.1/10 · At', '6.1/10 · 達到')], [Z('Science', '科學'), 52, 'warn', Z('5.2/10 · Building to', '5.2/10 · 正邁向')]], 'lv'), Z('Level is out of 10 and doesn’t drop when questions get harder.', '程度滿分 10，題目變難也不會下降。')],
+      ['pcheck', 2, Z('Same test, before and now', '同一水平：之前與現在'), Z('Maths: 48% → 76% on a check at the same level', '數學：同一水平測驗由 48% 升至 76%'), bars([[Z('Maths · before', '數學 · 之前'), 48, ''], [Z('Maths · now', '數學 · 現在'), 76, 'good'], [Z('English · before', '英文 · 之前'), 55, ''], [Z('English · now', '英文 · 現在'), 64, 'good']]), Z('A progress check every few weeks shows real change.', '每隔幾星期做一次進度測驗，看到真正的進步。')],
+      ['subjects', 5, Z('Subject by subject', '各科情況'), Z('Each subject needs something different', '每科需要的幫助都不同'), `<div class="pi-subs">${[[Z('Maths', '數學'), 82, 'good', Z('Strong', '強')], [Z('English', '英文'), 68, 'warn', Z('Careless slips', '粗心')], [Z('Science', '科學'), 54, 'bad', Z('Real gaps', '未掌握')], [Z('Chinese', '中文'), 66, 'warn', Z('Leans on hints', '依賴提示')]].map(([n, a, t, l]) => `<div><span>${n}</span><em class="${t}">${l}</em><b>${a}%</b></div>`).join('')}</div>`, Z('Praise the strong one, and keep an eye on the weakest.', '稱讚強項，多留意最弱的一科。')],
+      ['writing', 3, Z('Written answers', '文字題'), Z('46% of written answers get part marks: knows the idea, leaves out steps or reasons', '46% 文字題只得部分分數：明白概念，但漏了步驟或原因'), bars([[Z('Full marks', '滿分'), 38, 'good'], [Z('Part marks', '部分分數'), 46, 'warn'], [Z('No marks', '零分'), 16, 'bad']]), Z('Before handing in, ask: “Did I say why?”', '交之前問自己：「我有沒有寫原因？」')],
+      ['speed', 4, Z('Speed against the test clock', '速度夠不夠'), Z('At this pace, a 60-minute paper would take about 70 minutes', '以這個速度，60 分鐘的試卷大約要 70 分鐘'), bars([[Z('Time allowed', '考試時間'), 71, '', Z('60 min', '60 分鐘')], [Z('At this pace', '以這個速度'), 83, 'warn', Z('70 min', '70 分鐘')]], 'min'), Z('A timed chapter test once a week builds speed without stress.', '每週做一次計時章節測驗，慢慢提升速度。')],
+      ['time', 5, Z('Best time to study', '最佳溫習時間'), Z('Scores 18% higher in the afternoon than after 8pm', '下午的得分比晚上 8 時後高 18%'), bars([[Z('Afternoon', '下午'), 81, 'good'], [Z('Early evening', '傍晚'), 72, ''], [Z('After 8pm', '晚上 8 時後'), 63, 'warn']]), Z('Move practice to the afternoon where you can.', '盡量安排在下午練習。')],
+      ['tire', 5, Z('When they tire', '甚麼時候開始累'), Z('Accuracy drops from 82% to 61% after about 25 minutes', '大約 25 分鐘後，答對率由 82% 跌至 61%'), bars([[Z('First 15 minutes', '頭 15 分鐘'), 82, 'good'], [Z('After 25 minutes', '25 分鐘後'), 61, 'warn']]), Z('Two short sessions beat one long one.', '兩次短時間比一次長時間好。')],
+      ['alone', 6, Z('Working it out alone', '獨立解題'), Z('Needs hints less: 84% answered alone, up from 67%', '越來越少需要提示：84% 自己作答，之前 67%'), bars([[Z('Last 2 weeks', '最近 2 星期'), 84, 'good'], [Z('Before', '之前'), 67, '']]), ''],
+      ['fixed', 6, Z('Mistakes, fixed for good', '真正改正的錯誤'), Z('31 of 52 mistakes now answered right days later', '52 個錯誤中，31 個幾天後再答對'), bars([[Z('Fixed for good', '真正改正'), 60, 'good'], [Z('Fixed, checking again soon', '已改正，稍後再測'), 23, ''], [Z('Still to fix', '未改正'), 17, 'warn']]), ''],
+      ['guess', 7, Z('Guessing', '亂猜'), Z('9 multiple-choice answers were wrong in under 5 seconds', '9 題選擇題在 5 秒內答錯'), `<p class="pi-p">${Z('Too fast to have read the question. Usually a sign of rushing to finish.', '快得不像有看清題目，通常是想快點做完。')}</p>`, Z('Agree a rule: read every option before choosing.', '約定規則：看完所有選項才作答。')],
+      ['speaking', 7, Z('Speaking', '說話'), Z('Speaks more fluently: 92 words a minute, up from 74', '說得更流利：每分鐘 92 字，之前 74 字'), bars([[Z('Fluency now', '現在流暢度'), 77, 'good', Z('92 wpm', '92 字/分')], [Z('A month ago', '一個月前'), 62, '', Z('74 wpm', '74 字/分')]], 'lv'), Z('Ask them to tell you about their day in English for two minutes.', '請孩子用英文講兩分鐘今天的事。')],
+      ['dictation', 8, Z('Spelling and dictation', '默書'), Z('86% of words right first time, up from 70%', '86% 的字第一次就寫對，之前 70%'), bars([[Z('This month', '本月'), 86, 'good'], [Z('Last month', '上月'), 70, '']]), ''],
+      ['homework', 8, Z('Homework help', '功課協助'), Z('Asked Buddy about 6 homework sheets, mostly Maths word problems', '問了 Buddy 6 份功課，大多是數學應用題'), `<p class="pi-p">${Z('Getting stuck on the same kind of question at home is a useful early sign. Buddy adds more of these to practice.', '在家常卡在同一類題目，是值得留意的早期訊號。Buddy 會在練習中加多這類題目。')}</p>`, ''],
+    ];
+    const have = new Set(out.map((x) => x.id));
+    for (const [id, pri, tag, title, ev, todo] of SM) if (!have.has(id)) { cid = id; add(pri, tag, title, ev, todo, true); }
+  }
   return out.sort((a, b) => a.pri - b.pri);
 }
 // habits and gaps in a set of log entries (one test's chapters, or everything): biggest first
@@ -7128,12 +7188,12 @@ async function renderProgress() {
     const dw = X.dw || {}, did = [[dw.q, PT('questions from their own textbooks', '條題目來自自己的課本')], [dw.w, PT('written answers marked', '條文字答案已批改')], [dw.rv, PT('reviews brought back before they’d forget', '條溫習題在快忘記前出現')], [dw.fx, PT('mistakes fixed', '題錯題已改正')], [dw.ls, PT('lessons taught by Buddy', '堂 Buddy 課堂')], [dw.mx, PT('mix-ups found', '個混淆被找出')]].filter(([n]) => n > 0);
     const sDid = `<section class="pv-sec pp-did"><div class="pv-h"><h2>${PT('What PrepBuddy did this week', 'PrepBuddy 本週做了甚麼')}</h2></div>${did.length ? `<div class="pp-chips">${did.map(([n, t]) => `<span><b>${n}</b> ${t}</span>`).join('')}</div>` : `<p class="pv-p">${PT('This fills in as practice happens.', '開始練習後就會顯示。')}</p>`}
       ${btn(PT('Send as weekly report', '以每週報告發送'), () => reportDialog(), 'pv-btn primary pp-send')}</section>`;
-    const PI = parentInsights(who), dw7 = X.dw || {};
-    const sOnly = `<section class="pv-sec pi-sec"><div class="pv-h"><h2>${PT('What only PrepBuddy can tell you', '只有 PrepBuddy 看得到')}</h2><span>${PT(`Found in every answer ${who} gave: the timing, hints, kind of question and what was remembered days later`, `從${who}每一個答案中找出：用時、提示、題型，以及幾天後還記不記得`)}</span></div>
+    const PSAM = DEV && localStorage.getItem('pb.pisample') !== 'off', PI = parentInsights(who, { X, GS, books, sample: PSAM }), dw7 = X.dw || {};
+    const sOnly = `<section class="pv-sec pi-sec"><div class="pv-h"><h2>${PT('What only PrepBuddy can tell you', '只有 PrepBuddy 看得到')}</h2>${DEV ? `<button class="btn-sm pi-samb ${PSAM ? 'primary' : ''}" data-pisam>${PSAM ? 'Sample data: on' : 'Sample data: off'}</button>` : ''}<span>${PT(`Found in every answer ${who} gave: the timing, hints, kind of question and what was remembered days later`, `從${who}每一個答案中找出：用時、提示、題型，以及幾天後還記不記得`)}</span></div>
       ${dw7.q ? `<p class="pi-vs">${PT(`This week Buddy marked <b>${dw7.q}</b> answers${dw7.rv ? `, brought back <b>${dw7.rv}</b> reviews before they were forgotten` : ''}${dw7.mx ? ` and found <b>${dw7.mx}</b> mix-up${dw7.mx === 1 ? '' : 's'}` : ''}. A one-hour tutor lesson covers about 10–15 questions.`, `本週 Buddy 批改了 <b>${dw7.q}</b> 個答案${dw7.rv ? `，在快忘記前安排了 <b>${dw7.rv}</b> 次溫習` : ''}${dw7.mx ? `，並找出 <b>${dw7.mx}</b> 個混淆` : ''}。一堂一小時的補習大約只做 10–15 題。`)}</p>` : ''}
       ${PI.length ? `<div class="pi-grid">${PI.slice(0, 4).map((x) => x.html).join('')}</div>${PI.length > 4 ? `<details class="pp-all pi-more"><summary>${PT(`See ${PI.length - 4} more finding${PI.length - 4 === 1 ? '' : 's'}`, `再看 ${PI.length - 4} 項發現`)}</summary><div class="pi-grid">${PI.slice(4).map((x) => x.html).join('')}</div></details>` : ''}`
         : `<p class="pv-p">${PT(`After a week or two of practice, Buddy shows what it has learned about how ${who} thinks, remembers and works: careless slips or real gaps, the best time of day, when focus drops, and speed against the test clock.`, `練習一兩星期後，Buddy 會顯示它對${who}的了解：粗心還是不明白、最佳溫習時間、甚麼時候開始累，以及速度夠不夠。`)}</p>`}</section>`;
-    parBody = `${sHead}${sGoals}${sWork}${sOnly}${sWatch}${sDid}`;
+    parBody = `${sHead}${sOnly}${sGoals}${sWork}${sWatch}${sDid}`;
   }
   let newBody = '';
   if (PNEW) {
@@ -7160,6 +7220,7 @@ async function renderProgress() {
     <div id="pv-s2">${sec2}</div><div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s4">${sec4}</div><div id="pv-s5">${sec5}</div>`}
   </main>`;
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = acts[+b.dataset.pv]; if (f) f(); }));
+  $app.querySelectorAll('[data-pisam]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.pisample', localStorage.getItem('pb.pisample') === 'off' ? 'on' : 'off'); renderProgress(); }));
   $app.querySelectorAll('[data-pvmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.prog', b.dataset.pvmode); renderProgress(); }));
   if (PNEW || PPAR) { $app.querySelector('main').classList.add(PPAR ? 'pvpar' : 'pvnew'); ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); }); }
   // Info pop-ups in plain words: a few short lines with a picture each, for kids and parents alike
