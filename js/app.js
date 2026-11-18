@@ -2587,7 +2587,7 @@ async function renderHome() {
     return 10; };
   const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
   const stepRow = (x, k) => x.done || !x.now
-    ? `<div class="ms-row done"><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span></span><b data-raw>${esc(x.t)}</b><small data-raw>${esc(x.s)}</small></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
+    ? `<div class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></div>`
     : `<div class="ms-item ${k === firstOpen ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
@@ -2715,7 +2715,8 @@ async function renderHome() {
   const missionHTML = allDone
     ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
-      <div class="ms-list">${steps.map(stepRow).join('')}</div>
+      <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)), done = idx.filter(([x]) => x.done || !x.now);
+        return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
       ${missionHowHTML()}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
   await todayReadyHTML(books); // keeps each book's daily readiness history (used by the 'slipping' banner); not shown on Today
@@ -2744,7 +2745,7 @@ async function renderHome() {
   const risk = !lit && streak > 0 && hr >= 18;
   const flameSVG = (on) => `<svg viewBox="0 0 40 50" style="overflow:visible" aria-hidden="true"><defs><linearGradient id="skg${on ? 1 : 0}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${on ? '#E8361A' : '#AEB5C4'}"/><stop offset=".6" stop-color="${on ? '#FF8A1F' : '#C9CFDB'}"/><stop offset="1" stop-color="${on ? '#FFC94D' : '#DCE1EA'}"/></linearGradient></defs><g class="f-all"><path class="f-o" d="M20 1c3 9 15 15 15 30a15 15 0 0 1-30 0c0-7 4-12 7-16 0 5 2 8 5 9-2-8 0-15 3-23z" fill="url(#skg${on ? 1 : 0})"/>${on ? '<path class="f-m" d="M21 12c2 7 10 11 10 20a11 11 0 0 1-22 0c0-5 3-8 5-11 0 4 2 6 4 7-1-6 1-11 3-16z" fill="#FFA62B" opacity=".9"/>' : ''}<path class="f-i" d="M20 24c2 5 8 8 8 14a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-4 0-8 1-11z" fill="${on ? '#FFF1B8' : '#F1F3F7'}"/></g></svg>`;
   const wkOn = wk.map((x) => x.on);
-  const weekHTML = (cls = '') => `<span class="gr-week ${cls}" aria-label="${Z(`${wkOn.filter(Boolean).length} day(s) this week`, `本週 ${wkOn.filter(Boolean).length} 日`)}">${wk.map((x, k) => `<i class="${wkOn[k] ? 'on' : ''} ${x.today ? 'today' : ''}">${wkOn[k] ? flameSVG(true).replace(/skg1/g, 'skw' + k) : DN[k]}</i>`).join('')}</span>`;
+  const weekHTML = (cls = '') => `<span class="gr-week ${cls}" aria-label="${Z(`${wkOn.filter(Boolean).length} day(s) this week`, `本週 ${wkOn.filter(Boolean).length} 日`)}">${wk.map((x, k) => `<i class="${wkOn[k] ? 'on' : ''} ${x.today ? 'today' : ''} ${x.today && allDone ? 'ms' : ''}">${wkOn[k] ? flameSVG(true).replace(/skg1/g, 'skw' + k) : DN[k]}</i>`).join('')}</span>`;
   // the next badge to aim for
   const MIL = [3, 7, 14, 30, 50, 100, 200, 365];
   const nextM = MIL.find((m) => m > streak) || streak + 100, prevM = [...MIL].reverse().find((m) => m <= streak) || 0;
@@ -2766,7 +2767,22 @@ async function renderHome() {
     const close = () => box.remove(); box.querySelector('#skcOk').onclick = close; box.onclick = (e) => { if (e.target === box) close(); };
     box.querySelector('#skcOk').focus();
   };
-  if (doneToday && local.skSeen !== t0) { local.skSeen = t0; saveLocal(); setTimeout(() => celebrate(streak), 400); }
+  const missionParty = () => {
+    const got = addStars(5, 'mission', false);
+    const box = document.createElement('div'); box.className = 'skc-wrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+    const conf = Array.from({ length: 22 }, (_, i) => `<i class="conf" style="--dx:${Math.round(Math.cos(i * 0.29) * (90 + (i % 4) * 25))}px;--dy:${Math.round(Math.sin(i * 0.29) * 90 - 70)}px;--r:${(i * 47) % 360}deg;background:${['#FFC531', '#18966A', '#4A5AA8', '#F08A5D', '#E0533F'][i % 5]}"></i>`).join('');
+    box.innerHTML = `<div class="skc ms-party" style="position:relative">${conf}<span class="ms-pbud">${buddySVG('done', 96)}</span><b class="ms-ph">${Z('Mission done!', '任務完成！')}</b>
+      <span class="ms-ps">${Z(`All ${steps.length} steps done today.`, `今天 ${steps.length} 項全部完成。`)}</span>
+      <div class="ms-pchips">${got ? `<span class="ms-pc star">⭐ ${Z(`+${got} bonus stars`, `+${got} 粒獎勵星星`)}</span>` : ''}<span class="ms-pc fire">🔥 ${streak > 1 ? Z(`${streak}-day streak safe`, `連續 ${streak} 日，保住了`) : Z('Streak safe for today', '今天的連續紀錄保住了')}</span></div>
+      <button class="btn" id="msOk">${Z('Brilliant!', '太好了！')}</button>${extra ? `<button class="linkbtn" id="msMore2">${esc(extra.label)} ›</button>` : ''}</div>`;
+    document.body.appendChild(box);
+    const close = () => { box.remove(); renderHome(); };
+    box.querySelector('#msOk').onclick = close; box.onclick = (e) => { if (e.target === box) close(); };
+    { const m2 = box.querySelector('#msMore2'); if (m2) m2.onclick = () => { box.remove(); extra.run(); }; }
+    box.querySelector('#msOk').focus();
+  };
+  if (allDone && steps.length && local.msSeen !== t0) { local.msSeen = t0; local.skSeen = t0; saveLocal(); setTimeout(missionParty, 400); }
+  else if (doneToday && local.skSeen !== t0) { local.skSeen = t0; saveLocal(); setTimeout(() => celebrate(streak), 400); }
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
   const testHead = `<div class="sect-head"><h2 class="h-info">${SCH('School tests', '學校測驗')}${infoBtn('howTests', SCH('How do school tests work?', '學校測驗是怎樣運作的？'))}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>${testsHowHTML()}`;

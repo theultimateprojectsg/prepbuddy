@@ -3042,6 +3042,28 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 /* streak days: a soft peach circle so the orange flame stands out */
 .gr-week i.on{background:#FFEBD2!important;border:1.5px solid #FFB869!important}
 .gr-week i.on svg{width:68%!important;height:68%!important}
+/* Today's mission: what's left on top; done steps shrink to one line under 'Done today' */
+.ms-donehd{margin-top:6px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+.ms-row.done{gap:10px;padding:6px 0;border-top:0}
+.ms-row.done .ms-ic{width:22px;height:22px;opacity:.55}.ms-row.done .ms-ic svg{width:14px;height:14px}
+.ms-row.done .ms-t b{font-size:14px;font-weight:500;color:var(--muted);text-decoration:line-through;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-row.done .ms-tick{width:22px;height:22px}.ms-row.done .ms-tick svg{width:13px;height:13px}
+/* today's streak circle once the mission is done */
+.gr-week i.ms{position:relative}
+.gr-week i.ms::after{content:"";position:absolute;right:-3px;bottom:-3px;width:14px;height:14px;border-radius:50%;background:#18966A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px no-repeat;border:2px solid #FFFFFF}
+/* mission done celebration */
+.ms-party{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;overflow:visible}
+.ms-pbud{animation:mspop .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes mspop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.ms-ph{font-size:26px;font-weight:700;color:var(--ink)}
+.ms-ps{font-size:15px;color:var(--text-2)}
+.ms-pchips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:4px 0 6px}
+.ms-pc{font-size:14px;font-weight:700;padding:6px 12px;border-radius:999px}.ms-pc.star{background:#FFF6CC;color:#6B4A00}.ms-pc.fire{background:#FFEBD2;color:#8A3A10}
+.ms-party .btn{width:100%;min-height:52px}
+.ms-party .linkbtn{font-size:14px;font-weight:600}
+.ms-party .conf{position:absolute;left:50%;top:70px;width:8px;height:12px;border-radius:2px;opacity:0;animation:confy 1.4s ease-out .15s forwards}
+@keyframes confy{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 160px)) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){.ms-party .conf,.ms-pbud{animation:none}}
 </style>
 </head>
 <body>
