@@ -3097,6 +3097,14 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .mk-empty{justify-content:space-between}.mk-empty>.stack{flex:1}
 @media (min-width:1024px){.mk-hero:has(.mk-fixed){display:grid;grid-template-columns:1fr auto;column-gap:28px;row-gap:12px;align-items:center}
 .mk-hero:has(.mk-fixed) .mk-hero-r{grid-column:2;grid-row:1/span 2}.mk-hero:has(.mk-fixed) .mk-fixed{grid-column:1;justify-self:start}}
+/* Mistake book hint (no answer shown until they try again) */
+.mk-hintbtn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border:1.5px dashed #C9D2E6;border-radius:12px;background:#F7F9FD;color:var(--ink);font:600 15px var(--ui);cursor:pointer;text-align:left}
+.mk-hintbtn svg{flex:none}
+.mk-hinttxt{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:12px 14px;border-radius:12px;background:#FFF8DB;border:1px solid #F3E2A0}
+.mk-hinttxt>.stack{flex:1;min-width:0}.mk-hinttxt>svg{flex:none}.mk-hinttxt b{font-size:14px;color:#7A5A00}
+.mk-hinttxt .tmsg.ai{background:none;border:none;padding:0;margin:0;font-size:15px;line-height:1.5;max-width:none}
+.mk-dots{display:inline-flex;gap:4px}.mk-dots i{width:6px;height:6px;border-radius:50%;background:#C9A400;animation:mkdot 1s infinite}.mk-dots i:nth-child(2){animation-delay:.15s}.mk-dots i:nth-child(3){animation-delay:.3s}
+@keyframes mkdot{0%,100%{opacity:.3}50%{opacity:1}}
 </style>
 </head>
 <body>

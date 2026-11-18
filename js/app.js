@@ -7811,6 +7811,18 @@ async function mistakeItems(done) {
   }
   return groups.sort((a, b) => Math.max(...b.items.map((x) => x.m.t)) - Math.max(...a.items.map((x) => x.m.t)));
 }
+// A hint, never the answer: the answer is only shown after they try the question again.
+const mkHintHTML = (t) => `<div class="mk-hinttxt"><div class="stack g4"><b>${LANG === 'zh' ? 'Buddy 的提示' : 'Buddy’s hint'}</b><div class="tmsg ai" data-raw>${tutorMd(t)}</div></div>${buddySVG('happy', 36)}</div>`;
+async function getMkHint(q) {
+  const m = local.mistakes[q.id]; if (m && m.hint) return m.hint;
+  const [bookId, unitId] = qUnit(q.id);
+  const chapter = await store.get(`text:${bookId}:${unitId}`, '');
+  if (!chapter) throw new Error(LANG === 'zh' ? '這部機上找不到這一章的內容。' : 'This chapter’s text is missing on this device.');
+  const r = await api('explain', { title: q.section, text: chapter, question: qForServer(q), figure: figB64(q), answer: '', before: true, history: [], lang: LANG === 'zh' ? 'zh-HK' : langOf(chapter),
+    ask: 'I got this question wrong before. Give me one short hint (1-3 sentences) to help me try again: point me to the idea or the first step. Do not give the answer or say which option is right.' });
+  if (m && r.reply) { m.hint = r.reply; saveLocal(); }
+  return r.reply;
+}
 function mistakeCard(q, m) {
   const yours = choiceType(q) ? (m.ansText || (LANG === 'zh' ? '未有作答' : 'No answer'))
     : (Array.isArray(m.ans) ? m.ans.filter((a) => a && a.trim()).join('\n') : '') || 'No answer written';
@@ -7821,9 +7833,9 @@ function mistakeCard(q, m) {
     ${missed}${figHTML(q)}${renderStem(q.type === 'graph' || choiceType(q) ? q.stem : writtenStem(q), 'stem')}
     ${!choiceType(q) ? q.parts.map((p) => `<p class="mprompt">${esc(p.label)} ${esc(p.prompt)}</p>`).join('') : ''}
     <div class="mrow bad"><span>${LANG === 'zh' ? '你的答案' : 'Your answer'}</span><p class="nomath">${esc(yours)}</p></div>
-    ${right ? `<div class="mrow good"><span>${LANG === 'zh' ? '答案' : 'Answer'}</span><p>${esc(right)}</p></div>` : ''}
-    <p class="expl">${esc(q.explanation || '')}</p>
-    ${m.chat && m.chat.length ? `<details class="mchat"><summary>${LANG === 'zh' ? '你和 AI 導師的對話' : 'Your chat with the tutor'} (${m.chat.length})</summary>${m.chat.map((x) => x.role === 'user' ? `<div class="tmsg me nomath">${esc(x.text)}</div>` : `<div class="tmsg ai">${tutorMd(x.text)}</div>`).join('')}</details>` : ''}
+    ${m.done ? `${right ? `<div class="mrow good"><span>${LANG === 'zh' ? '答案' : 'Answer'}</span><p>${esc(right)}</p></div>` : ''}
+    <p class="expl">${esc(q.explanation || '')}</p>` : `<div class="mk-hint" data-hintbox="${esc(q.id)}">${m.hint ? mkHintHTML(m.hint) : `<button class="mk-hintbtn" data-hint="${esc(q.id)}">${buddySVG('think', 28)}<span>${LANG === 'zh' ? '請 Buddy 給提示' : 'Get a hint from Buddy'}</span></button>`}</div>`}
+    ${m.done && m.chat && m.chat.length ? `<details class="mchat"><summary>${LANG === 'zh' ? '你和 AI 導師的對話' : 'Your chat with the tutor'} (${m.chat.length})</summary>${m.chat.map((x) => x.role === 'user' ? `<div class="tmsg me nomath">${esc(x.text)}</div>` : `<div class="tmsg ai">${tutorMd(x.text)}</div>`).join('')}</details>` : ''}
     ${m.done ? '' : `<div class="mfoot"><button class="btn-sm primary" data-redo1="${esc(q.id)}">${LANG === 'zh' ? '再試這一題' : 'Try it again'}</button></div><div class="mk-rbox"><button class="mk-rm" data-mkreport="${esc(q.id)}">${LANG === 'zh' ? '這題有問題？' : 'Something wrong with this question?'}</button></div>`}
   </div>`;
 }
@@ -7908,6 +7920,12 @@ async function renderMistakes(tab, openBook) {
   $app.querySelectorAll('[data-mkopen]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab, book: b.dataset.mkopen || undefined })));
   $app.querySelectorAll('[data-redobook]').forEach((b) => (b.onclick = () => { const x = subjects.find((y) => y.book.id === b.dataset.redobook); start(x.chs.flatMap((c) => c.g.items.map((i) => i.q)), (zh ? '錯題簿 · ' : 'Mistake book · ') + sname(x.book)); }));
   $app.querySelectorAll('[data-more]').forEach((b) => (b.onclick = () => { const box = b.previousElementSibling; box.hidden = false; b.remove(); }));
+  $app.querySelectorAll('[data-hint]').forEach((b) => (b.onclick = async (e) => {
+    e.preventDefault(); const id = b.dataset.hint, box = b.parentElement, q = all.find((x) => x.id === id); if (!q) return;
+    box.innerHTML = `<div class="mk-hinttxt"><div class="stack g4"><b>${zh ? 'Buddy 正在想…' : 'Buddy is thinking…'}</b><span class="mk-dots"><i></i><i></i><i></i></span></div>${buddySVG('think', 36)}</div>`;
+    try { const t = await getMkHint(q); box.innerHTML = mkHintHTML(t); renderMath(box); }
+    catch (err) { box.innerHTML = `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(err.message || (zh ? '暫時未能給提示，請稍後再試。' : 'Couldn’t get a hint right now. Please try again.'))}</p>`; }
+  }));
   $app.querySelectorAll('[data-redo1]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const q = all.find((x) => x.id === b.dataset.redo1); if (q) start([q], zh ? '錯題簿' : 'Mistake book'); }));
   $app.querySelectorAll('[data-mkreport]').forEach((b) => (b.onclick = () => {
     const id = b.dataset.mkreport, box = b.parentElement, g = groups.find((x) => x.items.some((y) => y.q.id === id)); if (!g) return;
