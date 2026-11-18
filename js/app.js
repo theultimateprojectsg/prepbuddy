@@ -5486,6 +5486,28 @@ const PI = {
 };
 const pIcon = (k, size = 20) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PI[k]}</svg>`;
 const PT = (en, zh) => (LANG === 'zh' ? zh : en);
+// A few short points under a test card: the pace, the weaker kind of question, the chapters that need work.
+function testPoints(p, chs, aim, fc, st) {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), pts = [];
+  const habit = practiceHabit(), dpw = Math.max(1, Math.round(habit * 7));
+  if (st === 'ok') pts.push(['good', Z('On pace. Keep practising like you are', '進度理想，保持現在的節奏')]);
+  else { const best = planForecast(p.ready, chs, p.left, 1);
+    pts.push(['pace', best >= aim && habit < 0.95 ? Z(`Pick up the pace: practise every day (about ${dpw} days a week now)`, `要加快：每天練習（現在約每週 ${dpw} 日）`) : Z('Practise every day and add extra sets', '每天練習，再加練幾組')]); }
+  if (p.book && chs.length) {
+    const ids = new Set(chs.map((c) => c.unit.id));
+    const E = local.log.filter((e) => e.q && e.m && e.k !== 'spaced' && qUnit(e.q)[0] === p.book.id && ids.has(qUnit(e.q)[1]));
+    const acc = (es) => { const m = es.reduce((a, e) => a + e.m, 0); return m ? Math.round(100 * es.reduce((a, e) => a + e.g, 0) / m) : null; };
+    const C = E.filter((e) => e.ty === 'c'), W = E.filter((e) => e.ty === 'w');
+    const lv = [1, 2, 3, 4].map((l) => { const es = E.filter((e) => Math.max(1, Math.min(4, Math.round(e.l || 2))) === l); return { l, n: es.length, a: acc(es) }; }).filter((x) => x.n >= 3).sort((a, b) => a.a - b.a)[0];
+    if (C.length >= 3 && W.length >= 3 && Math.abs(acc(C) - acc(W)) >= 20) pts.push(['weak', acc(W) < acc(C) ? Z('Weaker in written questions', '文字題較弱') : Z('Weaker in multiple choice', '選擇題較弱')]);
+    else if (lv && lv.a < 60) pts.push(['weak', [Z('Weaker at remembering facts', '記憶事實較弱'), Z('Weaker at understanding the ideas', '理解概念較弱'), Z('Weaker at using it in new questions', '應用題較弱'), Z('Weaker at “explain why” questions', '「解釋原因」題較弱')][lv.l - 1]]);
+    const nm = (c) => shortTitle(c.unit.title).replace(/^(Unit|Chapter|Ch\.?)\s*[\w.]+\s*[·:]?\s*/i, '');
+    const notStarted = chs.filter((c) => !c.pct), low = chs.filter((c) => c.pct && c.pct < aim).sort((a, b) => a.pct - b.pct);
+    if (notStarted.length) pts.push(['ch', notStarted.length === 1 ? Z(`${nm(notStarted[0])} not started yet`, `「${nm(notStarted[0])}」還未開始`) : Z(`${notStarted.length} chapters not started yet`, `還有 ${notStarted.length} 章未開始`)]);
+    else if (low.length) pts.push(['ch', Z(`Weakest chapter: ${nm(low[0])} (${low[0].pct}%)`, `最弱的章節：${nm(low[0])}（${low[0].pct}%）`)]);
+  }
+  return `<ul class="pv-pts">${pts.slice(0, 3).map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join('')}</ul>`;
+}
 const SKILL_PLAIN = () => (LANG === 'zh' ? ['記憶事實', '理解', '應用', '深入思考'] : ['Remembering facts', 'Understanding', 'Using it', 'Thinking it through']);
 
 // Weekly goal (days × minutes), counted Monday to Sunday.
@@ -6131,7 +6153,7 @@ async function renderProgress() {
     const nums = p.ready == null ? '' : `<div class="pv-snum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i aria-hidden="true">→</i><div><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div><div><b>${aim}%</b><span>${PT('goal', '目標')}</span></div></div>
       <div class="pv-sbar ${st}"><i style="width:${p.ready}%"></i>${fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:${aim}%"></s></div>`;
     return `<div class="pv-test pv-simple ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${nums}<p class="pv-p">${say}</p>${btn(`${PT('Plan and today’s step on Today', '計劃和今天的步驟在「今日」')} ›`, () => { go({ name: 'home' }); setTimeout(() => { const el = document.querySelector('.td-sec'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400); }, 'linkbtn pv-tolink')}</div>`;
+      ${nums}${p.ready == null ? `<p class="pv-p">${say}</p>` : testPoints(p, chOf(p).length ? chOf(p) : p.book ? MB.get(p.book.id).chapters : [], aim, fc, st)}</div>`;
   });
   const testedBooks = new Set(tests.steps.map((p) => p.book && p.book.id).filter(Boolean));
   const noTest = RH.filter((x) => x.used && !testedBooks.has(x.b.id)).slice(0, Math.max(1, 3 - testCards.length)).map((x) => `<div class="pv-test none"><b data-raw>${esc(sname(x.b))} · ${PT('no test added', '未加入測驗')}</b>

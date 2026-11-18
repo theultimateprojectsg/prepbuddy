@@ -3132,6 +3132,11 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .gr-pts li.ic{padding-left:0;display:flex;align-items:center;gap:8px}.gr-pts li.ic::before{display:none}
 .gr-ic{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:#FFFFFF;box-shadow:0 1px 2px rgba(38,53,122,.08);flex:none}
 .gr-pts li.soon>span:last-child{color:#A3410F;font-weight:600}
+/* Test card: a few short points */
+.pv-pts{margin:2px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.pv-pts li{position:relative;padding-left:16px;font-size:14px;line-height:1.45;color:var(--ink)}
+.pv-pts li::before{content:"";position:absolute;left:2px;top:.55em;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.pv-pts li.pace::before{background:#E07A2E}.pv-pts li.weak::before{background:#E05A43}.pv-pts li.good::before{background:#18966A}
 </style>
 </head>
 <body>
