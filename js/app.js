@@ -7026,12 +7026,13 @@ async function renderProgress() {
   const pvDev = DEV ? `<div class="cb-dev"><b>DEV preview: Progress</b><span>Same data. Only you see this.</span><div class="cb-modes">${[['new', 'New order'], ['old', 'Current']].map(([k, t]) => `<button class="btn-sm ${(PNEW ? 'new' : 'old') === k ? 'primary' : ''}" data-pvmode="${k}">${t}</button>`).join('')}</div></div>` : '';
   let newBody = '';
   if (PNEW) {
-    const gCard = GDp ? goalsCardHTML(GDp, { progress: true, testBody: (g) => goalProgressHTML(g, testPoints(g.p, g.chs, g.aim, g.fc, g.st), false, true) }) : '';
-    const s3 = sec3.replace(/<\/h2>([\s\S]*?)<\/div>/, (m) => `${m}${levelCard}`);
-    const s4 = `<details class="pv-sec pv-fold"><summary><span class="pv-h"><h2>${PT('Is it working?', '有沒有成效？')}</h2><span>${PT('Proof that practice is paying off: readiness over time, harder questions, question types, school marks', '練習有沒有效果：準備度變化、較難題目、題型、學校成績')}</span></span><i aria-hidden="true">›</i></summary>
-      <div class="pv-grid3">${pcCard}${readyCard}${mixCard}${typesCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div></details>`;
-    newBody = `${gCard}<div id="pv-s2">${sec2}</div>${sumSec}<div class="pvn-fix">${fixedGoodHTML()}</div><div id="pv-s5">${sec5}</div><div id="pv-s3">${s3}</div><div id="pv-s4">${s4}</div>`;
+    // 1 week at a glance · 2 goals · 3 tests · 4 subject mastery · 5 what Buddy noticed (with the readiness and is-it-working charts) · 6 effort and habits
+    const goalsSec = goalPHTML.replace(`<h2>${PT('My goals', '我的目標')}</h2>`, `<h2>${PT('Am I on track for my goals?', '我的目標進度如何？')}</h2>`);
+    const grid4 = `<div class="pv-grid3 pvn-in">${levelCard}${pcCard}${readyCard}${mixCard}${typesCard}${mkCard}${marksCard}${growCard}${memCard}${timedCard}</div>`;
+    const k2 = sec2.lastIndexOf('</section>'), s2 = k2 >= 0 ? sec2.slice(0, k2) + grid4 + sec2.slice(k2) : sec2 + grid4;
+    newBody = `${sumSec}${goalsSec}<div id="pv-s1">${sec1}</div><div id="pv-s3">${sec3}</div><div id="pv-s2">${s2}</div><div id="pv-s5">${sec5}</div>`;
   }
+
   $app.innerHTML = `
   <main class="pad pgpage pv" data-view="progress" data-raw style="flex:1">
     <div class="pv-top"><div><h1 class="pagetitle" style="margin:0">${PT('Progress', '進度')}</h1><p>${PT('How you’re doing, whether it’s working, and what to do next.', '你的學習情況、練習有沒有成效，以及下一步。')}</p></div>
