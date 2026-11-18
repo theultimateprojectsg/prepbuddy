@@ -825,7 +825,14 @@ function goBack(fallback) {
 // The Back button names the screen it returns to: the one they came from, or the fallback when opened from a link.
 const VIEW_NAME = { home: ['Today', '今日'], practice: ['Practice', '練習'], books: ['Books', '課本'], book: ['Book', '課本'], mistakes: ['Mistakes', '錯題'], progress: ['Progress', '進度'], settings: ['Settings', '設定'], library: ['Library', '課本庫'], stars: ['Star shop', '星星商店'], parent: ['Parent', '家長'] };
 const backName = (fb, label) => { const prev = navStack.length > 1 ? navStack[navStack.length - 2] : fb; const nm = prev && VIEW_NAME[prev.name]; return nm ? nm[LANG === 'zh' ? 1 : 0] : label === 'Back' ? (LANG === 'zh' ? '返回' : 'Back') : label; };
-const backTop = (fb, label) => `<div class="topbar pagetop"><button class="backbtn" data-goback='${esc(JSON.stringify(fb))}'>${ICON.back}<span>${esc(backName(fb, label))}</span></button></div>`;
+const backTop = (fb, label) => `<div class="topbar pagetop"><button class="backbtn" data-goback='${esc(JSON.stringify(fb))}'>${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button></div>`;
+// On a page with a title, the Back button sits on the title's line, on the right, so the title stays at the top like on the main tabs.
+function dockBack() {
+  const bar = $app.querySelector(':scope .pagetop'), btn = bar && bar.querySelector('.backbtn'), h = $app.querySelector('.pagetitle');
+  if (!btn || !h || h.closest('.pt-row') || h.parentElement !== bar.parentElement && h.parentElement !== bar.nextElementSibling) return;
+  const row = document.createElement('div'); row.className = 'pt-row'; h.replaceWith(row); row.append(h, btn); bar.remove();
+}
+new MutationObserver(() => { if ($app.querySelector('.pagetop .backbtn') && $app.querySelector('.pagetitle')) dockBack(); }).observe($app, { childList: true });
 document.addEventListener('input', (e) => { const w = e.target.closest && e.target.closest('.cdlg-wrap'); if (w) w.dataset.dirty = '1'; }, true);
 document.addEventListener('click', (e) => {
   const w = e.target;
@@ -7875,14 +7882,15 @@ async function renderMistakes(tab, openBook) {
   const SHOW = 4;
   $app.innerHTML = `
   <main class="pad stack g18 mkpage" data-view="mistakes" style="flex:1">
-    ${backTop({ name: 'practice' }, 'Practice')}<h1 class="pagetitle">${LANG === 'zh' ? '錯題簿' : 'Mistake book'}</h1>
+    ${tab === 'done' ? backTop({ name: 'mistakes', tab: 'todo', book: openBook }, 'Back') : backTop({ name: 'practice' }, 'Practice')}<h1 class="pagetitle">${tab === 'done' ? (zh ? '已掌握' : 'Mastered') : zh ? '錯題簿' : 'Mistake book'}</h1>
+    ${tab === 'done' && done ? `<p class="muted mk-donesub">${zh ? `你已改正 ${done} 題。` : `${done} ${done === 1 ? 'question' : 'questions'} you got wrong, then got right.`}</p>` : ''}
     ${tab === 'todo' && todo ? `<section class="mk-hero">
       <div class="mk-hero-l">${buddySVG('happy', 64)}<div class="stack g6"><b class="mk-big">${todo} ${todo === 1 ? 'question' : 'questions'} to get right</b>
         <span class="muted">Get one right again and it moves to Mastered.${fixedWeek ? ` <b class="mk-win">${fixedWeek} fixed this week</b>` : ''}</span></div></div>
       <div class="mk-hero-r"><button class="btn" id="redoall">Redo all ${Math.min(all.length, 30)}</button>${all.length > 5 ? '<button class="btn ghost" id="quick5">Quick 5</button>' : ''}</div>
     </section>` : ''}
-    <div class="seg" style="grid-template-columns:1fr 1fr" role="tablist"><button role="tab" class="${tab === 'todo' ? 'on' : ''}" data-tab="todo">To get right (${todo})</button><button role="tab" class="${tab === 'done' ? 'on' : ''}" data-tab="done">Mastered (${done})</button></div>
     ${groups.length ? mkBody : `<div class="card mk-empty">${buddySVG(tab === 'todo' ? 'done' : 'think', 72)}<div class="stack g6"><b>${tab === 'todo' ? 'Nothing to fix right now' : 'Nothing mastered yet'}</b><span class="muted">${tab === 'todo' ? 'Questions you get wrong are saved here automatically, so you can come back and get them right.' : 'Get a mistake right again and it moves here.'}</span></div></div>`}
+    ${tab === 'todo' && done ? `<button class="mk-mastered" data-tab="done">${ICON.check}<span class="stack g2"><b>${zh ? `已掌握 ${done} 題` : `Mastered · ${done}`}</b><span class="muted">${zh ? '看看你已改正的題目' : 'Questions you’ve fixed'}</span></span><span class="mk-sub-go">›</span></button>` : ''}
   </main>`;
 
   $app.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => go({ name: 'mistakes', tab: b.dataset.tab, book: openBook })));
