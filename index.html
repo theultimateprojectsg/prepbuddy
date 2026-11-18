@@ -3132,6 +3132,20 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .gr-pts li.ic{padding-left:0;display:flex;align-items:center;gap:8px}.gr-pts li.ic::before{display:none}
 .gr-ic{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:#FFFFFF;box-shadow:0 1px 2px rgba(38,53,122,.08);flex:none}
 .gr-pts li.soon>span:last-child{color:#A3410F;font-weight:600}
+/* Progress test card: the chapters still weak, instead of a forecast sentence */
+.pv-weak{display:flex;flex-direction:column;gap:8px;margin-top:4px;padding-top:12px;border-top:1px solid rgba(38,53,122,.1)}
+.pv-weak-h{font-size:13px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--muted)}
+.pv-wr{display:grid;grid-template-columns:minmax(0,1fr) 64px auto auto;align-items:center;gap:10px}
+.pv-wn{font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-wr i{height:8px;border-radius:99px;background:rgba(38,53,122,.1);overflow:hidden}.pv-wr i b{display:block;height:100%;border-radius:99px;background:#E05A43}
+.pv-wr i b.mid{background:#F0A030}.pv-wr i b.good{background:#18966A}
+.pv-wr em{font-style:normal;font-size:13px;font-weight:700;color:var(--ink);min-width:34px;text-align:right;white-space:nowrap}
+.pv-wbtn{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:var(--accent);padding:6px 10px;border-radius:999px;background:#FFFFFF;border:1px solid var(--line)}
+.pv-weak-n{font-size:13px;color:var(--muted)}
+.pv-strong{display:flex;align-items:center;gap:8px;margin:4px 0 0;font-size:14px;font-weight:600;color:#1E7A46}.pv-strong svg{width:18px;height:18px;flex:none}
+.pv-wr{grid-template-columns:minmax(0,1fr) auto auto;row-gap:4px;column-gap:10px;padding:2px 0}
+.pv-wr .pv-wn{grid-column:1/-1;white-space:normal;font-size:14px;line-height:1.35}
+.pv-wr i{grid-column:1}
 </style>
 </head>
 <body>

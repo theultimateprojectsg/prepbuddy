@@ -6124,14 +6124,22 @@ async function renderProgress() {
     const aim = p.x.aim || 80, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
     const st = p.ready == null ? 'none' : aimTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
-    const say = p.ready == null ? PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')
-      : st === 'ok' ? PT(`Heading for about ${fc}% on test day, at or above the ${aim}% goal.`, `考試當日預計約 ${fc}%，達到 ${aim}% 目標。`)
-      : st === 'close' ? PT(`Heading for about ${fc}%, a little short of the ${aim}% goal.`, `考試當日預計約 ${fc}%，略低於 ${aim}% 目標。`)
-      : PT(`Heading for about ${fc}%, well short of the ${aim}% goal. Today’s plan steps it up.`, `考試當日預計約 ${fc}%，離 ${aim}% 目標較遠，今日的計劃會加把勁。`);
+    // the chapters in this test that still need the most work (weakest first)
+    let weakHTML = '';
+    if (p.ready == null) weakHTML = `<p class="pv-p">${PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')}</p>`;
+    else {
+      const chs = (chOf(p).length ? chOf(p) : p.book ? MB.get(p.book.id).chapters : []).slice().sort((a, b) => a.pct - b.pct);
+      const weak = chs.filter((c) => c.pct < aim).slice(0, 3);
+      weakHTML = !chs.length ? '' : !weak.length ? `<p class="pv-strong">${ICON.check}<span>${PT(`Every chapter is at ${aim}% or more. Keep it ticking over.`, `每一章都達到 ${aim}% 或以上，保持下去！`)}</span></p>`
+        : `<div class="pv-weak"><b class="pv-weak-h">${PT(weak.length === 1 ? 'Still weak at' : 'Still weak at these', '仍然較弱的章節')}</b>${weak.map((c) => `<div class="pv-wr"><span class="pv-wn" data-raw>${esc(chName(c.unit))}</span><i><b class="${tone(c.pct)}" style="width:${Math.max(3, c.pct)}%"></b></i><em>${fresh(c) ? PT('Not started', '未開始') : `${c.pct}%`}</em>${btn(PT('Practise', '練習'), () => { pick = { bookId: p.book.id, ids: new Set([c.unit.id]) }; startUnits(p.book, [c.unit], 10); }, 'pv-wbtn')}</div>`).join('')}
+          ${(() => { const more = chs.filter((c) => c.pct < aim).length - weak.length, ok = chs.filter((c) => c.pct >= aim).length;
+            const t = [more ? PT(`${more} more to work on`, `還有 ${more} 章要加強`) : '', ok ? PT(`${ok} at ${aim}% or more`, `${ok} 章已達 ${aim}% 或以上`) : ''].filter(Boolean).join(' · ');
+            return t ? `<small class="pv-weak-n">${t}</small>` : ''; })()}</div>`;
+    }
     const nums = p.ready == null ? '' : `<div class="pv-snum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i aria-hidden="true">→</i><div><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div><div><b>${aim}%</b><span>${PT('goal', '目標')}</span></div></div>
       <div class="pv-sbar ${st}"><i style="width:${p.ready}%"></i>${fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:${aim}%"></s></div>`;
     return `<div class="pv-test pv-simple ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${nums}<p class="pv-p">${say}</p>${btn(`${PT('Plan and today’s step on Today', '計劃和今天的步驟在「今日」')} ›`, () => { go({ name: 'home' }); setTimeout(() => { const el = document.querySelector('.td-sec'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 400); }, 'linkbtn pv-tolink')}</div>`;
+      ${nums}${weakHTML}</div>`;
   });
   const testedBooks = new Set(tests.steps.map((p) => p.book && p.book.id).filter(Boolean));
   const noTest = RH.filter((x) => x.used && !testedBooks.has(x.b.id)).slice(0, Math.max(1, 3 - testCards.length)).map((x) => `<div class="pv-test none"><b data-raw>${esc(sname(x.b))} · ${PT('no test added', '未加入測驗')}</b>
