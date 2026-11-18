@@ -2906,10 +2906,10 @@ async function renderHome() {
       const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<s style="left:${g.aim}%"></s><small style="left:${g.aim}%">${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</small></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>`;
       const sub = (g, i) => {
         const mis = inMission(g) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
-        if (g.kind === 'test') return `<details class="ag-sc t" ${i === 0 ? 'open' : ''}><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`, true)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
+        if (g.kind === 'test') return `<details class="ag-sc t ${g.st}" ${i === 0 ? 'open' : ''}><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`, true)}${miniTrack(g)}</summary><div class="ag-body">${cardOf(g)}</div></details>`;
         const name = Z(`Stronger in ${esc(g.lab)}`, `${esc(g.lab)}更進一步`);
         if (g.kind === 'longnew') return `<div class="ag-sc l">${subHead(g, GIC.long, name, Z('Practise a little and the level shows here', '練習一下，程度就會顯示在這裏'))}</div>`;
-        return `<div class="ag-sc l">${mis}${subHead(g, GIC.long, name, Z(`Target: level ${g.target.toFixed(1)} out of 10`, `目標：程度 ${g.target.toFixed(1)}（滿分 10）`))}
+        return `<div class="ag-sc l ${g.st}">${mis}${subHead(g, GIC.long, name, Z(`Target level ${g.target.toFixed(1)} / 10`, `目標程度 ${g.target.toFixed(1)} / 10`))}
           <div class="ag-lv"><div class="pv-num"><b>${g.now.toFixed(1)}</b><span>${Z('level now', '現在程度')}</span></div><div class="ag-lvb">${goalLevelBar(g.now, g.start, g.target)}</div>${g.change != null && Math.abs(g.change) >= 0.1 ? `<span class="gl-wk ${g.change > 0 ? 'up' : 'down'}">${g.change > 0 ? '▲' : '▼'} ${Math.abs(g.change).toFixed(1)}</span>` : ''}</div></div>`;
       };
       const who = local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');

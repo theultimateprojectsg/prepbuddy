@@ -3309,6 +3309,28 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ag-lv{display:flex;align-items:center;gap:12px}.ag-lv .pv-num b{font-size:18px}.ag-lv .pv-num span{font-size:11px}
 .ag-lvb{flex:1;min-width:0}.ag-lvb .gl-lvl{font-size:11px}
 .ag-sc .ag-mis{align-self:flex-start}
+/* All goals v3: tidier spacing, numbers aligned to their edges, each goal tinted by its status */
+.ag-sc{gap:8px;padding:12px 14px 10px}
+.ag-sc>summary{gap:8px}
+.ag-h{align-items:flex-start}.ag-h .gl-ric{margin-top:1px}.ag-h .gl-st{margin-top:2px;flex:none}.ag-chev{margin-top:4px}
+.ag-ht b{font-size:15.5px}
+.ag-mt{padding:0 0 15px!important;gap:12px!important;align-items:center}
+.ag-mt .pv-num,.ag-lv .pv-num{min-width:58px}
+.ag-mt .pv-num:first-child,.ag-lv .pv-num{align-items:flex-start}.ag-mt .pv-num:last-child{align-items:flex-end}
+.ag-mt .pv-num b,.ag-lv .pv-num b{font-size:20px!important;line-height:1.1}.ag-mt .pv-num span,.ag-lv .pv-num span{font-size:11.5px;white-space:nowrap}
+.ag-mt .pv-bar small{top:15px;font-size:11px}
+.ag-lv{gap:12px;padding-bottom:2px}.ag-lvb .gl-lvl span:first-child{visibility:hidden}
+.ag-sc.ok,.ag-sc.done{background:#F1FAF5;border-color:#C9EBD8}
+.ag-sc.close{background:#FFF8EC;border-color:#F3DDB0}
+.ag-sc.risk{background:#FEF3F1;border-color:#F4CFC8}
+.ag-sc.t[open]{background:#FFFFFF}
+.ag-sc.t.ok .gl-ric,.ag-sc.t.done .gl-ric{background:#E1F4EA}.ag-sc.t.close .gl-ric{background:#FCEBCB}.ag-sc.t.risk .gl-ric{background:#FBE1DC}
+.ag-sc .gl-ric{background:#FFFFFF}
+.ag-mt{padding:0!important}.ag-mt .pv-bar small{top:-17px;font-size:11px;font-weight:600}
+.ag-lv{padding-bottom:0}.ag-lvb .gl-lv{gap:3px}
+.ag-sc{padding:12px 14px}
+.ag-sc>summary{gap:14px}.ag-sc.l{gap:14px}
+.ag-lvb .gl-lv{flex-direction:column-reverse}.ag-lvb .gl-lvl{font-size:11px;font-weight:600;color:var(--text-2)}
 </style>
 </head>
 <body>
