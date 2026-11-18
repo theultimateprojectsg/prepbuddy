@@ -2810,8 +2810,8 @@ async function renderHome() {
       </div>`;
     };
     for (const p of tests.steps) await card(p); // works out today's job and minutes for each test
-    // the full test card (same as Progress used to have), with today's job and its Start button added
-    const cards = (await fullTestCards(tests, tdBtn)).map((h, k) => h.replace('<div class="pv-test-f">', `${jobsT[k] || ''}<div class="pv-test-f">`));
+    // the full test card; today's job for it is already in Buddy's plan box and in Today's mission, so no extra Start row
+    const cards = await fullTestCards(tests, tdBtn);
     const tot = tdMins.reduce((a, b) => a + b, 0);
     const totHTML = tdMins.length > 1 ? `<p class="tdc-tot ${tot > 60 ? 'hi' : ''}">${pIcon('clock', 17)}<span><b>${Z(`About ${tot} min today`, `今天約 ${tot} 分鐘`)}</b> ${Z(`for ${tdMins.length} tests.`, `（${tdMins.length} 個測驗）。`)}${tot > 60 ? Z(' That’s a lot. Slide Buddy to a lower goal on a test card to lighten it.', '時間較多，可在測驗卡上把 Buddy 拖到較低的目標。') : ''}</span></p>` : '';
     testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}${totHTML}${cards.join('')}</section>`;
