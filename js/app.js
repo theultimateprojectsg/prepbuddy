@@ -7885,11 +7885,12 @@ async function renderMistakes(tab, openBook) {
     ${tab === 'done' ? backTop({ name: 'mistakes', tab: 'todo', book: openBook }, 'Back') : backTop({ name: 'practice' }, 'Practice')}<h1 class="pagetitle">${tab === 'done' ? (zh ? '已掌握' : 'Mastered') : zh ? '錯題簿' : 'Mistake book'}</h1>
     ${tab === 'done' && done ? `<p class="muted mk-donesub">${zh ? `你已改正 ${done} 題。` : `${done} ${done === 1 ? 'question' : 'questions'} you got wrong, then got right.`}</p>` : ''}
     ${tab === 'todo' && todo ? `<section class="mk-hero">
-      <div class="mk-hero-l">${buddySVG('happy', 64)}<div class="stack g6"><b class="mk-big">${todo} ${todo === 1 ? 'question' : 'questions'} to get right</b>
-        <span class="muted">Get one right again and it moves to Mastered.${fixedWeek ? ` <b class="mk-win">${fixedWeek} fixed this week</b>` : ''}</span></div></div>
+      <div class="mk-hero-l"><div class="stack g6"><b class="mk-big">${todo} ${todo === 1 ? 'question' : 'questions'} to get right</b>
+        <span class="muted">${zh ? '再答對一次，就會移到「已掌握」。' : 'Get one right again and it moves to Mastered.'}</span></div>${buddySVG('happy', 52)}</div>
+      ${fixedWeek ? `<div class="mk-fixed">${ICON.check}<span><b>${zh ? `今個星期改正了 ${fixedWeek} 題` : `${fixedWeek} fixed this week`}</b> ${zh ? '做得好！' : 'Nice work!'}</span></div>` : ''}
       <div class="mk-hero-r"><button class="btn" id="redoall">Redo all ${Math.min(all.length, 30)}</button>${all.length > 5 ? '<button class="btn ghost" id="quick5">Quick 5</button>' : ''}</div>
     </section>` : ''}
-    ${groups.length ? mkBody : `<div class="card mk-empty">${buddySVG(tab === 'todo' ? 'done' : 'think', 72)}<div class="stack g6"><b>${tab === 'todo' ? 'Nothing to fix right now' : 'Nothing mastered yet'}</b><span class="muted">${tab === 'todo' ? 'Questions you get wrong are saved here automatically, so you can come back and get them right.' : 'Get a mistake right again and it moves here.'}</span></div></div>`}
+    ${groups.length ? mkBody : `<div class="card mk-empty"><div class="stack g6"><b>${tab === 'todo' ? 'Nothing to fix right now' : 'Nothing mastered yet'}</b><span class="muted">${tab === 'todo' ? 'Questions you get wrong are saved here automatically, so you can come back and get them right.' : 'Get a mistake right again and it moves here.'}</span></div>${buddySVG(tab === 'todo' ? 'done' : 'think', 64)}</div>`}
     ${tab === 'todo' && done ? `<button class="mk-mastered" data-tab="done">${ICON.check}<span class="stack g2"><b>${zh ? `已掌握 ${done} 題` : `Mastered · ${done}`}</b><span class="muted">${zh ? '看看你已改正的題目' : 'Questions you’ve fixed'}</span></span><span class="mk-sub-go">›</span></button>` : ''}
   </main>`;
 

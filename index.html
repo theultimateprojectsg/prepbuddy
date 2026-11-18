@@ -3090,6 +3090,13 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .mk-mastered{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;background:#FFFFFF;border:1px solid var(--line);border-radius:16px;cursor:pointer;font:inherit;color:var(--ink)}
 .mk-mastered>svg{width:28px;height:28px;padding:5px;border-radius:50%;background:#E6F4EC;color:#1E7A46;flex:none}
 .mk-mastered .stack{flex:1}.mk-mastered .muted{font-size:13px}
+/* Mistake book hero: Buddy on the right, the week's fixes on their own line */
+.mk-hero-l{align-items:flex-start;justify-content:space-between}.mk-hero-l>.stack{flex:1;min-width:0}.mk-hero-l>svg{flex:none}
+.mk-fixed{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:#E9F6EF;color:#1E6B41;font-size:15px}
+.mk-fixed>svg{width:24px;height:24px;padding:4px;border-radius:50%;background:#1E8A50;color:#FFFFFF;flex:none}.mk-fixed b{font-weight:700}
+.mk-empty{justify-content:space-between}.mk-empty>.stack{flex:1}
+@media (min-width:1024px){.mk-hero:has(.mk-fixed){display:grid;grid-template-columns:1fr auto;column-gap:28px;row-gap:12px;align-items:center}
+.mk-hero:has(.mk-fixed) .mk-hero-r{grid-column:2;grid-row:1/span 2}.mk-hero:has(.mk-fixed) .mk-fixed{grid-column:1;justify-self:start}}
 </style>
 </head>
 <body>
