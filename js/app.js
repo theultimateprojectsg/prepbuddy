@@ -2584,7 +2584,7 @@ async function renderHome() {
     return false;
   };
   const steps = M.steps.map((st) => ({ ...st, done: isDone(st), now: cands.find((c) => c.key === st.key) || (st.attr && !/^t:/.test(st.key) ? { t: st.t, s: st.s, attr: st.attr, why: st.why, tag: st.tag } : null) }));
-  const firstOpen = steps.findIndex((x) => !x.done && x.now);
+  let firstOpen = steps.findIndex((x) => !x.done && x.now);
   const allDone = steps.every((x) => x.done || !x.now);
   // the Today tab shows how many mission steps are left today
   { const left = steps.filter((x) => !x.done && x.now).length, d = startOfToday(); if (!local.msLeft || local.msLeft.d !== d || local.msLeft.n !== left) { local.msLeft = { d, n: left }; saveLocal(); renderTabs(); } }
@@ -2602,6 +2602,15 @@ async function renderHome() {
   const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
   // the goal card on top: the goal, how far along, and today's next mission step as the one next step
   const GD = await goalsData(tests).catch((e) => { console.warn(e); return null; });
+  // the focus test's own step comes first in the mission, so Next step and the focus always match
+  if (GD && GD.focus && GD.focus.kind === 'test') {
+    const pre = `c:${GD.focus.p.x.id}:`; let k = steps.findIndex((x) => !x.done && x.now && String(x.key).startsWith(pre));
+    // not in today's mission yet (it was set before this test became the focus): add it at the top
+    if (k < 0 && !allDone && !steps.some((x) => String(x.key).startsWith(pre))) { const c = cands.find((y) => String(y.key).startsWith(pre));
+      if (c) { const st = { key: c.key, icon: c.icon, t: c.t, s: c.s, chk: c.chk, attr: c.attr, tag: c.tag, why: c.why }; M.steps.unshift(st); steps.unshift({ ...st, done: isDone(st), now: c }); k = 0;
+        local.msLeft = { d: startOfToday(), n: steps.filter((x) => !x.done && x.now).length }; saveLocal(); renderTabs(); } }
+    if (k >= 0) firstOpen = k;
+  }
   const goalG = GD && GD.focus, gOthers = GD ? GD.list.filter((g) => g !== goalG && (['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab))) : [];
   const goalHTML = goalG ? goalTopHTML(goalG, firstOpen >= 0 ? { t: steps[firstOpen].now.t, min: jobMin(steps[firstOpen]) } : null, gOthers.length + 1)
     + (gOthers.length ? `<section class="gl-others" aria-label="${Z('Other goals', '其他目標')}"><div class="gl-oh"><b>${Z('Other goals', '其他目標')}</b><button class="linkbtn" data-mygoals>${Z('My goals', '我的目標')} ›</button></div>${gOthers.map((g) => goalRowHTML(g, 'data-gfocus')).join('')}</section>` : '') : '';
@@ -2757,7 +2766,7 @@ async function renderHome() {
   const missionHTML = allDone
     ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
-      <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)), done = idx.filter(([x]) => x.done || !x.now);
+      <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)).sort((a, b) => (b[1] === firstOpen) - (a[1] === firstOpen)), done = idx.filter(([x]) => x.done || !x.now);
         return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
       ${missionHowHTML()}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
