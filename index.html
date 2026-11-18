@@ -3141,6 +3141,14 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .pv-more>summary{list-style:none;cursor:pointer;display:inline-block;margin-top:2px;font-size:13px;font-weight:700;color:var(--accent);padding:4px 0}
 .pv-more>summary::-webkit-details-marker{display:none}.pv-more .hd{display:none}.pv-more[open] .hd{display:inline}.pv-more[open] .sh{display:none}
 .pv-more[open]{display:flex;flex-direction:column-reverse;gap:6px}.pv-more[open]>summary{align-self:flex-start}
+/* phones: Going well and Keep an eye on stacked, full width, one row each */
+@media (max-width:700px){
+  .pv-sum{grid-template-areas:'h h' 'g g' 'w w' 'r b' 'm d'!important}
+  .pv-sum .pv-sum-row.g,.pv-sum .pv-sum-row.w{flex-direction:row!important;align-items:center!important;gap:12px!important;padding:12px 40px 12px 12px!important}
+  .pv-sum .pv-sum-row.g>span,.pv-sum .pv-sum-row.w>span{gap:2px!important}
+  .pv-sum .pv-sum-row.g i,.pv-sum .pv-sum-row.w i{width:30px!important;height:30px!important;flex:none}
+  .pv-sum .pv-sum-row.g .pv-sum-ch,.pv-sum .pv-sum-row.w .pv-sum-ch{top:50%;transform:translateY(-50%)}
+}
 </style>
 </head>
 <body>
