@@ -3540,6 +3540,18 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .pi-tile small{margin-top:auto;font-size:12px;color:var(--accent);font-weight:700}
 .pi-panel .pi-th{margin-top:4px}
 .pi-card.isnew{box-shadow:inset 3px 0 0 #26357A}
+.win-card{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:380px}
+.win-bud{animation:winhop .9s ease-out 1}
+@keyframes winhop{0%{transform:translateY(8px) scale(.9)}40%{transform:translateY(-10px) scale(1.05)}100%{transform:none}}
+.win-big{font-size:22px;color:var(--text)}
+.win-list{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left}
+.win-i{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:#F3FBF7;border:1px solid #CBEBDB}
+.win-i.level{background:#F4F7FE;border-color:#DCE3F5}.win-i.ready{background:#FFF8EC;border-color:#F6DFB5}
+.win-ic{flex:none;font-size:20px;line-height:1.2}
+.win-i b{display:block;font-size:15px;color:var(--text);line-height:1.3}
+.win-i small{display:block;font-size:13px;color:var(--text-2);margin-top:2px;line-height:1.35}
+.win-ok{width:100%}
+@media (prefers-reduced-motion:reduce){.win-bud{animation:none}}
 </style>
 </head>
 <body>

@@ -2988,6 +2988,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
   bindPracticeTiles(); bindGear();
   window.scrollTo(0, 0);
+  checkWins().catch(() => {});
 }
 // Every practice tool, as tiles (used on the Practice page; Today shows a few with a link to the rest).
 function practiceTiles() {
@@ -4519,6 +4520,48 @@ document.addEventListener('click', async (e) => {
 });
 
 // Celebration: stars fly in, Buddy cheers, new badges shown.
+// Real wins, celebrated: a chapter mastered, a subject level up a whole point, a mistake fixed for good, ready for a test.
+// No points to chase: each one only happens through real learning, and each is celebrated once.
+let winsBusy = false;
+async function checkWins() {
+  if (winsBusy || !local.log || !local.log.length || (view && view.name !== 'home')) return;
+  winsBusy = true;
+  try {
+    const books = await getBooks(), used = new Set(local.log.map((e) => qUnit(e.q)[0])), W = local.wins, ev = [];
+    const cur = { ch: {}, lv: {}, fg: 0, rd: {} };
+    for (const b of books.filter((x) => used.has(x.id))) { const m = await bookMastery(b); for (const c of m.chapters) if (c.pct >= 80) cur.ch[`${b.id}:${c.unit.id}`] = shortTitle(c.unit.title); }
+    const GS = await gsData().catch(() => null); for (const x of (GS ? GS.s : [])) if (x[1] != null) cur.lv[x[0]] = Math.floor(lv10(x[1]));
+    cur.fg = fixedForGood().good;
+    for (const x of schoolTests()) { if (testDay(x) < startOfToday()) continue; const h = ((local.thist || {})[x.id] || []).slice(-1)[0]; if (h && h[1] >= (x.aim || 80)) cur.rd[x.id] = x.name; }
+    if (W) {
+      for (const [k, n] of Object.entries(cur.ch)) if (!W.ch[k]) ev.push(['chapter', PT(`You mastered ${n}!`, `你掌握了「${n}」！`), PT('Lesson done, and 80% or more right.', '上完課，而且答對八成或以上。')]);
+      for (const [k, v] of Object.entries(cur.lv)) if (W.lv[k] != null && v > W.lv[k]) ev.push(['level', PT(`${k} level up: ${W.lv[k]} → ${v}`, `${k}程度提升：${W.lv[k]} → ${v}`), PT('Out of 10. It only goes up when harder questions go right.', '滿分 10。只有答對更難的題目才會提升。')]);
+      if (cur.fg > W.fg) { const n = cur.fg - W.fg; ev.push(['fixed', PT(n === 1 ? 'A mistake fixed for good!' : `${n} mistakes fixed for good!`, n === 1 ? '一個錯誤真正改正了！' : `${n} 個錯誤真正改正了！`), PT('Still right days later, so it has really stuck.', '幾天後仍然答對，真的記住了。')]); }
+      for (const [k, n] of Object.entries(cur.rd)) if (!W.rd[k]) ev.push(['ready', PT(`You’re ready for the ${n}!`, `你已準備好「${n}」！`), PT('Ready enough to reach your goal. Keep it warm until test day.', '已達到目標的準備度。保持練習直到考試那天。')]);
+    }
+    // remember the best so far, so a dip and recovery isn't celebrated twice
+    const keep = (a, b) => ({ ...(a || {}), ...b });
+    local.wins = W ? { ch: keep(W.ch, cur.ch), lv: Object.fromEntries([...new Set([...Object.keys(W.lv), ...Object.keys(cur.lv)])].map((k) => [k, Math.max(W.lv[k] ?? -1, cur.lv[k] ?? -1)])), fg: Math.max(W.fg, cur.fg), rd: keep(W.rd, cur.rd) } : cur;
+    saveLocal();
+    if (ev.length) { const busy = () => document.querySelector('.cdlg-wrap, [aria-modal="true"], dialog[open]'); for (let i = 0; i < 60 && busy(); i++) await new Promise((r) => setTimeout(r, 1000)); if (!busy() && view && view.name === 'home') winsDialog(ev); else if (busy()) { local.wins = W; saveLocal(); /* still blocked: try again next time */ } }
+  } finally { winsBusy = false; }
+}
+function winsDialog(ev) {
+  const IC = { chapter: '🏆', level: '⬆️', fixed: '✅', ready: '🎯' }, kid = isPrimaryKid(), box = document.createElement('div');
+  box.className = 'cdlg-wrap win-cel';
+  const conf = kid ? Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 37) % 100}%;animation-delay:${(i % 9) * 0.07}s;background:${['#FFC531', '#FF7A59', '#4CC38A', '#5B8DEF', '#B57AF0'][i % 5]}"></i>`).join('') : '';
+  box.innerHTML = `${conf ? `<div class="confetti" aria-hidden="true">${conf}</div>` : ''}<div class="cdlg win-card" role="dialog" aria-modal="true" aria-labelledby="win-t">
+    <div class="win-bud" aria-hidden="true">${buddySVG('happy', 72)}</div>
+    <b id="win-t" class="win-big">${ev.length === 1 ? (kid ? PT('Big win!', '大進步！') : PT('Real progress', '真正的進步')) : PT(`${ev.length} big wins!`, `${ev.length} 個大進步！`)}</b>
+    <div class="win-list">${ev.slice(0, 4).map(([k, t, d]) => `<div class="win-i ${k}"><span class="win-ic" aria-hidden="true">${IC[k]}</span><div><b data-raw>${esc(t)}</b><small>${d}</small></div></div>`).join('')}</div>
+    <button class="btn win-ok" id="win-ok">${kid ? PT('Yay!', '好嘢！') : PT('Nice', '好')}</button></div>`;
+  document.body.appendChild(box);
+  const close = () => box.remove();
+  box.querySelector('#win-ok').onclick = close; box.onclick = (e) => { if (e.target === box) close(); };
+  document.addEventListener('keydown', function esc_(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc_); } });
+  box.querySelector('#win-ok').focus();
+}
+
 function celebrate(won) {
   if (!won) return;
   const box = document.createElement('div');
@@ -5615,7 +5658,7 @@ function parentInsights(who, C = {}) {
   { const X = C.X || {}, ge = X.ge || [], gn = X.gn, S = (C.GS && C.GS.s) || [];
     if (gn && ge.length) { const lab = { above: Z('Above', '高於'), meet: Z('At', '達到'), build: Z('Building to', '正邁向') }, top = ge.filter((g) => g[1] === 'above');
       addT(top.length ? 'good' : 'neutral', top.length ? Z('Above grade', '高於年級') : Z('Building to grade', '邁向年級水平'), top.length ? 3 : 6, Z('Against their grade', '對比年級水平'), top.length === ge.length ? Z(`Working above ${gn} level in every subject`, `各科都高於${gn}水平`) : top.length ? Z(`Working above ${gn} level in ${top.map((g) => g[0]).join(' and ')}`, `${top.map((g) => g[0]).join('和')}高於${gn}水平`) : Z(`Building towards ${gn} level`, `正邁向${gn}水平`),
-        bars(ge.map(([n, k]) => { const lv = (S.find((x) => x[0] === n) || [])[1] || 0; return [n, Math.round(lv * 10), k === 'above' ? 'good' : k === 'meet' ? '' : 'warn', `${lv.toFixed(1)}/10 · ${lab[k]}`]; }), 'lv'),
+        bars(ge.map(([n, k]) => { const raw = (S.find((x) => x[0] === n) || [])[1], lv = raw == null ? 0 : lv10(raw); return [n, Math.round(lv * 10), k === 'above' ? 'good' : k === 'meet' ? '' : 'warn', `${lv.toFixed(1)}/10 · ${lab[k]}`]; }), 'lv'),
         Z('Level is out of 10 and doesn’t drop when questions get harder. The expected level for the grade is around 6.', '程度滿分 10，題目變難也不會下降。年級預期程度約為 6。')); } }
   // 10. the same-level progress check: before and now
   cid = 'pcheck';
