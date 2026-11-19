@@ -2847,13 +2847,19 @@ async function renderHome() {
           const ch = m.chapters.filter((y) => ids.includes(y.unit.id)).sort((a, z) => a.pct - z.pct)[0]; if (!ch) continue;
           // Practised enough but no test passed yet: more practice won't move it, the chapter test will.
           // In Buddy's plan that practice step becomes the chapter test; elsewhere the bar is honest (no gain).
-          const plateau = c.y === 'log' && ch.done >= Math.min(6, ch.target) && !ch.passes;
+          // What a practice set can still add, from the parts practice can move (covering the chapter, accuracy, harder
+          // questions): about half of what's left in them, at most SET_GAIN, and never past the cap (70% before a passed test).
+          const capP = ch.passes ? 95 : 70, sc = ch.score || {};
+          const room = ['covered', 'accurate', 'deep'].reduce((t, k) => t + (AREAS.find((a) => a[0] === k) || [0, 0, 0])[2] * (1 - (sc[k] || 0)), 0);
+          const seen = ((local.chGain || {})[`${c.b}:${ch.unit.id}`] || []), seenAvg = seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null;
+          const pracGain = Math.max(0, Math.min(SET_GAIN, Math.round(room / 2), capP - ch.pct, seenAvg == null ? SET_GAIN : Math.round(seenAvg)));
+          const plateau = c.y === 'log' && !ch.passes && (pracGain < 3 || (ch.done >= Math.min(6, ch.target) && pracGain < 6));
           let asTest = false;
           if (plateau && String(x.key).startsWith('bp:') && PP) { const st = PP.steps[+String(x.key).slice(3)];
             if (st && (st.action === 'practise' || st.action === 'chapter_test')) { const nm0 = shortTitle(ch.unit.title);
               if (st.action === 'practise') { st.action = 'chapter_test'; st.label = Z(`Chapter test: ${nm0}`, `章節測驗：${nm0}`); st.why = Z('You’ve practised this well. Passing the chapter test is what moves it up now.', '這一章已練得不錯，通過章節測驗才能再進步。'); st.unitIds = [ch.unit.id]; saveLocal(); }
               x.now.t = st.label; x.now.why = st.why; x.icon = 'test'; x.maxS = 5; asTest = true; } }
-          const cap = asTest ? 85 : ch.passes ? 95 : 70, to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : plateau && !asTest ? ch.pct : Math.min(cap, ch.pct + SET_GAIN);
+          const to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : asTest ? Math.min(85, ch.pct + SET_GAIN) : plateau ? ch.pct : ch.pct + pracGain;
           const nm = shortTitle(ch.unit.title), it = { lab: String(x.now.t || '').includes(nm) ? Z('This chapter', '這一章') : nm, from: ch.pct, to, u: '%' };
           // a test's chapter: what it does for that test too
           const tid = (String(x.key).match(/^[tc]:([^:]+)/) || [])[1], tp = tid && tests.steps.find((q) => q.x.id === tid);
@@ -4932,6 +4938,11 @@ function snapPre(sess) { if (!sess || !sess.book) return; bookMastery(sess.book)
 async function sessionBars(sess, qs) {
   if (!sess || !sess.book || !sess.pre) return [];
   const m = await bookMastery(sess.book), ids = [...new Set(qs.map((q) => qUnit(q.id)[1]))];
+  // remember what good practice sets actually did for each chapter, so step bars can promise only what's real
+  if (S === sess && !sess.gainSaved && !sess.test && !['dse', 'mock', 'spaced'].includes(sess.mode) && !rushedSet(qs) && starScore(qs) !== 0) { sess.gainSaved = true;
+    const sc = starScore(qs); if (sc == null || sc >= STAR_PASS) { local.chGain = local.chGain || {};
+      for (const c of m.chapters) if (ids.includes(c.unit.id) && sess.pre[c.unit.id]) { const k = `${sess.book.id}:${c.unit.id}`; local.chGain[k] = [...(local.chGain[k] || []), Math.max(0, c.pct - sess.pre[c.unit.id][0])].slice(-3); }
+      saveLocal(); } }
   return m.chapters.filter((c) => ids.includes(c.unit.id) && sess.pre[c.unit.id]).map((c) => ({ lab: shortTitle(c.unit.title), from: sess.pre[c.unit.id][0], to: c.pct, passed: (c.passes || 0) > sess.pre[c.unit.id][1], cap: c.passes > 1 ? 95 : 85 }))
     .sort((a, b) => (b.to - b.from) - (a.to - a.from)).slice(0, 3);
 }
