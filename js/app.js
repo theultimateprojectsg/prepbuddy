@@ -4615,7 +4615,20 @@ async function restoreFile(file) {
    wrong answers. The child spends them in the Star shop on rewards a parent set up, and a parent approves each
    one on the spot with a 4-digit PIN. Everything is kept on this device. */
 const ST = (en, zh) => (LANG === 'zh' ? zh : en);
-const DAY_CAP = 10;
+// Daily limit on everyday practice stars. Parents choose it (Star shop → For parents); the default is no limit.
+const CAP_OPTS = [0, 10, 20, 30, 45];
+const dayCap = () => { const c = local.starCap; return c > 0 ? c : Infinity; };
+// About how many minutes of real practice earn one everyday star: this child's own rate once there is enough
+// history (last 30 days), otherwise a typical rate.
+const CAPPED_WHY = new Set(['set', 'score', 'fix', 'reviews', 'dictation', 'dictation-perfect', 'lesson', 'writing', 'speaking', 'listening', 'level check']);
+function minsPerStar() {
+  const since = Date.now() - 30 * 864e5, st = starState();
+  const stars = (st.log || []).filter((x) => x.t >= since && CAPPED_WHY.has(x.why)).reduce((a, x) => a + x.n, 0);
+  const mins = (local.sess || []).filter((x) => x.t >= since).reduce((a, x) => a + Math.min(x.min || 0, 60), 0);
+  if (stars >= 20 && mins >= 60) return { m: Math.max(2, Math.min(15, mins / stars)), own: true };
+  return { m: 4, own: false };
+}
+const fmtMins = (m) => { m = Math.max(5, Math.round(m / 5) * 5); if (m < 60) return ST(`${m} min`, `${m} 分鐘`); const h = Math.floor(m / 60), r = m % 60; return ST(`${h} h${r ? ` ${r} min` : ''}`, `${h} 小時${r ? ` ${r} 分鐘` : ''}`); };
 const looksPrimary = (b) => /\bP\.?\s?[1-6]\b|primary|小[一二三四五六]|小學|初小|高小/i.test(`${b.title || ''} ${b.level || ''}`);
 let primaryCache = null;
 function starsOn() {
@@ -4645,9 +4658,9 @@ function addStars(n, why, capped = true) {
   if (!starsOn() || n <= 0) return 0;
   const s = starState(), today = dayStart();
   if (!s.day || s.day.d !== today) s.day = { d: today, n: 0, once: {} };
-  if (capped) n = Math.max(0, Math.min(n, DAY_CAP - s.day.n));
+  if (capped) n = Math.max(0, Math.min(n, dayCap() - s.day.n));
   if (!n) return 0;
-  if (capped) { s.day.n += n; if (s.day.n >= DAY_CAP && !s.day.hit) { s.day.hit = 1; s.capDays = (s.capDays || 0) + 1; } }
+  if (capped) { s.day.n += n; if (s.day.n >= dayCap() && !s.day.hit) { s.day.hit = 1; s.capDays = (s.capDays || 0) + 1; } }
   s.bal += n; s.total += n;
   s.log.push({ t: Date.now(), n, why });
   if (s.log.length > 400) s.log = s.log.slice(-400);
@@ -4744,7 +4757,7 @@ function awardSession(qs, pct) {
     const wk = String(G.week[0].t);
     if (!s.goalWeeks[wk]) { s.goalWeeks[wk] = 1; const g = addStars(5, 'goal', false); if (g) { n += g; lines.push([ST('Reached your weekly goal!', '達成每週目標！'), g]); } }
   }
-  const capped = s.day && s.day.n >= DAY_CAP;
+  const capped = !!(s.day && s.day.n >= dayCap());
   const badges = checkBadges({ perfect: qs.length >= 5 && trusted && pct === 100 && !rushed });
   saveLocal();
   return n || badges.length ? { n: n + badges.reduce((a, b) => a + b.stars, 0), lines, badges, capped } : (capped ? { n: 0, lines: [], badges: [], capped } : null);
@@ -5037,7 +5050,7 @@ function renderStars(parent = false) {
         ['📘', ST(`Finish a practice set with ${STAR_PASS}% or more`, `完成一組練習並得 ${STAR_PASS}% 或以上`), 1], ['🎯', ST('Score 80% or more', '得分 80% 或以上'), '+1'], ['🛠️', ST('Fix a mistake from an earlier day', '改正之前的錯題'), 1],
         ['🔁', ST('Do today’s reviews', '完成今日溫習'), 1], ['🏆', ST('Reach your weekly goal', '達成每週目標'), 5], ['🎓', ST('Pass a chapter test (once a day per chapter)', '通過章節測驗（每章每日一次）'), 3], ['✍️', ST('Get writing marked (80+ words)', '寫作批改（80 字以上）'), '2–3'], ['🎤', ST('Speak for 30 seconds or more', '說話 30 秒或以上'), 2], ['📝', ST('Dictation with half or more right', '默書答對一半或以上'), 1]]
         .map(([i, t, n]) => `<div><span>${i}</span><span>${t}</span><b>${n} ★</b></div>`).join('')}</div>
-      <p class="hint">${ST(`Up to ${DAY_CAP} stars a day from practice. Badges and goals give extra. Rushing through answers earns no stars.`, `練習每日最多可賺 ${DAY_CAP} 粒星，徽章和目標另有獎勵。亂答一通不會賺到星星。`)}</p>
+      <p class="hint">${local.starCap > 0 ? ST(`Up to ${local.starCap} stars a day from practice. Badges and goals give extra. Rushing through answers earns no stars.`, `練習每日最多可賺 ${local.starCap} 粒星，徽章和目標另有獎勵。亂答一通不會賺到星星。`) : ST('Badges and goals give extra stars. Rushing through answers earns no stars.', '徽章和目標另有獎勵。亂答一通不會賺到星星。')}</p>
     </section>
     <section class="stack g10"><h2 class="st-h">${ST('Badges', '徽章')}</h2>${badgeShelf()}</section>
     ${s.redeemed.length ? `<section class="stack g10"><h2 class="st-h">${ST('Rewards you got', '已換領的獎勵')}</h2><div class="st-hist">${s.redeemed.slice().reverse().slice(0, 8).map((x) => `<div><span>${esc(x.icon || '🎁')}</span><span>${esc(x.name)}</span><small>${fmt(x.t)} · ${x.cost} ★</small></div>`).join('')}</div></section>` : ''}
@@ -5063,7 +5076,8 @@ function badgeShelf() {
   return `<div class="badges">${BADGES.map((b) => { const got = s.badges[b.id]; return `<div class="bdg ${got ? 'got' : ''}" title="${esc(ST(b.den, b.dzh))}"><span>${b.icon}</span><b>${esc(ST(b.en, b.zh))}</b><small>${got ? new Date(got).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' }) : esc(ST(b.den, b.dzh))}</small></div>`; }).join('')}</div>`;
 }
 function rewardEditor() {
-  const s = starState();
+  const s = starState(), mps = minsPerStar();
+  let capPick = local.starCap || 0;
   const ICONS = ['📱', '🎮', '🍦', '🍕', '🎬', '🧸', '📚', '🏊', '🎨', '🛝', '🍰', '🎁'];
   const row = (r) => `<div class="re-row" data-id="${r.id}">
     <select class="input re-ic" aria-label="${ST('Icon', '圖示')}">${ICONS.map((i) => `<option ${i === r.icon ? 'selected' : ''}>${i}</option>`).join('')}</select>
@@ -5077,6 +5091,10 @@ function rewardEditor() {
     <span>${ST('Choose rewards your child can save stars for, and how many stars each costs. About 8–10 stars is a good day of practice.', '選擇孩子可以儲星換領的獎勵和所需星星數目。一日認真練習大約可賺 8 至 10 粒星。')}</span>
     <div class="re-list">${s.rewards.map(row).join('')}</div>
     <button class="btn-sm" id="re-add" style="align-self:flex-start">+ ${ST('Add a reward', '加入獎勵')}</button>
+    <div class="re-cap"><b>${ST('Daily star limit', '每日星星上限')}</b>
+      <span class="hint">${ST('Time shows roughly how long it takes to earn that many. Stars from everyday practice stop at the limit; practice still counts. Missions, tests, goals and badges always give stars.', '時間是賺到該數量星星大約需要的練習時間。練習賺到的星星到上限就停，但練習照樣計算。任務、測驗、目標和徽章不受限制。')}</span>
+      <div class="re-capo" role="radiogroup" aria-label="${ST('Daily star limit', '每日星星上限')}">${CAP_OPTS.map((c) => `<button type="button" role="radio" class="${(local.starCap || 0) === c ? 'on' : ''}" aria-checked="${(local.starCap || 0) === c}" data-cap="${c}"><b>${c ? ST(`${c} stars`, `${c} 粒`) : ST('No limit', '不設上限')}</b><small>${c ? ST(`≈ ${fmtMins(c * mps.m)} a day`, `每日約 ${fmtMins(c * mps.m)}`) : ST('Stars keep coming', '一直有星星')}</small></button>`).join('')}</div>
+      <span class="hint">${mps.own ? ST(`Times are based on ${esc(local.name || 'your child')}’s own pace: about ${Math.round(mps.m)} min per star.`, `時間按${esc(local.name || '孩子')}自己的速度估算：每粒星約 ${Math.round(mps.m)} 分鐘。`) : ST('Times are a typical estimate (about 4 min per star) and will adjust to your child’s pace.', '時間為一般估算（每粒星約 4 分鐘），之後會按孩子的速度調整。')}</span></div>
     <div class="re-more"><button class="btn-sm quiet" id="re-pin">${ST('Change PIN', '更改密碼')}</button><span class="hint">${ST(`Balance ${s.bal} ★ · ${s.redeemed.length} rewards given`, `餘額 ${s.bal} 粒 · 已換領 ${s.redeemed.length} 次`)}</span></div>
     <div class="rd-row"><button class="btn ghost" id="re-no">${ST('Cancel', '取消')}</button><button class="btn" id="re-ok">${ST('Save', '儲存')}</button></div>
   </div>`;
@@ -5086,10 +5104,12 @@ function rewardEditor() {
   bindDel();
   box.querySelector('#re-add').onclick = () => { list.insertAdjacentHTML('beforeend', row({ id: uid(), icon: '🎁', name: '', cost: 20 })); bindDel(); list.lastElementChild.querySelector('.re-n').focus(); };
   box.querySelector('#re-no').onclick = () => box.remove();
+  box.querySelectorAll('[data-cap]').forEach((b) => (b.onclick = () => { capPick = +b.dataset.cap; box.querySelectorAll('[data-cap]').forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', on); }); }));
   box.querySelector('#re-pin').onclick = async () => { const old = local.pin; local.pin = ''; const ok = await askPin(ST('Choose a new 4-digit PIN.', '設定新的 4 位數密碼。')); if (!ok) { local.pin = old; } saveLocal(); };
   box.querySelector('#re-ok').onclick = () => {
     s.rewards = [...list.querySelectorAll('.re-row')].map((x) => ({ id: x.dataset.id, icon: x.querySelector('.re-ic').value, name: x.querySelector('.re-n').value.trim().slice(0, 40), cost: Math.max(1, Math.min(999, parseInt(x.querySelector('.re-c').value, 10) || 0)) })).filter((r) => r.name);
     if (s.saving && !s.rewards.some((r) => r.id === s.saving)) s.saving = null;
+    local.starCap = capPick;
     saveLocal(); box.remove(); renderStars();
   };
 }
