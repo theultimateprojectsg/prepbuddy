@@ -2971,7 +2971,7 @@ async function renderHome() {
       ['✅', 'Steps tick off like the mission.', '步驟像任務一樣自動打勾。', 'Finish a set without rushing and it ticks. The plan lasts for today.', '不太急地完成一組就會打勾。計劃只限今天。'],
     ])}</div></details>`;
     planCard = pNext < 0
-      ? `<section class="ms-card ms-done bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`All ${planSteps.length} steps of Buddy’s plan done. Great extra work!`, `Buddy 計劃的 ${planSteps.length} 個步驟全部完成，做得好！`)}</span><button class="linkbtn" id="bpX2">${Z('Ask Buddy for another plan', '請 Buddy 再訂計劃')} ›</button></div><details class="msd-all"><summary>${Z('What you did', '做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('')}</details></section>`
+      ? `<section class="ms-card ms-done bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Plan done!', '計劃完成！')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</b><span>${Z(`All ${planSteps.length} steps of Buddy’s plan done. Great extra work!`, `Buddy 計劃的 ${planSteps.length} 個步驟全部完成，做得好！`)}</span><button class="linkbtn" id="bpX2">${Z('Ask Buddy for another plan', '請 Buddy 再訂計劃')} ›</button>${planHow}</div><details class="msd-all"><summary>${Z('What you did', '做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('')}</details></section>`
       : `<section class="ms-card bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${pStarted ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${pMin} min`, `${pMin} 分鐘`)}${pStarted ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
       <div class="ms-list">${(() => { const idx = planSteps.map((x, k) => [x, k]), open = idx.filter(([x]) => !x.done), done = idx.filter(([x]) => x.done);
         return open.map(([x, k]) => stepRow(x, k, pNext)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done · ${done.length}`, `已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k, pNext)).join('')}` : ''); })()}</div>
@@ -3130,13 +3130,15 @@ async function renderHome() {
       comboHTML = goalsCardHTML(GD, { testBody: cardOf, inMission: (G) => G.kind === 'test' && steps.some((x) => !x.done && x.now && String(x.key).startsWith(`c:${G.p.x.id}:`)) });
     }
 
-  const msFirst = !!missionHTML && !missionHTML.includes('ms-card ms-done'); // the child should see Start without scrolling
+  const msFirst = !!missionHTML && !missionHTML.includes('ms-card ms-done');
+  const planDoneNow = !!planCard && planCard.includes('ms-done'); // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${planCard}
+    ${planCard && !planDoneNow ? planCard : ''}
     ${msFirst ? missionHTML : ''}
+    ${msFirst && planDoneNow ? planCard : ''}
     ${!todayPlan() && msFirst ? planHTML(false) : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
     ${installTip()}
@@ -3145,6 +3147,7 @@ async function renderHome() {
     ${slipHTML}
     ${!todayPlan() && !msFirst ? planHTML(true) : ''}
     ${msFirst ? '' : missionHTML}
+    ${!msFirst && planDoneNow ? planCard : ''}
     ${tests.pastHTML}
     ${comboHTML ? '' : testHTML}
     ${quickHTML}
