@@ -3760,6 +3760,11 @@ function renderSettings(sec) {
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('A ding for right answers, cheers for wins, and a little buzz on phones that support it.', '答對有提示音，有進步時有歡呼聲，支援的手機還會輕輕震動。')}</span>
     </section>
     ${DEV ? `<section class="card stack g10" style="padding:16px;border:1.5px dashed #C9D3EE">
+      <b style="font-size:16px">DEV · Fresh test family</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">Wipes this device and starts as ${esc(local.name || 'Phil')}, P4, with the starter books and a Science test on Units 1–3 in 11 days. Your DEV switches stay.</span>
+      <button class="btn-sm danger" id="sdevfresh" style="align-self:flex-start">Start fresh as a test family</button>
+    </section>
+    <section class="card stack g10" style="padding:16px;border:1.5px dashed #C9D3EE">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">DEV · Show answers</b>
         <button class="switch ${showAns() ? 'on' : ''}" id="sshowans" role="switch" aria-checked="${showAns()}" aria-label="Show answers"><i></i></button></div>
       <span class="muted" style="font-size:14px;line-height:1.5">Marks the right option and shows the mark scheme on every question, for quick testing. Only you see this, on this device.</span>
@@ -3863,6 +3868,7 @@ function renderSettings(sec) {
   if (document.getElementById('srestore')) document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   { const sp = document.getElementById('splans'); if (sp) sp.onclick = () => go({ name: 'plans' }); }
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(sec); renderTabs(); }));
+  { const fr = document.getElementById('sdevfresh'); if (fr) fr.onclick = async () => { if (await confirmLeave({ title: 'Start fresh as a test family?', body: 'Everything on this device is deleted, then a ready-made family is set up.', stay: 'Cancel', leave: 'Start fresh' })) devQuickSetup(); }; }
   { const sa = document.getElementById('sshowans'); if (sa) sa.onclick = () => { try { localStorage.setItem('pb.showans', showAns() ? '0' : '1'); } catch (e) {} sa.classList.toggle('on', showAns()); sa.setAttribute('aria-checked', String(showAns())); toast(showAns() ? 'Answers shown on this device' : 'Answers hidden'); }; }
   { const nr = document.getElementById('snorush'); if (nr) nr.onclick = () => { try { localStorage.setItem('pb.norush', rushOff() ? '0' : '1'); } catch (e) {} nr.classList.toggle('on', !rushOff()); nr.setAttribute('aria-checked', String(!rushOff())); toast(rushOff() ? 'Too-fast check off on this device' : 'Too-fast check on'); }; }
   if (document.getElementById('ssound')) document.getElementById('ssound').onclick = (e) => { local.soundOn = !soundOn(); saveLocal(); const b = e.currentTarget; b.classList.toggle('on', soundOn()); b.setAttribute('aria-checked', soundOn()); if (soundOn()) sfx('right'); };
@@ -3874,7 +3880,7 @@ function renderSettings(sec) {
 
 // "Delete everything on this device": every child's database, all PrepBuddy keys in local storage, the saved
 // voice clips and this tab's session, then a fresh start (the family-code screen in the pilot).
-async function wipeDevice() {
+async function wipeDevice(seed) {
   WIPING = true; stopSaying();
   const dbs = new Set(['prepbuddy', ...KIDS.list.map((k) => k.db)]);
   try { if (indexedDB.databases) (await indexedDB.databases()).forEach((d) => { if (d.name && /^prepbuddy/.test(d.name)) dbs.add(d.name); }); } catch (e) {}
@@ -3884,6 +3890,7 @@ async function wipeDevice() {
   // developer switches (dev mode, too-fast check, show answers, preview modes) survive a wipe, so testing can start fresh
   try { const KEEP = /^pb\.(dev|norush|showans|prog|aud|pisample)$/; Object.keys(localStorage).filter((k) => /^(prepbuddy|pb\.)/.test(k) && !KEEP.test(k)).forEach((k) => localStorage.removeItem(k)); } catch (e) {}
   try { sessionStorage.clear(); } catch (e) {}
+  if (seed) try { localStorage.setItem('prepbuddy.v2', JSON.stringify(seed)); } catch (e) {}
   location.replace(location.pathname);
 }
 
@@ -4861,6 +4868,14 @@ function checkBadges(extra) {
 // testing only (developer mode): switch the speed check off on this device
 // testing only (developer mode): show the answer on every question
 const showAns = () => { try { return DEV && localStorage.getItem('pb.showans') === '1'; } catch (e) { return false; } };
+// testing only: wipe this device and start as a ready-made family (P4, starter books, a Science test on Units 1-3 in 11 days)
+function devQuickSetup() {
+  const now = Date.now(), d = new Date(now + 11 * DAY), iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return wipeDevice({ toured: 1, learner: { grade: 'P4', at: now, goals: [] }, name: (local.name || 'Phil').slice(0, 20), profSkip: 1, marksSkip: now, consent: { v: 2, at: now }, code: local.code || '',
+    stats: {}, reports: [], usage: {}, log: [], types: 'mix', mistakes: {}, starsOn: true,
+    sched: [{ id: 'devsci', kind: 'test', name: 'Science test', date: iso, subj: 'science', b: 'lib-pb-p4-science', u: ['u0', 'u1', 'u2'], aim: 80 }],
+    mygoals: { main: 'test', longs: [{ subj: 'Science', target: 6.7 }] } });
+}
 // testing only: answer the rest of this set at a chosen score and go to the results (counts like real answers)
 function devFinish(rate) {
   if (!DEV || !S || !S.qs || !S.qs.length) return;
