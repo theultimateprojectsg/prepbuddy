@@ -1143,6 +1143,11 @@ async function coachSnapshot() {
 // The child says how long they have and what they want ("30 minutes, I want 100% on my Maths test"); the study coach
 // builds a short plan from their real chapters, and Today pins it at the front with a start button per step.
 const planState = { busy: false, error: '' };
+// A chapter test always takes the same time as the real test (questions × time each), not the AI's guess
+function planStepMin(st) {
+  if (st.action === 'chapter_test' && (st.unitIds || []).length) { const n = st.unitIds.length; return paperMinutes(Math.min(16, 6 + 2 * n), Math.min(4, 1 + n)); }
+  return st.minutes;
+}
 const PLAN_IC = { practise: 'practise', chapter_test: 'test', review: 'review', mistakes: 'mistakes', weak_topics: 'weak', learn: 'learn', mock_paper: 'test', dictation: 'dictation', writing: 'writing', speaking: 'speaking', homework: 'homework' };
 function todayPlan() { const P = local.bplan; return P && P.d === startOfToday() && (P.steps || []).length ? P : null; }
 function planStepDone(st) {
@@ -1206,7 +1211,7 @@ async function runPlanStep(i) {
 function planHTML(missionDone, pick, askOnly) {
   const P = askOnly ? null : todayPlan();
   if (P) {
-    const done = P.steps.map(planStepDone), next = done.indexOf(false), mins = P.steps.reduce((a, x, k) => a + (done[k] ? 0 : x.minutes), 0);
+    const done = P.steps.map(planStepDone), next = done.indexOf(false), mins = P.steps.reduce((a, x, k) => a + (done[k] ? 0 : planStepMin(x)), 0);
     return `<section class="ms-card bp-card" aria-label="${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2>${buddySVG('happy', 30)} ${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}</h2><button class="bp-x" id="bpX" aria-label="${PT('Clear this plan', '清除計劃')}">✕</button></div>
       <p class="bp-ask">“${esc(P.ask)}”</p>${P.title ? `<b class="bp-title" data-raw>${esc(P.title)}</b>` : ''}${P.intro ? `<p class="bp-intro" data-raw>${esc(P.intro)}</p>` : ''}
       <div class="bp-steps">${P.steps.map((x, k) => `<button class="bp-row ${done[k] ? 'done' : ''} ${k === next ? 'is-next' : ''}" data-pstep="${k}"><span class="ms-ic">${actionIcon(PLAN_IC[x.action] || 'practise', 16)}</span><span class="bp-t"><b data-raw>${esc(x.label)}</b><small data-raw>${x.why ? `${esc(x.why)} · ` : ''}${PT(`${x.minutes} min`, `${x.minutes} 分鐘`)}</small></span>${done[k] ? `<span class="ms-tick">${ICON.check}</span>` : k === next ? `<span class="ms-next">${PT('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`).join('')}</div>
@@ -2924,7 +2929,7 @@ async function renderHome() {
     const u1 = b && us && us.length === 1 ? b.units.find((u) => u.id === us[0]) : null, cn = u1 ? shortTitle(u1.title) : '';
     const lab = !u1 ? st.label : { practise: Z(`Practise ${cn}`, `練習「${cn}」`), weak_topics: Z(`Practise ${cn}`, `練習「${cn}」`), chapter_test: Z(`Chapter test: ${cn}`, `章節測驗：${cn}`), learn: Z(`Lesson: ${cn}`, `課堂：${cn}`), notes: Z(`Notes: ${cn}`, `筆記：${cn}`), flashcards: Z(`Flashcards: ${cn}`, `閃卡：${cn}`) }[st.action] || st.label;
     const now = { t: lab, s: '', subj: sj || kindLab || Z('Buddy’s pick', 'Buddy 推介'), attr: `data-pstep="${k}"`, why: st.why, tag: null };
-    return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: st.minutes, maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st) || (st.action === 'review' && !due.length), now }; // nothing due for review: nothing to do // reviews: also done once nothing is due
+    return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: planStepMin(st), maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st) || (st.action === 'review' && !due.length), now }; // nothing due for review: nothing to do // reviews: also done once nothing is due
   }) : [];
   const impact = {};
   { const BM = new Map(), bm = async (id) => { if (!BM.has(id)) { const b = books.find((x) => x.id === id); BM.set(id, b ? await bookMastery(b) : null); } return BM.get(id); };

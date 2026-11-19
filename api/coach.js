@@ -68,7 +68,7 @@ const PLAN_RULES = `
 The student wants a plan for right now. Call make_plan; no other reply is needed.
 - Fit the time they give (default 30 minutes if they don't say). Step minutes should add up to about that time. A practice set of 10 questions takes about 10 minutes.
 - Follow what they asked: a subject, a test, "100%", their mistakes, something new. If they ask for a test, use its chapters, weakest first.
-- Good order: a lesson for a chapter not started (action learn), then practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due.
+- Good order: a lesson for a chapter not started (action learn), then practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due. A chapter_test on one chapter takes 25 minutes (two chapters 30, three 40): plan with those times.
 - Only add a Mistake book step when the snapshot shows open mistakes for that subject.
 - Only add a review step when the snapshot shows questions due for review.
 - A lesson (learn) is only for a chapter the student hasn't started. Never plan a lesson for a chapter that has practice or a passed test.
