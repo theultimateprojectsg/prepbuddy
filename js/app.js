@@ -10819,7 +10819,7 @@ function renderSummary() {
       ${starsOn() && S.starNote ? `<p class="starnote">${starSVG(16)} ${esc(S.starNote)}</p>` : ''}
     </section>`}
     <div class="ractions">
-      ${unitRef ? `<section class="rsugg" id="rsugg" aria-live="polite"><div class="rsg-head">${buddySVG('happy', 30)}<b>${LANG === 'zh' ? 'Buddy 建議' : 'Buddy suggests'}</b></div><div class="rsg-body"><span class="dots"><i></i><i></i><i></i></span></div></section>` : ''}
+      ${unitRef ? `<section class="ms-card rsugg" id="rsugg" aria-live="polite"><div class="ms-head"><h2>${LANG === 'zh' ? 'Buddy 建議' : 'Buddy suggests'}</h2><span class="rsg-bud" aria-hidden="true">${buddySVG('happy', 30)}</span></div><div class="rsg-body"><span class="dots"><i></i><i></i><i></i></span></div></section>` : ''}
       ${!unitRef && drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} <span class="rprim">${LANG === 'zh' ? '針對弱項練習' : 'Drill my weak spots'}<small>${LANG === 'zh' ? `${drillable.length * PER_IDEA} 條針對答錯內容的新題目` : `${drillable.length * PER_IDEA} new questions on what you missed`}</small></span></button>` : ''}
       ${(() => {
         // Primary: drill if there are weak spots, otherwise more questions. The rest sit in one tidy list.
@@ -10904,12 +10904,13 @@ async function fillSuggestion({ unitRef, qs, pct, missed, drillable, drill, agai
   // the chapter's readiness as a big ring with a plain label, so it is the first thing a child sees
   const rp = ch ? Math.max(0, Math.min(100, ch.pct)) : null, rc = rp === null ? '' : rp >= 70 ? 'hi' : rp >= 40 ? 'mid' : 'lo';
   const rlab = rp === null ? '' : rp >= 70 ? Z('Nearly test-ready', '差不多可以應考') : rp >= 40 ? Z('Getting there', '漸入佳境') : Z('Just started', '剛剛起步');
-  const meter = rp === null ? '' : `<div class="rsg-meter ${rc}"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="tr"/><circle cx="18" cy="18" r="15.5" class="fg" stroke-dasharray="${(rp * 0.974).toFixed(1)} 100"/></svg><b>${rp}%</b></div>
-    <div class="rsg-mtxt"><small>${esc(Z('Chapter ready for the test', '本章應考準備度'))}</small><b>${esc(rlab)}</b>${trend ? `<span class="rsg-trend ${pct > (prevPct || 0) + 4 ? 'up' : pct < (prevPct || 0) - 4 ? 'down' : ''}">${esc(Z(`This set: ${pct}%. `, `今次：${pct}%。`) + trend)}</span>` : `<span class="rsg-trend">${esc(Z(`This set: ${pct}%`, `今次：${pct}%`))}</span>`}</div>`;
-  box.querySelector('.rsg-body').innerHTML = `${meter ? `<div class="rsg-ready">${meter}</div>` : ''}
-    <div class="rsg-next"><small>${esc(Z('Next step', '下一步'))}</small><h3 class="rsg-t">${esc(s.t)}</h3><p class="rsg-why">${esc(s.why)}</p></div>
-    ${!meter && trend ? `<div class="rsg-facts"><span>${esc(trend)}</span></div>` : ''}
-    <div class="rsg-btns"><button class="btn" id="rsgGo">${esc(s.go)}</button>${alt ? `<button class="btn ghost" id="rsgAlt">${esc(alt.go)}</button>` : ''}</div>`;
+  // same look as a mission step: the step on top, the chapter bar, Buddy's reason, then the button
+  const ic = /lesson|上.*課/i.test(s.t) ? 'learn' : /test|測驗/i.test(s.t) ? 'test' : /drill|weak|弱項/i.test(s.t) ? 'weak' : /key points|重點/i.test(s.t) ? 'notes' : /fresh|記憶/i.test(s.t) ? 'review' : 'practise';
+  const score = prevPct !== null ? Z(`Your score here: ${prevPct}% before → ${pct}% this set`, `你在這一章的得分：之前 ${prevPct}% → 今次 ${pct}%`) : Z(`This set: ${pct}%`, `今次：${pct}%`);
+  const bar = rp === null ? '' : `<div class="ms-imp"><div class="ms-imp-h"><span>${esc(Z('Chapter ready for the test', '本章應考準備度'))}${LANG !== 'zh' ? ` · <i class="ms-imp-lv">${esc(rlab)}</i>` : ''}</span><span class="ms-imp-v"><b>${rp}%</b></span></div><i class="ms-imp-bar" aria-hidden="true"><b style="width:${rp}%"></b></i><small class="rsg-score ${prevPct !== null && pct > prevPct + 4 ? 'up' : ''}">${esc(score)}</small></div>`;
+  box.querySelector('.rsg-body').innerHTML = `<div class="ms-item is-next rsg-item"><div class="ms-row"><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(ic, 16)}</span><em class="pv-tag2">${esc(Z('Next step', '下一步'))}</em></span><b data-raw>${esc(s.t)}</b></span></div>
+    ${bar}<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(s.why)}</span></p></div>
+    <div class="rsg-btns"><button class="btn ms-start" id="rsgGo">${esc(s.go)}</button>${alt ? `<button class="btn ghost" id="rsgAlt">${esc(alt.go)}</button>` : ''}</div>`;
   document.getElementById('rsgGo').onclick = s.run;
   if (alt) document.getElementById('rsgAlt').onclick = alt.run;
   track('suggest_shown');
