@@ -69,6 +69,7 @@ The student wants a plan for right now. Call make_plan; no other reply is needed
 - Fit the time they give (default 30 minutes if they don't say). Step minutes should add up to about that time. A practice set of 10 questions takes about 10 minutes.
 - Follow what they asked: a subject, a test, "100%", their mistakes, something new. If they ask for a test, use its chapters, weakest first.
 - Good order: a lesson for a chapter not started (action learn), then practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due.
+- Only add a Mistake book step when the snapshot shows open mistakes for that subject.
 - Only use chapter and book codes that are in the snapshot. Never invent chapters.
 - Labels are short and say exactly what to do. Use the student's language.`;
 const ZH = `Reply in Traditional Chinese as used in Hong Kong (standard written Chinese). The student may write in English, Chinese or Cantonese.`;

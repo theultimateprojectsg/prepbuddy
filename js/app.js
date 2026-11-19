@@ -1118,6 +1118,7 @@ const planState = { busy: false, error: '' };
 const PLAN_IC = { practise: 'practise', chapter_test: 'test', review: 'review', mistakes: 'mistakes', weak_topics: 'weak', learn: 'learn', mock_paper: 'test', dictation: 'dictation', writing: 'writing', speaking: 'speaking', homework: 'homework' };
 function todayPlan() { const P = local.bplan; return P && P.d === startOfToday() && (P.steps || []).length ? P : null; }
 function planStepDone(st) {
+  if (st.action === 'mistakes' && !mistakesIn(st.bookId)) return true; // nothing left to fix there
   if (!st.go) return false;
   const ss = (local.sess || []).filter((x) => x.t >= st.go && !x.e && !x.r);
   switch (st.action) {
@@ -1141,7 +1142,7 @@ async function askPlan(text) {
       const chs = (Array.isArray(x.chapters) ? x.chapters : []).map((c) => coachIndex[String(c).trim()]).filter((y) => y && y.unitId);
       const bookId = (chs[0] && chs[0].bookId) || (coachIndex[String(x.book || '').trim()] || {}).bookId || null;
       return { label: String(x.label || '').slice(0, 80), minutes: Math.max(2, Math.min(40, Number(x.minutes) || 10)), why: String(x.why || '').slice(0, 140), action: x.action, bookId, unitIds: chs.filter((c) => c.bookId === bookId).map((c) => c.unitId), count: x.count };
-    }).filter((x) => x.label && x.action);
+    }).filter((x) => x.label && x.action && (x.action !== 'mistakes' || mistakesIn(x.bookId) > 0));
     if (!steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
     local.bplan = { d: startOfToday(), t: Date.now(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
     saveLocal(); track('buddy_plan'); ok = true;
@@ -2829,7 +2830,7 @@ async function renderHome() {
     const b = st.bookId && books.find((y) => y.id === st.bookId), sj = b ? (b.subject ? subj(b.subject) : shortTitle(b.title)) : '';
     const us = (st.unitIds || []).length ? st.unitIds : null, mkN = mistakeCount();
     const chk = st.action === 'learn' && us ? { y: 'learn', b: st.bookId, u: us[0] } : ['practise', 'chapter_test'].includes(st.action) && us ? { y: 'log', b: st.bookId, us }
-      : st.action === 'mistakes' && mkN ? { y: 'mk', n: mkN, k: Math.min(5, mkN) } : st.action === 'review' ? { y: 'rv' } : { y: 'none' };
+      : st.action === 'mistakes' && mistakesIn(st.bookId) ? { y: 'mk', n: mistakesIn(st.bookId), k: Math.min(5, mistakesIn(st.bookId)) } : st.action === 'review' ? { y: 'rv' } : { y: 'none' };
     const now = { t: st.label, s: sj ? '' : Z('Buddy’s pick', 'Buddy 推介'), subj: sj, attr: `data-pstep="${k}"`, why: st.why, tag: null };
     return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: st.minutes, maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st) || (st.action === 'review' && !!st.go && !due.length), now }; // reviews: also done once nothing is due
   }) : [];
@@ -9113,6 +9114,8 @@ async function pruneMistakes(books) {
   if (n) saveLocal();
 }
 const mistakeCount = () => Object.values(local.mistakes || {}).filter((m) => !m.done).length;
+// open mistakes in one book (or all books)
+const mistakesIn = (bookId) => Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && (!bookId || qUnit(id)[0] === bookId)).length;
 async function mistakeItems(done) {
   const books = await getBooks();
   const byUnit = new Map();
