@@ -5139,7 +5139,7 @@ async function renderBook(bookId) {
   const { n: qReady } = await bookSummary(book);
   const answered = bm.chapters.reduce((x, c) => x + (c.done || 0), 0);
   const pl = (local.placement || {})[book.id];
-  const plHTML = !pl && !answered && !(local.plHide || {})[book.id]
+  const plHTML = !pl && !answered && bookFocus !== 'learn' && !(local.plHide || {})[book.id]
     ? `<section class="pl-card"><span class="pl-ic">${buddySVG('happy', 44)}</span><div class="pl-ct"><b>New to this book? Find your level first</b><span>About ${Math.max(6, Math.min(12, levelUnits(book).length * 2))} quick questions, about 5 minutes. Then every chapter starts at the right level for you.</span></div>
         <div class="pl-acts"><button class="btn" id="plGo">Start level check</button><button class="btn-sm quiet" id="plSkip">Not now</button></div></section>`
     : pl ? `<p class="pl-done">✓ Level check done ${new Date(pl.t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })} · <button class="linkbtn" id="plGo">Take it again</button></p>` : '';
@@ -5281,6 +5281,10 @@ async function renderBook(bookId) {
   if (bookTool && bookTool.bookId === bookId) {
     const isN = bookTool.tool === 'notes', zh = LANG === 'zh', g = document.getElementById('go'), nT = pick.ids.size;
     const what = isN ? (zh ? '溫習筆記' : 'revision notes') : (zh ? '閃卡' : 'flashcards');
+    // opened for flashcards or notes: say so, and don't push the level check first
+    { const sec = document.getElementById('bk-practise'); if (sec) sec.lastChild.textContent = isN ? (zh ? '溫習筆記' : 'Revision notes') : (zh ? '閃卡' : 'Flashcards');
+      const c1 = $app.querySelector('.chtools > p'); if (c1 && book.units.length > 1) c1.innerHTML = `${zh ? '1. 選擇章節' : '1. Choose chapters'} <span class="muted" style="font-weight:500">(${book.units.length})</span>`;
+      const pl = $app.querySelector('.pl-card'); if (pl) pl.remove(); }
     const h = $app.querySelector('.chtools'); if (h) h.insertAdjacentHTML('afterend', `<p class="bk-tip">${zh ? `剔選你想溫習的章節，然後按「打開${what}」。` : `Tick the chapters you want, then tap Open ${what}.`}</p>`);
     const sh = $app.querySelector('.setup-head p'); if (sh) sh.innerHTML = `${zh ? '2. 打開' + what : '2. Open ' + what}${nT ? ` <span class="muted" style="font-weight:500">· ${nT} ${zh ? '章' : nT > 1 ? 'chapters' : 'chapter'}</span>` : ''}`;
     if (g) { g.textContent = nT ? (zh ? `打開${what}` : `Open ${what}`) : (zh ? '先剔選至少一章' : 'Tick at least one chapter'); g.onclick = () => { document.getElementById(isN ? 'notes' : 'cards').click(); backTo = { name: 'book', bookId, focus: bookTool.tool }; }; }
@@ -8876,7 +8880,7 @@ async function renderPick(mode) {
   const title = weakMode ? 'Weak topics' : 'Mock exam';
   const intro = weakMode
     ? `The questions you didn’t get fully right, mixed together so you can fix them.${anyReady ? ' Choose a textbook.' : ''}`
-    : 'A DSE-style paper: Section A multiple choice, then Section B written questions, timed. Choose a textbook, then the chapters and length.';
+    : `${isPrimaryKid() ? 'A school-style test paper' : 'A DSE-style paper'}: Section A multiple choice, then Section B written questions, timed. Choose a textbook, then the chapters and length.`;
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button></div>
   <main class="pad stack g18 pickpage" style="flex:1">
