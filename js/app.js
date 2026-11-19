@@ -3066,7 +3066,7 @@ async function renderHome() {
   }
   // Today starts with a choice: Buddy's pick (the mission) or a plan from Buddy. Whatever is picked is today's plan.
   const DPk = local.dayPick && local.dayPick.d === t0 ? local.dayPick.k : null;
-  const MODE = DPk === 'mission' || steps.some((x) => x.done) ? 'mission' : DPk === 'plan' || PP ? 'plan' : null;
+  const MODE = DPk || (steps.some((x) => x.done) ? 'mission' : PP ? 'plan' : null);
   const missionHTML = allDone
     ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Mission done!', '任務完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
@@ -3227,7 +3227,7 @@ async function renderHome() {
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${MODE === null ? planHTML(false, { n: steps.filter((x) => !x.done && x.now).length, mins: steps.reduce((a, x) => a + (x.done || !x.now ? 0 : jobMin(x)), 0), titles: steps.filter((x) => !x.done && x.now).map((x) => String(x.now.t).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')) }) : ''}
-    ${MODE === 'plan' ? planCard : ''}
+    ${MODE === 'plan' ? planCard || planHTML(true) : ''}
     ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
     ${MODE === 'mission' && msFirst ? missionHTML : ''}
     ${MODE === 'mission' && msFirst && planDoneNow ? planCard : ''}
