@@ -2848,7 +2848,7 @@ async function renderHome() {
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
         else if (c.y === 'rv') impact[x.key] = { lab: Z('Questions due for review', '到期要溫習的題目'), from: due.length, to: Math.max(0, due.length - 10), u: '', down: true, max: due.length, test: Z('Keeps them in long-term memory', '把它們留在長期記憶裏') };
         else if (c.y === 'ctest') { const m = await bm(c.b); const ch = m && m.chapters.find((y) => y.unit.id === c.u);
-          if (ch) { const cap = ch.passes ? 95 : 85; impact[x.key] = { cb: c.b, cu: c.u, nm: shortTitle(ch.unit.title), passes: ch.passes, lab: Z('This chapter', '這一章'), from: ch.pct, to: Math.min(cap, ch.pct + 15), u: '%', test: Z(`Pass it (80% or more) to unlock up to ${cap}%. Not passing doesn’t lower anything.`, `合格（80% 或以上）可解鎖至 ${cap}%。不合格也不會扣分。`) }; } }
+          if (ch) { const cap = ch.passes ? 95 : 85; impact[x.key] = { cb: c.b, cu: c.u, nm: shortTitle(ch.unit.title), passes: ch.passes, lab: Z('This chapter', '這一章'), from: ch.pct, to: Math.min(cap, ch.pct + 15), u: '%', test: Z(`Pass it (80% or more) to unlock up to ${cap}%. Anything you miss goes to your Mistake book to fix.`, `合格（80% 或以上）可解鎖至 ${cap}%。答錯的題目會放進錯題簿，改正即可。`) }; } }
         else if (c.y === 'mm') impact[x.key] = { note: Z('Exam practice under time pressure, across your chapters', '跨章節的限時考試練習') };
         else if (c.y === 'lv') impact[x.key] = { note: Z('After this, every chapter starts at your level', '之後每一章都由你的程度開始') };
       } catch (e) { /* no bar for this one */ } }
@@ -4834,7 +4834,7 @@ async function moment(o) {
   const w = document.createElement('div'); w.className = 'cdlg-wrap pp-pop mo-pop';
   const conf = o.confetti ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59', '#B57AF0'][i % 5]}"></i>`).join('')}</div>` : '';
   const bar = (b) => { const u = b.u == null ? '%' : b.u, max = b.max || 100, a = Math.round((100 * Math.min(b.from, b.to)) / max), z = Math.round((100 * Math.max(b.from, b.to)) / max), d = b.to - b.from;
-    return `<div class="pp-r mo-r"><small class="mo-rl" data-raw>${esc(b.lab)}</small><div class="mo-rv">${d ? `<span class="mo-rf">${b.from}${u}</span><span class="mo-ra" aria-hidden="true">→</span>` : ''}<b><span class="pp-n" data-from="${b.from}" data-to="${b.to}">${b.from}</span>${u}</b>${d ? `<em class="ms-imp-g pp-g">${d > 0 ? '+' : '−'}${Math.abs(d)}${u}</em>` : ''}</div><i class="pp-bar"><b style="width:${a}%"></b><u style="left:${a}%;width:0" data-w="${z - a}"></u></i></div>`; };
+    return `<div class="pp-r mo-r"><small class="mo-rl" data-raw>${esc(b.lab)}</small><div class="mo-rv">${d ? `<span class="mo-rf">${b.from}${u}</span><span class="mo-ra" aria-hidden="true">→</span>` : ''}<b><span class="pp-n" data-from="${b.from}" data-to="${b.to}">${b.from}</span>${u}</b>${d ? `<em class="ms-imp-g pp-g${d < 0 && u === '%' ? ' dn' : ''}">${d > 0 ? '+' : '−'}${Math.abs(d)}${u}</em>` : ''}</div><i class="pp-bar${d < 0 && u === '%' ? ' dn' : ''}"><b style="width:${a}%"></b><u style="left:${a}%;width:0" data-w="${z - a}"></u></i></div>`; };
   if (o.confetti) sfx('win'); else sfx('pop');
   // the banner: sunny with turning rays for a win, calm blue for good work, soft lilac for a tough one; a score ring or a big icon in the middle
   const tone = o.tone || (o.confetti ? 'great' : 'ok'), rays = tone === 'great' ? `<div class="sc2-rays" aria-hidden="true">${Array.from({ length: 12 }, (_, i) => `<i style="transform:rotate(${i * 30}deg)"></i>`).join('')}</div>` : '';
@@ -10661,6 +10661,8 @@ async function resultMoment(sess, qs, pct, got, total) {
       }
     } catch (e) { /* fall back to the plain line */ }
   }
+  const dropped = bars.find((b) => b.to < b.from);
+  const dropLine = dropped && missed ? [['📉', Z(`Down ${dropped.from - dropped.to}% for now: the ${missed} you missed are open mistakes. Fix them to win it back.`, `暫時下跌 ${dropped.from - dropped.to}%：答錯的 ${missed} 題成了待改正的錯題。改正後就能升回來。`)]] : [];
   const keepGoing = lever ? [lever.l] : bars.length && !grew ? [['🌱', Z('Your % grows as you take on harder questions and still remember them days later. Keep going!', '做更難的題目、幾天後仍記得，百分比就會上升。繼續加油！')]] : [];
   if (sess.test) { // chapter test: a pass gets the unlock, a near miss gets the nudge
     const passed = pct >= 80, near = pct >= 60;
@@ -10669,7 +10671,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       sub: passed ? Z(`${pct}%: proof you know this chapter.`, `${pct}%：證明你掌握了這一章。`) : Z(`80% passes. ${near ? `You’re only ${80 - pct}% away.` : 'Every test shows Buddy exactly what to work on.'}`, `80% 合格。${near ? `只差 ${80 - pct}%。` : '每次測驗都讓 Buddy 知道要練甚麼。'}`),
       bars: chBars,
       lines: passed ? bars.filter((b) => b.passed).map((b) => ['🔓', Z(`${b.lab} can now go up to ${b.cap}%`, `${b.lab} 現在最高可達 ${b.cap}%`)])
-        : [['📌', Z(`The ${missed} you missed are in your Mistake book.`, `答錯的 ${missed} 題已放進錯題簿。`)], ['🔁', Z('Fix them, then try again on another day. Buddy will bring the test back in your mission.', '改正後，另一日再考。Buddy 會在任務中再安排。')]],
+        : [...(dropLine.length ? dropLine : [['📌', Z(`The ${missed} you missed are in your Mistake book.`, `答錯的 ${missed} 題已放進錯題簿。`)]]), ['🔁', Z('Fix them, then try again on another day. Buddy will bring the test back in your mission.', '改正後，另一日再考。Buddy 會在任務中再安排。')]],
       main: passed ? home : fix || home, alt: passed ? null : { label: Z('Later', '稍後'), run: null } });
   }
   if (sess.mode === 'dse' || sess.mode === 'mock') { // a mock paper: score, time, and the weaker section
@@ -10693,7 +10695,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   return say({ face: great ? 'done' : 'happy', confetti: great || grew, sel: 'main.results', hero, chips, tone: great ? 'great' : ok ? 'ok' : 'tough',
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
-    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...keepGoing, ...(wantFix ? [['📌', Z(`Fixing the ${missed} you missed now is the fastest way up.`, `現在改正答錯的 ${missed} 題，是進步最快的方法。`)]] : [])],
+    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fixing the ${missed} you missed now is the fastest way up.`, `現在改正答錯的 ${missed} 題，是進步最快的方法。`)]] : [])],
     main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : { label: Z('See Buddy’s next step', '看看 Buddy 的下一步'), run: () => { const r = document.getElementById('rsugg'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' }); else window.scrollTo(0, 0); } } });
 }
 function renderSummary() {
