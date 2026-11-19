@@ -1147,6 +1147,7 @@ async function askPlan(text) {
     }).filter((x) => x.label && x.action && (x.action !== 'mistakes' || mistakesIn(x.bookId) > 0) && (x.action !== 'review' || dueN > 0));
     if (!steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
     local.bplan = { d: startOfToday(), t: Date.now(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
+    if (!(local.dayPick && local.dayPick.d === startOfToday())) local.dayPick = { d: startOfToday(), k: 'plan' }; // a plan picked first becomes today's plan
     saveLocal(); track('buddy_plan'); ok = true;
   } catch (e) { planState.error = e.message || String(e); }
   if (Date.now() - t0 < 1800) await new Promise((r) => setTimeout(r, 1800 - (Date.now() - t0))); // long enough to see the steps tick
@@ -1170,7 +1171,7 @@ async function runPlanStep(i) {
   coachIndex = { ...coachIndex, 'P.B': { bookId: st.bookId } }; (st.unitIds || []).forEach((u, k) => { coachIndex[`P.C${k}`] = { bookId: st.bookId, unitId: u }; });
   return runCoachAction({ action: st.action, book: st.bookId ? 'P.B' : '', chapters: (st.unitIds || []).map((u, k) => `P.C${k}`), count: st.count });
 }
-function planHTML(missionDone) {
+function planHTML(missionDone, pick) {
   const P = todayPlan();
   if (P) {
     const done = P.steps.map(planStepDone), next = done.indexOf(false), mins = P.steps.reduce((a, x, k) => a + (done[k] ? 0 : x.minutes), 0);
@@ -1189,8 +1190,9 @@ function planHTML(missionDone) {
     ...(mkN >= 3 ? [['🔁', PT('Fix my mistakes', '改正錯題'), PT(`${mkN} waiting · 15 min`, `${mkN} 題 · 15 分鐘`), PT('15 minutes fixing my mistakes', '15 分鐘改正錯題')]] : []),
   ].slice(0, 4);
   if (planState.busy) return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}">${planThinkingHTML()}</section>`;
-  return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}"><div class="ms-head"><h2>${missionDone ? PT('Want to do more?', '想再做多一點？') : PT('Want something different?', '想做點別的？')}</h2><span class="bpq-bud" aria-hidden="true">${buddySVG('happy', 34)}</span></div>
-    <div class="bpq-grid">${quick.map(([ic, t, sub, ask]) => `<button class="bpq" data-pask="${esc(ask)}" ${planState.busy ? 'disabled' : ''}><span class="bpq-ic" aria-hidden="true">${ic}</span><span class="bpq-tx"><b>${t}</b><small>${sub}</small></span></button>`).join('')}</div>
+  const pickHTML = pick ? `<button class="bpq-pick" id="bpPick" type="button"><span class="bpq-ic" aria-hidden="true">⭐</span><span class="bpq-tx"><b>${PT('Buddy’s pick for today', 'Buddy 今日推介')}</b><small>${PT(`${pick.n} step${pick.n === 1 ? '' : 's'} · ${pick.mins} min${starsOn() ? ' · +5 bonus stars' : ''}`, `${pick.n} 個步驟 · ${pick.mins} 分鐘${starsOn() ? ' · 額外 +5 粒星' : ''}`)}</small><em data-raw>${esc(pick.titles.join(' · '))}</em></span><span class="bpq-go" aria-hidden="true">›</span></button><div class="bpq-or"><span>${PT('or pick something else', '或者選別的')}</span></div>` : '';
+  return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}"><div class="ms-head"><h2>${pick ? PT('What shall we do today?', '今天做甚麼好？') : missionDone ? PT('Want to do more?', '想再做多一點？') : PT('Want something different?', '想做點別的？')}</h2><span class="bpq-bud" aria-hidden="true">${buddySVG('happy', 34)}</span></div>
+    ${pickHTML}<div class="bpq-grid">${quick.map(([ic, t, sub, ask]) => `<button class="bpq" data-pask="${esc(ask)}" ${planState.busy ? 'disabled' : ''}><span class="bpq-ic" aria-hidden="true">${ic}</span><span class="bpq-tx"><b>${t}</b><small>${sub}</small></span></button>`).join('')}</div>
     ${planState.busy ? `<p class="bpq-busy">${buddySVG('happy', 22)} ${PT('Buddy is planning…', 'Buddy 正在計劃…')}</p>` : ''}
     <div class="bpq-or"><span>${PT('or ask for anything', '或者自己說')}</span></div>
     <form class="bpq-form2" id="bpForm"><span class="bpq-fb" aria-hidden="true">${buddySVG('happy', 28)}</span><input id="bpQ" maxlength="200" enterkeyhint="send" aria-label="${PT('Tell Buddy what you want to do', '告訴 Buddy 你想做甚麼')}" placeholder="${PT('e.g. 20 min on fractions', '例如：20 分鐘練分數')}" ${planState.busy ? 'disabled' : ''}><button class="bpq-send" aria-label="${PT('Plan it', '訂計劃')}" ${planState.busy ? 'disabled' : ''}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
@@ -1222,7 +1224,9 @@ function bindPlan() {
       const ask = P.ask; local.bplan = null; saveLocal(); await renderHome(); const q = document.getElementById('bpQ'); if (q) { q.value = ask; q.focus(); q.select(); q.scrollIntoView({ block: 'center' }); } }; }
   { const r = document.getElementById('bpRemove'); if (r) r.onclick = async () => {
       if (!(await confirmLeave({ title: PT('Remove Buddy’s plan?', '移除 Buddy 的計劃？'), body: PT('It goes away for today. Steps you’ve done still count.', '今天的計劃會移除。已完成的步驟仍然計算。'), stay: PT('Keep it', '保留'), leave: PT('Remove', '移除') }))) return;
-      local.bplan = null; saveLocal(); renderHome(); }; }
+      local.bplan = null; if (local.dayPick && local.dayPick.k === 'plan') local.dayPick = null; saveLocal(); renderHome(); }; }
+  { const pk = document.getElementById('bpPick'); if (pk) pk.onclick = () => { local.dayPick = { d: startOfToday(), k: 'mission' }; saveLocal(); renderHome(); }; }
+  { const ch = document.getElementById('msChoose'); if (ch) ch.onclick = () => { local.dayPick = null; saveLocal(); renderHome().then(() => { const c = document.querySelector('.bp-ask2'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); }; }
   { const f = document.getElementById('bpForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); askPlan(document.getElementById('bpQ').value); }; }
   $app.querySelectorAll('[data-pask]').forEach((b) => (b.onclick = () => askPlan(b.dataset.pask)));
 }
@@ -3050,6 +3054,9 @@ async function renderHome() {
       <button class="btn ms-start" id="bpGo">${pStarted ? Z('Keep going', '繼續') : Z('Start', '開始')}</button>
       <div class="bp-acts"><button class="btn ghost" id="bpChange">${pIcon('pencil', 16)} ${Z('Change plan', '更改計劃')}</button><button class="btn ghost bp-rm" id="bpRemove">${GICON.trash} ${Z('Remove plan', '移除計劃')}</button></div></section>`;
   }
+  // Today starts with a choice: Buddy's pick (the mission) or a plan from Buddy. Whatever is picked is today's plan.
+  const DPk = local.dayPick && local.dayPick.d === t0 ? local.dayPick.k : null;
+  const MODE = DPk === 'mission' || steps.some((x) => x.done) ? 'mission' : DPk === 'plan' || PP ? 'plan' : null;
   const missionHTML = allDone
     ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Mission done!', '任務完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
@@ -3057,7 +3064,7 @@ async function renderHome() {
         return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
       ${missionHowHTML()}
       ${starsOn() ? `<p class="ms-bonus">${starSVG(14)} ${Z('Finish every step for +5 bonus stars', '完成所有步驟，額外 +5 粒星星')}</p>` : ''}
-      <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
+      <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button>${!steps.some((x) => x.done) ? `<button class="linkbtn ms-choose" id="msChoose">${Z('Pick something else for today', '今天改做別的')}</button>` : ''}</section>`;
   await todayReadyHTML(books); // keeps each book's daily readiness history (used by the 'slipping' banner); not shown on Today
   // ---- greeting card: streak and this week's days ----
   const daysSet = new Set(local.log.map((e) => dayStart(e.t)));
@@ -3112,7 +3119,7 @@ async function renderHome() {
     const conf = Array.from({ length: 22 }, (_, i) => `<i class="conf" style="--dx:${Math.round(Math.cos(i * 0.29) * (90 + (i % 4) * 25))}px;--dy:${Math.round(Math.sin(i * 0.29) * 90 - 70)}px;--r:${(i * 47) % 360}deg;background:${['#FFC531', '#18966A', '#4A5AA8', '#F08A5D', '#E0533F'][i % 5]}"></i>`).join('');
     sfx('win');
     box.innerHTML = `<div class="skc ms-party" style="position:relative">${conf}<span class="ms-pbud">${buddySVG('done', 96)}</span><b class="ms-ph">${Z('Mission done!', '任務完成！')}</b>
-      <span class="ms-ps">${Z(`All ${steps.length} steps done today.`, `今天 ${steps.length} 項全部完成。`)}</span>
+      <span class="ms-ps">${(() => { const nn = planWin ? planSteps.length : steps.length; return Z(`All ${nn} steps done today.`, `今天 ${nn} 項全部完成。`); })()}</span>
       <div class="ms-pchips">${got ? `<span class="ms-pc star">⭐ ${Z(`+${got} bonus stars`, `+${got} 粒獎勵星星`)}</span>` : ''}<span class="ms-pc fire">🔥 ${streak > 1 ? Z(`${streak}-day streak safe`, `連續 ${streak} 日，保住了`) : Z('Streak safe for today', '今天的連續紀錄保住了')}</span></div>
       <button class="btn" id="msOk">${Z('Brilliant!', '太好了！')}</button>${extra ? `<button class="linkbtn" id="msMore2">${esc(extra.label)} ›</button>` : ''}</div>`;
     document.body.appendChild(box);
@@ -3121,7 +3128,8 @@ async function renderHome() {
     { const m2 = box.querySelector('#msMore2'); if (m2) m2.onclick = () => { box.remove(); extra.run(); }; }
     box.querySelector('#msOk').focus();
   };
-  if (allDone && steps.length && local.msSeen !== t0) homeOffer(1, () => { local.msSeen = t0; local.skSeen = t0; saveLocal(); missionParty(); });
+  const planWin = MODE === 'plan' && planSteps.length > 0 && planSteps.every((x) => x.done);
+  if (((MODE !== 'plan' && allDone && steps.length) || planWin) && local.msSeen !== t0) homeOffer(1, () => { local.msSeen = t0; local.skSeen = t0; saveLocal(); missionParty(); });
   else if (doneToday && local.skSeen !== t0) homeOffer(4, () => { local.skSeen = t0; saveLocal(); celebrate(streak); });
   // ---- the next school test, and how ready for it ----
   const nt = tests.steps[0];
@@ -3208,18 +3216,19 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${planCard && !planDoneNow ? planCard : ''}
-    ${msFirst ? missionHTML : ''}
-    ${msFirst && planDoneNow ? planCard : ''}
-    ${!todayPlan() && msFirst ? planHTML(false) : ''}
+    ${MODE === null ? planHTML(false, { n: steps.filter((x) => !x.done && x.now).length, mins: steps.reduce((a, x) => a + (x.done || !x.now ? 0 : jobMin(x)), 0), titles: steps.filter((x) => !x.done && x.now).map((x) => String(x.now.t).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')) }) : ''}
+    ${MODE === 'plan' ? planCard : ''}
+    ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
+    ${MODE === 'mission' && msFirst ? missionHTML : ''}
+    ${MODE === 'mission' && msFirst && planDoneNow ? planCard : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
     ${installTip()}
     ${winHTML}
     ${lessonHTML}
     ${slipHTML}
-    ${!todayPlan() && !msFirst ? planHTML(true) : ''}
-    ${msFirst ? '' : missionHTML}
-    ${!msFirst && planDoneNow ? planCard : ''}
+    ${MODE === 'mission' && !todayPlan() && !msFirst ? planHTML(true) : ''}
+    ${MODE === 'mission' && !msFirst ? missionHTML : ''}
+    ${MODE === 'mission' && !msFirst && planDoneNow ? planCard : ''}
     ${tests.pastHTML}
     ${comboHTML ? '' : testHTML}
     ${quickHTML}
