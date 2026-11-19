@@ -2593,6 +2593,7 @@ async function renderHome() {
     if (nt && nt.left === 1) return [...soon.map(tLine), ['practise', Z('A practice run tonight, then a good sleep', '今晚做一次模擬，然後好好睡一覺')]];
     if (F.allDone) return F.streak >= 2 ? Z(`Mission done, and ${F.streak} days in a row. Brilliant!`, `任務完成，已連續 ${F.streak} 日，太棒了！`) : Z('Mission done for today. Brilliant work!', '今天的任務完成了，做得好！');
     // tests further off aren't repeated here: the goals card right below shows each one with its countdown
+    if (F.restY && F.streak >= 1 && !F.doneToday) return Z(`Yesterday was your rest day 💤 so your ${F.streak}-day streak is safe. Practise today to keep it going!`, `昨天是你的休息日 💤，${F.streak} 日連續紀錄保住了。今天練習，繼續保持！`);
     if (F.streak >= 2 && !F.doneToday) return Z(`${F.streak} days in a row! Keep the flame going today.`, `已連續 ${F.streak} 日！今天也要保持。`);
     if (F.fixedY >= 3) return Z(`You fixed ${F.fixedY} mistakes yesterday. Nice!`, `昨天你改正了 ${F.fixedY} 題錯題，做得好！`);
     if (F.gw && !F.gw.reached && F.gw.met === F.gw.days - 1) return Z('One more day and you hit this week’s goal!', '再多一日就達到本週目標！');
@@ -3008,14 +3009,14 @@ async function renderHome() {
   await todayReadyHTML(books); // keeps each book's daily readiness history (used by the 'slipping' banner); not shown on Today
   // ---- greeting card: streak and this week's days ----
   const daysSet = new Set(local.log.map((e) => dayStart(e.t)));
-  let streak = 0; for (let d = daysSet.has(t0) ? t0 : t0 - DAY; daysSet.has(d); d -= DAY) streak++;
+  const SKI = streakInfo(daysSet, t0); let streak = SKI.n;
   const mon = t0 - ((new Date(t0).getDay() + 6) % 7) * DAY;
   const DN = { zh: ['一', '二', '三', '四', '五', '六', '日'], fr: ['L', 'M', 'M', 'J', 'V', 'S', 'D'], ja: ['月', '火', '水', '木', '金', '土', '日'] }[LANG] || ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0 }));
+  const wk = Array.from({ length: 7 }, (_, k) => ({ on: daysSet.has(mon + k * DAY), today: mon + k * DAY === t0, rest: SKI.rests.has(mon + k * DAY) }));
   const nOn = wk.filter((x) => x.on).length, gw = goalWeek();
   const doneToday = daysSet.has(t0);
   const fixedY = local.log.filter((e) => e.k === 'mistakes' && e.t >= t0 - DAY && e.t < t0 && e.m && e.g >= e.m).length;
-  const cheer = cheerFor({ test: tests.steps.find((q) => q.left >= 0), tests: tests.steps, allDone, streak, doneToday, fixedY, gw });
+  const cheer = cheerFor({ test: tests.steps.find((q) => q.left >= 0), tests: tests.steps, allDone, streak, doneToday, fixedY, gw, restY: SKI.rests.has(t0 - DAY) });
   // a line of encouragement for the streak (computers; phones show the "See today's mission" button instead)
   const encHTML = doneToday
     ? (streak >= 2 ? Z(`${streak} days in a row. Brilliant! Come back tomorrow for day ${streak + 1}.`, `已連續 ${streak} 日，太棒了！明天回來挑戰第 ${streak + 1} 日。`) : Z('Great start! Come back tomorrow and it becomes a streak.', '好開始！明天再來，就開始連續練習了。'))
@@ -3031,7 +3032,7 @@ async function renderHome() {
   const risk = !lit && streak > 0 && hr >= 18;
   const flameSVG = (on) => `<svg viewBox="0 0 40 50" style="overflow:visible" aria-hidden="true"><defs><linearGradient id="skg${on ? 1 : 0}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${on ? '#E8361A' : '#AEB5C4'}"/><stop offset=".6" stop-color="${on ? '#FF8A1F' : '#C9CFDB'}"/><stop offset="1" stop-color="${on ? '#FFC94D' : '#DCE1EA'}"/></linearGradient></defs><g class="f-all"><path class="f-o" d="M20 1c3 9 15 15 15 30a15 15 0 0 1-30 0c0-7 4-12 7-16 0 5 2 8 5 9-2-8 0-15 3-23z" fill="url(#skg${on ? 1 : 0})"/>${on ? '<path class="f-m" d="M21 12c2 7 10 11 10 20a11 11 0 0 1-22 0c0-5 3-8 5-11 0 4 2 6 4 7-1-6 1-11 3-16z" fill="#FFA62B" opacity=".9"/>' : ''}<path class="f-i" d="M20 24c2 5 8 8 8 14a8 8 0 0 1-16 0c0-4 2-6 4-8 0 3 1 4 3 5-1-4 0-8 1-11z" fill="${on ? '#FFF1B8' : '#F1F3F7'}"/></g></svg>`;
   const wkOn = wk.map((x) => x.on);
-  const weekHTML = (cls = '') => `<span class="gr-week ${cls}" aria-label="${Z(`${wkOn.filter(Boolean).length} day(s) this week`, `本週 ${wkOn.filter(Boolean).length} 日`)}">${wk.map((x, k) => `<i class="${wkOn[k] ? 'on' : ''} ${x.today ? 'today' : ''} ${x.today && allDone ? 'ms' : ''}">${wkOn[k] ? flameSVG(true).replace(/skg1/g, 'skw' + k) : DN[k]}</i>`).join('')}</span>`;
+  const weekHTML = (cls = '') => `<span class="gr-week ${cls}" aria-label="${Z(`${wkOn.filter(Boolean).length} day(s) this week`, `本週 ${wkOn.filter(Boolean).length} 日`)}">${wk.map((x, k) => `<i class="${wkOn[k] ? 'on' : ''} ${x.today ? 'today' : ''} ${x.today && allDone ? 'ms' : ''} ${x.rest && !wkOn[k] ? 'rest' : ''}" ${x.rest && !wkOn[k] ? `title="${Z('Rest day: your streak was kept safe', '休息日：連續紀錄保住了')}"` : ''}>${wkOn[k] ? flameSVG(true).replace(/skg1/g, 'skw' + k) : x.rest ? '💤' : DN[k]}</i>`).join('')}</span>`;
   // the next badge to aim for
   const MIL = [3, 7, 14, 30, 50, 100, 200, 365];
   const nextM = MIL.find((m) => m > streak) || streak + 100, prevM = [...MIL].reverse().find((m) => m <= streak) || 0;
@@ -3057,6 +3058,7 @@ async function renderHome() {
     const got = addStars(5, 'mission', false);
     const box = document.createElement('div'); box.className = 'skc-wrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
     const conf = Array.from({ length: 22 }, (_, i) => `<i class="conf" style="--dx:${Math.round(Math.cos(i * 0.29) * (90 + (i % 4) * 25))}px;--dy:${Math.round(Math.sin(i * 0.29) * 90 - 70)}px;--r:${(i * 47) % 360}deg;background:${['#FFC531', '#18966A', '#4A5AA8', '#F08A5D', '#E0533F'][i % 5]}"></i>`).join('');
+    sfx('win');
     box.innerHTML = `<div class="skc ms-party" style="position:relative">${conf}<span class="ms-pbud">${buddySVG('done', 96)}</span><b class="ms-ph">${Z('Mission done!', '任務完成！')}</b>
       <span class="ms-ps">${Z(`All ${steps.length} steps done today.`, `今天 ${steps.length} 項全部完成。`)}</span>
       <div class="ms-pchips">${got ? `<span class="ms-pc star">⭐ ${Z(`+${got} bonus stars`, `+${got} 粒獎勵星星`)}</span>` : ''}<span class="ms-pc fire">🔥 ${streak > 1 ? Z(`${streak}-day streak safe`, `連續 ${streak} 日，保住了`) : Z('Streak safe for today', '今天的連續紀錄保住了')}</span></div>
@@ -3609,6 +3611,11 @@ function renderSettings(sec) {
       <span class="muted" style="font-size:14px;line-height:1.5" id="sgoalTxt" data-raw>${esc(goalText())}</span>
     </section>
     <section class="card stack g10" style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">${PLT('Sounds', '聲音')}</b>
+        <button class="switch ${soundOn() ? 'on' : ''}" id="ssound" role="switch" aria-checked="${soundOn()}" aria-label="${PLT('Sounds', '聲音')}"><i></i></button></div>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('A ding for right answers, cheers for wins, and a little buzz on phones that support it.', '答對有提示音，有進步時有歡呼聲，支援的手機還會輕輕震動。')}</span>
+    </section>
+    <section class="card stack g10" style="padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Standard</span>' : ''}</b>
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
       <span class="muted" style="font-size:14px;line-height:1.5">Earn stars for practising and spend them on rewards your parents choose. On automatically for primary school books.</span>
@@ -3702,6 +3709,7 @@ function renderSettings(sec) {
   if (document.getElementById('srestore')) document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   { const sp = document.getElementById('splans'); if (sp) sp.onclick = () => go({ name: 'plans' }); }
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(sec); renderTabs(); }));
+  if (document.getElementById('ssound')) document.getElementById('ssound').onclick = (e) => { local.soundOn = !soundOn(); saveLocal(); const b = e.currentTarget; b.classList.toggle('on', soundOn()); b.setAttribute('aria-checked', soundOn()); if (soundOn()) sfx('right'); };
   if (document.getElementById('sstars')) document.getElementById('sstars').onclick = () => { if (locked('stars')) return upsell('stars', 'locked'); local.starsOn = !starsOn(); saveLocal(); renderSettings(sec); renderTabs(); };
   window.scrollTo(0, 0);
 }
@@ -4451,7 +4459,7 @@ async function pilotSnap() {
   Object.entries(U).forEach(([k, v]) => { usage.usd += v.usd || 0; usage.calls += v.requests || 0; usage.by[k] = { n: v.requests || 0, usd: Math.round((v.usd || 0) * 1000) / 1000 }; });
   usage.usd = Math.round(usage.usd * 1000) / 1000;
   const dset = new Set(log.map((e) => dayStart(e.t)));
-  let streak = 0; for (let d = dset.has(t0) ? t0 : t0 - DAY; dset.has(d); d -= DAY) streak++;
+  let streak = streakInfo(dset, t0).n;
   let best = 0, run = 0, prev = 0; [...dset].sort((a, b) => a - b).forEach((d) => { run = prev && d - prev <= DAY + 3600e3 ? run + 1 : 1; best = Math.max(best, run); prev = d; });
   const mk = Object.values(local.mistakes || {});
   return {
@@ -4662,7 +4670,7 @@ const BADGES = [
 function badgeCounts(extra = {}) {
   const s = starState();
   const days = new Set(local.log.map((e) => dayStart(e.t)));
-  let streak = 0; for (let d = days.has(dayStart()) ? dayStart() : dayStart() - DAY; days.has(d); d -= DAY) streak++;
+  let streak = streakInfo(days, dayStart()).n;
   return {
     sets: (s.sets || 0), answered: Math.max(0, Object.values(local.stats).reduce((a, x) => a + (x.seen || 0), 0) - (s.rushedQ || 0)), streak,
     fixed: Object.values(local.mistakes || {}).filter((m) => m.done && !m.manual && m.earned !== 0 && (m.earned || !m.doneAt || m.doneAt < STAR_RULES_AT)).length,
@@ -4798,6 +4806,7 @@ async function moment(o) {
   const conf = o.confetti ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59', '#B57AF0'][i % 5]}"></i>`).join('')}</div>` : '';
   const bar = (b) => { const u = b.u == null ? '%' : b.u, max = b.max || 100, a = Math.round((100 * Math.min(b.from, b.to)) / max), z = Math.round((100 * Math.max(b.from, b.to)) / max), d = b.to - b.from;
     return `<div class="pp-r"><div class="pp-rh"><span data-raw>${esc(b.lab)}${d ? `<small class="pp-was">${PT(`was ${b.from}${u}`, `之前 ${b.from}${u}`)}</small>` : ''}</span><b><span class="pp-n" data-from="${b.from}" data-to="${b.to}">${b.from}</span>${u}</b>${d ? `<em class="ms-imp-g pp-g">${d > 0 ? '+' : '−'}${Math.abs(d)}${u}</em>` : ''}</div><i class="pp-bar"><b style="width:${a}%"></b><u style="left:${a}%;width:0" data-w="${z - a}"></u></i></div>`; };
+  if (o.confetti) sfx('win'); else sfx('pop');
   w.innerHTML = `${conf}<div class="cdlg pp-card mo-card" role="dialog" aria-modal="true" aria-labelledby="moT"><div class="pp-bud">${buddySVG(o.face || 'happy', 64)}</div>
     <b id="moT" class="pp-h">${o.title}</b>${o.sub ? `<p class="mo-sub">${o.sub}</p>` : ''}
     ${(o.bars || []).slice(0, 3).map(bar).join('')}
@@ -4835,7 +4844,7 @@ async function progressPop(pops) {
   for (let i = 0; i < 60 && busy(); i++) await new Promise((r) => setTimeout(r, 1000));
   if (busy() || !view || view.name !== 'home') return;
   const big = true, w = document.createElement('div'); // every gain gets confetti, however small
-  w.className = 'cdlg-wrap pp-pop';
+  w.className = 'cdlg-wrap pp-pop'; sfx('win');
   const conf = big ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 22 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59'][i % 4]}"></i>`).join('')}</div>` : '';
   const row = (lab, from, to, k) => `<div class="pp-r"><div class="pp-rh"><span data-raw>${esc(lab)}<small class="pp-was">${PT(`was ${from}%`, `之前 ${from}%`)}</small></span><b><span class="pp-n" data-from="${from}" data-to="${to}">${from}</span>%</b><em class="ms-imp-g pp-g">+${to - from}%</em></div><i class="pp-bar"><b style="width:${from}%" data-to="${to}"></b><u style="left:${from}%;width:0" data-w="${to - from}"></u></i></div>`;
   w.innerHTML = `${conf}<div class="cdlg pp-card" role="dialog" aria-modal="true" aria-labelledby="ppT"><div class="pp-bud">${buddySVG('happy', 64)}</div>
@@ -4886,7 +4895,7 @@ function winsDialog(ev) {
   // Celebrated like the star screen: a sunny banner with turning rays, the win's big icon, Buddy jumping, confetti.
   // A level up shows the level out of 10 filling its next block; other wins show their own icon.
   const IC = { chapter: '🏆', level: '⬆️', fixed: '✅', ready: '🎯' }, kid = isPrimaryKid(), box = document.createElement('div');
-  box.className = 'cdlg-wrap win-cel star-cel';
+  box.className = 'cdlg-wrap win-cel star-cel'; sfx('win');
   const conf = Array.from({ length: 30 }, (_, i) => `<i style="left:${(i * 37) % 100}%;animation-delay:${(i % 9) * 0.07}s;background:${['#FFC531', '#FF7A59', '#4CC38A', '#5B8DEF', '#B57AF0'][i % 5]}"></i>`).join('');
   const rays = Array.from({ length: 12 }, (_, i) => `<i style="transform:rotate(${i * 30}deg)"></i>`).join('');
   const top = ev[0], lv = top[0] === 'level' && top[3] ? top[3] : null; // [from, to]
@@ -4907,6 +4916,7 @@ function winsDialog(ev) {
 
 function celebrate(won) {
   if (!won) return;
+  sfx('win');
   const box = document.createElement('div');
   box.className = 'cdlg-wrap star-cel';
   const conf = Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 37) % 100}%;animation-delay:${(i % 9) * 0.07}s;background:${['#FFC531', '#FF7A59', '#4CC38A', '#5B8DEF', '#B57AF0'][i % 5]}"></i>`).join('');
@@ -6227,7 +6237,7 @@ async function progressData() {
   const accOf = (es) => { const m = es.reduce((x, e) => x + e.m, 0); return m ? Math.round(100 * es.reduce((x, e) => x + e.g, 0) / m) : null; };
   // streak: days in a row with practice, up to today (or yesterday, if today hasn't started yet)
   const days = new Set(log.map((e) => dayOf(e.t)));
-  let streak = 0; for (let d = days.has(today) ? today : today - DAY; days.has(d); d -= DAY) streak++;
+  let streak = streakInfo(days, today).n;
   // weekly score for the last 6 weeks (each week ends today)
   const weeks = Array.from({ length: 6 }, (_, i) => {
     const end = today + DAY - (5 - i) * 7 * DAY, start = end - 7 * DAY;
@@ -6599,7 +6609,7 @@ function daysSheet() {
     return `<small class="ds-il">${lab}</small>${x.q ? `<div class="ds-it"><div><b>${x.min}</b><span>${PT('minutes', '分鐘')}</span></div><div><b>${x.q}</b><span>${PT('questions', '題目')}</span></div><div class="${x.acc >= 70 ? 'ok' : x.acc != null && x.acc < 50 ? 'lo' : ''}"><b>${x.acc != null ? x.acc + '%' : '–'}</b><span>${PT('right', '答對')}</span></div></div>` : `<p class="ds-none">${d === t0 ? PT('No practice yet today. Tap any day above to see it.', '今日仍未練習。按上面任何一日查看。') : PT('No practice this day.', '這一日沒有練習。')}</p>`}`; };
   const cells = Array.from({ length: 28 }, (_, i) => { const d = start + i * DAY, x = info(d), fut = d > t0;
     return `<button class="ds-day s${fut ? 'f' : shade(x.q)} ${d === t0 ? 'tod' : ''}" ${fut ? 'disabled' : ''} data-d="${d}"><span>${new Date(d).getDate()}</span></button>`; }).join('');
-  let streak = 0; for (let d = byDay.has(t0) ? t0 : t0 - DAY; byDay.has(d); d -= DAY) streak++;
+  let streak = streakInfo(byDay, t0).n;
   const allDays = [...byDay.keys()].sort((a, b) => a - b); let best = 0, run = 0, prev = 0;
   allDays.forEach((d) => { run = prev && d - prev <= DAY + 3600e3 ? run + 1 : 1; best = Math.max(best, run); prev = d; });
   const wk = (a, b) => { const es = L.filter((e) => e.t >= a && e.t < b); return { d: new Set(es.map((e) => dayStart(e.t))).size, min: minutesOf(es), q: es.length }; };
@@ -8303,6 +8313,60 @@ async function pumpPaper(sess) {
 /* ---------- sessions ---------- */
 const isExam = () => !!S && (S.mode === 'mock' || S.mode === 'dse');
 
+// Encouragement during a set: a ding or a soft tone for each answer, and Buddy pops up (without stopping anything)
+// for a run of right answers, at halfway, and after two misses in a row. Not in timed tests, where answers stay hidden.
+function inSetCheer(q, got) {
+  if (!S || isExam() || S.mode === 'drill') return;
+  const right = got >= marksOf(q), Z = PT;
+  S.combo = right ? (S.combo || 0) + 1 : 0; S.missRun = right ? 0 : (S.missRun || 0) + 1;
+  S.cheered = S.cheered || {};
+  const n = S.combo, tgt = S.target || (S.qs || []).length, at = (S.answered = (S.answered || 0) + 1);
+  let msg = '';
+  if (right && (n === 3 || n === 5 || n === 10 || (n > 10 && n % 5 === 0))) msg = n === 3 ? Z('3 in a row! 🔥', '連續答對 3 題！🔥') : n === 5 ? Z('5 in a row! You’re on fire! 🔥', '連續 5 題！你太勁了！🔥') : Z(`${n} in a row! Unstoppable! 🚀`, `連續 ${n} 題！無人能擋！🚀`);
+  else if (!right && S.missRun === 2 && !S.cheered.miss) { S.cheered.miss = 1; msg = Z('Hang in there! Tricky ones are how you learn. Ask Buddy for a hint any time 💪', '堅持下去！難題正是學習的機會。隨時可以問 Buddy 提示 💪'); }
+  else if (tgt >= 6 && at === Math.ceil(tgt / 2) && !S.cheered.half) { S.cheered.half = 1; msg = Z('Halfway there! Keep going 💪', '已經一半了！繼續加油 💪'); }
+  sfx(right ? (msg && n >= 3 ? 'combo' : 'right') : 'wrong');
+  if (msg) cheerBubble(msg, right && n >= 3);
+}
+function cheerBubble(text, hot) {
+  document.querySelectorAll('.cheer-bub').forEach((x) => x.remove());
+  const b = document.createElement('div'); b.className = `cheer-bub${hot ? ' hot' : ''}`; b.setAttribute('role', 'status');
+  b.innerHTML = `${buddySVG('happy', 34)}<span>${esc(text)}</span>`;
+  document.body.appendChild(b);
+  requestAnimationFrame(() => b.classList.add('on'));
+  setTimeout(() => { b.classList.remove('on'); setTimeout(() => b.remove(), 400); }, 2400);
+  b.onclick = () => b.remove();
+}
+// ---------- sounds and a little buzz: right, wrong, a run of right answers, and celebrations ----------
+// Made on the fly with Web Audio (no files to load). Off with one switch in Settings; a short buzz on phones that support it.
+const soundOn = () => local.soundOn !== false;
+let AC = null;
+function sfx(kind) {
+  if (!soundOn()) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const t = AC.currentTime, note = (f, at, dur, type = 'sine', vol = 0.14) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t + at); g.gain.exponentialRampToValueAtTime(vol, t + at + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + at + dur); o.connect(g).connect(AC.destination); o.start(t + at); o.stop(t + at + dur + 0.02); };
+    if (kind === 'right') { note(784, 0, 0.12); note(1175, 0.08, 0.2); }
+    else if (kind === 'wrong') { note(330, 0, 0.16, 'triangle', 0.1); note(262, 0.12, 0.22, 'triangle', 0.08); }
+    else if (kind === 'combo') { [784, 988, 1175, 1568].forEach((f, i) => note(f, i * 0.07, 0.16)); }
+    else if (kind === 'win') { [523, 659, 784, 1047, 1319].forEach((f, i) => note(f, i * 0.09, 0.28, 'sine', 0.13)); note(1568, 0.5, 0.5, 'sine', 0.1); }
+    else if (kind === 'pop') { note(660, 0, 0.09, 'sine', 0.1); note(990, 0.06, 0.12, 'sine', 0.1); }
+  } catch (e) { /* no sound on this device */ }
+  try { if (navigator.vibrate) navigator.vibrate(kind === 'wrong' ? [30] : kind === 'right' ? [12] : kind === 'combo' ? [15, 40, 15] : kind === 'win' ? [20, 50, 20, 50, 40] : [10]); } catch (e) {}
+}
+// The streak, with one rest day a week: a single missed day between practice days doesn't break it
+// (like a streak freeze, but free and automatic). The rest day keeps the count; it doesn't add to it.
+function streakInfo(has, t0 = startOfToday()) {
+  const weekOf = (d) => d - ((new Date(d).getDay() + 6) % 7) * DAY, rests = new Set();
+  let n = 0, d = has.has(t0) ? t0 : t0 - DAY;
+  for (let g = 0; g < 2000; g++) {
+    if (has.has(d)) { n++; d -= DAY; continue; }
+    if (d < t0 && has.has(d - DAY) && ![...rests].some((r) => weekOf(r) === weekOf(d))) { rests.add(d); d -= DAY; continue; }
+    break;
+  }
+  return { n, rests };
+}
 function newSession(props) {
   const sess = Object.assign({ at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
   if (!sess.placement) snapPre(sess);
@@ -10412,6 +10476,7 @@ function essayRevealed(q, m, ans, stem) {
 }
 
 function record(q, got) {
+  try { inSetCheer(q, got); } catch (e) { /* never block marking */ }
   // Getting stronger (progress.js): first attempts only, allowing for guessing and for help asked from Buddy first.
   const k_ = S && S.qs ? S.qs.indexOf(q) : -1, helped = !!(k_ >= 0 && S.chat && S.chat[k_] && S.chat[k_].msgs.length), ty = choiceType(q) ? 'c' : 'w';
   try { PG.update(pgState(), { t: Date.now(), q: q.id, g: got, m: marksOf(q), l: q.level, ty, h: helped }, prevAnswer(q.id) || (local.stats[q.id] ? { t: Date.now(), g: 1, m: 1 } : null), BOOK_SUBJ[String(q.id).split(':')[0]]); } catch (e) {}

@@ -3681,6 +3681,12 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .mo-lines li>span:first-child{flex:none;font-size:17px;line-height:1.2}
 .mo-alt{align-self:center;color:var(--muted);font-size:14px}
 .mo-card .btn{width:100%}
+.gr-week i.rest{background:#EEF1FB!important;border-color:#C9D5F5!important;font-size:13px}
+.cheer-bub{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 64px);z-index:60;display:flex;align-items:center;gap:10px;max-width:min(360px,calc(100vw - 32px));padding:8px 16px 8px 8px;border-radius:999px;background:#fff;border:2px solid #C9D5F5;box-shadow:0 10px 30px rgba(30,42,90,.18);font-weight:800;font-size:15px;color:#26357A;transform:translate(-50%,-20px) scale(.9);opacity:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .25s;cursor:pointer}
+.cheer-bub.on{transform:translate(-50%,0) scale(1);opacity:1}
+.cheer-bub.hot{background:linear-gradient(90deg,#FFF3C4,#FFE48A);border-color:#F6C64A;color:#7A4A00}
+.cheer-bub svg{flex:none}
+@media (prefers-reduced-motion:reduce){.cheer-bub{transition:opacity .2s}}
 </style>
 </head>
 <body>
