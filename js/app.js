@@ -444,7 +444,9 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   // New mistakes are a to-do, not a penalty: only ones left unfixed for MK_GRACE days pull the chapter down
   const openL = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && qUnit(id).join(':') === key), open = openL.length;
   const stale = openL.filter(([, m]) => now - (m.t || 0) > MK_GRACE * DAY).length;
-  const fixed = done.length ? Math.max(0, 1 - stale / 5) : 0;
+  // earned, not given: grows with the questions answered, each open mistake holds some back until it's fixed,
+  // and one left past MK_GRACE days holds back twice as much
+  const fixed = done.length ? Math.min(1, done.length / T) * Math.max(0, 1 - (open + stale) / 5) : 0;
   // tested: passes (80%+) at least a week apart; the latest test must be a pass
   const tests = testsFor(key);
   const passes = tests.filter((x) => x.r[0] / x.r[1] >= PASS);
@@ -10913,7 +10915,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   return say({ face: great ? 'done' : 'happy', confetti: great || grew, sel: 'main.results', hero, chips, tone: great ? 'great' : ok ? 'ok' : 'tough',
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
-    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : [])],
+    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
     main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : false });
 }
 function renderSummary() {
