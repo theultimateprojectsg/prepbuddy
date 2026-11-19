@@ -3656,6 +3656,11 @@ function renderSettings(sec) {
         <button class="switch ${soundOn() ? 'on' : ''}" id="ssound" role="switch" aria-checked="${soundOn()}" aria-label="${PLT('Sounds', '聲音')}"><i></i></button></div>
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('A ding for right answers, cheers for wins, and a little buzz on phones that support it.', '答對有提示音，有進步時有歡呼聲，支援的手機還會輕輕震動。')}</span>
     </section>
+    ${DEV ? `<section class="card stack g10" style="padding:16px;border:1.5px dashed #C9D3EE">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">DEV · “Too fast” check</b>
+        <button class="switch ${rushOff() ? '' : 'on'}" id="snorush" role="switch" aria-checked="${!rushOff()}" aria-label="Too fast check"><i></i></button></div>
+      <span class="muted" style="font-size:14px;line-height:1.5">On: sets answered in under 4 seconds a question don’t count and earn no stars. Turn it off for quick testing. Only you see this, and it only changes this device.</span>
+    </section>` : ''}
     <section class="card stack g10" style="padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">Stars and rewards${locked('stars') ? ' <span class="lock-tag inl">🔒 Standard</span>' : ''}</b>
         <button class="switch ${starsOn() ? 'on' : ''}" id="sstars" role="switch" aria-checked="${starsOn()}" aria-label="Stars and rewards"><i></i></button></div>
@@ -3750,6 +3755,7 @@ function renderSettings(sec) {
   if (document.getElementById('srestore')) document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   { const sp = document.getElementById('splans'); if (sp) sp.onclick = () => go({ name: 'plans' }); }
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(sec); renderTabs(); }));
+  { const nr = document.getElementById('snorush'); if (nr) nr.onclick = () => { try { localStorage.setItem('pb.norush', rushOff() ? '0' : '1'); } catch (e) {} nr.classList.toggle('on', !rushOff()); nr.setAttribute('aria-checked', String(!rushOff())); toast(rushOff() ? 'Too-fast check off on this device' : 'Too-fast check on'); }; }
   if (document.getElementById('ssound')) document.getElementById('ssound').onclick = (e) => { local.soundOn = !soundOn(); saveLocal(); const b = e.currentTarget; b.classList.toggle('on', soundOn()); b.setAttribute('aria-checked', soundOn()); if (soundOn()) sfx('right'); };
   if (document.getElementById('sstars')) document.getElementById('sstars').onclick = () => { if (locked('stars')) return upsell('stars', 'locked'); local.starsOn = !starsOn(); saveLocal(); renderSettings(sec); renderTabs(); };
   window.scrollTo(0, 0);
@@ -4742,6 +4748,8 @@ function checkBadges(extra) {
 }
 
 // Stars for a finished set (called once, from the results screen).
+// testing only (developer mode): switch the speed check off on this device
+const rushOff = () => { try { return DEV && localStorage.getItem('pb.norush') === '1'; } catch (e) { return false; } };
 const STAR_PASS = 50, RUSH_SECS = 4, STAR_RULES_AT = Date.UTC(2026, 10, 12, 12);
 // The score used for stars only counts marks the child can't give themselves: choice questions and AI-marked
 // written answers (using the AI's own marks, not ticks changed afterwards). Self-ticked answers still show in results.
@@ -4757,6 +4765,7 @@ function starScore(qs) {
 }
 // A set counts as rushed when most of it is choice questions and the typical (median) time per answer is under RUSH_SECS.
 function rushedSet(qs) {
+  if (rushOff()) return false;
   if (!S || !S.times || !qs.length) return false;
   const choice = qs.filter((q) => choiceType(q)).length;
   if (choice < qs.length * 0.6) return false;
