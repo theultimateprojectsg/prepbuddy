@@ -2696,7 +2696,7 @@ async function renderHome() {
   // Phones: an app bar (logo · child · stars · settings) above a friendly greeting card with Buddy. Computers: the plain greeting.
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
       <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}<span class="gr-bud-in" aria-hidden="true"><!--BUD46--></span></h1><span class="gr-sub"><!--CHEER--></span></div><span class="gr-buddy" aria-hidden="true"><!--BUD64--></span></div><!--STRIP--></div>
-      <div class="greet-r"><span class="gr-brand">${logoSVG(36)}<b>PrepBuddy</b></span>${KIDS.list.length > 1 ? kidChip() : ''}${starChip()}${gearBtn()}</div></div>`;
+      <div class="greet-r"><span class="gr-brand">${logoSVG(36)}<b>PrepBuddy</b></span>${KIDS.list.length > 1 ? kidChip() : ''}<!--SKCHIP-->${starChip()}${gearBtn()}</div></div>`;
   if (!books.length) {
     // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
     let starters = [];
@@ -3192,7 +3192,9 @@ async function renderHome() {
   const medal = `<svg class="medal" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l2 5-3 2zM17 2h-4l-2 5 3 2z" fill="#6E8BE0"/><circle cx="12" cy="15" r="7" fill="#FFC531" stroke="#E09B00" stroke-width="1.5"/><path d="M12 11.5l1.1 2.2 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3z" fill="#FFF6D6"/></svg>`;
   const nextHTML = `<span class="sk-next">${medal}<span>${Z(`${nextM - streak} more day${nextM - streak === 1 ? '' : 's'} to your ${nextM}-day badge`, `再 ${nextM - streak} 日得到 ${nextM} 日徽章`)}</span><span class="bar"><i style="width:${Math.round(((streak - prevM) / (nextM - prevM)) * 100)}%"></i></span></span>`;
   const label = streak ? Z(`day streak`, '日連續') : Z('Start a streak today', '今天開始連續練習');
-  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame sk-t${lit ? tier : 0} ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}${lit ? embs(tier) : ''}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span>${doneToday ? '' : `<small class="gr-cta">${Z('See today’s plan ›', '查看今日計劃 ›')}</small>`}${nextHTML}</span>
+  // the streak lives in a small flame chip beside the stars (the old week strip took a whole card)
+  const skChip = `<button class="firechip ${lit ? 'lit' : 'off'} ${risk ? 'risk' : ''}" id="streakGo" aria-label="${streak ? Z(`${streak}-day streak${lit ? ', practised today' : ''}`, `連續 ${streak} 日${lit ? '，今天已練習' : ''}`) : Z('No streak yet: practise today to start one', '還沒有連續紀錄：今天練習就開始')}"><span class="sk-flame sk-t${lit ? tier : 0} ${lit ? 'lit' : ''}">${flameSVG(lit)}</span><b>${streak}</b></button>`;
+  const strip0 = `<button class="gr-strip gr-btn" id="streakGo0"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame sk-t${lit ? tier : 0} ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}${lit ? embs(tier) : ''}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span>${doneToday ? '' : `<small class="gr-cta">${Z('See today’s plan ›', '查看今日計劃 ›')}</small>`}${nextHTML}</span>
     ${weekHTML()}</button>`;
   // Celebration, once a day, the first time Today opens after practising (like Duolingo's streak screen)
   const celebrate = (n) => {
@@ -3311,14 +3313,14 @@ async function renderHome() {
   const nextPick = allDone || !missionPick.n ? { fresh: true } : missionPick; // once the mission is done, Buddy's pick makes a fresh set // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
-    ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
+    ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', '').replace('<!--SKCHIP-->', skChip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
+    ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
     ${MODE === null ? planHTML(false, nextPick) : ''}
     ${MODE === 'plan' ? (planCard ? planCard + (planDoneNow ? planHTML(true, nextPick, true) : '') : planHTML(true, nextPick, true)) : ''}
     ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
     ${MODE === 'mission' && msFirst ? missionHTML : ''}
     ${MODE === 'mission' && msFirst && planDoneNow ? planCard : ''}
-    ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
     ${installTip()}
     ${winHTML}
     ${lessonHTML}
@@ -3353,6 +3355,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-firstch]').forEach((b) => (b.onclick = async () => { const [bid, uid] = b.dataset.firstch.split(':'); const bk = (await getBooks()).find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) { pick = { bookId: bid, ids: new Set([uid]) }; startUnits(bk, [u], sessionSize()); } else go({ name: 'book', bookId: bid }); }));
   { const sg = document.getElementById('streakGo'); if (sg) sg.onclick = () => {
     if (doneToday) return toast(Z(`You’ve practised today ✓ Come back tomorrow to make it ${streak + 1} days in a row.`, `今天已練習 ✓ 明天再來，就連續 ${streak + 1} 日了。`));
+    toast(streak ? Z(`${streak}-day streak 🔥 Do one step today to keep it going.`, `連續 ${streak} 日 🔥 今天做一步就能保持。`) : Z('Do one step today to start a streak 🔥', '今天做一步就開始連續紀錄 🔥'));
     // take them to Today's mission (and light it up) so they choose the step, rather than jumping into one
     const card = $app.querySelector('.ms-card'); if (!card) return go({ name: 'practice' });
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -3891,6 +3891,15 @@ body.mo-lock{overflow:hidden}
 .bpq-grid .bpq{min-height:0;gap:10px}
 .bpq-top{display:flex;align-items:center;justify-content:space-between;width:100%}
 .bpq-min{font-style:normal;font-size:12px;font-weight:700;color:var(--accent);background:#EEF1FB;border-radius:999px;padding:3px 9px;white-space:nowrap}
+
+.firechip{display:inline-flex;align-items:center;gap:4px;padding:5px 11px 5px 7px;border-radius:999px;border:1.5px solid #FFC9A3;background:#FFF2E8;color:#B54708;font:700 16px 'Lexend',sans-serif;cursor:pointer;flex:none}
+.firechip .sk-flame{width:18px;height:22px;display:inline-block;position:relative}
+.firechip .sk-flame svg{width:100%;height:100%}
+.firechip.off{border-color:var(--line);background:#F4F6FA;color:#8A93A8}
+.firechip.risk{animation:fc-pulse 1.6s ease-in-out infinite}
+@keyframes fc-pulse{50%{box-shadow:0 0 0 4px rgba(255,138,31,.22)}}
+@media (prefers-reduced-motion:reduce){.firechip.risk{animation:none}}
+@media (max-width:360px){.today .greet-r{flex-wrap:nowrap!important;gap:6px}.today .gr-brand b{font-size:17px}.firechip,.today .starchip{padding:4px 9px 4px 6px;font-size:14px;gap:4px}.bp-ask2 .ms-head h2{font-size:19px}}
 </style>
 </head>
 <body>
