@@ -1077,6 +1077,14 @@ function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
 // A text snapshot of the student's progress, made on the device and sent with each question.
 // Codes like B1 / B1.C3 let the coach say which book or chapter to open; coachIndex turns them back into ids.
 let coachIndex = {};
+function chapterLever(c) {
+  const fmt = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  if (!c.done) return { k: 'start', en: 'a lesson or a first practice set' };
+  if (!c.passes) return c.done >= Math.min(6, c.target) ? { k: 'test', en: 'its chapter test (practice alone has done its job)' } : { k: 'practise', en: 'more practice' };
+  if (!c.spread) { const at = (c.firstPass || 0) + 7 * DAY;
+    return Date.now() < at ? { k: 'wait', at, en: `reviews for now; a retest only counts from ${fmt(at)} (a week after the first pass)` } : { k: 'retest', en: 'a retest now (a week after the first pass)' }; }
+  return { k: 'reviews', en: 'reviews over the coming weeks' };
+}
 async function coachSnapshot() {
   const books = await getBooks(); const r = await currentReport();
   coachIndex = {};
@@ -1094,7 +1102,7 @@ async function coachSnapshot() {
     const practised = new Set((local.log || []).filter((e) => e.k !== 'place' && String(e.q).startsWith(b.id + ':')).map((e) => qUnit(e.q)[1]));
     for (const c of started.slice(0, 40)) {
       const acc = c.done ? pc(c.score.accurate / Math.max(0.01, Math.min(1, c.done / c.target))) : 0;
-      lines.push(`- [${code(c.unit)}] ${c.unit.title}${!practised.has(c.unit.id) && !c.tests ? ' (only seen in the level check, not studied yet)' : ''}: mastery ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}.`);
+      lines.push(`- [${code(c.unit)}] ${c.unit.title}${!practised.has(c.unit.id) && !c.tests ? ' (only seen in the level check, not studied yet)' : ''}: mastery ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}. What moves it next: ${chapterLever(c).en}.`);
     }
     const fresh = m.chapters.filter((c) => !c.done && !c.tests).map((c) => `[${code(c.unit)}] ${c.unit.title}`);
     if (fresh.length) lines.push(`- Not started yet (${fresh.length}): ${fresh.slice(0, 40).join('; ')}${fresh.length > 40 ? '; …' : ''}`);
@@ -2884,6 +2892,7 @@ async function renderHome() {
           if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const d = Math.max(1, Math.round((to - ch.pct) / tp.units.length)); it.tst = { n: tp.x.name, from: tp.ready, to: Math.min(100, tp.ready + d) }; }
           if (!rushOff() && (local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('⚡ Too fast last time, so it didn’t count', '⚡ 上次太快，所以不計')
           if (asTest) it.test = Z('Pass it (80% or more) to unlock up to 85%.', '合格（80% 或以上）可解鎖至 85%。');
+          { const lv = chapterLever(ch); if (lv.k === 'wait') { it.to = ch.pct; it.note = Z(`Grows with reviews now. A retest counts from ${new Date(lv.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `現在靠溫習進步。重考由 ${new Date(lv.at).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起才計算。`); } }
           if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
           it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid;
           impact[x.key] = it;
