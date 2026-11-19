@@ -3817,6 +3817,16 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-whyd2[open]>summary::after{transform:rotate(90deg)}
 .ms-whyd2 .ms-why{margin-top:8px}
 .ms-card .ms-item:not(.is-next) .ms-whyd2{display:none}
+.ms-hd{display:flex;align-items:center;gap:6px;padding-top:12px;cursor:pointer;min-width:0}
+.ms-hd .pv-tag2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-meta{margin-left:auto;flex:none;font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+.ms-meta .ms-stars{display:inline-flex;align-items:center;gap:2px}
+.ms-q{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid #B9C6EE;background:#fff;color:var(--accent);font:inherit;font-weight:800;font-size:13px;line-height:1;display:grid;place-items:center;cursor:pointer;padding:0}
+.ms-q.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.ms-card .ms-item>.ms-row{padding-top:4px}
+.ms-why[hidden]{display:none!important}
+.ms-card .ms-item:not(.is-next) .ms-hd .pv-tag2,.ms-card .ms-item:not(.is-next) .ms-q{display:none}
+.ms-card .ms-item:not(.is-next) .ms-row{padding-top:2px}
 </style>
 </head>
 <body>
