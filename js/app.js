@@ -4899,6 +4899,7 @@ async function moment(o) {
     <div class="sc2-top mo-top">${rays}${sky}${hero}<div class="sc2-bud" aria-hidden="true">${buddySVG(face, 54)}</div></div>
     <div class="mo-body"><b id="moT" class="pp-h">${o.title}</b>${o.sub ? `<p class="mo-sub">${o.sub}</p>` : ''}
     ${chips.length ? `<div class="mo-chips">${chips.map(([k, t]) => `<span class="mo-chip ${k}">${t}</span>`).join('')}</div>` : ''}
+    ${o.stars && o.stars.n ? `<div class="mo-stars"><span class="mo-st-ic" aria-hidden="true">${starSVG(34)}</span><div class="mo-st-t"><b>+<span class="pp-n" data-from="0" data-to="${o.stars.n}">0</span> ${PT(o.stars.n === 1 ? 'star' : 'stars', '粒星')}</b>${o.stars.why ? `<small>${esc(o.stars.why)}</small>` : ''}</div><span class="mo-st-bal">${PT(`${o.stars.bal} in total`, `共 ${o.stars.bal} 粒`)}</span></div>` : ''}
     ${(o.bars || []).slice(0, 3).map(bar).join('')}
     ${(o.lines || []).length ? `<ul class="mo-lines">${o.lines.map(([i, t]) => `<li><span aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>` : ''}
     <div class="mo-btns">${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}<button class="btn ${o.main ? 'ghost' : ''}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button></div></div></div>`;
@@ -10693,7 +10694,8 @@ async function resultMoment(sess, qs, pct, got, total) {
   const chips = [['ok', Z(`✅ ${right} right`, `✅ 答對 ${right}`)], missed ? ['miss', Z(`❌ ${missed} to fix`, `❌ ${missed} 題要改`)] : null, fixedN ? ['fix', Z(`🔧 ${fixedN} fixed`, `🔧 改正 ${fixedN}`)] : null, stars ? ['star', `⭐ +${stars}`] : null];
   const toAnswers = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   const hero = { pct, txt: `${right}/${qs.length}` }, sml = starMomentLines(sess.won);
-  const say = (o) => moment({ ...o, lines: [...(o.lines || []), ...sml] });
+  const stStrip = stars ? { n: sess.won.n, why: (sess.won.lines || []).map(([l, k]) => `${l} +${k}`).join(' · '), bal: starState().bal } : null;
+  const say = (o) => moment({ ...o, stars: stStrip, chips: (o.chips || []).filter((c) => !c || c[0] !== 'star'), lines: [...(o.lines || []), ...sml] });
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
   { const P = local.impPrev, ids = qs.map((q) => qUnit(q.id)[1]); if (P && P.s && sess.book) { Object.values(P.s).forEach((x) => { if (x.b === sess.book.id && ids.includes(x.u)) x.shown = 1; }); saveLocal(); } }
   // No % gain this time: say exactly what moves this chapter next (and offer it), instead of a generic "keep going"
