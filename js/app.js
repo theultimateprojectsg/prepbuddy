@@ -1147,7 +1147,7 @@ function planHTML(missionDone) {
 function bindPlan() {
   $app.querySelectorAll('[data-pstep]').forEach((b) => (b.onclick = () => runPlanStep(+b.dataset.pstep)));
   { const g = document.getElementById('bpGo'); if (g) g.onclick = () => { const P = todayPlan(); const k = P ? P.steps.findIndex((x) => !planStepDone(x)) : -1; if (k >= 0) runPlanStep(k); }; }
-  { const x = document.getElementById('bpX'); if (x) x.onclick = () => { local.bplan = null; saveLocal(); renderHome(); }; }
+  ['bpX', 'bpX2'].forEach((id) => { const x = document.getElementById(id); if (x) x.onclick = () => { local.bplan = null; saveLocal(); renderHome(); }; });
   { const f = document.getElementById('bpForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); askPlan(document.getElementById('bpQ').value); }; }
   $app.querySelectorAll('[data-pchip]').forEach((b) => (b.onclick = () => askPlan(b.textContent)));
 }
@@ -2672,7 +2672,7 @@ async function renderHome() {
   { const left = steps.filter((x) => !x.done && x.now).length, d = startOfToday(); if (!local.msLeft || local.msLeft.d !== d || local.msLeft.n !== left) { local.msLeft = { d, n: left }; saveLocal(); renderTabs(); } }
   { const md = local.mdone || (local.mdone = {}); const nd = steps.filter((x) => x.done).length; const prev = md[t0]; if (!prev || prev[0] !== nd || prev[1] !== steps.length) { md[t0] = [nd, steps.length]; Object.keys(md).filter((k) => +k < t0 - 60 * DAY).forEach((k) => delete md[k]); saveLocal(); } }
   // a rough time for each job, so the header can say how long today's mission takes
-  const jobMin = (x) => { const k = x.key, ic = x.icon;
+  const jobMin = (x) => { if (x.mins) return x.mins; const k = x.key, ic = x.icon;
     if (k === 'rv') return Math.max(2, Math.round(Math.min(10, due.length) * 0.6));
     if (k === 'mk') return Math.max(3, (x.chk && x.chk.k) || 5);
     if (k.startsWith('lv:')) return 5;
@@ -2721,9 +2721,19 @@ async function renderHome() {
   };
   // what each open step will do, shown as a small bar: where you are now, and where this step takes you.
   // Same model as the test forecast: a practice set adds about SET_GAIN to a chapter, a lesson gets it to LESSON_CREDIT.
+  // Buddy's plan (if asked for today): the same shape as mission steps, so it looks and works the same
+  const PP = todayPlan();
+  const planSteps = PP ? PP.steps.map((st, k) => {
+    const b = st.bookId && books.find((y) => y.id === st.bookId), sj = b ? (b.subject ? subj(b.subject) : shortTitle(b.title)) : '';
+    const us = (st.unitIds || []).length ? st.unitIds : null, mkN = mistakeCount();
+    const chk = st.action === 'learn' && us ? { y: 'learn', b: st.bookId, u: us[0] } : ['practise', 'chapter_test'].includes(st.action) && us ? { y: 'log', b: st.bookId, us }
+      : st.action === 'mistakes' && mkN ? { y: 'mk', n: mkN, k: Math.min(5, mkN) } : st.action === 'review' ? { y: 'rv' } : { y: 'none' };
+    const now = { t: st.label, s: sj || Z('Buddy’s pick', 'Buddy 推介'), attr: `data-pstep="${k}"`, why: st.why, tag: ['plan', sj ? Z(`Your plan · ${sj}`, `你的計劃 · ${sj}`) : Z('Your plan', '你的計劃')] };
+    return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: st.minutes, maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st), now };
+  }) : [];
   const impact = {};
   { const BM = new Map(), bm = async (id) => { if (!BM.has(id)) { const b = books.find((x) => x.id === id); BM.set(id, b ? await bookMastery(b) : null); } return BM.get(id); };
-    for (const x of steps) { if (x.done || !x.now) continue; const c = x.chk || {};
+    for (const x of [...steps, ...planSteps]) { if (x.done || !x.now) continue; const c = x.chk || {};
       try {
         if (c.y === 'log' || c.y === 'learn') {
           const m = await bm(c.b); if (!m) continue; const b = books.find((y) => y.id === c.b);
@@ -2742,15 +2752,15 @@ async function renderHome() {
         else if (c.y === 'lv') impact[x.key] = { note: Z('After this, every chapter starts at your level', '之後每一章都由你的程度開始') };
       } catch (e) { /* no bar for this one */ } } }
   // the most stars a step can earn (same rules as awardSession and friends): shown so children know what's up for grabs
-  const maxStars = (x) => { if (!starsOn()) return 0; const c = x.chk || {};
+  const maxStars = (x) => { if (!starsOn()) return 0; if (x.maxS) return x.maxS; const c = x.chk || {};
     return { log: 2, learn: 1, mk: (c.k || 1) + 2, rv: 3, lv: 2, dict: 2, wr: 3 }[c.y] || 0; };
   const impHTML = (it) => { if (!it) return '';
     if (it.from == null) return it.note ? `<div class="ms-imp note"><span>${it.note}</span></div>` : '';
     const max = it.max || 100, a = Math.round((100 * Math.min(it.from, it.to)) / max), b = Math.round((100 * Math.max(it.from, it.to)) / max);
     return `<div class="ms-imp${it.down ? ' down' : ''}"><div class="ms-imp-h"><span data-raw>${esc(it.lab)}</span><b>${it.from}${it.u} → ${it.to}${it.u}</b></div><i class="ms-imp-bar" aria-hidden="true"><b style="width:${a}%"></b><em style="left:${a}%;width:${b - a}%"></em></i>${it.test ? `<small data-raw>${esc(it.test)}</small>` : ''}${it.note ? `<small>${it.note}</small>` : ''}${it.warn ? `<small class="ms-imp-w">${it.warn}</small>` : ''}</div>`; };
-  const stepRow = (x, k) => x.done || !x.now
+  const stepRow = (x, k, nk = firstOpen) => x.done || !x.now
     ? `<details class="msd"><summary class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></summary>${doneInfo(x)}</details>`
-    : `<div class="ms-item ${k === firstOpen ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}${maxStars(x) ? `<span class="ms-stars" title="${Z('Most stars you can earn', '最多可賺的星星')}"> · ${starSVG(12)} ${Z(`up to ${maxStars(x)}`, `最多 ${maxStars(x)}`)}</span>` : ''}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${impHTML(impact[x.key])}${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
+    : `<div class="ms-item ${k === nk ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}${maxStars(x) ? `<span class="ms-stars" title="${Z('Most stars you can earn', '最多可賺的星星')}"> · ${starSVG(12)} ${Z(`up to ${maxStars(x)}`, `最多 ${maxStars(x)}`)}</span>` : ''}</small></span>${k === nk ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${impHTML(impact[x.key])}${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
@@ -2874,6 +2884,18 @@ async function renderHome() {
     const first = steps.find((x) => !x.done && x.now);
     coach.brief = p ? Z(`${p.x.name} is ${leftText(p.left)}${p.ready != null ? ` and you’re ${p.ready}% ready` : ''}.${first ? ` Today: ${first.now.t}.` : ''}`, `「${p.x.name}」${leftText(p.left)}${p.ready != null ? `，你現時準備度 ${p.ready}%` : ''}。${first ? `今天：${first.now.t}。` : ''}`)
       : first ? Z(`Today: ${first.now.t}.`, `今天：${first.now.t}。`) : Z('Today’s mission is done. Nice work!', '今日任務完成，做得好！'); }
+  let planCard = '';
+  if (PP) {
+    const pNext = planSteps.findIndex((x) => !x.done), pMin = planSteps.reduce((a, x) => a + (x.done ? 0 : x.mins), 0), pStarted = planSteps.some((x) => x.done);
+    const head = `<p class="bp-ask">“${esc(PP.ask)}”${PP.intro ? `<span data-raw> ${esc(PP.intro)}</span>` : ''}</p>`;
+    planCard = pNext < 0
+      ? `<section class="ms-card ms-done bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`All ${planSteps.length} steps of Buddy’s plan done. Great extra work!`, `Buddy 計劃的 ${planSteps.length} 個步驟全部完成，做得好！`)}</span><button class="linkbtn" id="bpX2">${Z('Ask Buddy for another plan', '請 Buddy 再訂計劃')} ›</button></div><details class="msd-all"><summary>${Z('What you did', '做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('')}</details></section>`
+      : `<section class="ms-card bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2>${Z('Buddy’s plan', 'Buddy 的計劃')}</h2><span class="bp-hr"><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${pStarted ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${pMin} min`, `${pMin} 分鐘`)}${pStarted ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span><button class="bp-x" id="bpX" aria-label="${Z('Clear this plan', '清除計劃')}">✕</button></span></div>
+      ${head}
+      <div class="ms-list">${(() => { const idx = planSteps.map((x, k) => [x, k]), open = idx.filter(([x]) => !x.done), done = idx.filter(([x]) => x.done);
+        return open.map(([x, k]) => stepRow(x, k, pNext)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done · ${done.length}`, `已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k, pNext)).join('')}` : ''); })()}</div>
+      <button class="btn ms-start" id="bpGo">${pStarted ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
+  }
   const missionHTML = allDone
     ? `<section class="ms-card ms-done" aria-label="${Z('Today’s mission', '今日任務')}">${buddySVG('done', 60)}<div class="ms-dt"><b class="h-info">${Z('Mission done!', '任務完成！')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
@@ -3030,7 +3052,7 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${todayPlan() ? planHTML() : ''}
+    ${planCard}
     ${msFirst ? missionHTML : ''}
     ${!todayPlan() && msFirst ? planHTML(false) : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
