@@ -2331,7 +2331,7 @@ async function renderLearn(bookId, unitId) {
     local.learned = local.learned || {}; const first = !local.learned[`${bookId}:${unitId}`];
     local.learned[`${bookId}:${unitId}`] = Date.now(); saveLocal();
     if (first && starsOn()) { const g = addStars(1, 'lesson'); if (g) setTimeout(() => celebrate({ n: g, lines: [[LANG === 'zh' ? '完成一課' : 'Finished a lesson', g]], badges: checkBadges({}), capped: false }), 400); }
-    if (first) { const nm = shortTitle(unit.title); setTimeout(() => moment({ face: 'done', confetti: true, view: 'learn', title: PT('Lesson done! 🎉', '完成一課！🎉'), sub: PT(`You’ve learned ${nm}.`, `你學會了「${nm}」。`),
+    if (first) { const nm = shortTitle(unit.title); setTimeout(() => moment({ face: 'done', confetti: true, view: 'learn', hero: { icon: '📖' }, title: PT('Lesson done! 🎉', '完成一課！🎉'), sub: PT(`You’ve learned ${nm}.`, `你學會了「${nm}」。`),
       bars: [{ lab: nm, from: 0, to: LESSON_CREDIT }], lines: [['🔒', PT('Lock it in now: a few questions while it’s fresh make it stick.', '趁記憶猶新做幾題，就能記得牢。')]],
       main: { label: PT('Lock it in: 5 questions', '鞏固：做 5 題'), run: () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], 5); } }, alt: { label: PT('Later', '稍後'), run: null } }), 700); }
   };
@@ -4774,7 +4774,7 @@ function homeMoments(due) {
   if (!today && gap >= 3 && local.wbSeen !== t0) {
     local.wbSeen = t0; saveLocal();
     const n = due.length;
-    return moment({ face: 'happy', view: 'home', title: Z('Welcome back! 👋', '歡迎回來！👋'), sub: Z(`It’s been ${gap} days. Great to see you!`, `已經 ${gap} 日了，很高興見到你！`),
+    return moment({ face: 'happy', view: 'home', hero: { icon: '👋' }, tone: 'ok', title: Z('Welcome back! 👋', '歡迎回來！👋'), sub: Z(`It’s been ${gap} days. Great to see you!`, `已經 ${gap} 日了，很高興見到你！`),
       lines: [...(n ? [['🔁', Z(`${n} question${n === 1 ? ' is' : 's are'} ready for a quick warm-up. Getting them right now keeps them in your memory.`, `${n} 題已準備好讓你熱身。現在答對，就能留在記憶裏。`)]] : []), ['🔥', Z('Practise today to start a new streak.', '今天練習，開始新的連續紀錄。')]],
       main: n ? { label: Z(`Warm up: ${Math.min(10, n)} quick reviews`, `熱身：${Math.min(10, n)} 題溫習`), run: () => startReview('spaced') } : { label: Z('Start today’s mission', '開始今日任務'), run: () => { const b = document.getElementById('msstart'); if (b) b.click(); } },
       alt: { label: Z('Later', '稍後'), run: null } });
@@ -4787,7 +4787,7 @@ function homeMoments(due) {
   const days = new Set(L.map((e) => dayStart(e.t))).size, right = L.filter((e) => e.m && e.g >= e.m).length;
   const kAt = (t) => (local.kpi || []).filter((k) => k.d <= t).pop(), k0 = kAt(prevStart), k1 = kAt(wkStart - 1);
   const fixedN = Object.values(local.mistakes || {}).filter((m) => m.done && (m.doneAt || 0) >= prevStart && (m.doneAt || 0) < wkStart).length;
-  return moment({ face: 'done', confetti: true, view: 'home', title: Z('Your week in review 🎉', '上週回顧 🎉'), sub: Z(`You practised on ${days} of 7 days.`, `7 日中你練習了 ${days} 日。`),
+  return moment({ face: 'done', confetti: true, view: 'home', hero: { icon: '📅' }, title: Z('Your week in review 🎉', '上週回顧 🎉'), sub: Z(`You practised on ${days} of 7 days.`, `7 日中你練習了 ${days} 日。`),
     bars: k0 && k1 && k1.r > k0.r ? [{ lab: Z('Overall readiness', '整體準備度'), from: k0.r, to: k1.r }] : [],
     lines: [['✅', Z(`${right} questions right`, `答對 ${right} 題`)], ...(fixedN ? [['🔧', Z(`${fixedN} mistake${fixedN === 1 ? '' : 's'} fixed`, `改正了 ${fixedN} 題錯題`)]] : []), ...(k0 && k1 && k1.c > k0.c ? [['🏆', Z(`${k1.c - k0.c} chapter${k1.c - k0.c === 1 ? '' : 's'} mastered`, `掌握了 ${k1.c - k0.c} 章`)]] : []),
       ['🎯', days >= 5 ? Z('This week: keep the same rhythm. It’s working!', '本週：保持同樣的節奏，很有效！') : Z(`This week: aim for ${Math.min(7, days + 1)} days. A little most days beats a lot once.`, `本週：目標 ${Math.min(7, days + 1)} 日。每天一點好過一次過做很多。`)]],
@@ -4807,11 +4807,19 @@ async function moment(o) {
   const bar = (b) => { const u = b.u == null ? '%' : b.u, max = b.max || 100, a = Math.round((100 * Math.min(b.from, b.to)) / max), z = Math.round((100 * Math.max(b.from, b.to)) / max), d = b.to - b.from;
     return `<div class="pp-r"><div class="pp-rh"><span data-raw>${esc(b.lab)}${d ? `<small class="pp-was">${PT(`was ${b.from}${u}`, `之前 ${b.from}${u}`)}</small>` : ''}</span><b><span class="pp-n" data-from="${b.from}" data-to="${b.to}">${b.from}</span>${u}</b>${d ? `<em class="ms-imp-g pp-g">${d > 0 ? '+' : '−'}${Math.abs(d)}${u}</em>` : ''}</div><i class="pp-bar"><b style="width:${a}%"></b><u style="left:${a}%;width:0" data-w="${z - a}"></u></i></div>`; };
   if (o.confetti) sfx('win'); else sfx('pop');
-  w.innerHTML = `${conf}<div class="cdlg pp-card mo-card" role="dialog" aria-modal="true" aria-labelledby="moT"><div class="pp-bud">${buddySVG(o.face || 'happy', 64)}</div>
-    <b id="moT" class="pp-h">${o.title}</b>${o.sub ? `<p class="mo-sub">${o.sub}</p>` : ''}
+  // the banner: sunny with turning rays for a win, calm blue for good work, soft lilac for a tough one; a score ring or a big icon in the middle
+  const tone = o.tone || (o.confetti ? 'great' : 'ok'), rays = tone === 'great' ? `<div class="sc2-rays" aria-hidden="true">${Array.from({ length: 12 }, (_, i) => `<i style="transform:rotate(${i * 30}deg)"></i>`).join('')}</div>` : '';
+  const hero = o.hero && o.hero.pct != null
+    ? `<div class="mo-ring" style="--p:${o.hero.pct}" role="img" aria-label="${o.hero.pct}%"><span><i class="mo-pct"><b class="pp-n" data-from="0" data-to="${o.hero.pct}">0</b>%</i>${o.hero.txt ? `<small>${o.hero.txt}</small>` : ''}</span></div>`
+    : `<div class="win-ico mo-ico">${(o.hero && o.hero.icon) || '🎉'}</div>`;
+  const chips = (o.chips || []).filter(Boolean);
+  w.innerHTML = `${conf}<div class="cdlg sc-card sc2 mo-card mo-${tone}" role="dialog" aria-modal="true" aria-labelledby="moT">
+    <div class="sc2-top mo-top">${rays}${hero}<div class="sc2-bud" aria-hidden="true">${buddySVG(o.face || 'happy', 54)}</div></div>
+    <div class="mo-body"><b id="moT" class="pp-h">${o.title}</b>${o.sub ? `<p class="mo-sub">${o.sub}</p>` : ''}
+    ${chips.length ? `<div class="mo-chips">${chips.map(([k, t]) => `<span class="mo-chip ${k}">${t}</span>`).join('')}</div>` : ''}
     ${(o.bars || []).slice(0, 3).map(bar).join('')}
     ${(o.lines || []).length ? `<ul class="mo-lines">${o.lines.map(([i, t]) => `<li><span aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>` : ''}
-    ${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}<button class="${o.main ? 'linkbtn mo-alt' : 'btn'}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button></div>`;
+    <div class="mo-btns">${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}<button class="btn ${o.main ? 'ghost' : ''}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button></div></div></div>`;
   document.body.appendChild(w);
   const close = () => w.remove();
   w.querySelector('#moAlt').onclick = () => { close(); if (o.alt && o.alt.run) o.alt.run(); };
@@ -8370,6 +8378,7 @@ function streakInfo(has, t0 = startOfToday()) {
 function newSession(props) {
   const sess = Object.assign({ at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
   if (!sess.placement) snapPre(sess);
+  try { sess.preMk = mistakeCount(); } catch (e) {}
   return sess;
 }
 
@@ -8967,7 +8976,7 @@ function renderPlacementResult() {
   const on = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = f; };
   on('plLearn', () => go({ name: 'learn', bookId: bk.id, unitId: first.id }));
   if (first && !S.plMoment) { S.plMoment = true; const nm = cleanUnitTitle(first.title), sj = bk.subject ? subj(bk.subject) : shortTitle(bk.title);
-    setTimeout(() => moment({ face: 'done', confetti: true, sel: 'main.plres', title: PT('Level check done! 🎉', '程度評估完成！🎉'), sub: PT(`Buddy now knows where to start you in ${sj}.`, `Buddy 已知道你的${sj}從哪裏開始。`),
+    setTimeout(() => moment({ face: 'done', confetti: true, sel: 'main.plres', hero: { icon: '🎯' }, title: PT('Level check done! 🎉', '程度評估完成！🎉'), sub: PT(`Buddy now knows where to start you in ${sj}.`, `Buddy 已知道你的${sj}從哪裏開始。`),
       lines: [['⏭️', PT('Chapters you already know start with harder questions, so you don’t waste time.', '你已懂的章節會由較難的題目開始，不會浪費時間。')], ['🎯', PT(`Best place to begin: ${nm}`, `最好由這裏開始：${nm}`)]],
       main: { label: PT(`Start with ${shortTitle(first.title)}`, `由「${shortTitle(first.title)}」開始`), run: () => go({ name: 'learn', bookId: bk.id, unitId: first.id }) }, alt: { label: PT('See the results', '看看結果'), run: null } }), 600); }
   on('plPrac', () => { pick = { bookId: bk.id, ids: new Set([first.id]) }; startUnits(bk, [first], local.count || sessionSize()); });
@@ -10560,13 +10569,16 @@ async function resultMoment(sess, qs, pct, got, total) {
   const Z = PT, bars = await sessionBars(sess, qs).catch(() => []), missed = qs.filter((q, k) => (sess.got[k] || 0) < marksOf(q)).length, right = qs.length - missed;
   const home = { label: missionNextLabel(), run: () => go({ name: 'home' }) };
   const fix = missed ? { label: Z(`Fix the ${missed} you missed`, `改正答錯的 ${missed} 題`), run: () => { const d = document.getElementById('drillall'); if (d) d.click(); else go({ name: 'mistakes' }); } } : null;
-  const chBars = bars.map((b) => ({ lab: b.lab, from: b.from, to: b.to })), grew = bars.some((b) => b.to > b.from);
+  const mkNow = mistakeCount(), fixedN = sess.preMk != null ? Math.max(0, sess.preMk - mkNow) : 0, stars = sess.won && sess.won.n ? sess.won.n : 0;
+  const chBars = [...bars.map((b) => ({ lab: b.lab, from: b.from, to: b.to })), ...(fixedN ? [{ lab: Z('Mistakes to fix', '待改正的錯題'), from: sess.preMk, to: mkNow, u: '', max: sess.preMk }] : [])], grew = bars.some((b) => b.to > b.from) || fixedN > 0;
+  const chips = [['ok', Z(`✅ ${right} right`, `✅ 答對 ${right}`)], missed ? ['miss', Z(`❌ ${missed} to fix`, `❌ ${missed} 題要改`)] : null, fixedN ? ['fix', Z(`🔧 ${fixedN} fixed`, `🔧 改正 ${fixedN}`)] : null, stars ? ['star', `⭐ +${stars}`] : null];
+  const hero = { pct, txt: `${right}/${qs.length}` };
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
   { const P = local.impPrev, ids = qs.map((q) => qUnit(q.id)[1]); if (P && P.s && sess.book) { Object.values(P.s).forEach((x) => { if (x.b === sess.book.id && ids.includes(x.u)) x.shown = 1; }); saveLocal(); } }
   const keepGoing = bars.length && !grew ? [['🌱', Z('Your % grows as you take on harder questions and still remember them days later. Keep going!', '做更難的題目、幾天後仍記得，百分比就會上升。繼續加油！')]] : [];
   if (sess.test) { // chapter test: a pass gets the unlock, a near miss gets the nudge
     const passed = pct >= 80, near = pct >= 60;
-    return moment({ face: passed ? 'done' : 'happy', confetti: passed, sel: 'main.results',
+    return moment({ face: passed ? 'done' : 'happy', confetti: passed, sel: 'main.results', hero: passed ? { icon: '🏆' } : hero, chips, tone: passed ? 'great' : near ? 'ok' : 'tough',
       title: passed ? Z('Test passed! 🎉', '測驗合格！🎉') : near ? Z(`So close! ${pct}%`, `只差一點！${pct}%`) : Z('Not this time, and that’s okay', '這次未合格，沒關係'),
       sub: passed ? Z(`${pct}%: proof you know this chapter.`, `${pct}%：證明你掌握了這一章。`) : Z(`80% passes. ${near ? `You’re only ${80 - pct}% away.` : 'Every test shows Buddy exactly what to work on.'}`, `80% 合格。${near ? `只差 ${80 - pct}%。` : '每次測驗都讓 Buddy 知道要練甚麼。'}`),
       bars: chBars,
@@ -10583,7 +10595,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       la = Z(`Section A ${Math.round(A * 100)}% · Section B ${Math.round(B * 100)}%`, `甲部 ${Math.round(A * 100)}% · 乙部 ${Math.round(B * 100)}%`);
     }
     const units = sess.book ? sess.book.units.filter((u) => qs.some((q) => qUnit(q.id)[1] === u.id)) : [];
-    return moment({ face: pct >= 70 ? 'done' : 'happy', confetti: true, sel: 'main.results',
+    return moment({ face: pct >= 70 ? 'done' : 'happy', confetti: true, sel: 'main.results', hero, chips, tone: pct >= 60 ? 'great' : 'ok',
       title: pct >= 80 ? Z('Exam-ready work! 🎉', '有考試水準！🎉') : pct >= 60 ? Z('Solid paper! 🎉', '表現穩定！🎉') : Z('Good practice under pressure', '在壓力下的好練習'),
       sub: Z(`${got} of ${total} marks (${pct}%)`, `${total} 分中得 ${got} 分（${pct}%）`), bars: chBars,
       lines: [...(la ? [['🧾', la]] : []), ...(allowed ? [['⏱️', used <= allowed ? Z(`${used} of ${allowed} minutes: good timing`, `用了 ${used}／${allowed} 分鐘：時間控制得好`) : Z(`${used} minutes, ${used - allowed} over time. Speed comes with practice.`, `用了 ${used} 分鐘，超時 ${used - allowed} 分鐘。多練就會快。`)]] : [])],
@@ -10592,10 +10604,10 @@ async function resultMoment(sess, qs, pct, got, total) {
   }
   // an ordinary set
   const great = pct >= 80, ok = pct >= 50, wantFix = missed >= 2 && !great;
-  return moment({ face: great ? 'done' : 'happy', confetti: great || grew, sel: 'main.results',
+  return moment({ face: great ? 'done' : 'happy', confetti: great || grew, sel: 'main.results', hero, chips, tone: great ? 'great' : ok ? 'ok' : 'tough',
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
-    sub: Z(`${right} of ${qs.length} right`, `${qs.length} 題答對 ${right} 題`), bars: chBars,
-    lines: [...keepGoing, ...(wantFix ? [['📌', Z(`${missed} to fix: fixing them now is the fastest way up.`, `${missed} 題要改正：現在改正是進步最快的方法。`)]] : [])],
+    sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
+    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...keepGoing, ...(wantFix ? [['📌', Z(`Fixing the ${missed} you missed now is the fastest way up.`, `現在改正答錯的 ${missed} 題，是進步最快的方法。`)]] : [])],
     main: wantFix ? fix : home, alt: { label: wantFix ? Z('Later', '稍後') : Z('See my answers', '看看我的答案'), run: null } });
 }
 function renderSummary() {
@@ -10685,7 +10697,7 @@ function renderSummary() {
     saveLocal();
   }
   if (won) setTimeout(() => { if (document.querySelector('main.results')) celebrate(won); }, 500);
-  if (!S.endedEarly && !S.momented && qs.length >= 3) { S.momented = true; const sess = S; setTimeout(() => resultMoment(sess, qs, pct, got, total), 700); }
+  if (!S.endedEarly && !S.momented && qs.length >= 3) { S.momented = true; const sess = S; sess.won = won; setTimeout(() => resultMoment(sess, qs, pct, got, total), 700); }
   const nRight = qs.filter((q, k) => (S.got[k] || 0) === marksOf(q)).length;
   const nMiss = qs.filter((q, k) => !(S.got[k] || 0) && marksOf(q)).length;
   const nPart = qs.length - nRight - nMiss;

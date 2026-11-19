@@ -3687,6 +3687,26 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .cheer-bub.hot{background:linear-gradient(90deg,#FFF3C4,#FFE48A);border-color:#F6C64A;color:#7A4A00}
 .cheer-bub svg{flex:none}
 @media (prefers-reduced-motion:reduce){.cheer-bub{transition:opacity .2s}}
+.mo-card{padding:0 0 18px!important;max-width:380px;gap:0!important;overflow:hidden}
+.mo-top{height:150px}
+.mo-ok .mo-top{background:radial-gradient(circle at 50% 60%,#F4F7FE 0%,#DCE6FB 60%,#C9D7F7 100%)}
+.mo-tough .mo-top{background:radial-gradient(circle at 50% 60%,#FAF6FF 0%,#ECE3FB 60%,#DCCDF6 100%)}
+.mo-ico{font-size:66px}
+.mo-ring{position:relative;z-index:2;width:108px;height:108px;border-radius:50%;background:conic-gradient(#18966A calc(var(--p)*1%),rgba(255,255,255,.75) 0);display:grid;place-items:center;filter:drop-shadow(0 6px 14px rgba(30,42,90,.18));animation:scstar .7s cubic-bezier(.3,1.6,.5,1) both}
+.mo-tough .mo-ring{background:conic-gradient(#6B4BC7 calc(var(--p)*1%),rgba(255,255,255,.75) 0)}
+.mo-ok .mo-ring{background:conic-gradient(#26357A calc(var(--p)*1%),rgba(255,255,255,.75) 0)}
+.mo-ring>span{width:86px;height:86px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:var(--text);line-height:1}
+.mo-ring>span b{font-size:30px}
+.mo-pct{font-style:normal;display:flex;align-items:baseline;gap:1px}
+.mo-ring small{font-size:12px;color:var(--muted);font-weight:700;margin-top:3px}
+.mo-body{display:flex;flex-direction:column;gap:12px;padding:16px 18px 0;text-align:center}
+.mo-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.mo-chip{font-size:13px;font-weight:800;padding:5px 11px;border-radius:999px;background:#EEF1F6;color:var(--text-2)}
+.mo-chip.ok{background:#EAF7F1;color:#11774F}.mo-chip.miss{background:#FFF1E6;color:#B4500F}.mo-chip.fix{background:#EEF1FB;color:#26357A}.mo-chip.star{background:#FFF3C4;color:#8A6100}
+.mo-body .pp-r{text-align:left}
+.mo-btns{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.mo-btns .btn{width:100%;min-height:50px}
+.mo-card .mo-sub{margin:-4px 0 0}
 </style>
 </head>
 <body>
