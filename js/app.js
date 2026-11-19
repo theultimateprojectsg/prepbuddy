@@ -2803,7 +2803,16 @@ async function renderHome() {
           continue; }
         if (testU.size && /^(u|w|b):/.test(c.key) && !ids.some((u) => testU.has(`${ck.b}:${u}`))) { later.push(c); continue; } }
       keep.push(c); }
-    cands.splice(0, cands.length, ...keep, ...later); }
+    cands.splice(0, cands.length, ...keep, ...later);
+    // a sensible order: the level check first (it sets where every chapter starts), then a test's chapters in book
+    // order, with a chapter's lesson before its practice
+    const uIdx = (c) => { const ck = c.chk || {}, b = books.find((x) => x.id === ck.b), u = ck.u || (ck.us || [])[0]; return b && u ? b.units.findIndex((x) => x.id === u) : 999; };
+    const inTest = (c) => { const ck = c.chk || {}; return (ck.u ? [ck.u] : ck.us || []).some((u) => testU.has(`${ck.b}:${u}`)); };
+    const tPos = cands.map((c, i) => (/^(t|c):/.test(c.key) || (/^(b|u|w):/.test(c.key) && inTest(c)) ? i : -1)).filter((i) => i >= 0);
+    const tSorted = tPos.map((i) => cands[i]).sort((a, z) => uIdx(a) - uIdx(z) || ((a.icon === 'learn' ? 0 : 1) - (z.icon === 'learn' ? 0 : 1)));
+    tPos.forEach((i, j) => { cands[i] = tSorted[j]; });
+    const lv = cands.findIndex((c) => c.key.startsWith('lv:'));
+    if (lv > 0 && tPos.length) { const [x] = cands.splice(lv, 1); cands.unshift(x); } }
   // every mission step says why it's there: a coloured reason tag and one plain sentence
   for (const c of cands) {
     if (c.key.startsWith('c:')) continue;
@@ -2823,7 +2832,7 @@ async function renderHome() {
   }
   const t0 = dayStart();
   const nSteps = Math.min(8, 5 + extraJobs); // up to 5, plus catch-up jobs when behind pace for a test
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 5) { local.mission = { v: 5, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 6) { local.mission = { v: 6, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
@@ -2862,9 +2871,10 @@ async function renderHome() {
   const GD = await goalsData(tests).catch((e) => { console.warn(e); return null; });
   // the focus test's own step comes first in the mission, so Next step and the focus always match
   if (GD && GD.focus && GD.focus.kind === 'test') {
-    const pre = `c:${GD.focus.p.x.id}:`; let k = steps.findIndex((x) => !x.done && x.now && String(x.key).startsWith(pre));
+    const pre = `c:${GD.focus.p.x.id}:`, tk = `t:${GD.focus.p.x.id}`; let k = steps.findIndex((x) => !x.done && x.now && (String(x.key).startsWith(pre) || x.key === tk));
+    if (firstOpen >= 0 && String(steps[firstOpen].key).startsWith('lv:')) k = firstOpen; // the level check stays first
     // not in today's mission yet (it was set before this test became the focus): add it at the top
-    if (k < 0 && !allDone && !steps.some((x) => String(x.key).startsWith(pre))) { const c = cands.find((y) => String(y.key).startsWith(pre));
+    if (k < 0 && !allDone && !steps.some((x) => String(x.key).startsWith(pre) || x.key === tk)) { const c = cands.find((y) => String(y.key).startsWith(pre));
       if (c) { const st = { key: c.key, icon: c.icon, t: c.t, s: c.s, chk: c.chk, attr: c.attr, tag: c.tag, why: c.why }; M.steps.unshift(st); steps.unshift({ ...st, done: isDone(st), now: c }); k = 0;
         local.msLeft = { d: startOfToday(), n: steps.filter((x) => !x.done && x.now).length }; saveLocal(); renderTabs(); } }
     if (k >= 0) firstOpen = k;
