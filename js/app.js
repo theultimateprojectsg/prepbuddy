@@ -940,6 +940,7 @@ async function bookSummary(b) {
 }
 function lastChapter(books) {
   for (let i = local.log.length - 1; i >= 0; i--) {
+    if (local.log[i].k === 'place') continue; // the level check samples chapters; it isn't where you were working
     const [bid, uid2] = qUnit(local.log[i].q); const b = books.find((x) => x.id === bid);
     const u = b && b.units.find((x) => x.id === uid2);
     if (u) return { book: b, unit: u };
@@ -2755,7 +2756,7 @@ async function renderHome() {
     if (nb) cands.push({ key: `lv:${nb.id}`, icon: 'level', t: Z('Find your level', '找出你的程度'), s: Z(`${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · about 5 min`, `${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · 約 5 分鐘`), attr: `data-lv="${esc(nb.id)}"`, chk: { y: 'lv', b: nb.id } }); }
   if (last) {
     const sc = scoreOf(await getQs(last.book.id, last.unit.id));
-    cands.push({ key: `u:${last.book.id}:${last.unit.id}`, icon: 'practise', t: shortTitle(last.unit.title), s: Z(`Keep going${sc !== null ? ` · scored ${sc}%` : ''}`, `繼續${sc !== null ? ` · 得分 ${sc}%` : ''}`), attr: 'id="continue"', chk: { y: 'log', b: last.book.id, us: [last.unit.id] } });
+    cands.push({ key: `u:${last.book.id}:${last.unit.id}`, icon: 'practise', t: shortTitle(last.unit.title), s: Z(`Keep going${sc !== null ? ` · scored ${sc}%` : ''}`, `繼續${sc !== null ? ` · 得分 ${sc}%` : ''}`), attr: `data-firstch="${esc(last.book.id)}:${esc(last.unit.id)}"`, chk: { y: 'log', b: last.book.id, us: [last.unit.id] } });
   } else { // nothing practised yet: start straight away on the first real chapter (not a summary or glossary)
     const u0 = books[0].units.find((u) => !NOT_TEACHING.test(String(u.title))) || books[0].units[0];
     cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z(`Practise ${shortTitle(u0.title)}`, `練習「${shortTitle(u0.title)}」`), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-firstch="${esc(books[0].id)}:${esc(u0.id)}"`, chk: { y: 'log', b: books[0].id, us: [u0.id] } }); }
@@ -3272,7 +3273,10 @@ async function renderHome() {
   $app.querySelectorAll('.today-week .mrowb[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   const mkb = document.getElementById('mistakes'); if (mkb) mkb.onclick = () => go({ name: 'mistakes' });
   const ct = document.getElementById('continue');
-  if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
+  // older saved missions: start the chapter the step names (its key), not whatever was practised last
+  if (ct) ct.onclick = async () => { const st = M.steps.find((x) => String(x.attr || '').includes('id="continue"')), m = st && String(st.key).match(/^u:(.+):([^:]+)$/);
+    const bid = m ? m[1] : last && last.book.id, uid = m ? m[2] : last && last.unit.id, bk = (await getBooks()).find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid);
+    if (u) { pick = { bookId: bid, ids: new Set([uid]) }; startUnits(bk, [u], sessionSize()); } else if (bid) go({ name: 'book', bookId: bid }); };
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
   $app.querySelectorAll('[data-firstch]').forEach((b) => (b.onclick = async () => { const [bid, uid] = b.dataset.firstch.split(':'); const bk = (await getBooks()).find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) { pick = { bookId: bid, ids: new Set([uid]) }; startUnits(bk, [u], sessionSize()); } else go({ name: 'book', bookId: bid }); }));
   { const sg = document.getElementById('streakGo'); if (sg) sg.onclick = () => {
