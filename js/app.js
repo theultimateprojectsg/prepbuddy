@@ -4838,12 +4838,17 @@ async function moment(o) {
   if (o.confetti) sfx('win'); else sfx('pop');
   // the banner: sunny with turning rays for a win, calm blue for good work, soft lilac for a tough one; a score ring or a big icon in the middle
   const tone = o.tone || (o.confetti ? 'great' : 'ok'), rays = tone === 'great' ? `<div class="sc2-rays" aria-hidden="true">${Array.from({ length: 12 }, (_, i) => `<i style="transform:rotate(${i * 30}deg)"></i>`).join('')}</div>` : '';
+  // the weather matches the result: sun and rays for a win, sun behind drifting clouds for good work, a rain cloud for a tough one
+  const CL = (c) => `<svg viewBox="0 0 120 60" aria-hidden="true"><path d="M30 52 a18 18 0 0 1 2-36 a24 24 0 0 1 44-6 a20 20 0 0 1 30 18 a15 15 0 0 1-2 24 z" fill="${c}"/></svg>`;
+  const sky = tone === 'ok' ? `<div class="mo-sky" aria-hidden="true"><i class="mo-sun"></i><span class="mo-cl c1">${CL('#fff')}</span><span class="mo-cl c2">${CL('#fff')}</span></div>`
+    : tone === 'tough' ? `<div class="mo-sky" aria-hidden="true"><span class="mo-cl c3">${CL('#B9C2D6')}</span><span class="mo-cl c4">${CL('#C9D0E0')}</span>${Array.from({ length: 14 }, (_, k) => `<i class="mo-drop" style="left:${6 + ((k * 37) % 88)}%;animation-delay:${((k * 0.23) % 1.2).toFixed(2)}s"></i>`).join('')}</div>` : '';
+  const face = o.tone ? ({ great: 'done', ok: 'smile', tough: 'sad' }[tone] || o.face || 'happy') : o.face || 'happy';
   const hero = o.hero && o.hero.pct != null
     ? `<div class="mo-ring" style="--p:${o.hero.pct}" role="img" aria-label="${o.hero.pct}%"><span><i class="mo-pct"><b class="pp-n" data-from="0" data-to="${o.hero.pct}">0</b>%</i>${o.hero.txt ? `<small>${o.hero.txt}</small>` : ''}</span></div>`
     : `<div class="win-ico mo-ico">${(o.hero && o.hero.icon) || '🎉'}</div>`;
   const chips = (o.chips || []).filter(Boolean);
   w.innerHTML = `${conf}<div class="cdlg sc-card sc2 mo-card mo-${tone}" role="dialog" aria-modal="true" aria-labelledby="moT">
-    <div class="sc2-top mo-top">${rays}${hero}<div class="sc2-bud" aria-hidden="true">${buddySVG(o.face || 'happy', 54)}</div></div>
+    <div class="sc2-top mo-top">${rays}${sky}${hero}<div class="sc2-bud" aria-hidden="true">${buddySVG(face, 54)}</div></div>
     <div class="mo-body"><b id="moT" class="pp-h">${o.title}</b>${o.sub ? `<p class="mo-sub">${o.sub}</p>` : ''}
     ${chips.length ? `<div class="mo-chips">${chips.map(([k, t]) => `<span class="mo-chip ${k}">${t}</span>`).join('')}</div>` : ''}
     ${(o.bars || []).slice(0, 3).map(bar).join('')}

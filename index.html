@@ -3782,6 +3782,21 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .mo-rv>b{font-size:24px;color:var(--ink);line-height:1.1}
 .mo-rv .pp-g{align-self:center;margin-left:auto}
 .mo-r .pp-bar{margin-top:5px}
+.mo-ok .mo-top{background:linear-gradient(180deg,#CFE3FB 0%,#E4EFFC 55%,#FFF6D8 100%)}
+.mo-tough .mo-top{background:linear-gradient(180deg,#B7C3DA 0%,#D3DBEA 60%,#E6EAF3 100%)}
+.mo-sky{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.mo-sun{position:absolute;left:14%;top:14px;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle,#FFE27A 0%,#FFC94A 70%);box-shadow:0 0 30px 8px rgba(255,210,90,.55)}
+.mo-cl{position:absolute;display:block;filter:drop-shadow(0 3px 6px rgba(30,42,90,.10))}
+.mo-cl svg{display:block;width:100%;height:auto}
+.mo-cl.c1{width:104px;left:16%;top:42px;animation:mocl 9s ease-in-out infinite alternate}
+.mo-cl.c2{width:72px;right:10%;top:14px;opacity:.9;animation:mocl 11s ease-in-out infinite alternate-reverse}
+.mo-cl.c3{width:150px;left:6%;top:4px;animation:mocl 10s ease-in-out infinite alternate}
+.mo-cl.c4{width:110px;right:4%;top:18px;animation:mocl 12s ease-in-out infinite alternate-reverse}
+@keyframes mocl{from{transform:translateX(-10px)}to{transform:translateX(14px)}}
+.mo-drop{position:absolute;top:46px;width:2.5px;height:13px;border-radius:2px;background:linear-gradient(#8FA2C8,#6E83B0);opacity:0;animation:modrop 1.2s linear infinite}
+@keyframes modrop{0%{transform:translateY(0);opacity:0}15%{opacity:.85}100%{transform:translateY(95px);opacity:0}}
+.mo-top .mo-ring,.mo-top .mo-ico{position:relative;z-index:2}
+@media (prefers-reduced-motion:reduce){.mo-cl,.mo-drop{animation:none}.mo-drop{opacity:.6}}
 </style>
 </head>
 <body>
