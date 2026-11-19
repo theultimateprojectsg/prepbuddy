@@ -1086,9 +1086,10 @@ function practiceGain(bookId, ch) {
 }
 // a plan step is worth doing today only if it can move something now
 async function stepUseful(st) {
-  if (!['practise', 'weak_topics', 'chapter_test'].includes(st.action) || !st.bookId || !(st.unitIds || []).length) return true;
+  if (!['practise', 'weak_topics', 'chapter_test', 'learn'].includes(st.action) || !st.bookId || !(st.unitIds || []).length) return true;
   const b = (await getBooks()).find((x) => x.id === st.bookId); if (!b) return true;
   const chs = (await bookMastery(b)).chapters.filter((c) => st.unitIds.includes(c.unit.id)); if (!chs.length) return true;
+  if (st.action === 'learn') return chs.some((c) => !c.done && !c.learned); // a lesson is for a chapter not started yet
   return chs.some((c) => { const lv = chapterLever(c); if (st.action === 'chapter_test') return lv.k === 'test' || lv.k === 'retest' || lv.k === 'practise';
     return !['wait', 'reviews'].includes(lv.k) || practiceGain(st.bookId, c) >= 3; });
 }
@@ -1117,7 +1118,7 @@ async function coachSnapshot() {
     const practised = new Set((local.log || []).filter((e) => e.k !== 'place' && String(e.q).startsWith(b.id + ':')).map((e) => qUnit(e.q)[1]));
     for (const c of started.slice(0, 40)) {
       const acc = c.done ? pc(c.score.accurate / Math.max(0.01, Math.min(1, c.done / c.target))) : 0;
-      lines.push(`- [${code(c.unit)}] ${c.unit.title}${!practised.has(c.unit.id) && !c.tests ? ' (only seen in the level check, not studied yet)' : ''}: mastery ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}. What moves it next: ${chapterLever(c).en}.`);
+      lines.push(`- [${code(c.unit)}] ${c.unit.title}${!practised.has(c.unit.id) && !c.tests ? ' (only seen in the level check, not studied yet)' : ''}: mastery ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}. Lesson ${c.learned ? 'done' : 'not taken'}. What moves it next: ${chapterLever(c).en}.`);
     }
     const fresh = m.chapters.filter((c) => !c.done && !c.tests).map((c) => `[${code(c.unit)}] ${c.unit.title}`);
     if (fresh.length) lines.push(`- Not started yet (${fresh.length}): ${fresh.slice(0, 40).join('; ')}${fresh.length > 40 ? '; …' : ''}`);
