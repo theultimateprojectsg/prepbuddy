@@ -1226,7 +1226,16 @@ function bindPlan() {
   { const r = document.getElementById('bpRemove'); if (r) r.onclick = async () => {
       if (!(await confirmLeave({ title: PT('Remove Buddy’s plan?', '移除 Buddy 的計劃？'), body: PT('It goes away for today. Steps you’ve done still count.', '今天的計劃會移除。已完成的步驟仍然計算。'), stay: PT('Keep it', '保留'), leave: PT('Remove', '移除') }))) return;
       local.bplan = null; if (local.dayPick && local.dayPick.k === 'plan') local.dayPick = null; saveLocal(); renderHome(); }; }
-  { const pk = document.getElementById('bpPick'); if (pk) pk.onclick = () => { local.dayPick = { d: startOfToday(), k: 'mission' }; saveLocal(); renderHome(); }; }
+  // Buddy's pick gets the same "Buddy is making your plan" moment as the other choices, then lands on it with a glow
+  { const pk = document.getElementById('bpPick'); if (pk) pk.onclick = async () => {
+      const sec = pk.closest('.bp-ask2'); planState.ask = PT('Buddy’s pick for today', 'Buddy 今日推介');
+      if (sec) { sec.innerHTML = planThinkingHTML(); sec.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      await new Promise((r) => setTimeout(r, 2200));
+      planState.ask = ''; local.dayPick = { d: startOfToday(), k: 'mission' }; saveLocal();
+      if (!view || view.name !== 'home') return;
+      await renderHome();
+      const card = document.querySelector('main.today>section.ms-card:not(.bp-card):not(.bp-ask2)');
+      if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); card.classList.add('bp-new'); sfx('pop'); setTimeout(() => card.classList.remove('bp-new'), 2400); } }; }
   { const ch = document.getElementById('msChoose'); if (ch) ch.onclick = () => { local.dayPick = null; saveLocal(); renderHome().then(() => { const c = document.querySelector('.bp-ask2'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); }; }
   { const f = document.getElementById('bpForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); askPlan(document.getElementById('bpQ').value); }; }
   $app.querySelectorAll('[data-pask]').forEach((b) => (b.onclick = () => askPlan(b.dataset.pask)));
