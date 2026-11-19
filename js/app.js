@@ -4955,7 +4955,7 @@ async function checkWins() {
     const books = await getBooks(), used = new Set(local.log.map((e) => qUnit(e.q)[0])), W = local.wins, ev = [];
     const cur = { ch: {}, lv: {}, fg: 0, rd: {} };
     for (const b of books.filter((x) => used.has(x.id))) { const m = await bookMastery(b); for (const c of m.chapters) if (c.pct >= 80) cur.ch[`${b.id}:${c.unit.id}`] = shortTitle(c.unit.title); }
-    const GS = await gsData().catch(() => null); for (const x of (GS ? GS.s : [])) if (x[1] != null) cur.lv[x[0]] = Math.floor(lv10(x[1]));
+    const GS = await gsData().catch(() => null); for (const x of (GS ? GS.s : [])) if (x[1] != null && (x[8] || 0) >= 40 && (x[5] || []).length >= 2) cur.lv[x[0]] = Math.floor(lv10(x[1])); // same bar as the goals card: no level-ups until the level is shown
     cur.fg = fixedForGood().good;
     for (const x of schoolTests()) { if (testDay(x) < startOfToday()) continue; const h = ((local.thist || {})[x.id] || []).slice(-1)[0]; if (h && h[1] >= (x.aim || 80)) cur.rd[x.id] = x.name; }
     if (W) {
