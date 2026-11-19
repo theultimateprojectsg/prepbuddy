@@ -1215,12 +1215,13 @@ function planHTML(missionDone, pick, askOnly) {
   // no plan yet: a card like the others, with a few one-tap plans (and a box to ask for anything else)
   const nt = upcomingTests().find((x) => x.kind !== 'dict'), mkN = mistakeCount();
   const quick = [
+    ...(mkN || planState.due ? [['🔁', PT('Clear your to-dos', '清理待辦'), [mkN ? PT(`${mkN} mistake${mkN === 1 ? '' : 's'}`, `${mkN} 題錯題`) : '', planState.due ? PT(`${planState.due} review${planState.due === 1 ? '' : 's'}`, `${planState.due} 題溫習`) : ''].filter(Boolean).join(' · ') + PT(' · 15 min', ' · 15 分鐘'), PT('15 minutes clearing my to-dos: fix my mistakes first, then the reviews that are due', '15 分鐘清理待辦：先改正錯題，再做到期的溫習')]] : []),
     ['⚡', PT('15-min boost', '15 分鐘快速提升'), PT('Quick win on your weakest chapter', '最弱一章快速進步'), PT('15 minutes: a quick boost on my weakest chapter', '15 分鐘：在最弱的一章快速提升')],
-    ...(nt ? [['📝', PT(`Ready for ${nt.name}`, `準備「${nt.name}」`), PT(`${testLeft(nt) === 0 ? 'Today' : testLeft(nt) === 1 ? 'Tomorrow' : `In ${testLeft(nt)} days`} · 30 min`, `${testLeft(nt) === 0 ? '今天' : testLeft(nt) === 1 ? '明天' : `${testLeft(nt)} 日後`} · 30 分鐘`), PT(`30 minutes to get me ready for my ${nt.name}, weakest chapters first`, `30 分鐘幫我準備「${nt.name}」，先做最弱的章節`)]] : []),
     ['🎯', PT('Weakest subject', '最弱的科目'), PT('30 min where you need it most', '30 分鐘練最需要的'), PT('30 minutes on my weakest subject', '30 分鐘練最弱的科目')],
+    ...(nt ? [['📝', PT(`Ready for ${nt.name}`, `準備「${nt.name}」`), PT(`${testLeft(nt) === 0 ? 'Today' : testLeft(nt) === 1 ? 'Tomorrow' : `In ${testLeft(nt)} days`} · 30 min`, `${testLeft(nt) === 0 ? '今天' : testLeft(nt) === 1 ? '明天' : `${testLeft(nt)} 日後`} · 30 分鐘`), PT(`30 minutes to get me ready for my ${nt.name}, weakest chapters first`, `30 分鐘幫我準備「${nt.name}」，先做最弱的章節`)]] : []),
+    ['🌱', PT('Learn something new', '學新東西'), PT('20 min · start the next chapter', '20 分鐘 · 開始下一章'), PT('20 minutes learning something new: the lesson for the next chapter I haven’t started, then a short practice', '20 分鐘學新東西：上下一章未開始的課，再做少量練習')],
     ['📚', PT('Study session', '溫習時段'), PT('45 min · learn, practise, test', '45 分鐘 · 學、練、測'), PT('A 45-minute study session: a lesson, practice, then a short test', '45 分鐘溫習：先上課，再練習，最後做小測')],
-    ...(mkN >= 3 ? [['🔁', PT('Fix my mistakes', '改正錯題'), PT(`${mkN} waiting · 15 min`, `${mkN} 題 · 15 分鐘`), PT('15 minutes fixing my mistakes', '15 分鐘改正錯題')]] : []),
-  ].slice(0, 4);
+  ];
   if (planState.busy) return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}">${planThinkingHTML()}</section>`;
   const pickHTML = pick ? `<button class="bpq-pick" id="bpPick" type="button" ${pick.fresh ? 'data-fresh="1"' : ''}><span class="bpq-ic" aria-hidden="true">⭐</span><span class="bpq-tx"><b>${pick.fresh ? PT('Buddy’s pick: what next', 'Buddy 推介：下一步') : PT('Buddy’s pick for today', 'Buddy 今日推介')}</b><small>${pick.fresh ? PT('A fresh set chosen for you · about 15 min', '為你挑選新的一組 · 約 15 分鐘') : PT(`${pick.n} step${pick.n === 1 ? '' : 's'} · ${pick.mins} min${starsOn() ? ' · +5 bonus stars' : ''}`, `${pick.n} 個步驟 · ${pick.mins} 分鐘${starsOn() ? ' · 額外 +5 粒星' : ''}`)}</small>${pick.fresh ? '' : `<em data-raw>${esc(pick.titles.join(' · '))}</em>`}</span><span class="bpq-go" aria-hidden="true">›</span></button><div class="bpq-or"><span>${PT('or pick something else', '或者選別的')}</span></div>` : '';
   return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}"><div class="ms-head"><h2>${pick ? (missionDone ? PT('What next?', '下一步做甚麼？') : PT('What shall we do today?', '今天做甚麼好？')) : missionDone ? PT('Want to do more?', '想再做多一點？') : PT('Want something different?', '想做點別的？')}</h2><span class="bpq-bud" aria-hidden="true">${buddySVG('happy', 34)}</span></div>
@@ -3299,6 +3300,7 @@ async function renderHome() {
   const msFirst = !!missionHTML && !missionHTML.includes('ms-card ms-done');
   const planDoneNow = !!planCard && planCard.includes('ms-card ms-done');
   const missionPick = { n: steps.filter((x) => !x.done && x.now).length, mins: steps.reduce((a, x) => a + (x.done || !x.now ? 0 : jobMin(x)), 0), titles: steps.filter((x) => !x.done && x.now).map((x) => String(x.now.t).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')) };
+  planState.due = (await dueItems().catch(() => [])).length; // for the "Clear your to-dos" choice
   const nextPick = allDone || !missionPick.n ? { fresh: true } : missionPick; // once the mission is done, Buddy's pick makes a fresh set // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
