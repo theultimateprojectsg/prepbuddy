@@ -1181,7 +1181,13 @@ function bindPlan() {
   $app.querySelectorAll('[data-pstep]').forEach((b) => (b.onclick = () => runPlanStep(+b.dataset.pstep)));
   { const g = document.getElementById('bpGo'); if (g) g.onclick = () => { const P = todayPlan(); const k = P ? P.steps.findIndex((x) => !planStepDone(x)) : -1; if (k >= 0) runPlanStep(k); }; }
   { const x = document.getElementById('bpX2'); if (x) x.onclick = () => { local.bplan = null; saveLocal(); renderHome(); }; } // plan finished: just ask again
-  { const c = document.getElementById('bpChange'); if (c) c.onclick = () => planChangeDialog(); }
+  // each asks first, so a stray tap can't lose the plan
+  { const c = document.getElementById('bpChange'); if (c) c.onclick = async () => { const P = todayPlan(); if (!P) return;
+      if (!(await confirmLeave({ title: PT('Make a different plan?', '換一個計劃？'), body: PT('Tell Buddy what you want instead. Steps you’ve done still count.', '告訴 Buddy 你想要甚麼。已完成的步驟仍然計算。'), stay: PT('Keep this plan', '保留這個計劃'), leave: PT('Change plan', '更改計劃') }))) return;
+      const ask = P.ask; local.bplan = null; saveLocal(); await renderHome(); const q = document.getElementById('bpQ'); if (q) { q.value = ask; q.focus(); q.select(); q.scrollIntoView({ block: 'center' }); } }; }
+  { const r = document.getElementById('bpRemove'); if (r) r.onclick = async () => {
+      if (!(await confirmLeave({ title: PT('Remove Buddy’s plan?', '移除 Buddy 的計劃？'), body: PT('It goes away for today. Steps you’ve done still count.', '今天的計劃會移除。已完成的步驟仍然計算。'), stay: PT('Keep it', '保留'), leave: PT('Remove', '移除') }))) return;
+      local.bplan = null; saveLocal(); renderHome(); }; }
   { const f = document.getElementById('bpForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); askPlan(document.getElementById('bpQ').value); }; }
   $app.querySelectorAll('[data-pchip]').forEach((b) => (b.onclick = () => askPlan(b.textContent)));
 }
@@ -2977,7 +2983,7 @@ async function renderHome() {
         return open.map(([x, k]) => stepRow(x, k, pNext)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done · ${done.length}`, `已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k, pNext)).join('')}` : ''); })()}</div>
       ${planHow}
       <button class="btn ms-start" id="bpGo">${pStarted ? Z('Keep going', '繼續') : Z('Start', '開始')}</button>
-      <button class="linkbtn bp-change" id="bpChange">${Z('Change or remove this plan', '更改或移除這個計劃')}</button></section>`;
+      <div class="bp-acts"><button class="btn ghost" id="bpChange">${pIcon('pencil', 16)} ${Z('Change plan', '更改計劃')}</button><button class="btn ghost bp-rm" id="bpRemove">${GICON.trash} ${Z('Remove plan', '移除計劃')}</button></div></section>`;
   }
   const missionHTML = allDone
     ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Mission done!', '任務完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
