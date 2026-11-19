@@ -2650,9 +2650,34 @@ async function renderHome() {
     else if (c.y === 'wr') o = { lines: [Z('You wrote a piece and got Buddy’s feedback', '你寫了一篇並收到 Buddy 的意見')] };
     return `<div class="msd-body">${o.lines.filter(Boolean).map((l, i) => i ? `<span class="muted">${esc(l)}</span>` : `<b>${esc(l)}</b>`).join('')}${o.note ? `<span class="msd-note">${esc(o.note)}</span>` : ''}${o.good ? `<span class="msd-good">${ICON.check}${esc(o.good)}</span>` : ''}${o.btn ? `<div class="msd-btns">${o.btn}</div>` : ''}</div>`;
   };
+  // what each open step will do, shown as a small bar: where you are now, and where this step takes you.
+  // Same model as the test forecast: a practice set adds about SET_GAIN to a chapter, a lesson gets it to LESSON_CREDIT.
+  const impact = {};
+  { const BM = new Map(), bm = async (id) => { if (!BM.has(id)) { const b = books.find((x) => x.id === id); BM.set(id, b ? await bookMastery(b) : null); } return BM.get(id); };
+    for (const x of steps) { if (x.done || !x.now) continue; const c = x.chk || {};
+      try {
+        if (c.y === 'log' || c.y === 'learn') {
+          const m = await bm(c.b); if (!m) continue; const b = books.find((y) => y.id === c.b);
+          const ids = c.y === 'learn' ? [c.u] : c.us && c.us.length ? c.us : [b.units[0].id];
+          const ch = m.chapters.filter((y) => ids.includes(y.unit.id)).sort((a, z) => a.pct - z.pct)[0]; if (!ch) continue;
+          const cap = ch.passes ? 95 : 70, to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : Math.min(cap, ch.pct + SET_GAIN);
+          const nm = shortTitle(ch.unit.title), it = { lab: String(x.now.t || '').includes(nm) ? Z('This chapter', '這一章') : nm, from: ch.pct, to, u: '%' };
+          // a test's chapter: what it does for that test too
+          const tid = (String(x.key).match(/^[tc]:([^:]+)/) || [])[1], tp = tid && tests.steps.find((q) => q.x.id === tid);
+          if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const d = Math.max(1, Math.round((to - ch.pct) / tp.units.length)); it.test = Z(`${tp.x.name}: ${tp.ready}% → ${Math.min(100, tp.ready + d)}% ready`, `「${tp.x.name}」：準備度 ${tp.ready}% → ${Math.min(100, tp.ready + d)}%`); }
+          if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
+          impact[x.key] = it;
+        } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
+        else if (c.y === 'rv') impact[x.key] = { lab: Z('Questions due for review', '到期要溫習的題目'), from: due.length, to: Math.max(0, due.length - 10), u: '', down: true, max: due.length, test: Z('Keeps them in long-term memory', '把它們留在長期記憶裏') };
+        else if (c.y === 'lv') impact[x.key] = { note: Z('After this, every chapter starts at your level', '之後每一章都由你的程度開始') };
+      } catch (e) { /* no bar for this one */ } } }
+  const impHTML = (it) => { if (!it) return '';
+    if (it.from == null) return it.note ? `<div class="ms-imp note"><span>${it.note}</span></div>` : '';
+    const max = it.max || 100, a = Math.round((100 * Math.min(it.from, it.to)) / max), b = Math.round((100 * Math.max(it.from, it.to)) / max);
+    return `<div class="ms-imp${it.down ? ' down' : ''}"><div class="ms-imp-h"><span data-raw>${esc(it.lab)}</span><b>${it.from}${it.u} → ${it.to}${it.u}</b></div><i class="ms-imp-bar" aria-hidden="true"><b style="width:${a}%"></b><em style="left:${a}%;width:${b - a}%"></em></i>${it.test ? `<small data-raw>${esc(it.test)}</small>` : ''}${it.note ? `<small>${it.note}</small>` : ''}</div>`; };
   const stepRow = (x, k) => x.done || !x.now
     ? `<details class="msd"><summary class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></summary>${doneInfo(x)}</details>`
-    : `<div class="ms-item ${k === firstOpen ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
+    : `<div class="ms-item ${k === firstOpen ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${impHTML(impact[x.key])}${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);

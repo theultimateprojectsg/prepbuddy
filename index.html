@@ -3555,6 +3555,20 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .gr-strip.gr-btn .gr-week{flex:none}
 .gr-strip.gr-btn .gr-sk-n span{white-space:normal!important;line-height:1.15}
 .gr-strip.gr-btn .gr-streak{min-width:84px}
+.ms-imp{margin:2px 0 4px;padding:8px 10px;border-radius:10px;background:#F6F8FC;display:flex;flex-direction:column;gap:5px}
+.ms-imp-h{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--text-2)}
+.ms-imp-h span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-imp-h b{flex:none;color:#11774F;font-size:13px}
+.ms-imp.down .ms-imp-h b{color:#26357A}
+.ms-imp-bar{position:relative;display:block;height:8px;border-radius:99px;background:#E4E8F1;overflow:hidden}
+.ms-imp-bar>b{position:absolute;left:0;top:0;bottom:0;background:#26357A;border-radius:99px 0 0 99px}
+.ms-imp-bar>em{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,#18966A 0 4px,#4CC38A 4px 8px);animation:msimp 1.6s ease-in-out infinite alternate}
+.ms-imp.down .ms-imp-bar>em{background:repeating-linear-gradient(45deg,#C9D2E6 0 4px,#E4E8F1 4px 8px)}
+@keyframes msimp{from{opacity:.55}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.ms-imp-bar>em{animation:none}}
+.ms-imp small{font-size:12px;color:var(--text-2);font-weight:600}
+.ms-imp.note{background:none;padding:0 2px}
+.ms-imp.note span{font-size:12.5px;color:var(--text-2)}
 </style>
 </head>
 <body>
