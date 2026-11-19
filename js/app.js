@@ -4740,7 +4740,7 @@ async function progressPop(pops) {
   const busy = () => document.querySelector('.cdlg-wrap, [aria-modal="true"], dialog[open], .skc-wrap');
   for (let i = 0; i < 60 && busy(); i++) await new Promise((r) => setTimeout(r, 1000));
   if (busy() || !view || view.name !== 'home') return;
-  const big = pops.some((p) => p.passed || p.to - p.from >= 10), w = document.createElement('div');
+  const big = true, w = document.createElement('div'); // every gain gets confetti, however small
   w.className = 'cdlg-wrap pp-pop';
   const conf = big ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 22 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59'][i % 4]}"></i>`).join('')}</div>` : '';
   const row = (lab, from, to, k) => `<div class="pp-r"><div class="pp-rh"><span data-raw>${esc(lab)}<small class="pp-was">${PT(`was ${from}%`, `之前 ${from}%`)}</small></span><b><span class="pp-n" data-from="${from}" data-to="${to}">${from}</span>%</b><em class="ms-imp-g pp-g">+${to - from}%</em></div><i class="pp-bar"><b style="width:${from}%" data-to="${to}"></b><u style="left:${from}%;width:0" data-w="${to - from}"></u></i></div>`;
