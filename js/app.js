@@ -390,7 +390,7 @@ const AREAS = [
   ['remembered', 'Remembered over time', 15],
   ['fixed', 'Mistakes fixed', 10],
 ];
-const PASS = 0.8, TEST_MIN_Q = 3;
+const PASS = 0.8, TEST_MIN_Q = 3, MK_GRACE = 3;
 function chapterTarget(u) {
   const pages = u.startPage && u.endPage ? u.endPage - u.startPage + 1 : 0;
   const n = pages ? Math.round(pages * 1.2) : Math.round((u.chars || 30000) / 2500);
@@ -441,8 +441,10 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const b4 = done.filter((q) => (st(q).box || 0) >= 4).length, b5 = done.filter((q) => (st(q).box || 0) >= 5).length;
   const remembered = Math.min(1, (0.5 * b4 + 0.5 * b5) / memTarget);
   // mistakes fixed
-  const open = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && qUnit(id).join(':') === key).length;
-  const fixed = done.length ? Math.max(0, 1 - open / 5) : 0;
+  // New mistakes are a to-do, not a penalty: only ones left unfixed for MK_GRACE days pull the chapter down
+  const openL = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && qUnit(id).join(':') === key), open = openL.length;
+  const stale = openL.filter(([, m]) => now - (m.t || 0) > MK_GRACE * DAY).length;
+  const fixed = done.length ? Math.max(0, 1 - stale / 5) : 0;
   // tested: passes (80%+) at least a week apart; the latest test must be a pass
   const tests = testsFor(key);
   const passes = tests.filter((x) => x.r[0] / x.r[1] >= PASS);
@@ -459,6 +461,9 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   if (!b5) pct = Math.min(pct, 95);                         // not yet shown it's remembered after a 2-week gap
   const learnedIt = !!(local.learned || {})[key];
   if (learnedIt) pct = Math.max(pct, LESSON_CREDIT); // a finished lesson is a real first step
+  // a chapter never goes down during a day of practice (it can ease off later if work is forgotten or left unfixed)
+  { const t0 = startOfToday(), MD = local.mastDay && local.mastDay.d === t0 ? local.mastDay : (local.mastDay = { d: t0, p: {} });
+    if (MD.p[key] == null) MD.p[key] = pct; else pct = Math.max(pct, MD.p[key]); }
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
@@ -10671,7 +10676,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       sub: passed ? Z(`${pct}%: proof you know this chapter.`, `${pct}%：證明你掌握了這一章。`) : Z(`80% passes. ${near ? `You’re only ${80 - pct}% away.` : 'Every test shows Buddy exactly what to work on.'}`, `80% 合格。${near ? `只差 ${80 - pct}%。` : '每次測驗都讓 Buddy 知道要練甚麼。'}`),
       bars: chBars,
       lines: passed ? bars.filter((b) => b.passed).map((b) => ['🔓', Z(`${b.lab} can now go up to ${b.cap}%`, `${b.lab} 現在最高可達 ${b.cap}%`)])
-        : [...(dropLine.length ? dropLine : [['📌', Z(`The ${missed} you missed are in your Mistake book.`, `答錯的 ${missed} 題已放進錯題簿。`)]]), ['🔁', Z('Fix them, then try again on another day. Buddy will bring the test back in your mission.', '改正後，另一日再考。Buddy 會在任務中再安排。')]],
+        : [...(dropLine.length ? dropLine : [['📌', Z(`The ${missed} you missed are in your Mistake book. Fix them in the next ${MK_GRACE} days to keep this chapter safe.`, `答錯的 ${missed} 題已放進錯題簿。在 ${MK_GRACE} 日內改正，保住這一章的進度。`)]]), ['🔁', Z('Fix them, then try again on another day. Buddy will bring the test back in your mission.', '改正後，另一日再考。Buddy 會在任務中再安排。')]],
       main: passed ? home : fix || home, alt: passed ? null : { label: Z('Later', '稍後'), run: null } });
   }
   if (sess.mode === 'dse' || sess.mode === 'mock') { // a mock paper: score, time, and the weaker section
@@ -10695,7 +10700,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   return say({ face: great ? 'done' : 'happy', confetti: great || grew, sel: 'main.results', hero, chips, tone: great ? 'great' : ok ? 'ok' : 'tough',
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
-    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fixing the ${missed} you missed now is the fastest way up.`, `現在改正答錯的 ${missed} 題，是進步最快的方法。`)]] : [])],
+    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : [])],
     main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : { label: Z('See Buddy’s next step', '看看 Buddy 的下一步'), run: () => { const r = document.getElementById('rsugg'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' }); else window.scrollTo(0, 0); } } });
 }
 function renderSummary() {
