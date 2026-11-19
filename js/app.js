@@ -1155,10 +1155,19 @@ function planHTML(missionDone) {
       <div class="bp-steps">${P.steps.map((x, k) => `<button class="bp-row ${done[k] ? 'done' : ''} ${k === next ? 'is-next' : ''}" data-pstep="${k}"><span class="ms-ic">${actionIcon(PLAN_IC[x.action] || 'practise', 16)}</span><span class="bp-t"><b data-raw>${esc(x.label)}</b><small data-raw>${x.why ? `${esc(x.why)} · ` : ''}${PT(`${x.minutes} min`, `${x.minutes} 分鐘`)}</small></span>${done[k] ? `<span class="ms-tick">${ICON.check}</span>` : k === next ? `<span class="ms-next">${PT('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`).join('')}</div>
       ${next < 0 ? `<p class="bp-done">🎉 ${PT('Plan done! Great extra work today.', '計劃完成！今天額外努力，做得好！')}</p>` : `<button class="btn ms-start" id="bpGo">${done.some(Boolean) ? PT('Keep going', '繼續') : PT('Start', '開始')} · ${PT(`${mins} min`, `${mins} 分鐘`)}</button>`}</section>`;
   }
-  const chips = [PT('30 min on my weakest subject', '30 分鐘練最弱的科目'), PT('Get me ready for my next test', '幫我準備下一次測驗'), PT('15 min quick boost', '15 分鐘快速提升')];
-  return `<section class="bp-ask-card${missionDone ? ' big' : ''}"><div class="bp-ah">${buddySVG('happy', missionDone ? 40 : 30)}<div><b>${missionDone ? PT('Got more time? Tell Buddy what you want', '還有時間？告訴 Buddy 你想做甚麼') : PT('Want something different? Ask Buddy for a plan', '想做點別的？請 Buddy 訂計劃')}</b>${missionDone ? `<small>${PT('How long you have, and what you want to get better at. Buddy builds a plan from your own chapters.', '說說你有多少時間、想加強甚麼。Buddy 會用你自己的章節訂計劃。')}</small>` : ''}</div></div>
-    <form class="bp-form" id="bpForm"><input id="bpQ" class="tinput" maxlength="200" placeholder="${PT('e.g. 30 minutes, I want 100% in my Maths test', '例如：30 分鐘，我想數學測驗拿 100 分')}" ${planState.busy ? 'disabled' : ''}><button class="btn" ${planState.busy ? 'disabled' : ''}>${planState.busy ? PT('Planning…', '計劃中…') : PT('Plan it', '訂計劃')}</button></form>
-    ${planState.busy ? '' : `<div class="tchips bp-chips">${chips.map((c) => `<button class="tchip" data-pchip>${esc(c)}</button>`).join('')}</div>`}
+  // no plan yet: a card like the others, with a few one-tap plans (and a box to ask for anything else)
+  const nt = upcomingTests().find((x) => x.kind !== 'dict'), mkN = mistakeCount();
+  const quick = [
+    ['⚡', PT('15-min boost', '15 分鐘快速提升'), PT('Quick win on your weakest chapter', '最弱一章快速進步'), PT('15 minutes: a quick boost on my weakest chapter', '15 分鐘：在最弱的一章快速提升')],
+    ...(nt ? [['📝', PT(`Ready for ${nt.name}`, `準備「${nt.name}」`), PT(`${testLeft(nt) === 0 ? 'Today' : testLeft(nt) === 1 ? 'Tomorrow' : `In ${testLeft(nt)} days`} · 30 min`, `${testLeft(nt) === 0 ? '今天' : testLeft(nt) === 1 ? '明天' : `${testLeft(nt)} 日後`} · 30 分鐘`), PT(`30 minutes to get me ready for my ${nt.name}, weakest chapters first`, `30 分鐘幫我準備「${nt.name}」，先做最弱的章節`)]] : []),
+    ['🎯', PT('Weakest subject', '最弱的科目'), PT('30 min where you need it most', '30 分鐘練最需要的'), PT('30 minutes on my weakest subject', '30 分鐘練最弱的科目')],
+    ['📚', PT('Study session', '溫習時段'), PT('45 min · learn, practise, test', '45 分鐘 · 學、練、測'), PT('A 45-minute study session: a lesson, practice, then a short test', '45 分鐘溫習：先上課，再練習，最後做小測')],
+    ...(mkN >= 3 ? [['🔁', PT('Fix my mistakes', '改正錯題'), PT(`${mkN} waiting · 15 min`, `${mkN} 題 · 15 分鐘`), PT('15 minutes fixing my mistakes', '15 分鐘改正錯題')]] : []),
+  ].slice(0, 4);
+  return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}"><div class="ms-head"><h2>${missionDone ? PT('Want to do more?', '想再做多一點？') : PT('Want something different?', '想做點別的？')}</h2><span class="bpq-bud" aria-hidden="true">${buddySVG('happy', 34)}</span></div>
+    <div class="bpq-grid">${quick.map(([ic, t, sub, ask]) => `<button class="bpq" data-pask="${esc(ask)}" ${planState.busy ? 'disabled' : ''}><span class="bpq-ic" aria-hidden="true">${ic}</span><b>${t}</b><small>${sub}</small></button>`).join('')}</div>
+    ${planState.busy ? `<p class="bpq-busy">${buddySVG('happy', 22)} ${PT('Buddy is planning…', 'Buddy 正在計劃…')}</p>` : ''}
+    <form class="bp-form bpq-form" id="bpForm"><input id="bpQ" class="tinput" maxlength="200" placeholder="${PT('Or tell Buddy what you want…', '或者告訴 Buddy 你想做甚麼…')}" ${planState.busy ? 'disabled' : ''}><button class="btn" aria-label="${PT('Plan it', '訂計劃')}" ${planState.busy ? 'disabled' : ''}>${PT('Plan it', '訂計劃')}</button></form>
     ${planState.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(planState.error)}</p>` : ''}</section>`;
 }
 // Changing or removing Buddy's plan asks first, so a stray tap can't lose it
@@ -1189,7 +1198,7 @@ function bindPlan() {
       if (!(await confirmLeave({ title: PT('Remove Buddy’s plan?', '移除 Buddy 的計劃？'), body: PT('It goes away for today. Steps you’ve done still count.', '今天的計劃會移除。已完成的步驟仍然計算。'), stay: PT('Keep it', '保留'), leave: PT('Remove', '移除') }))) return;
       local.bplan = null; saveLocal(); renderHome(); }; }
   { const f = document.getElementById('bpForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); askPlan(document.getElementById('bpQ').value); }; }
-  $app.querySelectorAll('[data-pchip]').forEach((b) => (b.onclick = () => askPlan(b.textContent)));
+  $app.querySelectorAll('[data-pask]').forEach((b) => (b.onclick = () => askPlan(b.dataset.pask)));
 }
 
 // Carry out what the coach decided to open (it only does this after the student agrees, or asks).
