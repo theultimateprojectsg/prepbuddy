@@ -3827,6 +3827,21 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-why[hidden]{display:none!important}
 .ms-card .ms-item:not(.is-next) .ms-hd .pv-tag2,.ms-card .ms-item:not(.is-next) .ms-q{display:none}
 .ms-card .ms-item:not(.is-next) .ms-row{padding-top:2px}
+/* steps: tap to open, Start inside each open step */
+#msstart,#bpGo{display:none!important}
+.ms-card .ms-item{cursor:pointer}
+.ms-card .ms-item.is-next,.ms-card .ms-item.is-open{cursor:default}
+.ms-go{width:100%;margin:4px 0 12px;min-height:46px}
+.ms-card .ms-item:not(.is-next):not(.is-open) .ms-go{display:none}
+.ms-card .ms-item.is-open{border:1.5px solid #B9C6EE;background:#F7F9FE;padding-bottom:2px}
+.ms-card .ms-item.is-open .ms-imp,.ms-card .ms-item.is-open .ms-q,.ms-card .ms-item.is-open .ms-hd .pv-tag2{display:revert}
+.ms-card .ms-item.is-open .ms-q{display:grid}
+.ms-card .ms-item.is-open .ms-hd .pv-tag2{display:inline-block}
+.ms-card .ms-item.is-open .ms-imp{display:block}
+.ms-card .ms-item.is-open .ms-subj{background:#26357A;color:#fff}
+.ms-card .ms-item .ms-exp::before{content:"⌄"!important;font-size:20px!important;margin-top:-8px!important}
+.ms-card .ms-item.is-open .ms-exp{transform:rotate(180deg)}
+.ms-card .ms-item.is-open>.ms-row .ms-ring{display:grid}
 </style>
 </head>
 <body>

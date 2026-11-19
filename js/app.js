@@ -2884,8 +2884,9 @@ async function renderHome() {
     ? `<details class="msd"><summary class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></summary>${doneInfo(x)}</details>`
     : (() => { const why = x.now.why || x.why, tg = x.now.tag || x.tag, ms = maxStars(x);
       return `<div class="ms-item ${k === nk ? 'is-next' : ''}"><div class="ms-hd">${x.now.subj ? `<em class="ms-subj" data-raw>${esc(x.now.subj)}</em>` : `<span class="ms-ic">${actionIcon(x.icon, 16)}</span>`}${tg ? `<em class="pv-tag2 ${tg[0]}">${esc(tg[1])}</em>` : ''}${why ? `<button type="button" class="ms-q" aria-expanded="false" aria-label="${Z('Why this step?', '為甚麼做這一步？')}">?</button>` : ''}<span class="ms-meta">${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}${ms ? ` · <span class="ms-stars" title="${Z('Most stars you can earn', '最多可賺的星星')}">${starSVG(12)} ${ms}</span>` : ''}</span></div>`
-        + `<button class="ms-row" ${x.now.attr}><span class="ms-t"><b data-raw>${esc(x.now.t)}</b>${x.now.s ? `<small data-raw>${esc(x.now.s)}</small>` : ''}</span>${k === nk ? '' : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${impHTML(impact[x.key])}`
-        + `${why ? `<p class="ms-why" hidden><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(why)}</span></p>` : ''}</div>`; })();
+        + `<div class="ms-row"><span class="ms-t"><b data-raw>${esc(x.now.t)}</b>${x.now.s ? `<small data-raw>${esc(x.now.s)}</small>` : ''}</span>${k === nk ? '' : '<span class="ms-ring ms-exp" aria-hidden="true"></span>'}</div>${impHTML(impact[x.key])}`
+        + `${why ? `<p class="ms-why" hidden><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(why)}</span></p>` : ''}`
+        + `<button class="btn ms-go" ${x.now.attr}>${k === nk ? Z('Start', '開始') : Z('Start this step', '開始這一步')}</button></div>`; })();
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
@@ -3204,7 +3205,7 @@ async function renderHome() {
   <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
   { const co = document.getElementById('coachOpen'); if (co) co.onclick = () => { document.getElementById('coach').classList.remove('folded'); const q = document.getElementById('coachQ'); if (q) q.focus({ preventScroll: true }); document.getElementById('coach').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
   bindHomeCommon();
-  { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-row') || $app.querySelector('.ms-item .ms-row'); if (r) r.click(); }; }
+  { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-go') || $app.querySelector('.ms-item .ms-go'); if (r) r.click(); }; }
   { const a = document.getElementById('glAddTest'); if (a) a.onclick = () => testDialog(); }
   ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); });
   $app.querySelectorAll('[data-cbmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.combo', b.dataset.cbmode); renderHome(); }));
@@ -3224,15 +3225,22 @@ async function renderHome() {
     const card = $app.querySelector('.ms-card'); if (!card) return go({ name: 'practice' });
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     card.classList.remove('ms-flash'); void card.offsetWidth; card.classList.add('ms-flash');
-    const first = card.querySelector('button.ms-row'); if (first) setTimeout(() => first.focus({ preventScroll: true }), 450);
+    const first = card.querySelector('.ms-go'); if (first) setTimeout(() => first.focus({ preventScroll: true }), 450);
   }; }
   bindSchoolTests();
   $app.querySelectorAll('.tdc-more').forEach((b) => (b.onclick = () => { const el = b.closest('.tdc-ch'), open = el.classList.toggle('open'); b.textContent = open ? Z('Show fewer', '顯示較少') : b.dataset.more; }));
   $app.querySelectorAll('.tdc-prog').forEach((b) => (b.onclick = () => go({ name: 'progress' })));
-  { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('button.ms-row'); if (r) r.click(); }; }
-  $app.querySelectorAll('.ms-item>.ms-hd').forEach((h) => (h.onclick = (e) => { const it = h.closest('.ms-item'), q = e.target.closest('.ms-q');
+  { const st = document.getElementById('msstart'); if (st) st.onclick = () => { const r = $app.querySelector('.ms-card:not(.bp-card) .ms-item.is-next .ms-go') || $app.querySelector('.ms-card:not(.bp-card) .ms-go'); if (r) r.click(); }; }
+  // Tapping a step only opens it (no accidental starts); each open step has its own Start button
+  $app.querySelectorAll('.ms-item').forEach((it) => (it.onclick = (e) => {
+    if (e.target.closest('.ms-go')) return;
+    const q = e.target.closest('.ms-q');
     if (q) { const w = it.querySelector('.ms-why'); if (!w) return; const open = w.hidden; w.hidden = !open; q.setAttribute('aria-expanded', String(open)); q.classList.toggle('on', open); return; }
-    const r = it.querySelector('button.ms-row'); if (r) r.click(); }));
+    if (it.classList.contains('is-next') || e.target.closest('.ms-imp,.ms-why')) return;
+    const open = !it.classList.contains('is-open');
+    it.closest('.ms-card').querySelectorAll('.ms-item.is-open').forEach((o) => o.classList.remove('is-open'));
+    it.classList.toggle('is-open', open);
+  }));
   { const b = document.getElementById('twX'); if (b) b.onclick = () => { const c = b.closest('.td-wins'); local.winsHid = { d: dayStart(), k: c.dataset.k }; saveLocal(); c.remove(); }; }
   $app.querySelectorAll('[data-mtime]').forEach((b) => (b.onclick = () => { local.mtime = +b.dataset.mtime; local.mission = null; saveLocal(); renderHome(); }));
   { const lg = document.getElementById('lessonGo'); if (lg && lessonLeft) lg.onclick = () => go({ name: 'learn', bookId: lessonLeft.b.id, unitId: lessonLeft.u.id }); }
