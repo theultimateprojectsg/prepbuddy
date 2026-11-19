@@ -3738,6 +3738,30 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .bp-new{animation:bpnew 1.2s ease 2}
 @keyframes bpnew{0%,100%{box-shadow:0 0 0 0 rgba(38,53,122,0)}50%{box-shadow:0 0 0 6px rgba(38,53,122,.18)}}
 @media (prefers-reduced-motion:reduce){.bpt-bud,.bpt-dots i,.bp-new{animation:none}.bpt-steps li{animation-duration:.01s}}
+/* compact one-tap plan tiles: icon beside the words */
+.bpq{flex-direction:row;align-items:center;gap:10px;min-height:0;padding:10px 11px}
+.bpq-ic{font-size:22px;margin:0;flex:none;width:36px;height:36px;border-radius:10px;background:#fff;display:grid;place-items:center;box-shadow:0 1px 3px rgba(30,42,90,.08)}
+.bpq-tx{display:flex;flex-direction:column;gap:1px;min-width:0}
+.bpq b{font-size:14px;line-height:1.2}.bpq small{font-size:12px;line-height:1.25}
+.bpq-or{display:flex;align-items:center;gap:10px;margin:12px 0 8px;color:var(--muted);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.bpq-or::before,.bpq-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.bpq-form2{display:flex;align-items:center;gap:8px;padding:5px 5px 5px 8px;border-radius:999px;border:1.5px solid var(--line);background:#fff;transition:border-color .15s,box-shadow .15s}
+.bpq-form2:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(38,53,122,.12)}
+.bpq-fb{flex:none;display:flex}
+.bpq-form2 input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:16px;color:var(--ink);padding:8px 2px}
+.bpq-send{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;cursor:pointer}
+.bpq-send:active{transform:scale(.94)}.bpq-send[disabled]{opacity:.5}
+/* mission and plan steps: each one its own card; only the next one opens up with its bar and Buddy's reason */
+.ms-card .ms-item{border:1px solid var(--line);border-radius:14px;padding:0 12px;margin-top:8px;background:#fff}
+.ms-card .ms-item+.ms-item{margin-top:8px}
+.ms-card .ms-item.is-next{border:1.5px solid #B9C6EE;background:#F7F9FE;box-shadow:0 2px 8px rgba(38,53,122,.07);padding-bottom:2px}
+.ms-card .ms-item:not(.is-next) .ms-imp,.ms-card .ms-item:not(.is-next) .ms-why{display:none}
+.ms-card .ms-item:not(.is-next)>.ms-row{padding:10px 0}
+.ms-card .ms-item:not(.is-next) .ms-t b{font-size:15px}
+.ms-card .ms-item:not(.is-next) .pv-tag2{display:none}
+.ms-card .ms-item:not(.is-next) .ms-ring{border:0!important;background:#EEF1FB!important;display:grid;place-items:center;color:var(--accent)}
+.ms-card .ms-item:not(.is-next) .ms-ring::before{content:"›";font-size:22px;font-weight:700;line-height:1;margin-top:-2px}
+.ms-card .ms-item:not(.is-next)>.ms-row:active{transform:scale(.985)}
 </style>
 </head>
 <body>

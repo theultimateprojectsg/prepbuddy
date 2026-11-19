@@ -1182,9 +1182,10 @@ function planHTML(missionDone) {
   ].slice(0, 4);
   if (planState.busy) return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}">${planThinkingHTML()}</section>`;
   return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}"><div class="ms-head"><h2>${missionDone ? PT('Want to do more?', '想再做多一點？') : PT('Want something different?', '想做點別的？')}</h2><span class="bpq-bud" aria-hidden="true">${buddySVG('happy', 34)}</span></div>
-    <div class="bpq-grid">${quick.map(([ic, t, sub, ask]) => `<button class="bpq" data-pask="${esc(ask)}" ${planState.busy ? 'disabled' : ''}><span class="bpq-ic" aria-hidden="true">${ic}</span><b>${t}</b><small>${sub}</small></button>`).join('')}</div>
+    <div class="bpq-grid">${quick.map(([ic, t, sub, ask]) => `<button class="bpq" data-pask="${esc(ask)}" ${planState.busy ? 'disabled' : ''}><span class="bpq-ic" aria-hidden="true">${ic}</span><span class="bpq-tx"><b>${t}</b><small>${sub}</small></span></button>`).join('')}</div>
     ${planState.busy ? `<p class="bpq-busy">${buddySVG('happy', 22)} ${PT('Buddy is planning…', 'Buddy 正在計劃…')}</p>` : ''}
-    <form class="bp-form bpq-form" id="bpForm"><input id="bpQ" class="tinput" maxlength="200" placeholder="${PT('Or tell Buddy what you want…', '或者告訴 Buddy 你想做甚麼…')}" ${planState.busy ? 'disabled' : ''}><button class="btn" aria-label="${PT('Plan it', '訂計劃')}" ${planState.busy ? 'disabled' : ''}>${PT('Plan it', '訂計劃')}</button></form>
+    <div class="bpq-or"><span>${PT('or ask for anything', '或者自己說')}</span></div>
+    <form class="bpq-form2" id="bpForm"><span class="bpq-fb" aria-hidden="true">${buddySVG('happy', 28)}</span><input id="bpQ" maxlength="200" enterkeyhint="send" aria-label="${PT('Tell Buddy what you want to do', '告訴 Buddy 你想做甚麼')}" placeholder="${PT('e.g. 20 min on fractions', '例如：20 分鐘練分數')}" ${planState.busy ? 'disabled' : ''}><button class="bpq-send" aria-label="${PT('Plan it', '訂計劃')}" ${planState.busy ? 'disabled' : ''}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
     ${planState.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(planState.error)}</p>` : ''}</section>`;
 }
 // Changing or removing Buddy's plan asks first, so a stray tap can't lose it
