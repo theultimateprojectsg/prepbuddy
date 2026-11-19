@@ -612,6 +612,23 @@ function askTime(title, detail, suggested) {
   });
 }
 
+// The mission's weekly mini mock: a short school-format paper (Section A multiple choice, Section B written) on chapters they've practised
+async function startMiniMock(book, units) {
+  if (!units.length) return go({ name: 'paper', bookId: book.id, from: 'home' });
+  if (!allow('mock')) return;
+  track('mini_mock');
+  const nA = 10, nB = 2, mins = await askTime(LANG === 'zh' ? '模擬小測' : 'Mini mock', LANG === 'zh' ? `${nA} 題選擇題，${nB} 題文字題，來自 ${units.length} 章。` : `${nA} multiple-choice and ${nB} written questions from ${units.length} chapters.`, paperMinutes(nA, nB));
+  if (mins === null) return;
+  try {
+    const paper = await preparePaper(book, shuffle(units.slice()).slice(0, 6), nA, nB, 'sit');
+    if (!paper) return;
+    startDse(book, paper, mins);
+    S.title = LANG === 'zh' ? '模擬小測' : 'Mini mock';
+  } catch (e) {
+    toast(e.status === 0 ? 'You seem to be offline.' : (e.message || 'Could not prepare the paper.'));
+    go({ name: 'home' });
+  }
+}
 async function startChapterTest(book, units) {
   if (!allow('test')) return;
   track('chapter_test');
@@ -2507,6 +2524,7 @@ function missionHowHTML(id = 'howMission') {
     ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'A lesson for a chapter you haven’t started, or your weakest one. A practice test the day before.', '先上還未開始的章節，或練最弱的一章。考試前一天做模擬測驗。'],
     ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
+    ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', 'Practice gets a chapter to 70%. When it’s ready, its timed test (80% to pass) takes it higher, and a second pass on another day higher still. Once a week, a short timed paper across your chapters.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
     ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
     ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
 }
@@ -2633,6 +2651,29 @@ async function renderHome() {
   if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Go over 10 questions from before', '溫習 10 題舊題目'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
   else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Go over ${due.length} question${due.length > 1 ? 's' : ''} from before`, `溫習 ${due.length} 題舊題目`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
   if (mk) { const n = Math.min(5, mk); cands.push({ key: 'mk', icon: 'mistakes', t: mk > n ? Z(`Fix ${n} of your ${mk} mistakes`, `改正 ${n} 題錯題（共 ${mk} 題）`) : Z(`Fix ${mk} mistake${mk > 1 ? 's' : ''}`, `改正 ${mk} 題錯題`), s: Z('Questions you didn’t get fully right', '未完全答對的題目'), attr: 'id="mistakes"', chk: { y: 'mk', n: mk, k: n } }); }
+  // Exam components: practice alone stops at 70%. A chapter that's ready gets its timed chapter test (80% to pass, up to 85%);
+  // one passed a few days ago gets a second test on another day (up to 95%). Once a week, a short mini mock across chapters.
+  { const inT = new Set(cands.flatMap((c) => (c.chk && c.chk.u ? [`${c.chk.b}:${c.chk.u}`] : c.chk && c.chk.us ? c.chk.us.map((u) => `${c.chk.b}:${u}`) : [])));
+    const used = books.filter((b) => local.log.some((e) => e.q && e.q.startsWith(b.id + ':')));
+    let first = null, again = null, mock = null;
+    for (const b of used) { const m = await bookMastery(b);
+      for (const c of m.chapters) { if (inT.has(`${b.id}:${c.unit.id}`)) continue;
+        if (!c.passes && c.done >= Math.min(6, c.target || 8) && c.pct >= 55 && (!first || c.pct > first.c.pct)) first = { b, c };
+        else if (c.passes && (!c.spread || !c.lastPass) && c.lastTest && Date.now() - c.lastTest >= 3 * DAY && (!again || c.pct > again.c.pct)) again = { b, c }; }
+      const prac = m.chapters.filter((c) => c.done >= 4);
+      if (prac.length >= 3 && (!mock || prac.length > mock.us.length)) mock = { b, us: prac.map((c) => c.unit.id) }; }
+    const t = first || again;
+    if (t) { const nm = shortTitle(t.c.unit.title);
+      cands.push({ key: `${first ? 'ct' : 'ct2'}:${t.b.id}:${t.c.unit.id}`, icon: 'test', t: first ? Z(`Chapter test: ${nm}`, `章節測驗：${nm}`) : Z(`Prove it again: ${nm}`, `再證明一次：${nm}`),
+        s: Z('Timed · 80% to pass', '限時 · 80% 合格'), attr: `data-ctest="${esc(t.b.id)}:${esc(t.c.unit.id)}"`, chk: { y: 'ctest', b: t.b.id, u: t.c.unit.id },
+        tag: ['test', first ? Z('Prove it', '證明實力') : Z('Prove it again', '再證明一次')],
+        why: first ? Z(`You’ve practised ${nm} enough to try its chapter test. Practice alone stops at 70%: passing the test (80% or more) takes it up to 85%.`, `你已經練習「${nm}」夠多，可以做章節測驗。只靠練習最多 70%：測驗合格（80% 或以上）可升至 85%。`)
+          : Z(`You passed ${nm} before. Passing again on a different day shows it has really stuck, and takes it up to 95%.`, `你之前通過了「${nm}」。在另一日再次合格，證明真的記住了，可升至 95%。`) }); }
+    const lastMock = Math.max(0, ...(local.tests || []).filter((x) => x.kind === 'mini' || x.kind === 'paper').map((x) => x.t));
+    if (mock && Date.now() - lastMock >= 7 * DAY) { const sj = mock.b.subject ? subj(mock.b.subject) : shortTitle(mock.b.title);
+      cands.push({ key: `mm:${mock.b.id}`, icon: 'test', t: Z(`Mini mock: ${sj}`, `模擬小測：${sj}`), s: Z(`${mock.us.length} chapters · timed · Section A + B`, `${mock.us.length} 章 · 限時 · 甲部 + 乙部`),
+        attr: `data-mmock="${esc(mock.b.id)}"`, chk: { y: 'mm', b: mock.b.id, us: mock.us }, tag: ['test', Z('Weekly mini mock', '每週模擬小測')],
+        why: Z(`Once a week: a short timed paper mixing the ${mock.us.length} chapters you’ve practised, like the real exam. It shows what you can do under time pressure.`, `每週一次：混合你練過的 ${mock.us.length} 章的限時短卷，像真正的考試，看看在時間壓力下的表現。`) }); } }
   // the weakest chapter practised lately (first tries, last 2 weeks), if it isn't already in the list
   { const by = {}, wk2 = Date.now() - 14 * DAY, seen = new Set();
     for (const e of local.log) { if (!e.q || !e.m || seen.has(e.q)) continue; seen.add(e.q); if (e.t < wk2 || e.k === 'mistakes' || e.k === 'spaced') continue; const k = String(e.q).split(':').slice(0, 2).join(':'); (by[k] || (by[k] = [])).push(e); }
@@ -2675,6 +2716,8 @@ async function renderHome() {
     if (c.y === 'learn') return !!(local.learned || {})[`${c.b}:${c.u}`];
     if (c.y === 'dict') { const L = (local.dict || []).find((d) => d.id === c.L); return !!(L && (L.runs || []).some((r) => r.t >= M.at)); }
     if (c.y === 'wr') return (local.wr || []).some((w) => w.t >= M.at || (w.drafts || []).some((d) => d.t >= M.at));
+    if (c.y === 'ctest') return (local.tests || []).some((x) => x.t >= M.at && x.kind === 'test' && x.b === c.b);
+    if (c.y === 'mm') return (local.tests || []).some((x) => x.t >= M.at && (x.kind === 'paper' || x.kind === 'mini') && x.b === c.b);
     if (c.y === 'lv') return !!(local.placement || {})[c.b] || bookAnswered(c.b);
     if (c.y === 'log') { // done when a set in this book was finished, not left halfway (or a full set's worth was answered across tries)
       const n = local.log.filter((e) => e.t >= M.at && e.k !== 'place' && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length;
@@ -2689,7 +2732,7 @@ async function renderHome() {
   { const left = steps.filter((x) => !x.done && x.now).length, d = startOfToday(); if (!local.msLeft || local.msLeft.d !== d || local.msLeft.n !== left) { local.msLeft = { d, n: left }; saveLocal(); renderTabs(); } }
   { const md = local.mdone || (local.mdone = {}); const nd = steps.filter((x) => x.done).length; const prev = md[t0]; if (!prev || prev[0] !== nd || prev[1] !== steps.length) { md[t0] = [nd, steps.length]; Object.keys(md).filter((k) => +k < t0 - 60 * DAY).forEach((k) => delete md[k]); saveLocal(); } }
   // a rough time for each job, so the header can say how long today's mission takes
-  const jobMin = (x) => { if (x.mins) return x.mins; const k = x.key, ic = x.icon;
+  const jobMin = (x) => { if (x.mins) return x.mins; const k = x.key, ic = x.icon; if (k.startsWith('mm:')) return 20;
     if (k === 'rv') return Math.max(2, Math.round(Math.min(10, due.length) * 0.6));
     if (k === 'mk') return Math.max(3, (x.chk && x.chk.k) || 5);
     if (k.startsWith('lv:')) return 5;
@@ -2766,11 +2809,14 @@ async function renderHome() {
           impact[x.key] = it;
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
         else if (c.y === 'rv') impact[x.key] = { lab: Z('Questions due for review', '到期要溫習的題目'), from: due.length, to: Math.max(0, due.length - 10), u: '', down: true, max: due.length, test: Z('Keeps them in long-term memory', '把它們留在長期記憶裏') };
+        else if (c.y === 'ctest') { const m = await bm(c.b); const ch = m && m.chapters.find((y) => y.unit.id === c.u);
+          if (ch) { const cap = ch.passes ? 95 : 85; impact[x.key] = { lab: Z('This chapter', '這一章'), from: ch.pct, to: Math.min(cap, ch.pct + 15), u: '%', test: Z(`Pass it (80% or more) to unlock up to ${cap}%. Not passing doesn’t lower anything.`, `合格（80% 或以上）可解鎖至 ${cap}%。不合格也不會扣分。`) }; } }
+        else if (c.y === 'mm') impact[x.key] = { note: Z('Exam practice under time pressure, across your chapters', '跨章節的限時考試練習') };
         else if (c.y === 'lv') impact[x.key] = { note: Z('After this, every chapter starts at your level', '之後每一章都由你的程度開始') };
       } catch (e) { /* no bar for this one */ } } }
   // the most stars a step can earn (same rules as awardSession and friends): shown so children know what's up for grabs
   const maxStars = (x) => { if (!starsOn()) return 0; if (x.maxS) return x.maxS; const c = x.chk || {};
-    return { log: 2, learn: 1, mk: (c.k || 1) + 2, rv: 3, lv: 2, dict: 2, wr: 3 }[c.y] || 0; };
+    return { log: 2, learn: 1, mk: (c.k || 1) + 2, rv: 3, lv: 2, dict: 2, wr: 3, ctest: 3, mm: 2 }[c.y] || 0; };
   // the bar: where you are now (coloured by how strong it is) and, striped green with a "+N" chip, what this step adds
   const impBar = (from, to, max, down) => { const a = Math.round((100 * Math.min(from, to)) / max), b = Math.round((100 * Math.max(from, to)) / max);
     return `<i class="ms-imp-bar" aria-hidden="true"><b style="width:${a}%"></b><em style="left:${a}%;width:${Math.max(2, b - a)}%"></em></i>`; };
@@ -3139,6 +3185,8 @@ async function renderHome() {
   $app.querySelectorAll('[data-wrgo]').forEach((b) => (b.onclick = () => go({ name: 'writing' })));
   $app.querySelectorAll('[data-mlearn]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.mlearn.split(':'); go({ name: 'learn', bookId: bid, unitId: uid }); }));
   $app.querySelectorAll('.msd [data-go]').forEach((b) => (b.onclick = () => go({ name: b.dataset.go, tab: 'todo' })));
+  $app.querySelectorAll('[data-ctest]').forEach((b) => (b.onclick = async () => { const [bid, uid] = b.dataset.ctest.split(':'); const bk = (await getBooks()).find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startChapterTest(bk, [u]); }));
+  $app.querySelectorAll('[data-mmock]').forEach((b) => (b.onclick = async () => { const st = M.steps.find((x) => x.key === `mm:${b.dataset.mmock}`); const bk = (await getBooks()).find((x) => x.id === b.dataset.mmock); if (bk) startMiniMock(bk, bk.units.filter((u) => ((st && st.chk && st.chk.us) || []).includes(u.id))); }));
   $app.querySelectorAll('[data-weak]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.weak.split(':'), bk = books.find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
