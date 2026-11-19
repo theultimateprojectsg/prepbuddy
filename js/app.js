@@ -1220,11 +1220,11 @@ function planHTML(missionDone, pick, askOnly) {
   // no plan yet: a card like the others, with a few one-tap plans (and a box to ask for anything else)
   const nt = upcomingTests().find((x) => x.kind !== 'dict'), mkN = mistakeCount();
   const quick = [
-    ...(mkN || planState.due ? [['🔁', PT('Clear your to-dos', '清理待辦'), [mkN ? PT(`${mkN} mistake${mkN === 1 ? '' : 's'}`, `${mkN} 題錯題`) : '', planState.due ? PT(`${planState.due} review${planState.due === 1 ? '' : 's'}`, `${planState.due} 題溫習`) : ''].filter(Boolean).join(' · ') + PT(' · 15 min', ' · 15 分鐘'), PT('15 minutes clearing my to-dos: fix my mistakes first, then the reviews that are due', '15 分鐘清理待辦：先改正錯題，再做到期的溫習')]] : []),
-    ['⚡', PT('15-min boost', '15 分鐘快速提升'), PT('Quick win on your weakest chapter', '最弱一章快速進步'), PT('15 minutes: a quick boost on my weakest chapter', '15 分鐘：在最弱的一章快速提升')],
-    ['🎯', PT('Weakest subject', '最弱的科目'), PT('30 min where you need it most', '30 分鐘練最需要的'), PT('30 minutes on my weakest subject', '30 分鐘練最弱的科目')],
+    ...(mkN || planState.due ? [['🔁', PT('Clear your to‑dos', '清理待辦'), [mkN ? PT(`${mkN} mistake${mkN === 1 ? '' : 's'}`, `${mkN} 題錯題`) : '', planState.due ? PT(`${planState.due} review${planState.due === 1 ? '' : 's'}`, `${planState.due} 題溫習`) : ''].filter(Boolean).join(' · ') + PT(' · 15 min', ' · 15 分鐘'), PT('15 minutes clearing my to-dos: fix my mistakes first, then the reviews that are due', '15 分鐘清理待辦：先改正錯題，再做到期的溫習')]] : []),
+    ['⚡', PT('15-min boost', '15 分鐘快速提升'), PT('Your weakest chapter', '最弱的一章'), PT('15 minutes: a quick boost on my weakest chapter', '15 分鐘：在最弱的一章快速提升')],
+    ['🎯', PT('Weakest subject', '最弱的科目'), PT('30 min where it’s needed', '30 分鐘練最需要的'), PT('30 minutes on my weakest subject', '30 分鐘練最弱的科目')],
     ...(nt ? [['📝', PT(`Ready for ${nt.name}`, `準備「${nt.name}」`), PT(`${testLeft(nt) === 0 ? 'Today' : testLeft(nt) === 1 ? 'Tomorrow' : `In ${testLeft(nt)} days`} · 30 min`, `${testLeft(nt) === 0 ? '今天' : testLeft(nt) === 1 ? '明天' : `${testLeft(nt)} 日後`} · 30 分鐘`), PT(`30 minutes to get me ready for my ${nt.name}, weakest chapters first`, `30 分鐘幫我準備「${nt.name}」，先做最弱的章節`)]] : []),
-    ['🌱', PT('Learn something new', '學新東西'), PT('20 min · start the next chapter', '20 分鐘 · 開始下一章'), PT('20 minutes learning something new: the lesson for the next chapter I haven’t started, then a short practice', '20 分鐘學新東西：上下一章未開始的課，再做少量練習')],
+    ['🌱', PT('Learn something new', '學新東西'), PT('20 min · next chapter', '20 分鐘 · 下一章'), PT('20 minutes learning something new: the lesson for the next chapter I haven’t started, then a short practice', '20 分鐘學新東西：上下一章未開始的課，再做少量練習')],
     ['📚', PT('Study session', '溫習時段'), PT('45 min · learn, practise, test', '45 分鐘 · 學、練、測'), PT('A 45-minute study session: a lesson, practice, then a short test', '45 分鐘溫習：先上課，再練習，最後做小測')],
   ];
   if (planState.busy) return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}">${planThinkingHTML()}</section>`;
