@@ -2806,14 +2806,24 @@ async function renderHome() {
           if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const d = Math.max(1, Math.round((to - ch.pct) / tp.units.length)); it.tst = { n: tp.x.name, from: tp.ready, to: Math.min(100, tp.ready + d) }; }
           if ((local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('Last try went too fast, so it didn’t count. Read each question and it will.', '上次答得太快，所以不計。慢慢讀清楚每一題就會計算。');
           if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
+          it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid;
           impact[x.key] = it;
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
         else if (c.y === 'rv') impact[x.key] = { lab: Z('Questions due for review', '到期要溫習的題目'), from: due.length, to: Math.max(0, due.length - 10), u: '', down: true, max: due.length, test: Z('Keeps them in long-term memory', '把它們留在長期記憶裏') };
         else if (c.y === 'ctest') { const m = await bm(c.b); const ch = m && m.chapters.find((y) => y.unit.id === c.u);
-          if (ch) { const cap = ch.passes ? 95 : 85; impact[x.key] = { lab: Z('This chapter', '這一章'), from: ch.pct, to: Math.min(cap, ch.pct + 15), u: '%', test: Z(`Pass it (80% or more) to unlock up to ${cap}%. Not passing doesn’t lower anything.`, `合格（80% 或以上）可解鎖至 ${cap}%。不合格也不會扣分。`) }; } }
+          if (ch) { const cap = ch.passes ? 95 : 85; impact[x.key] = { cb: c.b, cu: c.u, nm: shortTitle(ch.unit.title), passes: ch.passes, lab: Z('This chapter', '這一章'), from: ch.pct, to: Math.min(cap, ch.pct + 15), u: '%', test: Z(`Pass it (80% or more) to unlock up to ${cap}%. Not passing doesn’t lower anything.`, `合格（80% 或以上）可解鎖至 ${cap}%。不合格也不會扣分。`) }; } }
         else if (c.y === 'mm') impact[x.key] = { note: Z('Exam practice under time pressure, across your chapters', '跨章節的限時考試練習') };
         else if (c.y === 'lv') impact[x.key] = { note: Z('After this, every chapter starts at your level', '之後每一章都由你的程度開始') };
-      } catch (e) { /* no bar for this one */ } } }
+      } catch (e) { /* no bar for this one */ } }
+    // Remember where each open step started; when it's done, show the real gain (once), with the bar growing
+    const PREV = local.impPrev && local.impPrev.d === t0 ? local.impPrev : (local.impPrev = { d: t0, s: {} }), pops = [];
+    for (const [k, it] of Object.entries(impact)) if (it.cb && it.cu && !PREV.s[k]) PREV.s[k] = { pct: it.from, b: it.cb, u: it.cu, nm: it.nm, tid: it.tid, tr: it.tst ? it.tst.from : null, passes: it.passes || 0 };
+    for (const x of [...steps, ...planSteps]) { const P0 = PREV.s[x.key]; if (!x.done || !P0 || P0.shown) continue;
+      const m = await bm(P0.b), ch = m && m.chapters.find((y) => y.unit.id === P0.u); P0.shown = 1; if (!ch) continue;
+      const tp = P0.tid && tests.steps.find((q) => q.x.id === P0.tid), passed = ch.passes > (P0.passes || 0);
+      if (ch.pct > P0.pct || passed) pops.push({ nm: P0.nm, from: P0.pct, to: ch.pct, passed, cap: ch.passes > 1 ? 95 : 85, tst: tp && P0.tr != null && tp.ready > P0.tr ? { n: tp.x.name, from: P0.tr, to: tp.ready } : null }); }
+    saveLocal();
+    if (pops.length) setTimeout(() => progressPop(pops), 300); }
   // the most stars a step can earn (same rules as awardSession and friends): shown so children know what's up for grabs
   const maxStars = (x) => { if (!starsOn()) return 0; if (x.maxS) return x.maxS; const c = x.chk || {};
     return { log: 2, learn: 1, mk: (c.k || 1) + 2, rv: 3, lv: 2, dict: 2, wr: 3, ctest: 3, mm: 2 }[c.y] || 0; };
@@ -4724,6 +4734,33 @@ document.addEventListener('click', async (e) => {
 });
 
 // Celebration: stars fly in, Buddy cheers, new badges shown.
+// After a step: the chapter's bar grows from where it was to where it is now, with the gain counting up.
+// Waits for other pop-ups (stars, streak, wins) so it never stacks on them.
+async function progressPop(pops) {
+  const busy = () => document.querySelector('.cdlg-wrap, [aria-modal="true"], dialog[open], .skc-wrap');
+  for (let i = 0; i < 60 && busy(); i++) await new Promise((r) => setTimeout(r, 1000));
+  if (busy() || !view || view.name !== 'home') return;
+  const big = pops.some((p) => p.passed || p.to - p.from >= 10), w = document.createElement('div');
+  w.className = 'cdlg-wrap pp-pop';
+  const conf = big ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 22 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59'][i % 4]}"></i>`).join('')}</div>` : '';
+  const row = (lab, from, to, k) => `<div class="pp-r"><div class="pp-rh"><span data-raw>${esc(lab)}<small class="pp-was">${PT(`was ${from}%`, `之前 ${from}%`)}</small></span><b><span class="pp-n" data-from="${from}" data-to="${to}">${from}</span>%</b><em class="ms-imp-g pp-g">+${to - from}%</em></div><i class="pp-bar"><b style="width:${from}%" data-to="${to}"></b><u style="left:${from}%;width:0" data-w="${to - from}"></u></i></div>`;
+  w.innerHTML = `${conf}<div class="cdlg pp-card" role="dialog" aria-modal="true" aria-labelledby="ppT"><div class="pp-bud">${buddySVG('happy', 64)}</div>
+    <b id="ppT" class="pp-h">${pops.some((p) => p.passed) ? PT('Test passed! 🎉', '測驗合格！🎉') : PT('Your progress grew!', '你進步了！')}</b>
+    ${pops.slice(0, 3).map((p, k) => `${row(p.nm, p.from, p.to, k)}${p.passed ? `<p class="pp-note">🔓 ${PT(`Unlocked: this chapter can now go up to ${p.cap}%`, `已解鎖：這一章現在最高可達 ${p.cap}%`)}</p>` : ''}${p.tst ? row(PT(`📝 ${p.tst.n} readiness`, `📝「${p.tst.n}」準備度`), p.tst.from, p.tst.to, k) : ''}`).join('')}
+    <button class="btn" id="ppOk">${PT('Nice!', '好！')}</button></div>`;
+  document.body.appendChild(w);
+  const close = () => w.remove();
+  w.querySelector('#ppOk').onclick = close; w.onclick = (e) => { if (e.target === w) close(); };
+  w.querySelector('#ppOk').focus();
+  // grow the bars and count the numbers up
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(() => {
+    w.querySelectorAll('.pp-bar u').forEach((u) => (u.style.width = u.dataset.w + '%'));
+    w.querySelectorAll('.pp-g').forEach((g) => g.classList.add('on'));
+    w.querySelectorAll('.pp-n').forEach((n) => { const a = +n.dataset.from, b = +n.dataset.to, t0 = performance.now(), dur = still ? 1 : 1100;
+      const step = (t) => { const k = Math.min(1, (t - t0) / dur); n.textContent = Math.round(a + (b - a) * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); });
+  }, still ? 0 : 450);
+}
 // Real wins, celebrated: a chapter mastered, a subject level up a whole point, a mistake fixed for good, ready for a test.
 // No points to chase: each one only happens through real learning, and each is celebrated once.
 let winsBusy = false;
