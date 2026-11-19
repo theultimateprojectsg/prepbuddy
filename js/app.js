@@ -2574,7 +2574,12 @@ async function renderHome() {
         c.why = p.step.icon === 'learn' && p.step.u ? Z(`Your ${p.x.name} is ${leftText(p.left)} and covers this chapter. You haven’t started it yet, so begin with the lesson.`, `「${p.x.name}」${leftText(p.left)}，範圍包括這一章。你還未開始，先上課。`) : Z(`Your ${p.x.name} is ${leftText(p.left)}. ${p.step.s}.`, `「${p.x.name}」${leftText(p.left)}。${p.step.s}。`).replace(/\.\.$/, '.'); } }
     else if (c.key === 'mk') { c.tag = ['mistakes', Z(`${mk} mistakes`, `${mk} 題錯題`)]; c.s = Z('Quickest way to win marks back', '最快拿回分數的方法'); c.why = Z('Questions you got wrong. Fixing them is the quickest way to win marks back.', '你答錯的題目。改正它們是最快拿回分數的方法。'); }
     else if (c.key === 'rv') { c.tag = ['review', Z('Due today', '今日到期')]; c.s = Z('Helps them stick', '幫你記得牢'); c.why = Z('These questions are due back today. Getting them right now is what makes them stick.', '這些題目今天到期。現在答對才會記得牢。'); }
-    else if (c.key.startsWith('lv:')) { c.tag = ['level', Z('New book', '新課本')]; c.s = Z('Quick check to find your starting point', '快速評估，找出起點'); c.why = Z('A 5-minute check so Buddy starts you at the right level in this new book.', '5 分鐘的評估，讓 Buddy 在這本新課本從適合你的程度開始。'); }
+    else if (c.key.startsWith('lv:')) { // say which book, and what the check is for
+      const nb = books.find((y) => y.id === c.key.slice(3)), sj = nb ? (nb.subject ? subj(nb.subject) : shortTitle(nb.title)) : '', bt = nb ? shortTitle(nb.title) : '';
+      c.tag = ['level', sj ? Z(`${sj} · first time`, `${sj} · 第一次`) : Z('New book', '新課本')];
+      c.t = sj ? Z(`Find your level in ${sj}`, `找出你的${sj}程度`) : c.t;
+      const nq = nb ? Math.max(6, Math.min(12, levelUnits(nb).length * 2)) : 12; c.s = Z(`${nq} quick questions · not a test`, `${nq} 條快速題目 · 不是測驗`);
+      c.why = Z(`You haven’t practised ${sj || 'this book'} here yet. A few questions from different chapters show Buddy what you already know, so you skip what’s easy and start where you need help. Nothing goes in your Mistake book.`, `你還未在這裏練習過${sj || '這本書'}。從不同章節做幾題，Buddy 就知道你已經懂甚麼，讓你跳過太易的，由需要幫忙的地方開始。答錯也不會放進錯題簿。`); }
     else if (c.key.startsWith('u:')) { c.tag = ['practise', Z('Keep going', '繼續')]; c.s = c.s.replace(/^Keep going( · )?/, Z('Pick up where you left off', '從上次的地方繼續') + '$1').replace(/^繼續( · )?/, '從上次的地方繼續$1'); }
     else if (!c.tag) c.tag = ['learn', Z('Get started', '開始')];
   }
