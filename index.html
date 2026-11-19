@@ -3855,6 +3855,8 @@ body.mo-lock{overflow:hidden}
 /* Buddy's plan: every step open, each with its own Start */
 .bp-card .ms-item.is-open{cursor:default}
 .bp-card .ms-item .ms-exp{display:none!important}
+/* a progress bar inside a column (loading screens) keeps its height; flex:1 is only for the top bar */
+.stack>.progress,main>.progress{flex:none;height:8px}
 </style>
 </head>
 <body>
