@@ -2326,7 +2326,7 @@ async function renderLearn(bookId, unitId) {
     const lm = document.getElementById('lnMain'); if (!lm) return;
     { const bk = document.getElementById('back'); if (bk) { if (R.k >= 0 && R.k < n) bk.dataset.kind = 'lesson'; else delete bk.dataset.kind; } }
     const y = window.scrollY;
-    lm.innerHTML = `${R.k >= 0 && R.k < n ? dots : ''}${body}`;
+    lm.innerHTML = `${DEV && R.k < n ? '<div class="dev-pass"><span>DEV · lesson</span><button type="button" id="devLn">Finish it now</button></div>' : ''}${R.k >= 0 && R.k < n ? dots : ''}${body}`;
     renderMath(lm);
     if (!answered) window.scrollTo(0, 0);
     else {
@@ -2343,6 +2343,7 @@ async function renderLearn(bookId, unitId) {
     }
     if (!R.busy) drawChat();
     on('askb', () => { const c = document.getElementById('lnchat'); if (c && !desk()) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); askBuddy(T('Help me with the quick check', '小測給我一點提示')); });
+    on('devLn', () => { L.steps.forEach((st, i) => { if (st.check && R.picked[i] === undefined) { R.picked[i] = st.check.answer; R.right++; } }); R.k = n; finish(); draw(); });
     on('go1', () => { R.k = 0; draw(); });
     on('prev', () => { R.k--; draw(); });
     on('next', () => { R.k++; if (R.k >= n) finish(); draw(); });
