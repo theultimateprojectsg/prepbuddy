@@ -5053,10 +5053,10 @@ async function moment(o) {
     ${chips.length ? `<div class="mo-chips">${chips.map(([k, t]) => `<span class="mo-chip ${k}">${t}</span>`).join('')}</div>` : ''}
     ${(o.bars || []).slice(0, 3).map(bar).join('')}
     ${(o.lines || []).length ? `<ul class="mo-lines">${o.lines.map(([i, t]) => `<li><span aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>` : ''}
-    </div></div><div class="mo-btns">${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}<button class="btn ${o.main ? 'ghost' : ''}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button></div></div>`;
+    </div></div><div class="mo-btns">${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}${o.alt === false && o.main ? '' : `<button class="btn ${o.main ? 'ghost' : ''}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button>`}</div></div>`;
   document.body.classList.add('mo-lock'); document.body.appendChild(w);
   const close = () => { w.remove(); if (!document.querySelector('.mo-pop')) document.body.classList.remove('mo-lock'); };
-  w.querySelector('#moAlt').onclick = () => { close(); if (o.alt && o.alt.run) o.alt.run(); };
+  const mA = w.querySelector('#moAlt'); if (mA) mA.onclick = () => { close(); if (o.alt && o.alt.run) o.alt.run(); };
   const m = w.querySelector('#moMain'); if (m) m.onclick = () => { close(); o.main.run(); };
   w.onclick = (e) => { if (e.target === w) close(); };
   (m || w.querySelector('#moAlt')).focus({ preventScroll: true }); { const cd = w.querySelector('.mo-scroll'); if (cd) cd.scrollTop = 0; }
@@ -10856,7 +10856,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   const chBars = [...bars.map((b) => ({ lab: b.lab, from: b.from, to: b.to })), ...(fixedN ? [{ lab: Z('Mistakes to fix', '待改正的錯題'), from: sess.preMk, to: mkNow, u: '', max: sess.preMk }] : [])], grew = bars.some((b) => b.to > b.from) || fixedN > 0;
   const chips = [['ok', Z(`✅ ${right} right`, `✅ 答對 ${right}`)], missed ? ['miss', Z(`❌ ${missed} to fix`, `❌ ${missed} 題要改`)] : null, fixedN ? ['fix', Z(`🔧 ${fixedN} fixed`, `🔧 改正 ${fixedN}`)] : null, stars ? ['star', `⭐ +${stars}`] : null];
   const toAnswers = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-  const hero = { pct, txt: `${right}/${qs.length}` }, sml = starMomentLines(sess.won);
+  const hero = { pct }, sml = starMomentLines(sess.won);
   const say = (o) => moment({ ...o, lines: [...(o.lines || []), ...sml] });
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
   { const P = local.impPrev, ids = qs.map((q) => qUnit(q.id)[1]); if (P && P.s && sess.book) { Object.values(P.s).forEach((x) => { if (x.b === sess.book.id && ids.includes(x.u)) x.shown = 1; }); saveLocal(); } }
@@ -10911,7 +10911,7 @@ async function resultMoment(sess, qs, pct, got, total) {
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : [])],
-    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : { label: Z('See Buddy’s next step', '看看 Buddy 的下一步'), run: () => { const r = document.getElementById('rsugg'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' }); else window.scrollTo(0, 0); } } });
+    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : false });
 }
 function renderSummary() {
   setTimeout(() => pilotSync(), 3000);
