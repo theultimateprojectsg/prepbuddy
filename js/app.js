@@ -4834,7 +4834,7 @@ async function moment(o) {
   const w = document.createElement('div'); w.className = 'cdlg-wrap pp-pop mo-pop';
   const conf = o.confetti ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59', '#B57AF0'][i % 5]}"></i>`).join('')}</div>` : '';
   const bar = (b) => { const u = b.u == null ? '%' : b.u, max = b.max || 100, a = Math.round((100 * Math.min(b.from, b.to)) / max), z = Math.round((100 * Math.max(b.from, b.to)) / max), d = b.to - b.from;
-    return `<div class="pp-r"><div class="pp-rh"><span data-raw>${esc(b.lab)}${d ? `<small class="pp-was">${PT(`was ${b.from}${u}`, `之前 ${b.from}${u}`)}</small>` : ''}</span><b><span class="pp-n" data-from="${b.from}" data-to="${b.to}">${b.from}</span>${u}</b>${d ? `<em class="ms-imp-g pp-g">${d > 0 ? '+' : '−'}${Math.abs(d)}${u}</em>` : ''}</div><i class="pp-bar"><b style="width:${a}%"></b><u style="left:${a}%;width:0" data-w="${z - a}"></u></i></div>`; };
+    return `<div class="pp-r mo-r"><small class="mo-rl" data-raw>${esc(b.lab)}</small><div class="mo-rv">${d ? `<span class="mo-rf">${b.from}${u}</span><span class="mo-ra" aria-hidden="true">→</span>` : ''}<b><span class="pp-n" data-from="${b.from}" data-to="${b.to}">${b.from}</span>${u}</b>${d ? `<em class="ms-imp-g pp-g">${d > 0 ? '+' : '−'}${Math.abs(d)}${u}</em>` : ''}</div><i class="pp-bar"><b style="width:${a}%"></b><u style="left:${a}%;width:0" data-w="${z - a}"></u></i></div>`; };
   if (o.confetti) sfx('win'); else sfx('pop');
   // the banner: sunny with turning rays for a win, calm blue for good work, soft lilac for a tough one; a score ring or a big icon in the middle
   const tone = o.tone || (o.confetti ? 'great' : 'ok'), rays = tone === 'great' ? `<div class="sc2-rays" aria-hidden="true">${Array.from({ length: 12 }, (_, i) => `<i style="transform:rotate(${i * 30}deg)"></i>`).join('')}</div>` : '';
@@ -4899,7 +4899,7 @@ async function progressPop(pops) {
   const big = true, w = document.createElement('div'); // every gain gets confetti, however small
   w.className = 'cdlg-wrap pp-pop'; sfx('win');
   const conf = big ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 22 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59'][i % 4]}"></i>`).join('')}</div>` : '';
-  const row = (lab, from, to, k) => `<div class="pp-r"><div class="pp-rh"><span data-raw>${esc(lab)}<small class="pp-was">${PT(`was ${from}%`, `之前 ${from}%`)}</small></span><b><span class="pp-n" data-from="${from}" data-to="${to}">${from}</span>%</b><em class="ms-imp-g pp-g">+${to - from}%</em></div><i class="pp-bar"><b style="width:${from}%" data-to="${to}"></b><u style="left:${from}%;width:0" data-w="${to - from}"></u></i></div>`;
+  const row = (lab, from, to, k) => `<div class="pp-r mo-r"><small class="mo-rl" data-raw>${esc(lab)}</small><div class="mo-rv"><span class="mo-rf">${from}%</span><span class="mo-ra" aria-hidden="true">→</span><b><span class="pp-n" data-from="${from}" data-to="${to}">${from}</span>%</b><em class="ms-imp-g pp-g">+${to - from}%</em></div><i class="pp-bar"><b style="width:${from}%" data-to="${to}"></b><u style="left:${from}%;width:0" data-w="${to - from}"></u></i></div>`;
   w.innerHTML = `${conf}<div class="cdlg pp-card" role="dialog" aria-modal="true" aria-labelledby="ppT"><div class="pp-bud">${buddySVG('happy', 64)}</div>
     <b id="ppT" class="pp-h">${pops.some((p) => p.passed) ? PT('Test passed! 🎉', '測驗合格！🎉') : PT('Your progress grew!', '你進步了！')}</b>
     ${pops.slice(0, 3).map((p, k) => `${row(p.nm, p.from, p.to, k)}${p.passed ? `<p class="pp-note">🔓 ${PT(`Unlocked: this chapter can now go up to ${p.cap}%`, `已解鎖：這一章現在最高可達 ${p.cap}%`)}</p>` : ''}${p.tst ? row(PT(`📝 ${p.tst.n} readiness`, `📝「${p.tst.n}」準備度`), p.tst.from, p.tst.to, k) : ''}`).join('')}
@@ -10623,7 +10623,7 @@ function starMomentLines(won) {
   const goal = rw.find((r) => r.id === st.saving) || rw.filter((r) => r.cost > st.bal).sort((x, y) => x.cost - y.cost)[0];
   const out = [], bd = won.badges || [];
   if (bd.length) out.push(['🏅', bd.length === 1 ? ST(`New badge: ${bd[0].en}!`, `新徽章：${bd[0].zh}！`) : ST(`New badges: ${bd.map((b) => b.en).join(', ')}!`, `新徽章：${bd.map((b) => b.zh).join('、')}！`)]);
-  if (won.n && goal) out.push(['⭐', ST(`${goal.cost - st.bal} more stars to ${goal.icon || '🎁'} ${goal.name}`, `再 ${goal.cost - st.bal} 粒星就可換 ${goal.icon || '🎁'} ${goal.name}`)]);
+  if (won.n && goal) out.push(['⭐', goal.cost <= st.bal ? ST(`You have enough for ${goal.icon || '🎁'} ${goal.name}! Ask a parent in the Star shop.`, `你的星星已足夠換 ${goal.icon || '🎁'} ${goal.name}！去星星商店問爸爸媽媽吧。`) : ST(`${goal.cost - st.bal} more stars to ${goal.icon || '🎁'} ${goal.name}`, `再 ${goal.cost - st.bal} 粒星就可換 ${goal.icon || '🎁'} ${goal.name}`)]);
   if (won.capped && !won.n) out.push(['⭐', ST('That’s all the stars for today. Practice still counts!', '今日的星星已經拿完，練習照樣計算！')]);
   return out;
 }
@@ -10689,7 +10689,7 @@ async function resultMoment(sess, qs, pct, got, total) {
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...keepGoing, ...(wantFix ? [['📌', Z(`Fixing the ${missed} you missed now is the fastest way up.`, `現在改正答錯的 ${missed} 題，是進步最快的方法。`)]] : [])],
-    main: wantFix ? fix : (lever && lever.main) || home, alt: { label: wantFix ? Z('Later', '稍後') : Z('See my answers', '看看我的答案'), run: wantFix ? null : toAnswers } });
+    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : { label: Z('See Buddy’s next step', '看看 Buddy 的下一步'), run: () => { const r = document.getElementById('rsugg'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' }); else window.scrollTo(0, 0); } } });
 }
 function renderSummary() {
   setTimeout(() => pilotSync(), 3000);
@@ -10906,7 +10906,7 @@ async function fillSuggestion({ unitRef, qs, pct, missed, drillable, drill, agai
   const rlab = rp === null ? '' : rp >= 70 ? Z('Nearly test-ready', '差不多可以應考') : rp >= 40 ? Z('Getting there', '漸入佳境') : Z('Just started', '剛剛起步');
   // same look as a mission step: the step on top, the chapter bar, Buddy's reason, then the button
   const ic = /lesson|上.*課/i.test(s.t) ? 'learn' : /test|測驗/i.test(s.t) ? 'test' : /drill|weak|弱項/i.test(s.t) ? 'weak' : /key points|重點/i.test(s.t) ? 'notes' : /fresh|記憶/i.test(s.t) ? 'review' : 'practise';
-  const score = prevPct !== null ? Z(`Your score here: ${prevPct}% before → ${pct}% this set`, `你在這一章的得分：之前 ${prevPct}% → 今次 ${pct}%`) : Z(`This set: ${pct}%`, `今次：${pct}%`);
+  const score = prevPct !== null ? (pct > prevPct + 4 ? Z(`${pct}% this set, better than your usual ${prevPct}% on this chapter`, `今次 ${pct}%，比你平時在這一章的 ${prevPct}% 更好`) : pct < prevPct - 4 ? Z(`${pct}% this set. You usually get ${prevPct}% on this chapter`, `今次 ${pct}%。你平時在這一章有 ${prevPct}%`) : Z(`${pct}% this set, about your usual on this chapter`, `今次 ${pct}%，和你平時在這一章差不多`)) : Z(`${pct}% this set`, `今次 ${pct}%`);
   const bar = rp === null ? '' : `<div class="ms-imp"><div class="ms-imp-h"><span>${esc(Z('Chapter ready for the test', '本章應考準備度'))}${LANG !== 'zh' ? ` · <i class="ms-imp-lv">${esc(rlab)}</i>` : ''}</span><span class="ms-imp-v"><b>${rp}%</b></span></div><i class="ms-imp-bar" aria-hidden="true"><b style="width:${rp}%"></b></i><small class="rsg-score ${prevPct !== null && pct > prevPct + 4 ? 'up' : ''}">${esc(score)}</small></div>`;
   box.querySelector('.rsg-body').innerHTML = `<div class="ms-item is-next rsg-item"><div class="ms-row"><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(ic, 16)}</span><em class="pv-tag2">${esc(Z('Next step', '下一步'))}</em></span><b data-raw>${esc(s.t)}</b></span></div>
     ${bar}<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(s.why)}</span></p></div>
