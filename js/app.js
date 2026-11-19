@@ -2732,7 +2732,9 @@ async function renderHome() {
   if (last) {
     const sc = scoreOf(await getQs(last.book.id, last.unit.id));
     cands.push({ key: `u:${last.book.id}:${last.unit.id}`, icon: 'practise', t: shortTitle(last.unit.title), s: Z(`Keep going${sc !== null ? ` · scored ${sc}%` : ''}`, `繼續${sc !== null ? ` · 得分 ${sc}%` : ''}`), attr: 'id="continue"', chk: { y: 'log', b: last.book.id, us: [last.unit.id] } });
-  } else cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z('Practise your first chapter', '練習第一章'), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-book="${esc(books[0].id)}"`, chk: { y: 'log', b: books[0].id, us: null } });
+  } else { // nothing practised yet: start straight away on the first real chapter (not a summary or glossary)
+    const u0 = books[0].units.find((u) => !NOT_TEACHING.test(String(u.title))) || books[0].units[0];
+    cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z(`Practise ${shortTitle(u0.title)}`, `練習「${shortTitle(u0.title)}」`), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-firstch="${esc(books[0].id)}:${esc(u0.id)}"`, chk: { y: 'log', b: books[0].id, us: [u0.id] } }); }
   // every mission step says why it's there: a coloured reason tag and one plain sentence
   for (const c of cands) {
     if (c.key.startsWith('c:')) continue;
@@ -3238,6 +3240,7 @@ async function renderHome() {
   const ct = document.getElementById('continue');
   if (ct) ct.onclick = () => { pick = { bookId: last.book.id, ids: new Set([last.unit.id]) }; go({ name: 'book', bookId: last.book.id }); };
   $app.querySelectorAll('[data-book]').forEach((b) => (b.onclick = () => go({ name: 'book', bookId: b.dataset.book })));
+  $app.querySelectorAll('[data-firstch]').forEach((b) => (b.onclick = async () => { const [bid, uid] = b.dataset.firstch.split(':'); const bk = (await getBooks()).find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) { pick = { bookId: bid, ids: new Set([uid]) }; startUnits(bk, [u], sessionSize()); } else go({ name: 'book', bookId: bid }); }));
   { const sg = document.getElementById('streakGo'); if (sg) sg.onclick = () => {
     if (doneToday) return toast(Z(`You’ve practised today ✓ Come back tomorrow to make it ${streak + 1} days in a row.`, `今天已練習 ✓ 明天再來，就連續 ${streak + 1} 日了。`));
     // take them to Today's mission (and light it up) so they choose the step, rather than jumping into one
