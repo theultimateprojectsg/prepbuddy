@@ -10722,7 +10722,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       sub: passed ? Z(`${pct}%: proof you know this chapter.`, `${pct}%：證明你掌握了這一章。`) : Z(`80% passes. ${near ? `You’re only ${80 - pct}% away.` : 'Every test shows Buddy exactly what to work on.'}`, `80% 合格。${near ? `只差 ${80 - pct}%。` : '每次測驗都讓 Buddy 知道要練甚麼。'}`),
       bars: chBars,
       lines: passed ? bars.filter((b) => b.passed).map((b) => ['🔓', Z(`${b.lab} can now go up to ${b.cap}%`, `${b.lab} 現在最高可達 ${b.cap}%`)])
-        : [...(dropLine.length ? dropLine : [['📌', Z(`The ${missed} you missed are in your Mistake book. Fix them in the next ${MK_GRACE} days to keep this chapter safe.`, `答錯的 ${missed} 題已放進錯題簿。在 ${MK_GRACE} 日內改正，保住這一章的進度。`)]]), ['🔁', Z('Fix them, then try again on another day. Buddy will bring the test back in your mission.', '改正後，另一日再考。Buddy 會在任務中再安排。')]],
+        : [...(dropLine.length ? dropLine : [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Buddy will bring the test back in your mission.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。Buddy 會在任務中再安排測驗。`)]])],
       main: passed ? home : fix || home, alt: passed ? null : { label: Z('Later', '稍後'), run: null } });
   }
   if (sess.mode === 'dse' || sess.mode === 'mock') { // a mock paper: score, time, and the weaker section
