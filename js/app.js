@@ -2760,7 +2760,7 @@ async function renderHome() {
           const nm = shortTitle(ch.unit.title), it = { lab: String(x.now.t || '').includes(nm) ? Z('This chapter', '這一章') : nm, from: ch.pct, to, u: '%' };
           // a test's chapter: what it does for that test too
           const tid = (String(x.key).match(/^[tc]:([^:]+)/) || [])[1], tp = tid && tests.steps.find((q) => q.x.id === tid);
-          if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const d = Math.max(1, Math.round((to - ch.pct) / tp.units.length)); it.test = Z(`${tp.x.name}: ${tp.ready}% → ${Math.min(100, tp.ready + d)}% ready`, `「${tp.x.name}」：準備度 ${tp.ready}% → ${Math.min(100, tp.ready + d)}%`); }
+          if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const d = Math.max(1, Math.round((to - ch.pct) / tp.units.length)); it.tst = { n: tp.x.name, from: tp.ready, to: Math.min(100, tp.ready + d) }; }
           if ((local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('Last try went too fast, so it didn’t count. Read each question and it will.', '上次答得太快，所以不計。慢慢讀清楚每一題就會計算。');
           if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
           impact[x.key] = it;
@@ -2771,10 +2771,15 @@ async function renderHome() {
   // the most stars a step can earn (same rules as awardSession and friends): shown so children know what's up for grabs
   const maxStars = (x) => { if (!starsOn()) return 0; if (x.maxS) return x.maxS; const c = x.chk || {};
     return { log: 2, learn: 1, mk: (c.k || 1) + 2, rv: 3, lv: 2, dict: 2, wr: 3 }[c.y] || 0; };
+  // the bar: where you are now (coloured by how strong it is) and, striped green with a "+N" chip, what this step adds
+  const impTone = (v) => (v >= 70 ? 'good' : v >= 40 ? 'mid' : 'low');
+  const impBar = (from, to, max, down) => { const a = Math.round((100 * Math.min(from, to)) / max), b = Math.round((100 * Math.max(from, to)) / max);
+    return `<i class="ms-imp-bar" aria-hidden="true"><b class="${down ? 'low' : impTone(from)}" style="width:${a}%"></b><em style="left:${a}%;width:${Math.max(2, b - a)}%"></em></i>`; };
   const impHTML = (it) => { if (!it) return '';
     if (it.from == null) return it.note ? `<div class="ms-imp note"><span>${it.note}</span></div>` : '';
-    const max = it.max || 100, a = Math.round((100 * Math.min(it.from, it.to)) / max), b = Math.round((100 * Math.max(it.from, it.to)) / max);
-    return `<div class="ms-imp${it.down ? ' down' : ''}"><div class="ms-imp-h"><span data-raw>${esc(it.lab)}</span><b>${it.from}${it.u} → ${it.to}${it.u}</b></div><i class="ms-imp-bar" aria-hidden="true"><b style="width:${a}%"></b><em style="left:${a}%;width:${b - a}%"></em></i>${it.test ? `<small data-raw>${esc(it.test)}</small>` : ''}${it.note ? `<small>${it.note}</small>` : ''}${it.warn ? `<small class="ms-imp-w">${it.warn}</small>` : ''}</div>`; };
+    const max = it.max || 100, d = Math.abs(it.to - it.from), chip = d ? `<em class="ms-imp-g">${it.down ? '−' : '+'}${d}${it.u}</em>` : '';
+    const tst = it.tst ? `<div class="ms-imp-h ms-imp-t"><span data-raw>📝 ${esc(Z(`${it.tst.n} readiness`, `「${it.tst.n}」準備度`))}</span><span class="ms-imp-v"><em class="ms-imp-g">+${it.tst.to - it.tst.from}%</em><b>${it.tst.from}% → ${it.tst.to}%</b></span></div>${impBar(it.tst.from, it.tst.to, 100)}` : '';
+    return `<div class="ms-imp${it.down ? ' down' : ''}"><div class="ms-imp-h"><span data-raw>${esc(it.lab)}</span><span class="ms-imp-v">${chip}<b>${it.from}${it.u} → ${it.to}${it.u}</b></span></div>${impBar(it.from, it.to, max, it.down)}${tst}${it.test ? `<small data-raw>${esc(it.test)}</small>` : ''}${it.note ? `<small>${it.note}</small>` : ''}${it.warn ? `<small class="ms-imp-w">${it.warn}</small>` : ''}</div>`; };
   const stepRow = (x, k, nk = firstOpen) => x.done || !x.now
     ? `<details class="msd"><summary class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></summary>${doneInfo(x)}</details>`
     : `<div class="ms-item ${k === nk ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}${maxStars(x) ? `<span class="ms-stars" title="${Z('Most stars you can earn', '最多可賺的星星')}"> · ${starSVG(12)} ${Z(`up to ${maxStars(x)}`, `最多 ${maxStars(x)}`)}</span>` : ''}</small></span>${k === nk ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${impHTML(impact[x.key])}${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
