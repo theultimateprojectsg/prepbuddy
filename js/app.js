@@ -379,6 +379,27 @@ function scoreOf(questions) {
   questions.forEach((q) => { const s = local.stats[q.id]; if (s) { got += s.got; total += s.total; } });
   return total ? Math.round(100 * got / total) : null;
 }
+/* What one more practice set would really do to a chapter: answer a set (questions not seen yet first, then the
+   least-known) at the child's recent first-try accuracy in this chapter, work the % out exactly as it will be worked
+   out after the real set, then put everything back. So the bar on a step and the result afterwards agree. */
+function simPractice(book, u, qs, text, ntext, base, n) {
+  if (!qs.length) return 0;
+  const now = Date.now(), S0 = local.stats, M0 = local.mistakes || {};
+  const recent = local.log.filter((e) => e.m && e.k !== 'mistakes' && qs.some((q) => q.id === e.q)).slice(-20);
+  const p = recent.length >= 4 ? recent.reduce((a, e) => a + e.g / e.m, 0) / recent.length : 0.75;
+  const pool = [...qs.filter((q) => !S0[q.id]), ...qs.filter((q) => S0[q.id]).sort((a, b) => (S0[a.id].box || 0) - (S0[b.id].box || 0))].slice(0, n);
+  const right = Math.round(pool.length * p);
+  const logLen = local.log.length, md = JSON.stringify(local.mastDay || null), keep = new Map(pool.map((q) => [q.id, [S0[q.id], M0[q.id]]]));
+  try {
+    pool.forEach((q, k) => { const ok = k < right, m = marksOf(q), o = S0[q.id] || {};
+      local.log.push({ t: now, q: q.id, g: ok ? m : 0, m, l: q.level, k: 'practice', ty: choiceType(q) ? 'c' : 'w' });
+      S0[q.id] = { ...o, seen: (o.seen || 0) + 1, last: ok ? 1 : 0, box: ok ? Math.max(1, o.box || 0) : 1, due: now + DAY, t: now };
+      if (!ok) { local.mistakes = local.mistakes || {}; local.mistakes[q.id] = { t: now }; } });
+    return Math.max(0, chapterMastery(book, u, qs, text, ntext).pct - base);
+  } catch (e) { console.warn(e); return 0; }
+  finally { local.log.length = logLen; local.mastDay = JSON.parse(md);
+    keep.forEach(([st, mk], id) => { if (st === undefined) delete S0[id]; else S0[id] = st; if (mk === undefined) { if (local.mistakes) delete local.mistakes[id]; } else local.mistakes[id] = mk; }); }
+}
 /* ---------- mastery: how ready you are, per chapter and per book ----------
    A chapter earns its % in six areas. 100% means it has been covered, answered well (including hard and written
    questions), remembered over days, every mistake fixed, and passed in timed tests on different days. */
@@ -490,7 +511,8 @@ async function bookMastery(book) {
     store.getMany(book.units.map((u) => `text:${book.id}:${u.id}`), ''),
     store.getMany(book.units.map((u) => `qs:${book.id}:${u.id}`), []),
   ]);
-  const chapters = book.units.map((u, i) => ({ unit: u, ...chapterMastery(book, u, (lists[i] || []).filter((q) => !blocked(q)), texts[i] || '', ntextOf(`${book.id}:${u.id}`, texts[i] || '')) }));
+  const chapters = book.units.map((u, i) => { const qs = (lists[i] || []).filter((q) => !blocked(q)), tx = texts[i] || '', nt = ntextOf(`${book.id}:${u.id}`, tx);
+    const c = { unit: u, ...chapterMastery(book, u, qs, tx, nt) }; c.sim = (n) => simPractice(book, u, qs, tx, nt, c.pct, n); return c; });
   const w = chapters.reduce((t, c) => t + c.weight, 0) || 1;
   const raw = chapters.reduce((t, c) => t + c.pct * c.weight, 0) / w, pct = raw > 0 ? Math.max(1, Math.round(raw)) : 0; // started = at least 1%
   const areas = Object.fromEntries(AREAS.map(([k]) => [k, chapters.reduce((t, c) => t + c.score[k] * c.weight, 0) / w]));
@@ -1084,6 +1106,7 @@ function practiceGain(bookId, ch) {
   const capP = ch.passes ? 95 : 70, sc = ch.score || {};
   const room = ['covered', 'accurate', 'deep'].reduce((t, k) => t + (AREAS.find((a) => a[0] === k) || [0, 0, 0])[2] * (1 - (sc[k] || 0)), 0);
   const seen = ((local.chGain || {})[`${bookId}:${ch.unit.id}`] || []), avg = seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null;
+  if (ch.sim) return Math.min(capP - ch.pct, ch.sim(sessionSize()));
   return Math.max(0, Math.min(SET_GAIN, Math.round(room / 2), capP - ch.pct, avg == null ? SET_GAIN : Math.round(avg)));
 }
 // a plan step is worth doing today only if it can move something now
@@ -2945,10 +2968,12 @@ async function renderHome() {
     const us = (st.unitIds || []).length ? st.unitIds : null, mkN = mistakeCount();
     const chk = st.action === 'learn' && us ? { y: 'learn', b: st.bookId, u: us[0] } : ['practise', 'chapter_test'].includes(st.action) && us ? { y: 'log', b: st.bookId, us }
       : st.action === 'mistakes' && mistakesIn(st.bookId) ? { y: 'mk', n: mistakesIn(st.bookId), k: Math.min(5, mistakesIn(st.bookId)) } : st.action === 'review' ? { y: 'rv' } : { y: 'none' };
-    const kindLab = { review: Z('All subjects · reviews', '所有科目 · 溫習'), mistakes: Z('Mistake book', '錯題簿'), mock_paper: Z('Mock paper', '模擬試卷') }[st.action];
+    const rvSubj = [...new Set(due.slice(0, 10).map((y) => y.book.subject ? subj(y.book.subject) : shortTitle(y.book.title)))];
+    const kindLab = { review: rvSubj.length === 1 ? rvSubj[0] : Z('Reviews', '溫習'), mistakes: Z('Mistake book', '錯題簿'), mock_paper: Z('Mock paper', '模擬試卷') }[st.action];
     // one chapter: name it the same way every time ("Practise Unit 5 · Soil"), whatever words Buddy used
     const u1 = b && us && us.length === 1 ? b.units.find((u) => u.id === us[0]) : null, cn = u1 ? shortTitle(u1.title) : '';
-    const lab = !u1 ? st.label : { practise: Z(`Practise ${cn}`, `練習「${cn}」`), weak_topics: Z(`Practise ${cn}`, `練習「${cn}」`), chapter_test: Z(`Chapter test: ${cn}`, `章節測驗：${cn}`), learn: Z(`Lesson: ${cn}`, `課堂：${cn}`), notes: Z(`Notes: ${cn}`, `筆記：${cn}`), flashcards: Z(`Flashcards: ${cn}`, `閃卡：${cn}`) }[st.action] || st.label;
+    const rvN = Math.min(10, due.length);
+    const lab = st.action === 'review' ? Z(`Review ${rvN} question${rvN === 1 ? '' : 's'} from before`, `溫習 ${rvN} 題舊題目`) : !u1 ? st.label : { practise: Z(`Practise ${cn}`, `練習「${cn}」`), weak_topics: Z(`Practise ${cn}`, `練習「${cn}」`), chapter_test: Z(`Chapter test: ${cn}`, `章節測驗：${cn}`), learn: Z(`Lesson: ${cn}`, `課堂：${cn}`), notes: Z(`Notes: ${cn}`, `筆記：${cn}`), flashcards: Z(`Flashcards: ${cn}`, `閃卡：${cn}`) }[st.action] || st.label;
     const now = { t: lab, s: '', subj: sj || kindLab || Z('Buddy’s pick', 'Buddy 推介'), attr: `data-pstep="${k}"`, why: st.why, tag: null };
     return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: planStepMin(st), maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st) || (st.action === 'review' && !due.length), now }; // nothing due for review: nothing to do // reviews: also done once nothing is due
   }) : [];
@@ -2967,7 +2992,7 @@ async function renderHome() {
           const capP = ch.passes ? 95 : 70, sc = ch.score || {};
           const room = ['covered', 'accurate', 'deep'].reduce((t, k) => t + (AREAS.find((a) => a[0] === k) || [0, 0, 0])[2] * (1 - (sc[k] || 0)), 0);
           const seen = ((local.chGain || {})[`${c.b}:${ch.unit.id}`] || []), seenAvg = seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null;
-          const pracGain = Math.max(0, Math.min(SET_GAIN, Math.round(room / 2), capP - ch.pct, seenAvg == null ? SET_GAIN : Math.round(seenAvg)));
+          const pracGain = Math.max(0, ch.sim ? Math.min(capP - ch.pct, ch.sim(sessionSize())) : Math.min(SET_GAIN, Math.round(room / 2), capP - ch.pct, seenAvg == null ? SET_GAIN : Math.round(seenAvg)));
           const plateau = c.y === 'log' && !ch.passes && (pracGain < 3 || (ch.done >= Math.min(6, ch.target) && pracGain < 6));
           let asTest = false;
           if (plateau && String(x.key).startsWith('bp:') && PP) { const st = PP.steps[+String(x.key).slice(3)];
@@ -2981,12 +3006,12 @@ async function renderHome() {
           if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const d = Math.max(1, Math.round((to - ch.pct) / tp.units.length)); it.tst = { n: tp.x.name, from: tp.ready, to: Math.min(100, tp.ready + d) }; }
           if (!rushOff() && (local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('⚡ Too fast last time, so it didn’t count', '⚡ 上次太快，所以不計')
           if (asTest) it.test = Z('Pass it (80% or more) to unlock up to 85%.', '合格（80% 或以上）可解鎖至 85%。');
-          { const lv = chapterLever(ch); if (lv.k === 'wait') { it.to = ch.pct; it.note = Z(`Grows with reviews now. A retest counts from ${new Date(lv.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `現在靠溫習進步。重考由 ${new Date(lv.at).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起才計算。`); } }
+          { const lv = chapterLever(ch); if (lv.k === 'wait' && !asTest) { it.note = Z(`${it.to > ch.pct ? 'Practice still adds a little, reviews add more.' : 'Grows with reviews now.'} A retest counts from ${new Date(lv.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `現在靠溫習進步。重考由 ${new Date(lv.at).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起才計算。`); } }
           if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
           it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid;
           impact[x.key] = it;
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
-        else if (c.y === 'rv') impact[x.key] = { lab: Z('Questions due for review', '到期要溫習的題目'), from: due.length, to: Math.max(0, due.length - 10), u: '', down: true, max: due.length, test: Z('Keeps them in long-term memory', '把它們留在長期記憶裏') };
+        else if (c.y === 'rv') impact[x.key] = { lab: Z('Questions due for review', '到期要溫習的題目'), from: due.length, to: Math.max(0, due.length - 10), u: '', down: true, max: due.length, test: Z('Keeps them in long-term memory, and nudges up the chapters they’re from', '把它們留在長期記憶裏，也會令所屬章節稍為進步') };
         else if (c.y === 'ctest') { const m = await bm(c.b); const ch = m && m.chapters.find((y) => y.unit.id === c.u);
           if (ch) { const cap = ch.passes ? 95 : 85; impact[x.key] = { cb: c.b, cu: c.u, nm: shortTitle(ch.unit.title), passes: ch.passes, lab: Z('This chapter', '這一章'), from: ch.pct, to: Math.min(cap, ch.pct + 15), u: '%', test: Z(`Pass it (80% or more) to unlock up to ${cap}%. Anything you miss goes to your Mistake book to fix.`, `合格（80% 或以上）可解鎖至 ${cap}%。答錯的題目會放進錯題簿，改正即可。`) }; } }
         else if (c.y === 'mm') impact[x.key] = { note: Z('Exam practice under time pressure, across your chapters', '跨章節的限時考試練習') };
