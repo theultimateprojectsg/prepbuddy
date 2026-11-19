@@ -2923,16 +2923,18 @@ async function renderHome() {
       comboHTML = goalsCardHTML(GD, { testBody: cardOf, inMission: (G) => G.kind === 'test' && steps.some((x) => !x.done && x.now && String(x.key).startsWith(`c:${G.p.x.id}:`)) });
     }
 
+  const msFirst = !!missionHTML && !missionHTML.includes('ms-done'); // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
+    ${msFirst ? missionHTML : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
     ${installTip()}
     ${winHTML}
     ${lessonHTML}
     ${slipHTML}
-    ${missionHTML}
+    ${msFirst ? '' : missionHTML}
     ${tests.pastHTML}
     ${comboHTML ? '' : testHTML}
     ${quickHTML}
@@ -6370,6 +6372,7 @@ async function goalsData(tests) {
     if (x && used.has(x[0])) continue; // the same subject twice: once is enough
     if (!x) { out.push({ kind: 'longnew', id: 'l:' + (lg.subj || ''), lab: lg.subj, target: lg.target || 6.7 }); continue; }
     used.add(x[0]);
+    if ((x[8] || 0) < 40 || (x[5] || []).length < 2) { out.push({ kind: 'longnew', id: 'l:' + (lg.subj || ''), lab: x[0], target: lg.target || 6.7, started: true }); continue; } // a couple of sessions in: too early for a fair level
     const now = lv10(x[1]), target = lg.target || 6.7;
     out.push({ kind: 'long', id: 'l:' + (lg.subj || ''), lab: x[0], now, target, start: x[3] != null ? lv10(x[1] - x[3]) : null, change: x[3] != null ? Math.round((x[3] / 3) * 100) / 10 : null,
       st: now >= target ? 'done' : x[2] === 'rising' ? 'ok' : x[2] === 'dipping' ? 'risk' : 'close', line: (x[5] || []).map(lv10), nx: x[10] ? x[10][0] : null, others: S.filter((y) => y !== x).slice(0, 3).map((y) => ({ lab: y[0], now: lv10(y[1]) })) });
@@ -6608,7 +6611,7 @@ function goalsCardHTML(GD, o = {}) {
     const name = esc(g.lab);
     // subject goals open too: the level week by week, how far it has come, and what Buddy suggests next
     const toProg = o.progress ? '' : `<button class="linkbtn ag-more" data-gfocus2="${esc(g.id)}">${Z('See it on Progress', '在「進度」查看')} ›</button>`;
-    if (g.kind === 'longnew') return `<details class="ag-sc t l"><summary>${subHead(g, GIC.long, name, Z('Getting stronger · not started yet', '持續進步 · 未開始'))}</summary><div class="ag-body ag-lbody"><p>${Z(`Practise a few sets in ${esc(g.lab)} and Buddy will work out the level, out of 10, and show how it rises week by week.`, `在${esc(g.lab)}練習幾組，Buddy 就會算出程度（滿分 10），並顯示每週的進步。`)}</p></div></details>`;
+    if (g.kind === 'longnew') return `<details class="ag-sc t l"><summary>${subHead(g, GIC.long, name, g.started ? Z('Just started · level shows after a few sessions', '剛開始 · 練習幾次後顯示程度') : Z('Getting stronger · not started yet', '持續進步 · 未開始'))}</summary><div class="ag-body ag-lbody"><p>${Z(`Practise a few sets in ${esc(g.lab)} and Buddy will work out the level, out of 10, and show how it rises week by week.`, `在${esc(g.lab)}練習幾組，Buddy 就會算出程度（滿分 10），並顯示每週的進步。`)}</p></div></details>`;
     return `<details class="ag-sc t l ${g.st}"><summary>${mis}${subHead(g, GIC.long, name, Z(`Getting stronger`, `持續進步`))}
       ${(() => { const bst = g.st === 'done' ? 'ok' : g.st, ch = g.change != null && Math.abs(g.change) >= 0.1 ? g.change : null, ta = g.target * 10;
         // the same bar as the tests: level now on the left, the target line with its label, the change since starting on the right
@@ -8542,8 +8545,8 @@ function renderPlacementResult() {
   <div class="topbar"><span style="font-weight:600;font-size:16px;padding-left:4px">${LV('Level check', '程度評估')}</span></div>
   <main class="pad stack g18 plres" data-view="placement" style="flex:1">
     <section class="pl-hero">${buddySVG('done', 72)}<div><h1>${LV('Here’s your starting point', '這是你的起點')}</h1>
-      <p>${LV(`You got ${g} of ${m}. From now on, each chapter’s questions start at the right level for you.`, `你答對了 ${g}／${m} 題。之後每一章的題目都會由適合你的程度開始。`)}</p></div></section>
-    <section class="card pl-list">${rows.map((r) => `<div class="pl-row ${r.st[0]}"><span class="pl-dot" aria-hidden="true"></span><span class="pl-t"><b data-raw>${esc(cleanUnitTitle(r.u.title))}</b><small>${r.st[2]}</small></span><span class="pl-chip">${r.st[1]}</span><span class="pl-s">${r.gu}/${r.mu}</span></div>`).join('')}</section>
+      <p>${LV('Buddy now knows where to start you. Each chapter’s questions begin at the right level for you.', 'Buddy 已經知道由哪裏開始。之後每一章的題目都會由適合你的程度開始。')}</p></div></section>
+    <section class="card pl-list">${rows.map((r) => `<div class="pl-row ${r.st[0]}"><span class="pl-dot" aria-hidden="true"></span><span class="pl-t"><b data-raw>${esc(cleanUnitTitle(r.u.title))}</b><small>${r.st[2]}</small></span><span class="pl-chip">${r.st[1]}</span></div>`).join('')}</section>
     ${first ? `<section class="card pl-next"><h2>${LV('Where to begin', '建議由這裏開始')}</h2><p data-raw><b>${esc(cleanUnitTitle(first.title))}</b></p>
       <div class="rd-row"><button class="btn" id="plLearn">${LV('Learn it first', '先上一課')}</button><button class="btn ghost" id="plPrac">${LV('Practise it', '直接練習')}</button></div></section>` : ''}
     <button class="btn ghost" id="plBook">${LV('Back to the book', '返回課本')}</button>
@@ -10074,7 +10077,7 @@ function record(q, got) {
   local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '', ty, ...(helped ? { h: hN } : {}), ...(secs > 0 && secs < 900 ? { s: secs } : {}), ...ch, ...(fi > 0 && fi < 900 ? { fi } : {}) });
   // Mistake book: every question not fully right goes in; getting it fully right later marks it mastered.
   const mk = local.mistakes[q.id];
-  if (got < marksOf(q)) {
+  if (got < marksOf(q) && !(S && S.placement)) { // the level check places the child; its misses aren't mistakes
     const k = S ? S.qs.indexOf(q) : -1;
     const ans = k >= 0 ? S.answers[k] : null;
     // MCQ options are shuffled per session, so keep the text of the chosen option, not just its letter.
