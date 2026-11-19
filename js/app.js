@@ -2905,7 +2905,10 @@ async function renderHome() {
     const chk = st.action === 'learn' && us ? { y: 'learn', b: st.bookId, u: us[0] } : ['practise', 'chapter_test'].includes(st.action) && us ? { y: 'log', b: st.bookId, us }
       : st.action === 'mistakes' && mistakesIn(st.bookId) ? { y: 'mk', n: mistakesIn(st.bookId), k: Math.min(5, mistakesIn(st.bookId)) } : st.action === 'review' ? { y: 'rv' } : { y: 'none' };
     const kindLab = { review: Z('All subjects · reviews', '所有科目 · 溫習'), mistakes: Z('Mistake book', '錯題簿'), mock_paper: Z('Mock paper', '模擬試卷') }[st.action];
-    const now = { t: st.label, s: '', subj: sj || kindLab || Z('Buddy’s pick', 'Buddy 推介'), attr: `data-pstep="${k}"`, why: st.why, tag: null };
+    // one chapter: name it the same way every time ("Practise Unit 5 · Soil"), whatever words Buddy used
+    const u1 = b && us && us.length === 1 ? b.units.find((u) => u.id === us[0]) : null, cn = u1 ? shortTitle(u1.title) : '';
+    const lab = !u1 ? st.label : { practise: Z(`Practise ${cn}`, `練習「${cn}」`), weak_topics: Z(`Practise ${cn}`, `練習「${cn}」`), chapter_test: Z(`Chapter test: ${cn}`, `章節測驗：${cn}`), learn: Z(`Lesson: ${cn}`, `課堂：${cn}`), notes: Z(`Notes: ${cn}`, `筆記：${cn}`), flashcards: Z(`Flashcards: ${cn}`, `閃卡：${cn}`) }[st.action] || st.label;
+    const now = { t: lab, s: '', subj: sj || kindLab || Z('Buddy’s pick', 'Buddy 推介'), attr: `data-pstep="${k}"`, why: st.why, tag: null };
     return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: st.minutes, maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st) || (st.action === 'review' && !due.length), now }; // nothing due for review: nothing to do // reviews: also done once nothing is due
   }) : [];
   const impact = {};
