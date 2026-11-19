@@ -10618,6 +10618,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   const mkNow = mistakeCount(), fixedN = sess.preMk != null ? Math.max(0, sess.preMk - mkNow) : 0, stars = sess.won && sess.won.n ? sess.won.n : 0;
   const chBars = [...bars.map((b) => ({ lab: b.lab, from: b.from, to: b.to })), ...(fixedN ? [{ lab: Z('Mistakes to fix', '待改正的錯題'), from: sess.preMk, to: mkNow, u: '', max: sess.preMk }] : [])], grew = bars.some((b) => b.to > b.from) || fixedN > 0;
   const chips = [['ok', Z(`✅ ${right} right`, `✅ 答對 ${right}`)], missed ? ['miss', Z(`❌ ${missed} to fix`, `❌ ${missed} 題要改`)] : null, fixedN ? ['fix', Z(`🔧 ${fixedN} fixed`, `🔧 改正 ${fixedN}`)] : null, stars ? ['star', `⭐ +${stars}`] : null];
+  const toAnswers = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   const hero = { pct, txt: `${right}/${qs.length}` }, sml = starMomentLines(sess.won);
   const say = (o) => moment({ ...o, lines: [...(o.lines || []), ...sml] });
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
@@ -10647,7 +10648,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       sub: Z(`${got} of ${total} marks (${pct}%)`, `${total} 分中得 ${got} 分（${pct}%）`), bars: chBars,
       lines: [...(la ? [['🧾', la]] : []), ...(allowed ? [['⏱️', used <= allowed ? Z(`${used} of ${allowed} minutes: good timing`, `用了 ${used}／${allowed} 分鐘：時間控制得好`) : Z(`${used} minutes, ${used - allowed} over time. Speed comes with practice.`, `用了 ${used} 分鐘，超時 ${used - allowed} 分鐘。多練就會快。`)]] : [])],
       main: weakB && units.length ? { label: Z('Practise written answers next', '接著練習文字題'), run: () => { pick = { bookId: sess.book.id, ids: new Set(units.map((u) => u.id)) }; startUnits(sess.book, units.slice(0, 3), 8, { types: 'written' }); } } : fix || home,
-      alt: { label: Z('See my answers', '看看我的答案'), run: null } });
+      alt: { label: Z('See my answers', '看看我的答案'), run: toAnswers } });
   }
   // an ordinary set
   const great = pct >= 80, ok = pct >= 50, wantFix = missed >= 2 && !great;
@@ -10655,7 +10656,7 @@ async function resultMoment(sess, qs, pct, got, total) {
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...keepGoing, ...(wantFix ? [['📌', Z(`Fixing the ${missed} you missed now is the fastest way up.`, `現在改正答錯的 ${missed} 題，是進步最快的方法。`)]] : [])],
-    main: wantFix ? fix : home, alt: { label: wantFix ? Z('Later', '稍後') : Z('See my answers', '看看我的答案'), run: null } });
+    main: wantFix ? fix : home, alt: { label: wantFix ? Z('Later', '稍後') : Z('See my answers', '看看我的答案'), run: wantFix ? null : toAnswers } });
 }
 function renderSummary() {
   setTimeout(() => pilotSync(), 3000);
@@ -10768,7 +10769,13 @@ function renderSummary() {
   $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${S.book ? 'Chapters' : 'Home'}</span></button></div>
   <main class="pad results" data-view="${S.book ? 'books' : 'home'}">
     <div class="r-left">
-    <section class="rhero ${band}">
+    ${willMoment ? `<section class="rhero rslim ${band}">
+      <div class="rslim-row"><div class="ring ${band}" style="--p:${pct}" role="img" aria-label="${pct}%"><span>${pct}%</span></div>
+        <div class="rslim-t"><span class="rmeta">${esc(S.title)}</span><b>${PT(`${got} of ${total} mark${total === 1 ? '' : 's'}`, `${total} 分中得 ${got} 分`)}</b>
+        <small>${PT(`${nRight} right${nPart ? ` · ${nPart} partly` : ''} · ${nMiss} missed`, `答對 ${nRight}${nPart ? ` · 部分 ${nPart}` : ''} · 答錯 ${nMiss}`)}</small></div></div>
+      ${sections}
+      ${starsOn() && S.starNote ? `<p class="starnote">${starSVG(16)} ${esc(S.starNote)}</p>` : ''}
+    </section>` : `<section class="rhero ${band}">
       <span class="rmeta">${esc(S.title)} · ${S.endedEarly ? `stopped after ${qs.length}` : 'done'}</span>
       <div class="rtop"><div class="ring ${band}" style="--p:${pct}" role="img" aria-label="${pct}%"><span>${pct}%</span></div>
         <div class="rhead"><b>${head}</b><span>${got} of ${total} mark${total === 1 ? '' : 's'}</span></div>
@@ -10777,7 +10784,7 @@ function renderSummary() {
       <div class="rcounts"><span class="right">${V} ${nRight} right</span>${nPart ? `<span class="part">${H} ${nPart} partly</span>` : ''}<span class="miss">${X} ${nMiss} missed</span></div>
       ${sections}
       ${starsOn() && S.starNote ? `<p class="starnote">${starSVG(16)} ${esc(S.starNote)}</p>` : ''}
-    </section>
+    </section>`}
     <div class="ractions">
       ${unitRef ? `<section class="rsugg" id="rsugg" aria-live="polite"><div class="rsg-head">${buddySVG('happy', 30)}<b>${LANG === 'zh' ? 'Buddy 建議' : 'Buddy suggests'}</b></div><div class="rsg-body"><span class="dots"><i></i><i></i><i></i></span></div></section>` : ''}
       ${!unitRef && drillable.length ? `<button class="btn" id="drillall">${ICON.target.replace('width="22" height="22"', 'width="18" height="18"').replace('var(--miss)', 'currentColor')} <span class="rprim">${LANG === 'zh' ? '針對弱項練習' : 'Drill my weak spots'}<small>${LANG === 'zh' ? `${drillable.length * PER_IDEA} 條針對答錯內容的新題目` : `${drillable.length * PER_IDEA} new questions on what you missed`}</small></span></button>` : ''}
