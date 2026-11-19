@@ -3799,7 +3799,8 @@ async function wipeDevice() {
   await store.close();
   await Promise.all([...dbs].map((n) => new Promise((r) => { try { const q = indexedDB.deleteDatabase(n); q.onsuccess = q.onerror = q.onblocked = () => r(); } catch (e) { r(); } })));
   try { await caches.delete('pb-tts'); } catch (e) {}
-  try { Object.keys(localStorage).filter((k) => /^(prepbuddy|pb\.)/.test(k)).forEach((k) => localStorage.removeItem(k)); } catch (e) {}
+  // developer switches (dev mode, too-fast check, show answers, preview modes) survive a wipe, so testing can start fresh
+  try { const KEEP = /^pb\.(dev|norush|showans|prog|aud|pisample)$/; Object.keys(localStorage).filter((k) => /^(prepbuddy|pb\.)/.test(k) && !KEEP.test(k)).forEach((k) => localStorage.removeItem(k)); } catch (e) {}
   try { sessionStorage.clear(); } catch (e) {}
   location.replace(location.pathname);
 }
