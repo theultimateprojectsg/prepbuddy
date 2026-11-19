@@ -1125,7 +1125,10 @@ function planStepDone(st) {
 }
 async function askPlan(text) {
   text = String(text || '').trim(); if (!text || planState.busy) return;
-  planState.busy = true; planState.error = ''; renderHome();
+  planState.busy = true; planState.error = ''; planState.ask = text;
+  // show Buddy thinking straight away, in place (a full Today redraw takes a moment and looks frozen)
+  { const sec = document.querySelector('.bp-ask2'); if (sec) { sec.innerHTML = planThinkingHTML(); sec.scrollIntoView({ behavior: 'smooth', block: 'center' }); } else renderHome(); }
+  const t0 = Date.now(); let ok = false;
   try {
     const r = await api('coach', { plan: true, snapshot: await coachSnapshot(), ask: text, history: [], lang: LANG });
     const P = r && r.plan; if (!P || !Array.isArray(P.steps) || !P.steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
@@ -1136,9 +1139,21 @@ async function askPlan(text) {
     }).filter((x) => x.label && x.action);
     if (!steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
     local.bplan = { d: startOfToday(), t: Date.now(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
-    saveLocal(); track('buddy_plan');
+    saveLocal(); track('buddy_plan'); ok = true;
   } catch (e) { planState.error = e.message || String(e); }
-  planState.busy = false; if (view && view.name === 'home') renderHome();
+  if (Date.now() - t0 < 1800) await new Promise((r) => setTimeout(r, 1800 - (Date.now() - t0))); // long enough to see the steps tick
+  planState.busy = false;
+  if (!view || view.name !== 'home') return;
+  await renderHome();
+  // land on the new plan (or back on the ask card with the error)
+  const card = document.querySelector(ok ? '.bp-card' : '.bp-ask2');
+  if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); if (ok) { card.classList.add('bp-new'); sfx('pop'); setTimeout(() => card.classList.remove('bp-new'), 2400); } }
+}
+function planThinkingHTML() {
+  const steps = [PT('Looking at your chapters', '看看你的章節'), PT('Checking tests and mistakes', '查看測驗和錯題'), PT('Picking the best steps', '挑選最好的步驟')];
+  return `<div class="bpt" role="status" aria-live="polite"><div class="bpt-bud" aria-hidden="true">${buddySVG('think', 64)}<span class="bpt-dots"><i></i><i></i><i></i></span></div>
+    <b>${PT('Buddy is making your plan…', 'Buddy 正在為你訂計劃…')}</b>${planState.ask ? `<span class="bpt-ask" data-raw>“${esc(planState.ask)}”</span>` : ''}
+    <ul class="bpt-steps">${steps.map((t, k) => `<li style="--d:${0.3 + k * 0.9}s"><span class="bpt-tick" aria-hidden="true">${ICON.check}</span>${t}</li>`).join('')}</ul></div>`;
 }
 async function runPlanStep(i) {
   const P = todayPlan(); const st = P && P.steps[i]; if (!st) return;
@@ -1165,6 +1180,7 @@ function planHTML(missionDone) {
     ['📚', PT('Study session', '溫習時段'), PT('45 min · learn, practise, test', '45 分鐘 · 學、練、測'), PT('A 45-minute study session: a lesson, practice, then a short test', '45 分鐘溫習：先上課，再練習，最後做小測')],
     ...(mkN >= 3 ? [['🔁', PT('Fix my mistakes', '改正錯題'), PT(`${mkN} waiting · 15 min`, `${mkN} 題 · 15 分鐘`), PT('15 minutes fixing my mistakes', '15 分鐘改正錯題')]] : []),
   ].slice(0, 4);
+  if (planState.busy) return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}">${planThinkingHTML()}</section>`;
   return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}"><div class="ms-head"><h2>${missionDone ? PT('Want to do more?', '想再做多一點？') : PT('Want something different?', '想做點別的？')}</h2><span class="bpq-bud" aria-hidden="true">${buddySVG('happy', 34)}</span></div>
     <div class="bpq-grid">${quick.map(([ic, t, sub, ask]) => `<button class="bpq" data-pask="${esc(ask)}" ${planState.busy ? 'disabled' : ''}><span class="bpq-ic" aria-hidden="true">${ic}</span><b>${t}</b><small>${sub}</small></button>`).join('')}</div>
     ${planState.busy ? `<p class="bpq-busy">${buddySVG('happy', 22)} ${PT('Buddy is planning…', 'Buddy 正在計劃…')}</p>` : ''}
