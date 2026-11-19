@@ -2597,7 +2597,7 @@ async function renderHome() {
     if (c.y === 'lv') return !!(local.placement || {})[c.b] || bookAnswered(c.b);
     if (c.y === 'log') { // done when a set in this book was finished, not left halfway (or a full set's worth was answered across tries)
       const n = local.log.filter((e) => e.t >= M.at && e.k !== 'place' && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length;
-      const finished = (local.sess || []).some((x) => x.t >= M.at && x.b === c.b && !x.e && x.k !== 'place');
+      const finished = (local.sess || []).some((x) => x.t >= M.at && x.b === c.b && !x.e && !x.r && x.k !== 'place'); // finished, and not tapped through too fast
       return n >= 3 && (finished || n >= Math.max(8, sessionSize())); }
     return false;
   };
@@ -2670,19 +2670,23 @@ async function renderHome() {
           // a test's chapter: what it does for that test too
           const tid = (String(x.key).match(/^[tc]:([^:]+)/) || [])[1], tp = tid && tests.steps.find((q) => q.x.id === tid);
           if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const d = Math.max(1, Math.round((to - ch.pct) / tp.units.length)); it.test = Z(`${tp.x.name}: ${tp.ready}% → ${Math.min(100, tp.ready + d)}% ready`, `「${tp.x.name}」：準備度 ${tp.ready}% → ${Math.min(100, tp.ready + d)}%`); }
+          if ((local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('Last try went too fast, so it didn’t count. Read each question and it will.', '上次答得太快，所以不計。慢慢讀清楚每一題就會計算。');
           if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
           impact[x.key] = it;
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
         else if (c.y === 'rv') impact[x.key] = { lab: Z('Questions due for review', '到期要溫習的題目'), from: due.length, to: Math.max(0, due.length - 10), u: '', down: true, max: due.length, test: Z('Keeps them in long-term memory', '把它們留在長期記憶裏') };
         else if (c.y === 'lv') impact[x.key] = { note: Z('After this, every chapter starts at your level', '之後每一章都由你的程度開始') };
       } catch (e) { /* no bar for this one */ } } }
+  // the most stars a step can earn (same rules as awardSession and friends): shown so children know what's up for grabs
+  const maxStars = (x) => { if (!starsOn()) return 0; const c = x.chk || {};
+    return { log: 2, learn: 1, mk: (c.k || 1) + 2, rv: 3, lv: 2, dict: 2, wr: 3 }[c.y] || 0; };
   const impHTML = (it) => { if (!it) return '';
     if (it.from == null) return it.note ? `<div class="ms-imp note"><span>${it.note}</span></div>` : '';
     const max = it.max || 100, a = Math.round((100 * Math.min(it.from, it.to)) / max), b = Math.round((100 * Math.max(it.from, it.to)) / max);
-    return `<div class="ms-imp${it.down ? ' down' : ''}"><div class="ms-imp-h"><span data-raw>${esc(it.lab)}</span><b>${it.from}${it.u} → ${it.to}${it.u}</b></div><i class="ms-imp-bar" aria-hidden="true"><b style="width:${a}%"></b><em style="left:${a}%;width:${b - a}%"></em></i>${it.test ? `<small data-raw>${esc(it.test)}</small>` : ''}${it.note ? `<small>${it.note}</small>` : ''}</div>`; };
+    return `<div class="ms-imp${it.down ? ' down' : ''}"><div class="ms-imp-h"><span data-raw>${esc(it.lab)}</span><b>${it.from}${it.u} → ${it.to}${it.u}</b></div><i class="ms-imp-bar" aria-hidden="true"><b style="width:${a}%"></b><em style="left:${a}%;width:${b - a}%"></em></i>${it.test ? `<small data-raw>${esc(it.test)}</small>` : ''}${it.note ? `<small>${it.note}</small>` : ''}${it.warn ? `<small class="ms-imp-w">${it.warn}</small>` : ''}</div>`; };
   const stepRow = (x, k) => x.done || !x.now
     ? `<details class="msd"><summary class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></summary>${doneInfo(x)}</details>`
-    : `<div class="ms-item ${k === firstOpen ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${impHTML(impact[x.key])}${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
+    : `<div class="ms-item ${k === firstOpen ? 'is-next' : ''}"><button class="ms-row" ${x.now.attr}><span class="ms-t"><span class="ms-top"><span class="ms-ic">${actionIcon(x.icon, 16)}</span>${(x.now.tag || x.tag) ? `<em class="pv-tag2 ${(x.now.tag || x.tag)[0]}">${esc((x.now.tag || x.tag)[1])}</em>` : ''}</span><b data-raw>${esc(x.now.t)}</b><small data-raw>${esc(x.now.s)} · ${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}${maxStars(x) ? `<span class="ms-stars" title="${Z('Most stars you can earn', '最多可賺的星星')}"> · ${starSVG(12)} ${Z(`up to ${maxStars(x)}`, `最多 ${maxStars(x)}`)}</span>` : ''}</small></span>${k === firstOpen ? `<span class="ms-next">${Z('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>${impHTML(impact[x.key])}${(x.now.why || x.why) ? `<p class="ms-why"><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(x.now.why || x.why)}</span></p>` : ''}</div>`;
   // after the mission: a bonus aimed at the nearest school test's weakest chapter, if there is one
   let extra = null;
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
@@ -2812,6 +2816,7 @@ async function renderHome() {
       <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)).sort((a, b) => (b[1] === firstOpen) - (a[1] === firstOpen)), done = idx.filter(([x]) => x.done || !x.now);
         return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
       ${missionHowHTML()}
+      ${starsOn() ? `<p class="ms-bonus">${starSVG(14)} ${Z('Finish every step for +5 bonus stars', '完成所有步驟，額外 +5 粒星星')}</p>` : ''}
       <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
   await todayReadyHTML(books); // keeps each book's daily readiness history (used by the 'slipping' banner); not shown on Today
   // ---- greeting card: streak and this week's days ----
