@@ -70,6 +70,8 @@ The student wants a plan for right now. Call make_plan; no other reply is needed
 - Follow what they asked: a subject, a test, "100%", their mistakes, something new. If they ask for a test, use its chapters, weakest first.
 - Good order: a lesson for a chapter not started (action learn), then practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due.
 - Only add a Mistake book step when the snapshot shows open mistakes for that subject.
+- Only add a review step when the snapshot shows questions due for review.
+- Every label names what and where, e.g. "Practise Fractions" or "Lesson: Division". Never vague labels like "Check your answers and notes".
 - Only use chapter and book codes that are in the snapshot. Never invent chapters.
 - Labels are short and say exactly what to do. Use the student's language.`;
 const ZH = `Reply in Traditional Chinese as used in Hong Kong (standard written Chinese). The student may write in English, Chinese or Cantonese.`;

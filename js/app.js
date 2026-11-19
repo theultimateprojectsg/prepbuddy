@@ -1137,12 +1137,13 @@ async function askPlan(text) {
   const t0 = Date.now(); let ok = false;
   try {
     const r = await api('coach', { plan: true, snapshot: await coachSnapshot(), ask: text, history: [], lang: LANG });
+    const dueN = (await dueItems().catch(() => [])).length;
     const P = r && r.plan; if (!P || !Array.isArray(P.steps) || !P.steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
     const steps = P.steps.slice(0, 5).map((x) => { // turn the chapter codes into real ids now, so the plan still works later
       const chs = (Array.isArray(x.chapters) ? x.chapters : []).map((c) => coachIndex[String(c).trim()]).filter((y) => y && y.unitId);
       const bookId = (chs[0] && chs[0].bookId) || (coachIndex[String(x.book || '').trim()] || {}).bookId || null;
       return { label: String(x.label || '').slice(0, 80), minutes: Math.max(2, Math.min(40, Number(x.minutes) || 10)), why: String(x.why || '').slice(0, 140), action: x.action, bookId, unitIds: chs.filter((c) => c.bookId === bookId).map((c) => c.unitId), count: x.count };
-    }).filter((x) => x.label && x.action && (x.action !== 'mistakes' || mistakesIn(x.bookId) > 0));
+    }).filter((x) => x.label && x.action && (x.action !== 'mistakes' || mistakesIn(x.bookId) > 0) && (x.action !== 'review' || dueN > 0));
     if (!steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
     local.bplan = { d: startOfToday(), t: Date.now(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
     saveLocal(); track('buddy_plan'); ok = true;
@@ -2831,8 +2832,9 @@ async function renderHome() {
     const us = (st.unitIds || []).length ? st.unitIds : null, mkN = mistakeCount();
     const chk = st.action === 'learn' && us ? { y: 'learn', b: st.bookId, u: us[0] } : ['practise', 'chapter_test'].includes(st.action) && us ? { y: 'log', b: st.bookId, us }
       : st.action === 'mistakes' && mistakesIn(st.bookId) ? { y: 'mk', n: mistakesIn(st.bookId), k: Math.min(5, mistakesIn(st.bookId)) } : st.action === 'review' ? { y: 'rv' } : { y: 'none' };
-    const now = { t: st.label, s: sj ? '' : Z('Buddy’s pick', 'Buddy 推介'), subj: sj, attr: `data-pstep="${k}"`, why: st.why, tag: null };
-    return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: st.minutes, maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st) || (st.action === 'review' && !!st.go && !due.length), now }; // reviews: also done once nothing is due
+    const kindLab = { review: Z('All subjects · reviews', '所有科目 · 溫習'), mistakes: Z('Mistake book', '錯題簿'), mock_paper: Z('Mock paper', '模擬試卷') }[st.action];
+    const now = { t: st.label, s: '', subj: sj || kindLab || Z('Buddy’s pick', 'Buddy 推介'), attr: `data-pstep="${k}"`, why: st.why, tag: null };
+    return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: st.minutes, maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st) || (st.action === 'review' && !due.length), now }; // nothing due for review: nothing to do // reviews: also done once nothing is due
   }) : [];
   const impact = {};
   { const BM = new Map(), bm = async (id) => { if (!BM.has(id)) { const b = books.find((x) => x.id === id); BM.set(id, b ? await bookMastery(b) : null); } return BM.get(id); };
