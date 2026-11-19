@@ -10623,7 +10623,23 @@ async function resultMoment(sess, qs, pct, got, total) {
   const say = (o) => moment({ ...o, lines: [...(o.lines || []), ...sml] });
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
   { const P = local.impPrev, ids = qs.map((q) => qUnit(q.id)[1]); if (P && P.s && sess.book) { Object.values(P.s).forEach((x) => { if (x.b === sess.book.id && ids.includes(x.u)) x.shown = 1; }); saveLocal(); } }
-  const keepGoing = bars.length && !grew ? [['🌱', Z('Your % grows as you take on harder questions and still remember them days later. Keep going!', '做更難的題目、幾天後仍記得，百分比就會上升。繼續加油！')]] : [];
+  // No % gain this time: say exactly what moves this chapter next (and offer it), instead of a generic "keep going"
+  let lever = null;
+  if (bars.length && !grew && sess.book && !sess.test) {
+    try {
+      const uid0 = qUnit(qs[0].id)[1], c = (await bookMastery(sess.book)).chapters.find((y) => y.unit.id === uid0);
+      if (c) {
+        const nm = shortTitle(c.unit.title), u = c.unit;
+        const test = { label: Z('Take the chapter test', '做章節測驗'), run: () => startChapterTest(sess.book, [u]) };
+        if (c.done >= Math.min(6, c.target) && !c.passes) lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Pass it (80%+) to unlock up to 85%.`, `「${nm}」現在最大的進步來自章節測驗。合格（80% 或以上）就可升至最高 85%。`)], main: test };
+        else if (c.passes && (!c.spread || !c.lastPass)) lever = { l: ['📅', Z(`Next jump: pass the test again on a day at least a week after the first pass. That unlocks up to 95%.`, `下一步：在第一次合格至少一星期後再考一次並合格，就可升至 95%。`)] };
+        else if (c.needL3 || c.needL4) lever = { l: ['🧗', Z(`Next jump: get a harder “${c.needL4 ? 'analyse' : 'apply'}” question right. Buddy mixes them in as you go.`, `下一步：答對一題較難的「${c.needL4 ? '分析' : '應用'}」題。Buddy 會逐步加入這類題目。`)] };
+        else if (c.due) lever = { l: ['🔁', Z(`Next jump: ${c.due} review${c.due === 1 ? '' : 's'} waiting in ${nm}.`, `下一步：「${nm}」有 ${c.due} 題溫習在等你。`)], main: { label: Z('Do the reviews', '做溫習'), run: () => startReview('spaced') } };
+        else lever = { l: ['⏳', Z(`Next jump: answer these again in a few days. Still getting them right later is what moves the %.`, `下一步：幾天後再答這些題目。過一段時間仍答對，百分比就會上升。`)] };
+      }
+    } catch (e) { /* fall back to the plain line */ }
+  }
+  const keepGoing = lever ? [lever.l] : bars.length && !grew ? [['🌱', Z('Your % grows as you take on harder questions and still remember them days later. Keep going!', '做更難的題目、幾天後仍記得，百分比就會上升。繼續加油！')]] : [];
   if (sess.test) { // chapter test: a pass gets the unlock, a near miss gets the nudge
     const passed = pct >= 80, near = pct >= 60;
     return say({ face: passed ? 'done' : 'happy', confetti: passed, sel: 'main.results', hero: passed ? { icon: '🏆' } : hero, chips, tone: passed ? 'great' : near ? 'ok' : 'tough',
@@ -10656,7 +10672,7 @@ async function resultMoment(sess, qs, pct, got, total) {
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...keepGoing, ...(wantFix ? [['📌', Z(`Fixing the ${missed} you missed now is the fastest way up.`, `現在改正答錯的 ${missed} 題，是進步最快的方法。`)]] : [])],
-    main: wantFix ? fix : home, alt: { label: wantFix ? Z('Later', '稍後') : Z('See my answers', '看看我的答案'), run: wantFix ? null : toAnswers } });
+    main: wantFix ? fix : (lever && lever.main) || home, alt: { label: wantFix ? Z('Later', '稍後') : Z('See my answers', '看看我的答案'), run: wantFix ? null : toAnswers } });
 }
 function renderSummary() {
   setTimeout(() => pilotSync(), 3000);
