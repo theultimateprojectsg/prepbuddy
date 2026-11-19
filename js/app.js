@@ -10266,7 +10266,7 @@ function mcqBody(q, revealed) {
   const main = `${figHTML(q)}${renderStem(q.stem, 'q')}<div class="${q.type === 'graph' ? 'ggrid' : 'stack g10'}">${opts}</div>`;
   let footer = '';
   if (revealed) footer = `<div class="sheet"><span class="verdict ${right ? 'ok' : 'no'}">${right ? 'Correct' : picked ? `Not quite. The answer is ${q.correct_option}.` : `No answer. The answer is ${q.correct_option}.`}</span>${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
-  else if (isExam()) footer = `<div class="pad" style="padding-top:0"><button class="btn" id="next" ${picked ? '' : 'disabled'}>${nextLabel()}</button></div>`;
+  else if (isExam()) footer = `<div class="qx-foot"><button class="btn" id="next" ${picked ? '' : 'disabled'}>${nextLabel()}</button></div>`;
   return { main, footer, bind() {
     $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => {
       if (S.answers[S.i] && S.answers[S.i] !== b.dataset.opt) { S.chg = S.chg || {}; if (!(S.i in S.chg)) S.chg[S.i] = S.answers[S.i]; } // second-guessing: keep the first choice
@@ -10375,7 +10375,7 @@ function writtenBody(q, revealed) {
       ${essay ? `<span class="hint" id="wc">${wordCount(ans[k])} words</span>` : ''}`}</div>`;
     }).join('');
     const main = `${stem}${parts}${essay ? `<p class="hint">Marked on ${(q.rubric || []).map((r) => esc(r.criterion)).join(', ')}.</p>` : `<p class="hint ahint">${q.parts.every((p) => p.blank) ? (kindSync(q.id) === 'maths' ? (maths ? 'Type or handwrite your answer. Showing your working helps Buddy see where it went wrong.' : 'Write just the answer. Units like cm² can be typed as cm2.') : 'Check your spelling: it counts.') : maths ? 'Method marks are given for correct working, even if the final answer is wrong.' : 'Aim for one clear point per mark.'}</p>`}`;
-    const footer = `<div class="pad stack g8" style="padding-top:0"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">I don’t know this one. Show me the answer</button><span class="hint" style="text-align:center">It goes into your Mistake book so you can try it again later.</span>'}</div>`;
+    const footer = `<div class="${isExam() ? 'qx-foot' : 'pad stack g8'}" style="${isExam() ? '' : 'padding-top:0'}"><button class="btn" id="check">${isExam() ? nextLabel() : 'Mark my answer'}</button>${isExam() ? '' : '<button class="btn-sm quiet" id="skip" style="align-self:center">I don’t know this one. Show me the answer</button><span class="hint" style="text-align:center">It goes into your Mistake book so you can try it again later.</span>'}</div>`;
     return { main, footer, bind() {
       const grab = () => {
         const prev = S.answers[S.i] || [];
