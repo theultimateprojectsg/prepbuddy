@@ -4775,6 +4775,27 @@ function checkBadges(extra) {
 // testing only (developer mode): switch the speed check off on this device
 // testing only (developer mode): show the answer on every question
 const showAns = () => { try { return DEV && localStorage.getItem('pb.showans') === '1'; } catch (e) { return false; } };
+// testing only: answer the rest of this set at a chosen score and go to the results (counts like real answers)
+function devFinish(rate) {
+  if (!DEV || !S || !S.qs || !S.qs.length) return;
+  const from = S.phase === 'revealed' ? S.i + 1 : S.i, n = S.qs.length, ks = [];
+  for (let k = from; k < n; k++) ks.push(k);
+  const all = n, want = Math.round((rate / 100) * all), already = S.qs.slice(0, from).filter((q, k) => (S.got[k] || 0) >= marksOf(q)).length;
+  const rightSet = new Set(shuffle(ks).slice(0, Math.max(0, Math.min(ks.length, want - already))));
+  const t0 = Date.now() - (ks.length + 1) * 15000; S.at = Math.min(S.at || t0, t0 - 15000); S.times = S.times || [];
+  for (const k of ks) {
+    const q = S.qs[k], right = rightSet.has(k), m = marksOf(q); S.i = k;
+    if (choiceType(q)) S.answers[k] = right ? q.correct_option : 'ABCD'.split('').find((L) => L !== q.correct_option);
+    else { S.answers[k] = (q.parts || [{}]).map(() => right ? 'dev answer' : ''); S.marks = S.marks || {}; S.marks[k] = { parts: (q.parts || []).map((p) => ({ awarded: right ? Array.from({ length: p.marks || 1 }, (_, j) => j) : [], marks: right ? p.marks : 0 })) }; }
+    S.got[k] = right ? m : 0;
+    S.qShown = { q, t: t0 + (k - from) * 15000 };
+    try { record(q, S.got[k]); } catch (e) {}
+    S.times[k] = t0 + (k - from + 1) * 15000;
+  }
+  S.i = n - 1; S.target = n; S.generating = false; S.phase = 'revealed';
+  renderSummary();
+}
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-devpass]'); if (b) { e.preventDefault(); devFinish(+b.dataset.devpass); } });
 function devAnsHTML(q, revealed) {
   if (!showAns() || revealed) return '';
   const body = choiceType(q) ? `Answer: <b>${esc(q.correct_option || '?')}</b>${(q.options || [])['ABCD'.indexOf(q.correct_option)] ? ` · ${esc((q.options || [])['ABCD'.indexOf(q.correct_option)])}` : ''}`
@@ -10032,7 +10053,7 @@ function renderQuestion() {
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
     ${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${isPrimaryKid() && LANG !== 'zh' ? { mcq: 'Pick one', graph: 'Pick one', short: 'Short answer', structured: 'Long answer', essay: 'Writing' }[q.type] || TYPE[q.type] : TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
-    ${devAnsHTML(q, S.phase === 'revealed')}${body.main}
+    ${DEV ? `<div class="dev-pass"><span>DEV · finish at</span>${[60, 80, 100].map((r) => `<button type="button" data-devpass="${r}">${r}%</button>`).join('')}</div>` : ''}${devAnsHTML(q, S.phase === 'revealed')}${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '不明白？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
   ${body.footer}${/class="sheet/.test(body.footer) ? '' : qSide(q)}`;
