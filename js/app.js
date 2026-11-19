@@ -2779,7 +2779,7 @@ async function renderHome() {
     const w = Object.entries(by).filter(([k, es]) => es.length >= 5 && acc(es) < 70 && !inList.has(k)).sort((a, b) => acc(a[1]) - acc(b[1]))[0];
     if (w) { const [bid, uid] = w[0].split(':'), b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === uid);
       if (u) cands.push({ key: `w:${w[0]}`, icon: 'weak', t: Z(`Practise ${shortTitle(u.title)}`, `練習「${shortTitle(u.title)}」`), s: Z(`Your weakest lately · ${acc(w[1])}% right`, `最近最弱的一章 · 答對 ${acc(w[1])}%`), why: Z(`${acc(w[1])}% right on first tries lately, your weakest chapter. A short set makes it stronger.`, `最近第一次作答只答對 ${acc(w[1])}%，是最弱的一章。做一組就會進步。`), attr: `data-weak="${esc(w[0])}"`, chk: { y: 'log', b: bid, us: [uid] }, tag: ['weak', Z('Weak spot', '弱項')] }); } }
-  { const nb = books.find((b) => !(local.placement || {})[b.id] && !(local.plHide || {})[b.id] && !bookAnswered(b.id));
+  { const nb = null; // the level check is gone: practice finds the right level by itself after a few answers
     if (nb) cands.push({ key: `lv:${nb.id}`, icon: 'level', t: Z('Find your level', '找出你的程度'), s: Z(`${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · about 5 min`, `${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · 約 5 分鐘`), attr: `data-lv="${esc(nb.id)}"`, chk: { y: 'lv', b: nb.id } }); }
   if (last) {
     const sc = scoreOf(await getQs(last.book.id, last.unit.id));
@@ -2832,7 +2832,7 @@ async function renderHome() {
   }
   const t0 = dayStart();
   const nSteps = Math.min(8, 5 + extraJobs); // up to 5, plus catch-up jobs when behind pace for a test
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 6) { local.mission = { v: 6, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 7) { local.mission = { v: 7, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
@@ -4563,7 +4563,7 @@ async function startTour(replay) {
     { go: 'settings', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your child’s details and stars, the parent area, language, backup, help and privacy, each behind its own button.', '孩子的資料和星星、家長專區、語言、備份、說明及私隱，各有自己的按鈕。') },
     { go: { name: 'settings', sec: 'help' }, sel: '#sfb', skipIfMissing: true, t: C('Tell us what you think', '告訴我們你的意見'), d: C('Something confusing, or a great idea? Type it here. We read every message.', '有地方令你困惑，或有好主意？在這裏輸入，我們會細閱每一個訊息。') },
     { go: 'progress', sel: '#helperFab', skipIfMissing: true, t: C('Ask Buddy any time', '隨時問 Buddy'), d: C('On any screen, tap here to ask a question, get study advice, or find your way around.', '在任何頁面按這裏，都可以發問、取得溫習建議，或問怎樣使用。') },
-    { go: 'home', t: C('Now add your own textbook!', '現在加入你自己的課本！'), d: C('The sample book goes away now. Search for your textbook, then do “Find your level”. You can replay this tour in Settings.', '示範課本現在會移除。搜尋你的課本，然後做「找出你的程度」。你可以在設定中再看一次導覽。'), face: 'done', cta: C('Let’s go!', '開始吧！') },
+    { go: 'home', t: C('Now add your own textbook!', '現在加入你自己的課本！'), d: C('The sample book goes away now. Search for your textbook, then start its first chapter. You can replay this tour in Settings.', '示範課本現在會移除。搜尋你的課本，然後開始第一章。你可以在設定中再看一次導覽。'), face: 'done', cta: C('Let’s go!', '開始吧！') },
   ];
   await coachTour(steps, (how, k) => { local.toured = Date.now(); saveLocal(); track(replay ? 'tour_replay' : how === 'done' ? 'tour_done' : `tour_skip:${k}`); });
   S = null; pick = { bookId: null, ids: new Set() };
@@ -5760,10 +5760,7 @@ async function renderBook(bookId) {
   const { n: qReady } = await bookSummary(book);
   const answered = bm.chapters.reduce((x, c) => x + (c.done || 0), 0);
   const pl = (local.placement || {})[book.id];
-  const plHTML = !pl && !answered && bookFocus !== 'learn' && !(local.plHide || {})[book.id]
-    ? `<section class="pl-card"><span class="pl-ic">${buddySVG('happy', 44)}</span><div class="pl-ct"><b>New to this book? Find your level first</b><span>About ${Math.max(6, Math.min(12, levelUnits(book).length * 2))} quick questions, about 5 minutes. Then every chapter starts at the right level for you.</span></div>
-        <div class="pl-acts"><button class="btn" id="plGo">Start level check</button><button class="btn-sm quiet" id="plSkip">Not now</button></div></section>`
-    : pl ? `<p class="pl-done">✓ Level check done ${new Date(pl.t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })} · <button class="linkbtn" id="plGo">Take it again</button></p>` : '';
+  const plHTML = ''; // the level check is gone: practice finds the right level by itself
   // Learn: a guided lesson per chapter, shown as its own section above the practice list.
   const learned = local.learned || {};
   const lkey = (u) => learned[`${book.id}:${u.id}`];
