@@ -1156,7 +1156,7 @@ function planStepDone(st) {
 }
 async function askPlan(text) {
   text = String(text || '').trim(); if (!text || planState.busy) return;
-  planState.busy = true; planState.error = ''; planState.ask = text;
+  planState.busy = true; planState.error = ''; planState.maxed = null; planState.ask = text;
   // show Buddy thinking straight away, in place (a full Today redraw takes a moment and looks frozen)
   { const sec = document.querySelector('.bp-ask2'); if (sec) { sec.innerHTML = planThinkingHTML(); sec.scrollIntoView({ behavior: 'smooth', block: 'center' }); } else renderHome(); }
   const t0 = Date.now(); let ok = false;
@@ -1171,12 +1171,14 @@ async function askPlan(text) {
     }).filter((x) => x.label && x.action && (x.action !== 'mistakes' || mistakesIn(x.bookId) > 0) && (x.action !== 'review' || dueN > 0));
     if (!steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
     { const keep = []; for (const st of steps) if (await stepUseful(st)) keep.push(st);
-      if (!keep.length) throw new Error(PT('Nothing Buddy could plan would move your chapters today: they’re as far as practice can take them for now. Reviews and retests (a week after a pass) come up in the next days. Try another subject or a new chapter.', 'Buddy 今天能安排的都不會再提升你的章節：練習已做到目前的上限。之後幾日會有溫習和重考（合格一星期後）。試試其他科目或新的章節。'));
+      if (!keep.length) { // good news, not an error: offer the plan anyway, as extra practice that won't change the %
+        planState.maxed = { d: startOfToday(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
+        throw Object.assign(new Error(''), { maxed: true }); }
       steps.splice(0, steps.length, ...keep); }
     local.bplan = { d: startOfToday(), t: Date.now(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
     if (!(local.dayPick && local.dayPick.d === startOfToday())) local.dayPick = { d: startOfToday(), k: 'plan' }; // a plan picked first becomes today's plan
     saveLocal(); track('buddy_plan'); ok = true;
-  } catch (e) { planState.error = e.message || String(e); }
+  } catch (e) { if (!e.maxed) { planState.error = e.message || String(e); planState.maxed = null; } }
   if (Date.now() - t0 < 1800) await new Promise((r) => setTimeout(r, 1800 - (Date.now() - t0))); // long enough to see the steps tick
   planState.busy = false;
   if (!view || view.name !== 'home') return;
@@ -1223,7 +1225,10 @@ function planHTML(missionDone, pick, askOnly) {
     ${planState.busy ? `<p class="bpq-busy">${buddySVG('happy', 22)} ${PT('Buddy is planning…', 'Buddy 正在計劃…')}</p>` : ''}
     <div class="bpq-or"><span>${PT('or ask for anything', '或者自己說')}</span></div>
     <form class="bpq-form2" id="bpForm"><span class="bpq-fb" aria-hidden="true">${buddySVG('happy', 28)}</span><input id="bpQ" maxlength="200" enterkeyhint="send" aria-label="${PT('Tell Buddy what you want to do', '告訴 Buddy 你想做甚麼')}" placeholder="${PT('e.g. 20 min on fractions', '例如：20 分鐘練分數')}" ${planState.busy ? 'disabled' : ''}><button class="bpq-send" aria-label="${PT('Plan it', '訂計劃')}" ${planState.busy ? 'disabled' : ''}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
-    ${planState.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(planState.error)}</p>` : ''}</section>`;
+    ${planState.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(planState.error)}</p>` : ''}
+    ${planState.maxed && planState.maxed.d === startOfToday() ? `<div class="bp-maxed"><span class="bp-mx-bud" aria-hidden="true">${buddySVG('done', 44)}</span><div><b>${PT('You’ve done all you can for these chapters today 🎉', '這些章節今天已經做到最好了 🎉')}</b>
+      <span>${PT('The rest of the % comes from remembering it in the next days: reviews and a retest a week after a pass. Want to practise anyway to lock it in?', '餘下的百分比要靠之後幾日仍然記得：溫習，以及合格一星期後重考。想再練習鞏固一下嗎？')}</span>
+      <button class="btn" id="bpAnyway">${PT('Practise anyway', '照樣練習')} <small>${PT('· won’t change the %', '· 不會改變百分比')}</small></button></div></div>` : ''}</section>`;
 }
 // Changing or removing Buddy's plan asks first, so a stray tap can't lose it
 function planChangeDialog() {
@@ -1264,6 +1269,10 @@ function bindPlan() {
       const card = document.querySelector('main.today>section.ms-card:not(.bp-card):not(.bp-ask2)');
       if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); card.classList.add('bp-new'); sfx('pop'); setTimeout(() => card.classList.remove('bp-new'), 2400); } }; }
   { const ch = document.getElementById('msChoose'); if (ch) ch.onclick = () => { local.dayPick = null; saveLocal(); renderHome().then(() => { const c = document.querySelector('.bp-ask2'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); }; }
+  { const a = document.getElementById('bpAnyway'); if (a) a.onclick = () => { const M = planState.maxed; if (!M) return; planState.maxed = null;
+      local.bplan = { d: startOfToday(), t: Date.now(), ask: M.ask, title: M.title, intro: M.intro, steps: M.steps, extra: true };
+      if (!(local.dayPick && local.dayPick.d === startOfToday())) local.dayPick = { d: startOfToday(), k: 'plan' };
+      saveLocal(); renderHome().then(() => { const c = document.querySelector('.bp-card'); if (c) { c.scrollIntoView({ behavior: 'smooth', block: 'start' }); c.classList.add('bp-new'); setTimeout(() => c.classList.remove('bp-new'), 2400); } }); }; }
   { const f = document.getElementById('bpForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); askPlan(document.getElementById('bpQ').value); }; }
   $app.querySelectorAll('[data-pask]').forEach((b) => (b.onclick = () => askPlan(b.dataset.pask)));
 }
@@ -3086,6 +3095,7 @@ async function renderHome() {
     planCard = pNext < 0
       ? `<section class="ms-card ms-done ms-done2 bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`All ${planSteps.length} steps of Buddy’s plan done. Great extra work!`, `Buddy 計劃的 ${planSteps.length} 個步驟全部完成，做得好！`)}</span><button class="linkbtn" id="bpX2">${Z('Ask Buddy for another plan', '請 Buddy 再訂計劃')} ›</button>${planHow}</div></div><details class="msd-all"><summary>${Z('What you did', '做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('')}</details></section>`
       : `<section class="ms-card bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${pStarted ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${pMin} min`, `${pMin} 分鐘`)}${pStarted ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
+      ${PP.extra ? `<p class="bp-extra">✨ ${Z('Extra practice to lock it in · won’t change the %', '額外練習，鞏固記憶 · 不會改變百分比')}</p>` : ''}
       <div class="ms-list">${(() => { const idx = planSteps.map((x, k) => [x, k]), open = idx.filter(([x]) => !x.done), done = idx.filter(([x]) => x.done);
         return open.map(([x, k]) => stepRow(x, k, pNext).replace('class="ms-item ', 'class="ms-item is-open ')).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done · ${done.length}`, `已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k, pNext)).join('')}` : ''); })()}</div>
       ${planHow}
