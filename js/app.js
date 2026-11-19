@@ -8183,18 +8183,27 @@ async function renderPaper(bookId, from) {
 async function preparePaper(book, units, nA, nB, purpose) {
   const token = {}; paperJob = token;
   const total = nA + nB;
-  $app.innerHTML = `<div class="topbar"><button class="icon-btn" id="cancel" aria-label="Cancel">${ICON.close}</button></div>
-  <main class="pad stack g18" style="flex:1;justify-content:center;text-align:center;align-items:center">
-    <div class="spinner" aria-hidden="true"></div>
-    <h1 class="display" style="margin:0;font-size:22px">Preparing your paper</h1>
-    <div class="progress" style="width:100%;max-width:300px"><i id="pp" style="width:0%"></i></div>
-    <p class="muted" id="pt" style="margin:0;line-height:1.5;max-width:320px">Checking which questions are ready…</p>
+  $app.innerHTML = `<div class="topbar"><button class="backbtn" id="cancel" data-kind="wait">${ICON.back}<span>${PT('Back', '返回')}</span></button></div>
+  <main class="pad waitpage" style="flex:1">
+    <div class="wait-head">
+      <div class="wbud" aria-hidden="true">
+        <div class="wbud-paper"><svg viewBox="0 0 60 72" width="60" height="72"><rect x="1" y="1" width="58" height="70" rx="7" fill="#fff" stroke="#DCE2EE" stroke-width="2"/><path class="wl l1" d="M10 18H50"/><path class="wl l2" d="M10 30H46"/><path class="wl l3" d="M10 42H50"/><path class="wl l4" d="M10 54H36"/></svg><span class="wbud-pen">✏️</span></div>
+        <div class="wbud-me"><div class="wbud-bubble"><i></i><i></i><i></i></div><div class="wbud-b">${buddySVG('think', 92)}</div><div class="wbud-shadow"></div></div>
+        <span class="wsp s1">✦</span><span class="wsp s2">✦</span><span class="wsp s3">✦</span>
+      </div>
+      <h1 class="display">${PT('Getting your paper ready', '正在準備你的試卷')}</h1>
+      <p class="muted" data-raw>${esc(units.map((u) => shortTitle(u.title)).join(', '))}</p>
+      <div class="wait-prog"><div class="progress"><i id="pp" style="width:0%"></i></div><span id="pready" class="hint"></span></div>
+      <p class="wstat" id="pstat" aria-live="polite">${WAIT_STEPS[0]}</p>
+    </div>
+    <p class="hint wait-foot" id="pt">${PT('Each question is written from your textbook, then checked by a second AI. The first time can take a few minutes.', '每條題目都按你的課本撰寫，再由另一個 AI 檢查。第一次可能需要幾分鐘。')}</p>
   </main>`;
+  { let k = 0; const tick = setInterval(() => { const el = document.getElementById('pstat'); if (!el || paperJob !== token) return clearInterval(tick); k = (k + 1) % WAIT_STEPS.length; el.textContent = WAIT_STEPS[k]; }, 2600); }
   document.getElementById('cancel').onclick = () => { paperJob = null; go({ name: 'paper', bookId: book.id }); };
   const show = (have) => {
-    const el = document.getElementById('pp'), t = document.getElementById('pt');
+    const el = document.getElementById('pp'), t = document.getElementById('pready');
     if (el) el.style.width = `${Math.round(100 * Math.min(have, total) / total)}%`;
-    if (t) t.textContent = `${Math.min(have, total)} of ${total} questions ready. New ones are written from your textbook and checked first, so a long paper can take a few minutes the first time.`;
+    if (t) t.textContent = PT(`${Math.min(have, total)} of ${total} ready`, `${total} 題中 ${Math.min(have, total)} 題已準備好`);
   };
   const printed = new Set(local.printed || []);
   const fresh = (q) => (purpose === 'print' ? !printed.has(q.id) : !local.stats[q.id]);
