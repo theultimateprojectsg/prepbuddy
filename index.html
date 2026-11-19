@@ -3633,6 +3633,26 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .pp-card .btn{width:100%}
 @media (prefers-reduced-motion:reduce){.pp-bud{animation:none}.pp-bar>u,.pp-g{transition:none}}
 .pp-was{display:block;font-size:12px;color:var(--muted)}
+.win-card2{max-width:380px}
+.win-top{height:160px}
+.win-ico{position:relative;z-index:2;font-size:72px;line-height:1;filter:drop-shadow(0 6px 14px rgba(200,130,0,.4));animation:scstar .7s cubic-bezier(.3,1.6,.5,1) both,scbob 2.4s ease-in-out .7s infinite}
+.win-lv{position:relative;z-index:2;display:flex;align-items:center;gap:10px;font-weight:800;color:#7A5200;font-variant-numeric:tabular-nums}
+.win-lv-a{font-size:44px;opacity:.55}
+.win-lv-ar{font-size:30px;opacity:.7}
+.win-lv-b{font-size:76px;color:#26357A;text-shadow:0 4px 0 #FFE48A,0 8px 18px rgba(200,130,0,.35);animation:winlv .8s cubic-bezier(.3,1.7,.5,1) .35s both}
+@keyframes winlv{from{transform:scale(.2) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+.win-big2{color:#26357A!important}
+.win-blocks{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;width:calc(100% - 36px)}
+.win-blocks i{height:12px;border-radius:4px;background:#E4E8F1}
+.win-blocks i.on{background:#26357A}
+.win-blocks i.new{background:#E4E8F1;animation:winblk .5s ease-out var(--d) forwards}
+@keyframes winblk{0%{background:#E4E8F1;transform:scaleY(1)}50%{transform:scaleY(1.8)}100%{background:#18966A;transform:scaleY(1)}}
+.win-lines{width:calc(100% - 36px)}
+.win-i2 span:nth-child(2){display:flex;flex-direction:column;gap:2px}
+.win-i2 small{font-size:12.5px;color:var(--text-2);line-height:1.35}
+.win-i2 b{color:var(--text)!important}
+.win-card2 .win-ok{width:calc(100% - 36px)}
+@media (prefers-reduced-motion:reduce){.win-ico,.win-lv-b,.win-blocks i.new{animation:none}.win-blocks i.new{background:#18966A}}
 </style>
 </head>
 <body>

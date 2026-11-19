@@ -4776,7 +4776,7 @@ async function checkWins() {
     for (const x of schoolTests()) { if (testDay(x) < startOfToday()) continue; const h = ((local.thist || {})[x.id] || []).slice(-1)[0]; if (h && h[1] >= (x.aim || 80)) cur.rd[x.id] = x.name; }
     if (W) {
       for (const [k, n] of Object.entries(cur.ch)) if (!W.ch[k]) ev.push(['chapter', PT(`You mastered ${n}!`, `你掌握了「${n}」！`), PT('Lesson done, and 80% or more right.', '上完課，而且答對八成或以上。')]);
-      for (const [k, v] of Object.entries(cur.lv)) if (W.lv[k] != null && v > W.lv[k]) ev.push(['level', PT(`${k} level up: ${W.lv[k]} → ${v}`, `${k}程度提升：${W.lv[k]} → ${v}`), PT('Out of 10. It only goes up when harder questions go right.', '滿分 10。只有答對更難的題目才會提升。')]);
+      for (const [k, v] of Object.entries(cur.lv)) if (W.lv[k] != null && v > W.lv[k]) ev.push(['level', PT(`${k} level up: ${W.lv[k]} → ${v}`, `${k}程度提升：${W.lv[k]} → ${v}`), PT('Out of 10. It only goes up when harder questions go right.', '滿分 10。只有答對更難的題目才會提升。'), [W.lv[k], v]]);
       if (cur.fg > W.fg) { const n = cur.fg - W.fg; ev.push(['fixed', PT(n === 1 ? 'A mistake fixed for good!' : `${n} mistakes fixed for good!`, n === 1 ? '一個錯誤真正改正了！' : `${n} 個錯誤真正改正了！`), PT('Still right days later, so it has really stuck.', '幾天後仍然答對，真的記住了。')]); }
       for (const [k, n] of Object.entries(cur.rd)) if (!W.rd[k]) ev.push(['ready', PT(`You’re ready for the ${n}!`, `你已準備好「${n}」！`), PT('Ready enough to reach your goal. Keep it warm until test day.', '已達到目標的準備度。保持練習直到考試那天。')]);
     }
@@ -4784,17 +4784,25 @@ async function checkWins() {
     const keep = (a, b) => ({ ...(a || {}), ...b });
     local.wins = W ? { ch: keep(W.ch, cur.ch), lv: Object.fromEntries([...new Set([...Object.keys(W.lv), ...Object.keys(cur.lv)])].map((k) => [k, Math.max(W.lv[k] ?? -1, cur.lv[k] ?? -1)])), fg: Math.max(W.fg, cur.fg), rd: keep(W.rd, cur.rd) } : cur;
     saveLocal();
+    ev.sort((a, b) => (b[0] === 'level') - (a[0] === 'level'));
     if (ev.length) { const busy = () => document.querySelector('.cdlg-wrap, [aria-modal="true"], dialog[open]'); for (let i = 0; i < 60 && busy(); i++) await new Promise((r) => setTimeout(r, 1000)); if (!busy() && view && view.name === 'home') winsDialog(ev); else if (busy()) { local.wins = W; saveLocal(); /* still blocked: try again next time */ } }
   } finally { winsBusy = false; }
 }
 function winsDialog(ev) {
+  // Celebrated like the star screen: a sunny banner with turning rays, the win's big icon, Buddy jumping, confetti.
+  // A level up shows the level out of 10 filling its next block; other wins show their own icon.
   const IC = { chapter: '🏆', level: '⬆️', fixed: '✅', ready: '🎯' }, kid = isPrimaryKid(), box = document.createElement('div');
-  box.className = 'cdlg-wrap win-cel';
-  const conf = kid ? Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 37) % 100}%;animation-delay:${(i % 9) * 0.07}s;background:${['#FFC531', '#FF7A59', '#4CC38A', '#5B8DEF', '#B57AF0'][i % 5]}"></i>`).join('') : '';
-  box.innerHTML = `${conf ? `<div class="confetti" aria-hidden="true">${conf}</div>` : ''}<div class="cdlg win-card" role="dialog" aria-modal="true" aria-labelledby="win-t">
-    <div class="win-bud" aria-hidden="true">${buddySVG('happy', 72)}</div>
-    <b id="win-t" class="win-big">${ev.length === 1 ? (kid ? PT('Big win!', '大進步！') : PT('Real progress', '真正的進步')) : PT(`${ev.length} big wins!`, `${ev.length} 個大進步！`)}</b>
-    <div class="win-list">${ev.slice(0, 4).map(([k, t, d]) => `<div class="win-i ${k}"><span class="win-ic" aria-hidden="true">${IC[k]}</span><div><b data-raw>${esc(t)}</b><small>${d}</small></div></div>`).join('')}</div>
+  box.className = 'cdlg-wrap win-cel star-cel';
+  const conf = Array.from({ length: 30 }, (_, i) => `<i style="left:${(i * 37) % 100}%;animation-delay:${(i % 9) * 0.07}s;background:${['#FFC531', '#FF7A59', '#4CC38A', '#5B8DEF', '#B57AF0'][i % 5]}"></i>`).join('');
+  const rays = Array.from({ length: 12 }, (_, i) => `<i style="transform:rotate(${i * 30}deg)"></i>`).join('');
+  const top = ev[0], lv = top[0] === 'level' && top[3] ? top[3] : null; // [from, to]
+  const hero = lv ? `<div class="win-lv"><span class="win-lv-a">${lv[0]}</span><span class="win-lv-ar">→</span><span class="win-lv-b">${lv[1]}</span></div>` : `<div class="win-ico">${IC[top[0]]}</div>`;
+  const blocks = lv ? `<div class="win-blocks" aria-label="${PT(`Level ${lv[1]} out of 10`, `程度 ${lv[1]}／10`)}">${Array.from({ length: 10 }, (_, i) => `<i class="${i < lv[0] ? 'on' : i < lv[1] ? 'new' : ''}" style="--d:${0.6 + (i - lv[0]) * 0.18}s"></i>`).join('')}</div>` : '';
+  box.innerHTML = `<div class="confetti" aria-hidden="true">${conf}</div><div class="cdlg sc-card sc2 win-card2" role="dialog" aria-modal="true" aria-labelledby="win-t">
+    <div class="sc2-top win-top"><div class="sc2-rays" aria-hidden="true">${rays}</div>${hero}<div class="sc2-bud" aria-hidden="true">${buddySVG('happy', 58)}</div></div>
+    <b id="win-t" class="sc2-big win-big2">${ev.length === 1 ? (kid ? PT('Big win!', '大進步！') : PT('Real progress!', '真正的進步！')) : PT(`${ev.length} big wins!`, `${ev.length} 個大進步！`)}</b>
+    ${blocks}
+    <div class="sc2-lines win-lines">${ev.slice(0, 4).map(([k, t, d]) => `<div class="win-i2 ${k}"><span class="sc2-ic">${IC[k]}</span><span><b data-raw>${esc(t)}</b><small>${d}</small></span></div>`).join('')}</div>
     <button class="btn win-ok" id="win-ok">${kid ? PT('Yay!', '好嘢！') : PT('Nice', '好')}</button></div>`;
   document.body.appendChild(box);
   const close = () => box.remove();
