@@ -1078,6 +1078,20 @@ function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
 // A text snapshot of the student's progress, made on the device and sent with each question.
 // Codes like B1 / B1.C3 let the coach say which book or chapter to open; coachIndex turns them back into ids.
 let coachIndex = {};
+function practiceGain(bookId, ch) {
+  const capP = ch.passes ? 95 : 70, sc = ch.score || {};
+  const room = ['covered', 'accurate', 'deep'].reduce((t, k) => t + (AREAS.find((a) => a[0] === k) || [0, 0, 0])[2] * (1 - (sc[k] || 0)), 0);
+  const seen = ((local.chGain || {})[`${bookId}:${ch.unit.id}`] || []), avg = seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null;
+  return Math.max(0, Math.min(SET_GAIN, Math.round(room / 2), capP - ch.pct, avg == null ? SET_GAIN : Math.round(avg)));
+}
+// a plan step is worth doing today only if it can move something now
+async function stepUseful(st) {
+  if (!['practise', 'weak_topics', 'chapter_test'].includes(st.action) || !st.bookId || !(st.unitIds || []).length) return true;
+  const b = (await getBooks()).find((x) => x.id === st.bookId); if (!b) return true;
+  const chs = (await bookMastery(b)).chapters.filter((c) => st.unitIds.includes(c.unit.id)); if (!chs.length) return true;
+  return chs.some((c) => { const lv = chapterLever(c); if (st.action === 'chapter_test') return lv.k === 'test' || lv.k === 'retest' || lv.k === 'practise';
+    return !['wait', 'reviews'].includes(lv.k) || practiceGain(st.bookId, c) >= 3; });
+}
 function chapterLever(c) {
   const fmt = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   if (!c.done) return { k: 'start', en: 'a lesson or a first practice set' };
@@ -1156,6 +1170,9 @@ async function askPlan(text) {
       return { label: String(x.label || '').slice(0, 80), minutes: Math.max(2, Math.min(40, Number(x.minutes) || 10)), why: String(x.why || '').slice(0, 140), action: x.action, bookId, unitIds: chs.filter((c) => c.bookId === bookId).map((c) => c.unitId), count: x.count };
     }).filter((x) => x.label && x.action && (x.action !== 'mistakes' || mistakesIn(x.bookId) > 0) && (x.action !== 'review' || dueN > 0));
     if (!steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
+    { const keep = []; for (const st of steps) if (await stepUseful(st)) keep.push(st);
+      if (!keep.length) throw new Error(PT('Nothing Buddy could plan would move your chapters today: they’re as far as practice can take them for now. Reviews and retests (a week after a pass) come up in the next days. Try another subject or a new chapter.', 'Buddy 今天能安排的都不會再提升你的章節：練習已做到目前的上限。之後幾日會有溫習和重考（合格一星期後）。試試其他科目或新的章節。'));
+      steps.splice(0, steps.length, ...keep); }
     local.bplan = { d: startOfToday(), t: Date.now(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
     if (!(local.dayPick && local.dayPick.d === startOfToday())) local.dayPick = { d: startOfToday(), k: 'plan' }; // a plan picked first becomes today's plan
     saveLocal(); track('buddy_plan'); ok = true;
@@ -7204,8 +7221,9 @@ async function fullTestCards(tests, btn) {
   const fcLine = (ready, aim, left, I) => {
     const E = esc, li = (t) => `<li>${t}</li>`, box = (head, steps, extra = '') => `<div class="pv-coach"><div><b>${head}</b>${steps.length ? `<ol>${steps.map(li).join('')}</ol>` : ''}${extra}</div></div>`;
     if (ready >= aim) return box(E(PT(`You’ve reached your ${aim}% goal. Nice work!`, `已達到 ${aim}% 目標，做得好！`)), [E(PT('Keep it there with short reviews every few days.', '每隔幾日做短時間溫習，保持狀態。'))]);
-    const ord = I.names.map((n, k) => [n, I.pcts[k]]).sort((a, b) => a[1] - b[1]);
-    const todayStep = ord.length ? (ord[0][1] === 0 ? PT(`Today: take the lesson on ${ord[0][0]}. It’s not started yet.`, `今天：先上「${ord[0][0]}」這一課，還未開始。`) : PT(`Today: practise ${ord[0][0]}, your weakest chapter (${ord[0][1]}%).`, `今天：練習最弱的「${ord[0][0]}」（${ord[0][1]}%）。`)) : '';
+    const ord = I.names.map((n, k) => [n, I.pcts[k], (I.levers || [])[k]]).filter((x) => !x[2] || !['wait', 'reviews'].includes(x[2].k)).sort((a, b) => a[1] - b[1]);
+    const waits = (I.levers || []).filter((l) => l && l.k === 'wait').map((l) => l.at).sort((a, b) => a - b);
+    const todayStep = !ord.length && waits.length ? PT(`Today: your test chapters are as far as practice can take them. Do any reviews that come up; retests count from ${new Date(waits[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `今天：考試章節已練到目前的上限。有溫習就做；由 ${new Date(waits[0]).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起重考才計算。`) : ord.length ? (ord[0][1] === 0 ? PT(`Today: take the lesson on ${ord[0][0]}. It’s not started yet.`, `今天：先上「${ord[0][0]}」這一課，還未開始。`) : PT(`Today: practise ${ord[0][0]}, your weakest chapter (${ord[0][1]}%).`, `今天：練習最弱的「${ord[0][0]}」（${ord[0][1]}%）。`)) : '';
     const testStep = left >= 2 ? PT(`${I.prev}: a practice test, so test day feels familiar.`, `${I.prev}：做一次模擬測驗，考試時更有把握。`) : '';
     if (I.lock) return box(E(PT(`Here’s how to reach ${aim}%`, `這樣做就能達到 ${aim}%`)), [todayStep, testStep].filter(Boolean).map(E));
     const usual = Math.max(1, Math.round(left * I.habit)), dayW = (n) => (n >= left ? PT('every day', '每天') : PT(`on ${n} of the ${left} days left`, `餘下 ${left} 日中的 ${n} 日`));
@@ -7223,7 +7241,7 @@ async function fullTestCards(tests, btn) {
   tcFcLine = fcLine;
   return tests.steps.map((p, ti) => {
     const habit = practiceHabit(), fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, habit);
-    const fcI = { pcts: chOf(p).map((c) => c.pct || 0), names: chOf(p).map((c) => chName(c.unit)), habit, fc, lock: !!fcLocked, prev: fmtDay(testDay(p.x) - DAY) };
+    const fcI = { pcts: chOf(p).map((c) => c.pct || 0), names: chOf(p).map((c) => chName(c.unit)), levers: chOf(p).map((c) => (c.score ? chapterLever(c) : null)), habit, fc, lock: !!fcLocked, prev: fmtDay(testDay(p.x) - DAY) };
     const aim = p.x.aim || 80; // the parent's target for this test, set with the slider
     const st = p.ready == null ? 'none' : aimTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];

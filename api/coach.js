@@ -72,6 +72,7 @@ The student wants a plan for right now. Call make_plan; no other reply is needed
 - Only add a Mistake book step when the snapshot shows open mistakes for that subject.
 - Only add a review step when the snapshot shows questions due for review.
 - Each chapter line says "What moves it next". Plan that, and pick the steps that move the most: skip practice on chapters whose next move is a test, a retest or reviews, and never plan a retest before the date given.
+- When a school test is within 14 days, plan its chapters first (unless the student asks for something else). Other chapters only once the test chapters' next move is just reviews or a later retest.
 - Stay where the student is in the book. Choose from chapters they have actually practised, or the next chapters in book order after those. Do not jump ahead to much later chapters (for example Unit 18 when they are on Unit 5) just because a level check gave them a %, unless the student asks for it or an upcoming school test covers it.
 - If a chapter has been practised a lot but its test isn't passed yet, plan its chapter_test rather than more practice: more practice won't raise it until the test is passed.
 - Every label names what and where, e.g. "Practise Fractions" or "Lesson: Division". Never vague labels like "Check your answers and notes".
