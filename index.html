@@ -3806,7 +3806,17 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-card .ms-item .ms-next{display:none}
 .ms-card .ms-imp-h>span[data-raw]{font-size:13px;color:var(--muted)}
 .ms-card .ms-imp-w{font-size:13px}
-.ms-card .ms-item:not(.is-next) .ms-top{display:none}
+.ms-card .ms-item:not(.is-next) .ms-top:not(:has(.ms-subj)){display:none}
+.ms-card .ms-item:not(.is-next) .ms-top .pv-tag2{display:none}
+.ms-subj{font-style:normal;font-size:12.5px;font-weight:800;padding:3px 10px;border-radius:8px;background:#26357A;color:#fff;letter-spacing:.01em}
+.ms-card .ms-item:not(.is-next) .ms-subj{background:#EEF1FB;color:var(--accent)}
+.ms-whyd2{margin:2px 0 10px}
+.ms-whyd2>summary{list-style:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:700;color:var(--accent);padding:4px 10px 4px 4px;border-radius:999px;background:#EEF1FB;min-height:30px}
+.ms-whyd2>summary::-webkit-details-marker{display:none}
+.ms-whyd2>summary::after{content:"›";font-size:16px;transition:transform .15s;margin-left:2px}
+.ms-whyd2[open]>summary::after{transform:rotate(90deg)}
+.ms-whyd2 .ms-why{margin-top:8px}
+.ms-card .ms-item:not(.is-next) .ms-whyd2{display:none}
 </style>
 </head>
 <body>
