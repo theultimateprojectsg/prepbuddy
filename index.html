@@ -3834,10 +3834,9 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ms-go{width:100%;margin:4px 0 12px;min-height:46px}
 .ms-card .ms-item:not(.is-next):not(.is-open) .ms-go{display:none}
 .ms-card .ms-item.is-open{border:1.5px solid #B9C6EE;background:#F7F9FE;padding-bottom:2px}
-.ms-card .ms-item.is-open .ms-imp,.ms-card .ms-item.is-open .ms-q,.ms-card .ms-item.is-open .ms-hd .pv-tag2{display:revert}
 .ms-card .ms-item.is-open .ms-q{display:grid}
 .ms-card .ms-item.is-open .ms-hd .pv-tag2{display:inline-block}
-.ms-card .ms-item.is-open .ms-imp{display:block}
+.ms-card .ms-item.is-open .ms-imp{display:flex}
 .ms-card .ms-item.is-open .ms-subj{background:#26357A;color:#fff}
 .ms-card .ms-item .ms-exp::before{content:"⌄"!important;font-size:20px!important;margin-top:-8px!important}
 .ms-card .ms-item.is-open .ms-exp{transform:rotate(180deg)}
@@ -3853,6 +3852,9 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 @media (max-height:700px){.mo-top{height:132px}.mo-ring{width:96px;height:96px}.mo-ring>span{width:76px;height:76px}.mo-ring>span b{font-size:26px}.mo-body{gap:10px;padding-top:12px}}
 body.mo-lock{overflow:hidden}
 .mo-card>.mo-scroll,.mo-card>.mo-btns{margin-left:0!important;margin-right:0!important;width:100%!important}
+/* Buddy's plan: every step open, each with its own Start */
+.bp-card .ms-item.is-open{cursor:default}
+.bp-card .ms-item .ms-exp{display:none!important}
 </style>
 </head>
 <body>

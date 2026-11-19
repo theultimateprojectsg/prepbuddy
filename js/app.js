@@ -3027,7 +3027,7 @@ async function renderHome() {
       ? `<section class="ms-card ms-done ms-done2 bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`All ${planSteps.length} steps of Buddy’s plan done. Great extra work!`, `Buddy 計劃的 ${planSteps.length} 個步驟全部完成，做得好！`)}</span><button class="linkbtn" id="bpX2">${Z('Ask Buddy for another plan', '請 Buddy 再訂計劃')} ›</button>${planHow}</div></div><details class="msd-all"><summary>${Z('What you did', '做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('')}</details></section>`
       : `<section class="ms-card bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${pStarted ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${pMin} min`, `${pMin} 分鐘`)}${pStarted ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
       <div class="ms-list">${(() => { const idx = planSteps.map((x, k) => [x, k]), open = idx.filter(([x]) => !x.done), done = idx.filter(([x]) => x.done);
-        return open.map(([x, k]) => stepRow(x, k, pNext)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done · ${done.length}`, `已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k, pNext)).join('')}` : ''); })()}</div>
+        return open.map(([x, k]) => stepRow(x, k, pNext).replace('class="ms-item ', 'class="ms-item is-open ')).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done · ${done.length}`, `已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k, pNext)).join('')}` : ''); })()}</div>
       ${planHow}
       <button class="btn ms-start" id="bpGo">${pStarted ? Z('Keep going', '繼續') : Z('Start', '開始')}</button>
       <div class="bp-acts"><button class="btn ghost" id="bpChange">${pIcon('pencil', 16)} ${Z('Change plan', '更改計劃')}</button><button class="btn ghost bp-rm" id="bpRemove">${GICON.trash} ${Z('Remove plan', '移除計劃')}</button></div></section>`;
@@ -3240,7 +3240,7 @@ async function renderHome() {
     if (e.target.closest('.ms-go')) return;
     const q = e.target.closest('.ms-q');
     if (q) { const w = it.querySelector('.ms-why'); if (!w) return; const open = w.hidden; w.hidden = !open; q.setAttribute('aria-expanded', String(open)); q.classList.toggle('on', open); return; }
-    if (it.classList.contains('is-next') || e.target.closest('.ms-imp,.ms-why')) return;
+    if (it.classList.contains('is-next') || it.closest('.bp-card') || e.target.closest('.ms-imp,.ms-why')) return;
     const open = !it.classList.contains('is-open');
     it.closest('.ms-card').querySelectorAll('.ms-item.is-open').forEach((o) => o.classList.remove('is-open'));
     it.classList.toggle('is-open', open);
