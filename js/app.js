@@ -2845,13 +2845,22 @@ async function renderHome() {
           const m = await bm(c.b); if (!m) continue; const b = books.find((y) => y.id === c.b);
           const ids = c.y === 'learn' ? [c.u] : c.us && c.us.length ? c.us : [b.units[0].id];
           const ch = m.chapters.filter((y) => ids.includes(y.unit.id)).sort((a, z) => a.pct - z.pct)[0]; if (!ch) continue;
-          const cap = ch.passes ? 95 : 70, to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : Math.min(cap, ch.pct + SET_GAIN);
+          // Practised enough but no test passed yet: more practice won't move it, the chapter test will.
+          // In Buddy's plan that practice step becomes the chapter test; elsewhere the bar is honest (no gain).
+          const plateau = c.y === 'log' && ch.done >= Math.min(6, ch.target) && !ch.passes;
+          let asTest = false;
+          if (plateau && String(x.key).startsWith('bp:') && PP) { const st = PP.steps[+String(x.key).slice(3)];
+            if (st && (st.action === 'practise' || st.action === 'chapter_test')) { const nm0 = shortTitle(ch.unit.title);
+              if (st.action === 'practise') { st.action = 'chapter_test'; st.label = Z(`Chapter test: ${nm0}`, `章節測驗：${nm0}`); st.why = Z('You’ve practised this well. Passing the chapter test is what moves it up now.', '這一章已練得不錯，通過章節測驗才能再進步。'); st.unitIds = [ch.unit.id]; saveLocal(); }
+              x.now.t = st.label; x.now.why = st.why; x.icon = 'test'; x.maxS = 5; asTest = true; } }
+          const cap = asTest ? 85 : ch.passes ? 95 : 70, to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : plateau && !asTest ? ch.pct : Math.min(cap, ch.pct + SET_GAIN);
           const nm = shortTitle(ch.unit.title), it = { lab: String(x.now.t || '').includes(nm) ? Z('This chapter', '這一章') : nm, from: ch.pct, to, u: '%' };
           // a test's chapter: what it does for that test too
           const tid = (String(x.key).match(/^[tc]:([^:]+)/) || [])[1], tp = tid && tests.steps.find((q) => q.x.id === tid);
           if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const d = Math.max(1, Math.round((to - ch.pct) / tp.units.length)); it.tst = { n: tp.x.name, from: tp.ready, to: Math.min(100, tp.ready + d) }; }
           if ((local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('⚡ Too fast last time, so it didn’t count', '⚡ 上次太快，所以不計')
-          if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
+          if (asTest) it.test = Z('Pass it (80% or more) to unlock up to 85%.', '合格（80% 或以上）可解鎖至 85%。');
+          if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
           it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid;
           impact[x.key] = it;
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
