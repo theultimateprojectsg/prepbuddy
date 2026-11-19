@@ -2755,7 +2755,7 @@ async function renderHome() {
     for (const b of used) { const m = await bookMastery(b);
       for (const c of m.chapters) { if (inT.has(`${b.id}:${c.unit.id}`)) continue;
         if (!c.passes && c.done >= Math.min(6, c.target || 8) && c.pct >= 55 && (!first || c.pct > first.c.pct)) first = { b, c };
-        else if (c.passes && (!c.spread || !c.lastPass) && c.lastTest && Date.now() - c.lastTest >= 3 * DAY && (!again || c.pct > again.c.pct)) again = { b, c }; }
+        else if (c.passes && chapterLever(c).k === 'retest' && (!again || c.pct > again.c.pct)) again = { b, c }; }
       const prac = m.chapters.filter((c) => c.done >= 4);
       if (prac.length >= 3 && (!mock || prac.length > mock.us.length)) mock = { b, us: prac.map((c) => c.unit.id) }; }
     const t = first || again;
@@ -2786,6 +2786,23 @@ async function renderHome() {
   } else { // nothing practised yet: start straight away on the first real chapter (not a summary or glossary)
     const u0 = books[0].units.find((u) => !NOT_TEACHING.test(String(u.title))) || books[0].units[0];
     cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z(`Practise ${shortTitle(u0.title)}`, `練習「${shortTitle(u0.title)}」`), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-firstch="${esc(books[0].id)}:${esc(u0.id)}"`, chk: { y: 'log', b: books[0].id, us: [u0.id] } }); }
+  // Buddy's pick is the optimal arrangement: drop practice that can't move its chapter today (turning it into the
+  // chapter test when that's the move), and while a school test is near, put chapters outside it at the back.
+  { const MBx = new Map(), bmx = async (id) => { if (!MBx.has(id)) { const b = books.find((x) => x.id === id); MBx.set(id, b ? await bookMastery(b) : null); } return MBx.get(id); };
+    const testU = new Set(); for (const p of tests.steps.filter((q) => q.left >= 0 && q.left <= 14 && q.book && q.units)) p.units.forEach((u) => testU.add(`${p.book.id}:${u.id}`));
+    const keep = [], later = [];
+    for (const c of cands) {
+      const ck = c.chk || {}, ids = ck.y === 'log' && ck.b ? (ck.us && ck.us.length ? ck.us : []) : [];
+      if (ids.length) { const m = await bmx(ck.b), chs = m ? m.chapters.filter((x) => ids.includes(x.unit.id)) : [];
+        if (chs.length && chs.every((x) => { const lv = chapterLever(x); return lv.k === 'test' || lv.k === 'retest' || (['wait', 'reviews'].includes(lv.k) && practiceGain(ck.b, x) < 3); })) {
+          const t = chs.find((x) => ['test', 'retest'].includes(chapterLever(x).k)), b = books.find((x) => x.id === ck.b);
+          if (t && b && ![...cands, ...keep].some((z) => z.chk && z.chk.y === 'ctest' && z.chk.u === t.unit.id)) { const nm = shortTitle(t.unit.title), again = chapterLever(t).k === 'retest';
+            keep.push({ key: `${again ? 'ct2' : 'ct'}:${b.id}:${t.unit.id}`, icon: 'test', t: again ? Z(`Prove it again: ${nm}`, `再證明一次：${nm}`) : Z(`Chapter test: ${nm}`, `章節測驗：${nm}`), s: Z('Timed · 80% to pass', '限時 · 80% 合格'), attr: `data-ctest="${esc(b.id)}:${esc(t.unit.id)}"`, chk: { y: 'ctest', b: b.id, u: t.unit.id },
+              tag: ['test', again ? Z('Prove it again', '再證明一次') : Z('Prove it', '證明實力')], why: again ? Z(`A week after your first pass: passing again shows ${nm} has really stuck, and takes it up to 95%.`, `第一次合格一星期後：再次合格證明「${nm}」真的記住了，可升至 95%。`) : Z(`You’ve practised ${nm} well. Practice alone stops at 70%: passing the test (80% or more) takes it up to 85%.`, `「${nm}」已練得不錯。只靠練習最多 70%：測驗合格（80% 或以上）可升至 85%。`) }); }
+          continue; }
+        if (testU.size && /^(u|w|b):/.test(c.key) && !ids.some((u) => testU.has(`${ck.b}:${u}`))) { later.push(c); continue; } }
+      keep.push(c); }
+    cands.splice(0, cands.length, ...keep, ...later); }
   // every mission step says why it's there: a coloured reason tag and one plain sentence
   for (const c of cands) {
     if (c.key.startsWith('c:')) continue;
@@ -2805,7 +2822,7 @@ async function renderHome() {
   }
   const t0 = dayStart();
   const nSteps = Math.min(8, 5 + extraJobs); // up to 5, plus catch-up jobs when behind pace for a test
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 4) { local.mission = { v: 4, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 5) { local.mission = { v: 5, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: cands.slice(0, nSteps).map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
@@ -3268,7 +3285,7 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${MODE === null ? planHTML(false, missionPick) : ''}
+    ${MODE === null ? planHTML(false, nextPick) : ''}
     ${MODE === 'plan' ? (planCard ? planCard + (planDoneNow ? planHTML(true, nextPick, true) : '') : planHTML(true, nextPick, true)) : ''}
     ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
     ${MODE === 'mission' && msFirst ? missionHTML : ''}
