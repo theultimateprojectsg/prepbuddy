@@ -886,6 +886,7 @@ window.addEventListener('popstate', (e) => {
 // backTo: the screen a lesson / notes / flashcards was opened from (Practice → Lessons), so Back returns there.
 let backTo = null;
 async function go(v) {
+  if (!document.querySelector('.mo-pop')) document.body.classList.remove('mo-lock');
   if (v && v.name === 'home') homeVisit++;
   if (!['learn', 'notes', 'cards'].includes(v.name)) backTo = null;
   try { if (window.speechSynthesis && VC.state === 'off') speechSynthesis.cancel(); } catch (e) {}
@@ -4896,18 +4897,18 @@ async function moment(o) {
     : `<div class="win-ico mo-ico">${(o.hero && o.hero.icon) || '🎉'}</div>`;
   const chips = (o.chips || []).filter(Boolean);
   w.innerHTML = `${conf}<div class="cdlg sc-card sc2 mo-card mo-${tone}" role="dialog" aria-modal="true" aria-labelledby="moT">
-    <div class="sc2-top mo-top">${rays}${sky}${hero}<div class="sc2-bud" aria-hidden="true">${buddySVG(face, 54)}</div></div>
+    <div class="mo-scroll"><div class="sc2-top mo-top">${rays}${sky}${hero}<div class="sc2-bud" aria-hidden="true">${buddySVG(face, 54)}</div></div>
     <div class="mo-body"><b id="moT" class="pp-h">${o.title}</b>${o.sub ? `<p class="mo-sub">${o.sub}</p>` : ''}
     ${chips.length ? `<div class="mo-chips">${chips.map(([k, t]) => `<span class="mo-chip ${k}">${t}</span>`).join('')}</div>` : ''}
     ${(o.bars || []).slice(0, 3).map(bar).join('')}
     ${(o.lines || []).length ? `<ul class="mo-lines">${o.lines.map(([i, t]) => `<li><span aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>` : ''}
-    <div class="mo-btns">${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}<button class="btn ${o.main ? 'ghost' : ''}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button></div></div></div>`;
-  document.body.appendChild(w);
-  const close = () => w.remove();
+    </div></div><div class="mo-btns">${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}<button class="btn ${o.main ? 'ghost' : ''}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button></div></div>`;
+  document.body.classList.add('mo-lock'); document.body.appendChild(w);
+  const close = () => { w.remove(); if (!document.querySelector('.mo-pop')) document.body.classList.remove('mo-lock'); };
   w.querySelector('#moAlt').onclick = () => { close(); if (o.alt && o.alt.run) o.alt.run(); };
   const m = w.querySelector('#moMain'); if (m) m.onclick = () => { close(); o.main.run(); };
   w.onclick = (e) => { if (e.target === w) close(); };
-  (m || w.querySelector('#moAlt')).focus();
+  (m || w.querySelector('#moAlt')).focus({ preventScroll: true }); { const cd = w.querySelector('.mo-scroll'); if (cd) cd.scrollTop = 0; }
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   setTimeout(() => {
     w.querySelectorAll('.pp-bar u').forEach((u) => (u.style.width = u.dataset.w + '%'));
