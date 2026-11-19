@@ -3657,6 +3657,11 @@ function renderSettings(sec) {
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('A ding for right answers, cheers for wins, and a little buzz on phones that support it.', '答對有提示音，有進步時有歡呼聲，支援的手機還會輕輕震動。')}</span>
     </section>
     ${DEV ? `<section class="card stack g10" style="padding:16px;border:1.5px dashed #C9D3EE">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">DEV · Show answers</b>
+        <button class="switch ${showAns() ? 'on' : ''}" id="sshowans" role="switch" aria-checked="${showAns()}" aria-label="Show answers"><i></i></button></div>
+      <span class="muted" style="font-size:14px;line-height:1.5">Marks the right option and shows the mark scheme on every question, for quick testing. Only you see this, on this device.</span>
+    </section>
+    <section class="card stack g10" style="padding:16px;border:1.5px dashed #C9D3EE">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">DEV · “Too fast” check</b>
         <button class="switch ${rushOff() ? '' : 'on'}" id="snorush" role="switch" aria-checked="${!rushOff()}" aria-label="Too fast check"><i></i></button></div>
       <span class="muted" style="font-size:14px;line-height:1.5">On: sets answered in under 4 seconds a question don’t count and earn no stars. Turn it off for quick testing. Only you see this, and it only changes this device.</span>
@@ -3755,6 +3760,7 @@ function renderSettings(sec) {
   if (document.getElementById('srestore')) document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   { const sp = document.getElementById('splans'); if (sp) sp.onclick = () => go({ name: 'plans' }); }
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(sec); renderTabs(); }));
+  { const sa = document.getElementById('sshowans'); if (sa) sa.onclick = () => { try { localStorage.setItem('pb.showans', showAns() ? '0' : '1'); } catch (e) {} sa.classList.toggle('on', showAns()); sa.setAttribute('aria-checked', String(showAns())); toast(showAns() ? 'Answers shown on this device' : 'Answers hidden'); }; }
   { const nr = document.getElementById('snorush'); if (nr) nr.onclick = () => { try { localStorage.setItem('pb.norush', rushOff() ? '0' : '1'); } catch (e) {} nr.classList.toggle('on', !rushOff()); nr.setAttribute('aria-checked', String(!rushOff())); toast(rushOff() ? 'Too-fast check off on this device' : 'Too-fast check on'); }; }
   if (document.getElementById('ssound')) document.getElementById('ssound').onclick = (e) => { local.soundOn = !soundOn(); saveLocal(); const b = e.currentTarget; b.classList.toggle('on', soundOn()); b.setAttribute('aria-checked', soundOn()); if (soundOn()) sfx('right'); };
   if (document.getElementById('sstars')) document.getElementById('sstars').onclick = () => { if (locked('stars')) return upsell('stars', 'locked'); local.starsOn = !starsOn(); saveLocal(); renderSettings(sec); renderTabs(); };
@@ -4749,6 +4755,14 @@ function checkBadges(extra) {
 
 // Stars for a finished set (called once, from the results screen).
 // testing only (developer mode): switch the speed check off on this device
+// testing only (developer mode): show the answer on every question
+const showAns = () => { try { return DEV && localStorage.getItem('pb.showans') === '1'; } catch (e) { return false; } };
+function devAnsHTML(q, revealed) {
+  if (!showAns() || revealed) return '';
+  const body = choiceType(q) ? `Answer: <b>${esc(q.correct_option || '?')}</b>${(q.options || [])['ABCD'.indexOf(q.correct_option)] ? ` · ${esc((q.options || [])['ABCD'.indexOf(q.correct_option)])}` : ''}`
+    : (q.parts || []).map((p) => `<div>${p.label ? `<b>(${esc(p.label)})</b> ` : ''}${esc((p.mark_scheme || []).join(' | ') || '—')}</div>`).join('') || (q.answer ? esc(String(q.answer)) : '—');
+  return `<div class="dev-ans"><span>DEV answer</span>${body}</div>`;
+}
 const rushOff = () => { try { return DEV && localStorage.getItem('pb.norush') === '1'; } catch (e) { return false; } };
 const STAR_PASS = 50, RUSH_SECS = 4, STAR_RULES_AT = Date.UTC(2026, 10, 12, 12);
 // The score used for stars only counts marks the child can't give themselves: choice questions and AI-marked
@@ -9986,7 +10000,7 @@ function renderQuestion() {
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
     ${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${isPrimaryKid() && LANG !== 'zh' ? { mcq: 'Pick one', graph: 'Pick one', short: 'Short answer', structured: 'Long answer', essay: 'Writing' }[q.type] || TYPE[q.type] : TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
-    ${body.main}
+    ${devAnsHTML(q, S.phase === 'revealed')}${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '不明白？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
   ${body.footer}${/class="sheet/.test(body.footer) ? '' : qSide(q)}`;
@@ -10285,6 +10299,7 @@ function mcqBody(q, revealed) {
   const opts = (q.options || []).map((o, k) => {
     const L = 'ABCD'[k]; let cls = '';
     if (revealed) { if (L === q.correct_option) cls = 'right'; else if (L === picked) cls = 'wrong'; } else if (L === picked) cls = 'picked';
+    if (!revealed && showAns() && L === q.correct_option) cls += ' devans';
     const dot = revealed && L === q.correct_option ? ICON.check : L;
     if (q.type === 'graph') {
       return `<button class="opt gopt ${cls}" data-opt="${L}" ${revealed ? 'disabled' : ''} aria-pressed="${L === picked}" aria-label="Graph ${L}: ${esc(o)}"><span class="dot">${dot}</span>${graphSVG((q.graphs || [])[k] || {}, sc, `Graph ${L}: ${o}`)}${revealed ? `<span class="gcap">${esc(o)}</span>` : ''}</button>`;
