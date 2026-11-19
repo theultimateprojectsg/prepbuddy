@@ -1117,7 +1117,7 @@ function planStepDone(st) {
   switch (st.action) {
     case 'learn': return !!(local.learned || {})[`${st.bookId}:${(st.unitIds || [])[0]}`];
     case 'practise': case 'chapter_test': case 'weak_topics': case 'mock_paper': return ss.some((x) => !st.bookId || x.b === st.bookId);
-    case 'review': return ss.some((x) => x.k === 'spaced');
+    case 'review': return (local.sess || []).some((x) => x.t >= st.go && !x.e && x.k === 'spaced'); // reviews are meant to be quick: remembering fast isn't rushing
     case 'mistakes': return ss.length > 0;
     default: return true; // notes, flashcards and the like: opening it is doing it
   }
@@ -2795,7 +2795,7 @@ async function renderHome() {
     const chk = st.action === 'learn' && us ? { y: 'learn', b: st.bookId, u: us[0] } : ['practise', 'chapter_test'].includes(st.action) && us ? { y: 'log', b: st.bookId, us }
       : st.action === 'mistakes' && mkN ? { y: 'mk', n: mkN, k: Math.min(5, mkN) } : st.action === 'review' ? { y: 'rv' } : { y: 'none' };
     const now = { t: st.label, s: sj || Z('Buddy’s pick', 'Buddy 推介'), attr: `data-pstep="${k}"`, why: st.why, tag: ['plan', sj ? Z(`Your plan · ${sj}`, `你的計劃 · ${sj}`) : Z('Your plan', '你的計劃')] };
-    return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: st.minutes, maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st), now };
+    return { key: `bp:${k}`, icon: PLAN_IC[st.action] || 'practise', t: st.label, mins: st.minutes, maxS: st.action === 'chapter_test' ? 5 : 0, chk, done: planStepDone(st) || (st.action === 'review' && !!st.go && !due.length), now }; // reviews: also done once nothing is due
   }) : [];
   const impact = {};
   { const BM = new Map(), bm = async (id) => { if (!BM.has(id)) { const b = books.find((x) => x.id === id); BM.set(id, b ? await bookMastery(b) : null); } return BM.get(id); };
