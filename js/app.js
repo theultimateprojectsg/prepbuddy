@@ -1219,8 +1219,10 @@ function planHTML(missionDone, pick, askOnly) {
   }
   // no plan yet: a card like the others, with a few one-tap plans (and a box to ask for anything else)
   const nt = upcomingTests().find((x) => x.kind !== 'dict'), mkN = mistakeCount();
+  // about a minute a mistake and half a minute a review, in 5s, at most 30 (a big pile is cleared over a few days)
+  const todoMin = Math.max(5, Math.min(30, Math.round((mkN * 1 + (planState.due || 0) * 0.6) / 5) * 5));
   const quick = [
-    ...(mkN || planState.due ? [['🔁', PT('Clear your to‑dos', '清理待辦'), [mkN ? PT(`${mkN} mistake${mkN === 1 ? '' : 's'}`, `${mkN} 題錯題`) : '', planState.due ? PT(`${planState.due} review${planState.due === 1 ? '' : 's'}`, `${planState.due} 題溫習`) : ''].filter(Boolean).join(' · ') + PT(' · 15 min', ' · 15 分鐘'), PT('15 minutes clearing my to-dos: fix my mistakes first, then the reviews that are due', '15 分鐘清理待辦：先改正錯題，再做到期的溫習')]] : []),
+    ...(mkN || planState.due ? [['🔁', PT('Clear your to‑dos', '清理待辦'), [mkN ? PT(`${mkN} mistake${mkN === 1 ? '' : 's'}`, `${mkN} 題錯題`) : '', planState.due ? PT(`${planState.due} review${planState.due === 1 ? '' : 's'}`, `${planState.due} 題溫習`) : ''].filter(Boolean).join(' · ') + PT(` · ${todoMin} min`, ` · ${todoMin} 分鐘`), PT(`${todoMin} minutes clearing my to-dos: fix my mistakes first, then the reviews that are due`, `${todoMin} 分鐘清理待辦：先改正錯題，再做到期的溫習`)]] : []),
     ['⚡', PT('15-min boost', '15 分鐘快速提升'), PT('Your weakest chapter', '最弱的一章'), PT('15 minutes: a quick boost on my weakest chapter', '15 分鐘：在最弱的一章快速提升')],
     ['🎯', PT('Weakest subject', '最弱的科目'), PT('30 min where it’s needed', '30 分鐘練最需要的'), PT('30 minutes on my weakest subject', '30 分鐘練最弱的科目')],
     ...(nt ? [['📝', PT(`Ready for ${nt.name}`, `準備「${nt.name}」`), PT(`${testLeft(nt) === 0 ? 'Today' : testLeft(nt) === 1 ? 'Tomorrow' : `In ${testLeft(nt)} days`} · 30 min`, `${testLeft(nt) === 0 ? '今天' : testLeft(nt) === 1 ? '明天' : `${testLeft(nt)} 日後`} · 30 分鐘`), PT(`30 minutes to get me ready for my ${nt.name}, weakest chapters first`, `30 分鐘幫我準備「${nt.name}」，先做最弱的章節`)]] : []),
