@@ -1172,8 +1172,8 @@ async function runPlanStep(i) {
   coachIndex = { ...coachIndex, 'P.B': { bookId: st.bookId } }; (st.unitIds || []).forEach((u, k) => { coachIndex[`P.C${k}`] = { bookId: st.bookId, unitId: u }; });
   return runCoachAction({ action: st.action, book: st.bookId ? 'P.B' : '', chapters: (st.unitIds || []).map((u, k) => `P.C${k}`), count: st.count });
 }
-function planHTML(missionDone, pick) {
-  const P = todayPlan();
+function planHTML(missionDone, pick, askOnly) {
+  const P = askOnly ? null : todayPlan();
   if (P) {
     const done = P.steps.map(planStepDone), next = done.indexOf(false), mins = P.steps.reduce((a, x, k) => a + (done[k] ? 0 : x.minutes), 0);
     return `<section class="ms-card bp-card" aria-label="${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2>${buddySVG('happy', 30)} ${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}</h2><button class="bp-x" id="bpX" aria-label="${PT('Clear this plan', '清除計劃')}">✕</button></div>
@@ -3067,6 +3067,8 @@ async function renderHome() {
   // Today starts with a choice: Buddy's pick (the mission) or a plan from Buddy. Whatever is picked is today's plan.
   const DPk = local.dayPick && local.dayPick.d === t0 ? local.dayPick.k : null;
   const MODE = DPk || (steps.some((x) => x.done) ? 'mission' : PP ? 'plan' : null);
+  // with a chosen plan, "steps left" (Today's badge and the results button) counts the plan's steps, not the mission's
+  if (MODE === 'plan') { const n = planSteps.filter((x) => !x.done).length; if (!local.msLeft || local.msLeft.n !== n || !local.msLeft.plan) { local.msLeft = { d: t0, n, plan: 1 }; saveLocal(); renderTabs(); } }
   const missionHTML = allDone
     ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Mission done!', '任務完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
@@ -3227,7 +3229,7 @@ async function renderHome() {
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${MODE === null ? planHTML(false, { n: steps.filter((x) => !x.done && x.now).length, mins: steps.reduce((a, x) => a + (x.done || !x.now ? 0 : jobMin(x)), 0), titles: steps.filter((x) => !x.done && x.now).map((x) => String(x.now.t).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')) }) : ''}
-    ${MODE === 'plan' ? planCard || planHTML(true) : ''}
+    ${MODE === 'plan' ? (planCard || planHTML(true)) + (planCard && planDoneNow ? planHTML(true, null, true) : '') : ''}
     ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
     ${MODE === 'mission' && msFirst ? missionHTML : ''}
     ${MODE === 'mission' && msFirst && planDoneNow ? planCard : ''}
@@ -4992,7 +4994,7 @@ async function sessionBars(sess, qs) {
     .sort((a, b) => (b.to - b.from) - (a.to - a.from)).slice(0, 3);
 }
 // what's next on Today, in words, for the main button
-function missionNextLabel() { const n = local.msLeft && local.msLeft.d === startOfToday() ? local.msLeft.n : null; return n ? PT(`Next mission step (${n} left)`, `下一個任務步驟（還有 ${n} 個）`) : PT('Back to Today', '返回今日'); }
+function missionNextLabel() { const L = local.msLeft && local.msLeft.d === startOfToday() ? local.msLeft : null, n = L ? L.n : null; return n ? (L.plan ? PT(`Next plan step (${n} left)`, `計劃的下一步（還有 ${n} 個）`) : PT(`Next mission step (${n} left)`, `下一個任務步驟（還有 ${n} 個）`)) : PT('Back to Today', '返回今日'); }
 // After a step: the chapter's bar grows from where it was to where it is now, with the gain counting up.
 // Waits for other pop-ups (stars, streak, wins) so it never stacks on them.
 // Today shows at most ONE celebration per visit. Everything that wants to pop up offers itself here with a
