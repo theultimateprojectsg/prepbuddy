@@ -2590,7 +2590,10 @@ async function renderHome() {
     if (c.y === 'dict') { const L = (local.dict || []).find((d) => d.id === c.L); return !!(L && (L.runs || []).some((r) => r.t >= M.at)); }
     if (c.y === 'wr') return (local.wr || []).some((w) => w.t >= M.at || (w.drafts || []).some((d) => d.t >= M.at));
     if (c.y === 'lv') return !!(local.placement || {})[c.b] || bookAnswered(c.b);
-    if (c.y === 'log') return local.log.filter((e) => e.t >= M.at && e.k !== 'place' && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length >= 3;
+    if (c.y === 'log') { // done when a set in this book was finished, not left halfway (or a full set's worth was answered across tries)
+      const n = local.log.filter((e) => e.t >= M.at && e.k !== 'place' && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length;
+      const finished = (local.sess || []).some((x) => x.t >= M.at && x.b === c.b && !x.e && x.k !== 'place');
+      return n >= 3 && (finished || n >= Math.max(8, sessionSize())); }
     return false;
   };
   const steps = M.steps.map((st) => ({ ...st, done: isDone(st), now: cands.find((c) => c.key === st.key) || (st.attr && !/^t:/.test(st.key) ? { t: st.t, s: st.s, attr: st.attr, why: st.why, tag: st.tag } : null) }));
