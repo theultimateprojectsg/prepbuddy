@@ -2590,7 +2590,7 @@ async function renderHome() {
     if (c.y === 'dict') { const L = (local.dict || []).find((d) => d.id === c.L); return !!(L && (L.runs || []).some((r) => r.t >= M.at)); }
     if (c.y === 'wr') return (local.wr || []).some((w) => w.t >= M.at || (w.drafts || []).some((d) => d.t >= M.at));
     if (c.y === 'lv') return !!(local.placement || {})[c.b] || bookAnswered(c.b);
-    if (c.y === 'log') return local.log.filter((e) => e.t >= M.at && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length >= 3;
+    if (c.y === 'log') return local.log.filter((e) => e.t >= M.at && e.k !== 'place' && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length >= 3;
     return false;
   };
   const steps = M.steps.map((st) => ({ ...st, done: isDone(st), now: cands.find((c) => c.key === st.key) || (st.attr && !/^t:/.test(st.key) ? { t: st.t, s: st.s, attr: st.attr, why: st.why, tag: st.tag } : null) }));
@@ -2923,7 +2923,7 @@ async function renderHome() {
       comboHTML = goalsCardHTML(GD, { testBody: cardOf, inMission: (G) => G.kind === 'test' && steps.some((x) => !x.done && x.now && String(x.key).startsWith(`c:${G.p.x.id}:`)) });
     }
 
-  const msFirst = !!missionHTML && !missionHTML.includes('ms-done'); // the child should see Start without scrolling
+  const msFirst = !!missionHTML && !missionHTML.includes('ms-card ms-done'); // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
@@ -9470,7 +9470,7 @@ function renderQuestion() {
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
-    ${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
+    ${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${isPrimaryKid() && LANG !== 'zh' ? { mcq: 'Pick one', graph: 'Pick one', short: 'Short answer', structured: 'Long answer', essay: 'Writing' }[q.type] || TYPE[q.type] : TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '不明白？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
@@ -10074,7 +10074,7 @@ function record(q, got) {
   const hN = helped ? Math.min(9, S.chat[k_].msgs.filter((m) => m.role === 'user').length || 1) : 0;
   const ch = S && S.chg && k_ >= 0 && k_ in S.chg ? { cg: 1, c1: S.chg[k_] === q.correct_option ? 1 : 0 } : {};
   const fi = ty === 'w' && S && S.qShown && S.qShown.q === q && S.qShown.f ? Math.round((S.qShown.f - S.qShown.t) / 1000) : 0;
-  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: (S && S.mode) || '', ty, ...(helped ? { h: hN } : {}), ...(secs > 0 && secs < 900 ? { s: secs } : {}), ...ch, ...(fi > 0 && fi < 900 ? { fi } : {}) });
+  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: S && S.placement ? 'place' : (S && S.mode) || '', ty, ...(helped ? { h: hN } : {}), ...(secs > 0 && secs < 900 ? { s: secs } : {}), ...ch, ...(fi > 0 && fi < 900 ? { fi } : {}) });
   // Mistake book: every question not fully right goes in; getting it fully right later marks it mastered.
   const mk = local.mistakes[q.id];
   if (got < marksOf(q) && !(S && S.placement)) { // the level check places the child; its misses aren't mistakes
