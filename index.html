@@ -3121,7 +3121,9 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .msd-body b{font-weight:600;color:var(--ink)}.msd-body .muted{font-size:13px}
 .msd-btns{margin-top:6px}
 .ms-done:has(.msd-all){flex-wrap:wrap}
-.msd-all{flex-basis:100%;border-top:1px solid var(--line);padding-top:4px}
+.msd-all{flex-basis:100%;min-width:0;max-width:100%;border-top:1px solid var(--line);padding-top:4px}
+.msd-all .msd,.msd-all .ms-row{min-width:0;max-width:100%}
+.ms-done2 .ms-drow,.ms-done2 .ms-dt{min-width:0}.ms-done2 .ms-dt span{overflow-wrap:anywhere}
 .msd-all>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:8px 0;font-size:14px;font-weight:600;color:var(--accent)}
 .msd-all>summary::-webkit-details-marker{display:none}.msd-all .mq-chev{font-size:20px;transition:transform .15s}.msd-all[open]>summary .mq-chev{transform:rotate(90deg)}
 .msd-body{margin:2px 0 8px 0}
