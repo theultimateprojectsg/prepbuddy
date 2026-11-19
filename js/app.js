@@ -1177,16 +1177,10 @@ function planStepMin(st) {
   }
   return st.minutes;
 }
-/* How long a step takes, from the child's own pace: the typical seconds per answer in their recent work
-   (the log keeps it), plus a quarter for reading the feedback. Starting values until there are enough answers. */
-function paceSec(kind) {
-  const f = kind === 'rv' ? (x) => x.k === 'spaced' : kind === 'c' ? (x) => x.ty === 'c' : kind === 'w' ? (x) => x.ty === 'w' : (x) => x.k !== 'spaced' && x.k !== 'place';
-  const xs = (local.log || []).filter((x) => x.s > 0 && f(x)).slice(-60).map((x) => x.s).sort((a, b) => a - b);
-  if (xs.length < 8) return { rv: 35, c: 40, w: 150, q: 60 }[kind];
-  const mid = xs.slice(Math.floor(xs.length * 0.1), Math.ceil(xs.length * 0.9)); // drop the odd very quick or very slow one
-  return mid.reduce((a, b) => a + b, 0) / mid.length;
-}
-function stepMins(n, kind) { return Math.max(2, Math.round((n * paceSec(kind) * 1.25) / 60)); }
+/* How long a step takes: fixed times, the same for every child, so the numbers never jump around.
+   Seconds per question (including reading the feedback): practice 75, a review 45. */
+const PACE = { q: 75, rv: 45 };
+function stepMins(n, kind) { return Math.max(2, Math.round((n * (PACE[kind] || PACE.q)) / 60)); }
 function ctMins(nUnits) { return paperMinutes(Math.min(16, 6 + 2 * nUnits), Math.min(4, 1 + nUnits)); } // the same time the test itself gives
 const PLAN_IC = { practise: 'practise', chapter_test: 'test', review: 'review', mistakes: 'mistakes', weak_topics: 'weak', learn: 'learn', mock_paper: 'test', dictation: 'dictation', writing: 'writing', speaking: 'speaking', homework: 'homework' };
 function todayPlan() { const P = local.bplan; return P && P.d === startOfToday() && (P.steps || []).length ? P : null; }
