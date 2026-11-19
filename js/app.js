@@ -1088,6 +1088,70 @@ async function coachSnapshot() {
   if (done.length) lines.push('', `Recent school test results: ${done.map((x) => `${x.name} (${x.date}) ${x.score}%`).join('; ')}.`);
   return lines.join('\n');
 }
+// ---------- Buddy's plan for you ----------
+// The child says how long they have and what they want ("30 minutes, I want 100% on my Maths test"); the study coach
+// builds a short plan from their real chapters, and Today pins it at the front with a start button per step.
+const planState = { busy: false, error: '' };
+const PLAN_IC = { practise: 'practise', chapter_test: 'test', review: 'review', mistakes: 'mistakes', weak_topics: 'weak', learn: 'learn', mock_paper: 'test', dictation: 'dictation', writing: 'writing', speaking: 'speaking', homework: 'homework' };
+function todayPlan() { const P = local.bplan; return P && P.d === startOfToday() && (P.steps || []).length ? P : null; }
+function planStepDone(st) {
+  if (!st.go) return false;
+  const ss = (local.sess || []).filter((x) => x.t >= st.go && !x.e && !x.r);
+  switch (st.action) {
+    case 'learn': return !!(local.learned || {})[`${st.bookId}:${(st.unitIds || [])[0]}`];
+    case 'practise': case 'chapter_test': case 'weak_topics': case 'mock_paper': return ss.some((x) => !st.bookId || x.b === st.bookId);
+    case 'review': return ss.some((x) => x.k === 'spaced');
+    case 'mistakes': return ss.length > 0;
+    default: return true; // notes, flashcards and the like: opening it is doing it
+  }
+}
+async function askPlan(text) {
+  text = String(text || '').trim(); if (!text || planState.busy) return;
+  planState.busy = true; planState.error = ''; renderHome();
+  try {
+    const r = await api('coach', { plan: true, snapshot: await coachSnapshot(), ask: text, history: [], lang: LANG });
+    const P = r && r.plan; if (!P || !Array.isArray(P.steps) || !P.steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
+    const steps = P.steps.slice(0, 5).map((x) => { // turn the chapter codes into real ids now, so the plan still works later
+      const chs = (Array.isArray(x.chapters) ? x.chapters : []).map((c) => coachIndex[String(c).trim()]).filter((y) => y && y.unitId);
+      const bookId = (chs[0] && chs[0].bookId) || (coachIndex[String(x.book || '').trim()] || {}).bookId || null;
+      return { label: String(x.label || '').slice(0, 80), minutes: Math.max(2, Math.min(40, Number(x.minutes) || 10)), why: String(x.why || '').slice(0, 140), action: x.action, bookId, unitIds: chs.filter((c) => c.bookId === bookId).map((c) => c.unitId), count: x.count };
+    }).filter((x) => x.label && x.action);
+    if (!steps.length) throw new Error(PT('Buddy couldn’t make a plan this time. Try saying it another way.', 'Buddy 這次未能製定計劃，請換個方式再說一次。'));
+    local.bplan = { d: startOfToday(), t: Date.now(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
+    saveLocal(); track('buddy_plan');
+  } catch (e) { planState.error = e.message || String(e); }
+  planState.busy = false; if (view && view.name === 'home') renderHome();
+}
+async function runPlanStep(i) {
+  const P = todayPlan(); const st = P && P.steps[i]; if (!st) return;
+  if (!st.go) { st.go = Date.now(); saveLocal(); }
+  // reuse the coach's runner: give it codes that point at this step's book and chapters
+  coachIndex = { ...coachIndex, 'P.B': { bookId: st.bookId } }; (st.unitIds || []).forEach((u, k) => { coachIndex[`P.C${k}`] = { bookId: st.bookId, unitId: u }; });
+  return runCoachAction({ action: st.action, book: st.bookId ? 'P.B' : '', chapters: (st.unitIds || []).map((u, k) => `P.C${k}`), count: st.count });
+}
+function planHTML(missionDone) {
+  const P = todayPlan();
+  if (P) {
+    const done = P.steps.map(planStepDone), next = done.indexOf(false), mins = P.steps.reduce((a, x, k) => a + (done[k] ? 0 : x.minutes), 0);
+    return `<section class="ms-card bp-card" aria-label="${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2>${buddySVG('happy', 30)} ${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}</h2><button class="bp-x" id="bpX" aria-label="${PT('Clear this plan', '清除計劃')}">✕</button></div>
+      <p class="bp-ask">“${esc(P.ask)}”</p>${P.title ? `<b class="bp-title" data-raw>${esc(P.title)}</b>` : ''}${P.intro ? `<p class="bp-intro" data-raw>${esc(P.intro)}</p>` : ''}
+      <div class="bp-steps">${P.steps.map((x, k) => `<button class="bp-row ${done[k] ? 'done' : ''} ${k === next ? 'is-next' : ''}" data-pstep="${k}"><span class="ms-ic">${actionIcon(PLAN_IC[x.action] || 'practise', 16)}</span><span class="bp-t"><b data-raw>${esc(x.label)}</b><small data-raw>${x.why ? `${esc(x.why)} · ` : ''}${PT(`${x.minutes} min`, `${x.minutes} 分鐘`)}</small></span>${done[k] ? `<span class="ms-tick">${ICON.check}</span>` : k === next ? `<span class="ms-next">${PT('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`).join('')}</div>
+      ${next < 0 ? `<p class="bp-done">🎉 ${PT('Plan done! Great extra work today.', '計劃完成！今天額外努力，做得好！')}</p>` : `<button class="btn ms-start" id="bpGo">${done.some(Boolean) ? PT('Keep going', '繼續') : PT('Start', '開始')} · ${PT(`${mins} min`, `${mins} 分鐘`)}</button>`}</section>`;
+  }
+  const chips = [PT('30 min on my weakest subject', '30 分鐘練最弱的科目'), PT('Get me ready for my next test', '幫我準備下一次測驗'), PT('15 min quick boost', '15 分鐘快速提升')];
+  return `<section class="bp-ask-card${missionDone ? ' big' : ''}"><div class="bp-ah">${buddySVG('happy', missionDone ? 40 : 30)}<div><b>${missionDone ? PT('Got more time? Tell Buddy what you want', '還有時間？告訴 Buddy 你想做甚麼') : PT('Want something different? Ask Buddy for a plan', '想做點別的？請 Buddy 訂計劃')}</b>${missionDone ? `<small>${PT('How long you have, and what you want to get better at. Buddy builds a plan from your own chapters.', '說說你有多少時間、想加強甚麼。Buddy 會用你自己的章節訂計劃。')}</small>` : ''}</div></div>
+    <form class="bp-form" id="bpForm"><input id="bpQ" class="tinput" maxlength="200" placeholder="${PT('e.g. 30 minutes, I want 100% in my Maths test', '例如：30 分鐘，我想數學測驗拿 100 分')}" ${planState.busy ? 'disabled' : ''}><button class="btn" ${planState.busy ? 'disabled' : ''}>${planState.busy ? PT('Planning…', '計劃中…') : PT('Plan it', '訂計劃')}</button></form>
+    ${planState.busy ? '' : `<div class="tchips bp-chips">${chips.map((c) => `<button class="tchip" data-pchip>${esc(c)}</button>`).join('')}</div>`}
+    ${planState.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(planState.error)}</p>` : ''}</section>`;
+}
+function bindPlan() {
+  $app.querySelectorAll('[data-pstep]').forEach((b) => (b.onclick = () => runPlanStep(+b.dataset.pstep)));
+  { const g = document.getElementById('bpGo'); if (g) g.onclick = () => { const P = todayPlan(); const k = P ? P.steps.findIndex((x) => !planStepDone(x)) : -1; if (k >= 0) runPlanStep(k); }; }
+  { const x = document.getElementById('bpX'); if (x) x.onclick = () => { local.bplan = null; saveLocal(); renderHome(); }; }
+  { const f = document.getElementById('bpForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); askPlan(document.getElementById('bpQ').value); }; }
+  $app.querySelectorAll('[data-pchip]').forEach((b) => (b.onclick = () => askPlan(b.textContent)));
+}
+
 // Carry out what the coach decided to open (it only does this after the student agrees, or asks).
 async function runCoachAction(a) {
   if (!a || !a.action) return;
@@ -2966,12 +3030,15 @@ async function renderHome() {
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', strip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
+    ${todayPlan() ? planHTML() : ''}
     ${msFirst ? missionHTML : ''}
+    ${!todayPlan() && msFirst ? planHTML(false) : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
     ${installTip()}
     ${winHTML}
     ${lessonHTML}
     ${slipHTML}
+    ${!todayPlan() && !msFirst ? planHTML(true) : ''}
     ${msFirst ? '' : missionHTML}
     ${tests.pastHTML}
     ${comboHTML ? '' : testHTML}
@@ -3026,7 +3093,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-weak]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.weak.split(':'), bk = books.find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startUnits(bk, [u], local.count || sessionSize()); }));
   $app.querySelectorAll('[data-tstep]').forEach((b) => (b.onclick = () => { const p = tests.steps[+b.dataset.tstep]; if (p) p.step.run(); }));
   $app.querySelectorAll('[data-lv]').forEach((b) => (b.onclick = async () => { const bk = (await getBooks()).find((x) => x.id === b.dataset.lv); if (bk) startPlacement(bk); }));
-  bindPracticeTiles(); bindGear();
+  bindPracticeTiles(); bindGear(); bindPlan();
   window.scrollTo(0, 0);
   checkWins().catch(() => {});
 }

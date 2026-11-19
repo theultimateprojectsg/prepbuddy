@@ -44,6 +44,33 @@ const OPEN_TOOL = {
     },
   },
 };
+// "Buddy's plan for you": the student says how much time they have and what they want; the coach builds a short plan
+// from their real chapters, which the app pins to the top of Today with a start button per step.
+const PLAN_TOOL = {
+  name: 'make_plan',
+  description: 'Build a short study plan for right now, from the snapshot, that fits the time the student has and what they asked for.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      title: { type: 'string', description: 'Short title, e.g. "30 minutes for your Maths test". Max 8 words.' },
+      intro: { type: 'string', description: 'One sentence: why this plan, naming the real weak chapters or the test. Max 30 words.' },
+      steps: { type: 'array', minItems: 1, maxItems: 5, items: { type: 'object', properties: {
+        label: { type: 'string', description: 'What to do, max 8 words, e.g. "Practise Fractions: 10 questions".' },
+        minutes: { type: 'integer', minimum: 2, maximum: 40 },
+        why: { type: 'string', description: 'Max 15 words: why this step, with a real number from the snapshot where there is one.' },
+        ...STEP,
+      }, required: ['label', 'minutes', 'action'] } },
+    },
+    required: ['title', 'steps'],
+  },
+};
+const PLAN_RULES = `
+The student wants a plan for right now. Call make_plan; no other reply is needed.
+- Fit the time they give (default 30 minutes if they don't say). Step minutes should add up to about that time. A practice set of 10 questions takes about 10 minutes.
+- Follow what they asked: a subject, a test, "100%", their mistakes, something new. If they ask for a test, use its chapters, weakest first.
+- Good order: a lesson for a chapter not started (action learn), then practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due.
+- Only use chapter and book codes that are in the snapshot. Never invent chapters.
+- Labels are short and say exactly what to do. Use the student's language.`;
 const ZH = `Reply in Traditional Chinese as used in Hong Kong (standard written Chinese). The student may write in English, Chinese or Cantonese.`;
 
 module.exports = async (req, res) => {
@@ -70,6 +97,11 @@ module.exports = async (req, res) => {
       const out = await streamText({ body: { model: body.voice ? MODELS.voice : MODELS.tutor, max_tokens: body.voice ? 500 : 2500, tools: [OPEN_TOOL], tool_choice: { type: 'auto' }, system, messages: list },
         usage, toolName: OPEN_TOOL.name, onText: (t) => write({ d: t }) });
       return res.end(JSON.stringify({ done: true, reply: fallback(out), action: out.action, usage }) + '\n');
+    }
+    if (body.plan) {
+      const sys2 = [{ ...system[0], text: system[0].text + PLAN_RULES }, ...system.slice(1)];
+      const out = await callTextWithAction({ messages: { system: sys2, list }, usage, step: 'tutor', maxTokens: 1500, tool: PLAN_TOOL, force: true });
+      res.statusCode = 200; return res.end(JSON.stringify({ plan: out.action, usage }));
     }
     const out = await callTextWithAction({ messages: { system, list }, usage, step: 'tutor', maxTokens: body.voice ? 500 : 2500, tool: OPEN_TOOL });
     res.statusCode = 200; res.end(JSON.stringify({ reply: fallback(out), action: out.action, usage }));
