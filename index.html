@@ -3900,6 +3900,15 @@ body.mo-lock{overflow:hidden}
 @keyframes fc-pulse{50%{box-shadow:0 0 0 4px rgba(255,138,31,.22)}}
 @media (prefers-reduced-motion:reduce){.firechip.risk{animation:none}}
 @media (max-width:360px){.today .greet-r{flex-wrap:nowrap!important;gap:6px}.today .gr-brand b{font-size:17px}.firechip,.today .starchip{padding:4px 9px 4px 6px;font-size:14px;gap:4px}.bp-ask2 .ms-head h2{font-size:19px}}
+
+/* the goals live inside the morning card, as a white panel under the greeting */
+.today .gr-goals{position:relative;z-index:1;margin-top:4px}
+.today .gr-goals>.ms-card{margin:0!important;background:#fff;border:1px solid rgba(30,42,90,.08);border-radius:16px;box-shadow:0 2px 8px rgba(30,42,90,.06);padding:14px}
+.today .gr-hero:has(.gr-goals){padding:18px 12px 12px!important}
+.today .gr-hero:has(.gr-goals)>.gr-row{padding:0 8px}
+@media (max-width:400px){.today .gr-goals .ag-h:has(>.gl-st){display:grid;grid-template-columns:auto 1fr;column-gap:10px;row-gap:6px}.today .gr-goals .ag-h>.gl-st{grid-column:2;justify-self:start;margin:0}}
+@media (max-width:360px){.bp-ask2 .bpq-bud{display:none}}
+@media (max-width:360px){.today .gr-goals>.ms-card{padding:10px}.today .gr-goals .ms-card .ms-card.bp-ask2 .ms-head h2{font-size:18px!important;padding-right:34px}}
 </style>
 </head>
 <body>

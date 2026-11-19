@@ -1145,9 +1145,26 @@ async function coachSnapshot() {
 const planState = { busy: false, error: '' };
 // A chapter test always takes the same time as the real test (questions × time each), not the AI's guess
 function planStepMin(st) {
-  if (st.action === 'chapter_test' && (st.unitIds || []).length) { const n = st.unitIds.length; return paperMinutes(Math.min(16, 6 + 2 * n), Math.min(4, 1 + n)); }
+  switch (st.action) {
+    case 'chapter_test': if ((st.unitIds || []).length) return ctMins(st.unitIds.length); break;
+    case 'practise': return stepMins(Math.min(30, Math.max(5, Number(st.count) || sessionSize())), 'q');
+    case 'review': return stepMins(Math.min(10, planState.due || 10), 'rv');
+    case 'weak_topics': return stepMins(15, 'q');
+    case 'mistakes': return stepMins(Math.min(10, mistakeCount() || 5), 'q');
+  }
   return st.minutes;
 }
+/* How long a step takes, from the child's own pace: the typical seconds per answer in their recent work
+   (the log keeps it), plus a quarter for reading the feedback. Starting values until there are enough answers. */
+function paceSec(kind) {
+  const f = kind === 'rv' ? (x) => x.k === 'spaced' : kind === 'c' ? (x) => x.ty === 'c' : kind === 'w' ? (x) => x.ty === 'w' : (x) => x.k !== 'spaced' && x.k !== 'place';
+  const xs = (local.log || []).filter((x) => x.s > 0 && f(x)).slice(-60).map((x) => x.s).sort((a, b) => a - b);
+  if (xs.length < 8) return { rv: 35, c: 40, w: 150, q: 60 }[kind];
+  const mid = xs.slice(Math.floor(xs.length * 0.1), Math.ceil(xs.length * 0.9)); // drop the odd very quick or very slow one
+  return mid.reduce((a, b) => a + b, 0) / mid.length;
+}
+function stepMins(n, kind) { return Math.max(2, Math.round((n * paceSec(kind) * 1.25) / 60)); }
+function ctMins(nUnits) { return paperMinutes(Math.min(16, 6 + 2 * nUnits), Math.min(4, 1 + nUnits)); } // the same time the test itself gives
 const PLAN_IC = { practise: 'practise', chapter_test: 'test', review: 'review', mistakes: 'mistakes', weak_topics: 'weak', learn: 'learn', mock_paper: 'test', dictation: 'dictation', writing: 'writing', speaking: 'speaking', homework: 'homework' };
 function todayPlan() { const P = local.bplan; return P && P.d === startOfToday() && (P.steps || []).length ? P : null; }
 function planStepDone(st) {
@@ -1303,7 +1320,7 @@ async function runCoachAction(a) {
   switch (a.action) {
     case 'practise': if (book && units.length) return startUnits(book, units, Math.min(30, Math.max(5, Number(a.count) || sessionSize()))); break;
     case 'chapter_test': if (book && units.length) return startChapterTest(book, units); break;
-    case 'review': return startReview('spaced');
+    case 'review': return startReview('spaced', null, 10);
     case 'mistakes': return go({ name: 'mistakes' });
     case 'weak_topics': return book ? startReview('weak', book.id) : go({ name: 'pick', mode: 'weak' });
     case 'mock_paper': return book ? go({ name: 'paper', bookId: book.id, from: 'home' }) : go({ name: 'pick', mode: 'mock' });
@@ -2869,15 +2886,17 @@ async function renderHome() {
   { const left = steps.filter((x) => !x.done && x.now).length, d = startOfToday(); if (!local.msLeft || local.msLeft.d !== d || local.msLeft.n !== left) { local.msLeft = { d, n: left }; saveLocal(); renderTabs(); } }
   { const md = local.mdone || (local.mdone = {}); const nd = steps.filter((x) => x.done).length; const prev = md[t0]; if (!prev || prev[0] !== nd || prev[1] !== steps.length) { md[t0] = [nd, steps.length]; Object.keys(md).filter((k) => +k < t0 - 60 * DAY).forEach((k) => delete md[k]); saveLocal(); } }
   // a rough time for each job, so the header can say how long today's mission takes
+  planState.due = due.length;
   const jobMin = (x) => { if (x.mins) return x.mins; const k = x.key, ic = x.icon; if (k.startsWith('mm:')) return 20;
-    if (k === 'rv') return Math.max(2, Math.round(Math.min(10, due.length) * 0.6));
-    if (k === 'mk') return Math.max(3, (x.chk && x.chk.k) || 5);
+    if (k === 'rv') return stepMins(Math.min(10, due.length), 'rv');
+    if (k === 'mk') return stepMins(Math.min(10, (x.chk && x.chk.k) || 5), 'q');
     if (k.startsWith('lv:')) return 5;
     if (k.startsWith('d:')) return 5;
     if (k.startsWith('wt:')) return 20;
     if (ic === 'learn') return 10;
-    if (ic === 'test' || ic === 'mock') return 15;
-    return 10; };
+    if (ic === 'test') return ctMins(1);
+    if (ic === 'mock') return 15;
+    return stepMins(sessionSize(), 'q'); };
   const left = steps.filter((x) => !x.done && x.now), mins = Math.round(left.reduce((a, x) => a + jobMin(x), 0) / 5) * 5 || 5, started = left.length < steps.length;
   // the goal card on top: the goal, how far along, and today's next mission step as the one next step
   const GD = await goalsData(tests).catch((e) => { console.warn(e); return null; });
@@ -3151,8 +3170,10 @@ async function renderHome() {
   const MODE = DPk || (steps.some((x) => x.done) ? 'mission' : PP ? 'plan' : null);
   // with a chosen plan, "steps left" (Today's badge and the results button) counts the plan's steps, not the mission's
   if (MODE === 'plan') { const n = planSteps.filter((x) => !x.done).length; if (!local.msLeft || local.msLeft.n !== n || !local.msLeft.plan) { local.msLeft = { d: t0, n, plan: 1 }; saveLocal(); renderTabs(); } }
+  // when Buddy's pick and an asked-for plan are both done, they share one "done today" card
+  const pDoneN = allDone && PP && planSteps.length && planSteps.every((x) => x.done) ? planSteps.length : 0;
   const missionHTML = allDone
-    ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s plan', '今日計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
+    ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s plan', '今日計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`${steps.length + pDoneN} of ${steps.length + pDoneN} done today. See you tomorrow!`, `今天完成了 ${steps.length + pDoneN}／${steps.length + pDoneN} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}${pDoneN ? planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('') : ''}</details></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s plan', '今日計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
       <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)).sort((a, b) => (b[1] === firstOpen) - (a[1] === firstOpen)), done = idx.filter(([x]) => x.done || !x.now);
         return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
@@ -3306,16 +3327,17 @@ async function renderHome() {
       comboHTML = goalsCardHTML(GD, { testBody: cardOf, inMission: (G) => G.kind === 'test' && steps.some((x) => !x.done && x.now && String(x.key).startsWith(`c:${G.p.x.id}:`)) });
     }
 
+  if (pDoneN) planCard = MODE === 'plan' ? missionHTML : '';
   const msFirst = !!missionHTML && !missionHTML.includes('ms-card ms-done');
-  const planDoneNow = !!planCard && planCard.includes('ms-card ms-done');
+  const planDoneNow = !!pDoneN || (!!planCard && planCard.includes('ms-card ms-done'));
   const missionPick = { n: steps.filter((x) => !x.done && x.now).length, mins: steps.reduce((a, x) => a + (x.done || !x.now ? 0 : jobMin(x)), 0), titles: steps.filter((x) => !x.done && x.now).map((x) => String(x.now.t).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')) };
   planState.due = (await dueItems().catch(() => [])).length; // for the "Clear your to-dos" choice
   const nextPick = allDone || !missionPick.n ? { fresh: true } : missionPick; // once the mission is done, Buddy's pick makes a fresh set // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
-    ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', '').replace('<!--SKCHIP-->', skChip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
+    ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', comboHTML || goalHTML ? `<div class="gr-goals">${comboHTML || goalHTML}</div>` : '').replace('<!--SKCHIP-->', skChip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
-    ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}${comboHTML || goalHTML}
+    ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}
     ${MODE === null ? planHTML(false, nextPick) : ''}
     ${MODE === 'plan' ? (planCard ? planCard + (planDoneNow ? planHTML(true, nextPick, true) : '') : planHTML(true, nextPick, true)) : ''}
     ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
