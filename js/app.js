@@ -2610,7 +2610,7 @@ function goalsHowHTML(id = 'howGoals') {
     ['📊', 'The bar: ready now, where you’re heading, the goal.', '進度條：現在、走向、目標。', 'Solid is how ready you are today. Stripes are where your usual pace gets you by test day. The line is the goal.', '實色是今天的準備度，條紋是照平時步伐考試當日會到的位置，直線是目標。'],
     ['🚦', 'Green, amber or red: on track, a little behind, behind.', '綠、橙、紅：進度理想、稍為落後、落後。', 'For a test, from where you’re heading by test day. For a subject, from whether your level is rising.', '測驗看考試當日預計到哪裏；科目看程度是否上升。'],
     ['📈', 'Subjects show a level out of 10.', '科目以 10 分為滿分顯示程度。', '5.0 is keeping up, 6.7 above grade level, 8.5 top of the class.', '5.0 跟上進度，6.7 高於年級水平，8.5 名列前茅。'],
-    ['✅', '“In today’s mission” is today’s work for that goal.', '「已在今日任務中」是這個目標今天要做的。', 'The goal that needs the most work comes first, in the list and in the mission.', '最需要努力的目標排最先，清單和任務都一樣。'],
+    ['✅', '“In today’s plan” is today’s work for that goal.', '「已在今日計劃中」是這個目標今天要做的。', 'The goal that needs the most work comes first, in the list and in the mission.', '最需要努力的目標排最先，清單和任務都一樣。'],
     ['✏️', 'Tap a goal to open it. The pencil changes goals.', '按目標可打開詳情，鉛筆可修改目標。', 'Tests open to their full plan; subjects to their level week by week.', '測驗會顯示完整計劃；科目會顯示每週程度。']]);
 }
 function missionHowHTML(id = 'howMission') {
@@ -2627,7 +2627,7 @@ function testsHowHTML(id = 'howTests') {
   return howPanel(id, 'How do school tests work?', '學校測驗是怎樣運作的？', [
     ['➕', 'Add each school test, exam or 默書 with its date.', '加入學校的每個測驗、考試或默書和日期。', 'Pick the chapters if you know them. If not, Buddy uses everything practised in that subject.', '知道範圍就選章節；不知道的話，Buddy 會用該科練習過的所有內容。'],
     ['📊', 'The bar shows how ready you are, and your goal.', '進度條顯示準備度和你的目標。', 'Set the goal by sliding Buddy on the test card.', '在測驗卡上拖動 Buddy 設定目標。'],
-    ['▶️', 'Today shows one job for each test, with Start.', '每個測驗今天都有一項任務，按「開始」。', 'It’s the same job as in Today’s mission.', '和今日任務的那一項一樣。'],
+    ['▶️', 'Today shows one job for each test, with Start.', '每個測驗今天都有一項任務，按「開始」。', 'It’s the same job as in Today’s plan.', '和今日計劃的那一項一樣。'],
     ['📝', 'A practice test the day before.', '考試前一天做模擬測驗。', 'Tap Full plan to see every day until the test.', '按「完整計劃」看每一天的安排。']]);
 }
 function quickHowHTML(id = 'howQuick') {
@@ -2636,7 +2636,7 @@ function quickHowHTML(id = 'howQuick') {
     ['✍️', 'Writing to finish, or to redraft with Buddy’s feedback.', '要完成的寫作，或按 Buddy 的評語修改。'],
     ['📷', 'Homework you snapped today or yesterday.', '今天或昨天拍下的功課。'],
     ['🔤', 'Words you got wrong last time in 默書 practice.', '上次默書練習寫錯的詞語。'],
-    ['⏰', 'Something due very soon goes into Today’s mission instead.', '很快要到的，會放進今日任務。', 'A 默書 in the next 2 days, or a writing test in the next 3.', '兩日內的默書，或三日內的寫作測驗。']]);
+    ['⏰', 'Something due very soon goes into Today’s plan instead.', '很快要到的，會放進今日計劃。', 'A 默書 in the next 2 days, or a writing test in the next 3.', '兩日內的默書，或三日內的寫作測驗。']]);
 }
 // "How is 'how ready' worked out?\": a short fold-out under the readiness rings (Today and Progress).
 function readyHowHTML(id = 'howReady') {
@@ -2668,7 +2668,7 @@ async function renderHome() {
     const tLine = (q) => [tIc(q), q.left === 0 ? Z(`${q.x.name} today`, `今天「${q.x.name}」`) : q.left === 1 ? Z(`${q.x.name} tomorrow`, `明天「${q.x.name}」`) : Z(`${q.x.name} in ${q.left} days`, `「${q.x.name}」還有 ${q.left} 日`), q.left <= 2];
     if (nt && nt.left === 0) return [...soon.map(tLine), ['practise', Z('A quick warm-up first? You’ve got this!', '先熱熱身？你一定得！')]];
     if (nt && nt.left === 1) return [...soon.map(tLine), ['practise', Z('A practice run tonight, then a good sleep', '今晚做一次模擬，然後好好睡一覺')]];
-    if (F.allDone) return F.streak >= 2 ? Z(`Mission done, and ${F.streak} days in a row. Brilliant!`, `任務完成，已連續 ${F.streak} 日，太棒了！`) : Z('Mission done for today. Brilliant work!', '今天的任務完成了，做得好！');
+    if (F.allDone) return F.streak >= 2 ? Z(`Plan done, and ${F.streak} days in a row. Brilliant!`, `計劃完成，已連續 ${F.streak} 日，太棒了！`) : Z('Plan done for today. Brilliant work!', '今天的計劃完成了，做得好！');
     // tests further off aren't repeated here: the goals card right below shows each one with its countdown
     if (F.restY && F.streak >= 1 && !F.doneToday) return Z(`Yesterday was your rest day 💤 so your ${F.streak}-day streak is safe. Practise today to keep it going!`, `昨天是你的休息日 💤，${F.streak} 日連續紀錄保住了。今天練習，繼續保持！`);
     if (F.streak >= 2 && !F.doneToday) return Z(`${F.streak} days in a row! Keep the flame going today.`, `已連續 ${F.streak} 日！今天也要保持。`);
@@ -2677,7 +2677,7 @@ async function renderHome() {
     if (F.streak >= 2) return Z(`${F.streak} days in a row. Come back tomorrow for day ${F.streak + 1}!`, `已連續 ${F.streak} 日，明天回來挑戰第 ${F.streak + 1} 日！`);
     const L = LANG === 'zh'
       ? (hr < 12 ? ['新的一天，先做一點點吧！', '早上的腦袋最清醒，來幾題吧！', '先做一點點，今天就輕鬆得多。'] : hr < 18 ? ['今天也來練習一下吧！', '放學後做一個小任務？', '十分鐘就夠，開始吧！'] : ['睡前做十分鐘，明天更有信心。', '今晚做一點，明天記得更牢。', '一個小任務，然後好好休息。'])
-      : (hr < 12 ? ['A little practice now, a lot easier later.', 'Fresh brain, fresh start. Let’s go!', 'A few questions before the day gets busy?'] : hr < 18 ? ['Ready for a quick practice?', 'A short mission after school?', 'Ten minutes is all it takes. Let’s go!'] : ['Ten minutes before bed goes a long way.', 'A little tonight helps it stick tomorrow.', 'One small mission, then time to relax.']);
+      : (hr < 12 ? ['A little practice now, a lot easier later.', 'Fresh brain, fresh start. Let’s go!', 'A few questions before the day gets busy?'] : hr < 18 ? ['Ready for a quick practice?', 'A short plan after school?', 'Ten minutes is all it takes. Let’s go!'] : ['Ten minutes before bed goes a long way.', 'A little tonight helps it stick tomorrow.', 'One small plan, then time to relax.']);
     return L[Math.floor(Date.now() / DAY) % L.length];
   };
   // Phones: an app bar (logo · child · stars · settings) above a friendly greeting card with Buddy. Computers: the plain greeting.
@@ -3032,7 +3032,7 @@ async function renderHome() {
       if (!didToday && didY) ideas.push([Z('Practise today to make it 2 days in a row', '今天練習，就連續 2 日了'), 'flame']);
       else if (!didToday) ideas.push([Z('Practise today to start a streak', '今天練習，開始連續紀錄'), 'flame']);
       if (mkN >= 3) ideas.push([Z('Fix 3 mistakes and that’s a win', '改正 3 題錯題就是一個進步'), 'check']);
-      ideas.push([Z('Get 5 or more questions right in today’s mission', '在今日任務答對 5 題或以上'), 'star']);
+      ideas.push([Z('Get 5 or more questions right in today’s plan', '在今日計劃答對 5 題或以上'), 'star']);
       const head = didToday ? Z('Your next win is close!', '下一個進步就快到了！') : Z('Your first win of the week is one session away!', '再練習一次，就有本週第一個進步！');
       winHTML = `<section class="td-wins tw-next" data-k="${esc(head)}" aria-label="${Z('Your next win', '你的下一個進步')}"><button type="button" class="tw-x" id="twX" aria-label="${Z('Dismiss', '關閉')}">✕</button>
         <div class="tw-top"><span class="tw-bud">${buddySVG('happy', 56)}</span><div><small>${Z('Your next win', '你的下一個進步')}</small><b>${head}</b></div></div>
@@ -3099,7 +3099,7 @@ async function renderHome() {
   { const p = tests.steps.find((q) => q.left <= 14);
     const first = steps.find((x) => !x.done && x.now);
     coach.brief = p ? Z(`${p.x.name} is ${leftText(p.left)}${p.ready != null ? ` and you’re ${p.ready}% ready` : ''}.${first ? ` Today: ${first.now.t}.` : ''}`, `「${p.x.name}」${leftText(p.left)}${p.ready != null ? `，你現時準備度 ${p.ready}%` : ''}。${first ? `今天：${first.now.t}。` : ''}`)
-      : first ? Z(`Today: ${first.now.t}.`, `今天：${first.now.t}。`) : Z('Today’s mission is done. Nice work!', '今日任務完成，做得好！'); }
+      : first ? Z(`Today: ${first.now.t}.`, `今天：${first.now.t}。`) : Z('Today’s plan is done. Nice work!', '今日計劃完成，做得好！'); }
   let planCard = '';
   if (PP) {
     const pNext = planSteps.findIndex((x) => !x.done), pMin = planSteps.reduce((a, x) => a + (x.done ? 0 : x.mins), 0), pStarted = planSteps.some((x) => x.done);
@@ -3125,8 +3125,8 @@ async function renderHome() {
   // with a chosen plan, "steps left" (Today's badge and the results button) counts the plan's steps, not the mission's
   if (MODE === 'plan') { const n = planSteps.filter((x) => !x.done).length; if (!local.msLeft || local.msLeft.n !== n || !local.msLeft.plan) { local.msLeft = { d: t0, n, plan: 1 }; saveLocal(); renderTabs(); } }
   const missionHTML = allDone
-    ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Mission done!', '任務完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
-    : `<section class="ms-card" aria-label="${Z('Today’s mission', '今日任務')}"><div class="ms-head"><h2 class="h-info">${Z('Today’s mission', '今日任務')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
+    ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s plan', '今日計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`${steps.length} of ${steps.length} done today. See you tomorrow!`, `今天完成了 ${steps.length}／${steps.length} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}</details></section>`
+    : `<section class="ms-card" aria-label="${Z('Today’s plan', '今日計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
       <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)).sort((a, b) => (b[1] === firstOpen) - (a[1] === firstOpen)), done = idx.filter(([x]) => x.done || !x.now);
         return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
       ${missionHowHTML()}
@@ -3146,9 +3146,9 @@ async function renderHome() {
   // a line of encouragement for the streak (computers; phones show the "See today's mission" button instead)
   const encHTML = doneToday
     ? (streak >= 2 ? Z(`${streak} days in a row. Brilliant! Come back tomorrow for day ${streak + 1}.`, `已連續 ${streak} 日，太棒了！明天回來挑戰第 ${streak + 1} 日。`) : Z('Great start! Come back tomorrow and it becomes a streak.', '好開始！明天再來，就開始連續練習了。'))
-    : streak ? Z(`Keep your ${streak}-day streak going: one short mission today is all it takes.`, `保持連續 ${streak} 日的紀錄：今天只需完成一個小任務。`)
-    : nOn ? Z(`You practised ${nOn} day${nOn === 1 ? '' : 's'} this week. Do today’s mission and start a new streak 🔥`, `本週已練習 ${nOn} 日。完成今日任務，開始新的連續紀錄 🔥`)
-    : Z('Every streak starts with day one. Finish today’s mission to light your first 🔥', '每個連續紀錄都由第一日開始。完成今日任務，點燃你的第一團火 🔥');
+    : streak ? Z(`Keep your ${streak}-day streak going: one short plan today is all it takes.`, `保持連續 ${streak} 日的紀錄：今天只需完成一個小任務。`)
+    : nOn ? Z(`You practised ${nOn} day${nOn === 1 ? '' : 's'} this week. Do today’s plan and start a new streak 🔥`, `本週已練習 ${nOn} 日。完成今日計劃，開始新的連續紀錄 🔥`)
+    : Z('Every streak starts with day one. Finish today’s plan to light your first 🔥', '每個連續紀錄都由第一日開始。完成今日計劃，點燃你的第一團火 🔥');
   // Streak, the way Duolingo and others show it: one bold flame and the number. The flame is lit once today's
   // practice is done, grey until then (and wobbles in the evening when the streak is at risk). Days in a row join up.
   const lit = doneToday;
@@ -3165,7 +3165,7 @@ async function renderHome() {
   const medal = `<svg class="medal" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l2 5-3 2zM17 2h-4l-2 5 3 2z" fill="#6E8BE0"/><circle cx="12" cy="15" r="7" fill="#FFC531" stroke="#E09B00" stroke-width="1.5"/><path d="M12 11.5l1.1 2.2 2.4.3-1.8 1.7.5 2.4-2.2-1.2-2.2 1.2.5-2.4-1.8-1.7 2.4-.3z" fill="#FFF6D6"/></svg>`;
   const nextHTML = `<span class="sk-next">${medal}<span>${Z(`${nextM - streak} more day${nextM - streak === 1 ? '' : 's'} to your ${nextM}-day badge`, `再 ${nextM - streak} 日得到 ${nextM} 日徽章`)}</span><span class="bar"><i style="width:${Math.round(((streak - prevM) / (nextM - prevM)) * 100)}%"></i></span></span>`;
   const label = streak ? Z(`day streak`, '日連續') : Z('Start a streak today', '今天開始連續練習');
-  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame sk-t${lit ? tier : 0} ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}${lit ? embs(tier) : ''}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span>${doneToday ? '' : `<small class="gr-cta">${Z('See today’s mission ›', '查看今日任務 ›')}</small>`}${nextHTML}</span>
+  const strip = `<button class="gr-strip gr-btn" id="streakGo"><span class="gr-streak"><span class="gr-sk"><span class="sk-flame sk-t${lit ? tier : 0} ${lit ? 'lit' : ''} ${risk ? 'risk' : ''}">${flameSVG(lit)}${lit ? embs(tier) : ''}</span><span class="gr-sk-n">${streak ? `<b class="${lit ? '' : 'off'}">${streak}</b>` : ''}<span class="${streak ? '' : 'off'}">${label}</span></span></span>${doneToday ? '' : `<small class="gr-cta">${Z('See today’s plan ›', '查看今日計劃 ›')}</small>`}${nextHTML}</span>
     ${weekHTML()}</button>`;
   // Celebration, once a day, the first time Today opens after practising (like Duolingo's streak screen)
   const celebrate = (n) => {
@@ -3185,7 +3185,7 @@ async function renderHome() {
     const box = document.createElement('div'); box.className = 'skc-wrap'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
     const conf = Array.from({ length: 22 }, (_, i) => `<i class="conf" style="--dx:${Math.round(Math.cos(i * 0.29) * (90 + (i % 4) * 25))}px;--dy:${Math.round(Math.sin(i * 0.29) * 90 - 70)}px;--r:${(i * 47) % 360}deg;background:${['#FFC531', '#18966A', '#4A5AA8', '#F08A5D', '#E0533F'][i % 5]}"></i>`).join('');
     sfx('win');
-    box.innerHTML = `<div class="skc ms-party" style="position:relative">${conf}<span class="ms-pbud">${buddySVG('done', 96)}</span><b class="ms-ph">${Z('Mission done!', '任務完成！')}</b>
+    box.innerHTML = `<div class="skc ms-party" style="position:relative">${conf}<span class="ms-pbud">${buddySVG('done', 96)}</span><b class="ms-ph">${Z('Plan done!', '計劃完成！')}</b>
       <span class="ms-ps">${(() => { const nn = planWin ? planSteps.length : steps.length; return Z(`All ${nn} steps done today.`, `今天 ${nn} 項全部完成。`); })()}</span>
       <div class="ms-pchips">${got ? `<span class="ms-pc star">⭐ ${Z(`+${got} bonus stars`, `+${got} 粒獎勵星星`)}</span>` : ''}<span class="ms-pc fire">🔥 ${streak > 1 ? Z(`${streak}-day streak safe`, `連續 ${streak} 日，保住了`) : Z('Streak safe for today', '今天的連續紀錄保住了')}</span></div>
       <button class="btn" id="msOk">${Z('Brilliant!', '太好了！')}</button>${extra ? `<button class="linkbtn" id="msMore2">${esc(extra.label)} ›</button>` : ''}</div>`;
@@ -3202,7 +3202,7 @@ async function renderHome() {
   const nt = tests.steps[0];
   const testHead = `<div class="sect-head"><h2 class="h-info">${SCH('School tests', '學校測驗')}${infoBtn('howTests', SCH('How do school tests work?', '學校測驗是怎樣運作的？'))}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>${testsHowHTML()}`;
   let comboHTML = '';
-  let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s mission will get you ready, day by day.', '加入後，今日任務會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
+  let testHTML = `<section class="stack g10 td-sec" aria-label="${SCH('School tests', '學校測驗')}">${testHead}<button class="weekstrip td-addtest" id="addTest2"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and Today’s plan will get you ready, day by day.', '加入後，今日計劃會每天幫你準備。')}</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">+</span></button></section>`;
   const tdPlans = [], tdMins = [], jobsT = [], tdActs = [];
   const tdBtn = (label, run, cls = 'pv-btn') => { tdActs.push(run); return `<button class="${cls}" data-tdact="${tdActs.length - 1}">${label}</button>`; };
   let cards = [];
@@ -3658,9 +3658,9 @@ function renderAbout() {
     [Z('Does it really know my child, or is it just random questions?', '它真的了解我的孩子嗎？還是只是隨機出題？'),
       Z('It keeps a record of every answer and uses it. For each chapter it knows how far your child has got, how hard a question they can handle, which mistakes are still open, what they’re about to forget, and whether they passed a timed test. It also notices habits: how often hints were needed, whether a set was rushed, and when they usually study. Questions get harder as they improve and easier when they struggle, chapter by chapter.', '它會記錄每一個答案並加以運用。每一章它都知道孩子學到哪裡、能應付多難的題目、還有哪些錯題未改正、哪些快要忘記，以及有否通過限時測驗。它也會留意習慣：需要提示的次數、有否趕急完成、通常甚麼時候溫習。孩子進步，題目會變難；遇到困難，題目會變易，每章分開計算。')],
     [Z('How does it decide what my child does each day?', '它怎樣決定孩子每天做甚麼？'),
-      Z('Each morning Buddy sets “Today’s mission”: up to three steps, most important first. A school test coming up comes first (learn what’s not started, then the weakest chapter, a practice test the day before). Then mistakes to fix, reviews that are due, a level check for a new book, and finally carrying on where they left off. Your child just taps Start.', '每天早上 Buddy 會定好「今日任務」：最多三個步驟，最重要的先做。即將來臨的學校測驗最優先（先學未開始的章節，再練最弱的一章，考試前一天做模擬測驗）。然後是改正錯題、到期的溫習、新課本的程度評估，最後是繼續上次的進度。孩子只需按「開始」。')],
+      Z('Each morning Buddy sets “Today’s plan”: up to three steps, most important first. A school test coming up comes first (learn what’s not started, then the weakest chapter, a practice test the day before). Then mistakes to fix, reviews that are due, a level check for a new book, and finally carrying on where they left off. Your child just taps Start.', '每天早上 Buddy 會定好「今日計劃」：最多三個步驟，最重要的先做。即將來臨的學校測驗最優先（先學未開始的章節，再練最弱的一章，考試前一天做模擬測驗）。然後是改正錯題、到期的溫習、新課本的程度評估，最後是繼續上次的進度。孩子只需按「開始」。')],
     [Z('My child has a test next week. Can it help?', '孩子下星期有測驗，它可以幫忙嗎？'),
-      Z('Yes. Add the test (a quiz, 默書 or a whole exam period) with its date and chapters. PrepBuddy shows how ready your child is for that test, chapter by chapter, tells them how much to do each day to be ready in time, and builds every day’s mission around it. Afterwards, snap the marked paper and the result is saved.', '可以。加入測驗（小測、默書或整個考試期）、日期及範圍。PrepBuddy 會逐章顯示孩子對該測驗的準備程度，告訴他們每天要做多少才能及時準備好，並以此安排每天的任務。考完後，拍下已批改的試卷，成績便會記錄下來。')],
+      Z('Yes. Add the test (a quiz, 默書 or a whole exam period) with its date and chapters. PrepBuddy shows how ready your child is for that test, chapter by chapter, tells them how much to do each day to be ready in time, and builds every day’s plan around it. Afterwards, snap the marked paper and the result is saved.', '可以。加入測驗（小測、默書或整個考試期）、日期及範圍。PrepBuddy 會逐章顯示孩子對該測驗的準備程度，告訴他們每天要做多少才能及時準備好，並以此安排每天的任務。考完後，拍下已批改的試卷，成績便會記錄下來。')],
     [Z('Are the questions really from my child’s school work?', '題目真的來自孩子的學校課本嗎？'),
       Z('Yes. Questions are written from the pages of the textbook your child uses, and each one shows where in the book it comes from. A second AI check rejects questions that don’t match the book, refer to something your child can’t see, or have a doubtful answer.', '是的。題目根據孩子所用課本的內容編寫，每一題都會註明出自課本哪一部分。另一輪 AI 檢查會剔除與課本不符、提及孩子看不到的內容，或答案有疑問的題目。')],
     [Z('Can I trust the AI’s marking?', 'AI 的批改可信嗎？'),
@@ -3670,7 +3670,7 @@ function renderAbout() {
     [Z('How do I know it’s working?', '我怎樣知道它有效？'),
       Z('Three ways. “How ready” shows how much of each textbook your child has really mastered, with the change each week. “Getting stronger” shows their level in each subject, measured so it doesn’t drop when questions get harder. And “School results” puts their school marks from before PrepBuddy next to the latest ones. You also get a one-page weekly report.', '三方面。「準備程度」顯示孩子真正掌握了每本課本多少，以及每週的變化。「越來越強」顯示每科的程度，計算方法不會因題目變難而下降。「學校成績」把使用 PrepBuddy 前後的校內分數並列。你每週亦會收到一頁報告。')],
     [Z('How much time does it take?', '要花多少時間？'),
-      Z('As little as 5 minutes. Your child chooses 5, 15 or 30 minutes and Today’s mission fits. Little and often works better than long, rare sessions, so the app nudges a daily habit with streaks, a weekly goal and stars.', '最少 5 分鐘。孩子可選 5、15 或 30 分鐘，今日任務會按此調整。少量而經常練習比偶爾長時間更有效，所以 App 會以連續日數、每週目標和星星鼓勵每天練習。')],
+      Z('As little as 5 minutes. Your child chooses 5, 15 or 30 minutes and Today’s plan fits. Little and often works better than long, rare sessions, so the app nudges a daily habit with streaks, a weekly goal and stars.', '最少 5 分鐘。孩子可選 5、15 或 30 分鐘，今日計劃會按此調整。少量而經常練習比偶爾長時間更有效，所以 App 會以連續日數、每週目標和星星鼓勵每天練習。')],
     [Z('How does it keep my child coming back?', '它怎樣令孩子願意每天回來？'),
       Z('By rewarding the habit, not just the result. A treat after a good test comes weeks after the work that earned it; PrepBuddy rewards the work itself, every day. Your child earns stars for finishing a set, fixing an old mistake, doing the day’s reviews, passing a chapter test and reaching the weekly goal, and spends them on rewards you choose in the star shop (screen time, a treat, a family movie night). Rushing through answers earns nothing, so stars only come from real effort. Streaks and badges add to it, and there’s a daily cap so it stays about learning.', '獎勵的是習慣，而不只是結果。考試考得好後的獎勵，往往是在努力過後幾個星期才出現；PrepBuddy 每天直接獎勵努力本身。孩子完成一組練習、改正舊錯題、完成當天溫習、通過章節測驗和達到每週目標都會獲得星星，並可在星星商店換取由你設定的獎勵（例如玩平板時間、小食、家庭電影夜）。趕急作答不會得到星星，所以星星只來自真正的努力。連續日數和徽章更添動力，每天亦設有上限，確保重點仍是學習。')],
     [Z('Should it replace our tutor?', '應該取代補習老師嗎？'),
@@ -4494,13 +4494,13 @@ async function quickTour(replay) {
   const C = (en, zh) => (LANG === 'zh' ? zh : en);
   const tab = (k) => `[data-tabgo="${k}"]`;
   const steps = [
-    { go: 'home', sel: tab('home'), t: C('Hi, I’m Buddy! This is Today', '你好，我是 Buddy！這是「今日」'), d: C('Your home screen: your streak, your next school test and today’s mission. Tap Start and I’ll take you through it.', '你的主頁：連續練習日數、下一個學校測驗和今日任務。按「開始」，我會帶你逐項完成。') },
+    { go: 'home', sel: tab('home'), t: C('Hi, I’m Buddy! This is Today', '你好，我是 Buddy！這是「今日」'), d: C('Your home screen: your streak, your next school test and today’s plan. Tap Start and I’ll take you through it.', '你的主頁：連續練習日數、下一個學校測驗和今日計劃。按「開始」，我會帶你逐項完成。') },
     { go: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('Your textbooks. We’ve added free PrepBuddy books to try, and you can add your own school books here.', '你的課本。我們已加入 PrepBuddy 的免費課本給你試用，你也可以在這裏加入學校課本。') },
     { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Learn or practise any chapter, plus dictation, writing, listening, speaking and homework help.', '學習或練習任何一章，還有默書、寫作、聆聽、說話和功課幫手。') },
     { go: 'practice', sel: '#mkgo', skipIfMissing: true, t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here, under Practice. Get it right again a day later and it’s mastered.', '答錯的題目都會放在「練習」的錯題簿。隔一天再答對，就算掌握了。') },
     { go: 'settings', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, backups, and the parent dashboard.', '名字、語言、備份，以及家長主頁。') },
     { go: 'progress', sel: tab('progress'), t: C('Progress', '進度'), d: C('How you’re doing each week. Parents can open the parent dashboard from here or from Settings.', '每週的學習情況。家長可以在這裏或「設定」打開家長主頁。') },
-    { go: 'home', t: C('Ask me any time', '隨時問我'), d: C('Stuck on a question? Tap my round button in the corner. Ready? Let’s start with today’s mission.', '遇到不明白的題目？按角落的圓形按鈕問我。準備好了嗎？由今日任務開始吧！'), cta: C('Let’s go', '開始') },
+    { go: 'home', t: C('Ask me any time', '隨時問我'), d: C('Stuck on a question? Tap my round button in the corner. Ready? Let’s start with today’s plan.', '遇到不明白的題目？按角落的圓形按鈕問我。準備好了嗎？由今日計劃開始吧！'), cta: C('Let’s go', '開始') },
   ];
   await coachTour(steps, (how, k) => { local.toured = Date.now(); saveLocal(); track(replay ? 'tour_replay' : how === 'done' ? 'tour_done' : `tour_skip:${k}`); });
   go({ name: 'home' });
@@ -4517,7 +4517,7 @@ async function startTour(replay) {
   const steps = [
     { go: 'home', t: C('Hi, I’m Buddy!', '你好，我是 Buddy！'), d: C('Let me show you everything PrepBuddy can do, on the real screens. It takes about 3 minutes, and you can skip any time.', '讓我在真實的頁面上，帶你看看 PrepBuddy 的所有功能，大約 3 分鐘，隨時可以略過。') },
     { go: 'home', sel: tab('home'), t: C('Today', '今日'), d: C('Your home screen. Buddy plans what to do each day: reviews, a chapter to practise, mistakes to fix.', '你的主頁。Buddy 每天為你安排要做的事：溫習、練習章節、改正錯題。') },
-    { go: 'home', sel: '.ms-card', skipIfMissing: true, t: C('Today’s mission', '今日任務'), d: C('Start here every day: Buddy picks 2–3 things to do, in order. Tap Start, and each one gets a tick when it’s done. About 15 minutes.', '每天由這裏開始：Buddy 會按次序選 2 至 3 件事。按「開始」，完成一項就會打勾。約 15 分鐘。') },
+    { go: 'home', sel: '.ms-card', skipIfMissing: true, t: C('Today’s plan', '今日計劃'), d: C('Start here every day: Buddy picks 2–3 things to do, in order. Tap Start, and each one gets a tick when it’s done. About 15 minutes.', '每天由這裏開始：Buddy 會按次序選 2 至 3 件事。按「開始」，完成一項就會打勾。約 15 分鐘。') },
     { go: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('All your textbooks live here. For the tour I’ve added a sample book. Let’s open it.', '你所有的課本都在這裏。我為導覽加了一本示範課本，我們打開看看。') },
     { go: book, sel: '.bk-head', t: C('A book', '一本課本'), d: C('Every chapter of your textbook becomes questions, lessons, notes and flashcards, written from the book itself.', '課本的每一章都會變成題目、課堂、筆記和閃卡，全部根據課本內容。') },
     { go: book, sel: '.pl-card', skipIfMissing: true, t: C('Find your level', '找出你的程度'), d: C('A 5-minute quiz across the book, so every chapter starts at the right difficulty.', '一個 5 分鐘、涵蓋全書的小測驗，讓每一章都由合適的難度開始。') },
@@ -4533,7 +4533,7 @@ async function startTour(replay) {
     { go: { name: 'cards', bookId: DEMO_ID }, sel: '#flip, .fcard', t: C('Flashcards', '閃卡'), d: C('Quick-fire recall: read the question, think, then flip. Mark what you knew.', '快速記憶：看問題、想一想，再翻轉。記下你懂不懂。') },
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#ctest', skipIfMissing: true, t: C('Chapter tests', '章節測驗') + lt('test'), d: C('Timed tests marked like a school test, with a pass mark of 80%.', '計時測驗，按學校測驗方式批改，合格分數為 80%。') },
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#paper', skipIfMissing: true, t: C('Mock exams', '模擬考試') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
-    { go: 'home', sel: '.td-sec', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates and chapters. The next test shows here with how ready you are for each chapter, and Today’s mission works on it first.', '加入測驗日期和範圍。下一個測驗會在這裏顯示每章的準備度，今日任務也會優先溫習。') },
+    { go: 'home', sel: '.td-sec', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates and chapters. The next test shows here with how ready you are for each chapter, and Today’s plan works on it first.', '加入測驗日期和範圍。下一個測驗會在這裏顯示每章的準備度，今日計劃也會優先溫習。') },
     { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to study in one place. You choose a book, then the chapters.', '所有學習方式都在這裏。先選課本，再選章節。') },
     { go: 'practice', sel: 'main[data-view="practice"] .quick', skipIfMissing: true, t: C('Study tools', '學習工具'), d: C('Homework help, lessons, revision notes, flashcards, practice questions, mock exams, weak topics and the Mistake book.', '功課幫手、課堂、溫習筆記、閃卡、練習題、模擬考試、弱項和錯題簿。') },
     { go: 'homework', sel: '.hw-cap, .hw-hero', t: C('Homework help', '功課幫手') + lt('homework'), d: C('Snap a photo of your homework. Buddy reads it and guides you through each question.', '拍下功課，Buddy 會讀取題目，並引導你逐題完成。') },
@@ -4992,7 +4992,7 @@ function homeMoments(due) {
     const n = due.length;
     return homeOffer(5, () => { local.wbSeen = t0; saveLocal(); moment({ face: 'happy', view: 'home', hero: { icon: '👋' }, tone: 'ok', title: Z('Welcome back! 👋', '歡迎回來！👋'), sub: Z(`It’s been ${gap} days. Great to see you!`, `已經 ${gap} 日了，很高興見到你！`),
       lines: [...(n ? [['🔁', Z(`${n} question${n === 1 ? ' is' : 's are'} ready for a quick warm-up. Getting them right now keeps them in your memory.`, `${n} 題已準備好讓你熱身。現在答對，就能留在記憶裏。`)]] : []), ['🔥', Z('Practise today to start a new streak.', '今天練習，開始新的連續紀錄。')]],
-      main: n ? { label: Z(`Warm up: ${Math.min(10, n)} quick reviews`, `熱身：${Math.min(10, n)} 題溫習`), run: () => startReview('spaced') } : { label: Z('Start today’s mission', '開始今日任務'), run: () => { const b = document.getElementById('msstart'); if (b) b.click(); } },
+      main: n ? { label: Z(`Warm up: ${Math.min(10, n)} quick reviews`, `熱身：${Math.min(10, n)} 題溫習`), run: () => startReview('spaced') } : { label: Z('Start today’s plan', '開始今日計劃'), run: () => { const b = document.getElementById('msstart'); if (b) b.click(); } },
       alt: { label: Z('Later', '稍後'), run: null } }); });
   }
   // the week just gone (Monday to Sunday), shown once on the first visit Monday to Wednesday
@@ -5069,7 +5069,7 @@ async function sessionBars(sess, qs) {
     .sort((a, b) => (b.to - b.from) - (a.to - a.from)).slice(0, 3);
 }
 // what's next on Today, in words, for the main button
-function missionNextLabel() { const L = local.msLeft && local.msLeft.d === startOfToday() ? local.msLeft : null, n = L ? L.n : null; return n ? (L.plan ? PT(`Next plan step (${n} left)`, `計劃的下一步（還有 ${n} 個）`) : PT(`Next mission step (${n} left)`, `下一個任務步驟（還有 ${n} 個）`)) : PT('Back to Today', '返回今日'); }
+function missionNextLabel() { const L = local.msLeft && local.msLeft.d === startOfToday() ? local.msLeft : null, n = L ? L.n : null; return n ? (L.plan ? PT(`Next plan step (${n} left)`, `計劃的下一步（還有 ${n} 個）`) : PT(`Next plan step (${n} left)`, `計劃的下一步（還有 ${n} 個）`)) : PT('Back to Today', '返回今日'); }
 // After a step: the chapter's bar grows from where it was to where it is now, with the gain counting up.
 // Waits for other pop-ups (stars, streak, wins) so it never stacks on them.
 // Today shows at most ONE celebration per visit. Everything that wants to pop up offers itself here with a
@@ -6238,7 +6238,7 @@ function parentInsights(who, C = {}) {
     const ok = B.filter((b) => b.es.length >= 3); if (ok.length >= 2) { const wk = B.slice(2).flatMap((b) => b.es), wa = wk.length >= 3 ? acc(wk) : null;
       addT(wa != null && wa < 60 ? 'warn' : 'good', wa != null && wa < 60 ? Z('Forgets', '容易忘記') : Z('Remembers well', '記得牢'), wa != null && wa < 60 ? 3 : 7, Z('How well it sticks', '記得多牢'), wa != null ? Z(`Remembers ${wa}% of what was learned a week or more ago`, `一星期前學的，記得 ${wa}%`) : Z(`Remembers ${acc(ok[ok.length - 1].es)}% ${ok[ok.length - 1].x[2].toLowerCase()}`, `${ok[ok.length - 1].x[2]}記得 ${acc(ok[ok.length - 1].es)}%`),
         bars(ok.map((b) => [b.x[2], acc(b.es), acc(b.es) >= 75 ? 'good' : acc(b.es) >= 55 ? '' : 'warn'])),
-        wa != null && wa < 60 ? Z('Do the review step in each day’s mission. That’s what moves things into long-term memory.', '每天完成任務中的溫習部分，這樣才能記入長期記憶。') : Z('Daily reviews are working. Keep them in the routine.', '每日溫習有效，繼續保持。')); } }
+        wa != null && wa < 60 ? Z('Do the review step in each day’s plan. That’s what moves things into long-term memory.', '每天完成任務中的溫習部分，這樣才能記入長期記憶。') : Z('Daily reviews are working. Keep them in the routine.', '每日溫習有效，繼續保持。')); } }
   cid = 'time';
   // 5. best time of day
   { const S = [[0, 12, Z('Morning', '早上')], [12, 17, Z('Afternoon', '下午')], [17, 20, Z('Early evening', '傍晚')], [20, 24, Z('After 8pm', '晚上 8 時後')]].map(([a, b, n]) => { const es = L.filter((e) => { const h = new Date(e.t).getHours(); return h >= a && h < b; }); return { n, c: es.length, a: acc(es) }; });
@@ -6311,8 +6311,8 @@ function parentInsights(who, C = {}) {
   cid = 'missions';
   { const md = local.mdone || {}, ds = Object.keys(md).map(Number).filter((d) => d > now - 14 * DAY && d < startOfToday());
     if (ds.length >= 5) { const full = ds.filter((d) => md[d][0] >= md[d][1] && md[d][1]).length, part = ds.filter((d) => md[d][0] && md[d][0] < md[d][1]).length, none = ds.length - full - part, pc = (n) => Math.round((100 * n) / ds.length);
-      addT(full / ds.length < 0.5 ? 'warn' : 'good', full / ds.length < 0.5 ? Z('Skips the plan', '未跟計劃') : Z('Follows the plan', '跟隨計劃'), full / ds.length < 0.5 ? 3 : 7, Z('Following the plan', '跟隨計劃'), Z(`Finished the whole daily mission on ${full} of the last ${ds.length} days`, `過去 ${ds.length} 日中，有 ${full} 日完成整個任務`),
-        bars([[Z('Whole mission', '完成整個任務'), pc(full), 'good'], [Z('Part of it', '完成部分'), pc(part), ''], [Z('Not started', '未開始'), pc(none), 'warn']]), full / ds.length < 0.5 ? Z('Agree a fixed time each day. The mission is built to fit it.', '約定每天固定時間，任務會配合這個時間安排。') : ''); } }
+      addT(full / ds.length < 0.5 ? 'warn' : 'good', full / ds.length < 0.5 ? Z('Skips the plan', '未跟計劃') : Z('Follows the plan', '跟隨計劃'), full / ds.length < 0.5 ? 3 : 7, Z('Following the plan', '跟隨計劃'), Z(`Finished the whole daily plan on ${full} of the last ${ds.length} days`, `過去 ${ds.length} 日中，有 ${full} 日完成整個任務`),
+        bars([[Z('Whole plan', '完成整個任務'), pc(full), 'good'], [Z('Part of it', '完成部分'), pc(part), ''], [Z('Not started', '未開始'), pc(none), 'warn']]), full / ds.length < 0.5 ? Z('Agree a fixed time each day. Buddy’s plan is built to fit it.', '約定每天固定時間，任務會配合這個時間安排。') : ''); } }
   // 16. second-guessing: changing a first answer
   cid = 'second';
   { const Cg = L.filter((e) => e.cg);
@@ -6384,7 +6384,7 @@ function parentInsights(who, C = {}) {
       ['speaking', 7, Z('Speaking', '說話'), Z('Speaks more fluently: 92 words a minute, up from 74', '說得更流利：每分鐘 92 字，之前 74 字'), bars([[Z('Fluency now', '現在流暢度'), 77, 'good', Z('92 wpm', '92 字/分')], [Z('A month ago', '一個月前'), 62, '', Z('74 wpm', '74 字/分')]], 'lv'), Z('Ask them to tell you about their day in English for two minutes.', '請孩子用英文講兩分鐘今天的事。'), 'good', Z('More fluent', '更流利')],
       ['dictation', 8, Z('Spelling and dictation', '默書'), Z('86% of words right first time, up from 70%', '86% 的字第一次就寫對，之前 70%'), bars([[Z('This month', '本月'), 86, 'good'], [Z('Last month', '上月'), 70, '']]), '', 'good', Z('Spelling improving', '默書進步')],
       ['forecast', 2, Z('Buddy’s read against the real result', 'Buddy 的判斷與真實成績'), Z('Buddy’s readiness matched the school marks within 4 points', 'Buddy 的準備度與學校成績相差只有 4 分'), bars([[Z('Maths quiz · Buddy said', '數學小測 · Buddy 預計'), 78, ''], [Z('Maths quiz · school mark', '數學小測 · 學校成績'), 81, 'good'], [Z('English test · Buddy said', '英文測驗 · Buddy 預計'), 70, ''], [Z('English test · school mark', '英文測驗 · 學校成績'), 66, 'good']]), Z('The closer these match, the more you can trust the forecast for the next test.', '兩者越接近，越可以相信下一次的預測。'), 'good', Z('Forecast on target', '預測準確')],
-      ['missions', 4, Z('Following the plan', '跟隨計劃'), Z('Finished the whole daily mission on 9 of the last 14 days', '過去 14 日中，有 9 日完成整個任務'), bars([[Z('Whole mission', '完成整個任務'), 64, 'good'], [Z('Part of it', '完成部分'), 22, ''], [Z('Not started', '未開始'), 14, 'warn']]), '', 'good', Z('Follows the plan', '跟隨計劃')],
+      ['missions', 4, Z('Following the plan', '跟隨計劃'), Z('Finished the whole daily plan on 9 of the last 14 days', '過去 14 日中，有 9 日完成整個任務'), bars([[Z('Whole plan', '完成整個任務'), 64, 'good'], [Z('Part of it', '完成部分'), 22, ''], [Z('Not started', '未開始'), 14, 'warn']]), '', 'good', Z('Follows the plan', '跟隨計劃')],
       ['second', 5, Z('Changing answers', '改答案'), Z('Changed 7 right answers to wrong ones, and only 2 the other way', '把 7 個正確答案改錯，只有 2 個改對'), bars([[Z('Right → wrong', '對改錯'), 64, 'warn'], [Z('Wrong → right', '錯改對'), 18, 'good']]), Z('First instincts are usually right. Only change an answer with a clear reason.', '第一直覺通常是對的，有清楚理由才改答案。'), 'warn', Z('Second-guesses', '改錯答案')],
       ['stuck', 6, Z('Getting started', '開始作答'), Z('Takes over a minute to start 35% of written answers', '35% 的文字題要超過一分鐘才開始寫'), bars([[Z('Starts within a minute', '一分鐘內開始'), 65, 'good'], [Z('Takes over a minute', '超過一分鐘'), 35, 'warn']]), Z('Try “write the first step, then think”.', '先寫第一步再想。'), 'warn', Z('Slow to start', '起步慢')],
       ['quit', 6, Z('Finishing sets', '完成練習'), Z('Stopped 4 of 18 practice sets partway', '18 組練習中有 4 組中途停止'), bars([[Z('Finished', '完成'), 78, 'good'], [Z('Stopped partway', '中途停止'), 22, 'warn'], [Z('Rushed', '太急'), 6, '']]), Z('Shorter sets that get finished beat long ones that don’t.', '短而完成的練習，好過長而做不完的。'), 'warn', Z('Stops partway', '中途停止')],
@@ -6585,7 +6585,7 @@ function readySummary(rows, name, U = { daily: false, n: 6 }) {
   if (dip && dip !== best) parts.push(Z(`${esc(dip.n)} dipped ${-dip.step}% ${when}: fixing mistakes and doing reviews brings it back.`, `${esc(dip.n)}${when}下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
   else if (dip) parts.push(Z(`It dipped ${-dip.step}% ${when}: fixing mistakes and doing reviews brings it back.`, `${when}下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
   if (flat && parts.length < 2) parts.push(Z(`${esc(flat.n)} has barely moved: try a lesson this week.`, `${esc(flat.n)}幾乎沒有變化：這星期試上一課吧。`));
-  if (!parts.length) parts.push(best.ch > 0 ? Z(`Small steps up. A short mission most days gets the lines climbing.`, `有少少進步。大部分日子做個小任務，線就會上升。`) : Z('Not much change yet. A short mission most days gets the lines moving.', '暫時變化不大。大部分日子做個小任務，線就會上升。'));
+  if (!parts.length) parts.push(best.ch > 0 ? Z(`Small steps up. A short plan most days gets the lines climbing.`, `有少少進步。大部分日子做個小任務，線就會上升。`) : Z('Not much change yet. A short plan most days gets the lines moving.', '暫時變化不大。大部分日子做個小任務，線就會上升。'));
   return parts.join(' ');
 }
 function readyLinesSVG(rows) {
@@ -6894,7 +6894,7 @@ function daysSheet() {
         ${bands.length >= 2 ? `<p class="ds-best">${PT(`Best time to practise: <b>${fmtH(bands[0][0])}–${fmtH((bands[0][0] + 2) % 24)}</b>. Scores are highest then.`, `最好的練習時段：<b>${fmtH(bands[0][0])}–${fmtH((bands[0][0] + 2) % 24)}</b>，這段時間分數最高。`)}</p>` : ''}
       </section>
     </div>
-    ${!today.q ? `<section class="cs2-pick ds-go"><button class="cs2-go" data-o="go">${actionTile('practise', 36)}<span><b>${PT('Practise now', '現在練習')}</b><em>${PT('Today’s mission keeps the streak going', '完成今日任務，保持連續')}</em></span><i>›</i></button></section>` : ''}
+    ${!today.q ? `<section class="cs2-pick ds-go"><button class="cs2-go" data-o="go">${actionTile('practise', 36)}<span><b>${PT('Practise now', '現在練習')}</b><em>${PT('Today’s plan keeps the streak going', '完成今日計劃，保持連續')}</em></span><i>›</i></button></section>` : ''}
   </div>`;
   document.body.appendChild(box);
   const close = () => box.remove();
@@ -7051,7 +7051,7 @@ function goalTopHTML(G, next, n = 1) {
   const tag = n > 1 ? Z(`Focus today · 1 of ${n} goals`, `今日重點 · ${n} 個目標之一`) : Z('Your goal', '你的目標');
   const head = (title, sub, st) => `<div class="gl-h"><div class="gl-ht"><small>${tag}</small>${n > 1 && G.why ? `<i class="gl-why">${esc(G.why)}</i>` : ''}<b data-raw>${title}</b><span data-raw>${sub}</span></div>${st ? `<em class="gl-st ${st}">${ST[st]}</em>` : ''}</div>`;
   const nxt = next ? `<button class="gl-next" id="glNext"><span><small>${Z('Next step', '下一步')}${next.min ? ` · ${Z(`${next.min} min`, `${next.min} 分鐘`)}` : ''}</small><b data-raw>${esc(next.t)}</b></span><i aria-hidden="true">›</i></button>`
-    : `<p class="gl-done">${ICON.check}<span>${Z('Today’s mission is done. Nice work!', '今日任務已完成，做得好！')}</span></p>`;
+    : `<p class="gl-done">${ICON.check}<span>${Z('Today’s plan is done. Nice work!', '今日計劃已完成，做得好！')}</span></p>`;
   const foot = n > 1 ? '' : `<button class="linkbtn gl-chg" data-mygoals>${Z('My goals', '我的目標')}</button>`;
   if (G.kind === 'test') {
     const x = G.p.x, wk = G.wk != null && Math.abs(G.wk) >= 1 ? `<span class="gl-wk ${G.wk > 0 ? 'up' : 'down'}">${G.wk > 0 ? '▲' : '▼'} ${Math.abs(G.wk)}% ${Z('this week', '本週')}</span>` : '';
@@ -7217,7 +7217,7 @@ function goalsCardHTML(GD, o = {}) {
   const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}</span>`;
   const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<s style="left:${g.aim}%"></s><small style="left:${g.aim}%;transform:translateX(${g.aim >= 80 ? '-100%' : g.aim <= 20 ? '0' : '-50%'})">${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</small></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>`;
   const sub = (g, i) => {
-    const mis = (o.inMission ? o.inMission(g) : false) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s mission', '已在今日任務中')}</span>` : '';
+    const mis = (o.inMission ? o.inMission(g) : false) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s plan', '已在今日計劃中')}</span>` : '';
     if (g.kind === 'test') return `<details class="ag-sc t ${g.st}"><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${o.testBody ? o.testBody(g) : ''}</div></details>`;
     const name = esc(g.lab);
     // subject goals open too: the level week by week, how far it has come, and what Buddy suggests next
@@ -7297,7 +7297,7 @@ async function fullTestCards(tests, btn) {
     }
     const what = p.ready == null ? PT('Add the textbook so Buddy can get you ready.', '加入課本，Buddy 便可幫你準備。')
       : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT(`Aim for 80% by test day.`, '目標：考試前達到 80%。'))
-      : st === 'ok' ? PT(`With the plan you’ll reach about ${fc}%. Short reviews keep it there; Today’s mission takes care of it.`, `按現時進度，考試時約 ${fc}%。今日任務會安排溫習，保持狀態。`)
+      : st === 'ok' ? PT(`With the plan you’ll reach about ${fc}%. Short reviews keep it there; Today’s plan takes care of it.`, `按現時進度，考試時約 ${fc}%。今日計劃會安排溫習，保持狀態。`)
       : PT(`With the plan you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<span class="pv-flag" style="left:${aim}%;--a:${aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${PT(`Goal ${aim}%`, `目標 ${aim}%`)}</b></span><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Goal for this test', '這個測驗的目標')}"></div>
@@ -7830,7 +7830,7 @@ async function renderProgress(PO = {}) {
   const BY = beyondData(), wMarked = wkLog.filter((e) => e.ty === 'w').length;
   const sec5 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('Effort and habits', '努力與習慣')}${ib('howEffP', PT('How is this counted?', '這是怎樣計算的？'))}</h2><span>${PT('This week, compared with last week', '本週，與上週比較')}</span></div>
     ${how('howEffP', PT('How is this counted?', '這是怎樣計算的？'), `<ul><li><b>${PT('Days, time and questions', '日數、時間和題數')}</b> · ${PT('the last 7 days, against the 7 days before. Time is counted from when you answer questions.', '過去 7 日，與之前 7 日比較。時間按作答時計算。')}</li>
-      <li><b>${PT('Streak', '連續練習')}</b> · ${PT('days in a row with some practice, up to today.', '連續有練習的日數，直到今天。')}</li><li><b>${PT('Missions finished', '完成的任務')}</b> · ${PT('days this week when every step of Today’s mission was done, out of the days Today was opened. Finishing the plan matters more than total time.', '本週打開「今天」的日子中，完成所有任務步驟的日數。完成計劃比總時間更重要。')}</li>
+      <li><b>${PT('Streak', '連續練習')}</b> · ${PT('days in a row with some practice, up to today.', '連續有練習的日數，直到今天。')}</li><li><b>${PT('Missions finished', '完成的任務')}</b> · ${PT('days this week when every step of Today’s plan was done, out of the days Today was opened. Finishing the plan matters more than total time.', '本週打開「今天」的日子中，完成所有任務步驟的日數。完成計劃比總時間更重要。')}</li>
       <li><b>${PT('Fixed vs new mistakes', '改正與新錯題')}</b> · ${PT('mistakes put right this week against new ones still open. Fixing faster than making means the mistake book is shrinking.', '本週改正的錯題與仍未改正的新錯題比較。改正比犯錯快，代表錯題簿在減少。')}</li>
       <li><b>${PT('Best time', '最好的時段')}</b> · ${PT('the 2-hour slot with your highest score over the last 30 days (with at least 20 answers in it).', '過去 30 日得分最高的兩小時時段（最少 20 題）。')}</li></ul>`)}
     <div class="pv-grid6">${tileE(`${r.dp}<small>/7</small>`, PT('days practised', '日有練習'), cmp(r.dp, logP.length ? daysP : null))}
@@ -7839,7 +7839,7 @@ async function renderProgress(PO = {}) {
       ${tileE(PT(`${D.streak} day${D.streak === 1 ? '' : 's'}`, `${D.streak} 日`), PT('streak', '連續練習'), bestRun > 1 ? `<small>${PT(`best ever: ${bestRun}`, `最長：${bestRun} 日`)}</small>` : '')}
       ${(() => { const md = local.mdone || {}, wkDays = Object.keys(md).map(Number).filter((d) => d > t0 - 7 * DAY), pv = Object.keys(md).map(Number).filter((d) => d <= t0 - 7 * DAY && d > t0 - 14 * DAY);
         const fin = (ds) => ds.filter((d) => md[d][1] && md[d][0] >= md[d][1]).length;
-        return wkDays.length ? tileE(`${fin(wkDays)}<small>/${wkDays.length}</small>`, PT('missions finished', '完成的任務'), pv.length ? cmp(fin(wkDays), fin(pv)) : `<small>${PT('days a mission was set', '有任務的日數')}</small>`) : ''; })()}
+        return wkDays.length ? tileE(`${fin(wkDays)}<small>/${wkDays.length}</small>`, PT('plans finished', '完成的任務'), pv.length ? cmp(fin(wkDays), fin(pv)) : `<small>${PT('days a plan was set', '有任務的日數')}</small>`) : ''; })()}
       ${fixedW || newW ? tileE(PT(`${fixedW} fixed`, `改正 ${fixedW} 題`), PT(`vs ${newW} new mistakes`, `新錯題 ${newW} 題`), `<small class="${fixedW >= newW ? 'up' : 'down'}">${fixedW >= newW ? PT('Fixing faster than making', '改正比犯錯快') : PT('More new than fixed', '新錯題比改正多')}</small>`) : ''}
       ${bands.length >= 2 ? tileE(`${fmtH(bands[0][0])}–${fmtH((bands[0][0] + 2) % 24)}`, PT('your best time', '你最好的時段'), `<small>${PT('Scores highest here', '這段時間分數最高')}</small>`) : ''}</div>
     ${BY.length || wMarked ? `<div class="pv-chips">${wMarked ? `<span>${PT(`Buddy marked ${wMarked} of your written answers this week`, `Buddy 本週批改了你 ${wMarked} 個文字答案`)}</span>` : ''}${BY.map((x) => `<span data-raw>${esc(x.k)}: ${esc(x.v)}${x.c ? ` (${esc(x.c)})` : ''}</span>`).join('')}${starsOn() ? `<span>${PT('Stars to spend', '可用星星')}: ${starState().bal}</span>` : ''}</div>` : ''}
@@ -7894,7 +7894,7 @@ async function renderProgress(PO = {}) {
     const chg = (d, unit) => (d == null || (!d && d !== 0) ? '' : d === 0 ? `<em>${PT('same as last week', '與上週相同')}</em>` : `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d)}${unit} ${PT('vs last week', '對比上週')}</em>`);
     const dayL = (i) => new Date(r.from + i * DAY).toLocaleDateString(LOCALE(), { weekday: 'narrow' });
     const ml = local.msLeft && local.msLeft.d === startOfToday() ? local.msLeft.n : null, todayMin = r.days[6] || 0;
-    const todayTxt = ml === 0 ? `<b class="ok">${ICON.check} ${PT('Today’s mission done', '今日任務已完成')}</b>` : todayMin ? PT(`Practised ${todayMin} min today · ${ml || 'a few'} mission step${ml === 1 ? '' : 's'} left`, `今日練習了 ${todayMin} 分鐘 · 任務還有 ${ml || '幾'} 步`) : PT('Not started today yet', '今日還未開始');
+    const todayTxt = ml === 0 ? `<b class="ok">${ICON.check} ${PT('Today’s plan done', '今日計劃已完成')}</b>` : todayMin ? PT(`Practised ${todayMin} min today · ${ml || 'a few'} plan step${ml === 1 ? '' : 's'} left`, `今日練習了 ${todayMin} 分鐘 · 任務還有 ${ml || '幾'} 步`) : PT('Not started today yet', '今日還未開始');
     const sHead = `<section class="pv-sec pp-head"><small class="pp-k">${PT('This week', '本週')}</small><h2 class="pp-hl">${esc(YOU ? headline({ ...r, n: PT('You', '你') }).replace(/^You is /, 'You’re ').replace(/^You needs /, 'You need ').replace(/^You didn't/, 'You didn’t') : headline(r))}</h2>
       <div class="pp-week" aria-label="${PT(`Practised ${r.dp} of 7 days`, `7 日中練習了 ${r.dp} 日`)}">${r.days.map((m, i) => `<span class="${m ? 'on' : ''}${i === 6 ? ' td' : ''}"><i>${m ? ICON.check : ''}</i><small>${dayL(i)}</small></span>`).join('')}</div>
       <div class="pp-stats"><div><b>${r.dp}<small>/7</small></b><span>${PT('days practised', '練習日數')}</span></div><div><b>${mins}<small> ${PT('min', '分鐘')}</small></b><span>${PT('time practising', '練習時間')}</span>${chg(dm, PT(' min', ' 分鐘'))}</div><div><b>${r.a == null ? '–' : `${r.a}%`}</b><span>${PT('marks scored', '得分率')}</span>${r.a != null && r.pa != null ? chg(r.a - r.pa, PT(' pts', ' 分')) : ''}</div></div>
@@ -8703,7 +8703,7 @@ const FEAT = {
   books: { per: 'total', en: ['Textbooks', 'textbook', 'textbooks'], zh: ['課本', '本課本'] },
   hardDiff: { per: 'flag', en: ['Hard and Master difficulty'], zh: ['困難和大師難度'], d: ['Questions that stretch top students: applying and analysing, like the hardest exam questions.', '挑戰尖子的題目：應用和分析，好似考試最難的題目。'] },
   test: { per: 'week', en: ['Chapter tests', 'a week'], zh: ['章節測驗', '次／週'], d: ['Timed tests on a chapter, 80% to pass, like a school test.', '限時章節測驗，80% 合格，好似學校測驗。'] },
-  sched: { per: 'total', en: ['School test planner', 'test at a time', 'tests at a time'], zh: ['學校測驗計劃', '個測驗'], d: ['Add a school test and Today’s mission works on it, day by day.', '加入學校測驗，今日任務會每天幫你準備。'] },
+  sched: { per: 'total', en: ['School test planner', 'test at a time', 'tests at a time'], zh: ['學校測驗計劃', '個測驗'], d: ['Add a school test and Today’s plan works on it, day by day.', '加入學校測驗，今日計劃會每天幫你準備。'] },
   homework: { per: 'week', en: ['Homework help (photos)', 'a week'], zh: ['功課輔導（拍照）', '次／週'], d: ['Snap tonight’s homework: Buddy explains, gives hints and checks your answers.', '拍下今晚的功課，Buddy 會解釋、給提示和檢查答案。'] },
   coach: { per: 'flag', en: ['Study coach'], zh: ['溫習教練'], d: ['A coach that sees your scores and mistakes, plans your day and starts it in one tap.', '教練看得到你的分數和錯題，幫你計劃每天溫習，一按就開始。'] },
   stars: { per: 'flag', en: ['Stars and rewards'], zh: ['星星獎勵'], d: ['Earn stars for practising and spend them on rewards your parents choose.', '練習賺星星，換取家長設定的獎勵。'] },
@@ -9063,7 +9063,7 @@ function testDialog(edit) {
       body = `<div class="${dls.length > 2 ? 'td-one' : 'td-two'}"><div><label for="td-d">${SCH('Date', '日期')}</label><input id="td-d" class="input" type="date" min="${ymd(Date.now())}" value="${esc(st.date)}"></div>
       <div><label>${SCH('Language', '語文')}</label><div class="td-seg">${dls.map((x) => `<button type="button" data-lang="${x[0]}" class="${st.lang === x[0] ? 'on' : ''}">${x[0] === 'zh' ? '中文' : x[0] === 'en' ? 'English' : LANG === 'zh' ? x[1] : x[2]}</button>`).join('')}</div></div></div>
       <label for="td-l">${SCH('Word list', '詞語表')}</label><select id="td-l" class="input">${lists.map((L) => `<option value="${esc(L.id)}" ${L.id === st.L ? 'selected' : ''}>${esc(L.title)} · ${L.items.length}</option>`).join('')}<option value="" ${!st.L ? 'selected' : ''}>${SCH('Add the words after saving', '儲存後加入詞語')}</option></select>
-      <span class="td-hint">${SCH('Today’s mission will have you practise this list, and readiness is your latest score on it.', '「今日任務」會讓你練習這個詞語表，準備度是你最近一次的分數。')}</span>`;
+      <span class="td-hint">${SCH('Today’s plan will have you practise this list, and readiness is your latest score on it.', '「今日計劃」會讓你練習這個詞語表，準備度是你最近一次的分數。')}</span>`;
     } else {
       body = `<label>${SCH('Subjects and dates', '科目及日期')}</label>
       <div class="td-parts">${st.parts.map((pt, i) => `<div class="td-part"><select class="input" data-ps="${i}" aria-label="${SCH('Subject', '科目')}">${subjOpts(books, pt.b, pt.subj)}</select><input class="input" type="date" data-pd="${i}" min="${ymd(Date.now())}" value="${esc(pt.date)}" aria-label="${SCH('Date', '日期')}">${st.parts.length > 1 ? `<button type="button" class="btn-sm quiet" data-px="${i}" aria-label="${SCH('Remove', '移除')}">✕</button>` : ''}</div>`).join('')}</div>
@@ -9127,7 +9127,7 @@ function testDialog(edit) {
       if (recs.some((r) => testLeft(r) <= 14)) local.mission = null; // rebuild today's mission so it includes the new test
       saveLocal();
       if (st.kind === 'dict' && !st.L) { box.remove(); toast(SCH('Saved. Now add the words for your dictation.', '已儲存。請加入默書詞語。')); return go({ name: 'dictation', id: 'new' }); }
-      done(SCH(`Added. Today’s mission now gets you ready for ${name}.`, `已加入。今日任務會幫你準備「${name}」。`));
+      done(SCH(`Added. Today’s plan now gets you ready for ${name}.`, `已加入。今日計劃會幫你準備「${name}」。`));
     };
     // delete sits at the top; a second tap confirms
     const del = $('#td-del'); if (del) del.onclick = () => {
@@ -10875,7 +10875,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       sub: passed ? Z(`${pct}%: proof you know this chapter.`, `${pct}%：證明你掌握了這一章。`) : Z(`80% passes. ${near ? `You’re only ${80 - pct}% away.` : 'Every test shows Buddy exactly what to work on.'}`, `80% 合格。${near ? `只差 ${80 - pct}%。` : '每次測驗都讓 Buddy 知道要練甚麼。'}`),
       bars: chBars,
       lines: passed ? bars.filter((b) => b.passed).map((b) => ['🔓', Z(`${b.lab} can now go up to ${b.cap}%`, `${b.lab} 現在最高可達 ${b.cap}%`)])
-        : [...(dropLine.length ? dropLine : [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Buddy will bring the test back in your mission.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。Buddy 會在任務中再安排測驗。`)]])],
+        : [...(dropLine.length ? dropLine : [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Buddy will bring the test back in your plan.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。Buddy 會在任務中再安排測驗。`)]])],
       main: passed ? home : fix || home, alt: passed ? null : { label: Z('Later', '稍後'), run: null } });
   }
   if (sess.mode === 'dse' || sess.mode === 'mock') { // a mock paper: score, time, and the weaker section
