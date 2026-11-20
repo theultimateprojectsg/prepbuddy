@@ -451,7 +451,9 @@ function firstTries() {
 function testsFor(key) {
   return (local.tests || []).map((t) => ({ t: t.t, r: t.per && t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
 }
-const LESSON_CREDIT = 10; // readiness for a chapter whose lesson is done, before any practice
+// "Lock it in" after a lesson: one question for each part of it and a few harder ones (fewer for the youngest)
+const LOCK_N = () => (isPrimaryKid() && sessionSize() < 8 ? 8 : 10);
+const LESSON_CREDIT = 5; // readiness for a chapter whose lesson is done, before any practice
 function chapterMastery(book, u, qs, text, ntextPre) {
   const T = chapterTarget(u), now = Date.now();
   const key = `${book.id}:${u.id}`;
@@ -513,7 +515,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   let likely = 0;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), seen = new Map(); let pts = 0;
     for (const e of L) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
-      pts += Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.5 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25); }
+      pts += Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.5 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); } // straight after a lesson it's still short-term memory
     const rec = L.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
     const prac = 70 * Math.min(1, pts / (2.5 * T)) * Math.min(1, acc / 0.9);
     const best = new Map(); for (const x of tests) { const d = new Date(x.t).toDateString(), r = x.r, sc = r[0] / r[1];
@@ -2503,8 +2505,8 @@ async function renderLearn(bookId, unitId) {
     local.learned[`${bookId}:${unitId}`] = Date.now(); saveLocal();
     const lg = first && starsOn() ? addStars(1, 'lesson') : 0, lb = lg ? checkBadges({}) : [];
     if (first) { const nm = shortTitle(unit.title); setTimeout(() => moment({ face: 'done', confetti: true, view: 'learn', hero: { icon: '📖' }, chips: [lg ? ['star', `⭐ +${lg + lb.reduce((a, b) => a + b.stars, 0)}`] : null, ...lb.map((b) => ['star', `${b.icon} ${PT(b.en, b.zh)}`])], title: PT('Lesson done! 🎉', '完成一課！🎉'), sub: PT(`You’ve learned ${nm}.`, `你學會了「${nm}」。`),
-      bars: [{ lab: nm, from: 0, to: LESSON_CREDIT }], lines: [['🔒', PT('Lock it in now: a few questions while it’s fresh make it stick.', '趁記憶猶新做幾題，就能記得牢。')]],
-      main: { label: PT('Lock it in: 5 questions', '鞏固：做 5 題'), run: () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], 5); } }, alt: { label: PT('Later', '稍後'), run: null } }), 700); }
+      bars: [{ lab: nm, from: 0, to: LESSON_CREDIT }], lines: [['🔒', PT('Lock it in now: questions on every part of the lesson, easier to harder, while it’s fresh.', '趁記憶猶新，鞏固課堂每一部分，由淺入深。')]],
+      main: { label: PT(`Lock it in: ${LOCK_N()} questions`, `鞏固：做 ${LOCK_N()} 題`), run: () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], LOCK_N(), { lockin: true, title: PT(`Lock it in: ${shortTitle(unit.title)}`, `鞏固：${shortTitle(unit.title)}`) }); } }, alt: { label: PT('Later', '稍後'), run: null } }), 700); }
   };
   draw();
 }
@@ -2954,10 +2956,10 @@ async function renderHome() {
     if (c.y === 'mm') return (local.tests || []).some((x) => x.t >= M.at && (x.kind === 'paper' || x.kind === 'mini') && x.b === c.b);
     if (c.y === 'lv') return !!(local.placement || {})[c.b] || bookAnswered(c.b);
     if (c.y === 'log') { // done when a set in this book was finished, not left halfway (or a full set's worth was answered across tries)
-      const n = local.log.filter((e) => e.t >= M.at && e.k !== 'place' && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length;
+      const n = local.log.filter((e) => e.t >= M.at && e.k !== 'place' && e.k !== 'lock' && e.q && e.q.startsWith(c.b + ':') && (!c.us || c.us.includes(qUnit(e.q)[1]))).length;
       // a full set on these chapters, finished and not tapped through too fast (a 5-question "lock it in" after a lesson
       // is a start, not the practice step); older sets didn't record their chapters, so they count by book as before
-      const finished = (local.sess || []).some((x) => x.t >= M.at && x.b === c.b && !x.e && !x.r && x.k !== 'place' && (x.n || 0) >= sessionSize() && (!c.us || !x.u || x.u.some((u) => c.us.includes(u))));
+      const finished = (local.sess || []).some((x) => x.t >= M.at && x.b === c.b && !x.e && !x.r && x.k !== 'place' && x.k !== 'lock' && (x.n || 0) >= sessionSize() && (!c.us || !x.u || x.u.some((u) => c.us.includes(u))));
       return n >= 3 && (finished || n >= Math.max(8, sessionSize())); }
     return false;
   };
@@ -3046,7 +3048,7 @@ async function renderHome() {
             if (st && (st.action === 'practise' || st.action === 'chapter_test')) { const nm0 = shortTitle(ch.unit.title);
               if (st.action === 'practise') { st.action = 'chapter_test'; st.label = Z(`Chapter test: ${nm0}`, `章節測驗：${nm0}`); st.why = Z('You’ve practised this well. Passing the chapter test is what moves it up now.', '這一章已練得不錯，通過章節測驗才能再進步。'); st.unitIds = [ch.unit.id]; saveLocal(); }
               x.now.t = st.label; x.now.why = st.why; x.icon = 'test'; x.maxS = 5; asTest = true; } }
-          const to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : asTest ? Math.min(85, ch.pct + SET_GAIN) : plateau ? ch.pct : ch.pct + pracGain;
+          const to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : asTest ? Math.min(100, ch.pct + 10) : plateau ? ch.pct : ch.pct + pracGain;
           const nm = shortTitle(ch.unit.title), it = { lab: String(x.now.t || '').includes(nm) ? Z('This chapter', '這一章') : nm, from: ch.pct, to, u: '%' };
           // a test's chapter: what it does for that test too
           const tid = (String(x.key).match(/^[tc]:([^:]+)/) || [])[1], tp = tid && tests.steps.find((q) => q.x.id === tid);
@@ -8798,16 +8800,22 @@ async function startUnits(book, units, count = sessionSize(), opts = {}) {
     // a progress check may reuse questions answered before (least recently seen first), so it never has to wait for new ones
     const pool = opts.pcheck ? shuffle(all_).sort((a, b) => ((local.stats[a.id] || {}).last_t || 0) - ((local.stats[b.id] || {}).last_t || 0)) : shuffle(all_.filter((q) => !local.stats[q.id]));
     // closest to the student's level first, with some variety
+    if (opts.lockin) {
+      // locking in a lesson: a spread across the whole chapter (one per section before any repeats), easier first then harder
+      const bySec = new Map(); shuffle(pool).forEach((q) => { const k2 = q.section || ''; (bySec.get(k2) || bySec.set(k2, []).get(k2)).push(q); });
+      const spread = []; for (let r = 0; spread.length < pool.length; r++) { let got = false; for (const g of bySec.values()) if (g[r]) { spread.push(g[r]); got = true; } if (!got) break; }
+      pools.push(spread.slice(0, count).sort((a, b) => (a.level || 2) - (b.level || 2)).concat(spread.slice(count)));
+    } else
     pools.push(pool.map((q) => [q, Math.abs((q.level || 2) - want) + Math.random() * 1.5]).sort((a, b) => a[1] - b[1]).map((x) => x[0]));
   }
   let qs = [];
   pools.forEach((p) => qs.push(...p.slice(0, quota)));
   if (qs.length < count) pools.forEach((p) => qs.push(...p.slice(quota)));   // top up from chapters that have more
-  qs = shuffle(qs.slice(0, count));
+  qs = opts.lockin ? qs.slice(0, count) : shuffle(qs.slice(0, count));
   // unused questions each chapter still has after this session: spares are only written when that runs low
   const bankLeft = {}; units.forEach((u, i) => { bankLeft[u.id] = pools[i].filter((q) => !qs.includes(q)).length; });
   const title = k === 1 ? units[0].title : `${k} chapters`;
-  S = newSession({ mode: 'unit', title: opts.title || title, book, units, qs, target: count, pending: 0, types, count, diff, placement: !!opts.placement, pcheck: !!opts.pcheck, bankLeft });
+  S = newSession({ mode: 'unit', title: opts.title || title, book, units, qs, target: count, pending: 0, types, count, diff, placement: !!opts.placement, pcheck: !!opts.pcheck, lock: !!opts.lockin, bankLeft });
   topUp(S);
   if (S.qs.length) renderQuestion(); else renderWaiting();
 }
@@ -10900,7 +10908,7 @@ function record(q, got) {
   const hN = helped ? Math.min(9, S.chat[k_].msgs.filter((m) => m.role === 'user').length || 1) : 0;
   const ch = S && S.chg && k_ >= 0 && k_ in S.chg ? { cg: 1, c1: S.chg[k_] === q.correct_option ? 1 : 0 } : {};
   const fi = ty === 'w' && S && S.qShown && S.qShown.q === q && S.qShown.f ? Math.round((S.qShown.f - S.qShown.t) / 1000) : 0;
-  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: S && S.placement ? 'place' : (S && S.mode) || '', ty, ...(helped ? { h: hN } : {}), ...(secs > 0 && secs < 900 ? { s: secs } : {}), ...ch, ...(fi > 0 && fi < 900 ? { fi } : {}) });
+  local.log.push({ t: Date.now(), q: q.id, c: q.section || '', g: got, m: marksOf(q), l: q.level, k: S && S.placement ? 'place' : S && S.lock ? 'lock' : (S && S.mode) || '', ty, ...(helped ? { h: hN } : {}), ...(secs > 0 && secs < 900 ? { s: secs } : {}), ...ch, ...(fi > 0 && fi < 900 ? { fi } : {}) });
   // Mistake book: every question not fully right goes in; getting it fully right later marks it mastered.
   const mk = local.mistakes[q.id];
   if (got < marksOf(q) && !(S && S.placement)) { // the level check places the child; its misses aren't mistakes
@@ -11125,7 +11133,7 @@ function renderSummary() {
   if (!S.sessLogged && qs.length) {
     // One line per finished set, for the pilot dashboard: mode, size, score, minutes, rushed or not.
     S.sessLogged = true;
-    local.sess = [...(local.sess || []), { t: Date.now(), k: S.mode || '', b: S.book ? S.book.id : '', u: [...new Set(qs.map((q) => qUnit(q.id)[1]))], n: qs.length, p: pct, min: Math.max(1, Math.round((Date.now() - S.at) / 60000)), r: rushedSet(qs) ? 1 : 0, e: S.endedEarly ? 1 : 0, ts: S.test ? 1 : 0 }].slice(-400);
+    local.sess = [...(local.sess || []), { t: Date.now(), k: S.lock ? 'lock' : S.mode || '', b: S.book ? S.book.id : '', u: [...new Set(qs.map((q) => qUnit(q.id)[1]))], n: qs.length, p: pct, min: Math.max(1, Math.round((Date.now() - S.at) / 60000)), r: rushedSet(qs) ? 1 : 0, e: S.endedEarly ? 1 : 0, ts: S.test ? 1 : 0 }].slice(-400);
     saveLocal();
   }
   const willMoment = !S.endedEarly && !S.momented && qs.length >= 3;
