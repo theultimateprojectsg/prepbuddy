@@ -529,7 +529,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
       pts += Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.5 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); } // straight after a lesson it's still short-term memory
     const rec = P.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
     const prac = 60 * Math.min(1, pts / (2.5 * T)) * Math.min(1, acc / 0.9);
-    pracPart = Math.round(prac * 70 / 60); const lastT = tests.length ? tests[tests.length - 1].t : 0; pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
+    pracPart = Math.round(prac); // 0–60 const lastT = tests.length ? tests[tests.length - 1].t : 0; pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
     const ft = new Set(), apply = L.filter((e) => { if (ft.has(e.q)) return false; ft.add(e.q); return (e.l || 2) >= 3 && e.g >= e.m; }).length; // right first time at Apply+
     const wrote = new Set(L.filter((e) => e.ty === 'w' && (e.l || 2) >= 3 && e.g >= e.m).map((e) => e.q)).size, analyse = L.some((e) => (e.l || 2) >= 4 && e.g >= e.m);
     const best = (list, f) => { const m = new Map(); for (const x of list) { const d = new Date(x.t).toDateString(), v = f(x); if ((m.get(d) || 0) < v) m.set(d, v); } return [...m.values()].reduce((a, b) => a + b, 0); };
@@ -537,7 +537,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     if (tests.length && !lastPass) tc *= 0.5;
     const mix = mixedFor(key), mc = best(mix, (x) => { const sc = x.r[0] / x.r[1], all = x.all[0] / x.all[1]; return 5 * Math.min(1, x.r[1] / 4) * Math.min(sc, all + 0.1) ** 2; });
     let est = Math.min(60, prac) + Math.min(25, tc);
-    if (passes.length && lastPass && prac >= 40) est = Math.max(est, 70); // Test-ready: well practised and a chapter test passed
+    if (passes.length && lastPass && prac >= 35) est = Math.max(est, 70); // Test-ready: well practised and a chapter test passed
     if (apply < 3) est = Math.min(est, 75);                                // past 75 needs Apply-level questions right
     if (est >= 85 && !(wrote >= 2 && analyse)) est = 85; else if (apply >= 3 && wrote >= 2 && analyse) est += Math.min(10, mc);
     est = Math.min(est, 95) + (b5 ? 5 : b4 ? 2 : 0) * (est >= 94 ? 1 : 0);
@@ -642,7 +642,7 @@ function masterySteps(m) {
     const t = shortTitle(c.unit.title), g = c.gates || {}, lv = chapterLever(c), add = (text, kind, diff) => steps.push({ unit: c.unit, text, kind, diff });
     if (!c.done && !c.learned) add(Z(`Learn ${t}, then practise it`, `學習「${t}」，然後練習`), 'learn');
     else if ((c.open || 0) >= 3) add(Z(`Fix ${c.open} mistakes in ${t}`, `改正「${t}」的 ${c.open} 條錯題`), 'mistakes');
-    else if ((c.prac || 0) < 60 && lv.k !== 'test') add(Z(`Practise more of ${t}`, `多練習「${t}」`), 'practise');
+    else if ((c.prac || 0) < 50 && lv.k !== 'test') add(Z(`Practise more of ${t}`, `多練習「${t}」`), 'practise');
     else if ((g.apply || 0) < 3) add(Z(`Get ${3 - (g.apply || 0)} Apply question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`), 'practise', 'hard');
     else if (lv.k === 'test' || lv.k === 'retest') add(Z(`Pass a chapter test on ${t} (new questions, 80% to pass)`, `通過「${t}」的章節測驗（新題目，80% 合格）`), 'test');
     else if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) add(Z(`Get full marks on written Apply questions and an Analyse question in ${t}`, `在「${t}」的應用文字題拿滿分，並答對一條分析題`), 'practise', 'hard');
@@ -1219,8 +1219,8 @@ function chapterLever(c) {
     // a failed test: practise the missed ideas first (a set since that test, and not the same day), then retest
     if (c.lastTestT) { const lt = c.lastTestT;
       if ((c.pracSince || 0) < Math.min(8, sessionSize()) || startOfToday() <= new Date(lt).setHours(0, 0, 0, 0)) return { k: 'practise', en: 'practice on the ideas missed in the last test, then a retest' }; }
-    // the test once practice has done most of its job (60 of its 70%), or the chapter's questions have run out
-    return (c.prac || 0) >= 60 || (c.done >= c.target && (c.prac || 0) >= 40) ? { k: 'test', en: 'its chapter test (practice has done most of its job)' } : { k: 'practise', en: 'more practice' };
+    // the test once practice has done most of its job (50 of its 60%), or the chapter's questions have run out
+    return (c.prac || 0) >= 50 || (c.done >= c.target && (c.prac || 0) >= 40) ? { k: 'test', en: 'its chapter test (practice has done most of its job)' } : { k: 'practise', en: 'more practice' };
   }
   { const g = c.gates || {};
     if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) return { k: 'practise', en: 'harder questions: two full-marks written answers at Apply level and one Analyse question (85% needs real understanding)' };
@@ -2913,7 +2913,7 @@ async function renderHome() {
       cands.push({ key: `${first ? 'ct' : 'ct2'}:${t.b.id}:${t.c.unit.id}`, icon: 'test', t: first ? Z(`Chapter test: ${nm}`, `章節測驗：${nm}`) : Z(`Prove it again: ${nm}`, `再證明一次：${nm}`),
         s: Z('Timed · 80% to pass', '限時 · 80% 合格'), attr: `data-ctest="${esc(t.b.id)}:${esc(t.c.unit.id)}"`, chk: { y: 'ctest', b: t.b.id, u: t.c.unit.id },
         tag: ['test', first ? Z('Prove it', '證明實力') : Z('Prove it again', '再證明一次')],
-        why: first ? Z(`You’ve practised ${nm} enough to try its chapter test. Practice alone goes up to 70%: chapter tests take it the rest of the way.`, `你已經練習「${nm}」夠多，可以做章節測驗。限時測驗最能證明實力：它的分數對這一章的百分比影響最大。`)
+        why: first ? Z(`You’ve practised ${nm} enough to try its chapter test. Practice alone goes up to 60%: passing the chapter test makes it Test-ready (70%).`, `你已經練習「${nm}」夠多，可以做章節測驗。限時測驗最能證明實力：它的分數對這一章的百分比影響最大。`)
           : Z(`You passed ${nm} before. Passing again on a different day shows it has really stuck, and takes it up to 95%.`, `你之前通過了「${nm}」。在另一日再次合格，證明真的記住了，可升至 95%。`) }); }
     const lastMock = Math.max(0, ...(local.tests || []).filter((x) => x.kind === 'mini' || x.kind === 'paper').map((x) => x.t));
     if (mock && Date.now() - lastMock >= 7 * DAY) { const sj = mock.b.subject ? subj(mock.b.subject) : shortTitle(mock.b.title);
@@ -2953,7 +2953,7 @@ async function renderHome() {
           const t = chs.find((x) => ['test', 'retest'].includes(chapterLever(x).k)), b = books.find((x) => x.id === ck.b);
           if (t && b && ![...cands, ...keep].some((z) => z.chk && z.chk.y === 'ctest' && z.chk.u === t.unit.id)) { const nm = shortTitle(t.unit.title), again = chapterLever(t).k === 'retest';
             keep.push({ key: `${again ? 'ct2' : 'ct'}:${b.id}:${t.unit.id}`, icon: 'test', t: again ? Z(`Prove it again: ${nm}`, `再證明一次：${nm}`) : Z(`Chapter test: ${nm}`, `章節測驗：${nm}`), s: Z('Timed · 80% to pass', '限時 · 80% 合格'), attr: `data-ctest="${esc(b.id)}:${esc(t.unit.id)}"`, chk: { y: 'ctest', b: b.id, u: t.unit.id },
-              tag: ['test', again ? Z('Prove it again', '再證明一次') : Z('Prove it', '證明實力')], why: again ? Z(`A week after your first pass: another strong test shows ${nm} has really stuck. Each test day adds more, up to 100%.`, `第一次合格一星期後：再考得好證明「${nm}」真的記住了。每次測驗都會再加分，最高 100%。`) : Z(`You’ve practised ${nm} well. Practice alone goes up to 70%: chapter tests take it the rest of the way.`, `「${nm}」已練得不錯。只靠練習最多 70%：其餘靠章節測驗。`) }); }
+              tag: ['test', again ? Z('Prove it again', '再證明一次') : Z('Prove it', '證明實力')], why: again ? Z(`A week after your first pass: another strong test shows ${nm} has really stuck. Each test day adds more, up to 100%.`, `第一次合格一星期後：再考得好證明「${nm}」真的記住了。每次測驗都會再加分，最高 100%。`) : Z(`You’ve practised ${nm} well. Practice alone goes up to 60%: passing the chapter test makes it Test-ready (70%).`, `「${nm}」已練得不錯。只靠練習最多 60%：通過章節測驗就達到「準備好考試」（70%）。`) }); }
           continue; }
         if (testU.size && /^(u|w|b):/.test(c.key) && !ids.some((u) => testU.has(`${ck.b}:${u}`))) { later.push(c); continue; } }
       keep.push(c); }
