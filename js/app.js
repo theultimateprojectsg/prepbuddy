@@ -513,11 +513,13 @@ function chapterMastery(book, u, qs, text, ntextPre) {
      harder and the score higher; three full perfect tests at normal difficulty fill it, harder ones sooner. A latest test below the pass mark halves it.
      100% only once the work has been answered right again after a week; eases off if left for over a week. */
   let likely = 0;
-  { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), seen = new Map(); let pts = 0;
+  let pracPart = 0, pracSince = 0;
+  { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place' && e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0; // test answers count in the test part only
     for (const e of L) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
       pts += Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.5 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); } // straight after a lesson it's still short-term memory
     const rec = L.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
     const prac = 70 * Math.min(1, pts / (2.5 * T)) * Math.min(1, acc / 0.9);
+    pracPart = Math.round(prac); const lastT = tests.length ? tests[tests.length - 1].t : 0; pracSince = L.filter((e) => e.t > lastT && e.k !== 'lock').length;
     const best = new Map(); for (const x of tests) { const d = new Date(x.t).toDateString(), r = x.r, sc = r[0] / r[1];
       const w = Math.min(1, r[1] / 12) * Math.min(1.2, (r[3] ? r[2] / r[3] : 2) / 2), v = 10 * w * sc * sc; if ((best.get(d) || 0) < v) best.set(d, v); }
     let tc = [...best.values()].reduce((a, b) => a + b, 0); if (tests.length && !lastPass) tc *= 0.5;
@@ -533,7 +535,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, mast, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, mast, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -617,7 +619,7 @@ function masterySteps(m) {
     if (c.open) opts.push([1 - c.score.fixed + 0.2, `Fix ${c.open} mistake${c.open > 1 ? 's' : ''} in ${t}`, 'mistakes']);
     if (c.due) opts.push([1 - c.score.remembered + 0.1, `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, 'review']);
     else if (c.score.remembered < 1 && c.done >= 4) opts.push([0.3 * (1 - c.score.remembered), `Come back for reviews over the next few days to prove you remember ${t}`, 'wait']);
-    if (c.done >= Math.min(6, c.target)) {
+    if (c.passes || chapterLever(c).k === 'test') {
       if (!c.passDays) opts.push([1.2, `Pass a chapter test on ${t} (80% or more)`, 'test']);
       else if (!c.spread || !c.lastPass) opts.push([0.9, `Pass another chapter test on ${t} on a different day`, 'test']);
     }
@@ -1170,7 +1172,13 @@ async function stepUseful(st) {
 function chapterLever(c) {
   const fmt = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   if (!c.done) return { k: 'start', en: 'a lesson or a first practice set' };
-  if (!c.passes) return c.done >= Math.min(6, c.target) ? { k: 'test', en: 'its chapter test (practice alone has done its job)' } : { k: 'practise', en: 'more practice' };
+  if (!c.passes) {
+    // a failed test: practise the missed ideas first (a set since that test, and not the same day), then retest
+    if (c.lastTestT) { const lt = c.lastTestT;
+      if ((c.pracSince || 0) < Math.min(8, sessionSize()) || startOfToday() <= new Date(lt).setHours(0, 0, 0, 0)) return { k: 'practise', en: 'practice on the ideas missed in the last test, then a retest' }; }
+    // the test once practice has done most of its job (60 of its 70%), or the chapter's questions have run out
+    return (c.prac || 0) >= 60 || (c.done >= c.target && (c.prac || 0) >= 40) ? { k: 'test', en: 'its chapter test (practice has done most of its job)' } : { k: 'practise', en: 'more practice' };
+  }
   if (!c.spread) { const at = (c.firstPass || 0) + 7 * DAY;
     return Date.now() < at ? { k: 'wait', at, en: `reviews for now; a retest only counts from ${fmt(at)} (a week after the first pass)` } : { k: 'retest', en: 'a retest now (a week after the first pass)' }; }
   return { k: 'reviews', en: 'reviews over the coming weeks' };
@@ -2850,7 +2858,7 @@ async function renderHome() {
     let first = null, again = null, mock = null;
     for (const b of used) { const m = await bookMastery(b);
       for (const c of m.chapters) { if (inT.has(`${b.id}:${c.unit.id}`)) continue;
-        if (!c.passes && c.done >= Math.min(6, c.target || 8) && c.pct >= 55 && (!first || c.pct > first.c.pct)) first = { b, c };
+        if (!c.passes && chapterLever(c).k === 'test' && (!first || c.pct > first.c.pct)) first = { b, c };
         else if (c.passes && chapterLever(c).k === 'retest' && (!again || c.pct > again.c.pct)) again = { b, c }; }
       const prac = m.chapters.filter((c) => c.done >= 4);
       if (prac.length >= 3 && (!mock || prac.length > mock.us.length)) mock = { b, us: prac.map((c) => c.unit.id) }; }
@@ -3042,7 +3050,7 @@ async function renderHome() {
           const room = ['covered', 'accurate', 'deep'].reduce((t, k) => t + (AREAS.find((a) => a[0] === k) || [0, 0, 0])[2] * (1 - (sc[k] || 0)), 0);
           const seen = ((local.chGain || {})[`${c.b}:${ch.unit.id}`] || []), seenAvg = seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null;
           const pracGain = Math.max(0, ch.sim ? Math.min(capP - ch.pct, ch.sim(sessionSize())) : Math.min(SET_GAIN, Math.round(room / 2), capP - ch.pct, seenAvg == null ? SET_GAIN : Math.round(seenAvg)));
-          const plateau = c.y === 'log' && !ch.passes && (pracGain < 3 || (ch.done >= Math.min(6, ch.target) && pracGain < 6));
+          const plateau = c.y === 'log' && !ch.passes && chapterLever(ch).k === 'test' && pracGain < 6;
           let asTest = false;
           if (plateau && String(x.key).startsWith('bp:') && PP) { const st = PP.steps[+String(x.key).slice(3)];
             if (st && (st.action === 'practise' || st.action === 'chapter_test')) { const nm0 = shortTitle(ch.unit.title);
@@ -6873,7 +6881,7 @@ function testDayPlan(p, chs, aim = 80) {
   const need = chs.slice().sort((a, b) => a.pct - b.pct).map((c) => {
     const fresh = !c.done && !c.learned;
     const act = fresh ? ['learn', PT('Learn it', '先上課'), () => go({ name: 'learn', bookId: book.id, unitId: c.unit.id })]
-      : c.pct < Math.min(aim, 70) || !c.passes ? (c.done >= (c.target || 8) && (c.pct >= 55) && !c.passes ? ['test', PT('Chapter test', '章節測驗'), () => startChapterTest(book, [c.unit])] : ['practise', PT('Practise', '練習'), () => startUnits(book, [c.unit], n)])
+      : c.pct < Math.min(aim, 70) || !c.passes ? (!c.passes && chapterLever(c).k === 'test' ? ['test', PT('Chapter test', '章節測驗'), () => startChapterTest(book, [c.unit])] : ['practise', PT('Practise', '練習'), () => startUnits(book, [c.unit], n)])
       : c.due ? ['review', PT('Review', '溫習'), () => startReview('spaced', book.id)] : ['ok', PT('Keep it fresh', '保持'), () => startUnits(book, [c.unit], 5)];
     return { c, act };
   });
@@ -11005,7 +11013,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       if (c) {
         const nm = shortTitle(c.unit.title), u = c.unit;
         const test = { label: Z('Take the chapter test', '做章節測驗'), run: () => startChapterTest(sess.book, [u]) };
-        if (c.done >= Math.min(6, c.target) && !c.passes) lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Your score on it counts most.`, `「${nm}」現在最大的進步來自章節測驗，它的分數影響最大。`)], main: test };
+        if (!c.passes && chapterLever(c).k === 'test') lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Your score on it counts most.`, `「${nm}」現在最大的進步來自章節測驗，它的分數影響最大。`)], main: test };
         else if (c.passes && (!c.spread || !c.lastPass)) lever = { l: ['📅', Z(`Next jump: pass the test again on a day at least a week after the first pass. That unlocks up to 95%.`, `下一步：在第一次合格至少一星期後再考一次並合格，就可升至 95%。`)] };
         else if (c.needL3 || c.needL4) lever = { l: ['🧗', Z(`Next jump: get a harder “${c.needL4 ? 'analyse' : 'apply'}” question right. Buddy mixes them in as you go.`, `下一步：答對一題較難的「${c.needL4 ? '分析' : '應用'}」題。Buddy 會逐步加入這類題目。`)] };
         else if (c.due) lever = { l: ['🔁', Z(`Next jump: ${c.due} review${c.due === 1 ? '' : 's'} waiting in ${nm}.`, `下一步：「${nm}」有 ${c.due} 題溫習在等你。`)], main: { label: Z('Do the reviews', '做溫習'), run: () => startReview('spaced') } };
