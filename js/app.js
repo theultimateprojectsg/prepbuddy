@@ -606,8 +606,9 @@ function trStep(t) {
   for (const [re, f] of R) if (re.test(t)) return t.replace(re, f);
   return t;
 }
+// stage names that follow the gates of the chapter %
 function masteryLabel(p) {
-  return p >= 100 ? 'Mastered' : p >= 85 ? 'Exam ready' : p >= 70 ? 'Well versed' : p >= 50 ? 'Getting there' : p >= 25 ? 'Building up' : p > 0 ? 'Just started' : 'Not started';
+  return p >= 100 ? 'Mastered' : p >= 95 ? 'Nearly mastered' : p >= 85 ? 'Exam ready' : p >= 60 ? 'Tested' : p > 0 ? 'Learning' : 'Not started';
 }
 // Summaries, key terms, glossaries and end-of-chapter question lists aren't worth suggesting as practice.
 const NOT_TEACHING = /^\s*(chapter\s+\d*\s*)?(chapter summary|summary|key terms|key concepts and summary|glossary|review questions|critical thinking questions|visual connection questions|test prep( for ap® courses)?|science practice challenge questions|index|references|answer key|answers|further reading|bibliography)\s*[*:.]*\s*$|^\s*(總結|詞彙|詞彙表|練習|答案|重點)\s*$/i;
@@ -618,28 +619,24 @@ function weakestChapter(m) {
   return (real.length ? real : left).sort((a, b) => a.pct - b.pct)[0] || null;
 }
 // The next things to do, from the weakest areas of the weakest chapters.
+// The next step for the weakest chapters, following the stages of the chapter % (practice → Apply questions →
+// chapter tests → written and Analyse answers → mixed papers → proof it lasts). kind is what the button runs.
 function masterySteps(m) {
-  const steps = [];
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), steps = [];
   const left = m.chapters.filter((c) => c.pct < 100), real = left.filter((c) => !NOT_TEACHING.test(String(c.unit.title)));
-  const weak = (real.length ? real : left).sort((a, b) => a.pct - b.pct);
-  for (const c of weak) {
+  for (const c of (real.length ? real : left).sort((a, b) => a.pct - b.pct)) {
     if (steps.length >= 3) break;
-    const t = c.unit.title;
-    const opts = [];
-    if (c.more) opts.push([1 - c.score.accurate, `Practise ${c.more} more question${c.more > 1 ? 's' : ''} in ${t}`, 'practise']);
-    else if (c.score.accurate < 0.9) opts.push([1 - c.score.accurate, `Get more questions right in ${t}`, 'practise']);
-    if (c.uncovered > 0 && c.done) opts.push([1 - c.score.covered, `Practise the parts of ${t} you haven’t covered yet`, 'practise']);
-    if (c.needL4 || c.needL3) opts.push([1 - c.score.deep, `Get an ${c.needL4 ? 'analyse' : 'apply'} question right in ${t}`, 'practise']);
-    else if (c.needWritten) opts.push([1 - c.score.deep, `Get full marks on ${c.needWritten} written question${c.needWritten > 1 ? 's' : ''} in ${t}`, 'practise']);
-    if (c.open) opts.push([1 - c.score.fixed + 0.2, `Fix ${c.open} mistake${c.open > 1 ? 's' : ''} in ${t}`, 'mistakes']);
-    if (c.due) opts.push([1 - c.score.remembered + 0.1, `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, 'review']);
-    else if (c.score.remembered < 1 && c.done >= 4) opts.push([0.3 * (1 - c.score.remembered), `Come back for reviews over the next few days to prove you remember ${t}`, 'wait']);
-    if (c.passes || chapterLever(c).k === 'test') {
-      if (!c.passDays) opts.push([1.2, `Pass a chapter test on ${t} (80% or more)`, 'test']);
-      else if (!c.spread || !c.lastPass) opts.push([0.9, `Pass another chapter test on ${t} on a different day`, 'test']);
-    }
-    opts.sort((a, b) => b[0] - a[0]);
-    if (opts[0]) steps.push({ unit: c.unit, text: opts[0][1], kind: opts[0][2] });
+    const t = shortTitle(c.unit.title), g = c.gates || {}, lv = chapterLever(c), add = (text, kind, diff) => steps.push({ unit: c.unit, text, kind, diff });
+    if (!c.done && !c.learned) add(Z(`Learn ${t}, then practise it`, `學習「${t}」，然後練習`), 'learn');
+    else if ((c.open || 0) >= 3) add(Z(`Fix ${c.open} mistakes in ${t}`, `改正「${t}」的 ${c.open} 條錯題`), 'mistakes');
+    else if ((c.prac || 0) < 60 && lv.k !== 'test') add(Z(`Practise more of ${t}`, `多練習「${t}」`), 'practise');
+    else if ((g.apply || 0) < 3) add(Z(`Get ${3 - (g.apply || 0)} Apply question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`), 'practise', 'hard');
+    else if (lv.k === 'test' || lv.k === 'retest') add(Z(`Pass a chapter test on ${t} (new questions, 80% to pass)`, `通過「${t}」的章節測驗（新題目，80% 合格）`), 'test');
+    else if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) add(Z(`Get full marks on written Apply questions and an Analyse question in ${t}`, `在「${t}」的應用文字題拿滿分，並答對一條分析題`), 'practise', 'hard');
+    else if (c.pct >= 80 && !g.mixed) add(Z(`Do a mixed paper with ${t} and other chapters`, `做一份包括「${t}」和其他章節的綜合試卷`), 'mixed');
+    else if (c.due) add(Z(`Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`), 'review');
+    else if (lv.k === 'practise') add(Z(`Practise the ideas you missed in ${t}, then retest`, `練習「${t}」答錯的概念，然後再測驗`), 'practise');
+    else add(Z(`Come back for reviews: ${t} needs to be remembered over the next weeks`, `回來溫習：「${t}」要在未來幾星期都記得`), 'wait');
   }
   return steps;
 }
@@ -652,19 +649,23 @@ function masteryCard(m) {
     <div class="m-top"><div class="ring ${p >= 85 ? 'good' : p >= 50 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% ready"><span>${p}%</span></div>
       <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. The button below works on your weakest spot.` : 'Practise a chapter to see how ready you are.'}</span></div></div>
     
-    ${p > 0 && p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
+    ${p > 0 && p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? PT('Get me closer to 100%', '帶我更接近 100%') : PT('Get started', '開始')}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
   </section>`;
 }
-// "Get me closer to 100%": works on the weakest chapter's weakest area.
+// "Get me closer to 100%": the next step for the weakest chapter, whatever stage it's at.
 async function boostSession(book) {
   const m = await bookMastery(book);
   const c = weakestChapter(m);
-  if (!c) return toast('Every chapter is at 100%. Keep up your reviews!');
-  const step = masterySteps({ ...m, chapters: [c] })[0];
-  if (step && step.kind === 'test') return startChapterTest(book, [c.unit]);
+  if (!c) return toast(PT('Every chapter is at 100%. Keep up your reviews!', '每一章都到 100% 了，記得繼續溫習！'));
+  const step = masterySteps({ ...m, chapters: [c] })[0] || { kind: 'practise' };
+  if (step.kind === 'learn') return go({ name: 'learn', bookId: book.id, unitId: c.unit.id });
+  if (step.kind === 'test') return startChapterTest(book, [c.unit]);
+  if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit); return startMiniMock(book, [c.unit, ...others]); }
+  if (step.kind === 'mistakes') return go({ name: 'mistakes', bookId: book.id });
+  if (step.kind === 'review' || step.kind === 'wait') return startReview('spaced', null, 10);
   const qs = await getQs(book.id, c.unit.id), now = Date.now();
-  const again = shuffle(qs.filter((q) => { const st = local.stats[q.id]; return st && (st.due <= now || (st.last || 0) < 1); })).slice(0, 6).map(shuffleOptions);
-  await startUnits(book, [c.unit], Math.max(6, 10 - again.length));
+  const again = step.diff ? [] : shuffle(qs.filter((q) => { const st = local.stats[q.id]; return st && (st.due <= now || (st.last || 0) < 1); })).slice(0, 6).map(shuffleOptions);
+  await startUnits(book, [c.unit], Math.max(6, 10 - again.length), step.diff ? { diff: step.diff } : {});
   if (S && again.length) {
     const have = new Set(S.qs.map((q) => q.id));
     const add = again.filter((q) => !have.has(q.id));
