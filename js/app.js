@@ -510,7 +510,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
      about 2.5 points per question of the chapter's size (a few full sets) to fill. Held back if recent answers
      aren't mostly right.
      Chapter tests, the last 30%: each test day counts its best test, worth more when the test is longer and
-     harder and the score higher; about three strong tests fill it. A latest test below the pass mark halves it.
+     harder and the score higher; three full perfect tests at normal difficulty fill it, harder ones sooner. A latest test below the pass mark halves it.
      100% only once the work has been answered right again after a week; eases off if left for over a week. */
   let likely = 0;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), seen = new Map(); let pts = 0;
@@ -519,7 +519,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     const rec = L.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
     const prac = 70 * Math.min(1, pts / (2.5 * T)) * Math.min(1, acc / 0.9);
     const best = new Map(); for (const x of tests) { const d = new Date(x.t).toDateString(), r = x.r, sc = r[0] / r[1];
-      const w = Math.min(1, r[1] / 12) * Math.min(1.2, (r[3] ? r[2] / r[3] : 2) / 2), v = 8 * w * sc * sc; if ((best.get(d) || 0) < v) best.set(d, v); }
+      const w = Math.min(1, r[1] / 12) * Math.min(1.2, (r[3] ? r[2] / r[3] : 2) / 2), v = 10 * w * sc * sc; if ((best.get(d) || 0) < v) best.set(d, v); }
     let tc = [...best.values()].reduce((a, b) => a + b, 0); if (tests.length && !lastPass) tc *= 0.5;
     let est = Math.min(70, prac) + Math.min(30, tc);
     const idle = (now - lastActive(key)) / DAY; if (idle > 7) est *= Math.max(0.85, 1 - 0.01 * (idle - 7));
