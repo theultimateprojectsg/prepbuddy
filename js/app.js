@@ -485,16 +485,12 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   let tested = spread ? 1 : passes.length ? 0.5 : 0;
   if (tests.length && !lastPass) tested = Math.min(tested, 0.5);
   const score = { tested, covered, accurate, deep, remembered, fixed };
-  let pct = Math.round(AREAS.reduce((t, [k, , w]) => t + w * score[k], 0));
-  // ceilings: each one needs real proof, over time
-  if (!passes.length) pct = Math.min(pct, 70);            // not proven in a timed test yet
-  else if (!spread || !lastPass) pct = Math.min(pct, 85);  // one test, or tests too close together
-  if (!b5) pct = Math.min(pct, 95);                         // not yet shown it's remembered after a 2-week gap
+  // long-term mastery (internal now: it guides Buddy's plan, the child sees the likely score below as the chapter %)
+  let mast = Math.round(AREAS.reduce((t, [k, , w]) => t + w * score[k], 0));
+  if (!passes.length) mast = Math.min(mast, 70);
+  else if (!spread || !lastPass) mast = Math.min(mast, 85);
+  if (!b5) mast = Math.min(mast, 95);
   const learnedIt = !!(local.learned || {})[key];
-  if (learnedIt) pct = Math.max(pct, LESSON_CREDIT); // a finished lesson is a real first step
-  // a chapter never goes down during a day of practice (it can ease off later if work is forgotten or left unfixed)
-  { const t0 = startOfToday(), MD = local.mastDay && local.mastDay.d === t0 ? local.mastDay : (local.mastDay = { d: t0, p: {} });
-    if (MD.p[key] == null) MD.p[key] = pct; else pct = Math.max(pct, MD.p[key]); }
   /* likely: the score this child would probably get on this chapter in a test now (what a test goal is measured by).
      How well they answer (first tries, and their latest go so fixed mistakes count), times how much of the chapter
      they've seen; a recent chapter test counts most; eases off a little if the chapter is left for over a week. */
@@ -508,12 +504,19 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     const idle = (now - Math.max(lastActive(key), recentT.length ? recentT[recentT.length - 1].t : 0)) / DAY;
     if (idle > 7) est *= Math.max(0.85, 1 - 0.01 * (idle - 7));
     likely = Math.round(100 * est);
+    if (!passes.length) likely = Math.min(likely, 90); // practice isn't a timed test: a chapter test proves the rest
     if (!b4) likely = Math.min(likely, 95); // not yet shown to last a week: never quite certain
-  } else if (learnedIt) likely = 10;
+  }
+  if (learnedIt) likely = Math.max(likely, LESSON_CREDIT); // a finished lesson is a real first step
+  // The chapter % the child sees is this likely score. It never goes down during a day of practice
+  // (it can ease off on later days if work is forgotten).
+  { const t0 = startOfToday(), MD = local.mastDay && local.mastDay.d === t0 && local.mastDay.v === 2 ? local.mastDay : (local.mastDay = { d: t0, v: 2, p: {} });
+    if (MD.p[key] == null) MD.p[key] = likely; else likely = Math.max(likely, MD.p[key]); }
+  const pct = likely;
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, mast, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -612,10 +615,9 @@ function masteryCard(m) {
   const steps = w ? masterySteps({ ...m, chapters: [w] }) : [];
   const p = m.pct;
   return `<section class="mastery" aria-label="Mastery">
-    <div class="m-top"><div class="ring ${p >= 85 ? 'good' : p >= 50 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% mastered"><span>${p}%</span></div>
+    <div class="m-top"><div class="ring ${p >= 85 ? 'good' : p >= 50 ? 'mid' : ''}" style="--p:${p}" role="img" aria-label="${p}% ready"><span>${p}%</span></div>
       <div class="m-text"><b>${masteryLabel(p)}</b><span>${p >= 100 ? 'Proven in tests and remembered. Keep up your reviews.' : p ? `${100 - p}% to go. The button below works on your weakest spot.` : 'Practise a chapter to see how ready you are.'}</span></div></div>
-    <details class="areas"><summary>${LANG === 'zh' ? '由甚麼組成' : 'What it’s made of'}</summary>${AREAS.map(([k, label]) => { const v = Math.round(100 * m.areas[k]); return `<div class="area"><span>${label}</span><span class="abar"><i style="width:${v}%" class="${v >= 85 ? 'good' : v >= 50 ? 'mid' : ''}"></i></span><b>${v}%</b></div>`; }).join('')}
-      <p class="hint" style="margin:6px 0 0">${LANG === 'zh' ? '最高分要經過一段時間證明：通過測驗、之後再證明一次，並且仍然記得。' : 'The top scores take proof over time: passing tests, proving it again later, and still remembering it.'}</p></details>
+    
     ${p > 0 && p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? 'Get me closer to 100%' : 'Get started'}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
   </section>`;
 }
@@ -1133,7 +1135,7 @@ function startVoiceChat({ where, key, lang, send, alive, redraw, title }) {
 // Codes like B1 / B1.C3 let the coach say which book or chapter to open; coachIndex turns them back into ids.
 let coachIndex = {};
 function practiceGain(bookId, ch) {
-  const capP = ch.passes ? 95 : 70, sc = ch.score || {};
+  const capP = ch.passes ? 95 : 90, sc = ch.score || {};
   const room = ['covered', 'accurate', 'deep'].reduce((t, k) => t + (AREAS.find((a) => a[0] === k) || [0, 0, 0])[2] * (1 - (sc[k] || 0)), 0);
   const seen = ((local.chGain || {})[`${bookId}:${ch.unit.id}`] || []), avg = seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null;
   if (ch.sim) return Math.min(capP - ch.pct, ch.sim(sessionSize()));
@@ -1168,12 +1170,12 @@ async function coachSnapshot() {
     const m = await bookMastery(b);
     const bc = `B${bi + 1}`; coachIndex[bc] = { bookId: b.id };
     const code = (u) => { const cc = `${bc}.C${b.units.indexOf(u) + 1}`; coachIndex[cc] = { bookId: b.id, unitId: u.id }; return cc; };
-    lines.push('', `BOOK [${bc}]: ${b.title}${b.subject ? ` (${b.subject})` : ''} — mastery ${m.pct}% (${masteryLabel(m.pct)}). Areas: ${AREAS.map(([k, label]) => `${label} ${pc(m.areas[k])}%`).join(', ')}.`);
+    lines.push('', `BOOK [${bc}]: ${b.title}${b.subject ? ` (${b.subject})` : ''} — ready ${m.pct}% (the likely test score). Long-term areas: ${AREAS.map(([k, label]) => `${label} ${pc(m.areas[k])}%`).join(', ')}.`);
     const started = m.chapters.filter((c) => c.done || c.tests);
     const practised = new Set((local.log || []).filter((e) => e.k !== 'place' && String(e.q).startsWith(b.id + ':')).map((e) => qUnit(e.q)[1]));
     for (const c of started.slice(0, 40)) {
       const acc = c.done ? pc(c.score.accurate / Math.max(0.01, Math.min(1, c.done / c.target))) : 0;
-      lines.push(`- [${code(c.unit)}] ${c.unit.title}${!practised.has(c.unit.id) && !c.tests ? ' (only seen in the level check, not studied yet)' : ''}: mastery ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}. Lesson ${c.learned ? 'done' : 'not taken'}. What moves it next: ${chapterLever(c).en}.`);
+      lines.push(`- [${code(c.unit)}] ${c.unit.title}${!practised.has(c.unit.id) && !c.tests ? ' (only seen in the level check, not studied yet)' : ''}: ready ${c.pct}% (long-term mastery ${c.mast}%), ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}. Lesson ${c.learned ? 'done' : 'not taken'}. What moves it next: ${chapterLever(c).en}.`);
     }
     const fresh = m.chapters.filter((c) => !c.done && !c.tests).map((c) => `[${code(c.unit)}] ${c.unit.title}`);
     if (fresh.length) lines.push(`- Not started yet (${fresh.length}): ${fresh.slice(0, 40).join('; ')}${fresh.length > 40 ? '; …' : ''}`);
@@ -2648,7 +2650,7 @@ function startedOf(m) {
 // One reading per book per day is kept in local.mhist (also used by the exam forecast).
 async function todayReadyHTML(books) {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en);
-  const t0 = dayStart(); local.mhist = local.mhist || {};
+  const t0 = dayStart(); if (local.mhistV !== 2) { local.mhist = {}; local.mhistV = 2; } local.mhist = local.mhist || {}; // the chapter % became the likely score: start its history afresh
   const rows = [];
   for (const b of books.filter((x) => !x.demo)) {
     const m = await bookMastery(b), pct = m.pct;
@@ -2824,7 +2826,7 @@ async function renderHome() {
   if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Go over 10 questions from before', '溫習 10 題舊題目'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
   else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Go over ${due.length} question${due.length > 1 ? 's' : ''} from before`, `溫習 ${due.length} 題舊題目`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
   if (mk) { const n = Math.min(5, mk); cands.push({ key: 'mk', icon: 'mistakes', t: mk > n ? Z(`Fix ${n} of your ${mk} mistakes`, `改正 ${n} 題錯題（共 ${mk} 題）`) : Z(`Fix ${mk} mistake${mk > 1 ? 's' : ''}`, `改正 ${mk} 題錯題`), s: Z('Questions you didn’t get fully right', '未完全答對的題目'), attr: 'id="mistakes"', chk: { y: 'mk', n: mk, k: n } }); }
-  // Exam components: practice alone stops at 70%. A chapter that's ready gets its timed chapter test (80% to pass, up to 85%);
+  // Exam components: practice alone stops at 70%. A chapter that's ready gets its timed chapter test (80% to pass; its score counts most);
   // one passed a few days ago gets a second test on another day (up to 95%). Once a week, a short mini mock across chapters.
   { const inT = new Set(cands.flatMap((c) => (c.chk && c.chk.u ? [`${c.chk.b}:${c.chk.u}`] : c.chk && c.chk.us ? c.chk.us.map((u) => `${c.chk.b}:${u}`) : [])));
     const used = books.filter((b) => local.log.some((e) => e.q && e.q.startsWith(b.id + ':')));
@@ -2840,7 +2842,7 @@ async function renderHome() {
       cands.push({ key: `${first ? 'ct' : 'ct2'}:${t.b.id}:${t.c.unit.id}`, icon: 'test', t: first ? Z(`Chapter test: ${nm}`, `章節測驗：${nm}`) : Z(`Prove it again: ${nm}`, `再證明一次：${nm}`),
         s: Z('Timed · 80% to pass', '限時 · 80% 合格'), attr: `data-ctest="${esc(t.b.id)}:${esc(t.c.unit.id)}"`, chk: { y: 'ctest', b: t.b.id, u: t.c.unit.id },
         tag: ['test', first ? Z('Prove it', '證明實力') : Z('Prove it again', '再證明一次')],
-        why: first ? Z(`You’ve practised ${nm} enough to try its chapter test. Practice alone stops at 70%: passing the test (80% or more) takes it up to 85%.`, `你已經練習「${nm}」夠多，可以做章節測驗。只靠練習最多 70%：測驗合格（80% 或以上）可升至 85%。`)
+        why: first ? Z(`You’ve practised ${nm} enough to try its chapter test. A timed test is the best proof: its score counts most for this chapter’s %.`, `你已經練習「${nm}」夠多，可以做章節測驗。限時測驗最能證明實力：它的分數對這一章的百分比影響最大。`)
           : Z(`You passed ${nm} before. Passing again on a different day shows it has really stuck, and takes it up to 95%.`, `你之前通過了「${nm}」。在另一日再次合格，證明真的記住了，可升至 95%。`) }); }
     const lastMock = Math.max(0, ...(local.tests || []).filter((x) => x.kind === 'mini' || x.kind === 'paper').map((x) => x.t));
     if (mock && Date.now() - lastMock >= 7 * DAY) { const sj = mock.b.subject ? subj(mock.b.subject) : shortTitle(mock.b.title);
@@ -3018,8 +3020,8 @@ async function renderHome() {
           // Practised enough but no test passed yet: more practice won't move it, the chapter test will.
           // In Buddy's plan that practice step becomes the chapter test; elsewhere the bar is honest (no gain).
           // What a practice set can still add, from the parts practice can move (covering the chapter, accuracy, harder
-          // questions): about half of what's left in them, at most SET_GAIN, and never past the cap (70% before a passed test).
-          const capP = ch.passes ? 95 : 70, sc = ch.score || {};
+          // questions): about half of what's left in them, at most SET_GAIN, and never past the cap (90% before a passed test).
+          const capP = ch.passes ? 95 : 90, sc = ch.score || {};
           const room = ['covered', 'accurate', 'deep'].reduce((t, k) => t + (AREAS.find((a) => a[0] === k) || [0, 0, 0])[2] * (1 - (sc[k] || 0)), 0);
           const seen = ((local.chGain || {})[`${c.b}:${ch.unit.id}`] || []), seenAvg = seen.length ? seen.reduce((a, b) => a + b, 0) / seen.length : null;
           const pracGain = Math.max(0, ch.sim ? Math.min(capP - ch.pct, ch.sim(sessionSize())) : Math.min(SET_GAIN, Math.round(room / 2), capP - ch.pct, seenAvg == null ? SET_GAIN : Math.round(seenAvg)));
@@ -3035,7 +3037,7 @@ async function renderHome() {
           const tid = (String(x.key).match(/^[tc]:([^:]+)/) || [])[1], tp = tid && tests.steps.find((q) => q.x.id === tid);
           if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const lg = c.y === 'learn' ? Math.max(0, 10 - (ch.likely || 0)) : asTest ? Math.max(0, 85 - (ch.likely || 0)) * 0.6 : ch.simL ? ch.simL(sessionSize()) : to - ch.pct, d = Math.max(1, Math.round(lg / tp.units.length)); it.tst = { n: tp.x.name, from: tp.ready, to: Math.min(100, tp.ready + d) }; }
           if (!rushOff() && (local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('⚡ Too fast last time, so it didn’t count', '⚡ 上次太快，所以不計')
-          if (asTest) it.test = Z('Pass it (80% or more) to unlock up to 85%.', '合格（80% 或以上）可解鎖至 85%。');
+          if (asTest) it.test = Z('Your score on it counts most for this chapter’s %.', '測驗分數對這一章的百分比影響最大。');
           { const lv = chapterLever(ch); if (lv.k === 'wait' && !asTest) { it.note = Z(`${it.to > ch.pct ? 'Practice still adds a little, reviews add more.' : 'Grows with reviews now.'} A retest counts from ${new Date(lv.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `現在靠溫習進步。重考由 ${new Date(lv.at).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起才計算。`); } }
           if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
           it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid;
@@ -5217,7 +5219,7 @@ async function progressPop(pops) {
   const row = (lab, from, to, k) => `<div class="pp-r mo-r"><small class="mo-rl" data-raw>${esc(lab)}</small><div class="mo-rv"><span class="mo-rf">${from}%</span><span class="mo-ra" aria-hidden="true">→</span><b><span class="pp-n" data-from="${from}" data-to="${to}">${from}</span>%</b><em class="ms-imp-g pp-g">+${to - from}%</em></div><i class="pp-bar"><b style="width:${from}%" data-to="${to}"></b><u style="left:${from}%;width:0" data-w="${to - from}"></u></i></div>`;
   w.innerHTML = `${conf}<div class="cdlg pp-card" role="dialog" aria-modal="true" aria-labelledby="ppT"><div class="pp-bud">${buddySVG('happy', 64)}</div>
     <b id="ppT" class="pp-h">${pops.some((p) => p.passed) ? PT('Test passed! 🎉', '測驗合格！🎉') : PT('Your progress grew!', '你進步了！')}</b>
-    ${pops.slice(0, 3).map((p, k) => `${row(p.nm, p.from, p.to, k)}${p.passed ? `<p class="pp-note">🔓 ${PT(`Unlocked: this chapter can now go up to ${p.cap}%`, `已解鎖：這一章現在最高可達 ${p.cap}%`)}</p>` : ''}${p.tst ? row(PT(`📝 ${p.tst.n} readiness`, `📝「${p.tst.n}」準備度`), p.tst.from, p.tst.to, k) : ''}`).join('')}
+    ${pops.slice(0, 3).map((p, k) => `${row(p.nm, p.from, p.to, k)}${p.passed ? `<p class="pp-note">🏆 ${PT('Proven in a timed test', '已在限時測驗中證明實力')}</p>` : ''}${p.tst ? row(PT(`📝 ${p.tst.n} readiness`, `📝「${p.tst.n}」準備度`), p.tst.from, p.tst.to, k) : ''}`).join('')}
     <button class="btn" id="ppOk">${PT('Nice!', '好！')}</button></div>`;
   document.body.appendChild(w);
   const close = () => w.remove();
@@ -5829,7 +5831,7 @@ async function renderBook(bookId) {
       <span class="cbody"><span class="ct" data-raw>${esc(cleanTitle(u.title))}</span>
         <span class="cmeta">${[pages, c.done ? `${c.done} question${c.done === 1 ? '' : 's'} answered` : 'Not started yet'].filter(Boolean).join(' · ')}</span>
         <span class="cbar" aria-hidden="true"><i style="width:${c.pct}%;background:${pctColour(c.pct)}"></i></span></span>
-      <span class="cp" style="color:${c.done ? pctColour(c.pct) : 'var(--muted-2)'}">${c.pct}%<small>mastery</small></span>
+      <span class="cp" style="color:${c.done ? pctColour(c.pct) : 'var(--muted-2)'}">${c.pct}%<small>${LANG === 'zh' ? '準備' : 'ready'}</small></span>
     </button>`;
   };
   const row = (u) => {
@@ -6583,7 +6585,7 @@ function goalWeek() {
 function examInfo(subjects) {
   const today = new Date(); today.setHours(0, 0, 0, 0); const t0 = today.getTime();
   // keep one readiness reading per book per day, so a pace can be worked out
-  local.mhist = local.mhist || {};
+  if (local.mhistV !== 2) { local.mhist = {}; local.mhistV = 2; } local.mhist = local.mhist || {};
   for (const x of subjects) {
     const h = (local.mhist[x.book.id] || []).filter((p) => p[0] !== t0);
     h.push([t0, x.pct]); local.mhist[x.book.id] = h.slice(-120);
@@ -10980,7 +10982,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       if (c) {
         const nm = shortTitle(c.unit.title), u = c.unit;
         const test = { label: Z('Take the chapter test', '做章節測驗'), run: () => startChapterTest(sess.book, [u]) };
-        if (c.done >= Math.min(6, c.target) && !c.passes) lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Pass it (80%+) to unlock up to 85%.`, `「${nm}」現在最大的進步來自章節測驗。合格（80% 或以上）就可升至最高 85%。`)], main: test };
+        if (c.done >= Math.min(6, c.target) && !c.passes) lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Your score on it counts most.`, `「${nm}」現在最大的進步來自章節測驗，它的分數影響最大。`)], main: test };
         else if (c.passes && (!c.spread || !c.lastPass)) lever = { l: ['📅', Z(`Next jump: pass the test again on a day at least a week after the first pass. That unlocks up to 95%.`, `下一步：在第一次合格至少一星期後再考一次並合格，就可升至 95%。`)] };
         else if (c.needL3 || c.needL4) lever = { l: ['🧗', Z(`Next jump: get a harder “${c.needL4 ? 'analyse' : 'apply'}” question right. Buddy mixes them in as you go.`, `下一步：答對一題較難的「${c.needL4 ? '分析' : '應用'}」題。Buddy 會逐步加入這類題目。`)] };
         else if (c.due) lever = { l: ['🔁', Z(`Next jump: ${c.due} review${c.due === 1 ? '' : 's'} waiting in ${nm}.`, `下一步：「${nm}」有 ${c.due} 題溫習在等你。`)], main: { label: Z('Do the reviews', '做溫習'), run: () => startReview('spaced') } };
@@ -10997,7 +10999,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       title: passed ? Z('Test passed! 🎉', '測驗合格！🎉') : near ? Z(`So close! ${pct}%`, `只差一點！${pct}%`) : Z('Not this time, and that’s okay', '這次未合格，沒關係'),
       sub: passed ? Z(`${pct}%: proof you know this chapter.`, `${pct}%：證明你掌握了這一章。`) : Z(`80% passes. ${near ? `You’re only ${80 - pct}% away.` : 'Every test shows Buddy exactly what to work on.'}`, `80% 合格。${near ? `只差 ${80 - pct}%。` : '每次測驗都讓 Buddy 知道要練甚麼。'}`),
       bars: chBars,
-      lines: passed ? bars.filter((b) => b.passed).map((b) => ['🔓', Z(`${b.lab} can now go up to ${b.cap}%`, `${b.lab} 現在最高可達 ${b.cap}%`)])
+      lines: passed ? bars.filter((b) => b.passed).map((b) => ['🏆', Z(`${b.lab}: proven in a timed test`, `${b.lab}：已在限時測驗中證明實力`)])
         : [...(dropLine.length ? dropLine : [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Buddy will bring the test back in your plan.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。Buddy 會在任務中再安排測驗。`)]])],
       main: passed ? home : fix || home, alt: passed ? null : { label: Z('Later', '稍後'), run: null } });
   }
