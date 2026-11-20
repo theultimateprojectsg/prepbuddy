@@ -508,6 +508,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     const idle = (now - Math.max(lastActive(key), recentT.length ? recentT[recentT.length - 1].t : 0)) / DAY;
     if (idle > 7) est *= Math.max(0.85, 1 - 0.01 * (idle - 7));
     likely = Math.round(100 * est);
+    if (!b4) likely = Math.min(likely, 95); // not yet shown to last a week: never quite certain
   } else if (learnedIt) likely = 10;
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
@@ -3348,7 +3349,7 @@ async function renderHome() {
       if (chs.length && (p.x.kind || 'test') !== 'dict') {
         const order = p.book.units.map((u) => u.id), weak = new Set(chs.slice().sort((a, b) => (a.pct || 0) - (b.pct || 0)).slice(0, 3).map((c) => c.unit.id));
         const cs = chs.slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id)), more = cs.length - weak.size;
-        const row = (c) => `<div class="pv-tr ${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}${weak.has(c.unit.id) ? '' : ' hid'}"><span data-raw>${esc(shortTitle(c.unit.title))}</span><em>${c.done ? `${c.pct}%` : c.learned ? Z(`Lesson · ${c.pct}%`, `已上課 · ${c.pct}%`) : Z('Not started', '未開始')}</em><i><b style="width:${c.pct}%"></b></i></div>`;
+        const row = (c) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${weak.has(c.unit.id) ? '' : ' hid'}"><span data-raw>${esc(shortTitle(c.unit.title))}</span><em>${c.done ? `${tl(c)}%` : c.learned ? Z(`Lesson · ${tl(c)}%`, `已上課 · ${tl(c)}%`) : Z('Not started', '未開始')}</em><i><b style="width:${tl(c)}%"></b></i></div>`;
         chRows = `<div class="pv-tch tdc-ch">${cs.map(row).join('')}<div class="tdc-chf">${more > 0 ? `<button type="button" class="pv-tmore tdc-more" data-more="${Z(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`)}">${Z(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`)}</button>` : '<div></div>'}<button type="button" class="tdc-prog">${Z('Details in Progress', '在「進度」看詳情')} ›</button></div></div>`;
       }
       return `<div class="td-test tdc">
@@ -6533,6 +6534,8 @@ function habitGaps(E, inT = () => true) {
     else if (lv && lv.a < 60) gaps.push(['weak', [Z('Weaker at remembering facts', '記憶事實較弱'), Z('Weaker at understanding the ideas', '理解概念較弱'), Z('Weaker at using it in new questions', '應用題較弱'), Z('Weaker at “explain why” questions', '「解釋原因」題較弱')][lv.l - 1]]); }
   return gaps;
 }
+// a chapter inside a test goal shows its likely test score, the same measure as the goal's "ready now" (mastery is on Books)
+const tl = (c) => (c.likely != null ? c.likely : c.pct);
 function testPoints(p, chs, aim, fc, st) {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en), pts = [];
   const habit = practiceHabit(), dpw = Math.max(1, Math.round(habit * 7));
@@ -6895,7 +6898,7 @@ function testPlanSheet(p, chs, aim, fc) {
       <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${fc ?? p.ready}%</b><span>${PT('on test day with the plan', '跟著計劃考試當日')}</span></div><i>·</i><div><b>${aim}%</b><span>${PT('your goal', '你的目標')}</span></div></div>
       <p class="tp-p">${gap ? PT(`About ${gap} points short of your goal at the current pace. Follow the plan and most of that gap closes.`, `按現時進度，距離目標約 ${gap} 分。跟著計劃做，大部分差距都能補回。`) : PT('On course for your goal. The plan keeps it there with practice and a final practice test.', '正朝目標前進。計劃會用練習和最後一次模擬測驗保持狀態。')}</p>
       <h3>${PT('What each chapter needs', '每章需要做甚麼')}</h3>
-      <div class="tp-ch">${needInOrder.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${x.c.pct}%"></em><s style="left:${aim}%"></s></i></span><strong>${x.c.pct}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
+      <div class="tp-ch">${needInOrder.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${tl(x.c)}%"></em><s style="left:${aim}%"></s></i></span><strong>${tl(x.c)}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
     </div><div class="tp-col">
       <h3>${weekly ? PT('Week by week', '每週計劃') : PT('Day by day', '每日計劃')}</h3>
       <div class="tp-plan">${rows}</div>
@@ -7368,7 +7371,7 @@ async function fullTestCards(tests, btn) {
   const chipsOf = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
     if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
     const SHOWN = 4, more = cs.length - SHOWN;
-    const row = (c, hid) => `<div class="pv-tr ${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.pct}%` : c.learned ? PT(`Lesson · ${c.pct}%`, `已上課 · ${c.pct}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.pct}%"></b></i></div>`;
+    const row = (c, hid) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${tl(c)}%` : c.learned ? PT(`Lesson · ${tl(c)}%`, `已上課 · ${tl(c)}%`) : PT('Not started', '未開始')}</em><i><b style="width:${tl(c)}%"></b></i></div>`;
     const id = `tch${p.x.id}`.replace(/\W/g, ''), lab = PT(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`);
     return `<div class="pv-tch" id="${id}">${cs.map((c, i) => row(c, i >= SHOWN && more > 1)).join('')}${more > 1 ? btn(lab, () => {
       const el = document.getElementById(id), open = el.classList.toggle('open'), bt = el.querySelector('.pv-tmore');
@@ -8081,7 +8084,7 @@ async function renderProgress(PO = {}) {
     // goals and tests in one place, in Today's card: folded it answers "on track?", opened it shows the detail
     const chList = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
       if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
-      return `<details class="pvn-ch"><summary>${PT(`Chapters in this test (${cs.length})`, `測驗範圍內的章節（${cs.length}）`)}</summary><div class="pv-tch open">${cs.map((c) => `<div class="pv-tr ${c.pct >= 70 ? 'good' : c.pct >= 40 ? 'mid' : c.pct > 0 ? 'low' : 'zero'}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.pct}%` : c.learned ? PT(`Lesson · ${c.pct}%`, `已上課 · ${c.pct}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.pct}%"></b></i></div>`).join('')}</div></details>`; };
+      return `<details class="pvn-ch"><summary>${PT(`Chapters in this test (${cs.length})`, `測驗範圍內的章節（${cs.length}）`)}</summary><div class="pv-tch open">${cs.map((c) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${tl(c)}%` : c.learned ? PT(`Lesson · ${tl(c)}%`, `已上課 · ${tl(c)}%`) : PT('Not started', '未開始')}</em><i><b style="width:${tl(c)}%"></b></i></div>`).join('')}</div></details>`; };
     const tBody = (g) => { const chs = chOf(g.p).length ? chOf(g.p) : g.p.book ? MB.get(g.p.book.id).chapters : [];
       return `${goalProgressHTML(g, g.p.ready == null ? '' : testPoints(g.p, chs, g.aim, g.fc, g.st), false, true)}${chList(g.p)}`; };
     const gCard = GDp ? goalsCardHTML(GDp, { progress: true, testBody: tBody, title: PT('Am I on track for my goals?', '我的目標進度如何？') }) : '';
