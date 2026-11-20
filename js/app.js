@@ -412,6 +412,8 @@ const AREAS = [
   ['fixed', 'Mistakes fixed', 10],
 ];
 const PASS = 0.8, TEST_MIN_Q = 3, MK_GRACE = 3;
+// The default goal for a school test: 70% = "Test-ready" (practised, and a chapter test passed). 85 and 100 are bonus levels.
+const TEST_AIM = 70;
 function chapterTarget(u) {
   const pages = u.startPage && u.endPage ? u.endPage - u.startPage + 1 : 0;
   const n = pages ? Math.round(pages * 1.2) : Math.round((u.chars || 30000) / 2500);
@@ -534,8 +536,9 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     let tc = best(tests, (x) => { const r = x.r, sc = r[0] / r[1]; return (25 / 3) * Math.min(1, r[1] / 12) * Math.min(1.2, (r[3] ? r[2] / r[3] : 2) / 2) * sc * sc; });
     if (tests.length && !lastPass) tc *= 0.5;
     const mix = mixedFor(key), mc = best(mix, (x) => { const sc = x.r[0] / x.r[1], all = x.all[0] / x.all[1]; return 5 * Math.min(1, x.r[1] / 4) * Math.min(sc, all + 0.1) ** 2; });
-    let est = Math.min(60, prac);
-    if (apply >= 3) est += Math.min(25, tc); else est = Math.min(60, est + Math.min(25, tc));
+    let est = Math.min(60, prac) + Math.min(25, tc);
+    if (passes.length && lastPass && prac >= 40) est = Math.max(est, 70); // Test-ready: well practised and a chapter test passed
+    if (apply < 3) est = Math.min(est, 75);                                // past 75 needs Apply-level questions right
     if (est >= 85 && !(wrote >= 2 && analyse)) est = 85; else if (apply >= 3 && wrote >= 2 && analyse) est += Math.min(10, mc);
     est = Math.min(est, 95) + (b5 ? 5 : b4 ? 2 : 0) * (est >= 94 ? 1 : 0);
     /* Cracks (like Duolingo): reviews left more than 2 days past due mean it's being forgotten. The chapter slips
@@ -616,7 +619,7 @@ function trStep(t) {
 }
 // stage names that follow the gates of the chapter %
 function masteryLabel(p) {
-  return p >= 100 ? 'Mastered' : p >= 95 ? 'Nearly mastered' : p >= 85 ? 'Exam ready' : p >= 60 ? 'Tested' : p > 0 ? 'Learning' : 'Not started';
+  return p >= 100 ? 'Mastered' : p >= 85 ? 'Strong' : p >= 70 ? 'Test-ready' : p >= 60 ? 'Practised' : p > 0 ? 'Learning' : 'Not started';
 }
 // Summaries, key terms, glossaries and end-of-chapter question lists aren't worth suggesting as practice.
 const NOT_TEACHING = /^\s*(chapter\s+\d*\s*)?(chapter summary|summary|key terms|key concepts and summary|glossary|review questions|critical thinking questions|visual connection questions|test prep( for ap® courses)?|science practice challenge questions|index|references|answer key|answers|further reading|bibliography)\s*[*:.]*\s*$|^\s*(總結|詞彙|詞彙表|練習|答案|重點)\s*$/i;
@@ -2764,7 +2767,7 @@ function missionHowHTML(id = 'howMission') {
     ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'A lesson for a chapter you haven’t started, or your weakest one. A practice test the day before.', '先上還未開始的章節，或練最弱的一章。考試前一天做模擬測驗。'],
     ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
-    ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', 'Practice gets a chapter to 60%. Chapter tests, always with new questions, take it to 85%, once harder questions are right too. Mixed papers across chapters, like a real school test, take it to 95%. 100% needs proof it lasts two weeks.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
+    ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', '60% Practised: from practice sets. 70% Test-ready: well practised and a chapter test passed (new questions every time). 85% Strong: more tests, and harder Apply, Analyse and written questions right. 100% Mastered: mixed papers like a real school test, and still right two weeks later.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
     ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
     ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
 }
@@ -2863,7 +2866,7 @@ async function renderHome() {
   // behind pace for a test's goal: add catch-up jobs for it (its weakest chapters), so the daily amount matches what the goal needs
   let extraJobs = 0;
   for (const p of tests.steps.filter((q) => q.left >= 1 && q.left <= 14 && q.step && q.book && q.ready != null && (q.x.kind || 'test') !== 'dict').slice(0, 2)) {
-    const aim = p.x.aim || 80; if (p.ready >= aim) continue;
+    const aim = p.x.aim || TEST_AIM; if (p.ready >= aim) continue;
     const m = await bookMastery(p.book), chs = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)); if (!chs.length) continue;
     const habit = practiceHabit(), fc = planForecast(p.ready, chs, p.left, habit); if (fc >= aim) continue; // the usual pace gets there
     const N = planNeeds(p.ready, chs.map((c) => c.pct || 0), p.left, aim), perDay = Math.ceil(N.sets / Math.max(1, p.left));
@@ -3394,7 +3397,7 @@ async function renderHome() {
     // each test: a countdown card with a strip of days to the test, today's job for it, and the full plan one tap away
     const KIC = { learn: 'learn', practise: 'practise', mixed: 'practise', test: 'test', mock: 'mock', 'test-day': 'test', review: 'review' };
     const card = async (p) => {
-      const k = tests.steps.indexOf(p), aim = p.x.aim || 80, day = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+      const k = tests.steps.indexOf(p), aim = p.x.aim || TEST_AIM, day = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
       const m = p.book ? await bookMastery(p.book) : null, chs = m ? m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : [];
       const plan = p.book && chs.length && (p.x.kind || 'test') !== 'dict' ? testDayPlan(p, chs, aim) : null;
       let strip = '';
@@ -5066,7 +5069,7 @@ function devQuickSetup() {
   const now = Date.now(), d = new Date(now + 11 * DAY), iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   return wipeDevice({ toured: 1, learner: { grade: 'P4', at: now, goals: [] }, name: (local.name || 'Phil').slice(0, 20), profSkip: 1, marksSkip: now, consent: { v: 2, at: now }, code: local.code || '',
     stats: {}, reports: [], usage: {}, log: [], types: 'mix', mistakes: {}, starsOn: true,
-    sched: [{ id: 'devsci', kind: 'test', name: 'Science test', date: iso, subj: 'science', b: 'lib-pb-p4-science', u: ['u0', 'u1', 'u2'], aim: 80 }],
+    sched: [{ id: 'devsci', kind: 'test', name: 'Science test', date: iso, subj: 'science', b: 'lib-pb-p4-science', u: ['u0', 'u1', 'u2'], aim: TEST_AIM }],
     mygoals: { main: 'test', longs: [{ subj: 'Science', target: 6.7 }] } });
 }
 // testing only: answer the rest of this set at a chosen score and go to the results (counts like real answers)
@@ -5319,7 +5322,7 @@ async function checkWins() {
     for (const b of books.filter((x) => used.has(x.id))) { const m = await bookMastery(b); for (const c of m.chapters) if (c.pct >= 80) cur.ch[`${b.id}:${c.unit.id}`] = shortTitle(c.unit.title); }
     const GS = await gsData().catch(() => null); for (const x of (GS ? GS.s : [])) if (x[1] != null && (x[8] || 0) >= 40 && (x[5] || []).length >= 2) cur.lv[x[0]] = Math.floor(lv10(x[1])); // same bar as the goals card: no level-ups until the level is shown
     cur.fg = fixedForGood().good;
-    for (const x of schoolTests()) { if (testDay(x) < startOfToday()) continue; const h = ((local.thist || {})[x.id] || []).slice(-1)[0]; if (h && h[1] >= (x.aim || 80)) cur.rd[x.id] = x.name; }
+    for (const x of schoolTests()) { if (testDay(x) < startOfToday()) continue; const h = ((local.thist || {})[x.id] || []).slice(-1)[0]; if (h && h[1] >= (x.aim || TEST_AIM)) cur.rd[x.id] = x.name; }
     if (W) {
       for (const [k, n] of Object.entries(cur.ch)) if (!W.ch[k]) ev.push(['chapter', PT(`You mastered ${n}!`, `你掌握了「${n}」！`), PT('Lesson done, and 80% or more right.', '上完課，而且答對八成或以上。')]);
       for (const [k, v] of Object.entries(cur.lv)) if (W.lv[k] != null && v > W.lv[k]) ev.push(['level', PT(`${k} level up: ${W.lv[k]} → ${v}`, `${k}程度提升：${W.lv[k]} → ${v}`), PT('Out of 10. It only goes up when harder questions go right.', '滿分 10。只有答對更難的題目才會提升。'), [W.lv[k], v], k]);
@@ -6925,7 +6928,7 @@ function chapterSheet(book, c) {
 // plan up to the test, with today's step ready to start.
 // The day-by-day plan up to a test: what each chapter needs (weakest first), then one job per day.
 // Each day's task: [label, run, kind] — kind is learn, practise, test, mixed, mock or test-day.
-function testDayPlan(p, chs, aim = 80) {
+function testDayPlan(p, chs, aim = TEST_AIM) {
   const book = p.book, units = p.units, n = local.count || sessionSize(), t0 = dayStart(), left = p.left;
   const nm = (u) => shortTitle(u.title);
   // what each chapter needs, weakest first
@@ -7163,9 +7166,10 @@ async function goalsData(tests) {
   const MG = myGoals(), t0 = dayStart(), out = [];
   for (const p of tests.steps.filter((q) => q.book && q.ready != null && (q.x.kind || 'test') !== 'dict')) {
     const chs = (await bookMastery(p.book)).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id));
-    const fc = locked('forecast') ? null : planForecast(p.ready, chs, p.left), aim = p.x.aim || 80;
+    const fc = locked('forecast') ? null : planForecast(p.ready, chs, p.left), aim = p.x.aim || TEST_AIM;
     // a daily record of each test's readiness: the chart on Progress and "this week" come from it
-    if ((local.thistV || 0) < 3) { local.thist = {}; local.thistV = 3; } // readiness became the likely score: older history measured something else
+    if ((local.thistV || 0) < 3) { local.thist = {}; local.thistV = 3; }
+    if ((local.aimV || 0) < 1) { (local.sched || []).forEach((x) => { if (x.aim === 80) x.aim = TEST_AIM; }); local.aimV = 1; } // the default goal became 70% (Test-ready) // readiness became the likely score: older history measured something else
     local.thist = local.thist || {}; const h = (local.thist[p.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, p.ready, p.raw]); local.thist[p.x.id] = h.slice(-90);
     const old = h.filter((x) => x[0] <= t0 - 5 * DAY).sort((a, b) => Math.abs(a[0] - (t0 - 7 * DAY)) - Math.abs(b[0] - (t0 - 7 * DAY)))[0];
     out.push({ kind: 'test', id: 't:' + p.x.id, p, ready: p.ready, fc, aim, st: p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim), wk: old ? p.ready - old[1] : null, hist: h, chs });
@@ -7297,7 +7301,7 @@ async function myGoalsSheet(onDone) {
   { const top = GS ? GS.s.filter((x) => x[1] != null).sort((a, b) => (b[8] || 0) - (a[8] || 0))[0] : null; longs.forEach((x) => { if (!x.subj && top) x.subj = top[0]; }); }
   const subs = [...new Set([...(GS ? GS.s.map((x) => x[0]) : []), ...books.map((b) => (b.subject ? subj(b.subject) : '')).filter(Boolean)])];
   const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
-  const aims = Object.fromEntries(tests.map((x) => [x.id, x.aim || 80]));
+  const aims = Object.fromEntries(tests.map((x) => [x.id, x.aim || TEST_AIM]));
   let pin = MG.pin || null;
   const pinB = (id) => `<button class="mg-ic pin ${pin === id ? 'on' : ''}" data-pin="${esc(id)}" aria-pressed="${pin === id}" aria-label="${Z('Pin as the focus', '置頂為重點')}" title="${Z('Pin as the focus', '置頂為重點')}">${GICON.pin}</button>`;
   let adding = false;
@@ -7355,7 +7359,7 @@ async function renderGoals() {
   const TG = { 5: Z('Keeping up', '跟上進度'), 6.7: Z('Above grade level', '高於年級水平'), 8.5: Z('Top of the class', '名列前茅') };
   const pinTag = (id) => (MG.pin === id ? `<em class="mgp-pin">${GICON.pin}${Z('Focus', '重點')}</em>` : '');
   const row = (id, ic, cls, name, sub) => `<button class="mgp-row" data-gedit="${esc(id)}"><span class="atile mgp-ic ${cls}" aria-hidden="true">${ic}</span><span class="mgp-t"><b data-raw>${name}</b><small data-raw>${sub}</small></span>${pinTag(id)}<i aria-hidden="true">›</i></button>`;
-  const tRows = tests.map((x) => row('t:' + x.id, GIC.test, 'blue', esc(x.name), `${Z('Goal', '目標')} ${x.aim || 80}% · ${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(testLeft(x))}`)).join('');
+  const tRows = tests.map((x) => row('t:' + x.id, GIC.test, 'blue', esc(x.name), `${Z('Goal', '目標')} ${x.aim || TEST_AIM}% · ${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(testLeft(x))}`)).join('');
   const lRows = longs.map((x) => { const lv = lvOf(x.subj); return row('l:' + (x.subj || ''), GIC.long, 'green', esc(x.subj || Z('Main subject', '主要科目')), `${Z('Target', '目標')} ${(x.target || 6.7).toFixed(1)} · ${TG[x.target || 6.7] || ''}${lv != null ? ` · ${Z('now', '現在')} ${lv.toFixed(1)}` : ''}`); }).join('');
   $app.innerHTML = `<main class="pad stack g14 mgp-page" style="flex:1">
     ${backTop({ name: 'home' }, 'Today')}<h1 class="pagetitle">${Z('My goals', '我的目標')}</h1>
@@ -7374,7 +7378,7 @@ async function renderGoals() {
 function goalEditDialog(id, { subs = [] }) {
   const Z = PT, MG = myGoals(), longs = (MG.longs || []).map((x) => ({ ...x }));
   const isT = id && id.startsWith('t:'), x = isT ? (local.sched || []).find((y) => y.id === id.slice(2)) : null, li = !isT && id ? longs.findIndex((y) => 'l:' + (y.subj || '') === id) : -1;
-  const st = { aim: x ? x.aim || 80 : 80, target: li >= 0 ? longs[li].target || 6.7 : 6.7, pin: id ? MG.pin === id : false, subj: subs[0] || '' };
+  const st = { aim: x ? x.aim || TEST_AIM : 80, target: li >= 0 ? longs[li].target || 6.7 : 6.7, pin: id ? MG.pin === id : false, subj: subs[0] || '' };
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   const draw = () => {
     const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
@@ -7485,7 +7489,7 @@ async function fullTestCards(tests, btn) {
   return tests.steps.map((p, ti) => {
     const habit = practiceHabit(), fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, habit);
     const fcI = { pcts: chOf(p).map((c) => c.pct || 0), names: chOf(p).map((c) => chName(c.unit)), levers: chOf(p).map((c) => (c.score ? chapterLever(c) : null)), habit, fc, lock: !!fcLocked, prev: fmtDay(testDay(p.x) - DAY) };
-    const aim = p.x.aim || 80; // the parent's target for this test, set with the slider
+    const aim = p.x.aim || TEST_AIM; // the parent's target for this test, set with the slider
     const st = p.ready == null ? 'none' : p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
     const steps = [];
@@ -7506,7 +7510,7 @@ async function fullTestCards(tests, btn) {
     const coach = p.ready == null ? '' : `<div class="pv-fcline" data-ready="${p.ready}" data-left="${p.left}" data-info="${esc(JSON.stringify(fcI))}">${fcLine(p.ready, aim, p.left, fcI)}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Slide Buddy to set your own goal for this test.', '拖動 Buddy，為這個測驗設定你自己的目標。')}</p>` : ''}${coach}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
-      <div class="pv-test-f">${p.book && p.ready != null && (p.x.kind || 'test') !== 'dict' ? btn(PT('My plan for this test', '這個測驗的計劃'), () => testPlanSheet(p, chOf(p), (local.sched || []).find((y) => y.id === p.x.id)?.aim || 80, fc), 'pv-btn primary') : p.step ? btn(esc(p.step.t), p.step.run, 'pv-btn primary') : ''}${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
+      <div class="pv-test-f">${p.book && p.ready != null && (p.x.kind || 'test') !== 'dict' ? btn(PT('My plan for this test', '這個測驗的計劃'), () => testPlanSheet(p, chOf(p), (local.sched || []).find((y) => y.id === p.x.id)?.aim || TEST_AIM, fc), 'pv-btn primary') : p.step ? btn(esc(p.step.t), p.step.run, 'pv-btn primary') : ''}${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
   });
 }
 // goal sliders on the full test cards: move the line and the status live; save when let go
@@ -7540,7 +7544,7 @@ function bindTestCards(root) {
   });
 }
 // On track / close / at risk, against the target the parent set for that test (default 80%).
-const aimTone = (v, aim = 80) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
+const aimTone = (v, aim = TEST_AIM) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
 // Mistakes fixed for good: fixed, then right again on a later day (2+ days after fixing). Fixed once may just be memory.
 function fixedForGood() {
   const M = Object.entries(local.mistakes || {}), byQ = new Map();
@@ -7616,7 +7620,7 @@ async function renderProgress(PO = {}) {
   const chOf = (p) => (p.book && p.units && p.units.length ? MB.get(p.book.id).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : []);
   // Progress only reports: on track or not, ready now, where it's heading, the goal. Acting on it happens on Today.
   const testCards = tests.steps.map((p) => {
-    const aim = p.x.aim || 80, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
+    const aim = p.x.aim || TEST_AIM, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
     const st = p.ready == null ? 'none' : p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
     const say = p.ready == null ? PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')
@@ -8057,7 +8061,7 @@ async function renderProgress(PO = {}) {
   // The summary card at the top: Buddy's verdict, three takeaways (going well / keep an eye on / next), and the four headline numbers.
   const goodTx = !local.log.length ? '' : rising.length ? PT(`Getting stronger in ${rising.slice(0, 2).join(' and ')}`, `${rising.slice(0, 2).join('和')}越來越強`)
     : days28 >= 12 ? PT(`Practised on ${days28} of the last 28 days`, `過去 28 日中有 ${days28} 日練習`) : D.longTerm ? PT(`${D.longTerm} questions now in long-term memory`, `${D.longTerm} 題已進入長期記憶`) : PT(`${r.dp} days of practice this week`, `本週練習了 ${r.dp} 日`);
-  const closeAim = close ? ((local.sched || []).find((y) => y.id === close.x.id) || {}).aim || 80 : 80;
+  const closeAim = close ? ((local.sched || []).find((y) => y.id === close.x.id) || {}).aim || TEST_AIM : 80;
   const watchTx = close ? PT(`${close.x.name} ${leftText(close.left)}: ${close.ready}% ready, goal ${closeAim}%`, `「${close.x.name}」${leftText(close.left)}：準備度 ${close.ready}%，目標 ${closeAim}%`)
     : quiet ? PT(`${sname(quiet)} has been quiet for a few days`, `${sname(quiet)}已經幾天沒有練習`) : D.weak ? PT(`Weakest chapter: ${chName(D.weak.unit)} · ${D.weak.a}%`, `最弱的章節：${chName(D.weak.unit)} · ${D.weak.a}%`) : '';
   const nx = next[0];
