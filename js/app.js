@@ -556,7 +556,9 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   { const t0 = startOfToday(), MD = local.mastDay && local.mastDay.d === t0 && local.mastDay.v === 3 ? local.mastDay : (local.mastDay = { d: t0, v: 3, p: {} });
     // at most +30% on a chapter in one day (like Khan's waits): learning has to be spread over days to count
     if (MD.p0 == null) MD.p0 = {}; if (MD.p0[key] == null) MD.p0[key] = likely; else likely = Math.min(likely, MD.p0[key] + 30);
-    if (MD.p[key] == null || cracked) MD.p[key] = likely; else likely = Math.max(likely, MD.p[key]); }
+    // it can drop the same day only for real evidence: a crack, a failed chapter test today, or a weak "Still there?" check today
+    const ck = (local.checks || {})[key], hitToday = (tests.length && !lastPass && tests[tests.length - 1].t >= t0) || (ck && ck.t >= t0 && ck.sc < 1);
+    if (MD.p[key] == null || cracked || hitToday) MD.p[key] = likely; else likely = Math.max(likely, MD.p[key]); }
   const pct = likely;
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
