@@ -448,8 +448,13 @@ function firstTries() {
   for (const e of local.log) if (e.q && e.m && e.k !== 'mistakes' && !_ft.has(e.q)) _ft.set(e.q, e.g / e.m);
   return _ft;
 }
+// chapter tests on this chapter alone (mixed papers across chapters are counted separately: mixedFor)
 function testsFor(key) {
-  return (local.tests || []).map((t) => ({ t: t.t, r: t.per && t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
+  return (local.tests || []).filter((t) => t.per && Object.keys(t.per).length === 1).map((t) => ({ t: t.t, r: t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
+}
+// mixed papers that covered this chapter along with others (closest to a real school test)
+function mixedFor(key) {
+  return (local.tests || []).filter((t) => t.per && Object.keys(t.per).length >= 2 && t.per[key] && t.per[key][1] >= 2).map((t) => ({ t: t.t, r: t.per[key], all: Object.values(t.per).reduce((a, r) => [a[0] + r[0], a[1] + r[1]], [0, 0]) })).sort((a, b) => a.t - b.t);
 }
 // "Lock it in" after a lesson: one question for each part of it and a few harder ones (fewer for the youngest)
 const LOCK_N = () => (isPrimaryKid() && sessionSize() < 8 ? 8 : 10);
@@ -504,28 +509,38 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   /* likely: the score this child would probably get on this chapter in a test now (what a test goal is measured by).
      How well they answer (first tries, and their latest go so fixed mistakes count), times how much of the chapter
      they've seen; a recent chapter test counts most; eases off a little if the chapter is left for over a week. */
-  /* The chapter % (the score this child would likely get): two parts.
-     Practice, up to 70%: earned answer by answer. A right answer is worth more at a harder level, a full-marks
-     written answer half as much again, the same question again counts half (then a quarter), and it takes
-     about 2.5 points per question of the chapter's size (a few full sets) to fill. Held back if recent answers
-     aren't mostly right.
-     Chapter tests, the last 30%: each test day counts its best test, worth more when the test is longer and
-     harder and the score higher; three full perfect tests at normal difficulty fill it, harder ones sooner. A latest test below the pass mark halves it.
-     100% only once the work has been answered right again after a week; eases off if left for over a week. */
-  let likely = 0;
+  /* The chapter % (the score this child would likely get). 100% is meant to be hard: it needs understanding,
+     not memory of answers. Four parts, each with a gate:
+     - Practice, up to 60%: right answers, worth more at harder levels and for full-marks written answers; the same
+       question again counts half, then a quarter; about 2.5 points per question of the chapter's size fill it; held
+       back if recent answers aren't mostly right. Past 60% only with 3 right first tries at Apply level or above.
+     - Chapter tests, up to 25% more: always new questions; best test each day; longer, harder, higher scores count
+       more; three strong tests fill it; a failed latest test halves it. Past 85% only with 2 full-marks written
+       answers at Apply level or above and a right answer at Analyse level.
+     - Mixed papers (this chapter among others, like a real school test), up to 10% more: two strong ones fill it.
+     - The last 5%: shown to last. Over 90% needs work answered right after a week; 100% after two weeks.
+     Eases off if the chapter is left for over a week. */
+  let likely = 0, gates = {};
   let pracPart = 0, pracSince = 0;
-  { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place' && e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0; // test answers count in the test part only
-    for (const e of L) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
+  { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), P = L.filter((e) => e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0;
+    for (const e of P) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
       pts += Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.5 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); } // straight after a lesson it's still short-term memory
-    const rec = L.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
-    const prac = 70 * Math.min(1, pts / (2.5 * T)) * Math.min(1, acc / 0.9);
-    pracPart = Math.round(prac); const lastT = tests.length ? tests[tests.length - 1].t : 0; pracSince = L.filter((e) => e.t > lastT && e.k !== 'lock').length;
-    const best = new Map(); for (const x of tests) { const d = new Date(x.t).toDateString(), r = x.r, sc = r[0] / r[1];
-      const w = Math.min(1, r[1] / 12) * Math.min(1.2, (r[3] ? r[2] / r[3] : 2) / 2), v = 10 * w * sc * sc; if ((best.get(d) || 0) < v) best.set(d, v); }
-    let tc = [...best.values()].reduce((a, b) => a + b, 0); if (tests.length && !lastPass) tc *= 0.5;
-    let est = Math.min(70, prac) + Math.min(30, tc);
+    const rec = P.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
+    const prac = 60 * Math.min(1, pts / (2.5 * T)) * Math.min(1, acc / 0.9);
+    pracPart = Math.round(prac * 70 / 60); const lastT = tests.length ? tests[tests.length - 1].t : 0; pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
+    const ft = new Set(), apply = L.filter((e) => { if (ft.has(e.q)) return false; ft.add(e.q); return (e.l || 2) >= 3 && e.g >= e.m; }).length; // right first time at Apply+
+    const wrote = new Set(L.filter((e) => e.ty === 'w' && (e.l || 2) >= 3 && e.g >= e.m).map((e) => e.q)).size, analyse = L.some((e) => (e.l || 2) >= 4 && e.g >= e.m);
+    const best = (list, f) => { const m = new Map(); for (const x of list) { const d = new Date(x.t).toDateString(), v = f(x); if ((m.get(d) || 0) < v) m.set(d, v); } return [...m.values()].reduce((a, b) => a + b, 0); };
+    let tc = best(tests, (x) => { const r = x.r, sc = r[0] / r[1]; return (25 / 3) * Math.min(1, r[1] / 12) * Math.min(1.2, (r[3] ? r[2] / r[3] : 2) / 2) * sc * sc; });
+    if (tests.length && !lastPass) tc *= 0.5;
+    const mix = mixedFor(key), mc = best(mix, (x) => { const sc = x.r[0] / x.r[1], all = x.all[0] / x.all[1]; return 5 * Math.min(1, x.r[1] / 4) * Math.min(sc, all + 0.1) ** 2; });
+    let est = Math.min(60, prac);
+    if (apply >= 3) est += Math.min(25, tc); else est = Math.min(60, est + Math.min(25, tc));
+    if (est >= 85 && !(wrote >= 2 && analyse)) est = 85; else if (apply >= 3 && wrote >= 2 && analyse) est += Math.min(10, mc);
+    est = Math.min(est, 95) + (b5 ? 5 : b4 ? 2 : 0) * (est >= 94 ? 1 : 0);
     const idle = (now - lastActive(key)) / DAY; if (idle > 7) est *= Math.max(0.85, 1 - 0.01 * (idle - 7));
-    likely = Math.round(est); if (!b4) likely = Math.min(likely, 95); }
+    likely = Math.round(est); if (!b4) likely = Math.min(likely, 90); if (!b5) likely = Math.min(likely, 97);
+    gates = { apply, wrote, analyse, mixed: mix.length }; }
   if (learnedIt) likely = Math.max(likely, LESSON_CREDIT); // a finished lesson is a real first step
   // The chapter % the child sees is this likely score. It never goes down during a day of practice
   // (it can ease off on later days if work is forgotten).
@@ -535,7 +550,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, mast, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, mast, gates, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -1179,6 +1194,9 @@ function chapterLever(c) {
     // the test once practice has done most of its job (60 of its 70%), or the chapter's questions have run out
     return (c.prac || 0) >= 60 || (c.done >= c.target && (c.prac || 0) >= 40) ? { k: 'test', en: 'its chapter test (practice has done most of its job)' } : { k: 'practise', en: 'more practice' };
   }
+  { const g = c.gates || {};
+    if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) return { k: 'practise', en: 'harder questions: two full-marks written answers at Apply level and one Analyse question (85% needs real understanding)' };
+    if (c.pct >= 80 && !g.mixed) return { k: 'mixed', en: 'a mixed paper with other chapters, like a real school test' }; }
   if (!c.spread) { const at = (c.firstPass || 0) + 7 * DAY;
     return Date.now() < at ? { k: 'wait', at, en: `reviews for now; a retest only counts from ${fmt(at)} (a week after the first pass)` } : { k: 'retest', en: 'a retest now (a week after the first pass)' }; }
   return { k: 'reviews', en: 'reviews over the coming weeks' };
@@ -1190,7 +1208,7 @@ async function coachSnapshot() {
   const lines = [`Today: ${new Date().toDateString()}.`, // the child's name is never sent to the AI
     `Last 7 days: practised on ${r.dp} of 7 days, ${r.q} questions answered, ${r.a === null ? 'no score yet' : r.a + '% of marks'}${r.pa !== null && r.a !== null ? ` (previous week ${r.pa}%)` : ''}.`,
     `Thinking skills, last 30 days (% of marks, answers): ${['Recall', 'Understand', 'Apply', 'Analyse/evaluate'].map((n, i) => `${n} ${r.sk[i][1] ? r.sk[i][0] + '%' : '-'} (${r.sk[i][1]})`).join(', ')}.`,
-    `Mistake book: ${mistakeCount()} questions still to get right. Reviews due now: ${(await dueItems()).length}.`];
+    `Mistake book: ${mistakeCount()} questions still to get right. Reviews due now: ${(await dueItems()).length}.`, ...(() => { const c = calibration(); return c.f < 1 && c.last ? [`Honesty check: the last school test was ${c.last.score}%, PrepBuddy had predicted ${c.last.pred}%. Predictions are now scaled down; plan more apply-level questions and mixed papers.`] : []; })()];
   for (const [bi, b] of books.entries()) {
     const m = await bookMastery(b);
     const bc = `B${bi + 1}`; coachIndex[bc] = { bookId: b.id };
@@ -2723,7 +2741,7 @@ function missionHowHTML(id = 'howMission') {
     ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'A lesson for a chapter you haven’t started, or your weakest one. A practice test the day before.', '先上還未開始的章節，或練最弱的一章。考試前一天做模擬測驗。'],
     ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
-    ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', 'Practice gets a chapter to 70%. When it’s ready, its timed test (80% to pass) takes it higher, and a second pass on another day higher still. Once a week, a short timed paper across your chapters.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
+    ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', 'Practice gets a chapter to 60%. Chapter tests, always with new questions, take it to 85%, once harder questions are right too. Mixed papers across chapters, like a real school test, take it to 95%. 100% needs proof it lasts two weeks.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
     ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
     ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
 }
@@ -6566,6 +6584,9 @@ const tl = (c) => (c.likely != null ? c.likely : c.pct);
 function testPoints(p, chs, aim, fc, st) {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en), pts = [];
   const habit = practiceHabit(), dpw = Math.max(1, Math.round(habit * 7));
+  // 0. honesty: a school result came in lower than predicted
+  if (p.cal && p.cal.f < 1 && p.cal.last) { const L = p.cal.last;
+    pts.push(['pace', Z(`Your last school test (${L.score}%) was lower than PrepBuddy predicted (${L.pred}%). Buddy now counts more carefully and adds more apply questions and mixed papers.`, `上次學校測驗（${L.score}%）比 PrepBuddy 預計（${L.pred}%）低。Buddy 現在會計得更嚴謹，並加多應用題和綜合試卷。`)]); }
   // 1. pace
   if (st === 'ok') pts.push(['good', Z('On pace. Keep practising like you are', '進度理想，保持現在的節奏')]);
   else { const best = planForecast(p.ready, chs, p.left, 1);
@@ -7115,7 +7136,7 @@ async function goalsData(tests) {
     const fc = locked('forecast') ? null : planForecast(p.ready, chs, p.left), aim = p.x.aim || 80;
     // a daily record of each test's readiness: the chart on Progress and "this week" come from it
     if ((local.thistV || 0) < 3) { local.thist = {}; local.thistV = 3; } // readiness became the likely score: older history measured something else
-    local.thist = local.thist || {}; const h = (local.thist[p.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, p.ready]); local.thist[p.x.id] = h.slice(-90);
+    local.thist = local.thist || {}; const h = (local.thist[p.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, p.ready, p.raw]); local.thist[p.x.id] = h.slice(-90);
     const old = h.filter((x) => x[0] <= t0 - 5 * DAY).sort((a, b) => Math.abs(a[0] - (t0 - 7 * DAY)) - Math.abs(b[0] - (t0 - 7 * DAY)))[0];
     out.push({ kind: 'test', id: 't:' + p.x.id, p, ready: p.ready, fc, aim, st: p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim), wk: old ? p.ready - old[1] : null, hist: h, chs });
   }
@@ -9078,6 +9099,17 @@ const SCH = (en, zh) => (LANG === 'zh' ? zh : en);
 const ymd = (t) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const testDay = (x) => new Date(x.date + 'T00:00:00').getTime();
 const testLeft = (x) => Math.round((testDay(x) - dayStart()) / DAY);
+/* Keeping the % honest: when a school result comes in, compare it with what PrepBuddy predicted for that test
+   (the last reading before test day). If school came out clearly lower, later predictions are scaled down by the
+   same amount (the average of the last three tests). Never scaled up: a good school day doesn't inflate anything. */
+function calibration() {
+  const out = [];
+  for (const x of schoolTests()) { if (typeof x.score !== 'number') continue; const td = testDay(x), h = ((local.thist || {})[x.id] || []).filter((e) => e[0] <= td && e[2] != null);
+    if (!h.length) continue; const pred = h[h.length - 1][2]; if (pred >= 20) out.push({ x, pred, score: x.score, r: x.score / pred }); }
+  const last = out.slice(-3); if (!last.length) return { f: 1, last: null };
+  const f = Math.max(0.6, Math.min(1, last.reduce((a, b) => a + b.r, 0) / last.length));
+  return { f: f > 0.95 ? 1 : f, last: last[last.length - 1] };
+}
 function schoolTests() { return (local.sched || []).slice().sort((a, b) => testDay(a) - testDay(b)); }
 const upcomingTests = () => schoolTests().filter((x) => testLeft(x) >= 0);
 const leftText = (n) => (n === 0 ? SCH('today', '今天') : n === 1 ? SCH('tomorrow', '明天') : SCH(`in ${n} days`, `${n} 天後`));
@@ -9130,7 +9162,8 @@ async function testStep(x) {
   if (!chs.length) chs = m.chapters.slice(0, 1);
   if (!chs.length) return null;
   const units = chs.map((c) => c.unit);
-  const ready = Math.round(chs.reduce((t, c) => t + (c.likely || 0), 0) / chs.length); // the likely score on these chapters now
+  const raw = Math.round(chs.reduce((t, c) => t + (c.likely || 0), 0) / chs.length); // the likely score on these chapters now
+  const cal = calibration(), ready = Math.round(raw * cal.f); // checked against this child's real school results
   const learned = (u) => !!(local.learned || {})[`${book.id}:${u.id}`];
   const weakest = chs.slice().sort((a, b) => a.pct - b.pct)[0];
   const name = (u) => shortTitle(u.title);
@@ -9143,7 +9176,7 @@ async function testStep(x) {
     else if (weakest.pct < 75) step = { icon: 'practise', t: SCH(`Practise: ${name(weakest.unit)}`, `練習：${name(weakest.unit)}`), s: SCH(`Your weakest test chapter, ${weakest.pct}% so far`, `最弱的考試章節，目前 ${weakest.pct}%`), go: SCH('Practise', '練習'), run: () => { pick = { bookId: book.id, ids: new Set([weakest.unit.id]) }; startUnits(book, [weakest.unit], 10); } };
     else step = { icon: 'review', t: SCH('Mixed practice on all test chapters', '所有考試章節混合練習'), s: SCH('You’re in good shape: keep it fresh', '準備得不錯，保持手感'), go: SCH('Practise', '練習'), run: () => startUnits(book, units, 10) };
   }
-  return { x, book, units, left, ready, step, all };
+  return { x, book, units, left, ready, raw, cal, step, all };
 }
 // Add or edit a school test. Three kinds: a test or quiz (one subject, textbook and chapters optional),
 // 默書 (a word list), or exams (several subjects, each with its own date; saved as one record per subject sharing grp).
@@ -11127,7 +11160,7 @@ function renderSummary() {
   if (((S.mode === 'dse' && !S.ws) || S.mode === 'mock') && !S.endedEarly && !S.recorded) {
     S.recorded = true;
     const per = {};
-    if (S.mode === 'dse') qs.forEach((q, k) => { const key = qUnit(q.id).join(':'); const r = per[key] || (per[key] = [0, 0, 0, 0]); r[0] += S.got[k] || 0; r[1] += marksOf(q); r[2] += q.level || 2; r[3] += 1; }); // [got, marks, level total, questions]
+    qs.forEach((q, k) => { const key = qUnit(q.id).join(':'); const r = per[key] || (per[key] = [0, 0, 0, 0]); r[0] += S.got[k] || 0; r[1] += marksOf(q); r[2] += q.level || 2; r[3] += 1; }); // [got, marks, level total, questions]
     local.tests = [...(local.tests || []), { t: Date.now(), per, kind: S.mode === 'mock' ? 'mini' : S.test ? 'test' : 'paper', title: S.title, b: S.book ? S.book.id : '', g: got, m: total, nt: S.deadline ? 0 : 1, x: S.extra || 0, min: Math.max(1, Math.round(((S.examEnd || Date.now()) - S.at) / 60000)) }].slice(-300); saveLocal();
   }
   if (S.ws && !S.endedEarly) saveWorksheetScore(S.ws, `${got} / ${total}`);
