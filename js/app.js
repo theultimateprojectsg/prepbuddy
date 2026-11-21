@@ -2417,6 +2417,7 @@ async function renderLearn(bookId, unitId) {
   if (!unit) return go({ name: 'home' });
   if (!allow('lesson')) return go({ name: 'book', bookId });
   meter('lesson');
+  growBank(book, unit); // start writing this chapter's full question bank while the lesson is read
   const myView = view, zh = LANG === 'zh';
   const T = (en, z) => (zh ? z : en);
   $app.innerHTML = `<div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${backLabel(T('Chapter', '章節'))}</span></button><span style="font-weight:600;font-size:16px" data-raw>${esc(shortTitle(unit.title))}</span></div>
@@ -8532,6 +8533,20 @@ async function renderPaper(bookId, from) {
   document.getElementById('print').onclick = () => go2('print');
 }
 
+/* A full bank for every chapter a child starts: about 30 questions, every level, multiple-choice and written,
+   so practice stays fresh and chapter tests can keep their full difficulty mix. Fills what's missing in the
+   background, one batch at a time, at most once a day per chapter. */
+const BANK_MIX = { mcq: [0, 5, 7, 6, 4], written: [0, 0, 2, 3, 3] }; // by level 1–4
+async function growBank(book, unit) {
+  try {
+    const key = `${book.id}:${unit.id}`, t0 = startOfToday(); local.grown = local.grown || {};
+    if (local.grown[key] === t0) return; local.grown[key] = t0; saveLocal();
+    const qs = await getQs(book.id, unit.id), have = { mcq: [0, 0, 0, 0, 0], written: [0, 0, 0, 0, 0] };
+    for (const q of qs) have[isMcqLike(q) ? 'mcq' : 'written'][Math.max(1, Math.min(4, q.level || 2))]++;
+    for (const kind of ['mcq', 'written']) for (let L = 1; L <= 4; L++) { const k = BANK_MIX[kind][L] - have[kind][L];
+      if (k > 0) { const j = ensureFill(book, unit, k, kind, 1, false, 'l' + L); await j.promise; if (j.error && (j.error.status === 0 || j.error.status === 401)) return; } } // one at a time, so it never crowds out the child's own questions
+  } catch (e) { console.warn('growBank', e); }
+}
 // the test blueprint: which level each question should be
 function blueprintMcq(n) { const c = [Math.round(n * 0.25), Math.round(n * 0.35), Math.round(n * 0.25)]; c.push(Math.max(0, n - c[0] - c[1] - c[2]));
   return c.flatMap((k, i) => Array(k).fill(i + 1)); }
@@ -8877,6 +8892,7 @@ const MAKE_PAR = 4;
 async function startUnits(book, units, count = sessionSize(), opts = {}) {
   track(opts.placement ? 'level_check' : 'practice');
   if (!opts.placement) { if (!allow('q')) return; if (limitOf('q') !== UNL) count = Math.max(1, Math.min(count, leftOf('q'))); }
+  if (!opts.placement) units.forEach((u) => growBank(book, u));
   const k = units.length, quota = Math.ceil(count / k);
   let types = opts.types || curTypes(); const diff = opts.diff || curDiff();
   if (types !== 'mcq' && limitOf('written') !== UNL && leftOf('written') <= 0) { types = 'mcq'; toast(PL('Today’s written questions are used up: multiple choice for now. Standard has unlimited.', '今日的文字題已用完，暫時只有選擇題。標準計劃無限使用。')); }
