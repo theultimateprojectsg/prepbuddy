@@ -533,7 +533,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     const ft = new Set(), apply = L.filter((e) => { if (ft.has(e.q)) return false; ft.add(e.q); return (e.l || 2) >= 3 && e.g >= e.m; }).length; // right first time at Apply+
     const wrote = new Set(L.filter((e) => e.ty === 'w' && (e.l || 2) >= 3 && e.g >= e.m).map((e) => e.q)).size, analyse = L.some((e) => (e.l || 2) >= 4 && e.g >= e.m);
     const best = (list, f) => { const m = new Map(); for (const x of list) { const d = new Date(x.t).toDateString(), v = f(x); if ((m.get(d) || 0) < v) m.set(d, v); } return [...m.values()].reduce((a, b) => a + b, 0); };
-    let tc = best(tests, (x) => { const r = x.r, sc = r[0] / r[1]; return (25 / 3) * Math.min(1, r[1] / 12) * Math.min(1.2, (r[3] ? r[2] / r[3] : 2) / 2) * sc * sc; });
+    let tc = best(tests, (x) => { const r = x.r, sc = r[0] / r[1]; return (25 / 3) * Math.min(1, r[1] / 14) * sc * sc; }); // every chapter test has the same difficulty mix: size and score count
     if (tests.length && !lastPass) tc *= 0.5;
     const mix = mixedFor(key), mc = best(mix, (x) => { const sc = x.r[0] / x.r[1], all = x.all[0] / x.all[1]; return 5 * Math.min(1, x.r[1] / 4) * Math.min(sc, all + 0.1) ** 2; });
     let est = Math.min(60, prac) + Math.min(25, tc);
@@ -730,7 +730,7 @@ async function startMiniMock(book, units) {
   if (!units.length) return go({ name: 'paper', bookId: book.id, from: 'home' });
   if (!allow('mock')) return;
   track('mini_mock');
-  const nA = 10, nB = 2, mins = await askTime(LANG === 'zh' ? '模擬小測' : 'Mini mock', LANG === 'zh' ? `${nA} 題選擇題，${nB} 題文字題，來自 ${units.length} 章。` : `${nA} multiple-choice and ${nB} written questions from ${units.length} chapters.`, paperMinutes(nA, nB));
+  const [nA, nB] = gradeBand() === 'p12' ? [10, 2] : [14, 3], mins = await askTime(LANG === 'zh' ? '模擬小測' : 'Mini mock', LANG === 'zh' ? `${nA} 題選擇題，${nB} 題文字題，來自 ${units.length} 章。` : `${nA} multiple-choice and ${nB} written questions from ${units.length} chapters.`, paperMinutes(nA, nB));
   if (mins === null) return;
   try {
     const paper = await preparePaper(book, shuffle(units.slice()).slice(0, 6), nA, nB, 'sit');
@@ -745,7 +745,7 @@ async function startMiniMock(book, units) {
 async function startChapterTest(book, units) {
   if (!allow('test')) return;
   track('chapter_test');
-  const nA = Math.min(16, 6 + 2 * units.length), nB = Math.min(4, 1 + units.length);
+  const [nA, nB] = testSize(units.length);
   const mins = await askTime(LANG === 'zh' ? '章節測驗' : 'Chapter test', `${nA} multiple-choice and ${nB} written questions. Pass mark 80%.`, paperMinutes(nA, nB));
   if (mins === null) return;
   try {
@@ -1284,7 +1284,9 @@ function planStepMin(st) {
    Seconds per question (including reading the feedback): practice 75, a review 45. */
 const PACE = { q: 75, rv: 45 };
 function stepMins(n, kind) { return Math.max(2, Math.round((n * (PACE[kind] || PACE.q)) / 60)); }
-function ctMins(nUnits) { return paperMinutes(Math.min(16, 6 + 2 * nUnits), Math.min(4, 1 + nUnits)); } // the same time the test itself gives
+// A chapter test's size: [multiple-choice, written]. One chapter: 12 + 3 (P1–P2: 10 + 2); more chapters, more questions.
+function testSize(n) { return gradeBand() === 'p12' ? [Math.min(16, 8 + 2 * n), Math.min(4, 1 + n)] : [Math.min(20, 10 + 2 * n), Math.min(5, 2 + n)]; }
+function ctMins(nUnits) { const [a, b] = testSize(nUnits); return paperMinutes(a, b); } // the same time the test itself gives
 const PLAN_IC = { practise: 'practise', chapter_test: 'test', review: 'review', mistakes: 'mistakes', weak_topics: 'weak', learn: 'learn', mock_paper: 'test', dictation: 'dictation', writing: 'writing', speaking: 'speaking', homework: 'homework' };
 function todayPlan() { const P = local.bplan; return P && P.d === startOfToday() && (P.steps || []).length ? P : null; }
 function planStepDone(st) {
@@ -8530,6 +8532,14 @@ async function renderPaper(bookId, from) {
   document.getElementById('print').onclick = () => go2('print');
 }
 
+// the test blueprint: which level each question should be
+function blueprintMcq(n) { const c = [Math.round(n * 0.25), Math.round(n * 0.35), Math.round(n * 0.25)]; c.push(Math.max(0, n - c[0] - c[1] - c[2]));
+  return c.flatMap((k, i) => Array(k).fill(i + 1)); }
+function blueprintW(n) { return Array.from({ length: n }, (_, i) => [3, 4, 2, 3, 4][i % 5]); }
+// write new questions at the levels a test ran short of, so the next test has its full mix (runs in the background)
+function fillLevels(book, units, short) {
+  for (const [kind, arr] of [['mcq', short.mcq], ['written', short.w]]) arr.forEach((k, L) => { if (k > 0) units.forEach((u) => ensureFill(book, u, Math.ceil(k / units.length) + 1, kind, 1, false, 'l' + L)); });
+}
 async function preparePaper(book, units, nA, nB, purpose) {
   const token = {}; paperJob = token;
   const total = nA + nB;
@@ -8558,7 +8568,18 @@ async function preparePaper(book, units, nA, nB, purpose) {
   const printed = new Set(local.printed || []);
   const fresh = (q) => (purpose === 'print' ? !printed.has(q.id) : !local.stats[q.id]);
   const pool = async () => { const all = []; for (const u of units) all.push(...await getQs(book.id, u.id)); return all; };
-  const take = (all, mcq, n) => shuffle(all.filter((q) => isMcqLike(q) === mcq && fresh(q))).slice(0, n);
+  /* Every test has the same difficulty mix, like a school paper (blueprint): multiple-choice about a quarter Recall,
+     a third Understand, a quarter Apply and the rest Analyse; written answers Apply, Analyse, then Understand. When a
+     level has run out, the nearest level stands in, and new questions are written at the missing level for next time. */
+  const short = { mcq: [0, 0, 0, 0, 0], w: [0, 0, 0, 0, 0] };
+  const take = (all, mcq, n) => {
+    const levels = mcq ? blueprintMcq(n) : blueprintW(n), byL = [[], [], [], [], []];
+    for (const q of shuffle(all.filter((q) => isMcqLike(q) === mcq && fresh(q)))) byL[Math.max(1, Math.min(4, q.level || 2))].push(q);
+    const out = []; (mcq ? short.mcq : short.w).fill(0);
+    for (const L of levels) { if (byL[L].length) { out.push(byL[L].shift()); continue; } (mcq ? short.mcq : short.w)[L]++;
+      const alt = [L + 1, L - 1, L + 2, L - 2, L + 3, L - 3].find((x) => x >= 1 && x <= 4 && byL[x].length); if (alt) out.push(byL[alt].shift()); }
+    return out;
+  };
   let all = await pool();
   let A = take(all, true, nA), B = take(all, false, nB);
   show(A.length + B.length);
@@ -8588,6 +8609,7 @@ async function preparePaper(book, units, nA, nB, purpose) {
       if (paperJob !== token) return null;
     }
     if (!A.length && !B.length) throw new Error('No questions could be made for these chapters.');
+    fillLevels(book, units, short);
     return { A: shuffle(A).map(shuffleOptions), B: shuffle(B), nA, nB, units, live: true };
   }
   for (let round = 0; round < 4 && (A.length < nA || B.length < nB); round++) {
