@@ -1,0 +1,37 @@
+# Grows the library's question banks (tools/build_bank.py) on GitHub's servers, which can reach the live site.
+# Needs one repo secret: ADMIN_PASSWORD (Settings > Secrets and variables > Actions). It is never printed.
+# Run it from the Actions tab (or `gh workflow run build-bank.yml -f book=pb-p4-science`). Saves after each
+# chapter, so a run that stops (time limit, spending cap) can simply be run again.
+name: Build question bank
+on:
+  workflow_dispatch:
+    inputs:
+      book:
+        description: "Library book id, or 'starters' for the three P4 books, or 'all'"
+        default: starters
+      per:
+        description: Questions per chapter
+        default: '60'
+permissions:
+  contents: write
+concurrency: build-bank
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write questions
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          BOOK: ${{ inputs.book }}
+          PER: ${{ inputs.per }}
+        run: |
+          if [ -z "$ADMIN_PASSWORD" ]; then echo "Add the ADMIN_PASSWORD secret first."; exit 1; fi
+          if [ "$BOOK" = "starters" ]; then set -- pb-p4-science pb-p4-maths pb-p4-english; else set -- "$BOOK"; fi
+          for b in "$@"; do
+            python3 tools/build_bank.py --book "$b" --per "$PER" || true
+            git config user.name "PrepBuddy bank builder"; git config user.email "actions@users.noreply.github.com"
+            git add library
+            git diff --cached --quiet || { git commit -m "Question bank: $b"; git pull --rebase -q origin main; git push -q origin HEAD:main; }
+          done
