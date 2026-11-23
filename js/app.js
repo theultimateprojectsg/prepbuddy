@@ -511,59 +511,74 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   /* likely: the score this child would probably get on this chapter in a test now (what a test goal is measured by).
      How well they answer (first tries, and their latest go so fixed mistakes count), times how much of the chapter
      they've seen; a recent chapter test counts most; eases off a little if the chapter is left for over a week. */
-  /* The chapter % (the score this child would likely get). 100% is meant to be hard: it needs understanding,
-     not memory of answers. Four parts, each with a gate:
+  /* The chapter % (the score this child would likely get). Earned, then kept:
+     EARNED (no waiting, only real work):
      - Practice, up to 60%: right answers, worth more at harder levels and for full-marks written answers; the same
        question again counts half, then a quarter; about 2.5 points per question of the chapter's size fill it; held
-       back if recent answers aren't mostly right. Past 60% only with 3 right first tries at Apply level or above.
-     - Chapter tests, up to 25% more: always new questions; best test each day; longer, harder, higher scores count
-       more; three strong tests fill it; a failed latest test halves it. Past 85% only with 2 full-marks written
-       answers at Apply level or above and a right answer at Analyse level.
-     - Mixed papers (this chapter among others, like a real school test), up to 10% more: two strong ones fill it.
-     - The last 5%: shown to last. Over 90% needs work answered right after a week; 100% after two weeks.
-     Eases off if the chapter is left for over a week. */
-  let likely = 0, gates = {}, cracked = false;
+       back if recent answers aren't mostly right.
+     - Chapter tests (always new questions, the same difficulty mix every time), up to 25% more: two strong tests fill
+       it. A pass on a practised chapter makes it Test-ready (70%). A failed latest test halves this part.
+     - Gates: past 75% needs 3 Apply questions right first time; past 85% needs 2 full-marks written Apply answers and
+       a right Analyse answer.
+     - Mixed papers (this chapter with others, like a school test), up to 15% more: two strong ones fill it.
+     KEPT (it fades unless shown to stick, like Duolingo; won back with a check, like Khan):
+     - After the last proof (a passed test or mixed paper, a "Still there?" check, or a practice day at 80%+), 2 days'
+       grace, then it fades towards 60% at a rate set by its strength: Fresh 3%/day, Holding 1.5 (proven again 3+
+       days later), Solid 0.75 (7+ days), Locked in 0.4 (14+ days). A test, mixed paper or check after such a gap
+       raises the strength; a good practice day only restarts the clock.
+     - The latest "Still there?" check: 5-6 of 6 right wins it all back; 3-4 holds it 10% below; fewer, 15% below. */
+  let likely = 0, earned = 0, gates = {}, fading = 0, strength = 0;
   let pracPart = 0, pracSince = 0;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), P = L.filter((e) => e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0;
     for (const e of P) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
-      pts += Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.5 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); } // straight after a lesson it's still short-term memory
+      pts += Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.5 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); }
     const rec = P.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
     const prac = 60 * Math.min(1, pts / (2.5 * T)) * Math.min(1, acc / 0.9);
-    pracPart = Math.round(prac); // 0–60 const lastT = tests.length ? tests[tests.length - 1].t : 0; pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
-    const ft = new Set(), apply = L.filter((e) => { if (ft.has(e.q)) return false; ft.add(e.q); return (e.l || 2) >= 3 && e.g >= e.m; }).length; // right first time at Apply+
+    pracPart = Math.round(prac);
+    const lastT = tests.length ? tests[tests.length - 1].t : 0;
+    pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
+    const ft = new Set(), apply = L.filter((e) => { if (ft.has(e.q)) return false; ft.add(e.q); return (e.l || 2) >= 3 && e.g >= e.m; }).length;
     const wrote = new Set(L.filter((e) => e.ty === 'w' && (e.l || 2) >= 3 && e.g >= e.m).map((e) => e.q)).size, analyse = L.some((e) => (e.l || 2) >= 4 && e.g >= e.m);
-    const best = (list, f) => { const m = new Map(); for (const x of list) { const d = new Date(x.t).toDateString(), v = f(x); if ((m.get(d) || 0) < v) m.set(d, v); } return [...m.values()].reduce((a, b) => a + b, 0); };
-    let tc = best(tests, (x) => { const r = x.r, sc = r[0] / r[1]; return (25 / 3) * Math.min(1, r[1] / 14) * sc * sc; }); // every chapter test has the same difficulty mix: size and score count
+    let tc = tests.reduce((a, x) => { const sc = x.r[0] / x.r[1]; return a + 12.5 * Math.min(1, x.r[1] / 14) * sc * sc; }, 0);
     if (tests.length && !lastPass) tc *= 0.5;
-    const mix = mixedFor(key), mc = best(mix, (x) => { const sc = x.r[0] / x.r[1], all = x.all[0] / x.all[1]; return 5 * Math.min(1, x.r[1] / 4) * Math.min(sc, all + 0.1) ** 2; });
+    const mix = mixedFor(key), mc = mix.reduce((a, x) => { const sc = x.r[0] / x.r[1], all = x.all[0] / x.all[1]; return a + 7.5 * Math.min(1, x.r[1] / 4) * Math.min(sc, all + 0.1) ** 2; }, 0);
     let est = Math.min(60, prac) + Math.min(25, tc);
-    if (passes.length && lastPass && prac >= 35) est = Math.max(est, 70); // Test-ready: well practised and a chapter test passed
-    if (apply < 3) est = Math.min(est, 75);                                // past 75 needs Apply-level questions right
-    if (est >= 85 && !(wrote >= 2 && analyse)) est = 85; else if (apply >= 3 && wrote >= 2 && analyse) est += Math.min(10, mc);
-    est = Math.min(est, 95) + (b5 ? 5 : b4 ? 2 : 0) * (est >= 94 ? 1 : 0);
-    /* Cracks (like Duolingo): reviews left more than 2 days past due mean it's being forgotten. The chapter slips
-       2% a day from then, down to 60% at most, until its reviews are done; doing them repairs it straight away. */
-    const lateBy = done.reduce((m, q) => { const d = st(q).due; return d && d < now - 2 * DAY ? Math.max(m, (now - d) / DAY - 2) : m; }, 0);
-    if (lateBy > 0 && est > 60) { est = Math.max(60, est - 2 * lateBy); cracked = true; }
-    /* "Still there?" (like Khan's Mastery Challenges): the latest quick check on this chapter, within 3 weeks,
-       caps it: all right keeps everything, two-thirds right caps it at about 83%, a third at 67%. */
-    const chk = ((local.checks || {})[key]); if (chk && now - chk.t < 21 * DAY) est = Math.min(est, 50 + 50 * chk.sc);
-    likely = Math.round(est); if (!b4) likely = Math.min(likely, 90); if (!b5) likely = Math.min(likely, 97);
-    gates = { apply, wrote, analyse, mixed: mix.length }; }
+    if (passes.length && lastPass && prac >= 35) est = Math.max(est, 70);
+    if (apply < 3) est = Math.min(est, 75);
+    if (est >= 85 && !(wrote >= 2 && analyse)) est = 85; else if (apply >= 3 && wrote >= 2 && analyse) est += Math.min(15, mc);
+    earned = Math.round(Math.min(100, est));
+    gates = { apply, wrote, analyse, mixed: mix.length };
+    // proofs: [time, strong?]; strong ones (tests, mixed papers, checks) can raise the strength
+    const proofs = [];
+    for (const x of tests) if (x.r[0] / x.r[1] >= PASS) proofs.push([x.t, true]);
+    for (const x of mix) if (x.r[0] / x.r[1] >= PASS) proofs.push([x.t, true]);
+    const ck = (local.checks || {})[key]; if (ck) proofs.push([ck.t, ck.sc >= 0.8]); // a weaker check still restarts the clock, from a lower point (below)
+    { const days = new Map(); for (const e of P) { if (e.k === 'lock') continue; const d = new Date(e.t).toDateString(), r = days.get(d) || [0, 0, e.t]; r[0] += Math.max(0, Math.min(1, e.g / e.m)); r[1]++; r[2] = Math.max(r[2], e.t); days.set(d, r); }
+      for (const r of days.values()) if (r[1] >= 5 && r[0] / r[1] >= 0.8) proofs.push([r[2], false]); }
+    proofs.sort((a, b) => a[0] - b[0]);
+    for (let i = 1, prev = proofs.length ? proofs[0][0] : 0; i < proofs.length; i++) { const gap = (proofs[i][0] - prev) / DAY;
+      if (proofs[i][1]) strength = Math.max(strength, gap >= 14 ? 3 : gap >= 7 ? 2 : gap >= 3 ? 1 : 0); prev = proofs[i][0]; }
+    if (b5) strength = Math.max(strength, 3); else if (b4) strength = Math.max(strength, 2); // work already shown to last in reviews
+    const lastProof = Math.max(proofs.length ? proofs[proofs.length - 1][0] : 0, local.fadeFrom || (local.fadeFrom = Date.now()));
+    // the latest check, if nothing has proved more since: 3-4 of 6 holds it 10% below what was earned, fewer 15%
+    const top = ck && ck.sc < 0.8 && ck.t >= proofs[proofs.length - 1][0] ? earned - (ck.sc >= 0.5 ? 10 : 15) : earned;
+    let shown = top;
+    if (lastProof && top > 60) { const days = (now - lastProof) / DAY - 2;
+      if (days > 0) shown = Math.max(60, top - [3, 1.5, 0.75, 0.4][strength] * days); }
+    fading = Math.max(0, Math.round(earned - shown));
+    likely = Math.round(Math.max(0, shown)); }
   if (learnedIt) likely = Math.max(likely, LESSON_CREDIT); // a finished lesson is a real first step
   // The chapter % the child sees is this likely score. It never goes down during a day of practice
   // (it can ease off on later days if work is forgotten).
-  { const t0 = startOfToday(), MD = local.mastDay && local.mastDay.d === t0 && local.mastDay.v === 3 ? local.mastDay : (local.mastDay = { d: t0, v: 3, p: {} });
-    // at most +30% on a chapter in one day (like Khan's waits): learning has to be spread over days to count
-    if (MD.p0 == null) MD.p0 = {}; if (MD.p0[key] == null) MD.p0[key] = likely; else likely = Math.min(likely, MD.p0[key] + 30);
-    // it can drop the same day only for real evidence: a crack, a failed chapter test today, or a weak "Still there?" check today
-    const ck = (local.checks || {})[key], hitToday = (tests.length && !lastPass && tests[tests.length - 1].t >= t0) || (ck && ck.t >= t0 && ck.sc < 1);
-    if (MD.p[key] == null || cracked || hitToday) MD.p[key] = likely; else likely = Math.max(likely, MD.p[key]); }
+  { const t0 = startOfToday(), MD = local.mastDay && local.mastDay.d === t0 && local.mastDay.v === 4 ? local.mastDay : (local.mastDay = { d: t0, v: 4, p: {} });
+    // it never drops during a day of work, except for real evidence today: a failed chapter test or a weak "Still there?" check
+    const ck2 = (local.checks || {})[key], hitToday = (tests.length && !lastPass && tests[tests.length - 1].t >= t0) || (ck2 && ck2.t >= t0 && ck2.sc < 0.8);
+    if (MD.p[key] == null || hitToday) MD.p[key] = likely; else likely = Math.max(likely, MD.p[key]); }
   const pct = likely;
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, mast, gates, cracked, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, earned, fading, strength, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), mast, gates, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -641,6 +656,7 @@ function masterySteps(m) {
     if (steps.length >= 3) break;
     const t = shortTitle(c.unit.title), g = c.gates || {}, lv = chapterLever(c), add = (text, kind, diff) => steps.push({ unit: c.unit, text, kind, diff });
     if (!c.done && !c.learned) add(Z(`Learn ${t}, then practise it`, `學習「${t}」，然後練習`), 'learn');
+    else if (c.cracked) add(Z(`Win back ${t}: a quick check (it was ${c.earned}%)`, `贏回「${t}」：快速檢查（曾經是 ${c.earned}%）`), 'check');
     else if ((c.open || 0) >= 3) add(Z(`Fix ${c.open} mistakes in ${t}`, `改正「${t}」的 ${c.open} 條錯題`), 'mistakes');
     else if ((c.prac || 0) < 50 && lv.k !== 'test') add(Z(`Practise more of ${t}`, `多練習「${t}」`), 'practise');
     else if ((g.apply || 0) < 3) add(Z(`Get ${3 - (g.apply || 0)} Apply question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`), 'practise', 'hard');
@@ -649,7 +665,7 @@ function masterySteps(m) {
     else if (c.pct >= 80 && !g.mixed) add(Z(`Do a mixed paper with ${t} and other chapters`, `做一份包括「${t}」和其他章節的綜合試卷`), 'mixed');
     else if (c.due) add(Z(`Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`), 'review');
     else if (lv.k === 'practise') add(Z(`Practise the ideas you missed in ${t}, then retest`, `練習「${t}」答錯的概念，然後再測驗`), 'practise');
-    else add(Z(`Come back for reviews: ${t} needs to be remembered over the next weeks`, `回來溫習：「${t}」要在未來幾星期都記得`), 'wait');
+    else add(Z(`Keep ${t}: a quick check now and then stops it fading`, `保持「${t}」：不時快速檢查，就不會退步`), 'check');
   }
   return steps;
 }
@@ -675,6 +691,7 @@ async function boostSession(book) {
   if (step.kind === 'test') return startChapterTest(book, [c.unit]);
   if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit); return startMiniMock(book, [c.unit, ...others]); }
   if (step.kind === 'mistakes') return go({ name: 'mistakes', bookId: book.id });
+  if (step.kind === 'check') return startCheck(book, [c.unit]);
   if (step.kind === 'review' || step.kind === 'wait') return startReview('spaced', null, 10);
   const qs = await getQs(book.id, c.unit.id), now = Date.now();
   const again = step.diff ? [] : shuffle(qs.filter((q) => { const st = local.stats[q.id]; return st && (st.due <= now || (st.last || 0) < 1); })).slice(0, 6).map(shuffleOptions);
@@ -718,7 +735,7 @@ function askTime(title, detail, suggested) {
 // "Still there?": 3 questions a chapter (up to 12), mostly ones answered right some days ago, mixed together.
 // The result per chapter is kept (local.checks) and caps that chapter's % for 3 weeks: what's remembered now.
 async function startCheck(book, units) {
-  const per = Math.max(2, Math.min(3, Math.floor(12 / units.length))), now = Date.now(), qs = [];
+  const per = units.length === 1 ? 6 : Math.max(2, Math.min(3, Math.floor(12 / units.length))), now = Date.now(), qs = [];
   for (const u of units) { const all = (await getQs(book.id, u.id)).filter((q) => !blocked(q));
     const old = shuffle(all.filter((q) => { const s2 = local.stats[q.id]; return s2 && (s2.last || 0) >= 1 && now - (s2.t || s2.due || 0) > 4 * DAY; }));
     const rest = shuffle(all.filter((q) => !old.includes(q)));
@@ -1214,7 +1231,8 @@ async function stepUseful(st) {
 function chapterLever(c) {
   const fmt = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   if (!c.done) return { k: 'start', en: 'a lesson or a first practice set' };
-  if (c.cracked) return { k: 'reviews', en: 'its overdue reviews (it’s slipping until they’re done)' };
+  if (c.cracked && c.checkWeak) return { k: 'practise', en: 'practice on what the last check missed, then another check' };
+  if (c.cracked) return { k: 'check', en: `a quick "Still there?" check: it has slipped from ${c.earned}% to ${c.pct}%, and 5 of 6 right wins it back` };
   if (!c.passes) {
     // a failed test: practise the missed ideas first (a set since that test, and not the same day), then retest
     if (c.lastTestT) { const lt = c.lastTestT;
@@ -1225,9 +1243,10 @@ function chapterLever(c) {
   { const g = c.gates || {};
     if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) return { k: 'practise', en: 'harder questions: two full-marks written answers at Apply level and one Analyse question (85% needs real understanding)' };
     if (c.pct >= 80 && !g.mixed) return { k: 'mixed', en: 'a mixed paper with other chapters, like a real school test' }; }
-  if (!c.spread) { const at = (c.firstPass || 0) + 7 * DAY;
-    return Date.now() < at ? { k: 'wait', at, en: `reviews for now; a retest only counts from ${fmt(at)} (a week after the first pass)` } : { k: 'retest', en: 'a retest now (a week after the first pass)' }; }
-  return { k: 'reviews', en: 'reviews over the coming weeks' };
+  // a second strong chapter test (new questions) fills the test part: any day after the first pass
+  if (c.passes < 2) { const at = new Date(c.lastTestT || 0).setHours(24, 0, 0, 0);
+    return Date.now() < at ? { k: 'wait', at, en: 'practice or reviews today; a second chapter test from tomorrow' } : { k: 'retest', en: 'a second chapter test (new questions) to make it Strong' }; }
+  return { k: 'reviews', en: 'keeping it: a quick "Still there?" check now and then stops it fading' };
 }
 async function coachSnapshot() {
   const books = await getBooks(); const r = await currentReport();
@@ -2772,7 +2791,7 @@ function missionHowHTML(id = 'howMission') {
     ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'A lesson for a chapter you haven’t started, or your weakest one. A practice test the day before.', '先上還未開始的章節，或練最弱的一章。考試前一天做模擬測驗。'],
     ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
-    ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', '60% Practised: from practice sets. 70% Test-ready: well practised and a chapter test passed (new questions every time). 85% Strong: more tests, and harder Apply, Analyse and written questions right. 100% Mastered: mixed papers like a real school test, and still right two weeks later.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
+    ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', '60% Practised: from practice sets. 70% Test-ready: a chapter test passed (new questions every time). 85% Strong: a second strong test, and harder Apply, Analyse and written questions right. 100% Mastered: two strong mixed papers, like a real school test. Then it slowly fades unless you show it has stuck: a quick check wins it back, and each time it fades more slowly.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
     ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
     ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
 }
@@ -2904,20 +2923,26 @@ async function renderHome() {
   // one passed a few days ago gets a second test on another day (up to 95%). Once a week, a short mini mock across chapters.
   { const inT = new Set(cands.flatMap((c) => (c.chk && c.chk.u ? [`${c.chk.b}:${c.chk.u}`] : c.chk && c.chk.us ? c.chk.us.map((u) => `${c.chk.b}:${u}`) : [])));
     const used = books.filter((b) => local.log.some((e) => e.q && e.q.startsWith(b.id + ':')));
-    let first = null, again = null, mock = null;
+    let first = null, again = null, mock = null, slip = null;
     for (const b of used) { const m = await bookMastery(b);
       for (const c of m.chapters) { if (inT.has(`${b.id}:${c.unit.id}`)) continue;
         if (!c.passes && chapterLever(c).k === 'test' && (!first || c.pct > first.c.pct)) first = { b, c };
-        else if (c.passes && chapterLever(c).k === 'retest' && (!again || c.pct > again.c.pct)) again = { b, c }; }
+        else if (c.passes && chapterLever(c).k === 'retest' && (!again || c.pct > again.c.pct)) again = { b, c };
+        if (c.fading >= 8 && !c.checkWeak && (!slip || c.fading > slip.c.fading)) slip = { b, c }; }
       const prac = m.chapters.filter((c) => c.done >= 4);
       if (prac.length >= 3 && (!mock || prac.length > mock.us.length)) mock = { b, us: prac.map((c) => c.unit.id) }; }
+    // a chapter that has slipped 8%+ from what it earned: a quick "Still there?" check wins it back
+    if (slip) { const nm = shortTitle(slip.c.unit.title);
+      cands.push({ key: `chk1:${slip.b.id}:${slip.c.unit.id}`, icon: 'review', t: Z(`Still there? ${nm}`, `還記得嗎？${nm}`), s: Z(`6 questions · about 8 min · back to ${slip.c.earned}%`, `6 題 · 約 8 分鐘 · 回到 ${slip.c.earned}%`),
+        chk: { y: 'check', b: slip.b.id, us: [slip.c.unit.id] }, attr: `data-chk="${slip.b.id}|${slip.c.unit.id}"`, tag: ['review', Z('Win it back', '贏回來')],
+        why: Z(`${nm} was ${slip.c.earned}% and has slipped to ${slip.c.pct}%. Get 5 of 6 right and it’s back, and it’ll fade more slowly after.`, `「${nm}」曾經是 ${slip.c.earned}%，現在跌到 ${slip.c.pct}%。答對 6 題中的 5 題就能回來，之後也會退得更慢。`) }); }
     const t = first || again;
     if (t) { const nm = shortTitle(t.c.unit.title);
       cands.push({ key: `${first ? 'ct' : 'ct2'}:${t.b.id}:${t.c.unit.id}`, icon: 'test', t: first ? Z(`Chapter test: ${nm}`, `章節測驗：${nm}`) : Z(`Prove it again: ${nm}`, `再證明一次：${nm}`),
         s: Z('Timed · 80% to pass', '限時 · 80% 合格'), attr: `data-ctest="${esc(t.b.id)}:${esc(t.c.unit.id)}"`, chk: { y: 'ctest', b: t.b.id, u: t.c.unit.id },
         tag: ['test', first ? Z('Prove it', '證明實力') : Z('Prove it again', '再證明一次')],
         why: first ? Z(`You’ve practised ${nm} enough to try its chapter test. Practice alone goes up to 60%: passing the chapter test makes it Test-ready (70%).`, `你已經練習「${nm}」夠多，可以做章節測驗。限時測驗最能證明實力：它的分數對這一章的百分比影響最大。`)
-          : Z(`You passed ${nm} before. Passing again on a different day shows it has really stuck, and takes it up to 95%.`, `你之前通過了「${nm}」。在另一日再次合格，證明真的記住了，可升至 95%。`) }); }
+          : Z(`You passed ${nm} before. Another strong test takes it towards 85% (Strong), and shows it has stuck.`, `你之前通過了「${nm}」。在另一日再次合格，證明真的記住了，可升至 95%。`) }); }
     const lastMock = Math.max(0, ...(local.tests || []).filter((x) => x.kind === 'mini' || x.kind === 'paper').map((x) => x.t));
     if (mock && Date.now() - lastMock >= 7 * DAY) { const sj = mock.b.subject ? subj(mock.b.subject) : shortTitle(mock.b.title);
       cands.push({ key: `mm:${mock.b.id}`, icon: 'test', t: Z(`Mini mock: ${sj}`, `模擬小測：${sj}`), s: Z(`${mock.us.length} chapters · timed · Section A + B`, `${mock.us.length} 章 · 限時 · 甲部 + 乙部`),
@@ -2931,8 +2956,8 @@ async function renderHome() {
     const w = Object.entries(by).filter(([k, es]) => es.length >= 5 && acc(es) < 70 && !inList.has(k)).sort((a, b) => acc(a[1]) - acc(b[1]))[0];
     if (w) { const [bid, uid] = w[0].split(':'), b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === uid);
       if (u) cands.push({ key: `w:${w[0]}`, icon: 'weak', t: Z(`Practise ${shortTitle(u.title)}`, `練習「${shortTitle(u.title)}」`), s: Z(`Your weakest lately · ${acc(w[1])}% right`, `最近最弱的一章 · 答對 ${acc(w[1])}%`), why: Z(`${acc(w[1])}% right on first tries lately, your weakest chapter. A short set makes it stronger.`, `最近第一次作答只答對 ${acc(w[1])}%，是最弱的一章。做一組就會進步。`), attr: `data-weak="${esc(w[0])}"`, chk: { y: 'log', b: bid, us: [uid] }, tag: ['weak', Z('Weak spot', '弱項')] }); } }
-  // "Still there?": in the week before a school test, a short mixed check on its chapters (not if one was done in the last 5 days)
-  for (const p of tests.steps || []) { if (!p.book || p.left > 7 || p.left < 1 || (p.x.kind || 'test') === 'dict') continue;
+  // "Still there?": 2-3 days before a school test, a short mixed check on its chapters, so the child walks in at their peak
+  for (const p of tests.steps || []) { if (!p.book || p.left > 3 || p.left < 1 || (p.x.kind || 'test') === 'dict') continue;
     const us = (p.units || []).filter((u) => (local.stats && Object.keys(local.stats).some((id) => id.startsWith(`${p.book.id}:${u.id}:`))));
     const recent = us.some((u) => { const c = (local.checks || {})[`${p.book.id}:${u.id}`]; return c && Date.now() - c.t < 5 * DAY; });
     if (us.length && !recent) cands.push({ key: `chk:${p.x.id}`, icon: 'review', t: Z(`Still there? Quick check for ${p.x.name}`, `還記得嗎？「${p.x.name}」快速檢查`), s: Z(`${Math.min(12, us.length * 3)} questions from ${us.length} chapter${us.length > 1 ? 's' : ''}, mixed · about ${stepMins(Math.min(12, us.length * 3), 'q')} min`, `${Math.min(12, us.length * 3)} 題，來自 ${us.length} 章 · 約 ${stepMins(Math.min(12, us.length * 3), 'q')} 分鐘`), chk: { y: 'check', b: p.book.id, us: us.map((u) => u.id) }, attr: `data-chk="${p.book.id}|${us.map((u) => u.id).join(',')}"`, why: Z('Checks what’s still remembered before the test. Your % follows what you remember now, not last month.', '考試前檢查還記得多少。百分比會跟你現在記得的，而不是上個月。') }); }
@@ -3431,7 +3456,7 @@ async function renderHome() {
       if (chs.length && (p.x.kind || 'test') !== 'dict') {
         const order = p.book.units.map((u) => u.id), weak = new Set(chs.slice().sort((a, b) => (a.pct || 0) - (b.pct || 0)).slice(0, 3).map((c) => c.unit.id));
         const cs = chs.slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id)), more = cs.length - weak.size;
-        const row = (c) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${weak.has(c.unit.id) ? '' : ' hid'}"><span data-raw>${esc(shortTitle(c.unit.title))}</span><em>${c.done ? `${c.cracked ? '🩹 ' : ''}${tl(c)}%` : c.learned ? Z(`Lesson · ${c.cracked ? '🩹 ' : ''}${tl(c)}%`, `已上課 · ${c.cracked ? '🩹 ' : ''}${tl(c)}%`) : Z('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🩹 ' : ''}${tl(c)}%"></b></i></div>`;
+        const row = (c) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${weak.has(c.unit.id) ? '' : ' hid'}"><span data-raw>${esc(shortTitle(c.unit.title))}</span><em>${c.done ? `${c.cracked ? '🍂 ' : ''}${tl(c)}%` : c.learned ? Z(`Lesson · ${c.cracked ? '🍂 ' : ''}${tl(c)}%`, `已上課 · ${c.cracked ? '🍂 ' : ''}${tl(c)}%`) : Z('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🍂 ' : ''}${tl(c)}%"></b></i></div>`;
         chRows = `<div class="pv-tch tdc-ch">${cs.map(row).join('')}<div class="tdc-chf">${more > 0 ? `<button type="button" class="pv-tmore tdc-more" data-more="${Z(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`)}">${Z(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`)}</button>` : '<div></div>'}<button type="button" class="tdc-prog">${Z('Details in Progress', '在「進度」看詳情')} ›</button></div></div>`;
       }
       return `<div class="td-test tdc">
@@ -5912,7 +5937,7 @@ async function renderBook(bookId) {
       <span class="cbody"><span class="ct" data-raw>${esc(cleanTitle(u.title))}</span>
         <span class="cmeta">${[pages, c.done ? `${c.done} question${c.done === 1 ? '' : 's'} answered` : 'Not started yet'].filter(Boolean).join(' · ')}</span>
         <span class="cbar" aria-hidden="true"><i style="width:${c.pct}%;background:${pctColour(c.pct)}"></i></span></span>
-      <span class="cp" style="color:${c.done ? pctColour(c.pct) : 'var(--muted-2)'}">${c.cracked ? `<span class="crack" title="${LANG === 'zh' ? '溫習過期，正在遺忘' : 'Reviews overdue: it’s slipping'}">🩹</span>` : ''}${c.pct}%<small>${LANG === 'zh' ? '準備' : 'ready'}</small></span>
+      <span class="cp" style="color:${c.done ? pctColour(c.pct) : 'var(--muted-2)'}">${c.cracked ? `<span class="crack" title="${LANG === 'zh' ? `由 ${c.earned}% 退了下來：快速檢查就能贏回` : `Slipped from ${c.earned}%: a quick check wins it back`}">🍂</span>` : ''}${c.pct}%<small>${LANG === 'zh' ? '準備' : 'ready'}</small></span>
     </button>`;
   };
   const row = (u) => {
@@ -7174,6 +7199,7 @@ async function goalsData(tests) {
     const fc = locked('forecast') ? null : planForecast(p.ready, chs, p.left), aim = p.x.aim || TEST_AIM;
     // a daily record of each test's readiness: the chart on Progress and "this week" come from it
     if ((local.thistV || 0) < 3) { local.thist = {}; local.thistV = 3; }
+    if (!local.fadeFrom) { local.fadeFrom = Date.now(); saveLocal(); } // earned-then-fade began: nobody drops on the day it switches
     if ((local.aimV || 0) < 1) { (local.sched || []).forEach((x) => { if (x.aim === 80) x.aim = TEST_AIM; }); local.aimV = 1; } // the default goal became 70% (Test-ready) // readiness became the likely score: older history measured something else
     local.thist = local.thist || {}; const h = (local.thist[p.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, p.ready, p.raw]); local.thist[p.x.id] = h.slice(-90);
     const old = h.filter((x) => x[0] <= t0 - 5 * DAY).sort((a, b) => Math.abs(a[0] - (t0 - 7 * DAY)) - Math.abs(b[0] - (t0 - 7 * DAY)))[0];
@@ -7458,7 +7484,7 @@ async function fullTestCards(tests, btn) {
   const chipsOf = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
     if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
     const SHOWN = 4, more = cs.length - SHOWN;
-    const row = (c, hid) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.cracked ? '🩹 ' : ''}${tl(c)}%` : c.learned ? PT(`Lesson · ${c.cracked ? '🩹 ' : ''}${tl(c)}%`, `已上課 · ${c.cracked ? '🩹 ' : ''}${tl(c)}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🩹 ' : ''}${tl(c)}%"></b></i></div>`;
+    const row = (c, hid) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.cracked ? '🍂 ' : ''}${tl(c)}%` : c.learned ? PT(`Lesson · ${c.cracked ? '🍂 ' : ''}${tl(c)}%`, `已上課 · ${c.cracked ? '🍂 ' : ''}${tl(c)}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🍂 ' : ''}${tl(c)}%"></b></i></div>`;
     const id = `tch${p.x.id}`.replace(/\W/g, ''), lab = PT(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`);
     return `<div class="pv-tch" id="${id}">${cs.map((c, i) => row(c, i >= SHOWN && more > 1)).join('')}${more > 1 ? btn(lab, () => {
       const el = document.getElementById(id), open = el.classList.toggle('open'), bt = el.querySelector('.pv-tmore');
@@ -8171,7 +8197,7 @@ async function renderProgress(PO = {}) {
     // goals and tests in one place, in Today's card: folded it answers "on track?", opened it shows the detail
     const chList = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
       if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
-      return `<details class="pvn-ch"><summary>${PT(`Chapters in this test (${cs.length})`, `測驗範圍內的章節（${cs.length}）`)}</summary><div class="pv-tch open">${cs.map((c) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.cracked ? '🩹 ' : ''}${tl(c)}%` : c.learned ? PT(`Lesson · ${c.cracked ? '🩹 ' : ''}${tl(c)}%`, `已上課 · ${c.cracked ? '🩹 ' : ''}${tl(c)}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🩹 ' : ''}${tl(c)}%"></b></i></div>`).join('')}</div></details>`; };
+      return `<details class="pvn-ch"><summary>${PT(`Chapters in this test (${cs.length})`, `測驗範圍內的章節（${cs.length}）`)}</summary><div class="pv-tch open">${cs.map((c) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.cracked ? '🍂 ' : ''}${tl(c)}%` : c.learned ? PT(`Lesson · ${c.cracked ? '🍂 ' : ''}${tl(c)}%`, `已上課 · ${c.cracked ? '🍂 ' : ''}${tl(c)}%`) : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🍂 ' : ''}${tl(c)}%"></b></i></div>`).join('')}</div></details>`; };
     const tBody = (g) => { const chs = chOf(g.p).length ? chOf(g.p) : g.p.book ? MB.get(g.p.book.id).chapters : [];
       return `${goalProgressHTML(g, g.p.ready == null ? '' : testPoints(g.p, chs, g.aim, g.fc, g.st), false, true)}${chList(g.p)}`; };
     const gCard = GDp ? goalsCardHTML(GDp, { progress: true, testBody: tBody, title: PT('Am I on track for my goals?', '我的目標進度如何？') }) : '';
