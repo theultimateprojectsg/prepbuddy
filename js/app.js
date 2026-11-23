@@ -2956,6 +2956,16 @@ async function renderHome() {
     const w = Object.entries(by).filter(([k, es]) => es.length >= 5 && acc(es) < 70 && !inList.has(k)).sort((a, b) => acc(a[1]) - acc(b[1]))[0];
     if (w) { const [bid, uid] = w[0].split(':'), b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === uid);
       if (u) cands.push({ key: `w:${w[0]}`, icon: 'weak', t: Z(`Practise ${shortTitle(u.title)}`, `練習「${shortTitle(u.title)}」`), s: Z(`Your weakest lately · ${acc(w[1])}% right`, `最近最弱的一章 · 答對 ${acc(w[1])}%`), why: Z(`${acc(w[1])}% right on first tries lately, your weakest chapter. A short set makes it stronger.`, `最近第一次作答只答對 ${acc(w[1])}%，是最弱的一章。做一組就會進步。`), attr: `data-weak="${esc(w[0])}"`, chk: { y: 'log', b: bid, us: [uid] }, tag: ['weak', Z('Weak spot', '弱項')] }); } }
+  // In class now (set on the book page): keep in step with school, like a tutor who asks what the teacher covered this week
+  for (const [bid, ic] of Object.entries(local.inClass || {})) { if (!ic || Date.now() - ic.t > 21 * DAY) continue;
+    const b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === ic.u); if (!u) continue;
+    const m = await bookMastery(b), c = m.chapters.find((x) => x.unit.id === u.id); if (!c || c.pct >= 70) continue;
+    const fresh = !c.done && !c.learned, nm = shortTitle(u.title);
+    if (cands.some((x) => x.chk && ((x.chk.u === u.id) || (x.chk.us || []).includes(u.id)) && x.chk.b === bid)) continue;
+    cands.unshift({ key: `ic:${bid}:${u.id}`, icon: fresh ? 'learn' : 'practise', t: fresh ? Z(`Learn: ${nm}`, `學習：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`),
+      s: Z('What your class is doing now', '你班現在教的'), why: Z(`Your class is on ${nm} right now. Keeping in step with school makes lessons easier and homework quicker.`, `你班現在教「${nm}」。跟上學校的進度，上堂更易明白，做功課也更快。`),
+      attr: fresh ? `data-mlearn="${esc(bid)}:${esc(u.id)}"` : `data-weak="${esc(bid)}:${esc(u.id)}"`,
+      chk: fresh ? { y: 'learn', b: bid, u: u.id } : { y: 'log', b: bid, us: [u.id] }, tag: ['practise', Z('In class now', '班上進度')] }); }
   // "Still there?": 2-3 days before a school test, a short mixed check on its chapters, so the child walks in at their peak
   for (const p of tests.steps || []) { if (!p.book || p.left > 3 || p.left < 1 || (p.x.kind || 'test') === 'dict') continue;
     const us = (p.units || []).filter((u) => (local.stats && Object.keys(local.stats).some((id) => id.startsWith(`${p.book.id}:${u.id}:`))));
@@ -3977,6 +3987,13 @@ function renderSettings(sec) {
       <b style="font-size:16px">${PLT('Daily study time', '每日學習時間')}</b>
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('Buddy’s pick for each day fits in this time. Extra is always possible.', 'Buddy 每日的推介會配合這個時間。想多做隨時可以。')}</span>
       <div class="re-capo" role="radiogroup" aria-label="${PLT('Daily study time', '每日學習時間')}">${[20, 30, 45, 60].map((m) => `<button type="button" role="radio" data-daymin="${m}" class="${dayMins() === m ? 'on' : ''}" aria-checked="${dayMins() === m}"><b>${PLT(`${m} min`, `${m} 分鐘`)}</b><small>${{ 20: PLT('A light day', '輕鬆'), 30: PLT('Most primary kids', '大部分小學生'), 45: PLT('Steady', '穩定'), 60: PLT('Exam weeks', '考試週') }[m]}</small></button>`).join('')}</div>
+    </section>
+    <section class="card stack g10" style="padding:16px">
+      <b style="font-size:16px">${PLT('Study time reminder', '溫習時間提醒')}</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">${PLT('Like a tutor who turns up: pick the days and time, and it goes into your phone’s calendar with an alert and a link straight to Today.', '就像補習老師準時上門：揀好日子和時間，就會加入手機日曆，有提示和直達「今日」的連結。')}</span>
+      <div class="rm-days" role="group" aria-label="${PLT('Days', '日子')}">${['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d, i) => `<button type="button" class="rm-day ${(local.remind || { days: [0, 1, 2, 3, 4] }).days.includes(i) ? 'on' : ''}" data-rmday="${i}" aria-pressed="${(local.remind || { days: [0, 1, 2, 3, 4] }).days.includes(i)}">${LANG === 'zh' ? '一二三四五六日'[i] : d}</button>`).join('')}</div>
+      <label class="rm-time">${PLT('Time', '時間')} <input type="time" id="rmTime" value="${(local.remind && local.remind.time) || '17:30'}"></label>
+      <button type="button" class="btn" id="rmAdd">${PLT('Add to my calendar', '加入我的日曆')}</button>
     </section>
     <section class="card stack g10" style="padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">${PLT('Sounds', '聲音')}</b>
@@ -5973,7 +5990,10 @@ async function renderBook(bookId) {
   const { n: qReady } = await bookSummary(book);
   const answered = bm.chapters.reduce((x, c) => x + (c.done || 0), 0);
   const pl = (local.placement || {})[book.id];
-  const plHTML = ''; // the level check is gone: practice finds the right level by itself
+  // In class now: which chapter the class is on, so Buddy keeps in step with school (clears itself after 3 weeks)
+  const icNow = (local.inClass || {})[book.id], icU = icNow && Date.now() - icNow.t < 21 * DAY ? icNow.u : '';
+  const plHTML = book.units.length > 1 ? `<label class="card ic-pick"><span><b>${PT('In class now', '班上進度')}</b><small>${PT('Which chapter is the class on? Buddy keeps in step with school.', '班上現在教哪一章？Buddy 會跟上學校進度。')}</small></span>
+    <select id="icSel" class="input"><option value="">${PT('Not set', '未設定')}</option>${book.units.filter((u) => !NOT_TEACHING.test(String(u.title))).map((u) => `<option value="${esc(u.id)}" ${u.id === icU ? 'selected' : ''}>${esc(shortTitle(u.title))}</option>`).join('')}</select></label>` : '';
   // Learn: a guided lesson per chapter, shown as its own section above the practice list.
   const learned = local.learned || {};
   const lkey = (u) => learned[`${book.id}:${u.id}`];
@@ -6086,6 +6106,9 @@ async function renderBook(bookId) {
   document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || sessionSize()); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
   const bst = document.getElementById('boost'); if (bst) bst.onclick = () => boostSession(book);
+  { const ics = document.getElementById('icSel'); if (ics) ics.onchange = () => { local.inClass = local.inClass || {};
+    if (ics.value) local.inClass[book.id] = { u: ics.value, t: Date.now() }; else delete local.inClass[book.id];
+    { const md = (local.mdone || {})[dayStart()]; if (local.mission && !(md && md[0])) local.mission.v = 0; } saveLocal(); toast(ics.value ? PT('Got it: Buddy will keep in step with your class', '收到：Buddy 會跟上班上進度') : PT('Cleared', '已清除')); }; }
   $app.querySelectorAll('[data-step-unit]').forEach((b) => (b.onclick = () => {
     const u = book.units.find((x) => x.id === b.dataset.stepUnit);
     if (b.dataset.stepKind === 'test' && u) return startChapterTest(book, [u]);
@@ -7372,6 +7395,25 @@ async function myGoalsSheet(onDone) {
 const goalText = () => { const MG = myGoals(), nt = upcomingTests().filter((x) => x.b && (x.kind || 'test') !== 'dict').length, nl = (MG.longs || []).length;
   return !nt && !nl ? PT('No goals yet: add a test or a subject to get stronger in.', '還沒有目標：加入測驗或想加強的科目。')
     : [nt ? PT(`${nt} test${nt > 1 ? 's' : ''}`, `${nt} 個測驗`) : '', nl ? PT(`${nl} subject${nl > 1 ? 's' : ''} to get stronger in`, `${nl} 科持續進步`) : ''].filter(Boolean).join(' · '); };
+// Study time reminder: a repeating calendar event (works on any phone, no app permissions or push setup needed)
+document.addEventListener('click', (e) => {
+  const d = e.target.closest && e.target.closest('[data-rmday]');
+  if (d) { const on = !d.classList.contains('on'); d.classList.toggle('on', on); d.setAttribute('aria-pressed', String(on)); return; }
+  if (!(e.target.closest && e.target.closest('#rmAdd'))) return;
+  const days = [...document.querySelectorAll('[data-rmday].on')].map((x) => +x.dataset.rmday), time = (document.getElementById('rmTime') || {}).value || '17:30';
+  if (!days.length) return toast(PT('Pick at least one day', '最少揀一日'));
+  local.remind = { days, time }; saveLocal();
+  const [hh, mm] = time.split(':').map(Number), start = new Date(); start.setHours(hh, mm, 0, 0);
+  while (!days.includes((start.getDay() + 6) % 7)) start.setDate(start.getDate() + 1);
+  const pad = (n) => String(n).padStart(2, '0'), stamp = (t) => `${t.getFullYear()}${pad(t.getMonth() + 1)}${pad(t.getDate())}T${pad(t.getHours())}${pad(t.getMinutes())}00`;
+  const end = new Date(start.getTime() + dayMins() * 60000), url = location.origin + '/#/home';
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PrepBuddy//Study time//EN', 'BEGIN:VEVENT', `UID:prepbuddy-study-${Date.now()}@prepbuddy`, `DTSTAMP:${stamp(new Date())}`,
+    `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`, `RRULE:FREQ=WEEKLY;BYDAY=${days.map((i) => ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'][i]).join(',')}`,
+    `SUMMARY:${PT('PrepBuddy study time', 'PrepBuddy 溫習時間')}`, `DESCRIPTION:${PT(`Buddy’s plan is ready (about ${dayMins()} min). Open: `, `Buddy 的計劃準備好了（約 ${dayMins()} 分鐘）。打開：`)}${url}`, `URL:${url}`,
+    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${PT('Time for PrepBuddy', 'PrepBuddy 時間到')}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = 'prepbuddy-study-time.ics'; document.body.appendChild(a); a.click(); a.remove();
+  toast(PT('Open the file to add it to your calendar', '打開檔案即可加入日曆'));
+});
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-daymin]'); if (!b) return;
   local.dayMin = +b.dataset.daymin; const md = (local.mdone || {})[dayStart()]; if (local.mission && local.mission.d === dayStart() && !(md && md[0])) local.mission.v = 0; saveLocal(); // nothing done yet today: today's pick fits the new time too
   document.querySelectorAll('[data-daymin]').forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', String(on)); });
@@ -9166,6 +9208,24 @@ async function renderParent() {
   (local.hw || []).forEach((h) => feed.push({ t: h.t, ic: 'check', tx: PD(`Homework help: ${h.title || 'homework'}`, `功課輔導：${h.title || '功課'}`) }));
   schoolTests().filter((x) => typeof x.score === 'number').forEach((x) => feed.push({ t: testDay(x), ic: 'target', tx: PD(`School test result: ${x.name} ${x.score}%`, `學校測驗成績：${x.name} ${x.score}%`) }));
   feed.sort((a, b) => b.t - a.t);
+  // "This week in one message": what a tutor tells the parent after the week, ready to send on WhatsApp
+  const wk = Date.now() - 7 * DAY, kid = local.name || PD('your child', '孩子');
+  const wkLog = local.log.filter((e) => e.t >= wk && e.q), wkDays = new Set(wkLog.map((e) => new Date(e.t).toDateString())).size;
+  const careless = Object.values(local.mistakes || {}).filter((m) => m.careless && (m.t || 0) >= wk).length, wkMiss = Object.values(local.mistakes || {}).filter((m) => (m.t || 0) >= wk).length;
+  const lines = [PD(`PrepBuddy this week for ${kid}:`, `${kid} 本週在 PrepBuddy：`),
+    PD(`• Practised on ${wkDays} of 7 days, ${wkLog.length} questions`, `• 7 日中練習了 ${wkDays} 日，共 ${wkLog.length} 題`)];
+  const passedWk = (local.tests || []).filter((x) => x.kind === 'test' && x.t >= wk && x.m && x.g / x.m >= PASS).map((x) => String(x.title || '').replace(/^Chapter test:?\s*/i, '')).filter(Boolean);
+  if (passedWk.length) lines.push(PD(`• Passed chapter tests: ${passedWk.slice(0, 3).join(', ')} (now Test-ready)`, `• 通過章節測驗：${passedWk.slice(0, 3).join('、')}（已達「準備好考試」）`));
+  let tip = '';
+  for (const p of tests) { const when = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+    if (p.ready != null) lines.push(PD(`• ${p.x.name} (${when}): likely about ${p.ready}/100 if it were today · goal ${p.x.aim || TEST_AIM}`, `• ${p.x.name}（${when}）：如果今天考，大約 ${p.ready}/100 · 目標 ${p.x.aim || TEST_AIM}`));
+    if (!tip && p.book) { const m = await bookMastery(p.book), ids = new Set((p.units || []).map((u) => u.id)); const w = m.chapters.filter((c) => ids.has(c.unit.id) && c.done).sort((a, b) => a.pct - b.pct)[0];
+      if (w) tip = PD(`At home: ask ${kid} to explain “${shortTitle(w.unit.title)}” to you in their own words. Explaining it is the best check.`, `在家：請${kid}用自己的話向你解釋「${shortTitle(w.unit.title)}」。能解釋到，才是真正明白。`); } }
+  if (wkMiss) lines.push(PD(`• ${wkMiss} mistake${wkMiss > 1 ? 's' : ''} this week${careless ? `, ${careless} of them careless (knew it, slipped)` : ''}`, `• 本週 ${wkMiss} 題錯題${careless ? `，其中 ${careless} 題是粗心（識但做錯）` : ''}`));
+  if (tip) lines.push(tip);
+  const weekMsg = lines.join('\n');
+  const weekCard = `<section class="rp-card wk-msg"><div class="rp-card-head"><h2>${pIcon('send', 18)} ${PD('This week, in one message', '本週一覽')}</h2><span>${PD('like a tutor’s update', '像補習老師的匯報')}</span></div>
+    <pre class="wk-pre">${esc(weekMsg)}</pre><div class="row g8"><button class="btn-sm" id="wkShare">${pIcon('send', 16)} ${PD('Send on WhatsApp', '用 WhatsApp 傳送')}</button><button class="btn-sm quiet" id="wkCopy">${PD('Copy', '複製')}</button></div></section>`;
   const tone = (p) => (p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low');
   // The dashboard is the weekly report, live, plus what only a live view can show: today, tests coming up, activity.
   const todayCard = `<section class="rp-card"><div class="rp-card-head"><h2>${pIcon('clock', 18)} ${PD('Today', '今日')}</h2><span>${last ? PD(`Last practised ${agoWords(last)}`, `上次練習：${agoWords(last)}`) : PD('No practice yet', '仍未練習')}</span></div>
@@ -9181,10 +9241,13 @@ async function renderParent() {
   <main class="pad stack g14 parentpage" data-view="parent" data-raw style="flex:1">
     <div class="pd-top"><span class="muted" style="font-size:14px">${PD('Updates as your child practises', '孩子練習時會即時更新')}</span>
       <div class="pd-acts"><button class="btn-sm" id="pdReport">${pIcon('send', 16)} ${PD('Send as weekly report', '傳送每週報告')}</button><button class="btn-sm quiet" id="pdLock">🔒 ${PD('Lock', '鎖上')}</button></div></div>
-    <div class="pd-rep">${reportHTML(r, { live: true, top: todayCard + testsCard, sideTop: fixCard, bottom: marksCard() + feedCard })}</div>
+    <div class="pd-rep">${reportHTML(r, { live: true, top: weekCard + todayCard + testsCard, sideTop: fixCard, bottom: marksCard() + feedCard })}</div>
     <p class="hint" style="margin:0;text-align:center">${PD('Same as the weekly report, kept up to date. With PrepBuddy accounts (coming soon) it will open on your own phone.', '與每週報告相同，但會即時更新。推出 PrepBuddy 帳戶後，可在你自己的手機查看。')}</p>
   </main>`;
   document.getElementById('pdReport').onclick = () => reportDialog();
+  { const sh = document.getElementById('wkShare'), cp = document.getElementById('wkCopy');
+    if (sh) sh.onclick = async () => { if (navigator.share) { try { await navigator.share({ text: weekMsg }); return; } catch (e) { if (e && e.name === 'AbortError') return; } } window.open('https://wa.me/?text=' + encodeURIComponent(weekMsg), '_blank'); };
+    if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(weekMsg); toast(PD('Copied', '已複製')); } catch (e) { toast(PD('Couldn’t copy', '無法複製')); } }; }
   document.getElementById('pdLock').onclick = () => { parentUntil = 0; go({ name: 'progress' }); };
   { const b = document.getElementById('pdMarks'); if (b) b.onclick = async () => { await marksScreen(); go({ name: 'parent' }); }; }
   $app.querySelectorAll('[data-mk]').forEach((b) => (b.onclick = async () => { await marksScreen((local.marks || []).find((x) => x.id === b.dataset.mk)); go({ name: 'parent' }); }));
@@ -9654,7 +9717,7 @@ async function renderMistakes(tab, openBook) {
     return `<details class="mq ${m.n > 1 ? 'often' : ''}"><summary>
         <span class="mq-dot" aria-hidden="true"></span>
         <span class="mq-text" data-raw>${esc(String(ask || '').replace(/\s*\n+\s*/g, ' '))}</span>
-        ${m.done ? `<span class="mq-meta"><span>${esc(agoText(m.doneAt || m.t))}</span></span>` : m.n > 1 ? `<span class="mq-pill">${zh ? `錯 ${m.n} 次` : `${m.n}×`}</span>` : ''}
+        ${m.done ? `<span class="mq-meta"><span>${esc(agoText(m.doneAt || m.t))}</span></span>` : m.n > 1 ? `<span class="mq-pill">${zh ? `錯 ${m.n} 次` : `${m.n}×`}</span>` : ''}${m.careless ? `<span class="mq-pill careless" title="${zh ? '你通常答得對這類題目：慢一點，重讀題目' : 'You usually get these right: slow down and re-read the question'}">${zh ? '粗心？' : 'Careless?'}</span>` : ''}
         <span class="mq-chev" aria-hidden="true">›</span></summary>
       <div class="mq-body">${mistakeCard(q, m)}</div></details>`;
   };
@@ -11057,8 +11120,14 @@ function record(q, got) {
     const ans = k >= 0 ? S.answers[k] : null;
     // MCQ options are shuffled per session, so keep the text of the chosen option, not just its letter.
     const ansText = choiceType(q) && ans ? (q.options || [])['ABCD'.indexOf(ans)] || '' : null;
-    local.mistakes[q.id] = { t: Date.now(), n: ((mk && mk.n) || 0) + 1, got, ans: Array.isArray(ans) ? ans.map((a) => String(a || '').slice(0, 1500)) : null, ansText, chat: (mk && mk.chat) || null, done: false };
-  } else if (mk && !mk.done) { mk.done = true; mk.doneAt = Date.now(); if (mk.t < dayStart()) { mk.earned = 1; if (S) S.fixedNow = (S.fixedNow || 0) + 1; } }
+    // careless or didn't know? Probably careless when this child usually gets questions like this right (80%+ of their
+    // last answers at this level in this chapter), or answered far faster than they usually take
+    const prior = chapterLog(qUnit(q.id).join(':')).filter((e) => e.q !== q.id && e.m && (e.l || 2) === (q.level || 2) && e.k !== 'place').slice(-12);
+    const accL = prior.length >= 5 ? prior.reduce((a, e) => a + Math.min(1, e.g / e.m), 0) / prior.length : 0;
+    const ts = prior.filter((e) => e.ty === ty && e.s > 0).map((e) => e.s).sort((a, b) => a - b), typ = ts.length >= 3 ? ts[Math.floor(ts.length / 2)] : 0;
+    const careless = !mk && (accL >= 0.8 || (secs > 0 && typ > 0 && secs < 0.4 * typ));
+    local.mistakes[q.id] = { t: Date.now(), n: ((mk && mk.n) || 0) + 1, got, ans: Array.isArray(ans) ? ans.map((a) => String(a || '').slice(0, 1500)) : null, ansText, chat: (mk && mk.chat) || null, done: false, ...(careless ? { careless: true } : {}) };
+  } else if (mk && !mk.done) { if (mk.n === 1 && S && S.mode === 'mistakes' && Date.now() - mk.t < 3 * DAY) mk.careless = true; /* fixed at the first go: knew it, slipped */ mk.done = true; mk.doneAt = Date.now(); if (mk.t < dayStart()) { mk.earned = 1; if (S) S.fixedNow = (S.fixedNow || 0) + 1; } }
   const ids = Object.keys(local.mistakes);
   if (ids.length > 600) ids.sort((a, b) => local.mistakes[a].t - local.mistakes[b].t).slice(0, ids.length - 600).forEach((id) => delete local.mistakes[id]);
   if (local.log.length > 5000) local.log = local.log.slice(-5000);
@@ -11188,7 +11257,8 @@ async function resultMoment(sess, qs, pct, got, total) {
   return say({ face: great ? 'done' : 'happy', confetti: great || grew, sel: 'main.results', hero, chips, tone: great ? 'great' : ok ? 'ok' : 'tough',
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
-    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
+    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(() => { const cn = qs.filter((q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done && m.careless && m.t >= Date.now() - 3 * 3600e3; }).length;
+      return cn ? [['🔍', Z(`${cn} of your misses look careless: you usually get these right. Slow down and re-read before you answer.`, `有 ${cn} 題錯題看來是粗心：你平時答得對。答題前慢一點，重讀題目。`)]] : []; })(), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
     main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : false });
 }
 function renderSummary() {
