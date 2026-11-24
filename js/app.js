@@ -460,7 +460,10 @@ function mixedFor(key) {
 }
 // "Lock it in" after a lesson: one question for each part of it and a few harder ones (fewer for the youngest)
 const LOCK_N = () => (isPrimaryKid() && sessionSize() < 8 ? 8 : 10);
-const LESSON_CREDIT = 5; // readiness for a chapter whose lesson is done, before any practice
+const LESSON_CREDIT = 5; // readiness for a chapter whose lesson is done, before any practice (only while lessons are in the plan)
+// PrepBuddy is test prep, like a tutor: practice, chapter tests and mock exams. Lessons stay in Books for a child
+// who missed a class, but Buddy never plans one and they earn no %. (Hidden 24 Nov 2026; true brings them back.)
+const LESSONS_IN_PLAN = false;
 function chapterMastery(book, u, qs, text, ntextPre) {
   const T = chapterTarget(u), now = Date.now();
   const key = `${book.id}:${u.id}`;
@@ -573,7 +576,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
       if (days > 0) shown = Math.max(60, top - [3, 1.5, 0.75, 0.4][strength] * days); }
     fading = Math.max(0, Math.round(earned - shown));
     likely = Math.round(Math.max(0, shown)); }
-  if (learnedIt) likely = Math.max(likely, LESSON_CREDIT); // a finished lesson is a real first step
+  if (LESSONS_IN_PLAN && learnedIt) likely = Math.max(likely, LESSON_CREDIT); // a finished lesson is a real first step
   // The chapter % the child sees is this likely score. It never goes down during a day of practice
   // (it can ease off on later days if work is forgotten).
   { const t0 = startOfToday(), MD = local.mastDay && local.mastDay.d === t0 && local.mastDay.v === 4 ? local.mastDay : (local.mastDay = { d: t0, v: 4, p: {} });
@@ -661,7 +664,8 @@ function masterySteps(m) {
   for (const c of (real.length ? real : left).sort((a, b) => a.pct - b.pct)) {
     if (steps.length >= 3) break;
     const t = shortTitle(c.unit.title), g = c.gates || {}, lv = chapterLever(c), add = (text, kind, diff) => steps.push({ unit: c.unit, text, kind, diff });
-    if (!c.done && !c.learned) add(Z(`Learn ${t}, then practise it`, `學習「${t}」，然後練習`), 'learn');
+    if (!c.done && !c.learned && LESSONS_IN_PLAN) add(Z(`Learn ${t}, then practise it`, `學習「${t}」，然後練習`), 'learn');
+    else if (!c.done) add(Z(`Start ${t}: a first practice set`, `開始「${t}」：第一組練習`), 'practise');
     else if (c.cracked) add(Z(`Win back ${t}: a quick check (it was ${c.earned}%)`, `贏回「${t}」：快速檢查（曾經是 ${c.earned}%）`), 'check');
     else if ((c.open || 0) >= 3) add(Z(`Fix ${c.open} mistakes in ${t}`, `改正「${t}」的 ${c.open} 條錯題`), 'mistakes');
     else if ((c.prac || 0) < 50 && lv.k !== 'test') add(Z(`Practise more of ${t}`, `多練習「${t}」`), 'practise');
@@ -1232,13 +1236,13 @@ async function stepUseful(st) {
   if (!['practise', 'weak_topics', 'chapter_test', 'learn'].includes(st.action) || !st.bookId || !(st.unitIds || []).length) return true;
   const b = (await getBooks()).find((x) => x.id === st.bookId); if (!b) return true;
   const chs = (await bookMastery(b)).chapters.filter((c) => st.unitIds.includes(c.unit.id)); if (!chs.length) return true;
-  if (st.action === 'learn') return chs.some((c) => !c.done && !c.learned); // a lesson is for a chapter not started yet
+  if (st.action === 'learn') return LESSONS_IN_PLAN && chs.some((c) => !c.done && !c.learned); // a lesson is for a chapter not started yet
   return chs.some((c) => { const lv = chapterLever(c); if (st.action === 'chapter_test') return lv.k === 'test' || lv.k === 'retest' || lv.k === 'practise';
     return !['wait', 'reviews'].includes(lv.k) || practiceGain(st.bookId, c) >= 3; });
 }
 function chapterLever(c) {
   const fmt = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  if (!c.done) return { k: 'start', en: 'a lesson or a first practice set' };
+  if (!c.done) return { k: 'start', en: LESSONS_IN_PLAN ? 'a lesson or a first practice set' : 'a first practice set' };
   if (c.cracked && c.checkWeak) return { k: 'practise', en: 'practice on what the last check missed, then another check' };
   if (c.cracked) return { k: 'check', en: `a quick "Still there?" check: it has slipped from ${c.earned}% to ${c.pct}%, and 5 of 6 right wins it back` };
   if (!c.passes) {
@@ -1389,12 +1393,13 @@ function planHTML(missionDone, pick, askOnly) {
   const todoMin = Math.max(5, Math.min(30, Math.round((mkN * 1 + (planState.due || 0) * 0.6) / 5) * 5));
   const quick = [ // [icon, title, one short line, what to ask Buddy, minutes]
     ...(mkN || planState.due ? [['🔁', PT('Clear your to‑dos', '清理待辦'), [mkN ? PT(`${mkN} mistake${mkN === 1 ? '' : 's'}`, `${mkN} 題錯題`) : '', planState.due ? PT(`${planState.due} review${planState.due === 1 ? '' : 's'}`, `${planState.due} 題溫習`) : ''].filter(Boolean).join(' · '), PT(`${todoMin} minutes clearing my to-dos: fix my mistakes first, then the reviews that are due`, `${todoMin} 分鐘清理待辦：先改正錯題，再做到期的溫習`), todoMin]] : []),
-    ['⚡', PT('Quick boost', '快速提升'), PT('Weakest chapter', '最弱的一章'), PT('15 minutes: a quick boost on my weakest chapter', '15 分鐘：在最弱的一章快速提升'), 15],
+    ['⚡', PT('Practise', '練習'), PT('Your weakest chapter', '你最弱的一章'), PT('15 minutes: a quick boost on my weakest chapter', '15 分鐘：在最弱的一章快速提升'), 15],
     ['🎯', PT('Weakest subject', '最弱的科目'), PT('Where it’s needed most', '最需要的地方'), PT('30 minutes on my weakest subject', '30 分鐘練最弱的科目'), 30],
-    ...(nt ? [['📝', PT(`Ready for ${nt.name}`, `準備「${nt.name}」`), PT(testLeft(nt) === 0 ? 'Test today' : testLeft(nt) === 1 ? 'Test tomorrow' : `Test in ${testLeft(nt)} days`, testLeft(nt) === 0 ? '今天測驗' : testLeft(nt) === 1 ? '明天測驗' : `${testLeft(nt)} 日後測驗`), PT(`30 minutes to get me ready for my ${nt.name}, weakest chapters first`, `30 分鐘幫我準備「${nt.name}」，先做最弱的章節`), 30]] : []),
-    ['🌱', PT('Learn something new', '學新東西'), PT('The next chapter', '下一章'), PT('20 minutes learning something new: the lesson for the next chapter I haven’t started, then a short practice', '20 分鐘學新東西：上下一章未開始的課，再做少量練習'), 20],
-    ['📚', PT('Study session', '溫習時段'), PT('Learn, practise, test', '學、練、測'), PT('A 45-minute study session: a lesson, practice, then a short test', '45 分鐘溫習：先上課，再練習，最後做小測'), 45],
+    ...(nt ? [['🗓️', PT(`Ready for ${nt.name}`, `準備「${nt.name}」`), PT(testLeft(nt) === 0 ? 'Test today' : testLeft(nt) === 1 ? 'Test tomorrow' : `Test in ${testLeft(nt)} days`, testLeft(nt) === 0 ? '今天測驗' : testLeft(nt) === 1 ? '明天測驗' : `${testLeft(nt)} 日後測驗`), PT(`30 minutes to get me ready for my ${nt.name}, weakest chapters first`, `30 分鐘幫我準備「${nt.name}」，先做最弱的章節`), 30]] : []),
+    ['📝', PT('Chapter test', '章節測驗'), PT('Timed, like school', '限時，像學校測驗'), PT('A timed chapter test on the chapter that’s most ready for one (if none is ready yet, practice to get one there)', '為最準備好的一章做限時章節測驗（如果未有準備好的章節，就先練習）'), 40],
+    ['🏁', PT('Mock exam', '模擬考試'), PT('Mixed chapters, timed', '多章混合，限時'), PT('A mock exam: a timed mixed paper on the chapters I’ve practised, like the real exam', '模擬考試：用我練過的章節出一份限時混合試卷，像真正的考試'), 40],
   ];
+  if (quick.length % 2) quick.splice(quick.findIndex((x) => x[0] === '🎯'), 1); // an even grid: the subject tile gives way
   if (planState.busy) return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}">${planThinkingHTML()}</section>`;
   const pickHTML = pick ? `<button class="bpq-pick" id="bpPick" type="button" ${pick.fresh ? 'data-fresh="1"' : ''}><span class="bpq-ic" aria-hidden="true">⭐</span><span class="bpq-tx"><b>${pick.fresh ? PT('Buddy’s pick: what next', 'Buddy 推介：下一步') : PT('Buddy’s pick for today', 'Buddy 今日推介')}</b><small>${pick.fresh ? PT('A fresh set chosen for you · about 15 min', '為你挑選新的一組 · 約 15 分鐘') : PT(`${pick.n} step${pick.n === 1 ? '' : 's'} · ${pick.mins} min${starsOn() ? ' · +5 bonus stars' : ''}`, `${pick.n} 個步驟 · ${pick.mins} 分鐘${starsOn() ? ' · 額外 +5 粒星' : ''}`)}</small>${pick.fresh ? '' : `<em data-raw>${esc(pick.titles.join(' · '))}</em>`}</span><span class="bpq-go" aria-hidden="true">›</span></button><div class="bpq-or"><span>${PT('or pick something else', '或者選別的')}</span></div>` : '';
   return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}"><div class="ms-head"><h2>${pick ? (missionDone ? PT('What next?', '下一步做甚麼？') : PT('What shall we do today?', '今天做甚麼好？')) : missionDone ? PT('Want to do more?', '想再做多一點？') : PT('Want something different?', '想做點別的？')}</h2><span class="bpq-bud" aria-hidden="true">${buddySVG('happy', 34)}</span></div>
@@ -2589,7 +2594,7 @@ async function renderLearn(bookId, unitId) {
     local.learned[`${bookId}:${unitId}`] = Date.now(); saveLocal();
     const lg = first && starsOn() ? addStars(1, 'lesson') : 0, lb = lg ? checkBadges({}) : [];
     if (first) { const nm = shortTitle(unit.title); setTimeout(() => moment({ face: 'done', confetti: true, view: 'learn', hero: { icon: '📖' }, chips: [lg ? ['star', `⭐ +${lg + lb.reduce((a, b) => a + b.stars, 0)}`] : null, ...lb.map((b) => ['star', `${b.icon} ${PT(b.en, b.zh)}`])], title: PT('Lesson done! 🎉', '完成一課！🎉'), sub: PT(`You’ve learned ${nm}.`, `你學會了「${nm}」。`),
-      bars: [{ lab: nm, from: 0, to: LESSON_CREDIT }], lines: [['🔒', PT('Lock it in now: questions on every part of the lesson, easier to harder, while it’s fresh.', '趁記憶猶新，鞏固課堂每一部分，由淺入深。')]],
+      bars: LESSONS_IN_PLAN ? [{ lab: nm, from: 0, to: LESSON_CREDIT }] : [], lines: [['🔒', PT('Lock it in now: questions on every part of the lesson, easier to harder, while it’s fresh.', '趁記憶猶新，鞏固課堂每一部分，由淺入深。')]],
       main: { label: PT(`Lock it in: ${LOCK_N()} questions`, `鞏固：做 ${LOCK_N()} 題`), run: () => { pick = { bookId, ids: new Set([unitId]) }; startUnits(book, [unit], LOCK_N(), { lockin: true, title: PT(`Lock it in: ${shortTitle(unit.title)}`, `鞏固：${shortTitle(unit.title)}`) }); } }, alt: { label: PT('Later', '稍後'), run: null } }), 700); }
   };
   draw();
@@ -2894,7 +2899,7 @@ async function renderHome() {
   // ---- Today's mission: up to 3 steps in order, fixed for the day, ticked off as they get done ----
   const cands = []; // { key, icon, t, s, attr, chk }
   for (const p of tests.steps.filter((q) => q.left <= 14 && q.step).slice(0, 2)) {
-    { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
+    { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? (p.step.icon === 'learn' ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: [p.step.u] }) : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
   // behind pace for a test's goal: add catch-up jobs for it (its weakest chapters), so the daily amount matches what the goal needs
   let extraJobs = 0;
   for (const p of tests.steps.filter((q) => q.left >= 1 && q.left <= 14 && q.step && q.book && q.ready != null && (q.x.kind || 'test') !== 'dict').slice(0, 2)) {
@@ -2906,10 +2911,10 @@ async function renderHome() {
     const taken = new Set(cands.flatMap((c) => (c.chk && c.chk.u ? [c.chk.u] : c.chk && c.chk.us ? c.chk.us : [])));
     const pick = chs.filter((c) => !taken.has(c.unit.id)).sort((a, b) => a.pct - b.pct).slice(0, want);
     for (const c of pick) {
-      const fresh = !c.done && !c.learned, nm = shortTitle(c.unit.title);
+      const fresh = LESSONS_IN_PLAN && !c.done && !c.learned, nm = shortTitle(c.unit.title);
       cands.push({ key: `c:${p.x.id}:${c.unit.id}`, icon: fresh ? 'learn' : 'practise', t: fresh ? Z(`Learn: ${nm}`, `學習：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`),
         s: Z(`Extra, to reach your ${aim}% goal`, `額外練習，達到 ${aim}% 目標`),
-        why: Z(`To reach your ${aim}% goal for the ${p.x.name}, Buddy added this. At your usual pace you’d get about ${fc}%.`, `為了在「${p.x.name}」達到 ${aim}% 目標，Buddy 加了這一項。照平時的步伐約 ${fc}%。`),
+        why: fc == null ? Z(`Your ${p.x.name} is ${leftText(p.left)}. To reach your ${aim}% goal, every chapter in it needs practice, so Buddy added this one.`, `「${p.x.name}」${leftText(p.left)}。要達到 ${aim}% 目標，每一章都要練習，所以 Buddy 加了這一章。`) : Z(`To reach your ${aim}% goal for the ${p.x.name}, Buddy added this. At your usual pace you’d get about ${fc}%.`, `為了在「${p.x.name}」達到 ${aim}% 目標，Buddy 加了這一項。照平時的步伐約 ${fc}%。`),
         attr: fresh ? `data-mlearn="${esc(p.book.id)}:${esc(c.unit.id)}"` : `data-weak="${esc(p.book.id)}:${esc(c.unit.id)}"`,
         chk: fresh ? { y: 'learn', b: p.book.id, u: c.unit.id } : { y: 'log', b: p.book.id, us: [c.unit.id] }, tag: ['test', Z(`${p.x.name} · catch up`, `「${p.x.name}」· 追進度`)] });
       extraJobs++;
@@ -2968,7 +2973,7 @@ async function renderHome() {
   for (const [bid, ic] of Object.entries(local.inClass || {})) { if (!ic || Date.now() - ic.t > 21 * DAY) continue;
     const b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === ic.u); if (!u) continue;
     const m = await bookMastery(b), c = m.chapters.find((x) => x.unit.id === u.id); if (!c || c.pct >= 70) continue;
-    const fresh = !c.done && !c.learned, nm = shortTitle(u.title);
+    const fresh = LESSONS_IN_PLAN && !c.done && !c.learned, nm = shortTitle(u.title);
     if (cands.some((x) => x.chk && ((x.chk.u === u.id) || (x.chk.us || []).includes(u.id)) && x.chk.b === bid)) continue;
     cands.unshift({ key: `ic:${bid}:${u.id}`, icon: fresh ? 'learn' : 'practise', t: fresh ? Z(`Learn: ${nm}`, `學習：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`),
       s: Z('What your class is doing now', '你班現在教的'), why: Z(`Your class is on ${nm} right now. Keeping in step with school makes lessons easier and homework quicker.`, `你班現在教「${nm}」。跟上學校的進度，上堂更易明白，做功課也更快。`),
@@ -2986,7 +2991,7 @@ async function renderHome() {
     cands.push({ key: `u:${last.book.id}:${last.unit.id}`, icon: 'practise', t: shortTitle(last.unit.title), s: Z(`Keep going${sc !== null ? ` · scored ${sc}%` : ''}`, `繼續${sc !== null ? ` · 得分 ${sc}%` : ''}`), attr: `data-firstch="${esc(last.book.id)}:${esc(last.unit.id)}"`, chk: { y: 'log', b: last.book.id, us: [last.unit.id] } });
   } else { // nothing practised yet: start straight away on the first real chapter (not a summary or glossary)
     const u0 = books[0].units.find((u) => !NOT_TEACHING.test(String(u.title))) || books[0].units[0];
-    cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z(`Practise ${shortTitle(u0.title)}`, `練習「${shortTitle(u0.title)}」`), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-firstch="${esc(books[0].id)}:${esc(u0.id)}"`, chk: { y: 'log', b: books[0].id, us: [u0.id] } }); }
+    if (!cands.some((c) => c.chk && c.chk.b === books[0].id && (c.chk.u === u0.id || (c.chk.us || []).includes(u0.id)))) cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z(`Practise ${shortTitle(u0.title)}`, `練習「${shortTitle(u0.title)}」`), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-firstch="${esc(books[0].id)}:${esc(u0.id)}"`, chk: { y: 'log', b: books[0].id, us: [u0.id] } }); }
   // Buddy's pick is the optimal arrangement: drop practice that can't move its chapter today (turning it into the
   // chapter test when that's the move), and while a school test is near, put chapters outside it at the back.
   { const MBx = new Map(), bmx = async (id) => { if (!MBx.has(id)) { const b = books.find((x) => x.id === id); MBx.set(id, b ? await bookMastery(b) : null); } return MBx.get(id); };
@@ -3207,7 +3212,7 @@ async function renderHome() {
   { const p = tests.steps.find((q) => q.left <= 14 && q.book && q.units.length);
     if (p) { const m = await bookMastery(p.book); const ch = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)).sort((a, b) => a.pct - b.pct)[0];
       // a chapter not started yet gets its lesson first, like everywhere else
-      if (ch && ch.pct < 90) extra = !ch.done && !ch.learned
+      if (ch && ch.pct < 90) extra = LESSONS_IN_PLAN && !ch.done && !ch.learned
         ? { label: Z(`Extra for ${p.x.name}: lesson on ${shortTitle(ch.unit.title)}`, `為「${p.x.name}」加練：${shortTitle(ch.unit.title)} 課堂`), run: () => go({ name: 'learn', bookId: p.book.id, unitId: ch.unit.id }) }
         : { label: Z(`Extra for ${p.x.name}: ${shortTitle(ch.unit.title)} (${ch.pct}%)`, `為「${p.x.name}」加練：${shortTitle(ch.unit.title)}（${ch.pct}%）`), run: () => { pick = { bookId: p.book.id, ids: new Set([ch.unit.id]) }; startUnits(p.book, [ch.unit], 10); } }; } }
   // Wins: a cheerful card above the mission with the best recent win (and up to two smaller ones).
@@ -3545,6 +3550,7 @@ async function renderHome() {
   { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-go') || $app.querySelector('.ms-item .ms-go'); if (r) r.click(); }; }
   { const a = document.getElementById('glAddTest'); if (a) a.onclick = () => testDialog(); }
   ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); });
+  { const n = document.getElementById('noTest'); if (n) n.onclick = () => { local.noTestAsk = Date.now(); saveLocal(); renderHome(); }; }
   $app.querySelectorAll('[data-cbmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.combo', b.dataset.cbmode); renderHome(); }));
   bindCoach();
   { const pa = document.getElementById('profAsk'); if (pa) pa.onclick = async () => { await profileScreen(); go({ name: 'home' }); }; }
@@ -3645,7 +3651,7 @@ function renderPractice() {
     <div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h1 class="pagetitle" style="margin:0">${Z('Practice', '練習')}</h1><p>${Z('Every way to practise, in one place.', '所有練習方式，都在這裡。')}</p></div>${gearBtn()}</div>
     <section class="stack g10"><div class="sect-head"><h2>${Z('Study tools', '學習工具')}</h2></div><div class="quick">
       ${pick(['hwgo'])}
-      <button class="qtile" id="lessongo">${actionTile('learn', 44)}<b>${Z('Lessons', '課堂')}</b><span>${Z('Buddy teaches a chapter step by step', 'Buddy 逐步教你一章')}</span></button>
+      ${LESSONS_IN_PLAN ? `<button class="qtile" id="lessongo">${actionTile('learn', 44)}<b>${Z('Lessons', '課堂')}</b><span>${Z('Buddy teaches a chapter step by step', 'Buddy 逐步教你一章')}</span></button>` : ''}
       <button class="qtile" id="notesgo">${actionTile('notes', 44)}<b>${Z('Revision notes', '溫習筆記')}</b><span>${Z('Key points for each chapter', '每一章的重點')}</span></button>
       <button class="qtile" id="cardsgo">${actionTile('flashcards', 44)}<b>${Z('Flashcards', '閃卡')}</b><span>${Z('Quick-fire recall', '快速記憶')}</span></button>
       <button class="qtile" id="questionsgo">${actionTile('practise', 44)}<b>${Z('Practice questions', '練習題')}</b><span>${Z('Pick a book, then chapters', '選課本，再選章節')}</span></button>
@@ -3659,7 +3665,7 @@ function renderPractice() {
   bindPracticeTiles(); bindGear();
   // one book: straight to its page; several: ask which book first
   const toBook = async (mode) => { const bs = await getBooks(); if (bs.length === 1) go({ name: 'book', bookId: bs[0].id, focus: mode }); else go({ name: 'chapters', mode }); };
-  document.getElementById('lessongo').onclick = () => toBook('learn');
+  { const l = document.getElementById('lessongo'); if (l) l.onclick = () => toBook('learn'); }
   document.getElementById('questionsgo').onclick = () => toBook('practise');
   document.getElementById('mkgo').onclick = () => go({ name: 'mistakes' });
   document.getElementById('notesgo').onclick = () => toBook('notes');
@@ -3897,7 +3903,7 @@ function renderAbout() {
     [Z('Does it really know my child, or is it just random questions?', '它真的了解我的孩子嗎？還是只是隨機出題？'),
       Z('It keeps a record of every answer and uses it. For each chapter it knows how far your child has got, how hard a question they can handle, which mistakes are still open, what they’re about to forget, and whether they passed a timed test. It also notices habits: how often hints were needed, whether a set was rushed, and when they usually study. Questions get harder as they improve and easier when they struggle, chapter by chapter.', '它會記錄每一個答案並加以運用。每一章它都知道孩子學到哪裡、能應付多難的題目、還有哪些錯題未改正、哪些快要忘記，以及有否通過限時測驗。它也會留意習慣：需要提示的次數、有否趕急完成、通常甚麼時候溫習。孩子進步，題目會變難；遇到困難，題目會變易，每章分開計算。')],
     [Z('How does it decide what my child does each day?', '它怎樣決定孩子每天做甚麼？'),
-      Z('Each morning Buddy sets “Today’s plan”: up to three steps, most important first. A school test coming up comes first (learn what’s not started, then the weakest chapter, a practice test the day before). Then mistakes to fix, reviews that are due, a level check for a new book, and finally carrying on where they left off. Your child just taps Start.', '每天早上 Buddy 會定好「今日計劃」：最多三個步驟，最重要的先做。即將來臨的學校測驗最優先（先學未開始的章節，再練最弱的一章，考試前一天做模擬測驗）。然後是改正錯題、到期的溫習、新課本的程度評估，最後是繼續上次的進度。孩子只需按「開始」。')],
+      Z('Each morning Buddy sets “Today’s plan”: up to three steps, most important first. A school test coming up comes first (practice on the weakest chapters, chapter tests once they’re ready, a practice test the day before). Then mistakes to fix, reviews that are due, a level check for a new book, and finally carrying on where they left off. Your child just taps Start.', '每天早上 Buddy 會定好「今日計劃」：最多三個步驟，最重要的先做。即將來臨的學校測驗最優先（先練最弱的章節，準備好就做章節測驗，考試前一天做模擬測驗）。然後是改正錯題、到期的溫習、新課本的程度評估，最後是繼續上次的進度。孩子只需按「開始」。')],
     [Z('My child has a test next week. Can it help?', '孩子下星期有測驗，它可以幫忙嗎？'),
       Z('Yes. Add the test (a quiz, 默書 or a whole exam period) with its date and chapters. PrepBuddy shows how ready your child is for that test, chapter by chapter, tells them how much to do each day to be ready in time, and builds every day’s plan around it. Afterwards, snap the marked paper and the result is saved.', '可以。加入測驗（小測、默書或整個考試期）、日期及範圍。PrepBuddy 會逐章顯示孩子對該測驗的準備程度，告訴他們每天要做多少才能及時準備好，並以此安排每天的任務。考完後，拍下已批改的試卷，成績便會記錄下來。')],
     [Z('Are the questions really from my child’s school work?', '題目真的來自孩子的學校課本嗎？'),
@@ -5395,7 +5401,7 @@ async function checkWins() {
     cur.fg = fixedForGood().good;
     for (const x of schoolTests()) { if (testDay(x) < startOfToday()) continue; const h = ((local.thist || {})[x.id] || []).slice(-1)[0]; if (h && h[1] >= (x.aim || TEST_AIM)) cur.rd[x.id] = x.name; }
     if (W) {
-      for (const [k, n] of Object.entries(cur.ch)) if (!W.ch[k]) ev.push(['chapter', PT(`You mastered ${n}!`, `你掌握了「${n}」！`), PT('Lesson done, and 80% or more right.', '上完課，而且答對八成或以上。')]);
+      for (const [k, n] of Object.entries(cur.ch)) if (!W.ch[k]) ev.push(['chapter', PT(`You mastered ${n}!`, `你掌握了「${n}」！`), PT('It’s past 80%: practised and proven in a chapter test.', '超過 80%：練習充足，章節測驗也證明了實力。')]);
       for (const [k, v] of Object.entries(cur.lv)) if (W.lv[k] != null && v > W.lv[k]) ev.push(['level', PT(`${k} level up: ${W.lv[k]} → ${v}`, `${k}程度提升：${W.lv[k]} → ${v}`), PT('Out of 10. It only goes up when harder questions go right.', '滿分 10。只有答對更難的題目才會提升。'), [W.lv[k], v], k]);
       if (cur.fg > W.fg) { const n = cur.fg - W.fg; ev.push(['fixed', PT(n === 1 ? 'A mistake fixed for good!' : `${n} mistakes fixed for good!`, n === 1 ? '一個錯誤真正改正了！' : `${n} 個錯誤真正改正了！`), PT('Still right days later, so it has really stuck.', '幾天後仍然答對，真的記住了。')]); }
       for (const [k, n] of Object.entries(cur.rd)) if (!W.rd[k]) ev.push(['ready', PT(`You’re ready for the ${n}!`, `你已準備好「${n}」！`), PT('Ready enough to reach your goal. Keep it warm until test day.', '已達到目標的準備度。保持練習直到考試那天。')]);
@@ -7010,7 +7016,7 @@ function testDayPlan(p, chs, aim = TEST_AIM) {
   const nm = (u) => shortTitle(u.title);
   // what each chapter needs, weakest first
   const need = chs.slice().sort((a, b) => a.pct - b.pct).map((c) => {
-    const fresh = !c.done && !c.learned;
+    const fresh = LESSONS_IN_PLAN && !c.done && !c.learned;
     const act = fresh ? ['learn', PT('Learn it', '先上課'), () => go({ name: 'learn', bookId: book.id, unitId: c.unit.id })]
       : c.pct < Math.min(aim, 70) || !c.passes ? (!c.passes && chapterLever(c).k === 'test' ? ['test', PT('Chapter test', '章節測驗'), () => startChapterTest(book, [c.unit])] : ['practise', PT('Practise', '練習'), () => startUnits(book, [c.unit], n)])
       : c.due ? ['review', PT('Review', '溫習'), () => startReview('spaced', book.id)] : ['ok', PT('Keep it fresh', '保持'), () => startUnits(book, [c.unit], 5)];
@@ -7535,7 +7541,8 @@ function goalsCardHTML(GD, o = {}) {
   };
   const who = o.title ? o.title : local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
   return `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
-    ${goalsHowHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`}</section>`;
+    ${goalsHowHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : (local.noTestAsk && Date.now() - local.noTestAsk < 7 * DAY ? `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`
+      : `<div class="ag-first"><span class="ag-fic" aria-hidden="true">📅</span><b>${SCH('When’s your next test?', '下一次測驗是甚麼時候？')}</b><p>${SCH('Tell Buddy the subject, the date and the chapters. Every day’s plan then gets you ready for it: practice on the weakest chapters, chapter tests, and a mock paper before the day.', '告訴 Buddy 科目、日期和章節。之後每天的計劃都會幫你準備：先練最弱的章節，再做章節測驗，考試前做模擬試卷。')}</p><button class="btn" id="addTest4">${SCH('Add my next test', '加入下一次測驗')}</button><button class="linkbtn" id="noTest">${SCH('No test coming up', '暫時沒有測驗')}</button></div>`)}</section>`;
 }
 async function fullTestCards(tests, btn) {
   const MB = new Map(); for (const p of tests.steps) if (p.book && !MB.has(p.book.id)) MB.set(p.book.id, await bookMastery(p.book));
@@ -7734,7 +7741,7 @@ async function renderProgress(PO = {}) {
       <p class="pv-p">${PT(`${x.pct}% ready overall. Add the next ${esc(sname(x.b))} test and Buddy plans backwards from the date.`, `整體準備度 ${x.pct}%。加入下一個${esc(sname(x.b))}測驗，Buddy 會按日期倒數安排。`)}</p>
       ${btn(`+ ${PT('Add a test', '加入測驗')}`, () => testDialog())}</div>`);
   const sec1 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('Am I on track for my tests?', '考試準備好了嗎？')}${infoBtn('howTestP', PT('How is this worked out?', '這是怎樣計算的？'))}</h2><span class="pv-h-r">${PT('Readiness now, and where it’s heading by test day', '現在的準備度，以及考試當日的預測')}${testCards.length ? btn(`+ ${PT('Add a test', '加入測驗')}`, () => testDialog(), 'pv-btn pv-addt') : ''}</span></div>
-    <div class="pv-grid3">${testCards.join('') || `<div class="pv-test none"><b>${PT('Got a test coming up?', '快要測驗？')}</b><p class="pv-p">${PT('Add it and Buddy plans backwards from the date: new chapters first, then the weakest, then a practice test the day before.', '加入後，Buddy 會按日期倒數安排：先學新章節，再練最弱的，前一天做模擬測驗。')}</p>${btn(`+ ${PT('Add a test', '加入測驗')}`, () => testDialog())}</div>`}</div>
+    <div class="pv-grid3">${testCards.join('') || `<div class="pv-test none"><b>${PT('Got a test coming up?', '快要測驗？')}</b><p class="pv-p">${PT('Add it and Buddy plans backwards from the date: practice on the weakest chapters, chapter tests, then a practice test the day before.', '加入後，Buddy 會按日期倒數安排：先學新章節，再練最弱的，前一天做模擬測驗。')}</p>${btn(`+ ${PT('Add a test', '加入測驗')}`, () => testDialog())}</div>`}</div>
     <details class="ms-how how-panel" id="howTestP"><summary>${PT('How is this worked out?', '這是怎樣計算的？')}</summary><div>
       <p>${PT('Ready now is the readiness of the chapters in the test (or everything practised so far, if you didn’t choose chapters).', '「現在」是測驗範圍內各章節的準備度（未選章節的話，就是所有練習過的內容）。')}</p>
       <p>${PT('Finishing a chapter’s lesson counts as 10%. Practice, reviews and chapter tests take it the rest of the way. Practice on chapters that aren’t in the test doesn’t change this number.', '完成一章的課堂計 10%，之後靠練習、溫習和章節測驗提升。練習測驗範圍以外的章節不會影響這個數字。')}</p>
@@ -7856,7 +7863,7 @@ async function renderProgress(PO = {}) {
       if (share < 0.2) add(10, card(PT('Tests', '測驗'), 'red', PT(`${soon.x.name} is ${leftText(soon.left)}, but little practice on it`, `「${soon.x.name}」${leftText(soon.left)}，但很少練習`), PT(`Only ${Math.round(share * 100)}% of this week’s questions were ${sname(soon.book)}. Switch some practice over now.`, `本週只有 ${Math.round(share * 100)}% 的題目是${sname(soon.book)}。現在多練習一點。`), btn(PT(`Practise ${sname(soon.book)}`, `練習${sname(soon.book)}`), () => startUnits(soon.book, soon.units, nQ), 'pv-btn soft'), { ev: bars([[PT(`${sname(soon.book)} this week`, `本週${sname(soon.book)}`), share * 100, 'low']], PT('Share of this week’s questions', '本週題目所佔比例')), why: PT(`The ${soon.x.name} is ${leftText(soon.left)}. Every day of practice on it counts now.`, `「${soon.x.name}」${leftText(soon.left)}，現在每天練習都很重要。`), act: [PT(`Practise ${sname(soon.book)}`, `練習${sname(soon.book)}`), PT(`${nQ} questions on the test chapters`, `考試章節 ${nQ} 題`)] }), false, ['red', PT(`Little practice for the ${soon.x.name}`, `「${soon.x.name}」練習不足`), PT(`It’s ${leftText(soon.left)}, and only ${Math.round(share * 100)}% of this week’s questions were ${sname(soon.book)}.`, `${leftText(soon.left)}考試，本週只有 ${Math.round(share * 100)}% 的題目是${sname(soon.book)}。`)]); } }
   // 9. practising a chapter without its lesson, and struggling
   { const byU = {}; firsts.forEach((e) => { const k = String(e.q).split(':').slice(0, 2).join(':'); (byU[k] || (byU[k] = [])).push(e); });
-    const cand = Object.entries(byU).filter(([k, es]) => es.length >= 5 && accP(es) < 50 && !(local.learned || {})[k]).sort((x, y) => accP(x[1]) - accP(y[1]))[0];
+    const cand = Object.entries(byU).filter(([k, es]) => LESSONS_IN_PLAN && es.length >= 5 && accP(es) < 50 && !(local.learned || {})[k]).sort((x, y) => accP(x[1]) - accP(y[1]))[0];
     if (cand) { const bk = bookOf(cand[0]), u = unitOf(cand[0]);
       if (bk && u) add(26, card(PT('Lessons', '課堂'), 'orange', PT(`Practising ${chName(u)} without the lesson`, `未上課就練習「${chName(u)}」`), PT(`${accP(cand[1])}% so far. The lesson explains it step by step and usually lifts scores a lot.`, `目前 ${accP(cand[1])}%。課堂會一步步講解，通常能大大提升分數。`), btn(PT('Take the lesson', '上課'), () => go({ name: 'learn', bookId: bk.id, unitId: u.id }), 'pv-btn soft'), { ev: bars([[PT('Right so far', '目前答對'), accP(cand[1]), 'low']], PT('Without the lesson', '未上課')), why: PT('The lesson explains it step by step and usually lifts scores a lot.', '課堂會一步步講解，通常能大大提升分數。'), act: [PT('Take the lesson', '上課'), PT('About 10 min · with quick checks', '大約 10 分鐘 · 附小測')] }), false, ['orange', PT(`Practising ${chName(u)} without the lesson`, `未上課就練習「${chName(u)}」`), PT(`${accP(cand[1])}% so far. The lesson usually lifts scores a lot.`, `目前 ${accP(cand[1])}%。上課通常能大大提升分數。`)]); } }
   // 10. strong in practice, weaker when timed
@@ -9358,9 +9365,9 @@ async function testStep(x) {
   if (left === 0) step = { icon: 'weak', t: SCH('Test today: a 5-question warm-up', '今天考試：5 題熱身'), s: SCH('Wake your brain up, then good luck!', '熱熱身，祝你考試順利！'), go: SCH('Warm up', '熱身'), run: () => startUnits(book, units, 5) };
   else if (left === 1) step = { icon: 'test', t: SCH('Practice test for tomorrow', '為明天做一次模擬測驗'), s: SCH('Timed, on all the test chapters', '限時，包括所有考試章節'), go: SCH('Start', '開始'), run: () => startChapterTest(book, units) };
   else {
-    const fresh = chs.find((c) => !c.done && !learned(c.unit));
+    const fresh = LESSONS_IN_PLAN && chs.find((c) => !c.done && !learned(c.unit));
     if (fresh) step = { u: fresh.unit.id, icon: 'learn', t: SCH(`Learn: ${name(fresh.unit)}`, `學習：${name(fresh.unit)}`), s: SCH('Not started yet: a guided lesson first', '未開始：先上一課'), go: SCH('Learn', '學習'), run: () => go({ name: 'learn', bookId: book.id, unitId: fresh.unit.id }) };
-    else if (weakest.pct < 75) step = { icon: 'practise', t: SCH(`Practise: ${name(weakest.unit)}`, `練習：${name(weakest.unit)}`), s: SCH(`Your weakest test chapter, ${weakest.pct}% so far`, `最弱的考試章節，目前 ${weakest.pct}%`), go: SCH('Practise', '練習'), run: () => { pick = { bookId: book.id, ids: new Set([weakest.unit.id]) }; startUnits(book, [weakest.unit], 10); } };
+    else if (weakest.pct < 75) step = { u: weakest.unit.id, icon: 'practise', t: SCH(`Practise: ${name(weakest.unit)}`, `練習：${name(weakest.unit)}`), s: SCH(`Your weakest test chapter, ${weakest.pct}% so far`, `最弱的考試章節，目前 ${weakest.pct}%`), go: SCH('Practise', '練習'), run: () => { pick = { bookId: book.id, ids: new Set([weakest.unit.id]) }; startUnits(book, [weakest.unit], 10); } };
     else step = { icon: 'review', t: SCH('Mixed practice on all test chapters', '所有考試章節混合練習'), s: SCH('You’re in good shape: keep it fresh', '準備得不錯，保持手感'), go: SCH('Practise', '練習'), run: () => startUnits(book, units, 10) };
   }
   return { x, book, units, left, ready, raw, cal, step, all };
@@ -9602,7 +9609,7 @@ function renderPlacementResult() {
       <p>${LV('Buddy now knows where to start you. Each chapter’s questions begin at the right level for you.', 'Buddy 已經知道由哪裏開始。之後每一章的題目都會由適合你的程度開始。')}</p></div></section>
     <section class="card pl-list">${rows.map((r) => `<div class="pl-row ${r.st[0]}"><span class="pl-dot" aria-hidden="true"></span><span class="pl-t"><b data-raw>${esc(cleanUnitTitle(r.u.title))}</b><small>${r.st[2]}</small></span><span class="pl-chip">${r.st[1]}</span></div>`).join('')}</section>
     ${first ? `<section class="card pl-next"><h2>${LV('Where to begin', '建議由這裏開始')}</h2><p data-raw><b>${esc(cleanUnitTitle(first.title))}</b></p>
-      <div class="rd-row"><button class="btn" id="plLearn">${LV('Learn it first', '先上一課')}</button><button class="btn ghost" id="plPrac">${LV('Practise it', '直接練習')}</button></div></section>` : ''}
+      <div class="rd-row">${LESSONS_IN_PLAN ? `<button class="btn" id="plLearn">${LV('Learn it first', '先上一課')}</button>` : ''}<button class="btn ${LESSONS_IN_PLAN ? 'ghost' : ''}" id="plPrac">${LV('Practise it', '直接練習')}</button></div></section>` : ''}
     <button class="btn ghost" id="plBook">${LV('Back to the book', '返回課本')}</button>
     <p class="hint" style="margin:0;text-align:center">${LV('Only a few questions per chapter, so it’s a rough guide. It gets more accurate as you practise.', '每章只有幾題，所以只是大概的參考，練習越多會越準確。')}</p>
   </main>`;
@@ -9612,7 +9619,7 @@ function renderPlacementResult() {
   if (first && !S.plMoment) { S.plMoment = true; const nm = cleanUnitTitle(first.title), sj = bk.subject ? subj(bk.subject) : shortTitle(bk.title);
     setTimeout(() => moment({ face: 'done', confetti: true, sel: 'main.plres', hero: { icon: '🎯' }, title: PT('Level check done! 🎉', '程度評估完成！🎉'), sub: PT(`Buddy now knows where to start you in ${sj}.`, `Buddy 已知道你的${sj}從哪裏開始。`),
       lines: [['⏭️', PT('Chapters you already know start with harder questions, so you don’t waste time.', '你已懂的章節會由較難的題目開始，不會浪費時間。')], ['🎯', PT(`Best place to begin: ${nm}`, `最好由這裏開始：${nm}`)]],
-      main: { label: PT(`Start with ${shortTitle(first.title)}`, `由「${shortTitle(first.title)}」開始`), run: () => go({ name: 'learn', bookId: bk.id, unitId: first.id }) }, alt: { label: PT('See the results', '看看結果'), run: null } }), 600); }
+      main: { label: PT(`Start with ${shortTitle(first.title)}`, `由「${shortTitle(first.title)}」開始`), run: () => { if (LESSONS_IN_PLAN) return go({ name: 'learn', bookId: bk.id, unitId: first.id }); pick = { bookId: bk.id, ids: new Set([first.id]) }; startUnits(bk, [first], local.count || sessionSize()); } }, alt: { label: PT('See the results', '看看結果'), run: null } }), 600); }
   on('plPrac', () => { pick = { bookId: bk.id, ids: new Set([first.id]) }; startUnits(bk, [first], local.count || sessionSize()); });
   on('plBook', () => go({ name: 'book', bookId: bk.id }));
   window.scrollTo(0, 0);
@@ -11473,7 +11480,7 @@ async function fillSuggestion({ unitRef, qs, pct, missed, drillable, drill, agai
   const focus = (fn) => () => { pick = { bookId: book.id, ids: new Set(unitRef.units.map((x) => x.id)) }; fn(); };
   let s = null, alt = null;
   if (rushed) s = { t: Z('Slow down and redo this set', '放慢一點，重做這一組'), why: Z('The answers came very fast. Reading each question properly is the quickest way to a better score.', '你答得很快。逐題細心讀，是最快提升分數的方法。'), go: Z('Redo this set', '重做這一組'), run: again };
-  else if (pct < 50 && !learned && one) {
+  else if (LESSONS_IN_PLAN && pct < 50 && !learned && one) {
     s = { t: Z(`Take the lesson on ${name}`, `先上「${name}」這一課`), why: Z('This set was tough and you haven’t done the lesson for this chapter yet. It teaches the ideas step by step with quick checks, so the next set feels much easier.', '這一組比較難，而你還未上這一章的課。課堂會一步步講解並有小測，之後再做題會容易得多。'), go: Z('Start the lesson', '開始上課'), run: () => go({ name: 'learn', bookId: book.id, unitId: u.id }) };
     if (drillable.length) alt = { go: Z('Drill my weak spots instead', '改為針對弱項練習'), run: drill };
   } else if (pct < 50) {
@@ -11487,7 +11494,7 @@ async function fillSuggestion({ unitRef, qs, pct, missed, drillable, drill, agai
   } else if (pct >= 80 && ch && !ch.passDays && !locked('test')) {
     s = { t: Z(`Take the chapter test on ${name}`, `做「${name}」的章節測驗`), why: Z('You’re doing well in practice. Passing a timed test (80%+) is what proves it and moves this chapter past 70% ready.', '練習做得不錯。通過限時測驗（80% 或以上）才能證明你掌握了，並令這一章的準備度超過 70%。'), go: Z('Start the test', '開始測驗'), run: () => startChapterTest(book, unitRef.units) };
   } else if (pct >= 80 && nextU) {
-    const nl = !!(local.learned || {})[`${book.id}:${nextU.id}`];
+    const nl = !LESSONS_IN_PLAN || !!(local.learned || {})[`${book.id}:${nextU.id}`];
     s = { t: Z(`Move on to ${shortTitle(nextU.title)}`, `繼續下一章「${shortTitle(nextU.title)}」`), why: Z(`${name} is in good shape${ch && ch.passDays ? ' and you’ve passed its test' : ''}. Reviews will bring it back at the right time.`, `「${name}」掌握得不錯${ch && ch.passDays ? '，測驗也合格了' : ''}。之後會在適當時間提醒你溫習。`), go: nl ? Z('Practise it', '練習') : Z('Start its lesson', '開始上課'), run: nl ? () => startUnits(book, [nextU]) : () => go({ name: 'learn', bookId: book.id, unitId: nextU.id }) };
   } else if (drillable.length) {
     s = { t: Z('Drill your weak spots', '針對弱項練習'), why: Z('A few slips to tidy up. New questions on the ideas you missed lock them in.', '有幾個小錯要改正。針對答錯的概念做新題目，能把它們記牢。'), go: Z('Start the drill', '開始練習'), run: drill };

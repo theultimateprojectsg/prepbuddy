@@ -68,15 +68,16 @@ const PLAN_RULES = `
 The student wants a plan for right now. Call make_plan; no other reply is needed.
 - Fit the time they give (default 30 minutes if they don't say). Step minutes should add up to about that time. A practice set of 10 questions takes about 10 minutes.
 - Follow what they asked: a subject, a test, "100%", their mistakes, something new. If they ask for a test, use its chapters, weakest first.
-- Good order: a lesson for a chapter not started (action learn), then practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due. A chapter_test on one chapter takes 40 minutes (two chapters 50, three 60; 30 for P1–P2): plan with those times.
+- PrepBuddy is test prep, like a private tutor: practice questions, chapter tests and mock papers. Never plan a lesson (action learn), even for a chapter not started: a new chapter starts with a practice set.
+- Good order: practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due. A chapter_test on one chapter takes 40 minutes (two chapters 50, three 60; 30 for P1–P2): plan with those times.
 - Only add a Mistake book step when the snapshot shows open mistakes for that subject.
 - Only add a review step when the snapshot shows questions due for review.
-- A lesson (learn) is only for a chapter the student hasn't started. Never plan a lesson for a chapter that has practice or a passed test.
+- When the test chapters are practised and tested, a mock_paper across them is the best rehearsal in the last few days before the test.
 - Each chapter line says "What moves it next". Plan that, and pick the steps that move the most: skip practice on chapters whose next move is a test, a retest or reviews, and never plan a retest before the date given.
 - When a school test is within 14 days, plan its chapters first (unless the student asks for something else). Other chapters only once the test chapters' next move is just reviews or a later retest.
 - Stay where the student is in the book. Choose from chapters they have actually practised, or the next chapters in book order after those. Do not jump ahead to much later chapters (for example Unit 18 when they are on Unit 5) just because a level check gave them a %, unless the student asks for it or an upcoming school test covers it.
 - If a chapter has been practised a lot but its test isn't passed yet, plan its chapter_test rather than more practice: more practice won't raise it until the test is passed.
-- Every label names what and where, e.g. "Practise Fractions" or "Lesson: Division". Never vague labels like "Check your answers and notes".
+- Every label names what and where, e.g. "Practise Fractions" or "Chapter test: Division". Never vague labels like "Check your answers and notes".
 - Only use chapter and book codes that are in the snapshot. Never invent chapters.
 - Labels are short and say exactly what to do. Use the student's language.`;
 const ZH = `Reply in Traditional Chinese as used in Hong Kong (standard written Chinese). The student may write in English, Chinese or Cantonese.`;
