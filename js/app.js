@@ -5126,8 +5126,17 @@ function devQuickSetup() {
     mygoals: { main: 'test', longs: [{ subj: 'Science', target: 6.7 }] } });
 }
 // testing only: answer the rest of this set at a chosen score and go to the results (counts like real answers)
-function devFinish(rate) {
+function devFinish(rate, waited = 0) {
   if (!DEV || !S || !S.qs || !S.qs.length) return;
+  // the set isn't fully written yet: wait for the rest (up to 3 minutes) so the dev run answers a full set
+  const busy = [...(S.jobs || [])].some((j) => !j.done);
+  if (S.qs.length < (S.target || 0) && !S.error && waited < 180 && (busy || waited < 5)) { // nothing writing after 5s: finish what's there
+    const sess = S;
+    if (!waited) { if (!busy) topUp(sess); toast(`DEV · waiting for ${sess.target - sess.qs.length} more questions to be written…`); }
+    const b = document.querySelector('.dev-pass'); if (b) b.innerHTML = `<span>DEV · writing questions ${sess.qs.length}/${sess.target}…</span>`;
+    setTimeout(() => { if (S === sess) devFinish(rate, waited + 1); }, 1000);
+    return;
+  }
   const from = S.phase === 'revealed' ? S.i + 1 : S.i, n = S.qs.length, ks = [];
   for (let k = from; k < n; k++) ks.push(k);
   const all = n, want = Math.round((rate / 100) * all), already = S.qs.slice(0, from).filter((q, k) => (S.got[k] || 0) >= marksOf(q)).length;
