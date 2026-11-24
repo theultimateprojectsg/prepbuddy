@@ -1350,7 +1350,7 @@ async function askPlan(text) {
         throw Object.assign(new Error(''), { maxed: true }); }
       steps.splice(0, steps.length, ...keep); }
     local.bplan = { d: startOfToday(), t: Date.now(), ask: text.slice(0, 200), title: String(P.title || '').slice(0, 80), intro: String(P.intro || '').slice(0, 220), steps };
-    if (!(local.dayPick && local.dayPick.d === startOfToday())) local.dayPick = { d: startOfToday(), k: 'plan' }; // a plan picked first becomes today's plan
+    if (!(local.dayPick && local.dayPick.d === startOfToday() && local.dayPick.k !== 'choose')) local.dayPick = { d: startOfToday(), k: 'plan' }; // a plan picked first becomes today's plan
     saveLocal(); track('buddy_plan'); ok = true;
   } catch (e) { if (!e.maxed) { planState.error = e.message || String(e); planState.maxed = null; } }
   if (Date.now() - t0 < 1800) await new Promise((r) => setTimeout(r, 1800 - (Date.now() - t0))); // long enough to see the steps tick
@@ -1435,7 +1435,7 @@ function bindPlan() {
       const ask = P.ask; local.bplan = null; saveLocal(); await renderHome(); const q = document.getElementById('bpQ'); if (q) { q.value = ask; q.focus(); q.select(); q.scrollIntoView({ block: 'center' }); } }; }
   { const r = document.getElementById('bpRemove'); if (r) r.onclick = async () => {
       if (!(await confirmLeave({ title: PT('Remove Buddy’s plan?', '移除 Buddy 的計劃？'), body: PT('It goes away for today. Steps you’ve done still count.', '今天的計劃會移除。已完成的步驟仍然計算。'), stay: PT('Keep it', '保留'), leave: PT('Remove', '移除') }))) return;
-      local.bplan = null; if (local.dayPick && local.dayPick.k === 'plan') local.dayPick = null; saveLocal(); renderHome(); }; }
+      local.bplan = null; if (local.dayPick && local.dayPick.k === 'plan') local.dayPick = { d: startOfToday(), k: 'choose' }; saveLocal(); renderHome(); }; }
   // Buddy's pick gets the same "Buddy is making your plan" moment as the other choices, then lands on it with a glow
   { const pk = document.getElementById('bpPick'); if (pk && pk.dataset.fresh) pk.onclick = () => askPlan(PT('Buddy’s pick: choose the best thing for me to practise next, about 15 minutes', 'Buddy 推介：挑選我下一步最值得練習的內容，約 15 分鐘'));
     else if (pk) pk.onclick = async () => {
@@ -1447,10 +1447,10 @@ function bindPlan() {
       await renderHome();
       const card = document.querySelector('main.today>section.ms-card:not(.bp-card):not(.bp-ask2)');
       if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); card.classList.add('bp-new'); sfx('pop'); setTimeout(() => card.classList.remove('bp-new'), 2400); } }; }
-  { const ch = document.getElementById('msChoose'); if (ch) ch.onclick = () => { local.dayPick = null; saveLocal(); renderHome().then(() => { const c = document.querySelector('.bp-ask2'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); }; }
+  { const ch = document.getElementById('msChoose'); if (ch) ch.onclick = () => { local.dayPick = { d: startOfToday(), k: 'choose' }; saveLocal(); renderHome().then(() => { const c = document.querySelector('.bp-ask2'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); }; }
   { const a = document.getElementById('bpAnyway'); if (a) a.onclick = () => { const M = planState.maxed; if (!M) return; planState.maxed = null;
       local.bplan = { d: startOfToday(), t: Date.now(), ask: M.ask, title: M.title, intro: M.intro, steps: M.steps, extra: true };
-      if (!(local.dayPick && local.dayPick.d === startOfToday())) local.dayPick = { d: startOfToday(), k: 'plan' };
+      if (!(local.dayPick && local.dayPick.d === startOfToday() && local.dayPick.k !== 'choose')) local.dayPick = { d: startOfToday(), k: 'plan' };
       saveLocal(); renderHome().then(() => { const c = document.querySelector('.bp-card'); if (c) { c.scrollIntoView({ behavior: 'smooth', block: 'start' }); c.classList.add('bp-new'); setTimeout(() => c.classList.remove('bp-new'), 2400); } }); }; }
   { const f = document.getElementById('bpForm'); if (f) f.onsubmit = (e) => { e.preventDefault(); askPlan(document.getElementById('bpQ').value); }; }
   $app.querySelectorAll('[data-pask]').forEach((b) => (b.onclick = () => askPlan(b.dataset.pask)));
@@ -3350,7 +3350,8 @@ async function renderHome() {
   }
   // Today starts with a choice: Buddy's pick (the mission) or a plan from Buddy. Whatever is picked is today's plan.
   const DPk = local.dayPick && local.dayPick.d === t0 ? local.dayPick.k : null;
-  const MODE = DPk || (steps.some((x) => x.done) ? 'mission' : PP ? 'plan' : null);
+  // Buddy's pick shows straight away; "Pick something else" (k 'choose') brings back the choices for today
+  const MODE = DPk === 'choose' ? (PP ? 'plan' : null) : DPk || (steps.some((x) => x.done) ? 'mission' : PP ? 'plan' : steps.some((x) => !x.done && x.now) ? 'mission' : null);
   // with a chosen plan, "steps left" (Today's badge and the results button) counts the plan's steps, not the mission's
   if (MODE === 'plan') { const n = planSteps.filter((x) => !x.done).length; if (!local.msLeft || local.msLeft.n !== n || !local.msLeft.plan) { local.msLeft = { d: t0, n, plan: 1 }; saveLocal(); renderTabs(); } }
   // when Buddy's pick and an asked-for plan are both done, they share one "done today" card
