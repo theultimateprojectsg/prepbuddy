@@ -522,7 +522,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
        a right Analyse answer.
      - Mixed papers (this chapter with others, like a school test), up to 15% more: two strong ones fill it.
      KEPT (it fades unless shown to stick, like Duolingo; won back with a check, like Khan):
-     - After the last proof (a passed test or mixed paper, a "Still there?" check, or a practice day at 80%+), 2 days'
+     - After the last proof (a passed test or mixed paper, a "Still there?" check, or a practice day at 70%+), 2 days'
        grace, then it fades towards 60% at a rate set by its strength: Fresh 3%/day, Holding 1.5 (proven again 3+
        days later), Solid 0.75 (7+ days), Locked in 0.4 (14+ days). A test, mixed paper or check after such a gap
        raises the strength; a good practice day only restarts the clock.
@@ -554,7 +554,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     for (const x of mix) if (x.r[0] / x.r[1] >= PASS) proofs.push([x.t, true]);
     const ck = (local.checks || {})[key]; if (ck) proofs.push([ck.t, ck.sc >= 0.8]); // a weaker check still restarts the clock, from a lower point (below)
     { const days = new Map(); for (const e of P) { if (e.k === 'lock') continue; const d = new Date(e.t).toDateString(), r = days.get(d) || [0, 0, e.t]; r[0] += Math.max(0, Math.min(1, e.g / e.m)); r[1]++; r[2] = Math.max(r[2], e.t); days.set(d, r); }
-      for (const r of days.values()) if (r[1] >= 5 && r[0] / r[1] >= 0.8) proofs.push([r[2], false]); }
+      for (const r of days.values()) if (r[1] >= 5 && r[0] / r[1] >= 0.7) proofs.push([r[2], false]); }
     proofs.sort((a, b) => a[0] - b[0]);
     for (let i = 1, prev = proofs.length ? proofs[0][0] : 0; i < proofs.length; i++) { const gap = (proofs[i][0] - prev) / DAY;
       if (proofs[i][1]) strength = Math.max(strength, gap >= 14 ? 3 : gap >= 7 ? 2 : gap >= 3 ? 1 : 0); prev = proofs[i][0]; }
