@@ -914,6 +914,8 @@ function planAvg(pcts, sets, cap) {
    (about a fifth of it per day of practice). Smooth on purpose: one day's work nudges it, never swings it. */
 function planForecast(ready, chs, left, habit = practiceHabit()) {
   if (ready == null || left < 1) return ready;
+  // no forecast until there's something to go on: 3 days of practice (the best case, habit 1, is still worked out)
+  if (habit !== 1 && practiceDays() < 3) return null;
   // and expects some forgetting: the fewer days practised, the more slips away before a test that's weeks off
   const top = 90, forget = (1 - habit) * Math.min(15, left * 0.5);
   const grow = ready >= top ? 0 : (top - ready) * (1 - Math.exp(-(left * habit) / 5));
@@ -7471,7 +7473,7 @@ async function renderGoals() {
 function goalEditDialog(id, { subs = [] }) {
   const Z = PT, MG = myGoals(), longs = (MG.longs || []).map((x) => ({ ...x }));
   const isT = id && id.startsWith('t:'), x = isT ? (local.sched || []).find((y) => y.id === id.slice(2)) : null, li = !isT && id ? longs.findIndex((y) => 'l:' + (y.subj || '') === id) : -1;
-  const st = { aim: x ? x.aim || TEST_AIM : 80, target: li >= 0 ? longs[li].target || 6.7 : 6.7, pin: id ? MG.pin === id : false, subj: subs[0] || '' };
+  const st = { aim: x ? x.aim || TEST_AIM : TEST_AIM, target: li >= 0 ? longs[li].target || 6.7 : 6.7, pin: id ? MG.pin === id : false, subj: subs[0] || '' };
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   const draw = () => {
     const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
@@ -7513,7 +7515,7 @@ function goalsCardHTML(GD, o = {}) {
   // one goal = one sub-card, all the same shape: icon, name, when or target, status; then its measure
   const ST = GOAL_ST();
   const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}</span>`;
-  const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<span class="pv-flag ag-flag" style="left:${g.aim}%;--a:${g.aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</b></span></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>`;
+  const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<span class="pv-flag ag-flag" style="left:${g.aim}%;--a:${g.aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</b></span></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>${g.fc == null && g.ready != null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
   const sub = (g, i) => {
     const mis = (o.inMission ? o.inMission(g) : false) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s plan', '已在今日計劃中')}</span>` : '';
     if (g.kind === 'test') return `<details class="ag-sc t ${g.st}"><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${o.testBody ? o.testBody(g) : ''}</div></details>`;
@@ -7565,7 +7567,7 @@ async function fullTestCards(tests, btn) {
     const waits = (I.levers || []).filter((l) => l && l.k === 'wait').map((l) => l.at).sort((a, b) => a - b);
     const todayStep = !ord.length && waits.length ? PT(`Today: your test chapters are as far as practice can take them. Do any reviews that come up; retests count from ${new Date(waits[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `今天：考試章節已練到目前的上限。有溫習就做；由 ${new Date(waits[0]).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起重考才計算。`) : ord.length ? (ord[0][1] === 0 ? PT(`Today: take the lesson on ${ord[0][0]}. It’s not started yet.`, `今天：先上「${ord[0][0]}」這一課，還未開始。`) : PT(`Today: practise ${ord[0][0]}, your weakest chapter (${ord[0][1]}%).`, `今天：練習最弱的「${ord[0][0]}」（${ord[0][1]}%）。`)) : '';
     const testStep = left >= 2 ? PT(`${I.prev}: a practice test, so test day feels familiar.`, `${I.prev}：做一次模擬測驗，考試時更有把握。`) : '';
-    if (I.lock) return box(E(PT(`Here’s how to reach ${aim}%`, `這樣做就能達到 ${aim}%`)), [todayStep, testStep].filter(Boolean).map(E));
+    if (I.lock || I.fc == null) return box(E(PT(`Here’s how to reach ${aim}%`, `這樣做就能達到 ${aim}%`)), [todayStep, testStep].filter(Boolean).map(E));
     const usual = Math.max(1, Math.round(left * I.habit)), dayW = (n) => (n >= left ? PT('every day', '每天') : PT(`on ${n} of the ${left} days left`, `餘下 ${left} 日中的 ${n} 日`));
     const mins = (sets, days) => Math.max(10, Math.round((sets * SET_MIN) / Math.max(1, days) / 5) * 5);
     const N = planNeeds(ready, I.pcts, left, aim), easy = N.sets <= Math.round(left * I.habit * 2);
@@ -7599,7 +7601,7 @@ async function fullTestCards(tests, btn) {
       : PT(`With the plan you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<span class="pv-flag" style="left:${aim}%;--a:${aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${PT(`Goal ${aim}%`, `目標 ${aim}%`)}</b></span><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Goal for this test', '這個測驗的目標')}"></div>
-      ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>`;
+      ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : fc == null ? '' : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>${!fcLocked && fc == null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
     const coach = p.ready == null ? '' : `<div class="pv-fcline" data-ready="${p.ready}" data-left="${p.left}" data-info="${esc(JSON.stringify(fcI))}">${fcLine(p.ready, aim, p.left, fcI)}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Slide Buddy to set your own goal for this test.', '拖動 Buddy，為這個測驗設定你自己的目標。')}</p>` : ''}${coach}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
@@ -9372,7 +9374,7 @@ function testDialog(edit) {
     kind: edit ? (edit.grp ? 'exam' : edit.kind || 'test') : 'test',
     id: edit ? edit.id : uid(), name: edit ? (edit.grp ? edit.gname || '' : edit.name) : '', named: !!edit,
     date: edit ? edit.date : wk, subj: edit ? edit.subj || '' : '', b: edit ? edit.b || null : null, u: new Set(edit && edit.u ? edit.u : []),
-    lang: edit && edit.lang ? edit.lang : 'zh', L: edit ? edit.L || '' : '', aim: edit && edit.aim ? edit.aim : group && group[0].aim ? group[0].aim : 80,
+    lang: edit && edit.lang ? edit.lang : 'zh', L: edit ? edit.L || '' : '', aim: edit && edit.aim ? edit.aim : group && group[0].aim ? group[0].aim : TEST_AIM,
     parts: group ? group.map((x) => ({ id: x.id, subj: x.subj || '', date: x.date, b: x.b || '', score: x.score })) : [{ id: uid(), subj: '', date: wk, b: '' }],
   };
   const autoName = () => {
