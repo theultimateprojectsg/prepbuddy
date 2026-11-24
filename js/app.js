@@ -514,7 +514,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   /* The chapter % (the score this child would likely get). Earned, then kept:
      EARNED (no waiting, only real work):
      - Practice, up to 60%: right answers, worth more at harder levels and for full-marks written answers; the same
-       question again counts half, then a quarter; about 2.5 points per question of the chapter's size fill it; held
+       question again counts half, then a quarter; at least 5 full sets fill it and one sitting adds at most a quarter (so 15%); held
        back if recent answers aren't mostly right.
      - Chapter tests (always new questions, the same difficulty mix every time), up to 25% more: two strong tests fill
        it. A pass on a practised chapter makes it Test-ready (70%). A failed latest test halves this part.
@@ -530,10 +530,16 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   let likely = 0, earned = 0, gates = {}, fading = 0, strength = 0;
   let pracPart = 0, pracSince = 0;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), P = L.filter((e) => e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0;
+    // practice fills over several sets, never in one: the points needed are at least 5 sets' worth of right answers
+    // at Understand level, and one sitting (answers less than 20 minutes apart) adds at most a quarter of them
+    const need = Math.max(2.5 * T, 5 * sessionSize());
+    let sit = 0, sitPts = 0;
     for (const e of P) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
-      pts += Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.5 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); }
+      if (e.t - sit > 20 * 60000) sitPts = 0; sit = e.t;
+      const v = Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.25 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1);
+      const add = Math.max(0, Math.min(v, need / 4 - sitPts)); sitPts += add; pts += add; }
     const rec = P.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
-    const prac = 60 * Math.min(1, pts / (2.5 * T)) * Math.min(1, acc / 0.9);
+    const prac = 60 * Math.min(1, pts / need) * Math.min(1, acc / 0.9);
     pracPart = Math.round(prac);
     const lastT = tests.length ? tests[tests.length - 1].t : 0;
     pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
@@ -2929,8 +2935,8 @@ async function renderHome() {
         if (!c.passes && chapterLever(c).k === 'test' && (!first || c.pct > first.c.pct)) first = { b, c };
         else if (c.passes && chapterLever(c).k === 'retest' && (!again || c.pct > again.c.pct)) again = { b, c };
         if (c.fading >= 8 && !c.checkWeak && (!slip || c.fading > slip.c.fading)) slip = { b, c }; }
-      const prac = m.chapters.filter((c) => c.done >= 4);
-      if (prac.length >= 3 && (!mock || prac.length > mock.us.length)) mock = { b, us: prac.map((c) => c.unit.id) }; }
+      const prac = m.chapters.filter((c) => c.pct >= 70); // mixed papers once chapters are Test-ready
+      if (prac.length >= 2 && (!mock || prac.length > mock.us.length)) mock = { b, us: prac.map((c) => c.unit.id) }; }
     // a chapter that has slipped 8%+ from what it earned: a quick "Still there?" check wins it back
     if (slip) { const nm = shortTitle(slip.c.unit.title);
       cands.push({ key: `chk1:${slip.b.id}:${slip.c.unit.id}`, icon: 'review', t: Z(`Still there? ${nm}`, `還記得嗎？${nm}`), s: Z(`6 questions · about 8 min · back to ${slip.c.earned}%`, `6 題 · 約 8 分鐘 · 回到 ${slip.c.earned}%`),
