@@ -3974,6 +3974,10 @@ function renderSettings(sec) {
       <button class="btn-sm primary" id="sfbgo" style="align-self:flex-start">${PLT('Send', '傳送')}</button>
       <span class="hint" style="margin:0">${PLT(`Family code ${esc(local.code || '')}`, `家庭代碼 ${esc(local.code || '')}`)}</span>
     </section>` : ''}
+    ${(() => { try { return localStorage.getItem('pb.dev') !== null; } catch (e) { return false; } })() ? `<section class="card stack g10" style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">Developer mode</b><button type="button" class="btn-sm ${DEV ? 'primary' : 'quiet'}" id="sdev" aria-pressed="${DEV}">${DEV ? 'On' : 'Off'}</button></div>
+      <span class="muted" style="font-size:14px;line-height:1.5">For testing: shows answers and the “finish at 60 / 80 / 100%” bar. Only shows on devices that have used developer mode.</span>
+    </section>` : ''}
 `;
   const SECS = {
     child: [PLT('Your child', '你的孩子'), 'child', `    <section class="card stack g10" style="padding:16px">
@@ -4100,6 +4104,7 @@ function renderSettings(sec) {
   $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { if (b.dataset.lang === LANG) return; setLang(b.dataset.lang); go({ name: 'settings', sec }); }));
   { const nm = document.getElementById('sname'); if (nm) nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); }; }
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
+  { const d = document.getElementById('sdev'); if (d) d.onclick = () => { try { localStorage.setItem('pb.dev', DEV ? '0' : '1'); } catch (e) {} location.replace(location.pathname + location.search.replace(/[?&]dev=[01]\b/, '').replace(/^&/, '?') + location.hash); }; }
   { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); const f = document.getElementById('stourfull'); if (f) f.onclick = () => startTour('full'); }
   { const sp = document.getElementById('sparent'); if (sp) sp.onclick = () => openParent(); }
   { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings', sec }); }; }
