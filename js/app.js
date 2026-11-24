@@ -3363,7 +3363,7 @@ async function renderHome() {
         return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
       ${missionHowHTML()}
       ${starsOn() ? `<p class="ms-bonus">${starSVG(14)} ${Z('Finish every step for +5 bonus stars', '完成所有步驟，額外 +5 粒星星')}</p>` : ''}
-      <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button>${!steps.some((x) => x.done) ? `<button class="linkbtn ms-choose" id="msChoose">${Z('Pick something else for today', '今天改做別的')}</button>` : ''}</section>`;
+      <button class="btn ms-start" id="msstart">${steps.some((x) => x.done) ? Z('Keep going', '繼續') : Z('Start', '開始')}</button></section>`;
   await todayReadyHTML(books); // keeps each book's daily readiness history (used by the 'slipping' banner); not shown on Today
   // ---- greeting card: streak and this week's days ----
   const daysSet = new Set(local.log.map((e) => dayStart(e.t)));
@@ -3526,6 +3526,7 @@ async function renderHome() {
     ${MODE === 'plan' ? (planCard ? planCard + (planDoneNow ? planHTML(true, nextPick, true) : '') : planHTML(true, nextPick, true)) : ''}
     ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
     ${MODE === 'mission' && msFirst ? missionHTML : ''}
+    ${MODE === 'mission' && msFirst && !(planCard && !planDoneNow) ? planHTML(false, null, true) : ''}
     ${MODE === 'mission' && msFirst && planDoneNow ? planCard : ''}
     ${installTip()}
     ${winHTML}
