@@ -520,7 +520,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     if (apply < 3) est = Math.min(est, 75);
     if (est >= 85 && !(wrote >= 2 && analyse)) est = 85; else if (apply >= 3 && wrote >= 2 && analyse) est += Math.min(15, mc);
     earned = Math.round(Math.min(100, est));
-    gates = { apply, wrote, analyse, mixed: mix.length };
+    gates = { apply, wrote, analyse, mixed: mix.length, testPart: Math.min(25, tc), mixPart: Math.min(15, mc) }; // how full each part is
     // proofs: [time, strong?]; strong ones (tests, mixed papers, checks) can raise the strength
     const proofs = [];
     for (const x of tests) if (x.r[0] / x.r[1] >= PASS) proofs.push([x.t, true]);
@@ -627,15 +627,15 @@ function weakestChapter(m) {
 function nextStep(c) {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en), t = shortTitle(c.unit.title), g = c.gates || {};
   const S = (kind, en, zh, diff) => ({ unit: c.unit, kind, text: Z(en, zh), diff });
-  if (c.pct >= 100 && !c.cracked) return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
-  if (c.cracked) return S('check', `Win back ${t}: a quick check (it was ${c.earned}%)`, `贏回「${t}」：快速檢查（曾經是 ${c.earned}%）`);
+  if (c.pct >= 100 && !(c.fading >= 1)) return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
+  if ((c.fading || 0) >= 1) return S('check', `Win back ${t}: a quick check (it was ${c.earned}%)`, `贏回「${t}」：快速檢查（曾經是 ${c.earned}%）`);
   if ((c.open || 0) >= 3) return S('mistakes', `Fix ${c.open} mistakes in ${t}`, `改正「${t}」的 ${c.open} 條錯題`);
   if (!c.done) return S('practise', `Start ${t}: a first practice set`, `開始「${t}」：第一組練習`);
   if ((c.prac || 0) < 50) return S('practise', `Practise more of ${t}`, `多練習「${t}」`);
   if ((g.apply || 0) < 3) return S('practise', `Get ${3 - (g.apply || 0)} harder (Apply) question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`, 'hard');
-  if (c.passes < 2 || !c.lastPass) return S('test', `${c.passes ? 'A second chapter test' : 'Chapter test'} on ${t} (new questions, 80% to pass)`, `「${t}」${c.passes ? '第二次' : ''}章節測驗（新題目，80% 合格）`);
+  if (c.passes < 2 || !c.lastPass || (g.testPart != null && g.testPart < 24.5)) return S('test', c.passes >= 2 ? `Another chapter test on ${t}: higher marks fill the test part` : `${c.passes ? 'A second chapter test' : 'Chapter test'} on ${t} (new questions, 80% to pass)`, c.passes >= 2 ? `「${t}」再做一次章節測驗：分數越高，測驗部分越滿` : `「${t}」${c.passes ? '第二次' : ''}章節測驗（新題目，80% 合格）`);
   if (!((g.wrote || 0) >= 2 && g.analyse)) return S('practise', `Full marks on 2 written Apply answers and 1 Analyse question in ${t}`, `在「${t}」的 2 條應用文字題拿滿分，並答對 1 條分析題`, 'hard');
-  if ((g.mixed || 0) < 2) return S('mixed', `A mixed paper with ${t} and other chapters`, `包括「${t}」和其他章節的綜合試卷`);
+  if ((g.mixed || 0) < 2 || (g.mixPart != null && g.mixPart < 14.5)) return S('mixed', `A mixed paper with ${t} and other chapters`, `包括「${t}」和其他章節的綜合試卷`);
   if ((c.prac || 0) < 60) return S('practise', `Practise more of ${t} to top up its practice part`, `多練習「${t}」，補滿練習部分`);
   return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
 }
@@ -670,7 +670,7 @@ async function closerPick() {
     for (const c of m.chapters) {
       if ((ids && !ids.includes(c.unit.id)) || c.pct >= 100 || NOT_TEACHING.test(String(c.unit.title))) continue;
       const st = masterySteps({ ...m, chapters: [c] })[0]; if (!st) continue;
-      if (st.kind === 'check' && !c.cracked) continue; // a check only helps a chapter that has faded
+      if (st.kind === 'check' && !(c.fading >= 1)) continue; // a check only helps a chapter that has faded
       if (!best || c.pct < best.c.pct) best = { book, c, step: st, test };
     }
   }
@@ -684,7 +684,7 @@ async function testCtx(id) {
 }
 async function runTestNext(id) {
   const t = await testCtx(id); if (!t) return;
-  const pk = t.chs.map((c) => ({ c, st: nextStep(c) })).filter((x) => x.st && !(x.st.kind === 'check' && !x.c.cracked)).sort((a, z) => a.c.pct - z.c.pct)[0];
+  const pk = t.chs.map((c) => ({ c, st: nextStep(c) })).filter((x) => x.st && !(x.st.kind === 'check' && !(x.c.fading >= 1))).sort((a, z) => a.c.pct - z.c.pct)[0];
   if (!pk) return toast(PT('Everything for this test that can move today has moved. Come back tomorrow!', '這個測驗今天能進步的都完成了，明天再來！'));
   track('test_next'); return boostSession(t.p.book, pk.c, pk.st);
 }
@@ -3185,7 +3185,7 @@ async function renderHome() {
     // Every goal shown the same way, most work needed first; no focus, no picking. Today's mission says what to do.
     if (GD && (!DEV || DMODE === 'all')) {
       const cardOf = (G) => { const k = tests.steps.indexOf(G.p); return k >= 0 ? cards[k] : ''; };
-      comboHTML = goalsCardHTML(GD, { testBody: cardOf, inMission: (G) => G.kind === 'test' && steps.some((x) => !x.done && x.now && String(x.key).startsWith(`c:${G.p.x.id}:`)) });
+      comboHTML = goalsCardHTML(GD, { testBody: cardOf, inMission: (G) => G.kind === 'test' && G.p.book && steps.some((x) => !x.done && x.now && (G.p.units || []).some((u) => x.key === `n:${G.p.book.id}:${u.id}`)) });
     }
 
   if (pDoneN) planCard = MODE === 'plan' ? missionHTML : '';
@@ -6663,16 +6663,16 @@ function testDayPlan(p, chs, aim = TEST_AIM) {
   const setGain = 12 * Math.min(1, acc / 0.9), passes = acc >= 0.75;
   // a copy of each chapter that the plan moves forward (the same fields the brain reads)
   const sim = chs.map((c) => ({ unit: c.unit, real: c, pct: c.pct, prac: c.prac || 0, done: c.done, passes: c.passes || 0, lastPass: c.lastPass, open: 0, due: 0, cracked: false,
-    gates: { apply: (c.gates || {}).apply || 0, wrote: (c.gates || {}).wrote || 0, analyse: !!(c.gates || {}).analyse, mixed: (c.gates || {}).mixed || 0 }, tp: 0, mp: 0 }));
+    gates: { apply: (c.gates || {}).apply || 0, wrote: (c.gates || {}).wrote || 0, analyse: !!(c.gates || {}).analyse, mixed: (c.gates || {}).mixed || 0, testPart: (c.gates || {}).testPart || 0, mixPart: (c.gates || {}).mixPart || 0 }, tp: 0, mp: 0, fading: 0 }));
   const pctOf = (x) => { let e = Math.min(60, x.prac) + Math.min(25, x.tp); if (x.passes && x.prac >= 35) e = Math.max(e, 70);
     if (x.gates.apply < 3) e = Math.min(e, 75); if (e >= 85 && !(x.gates.wrote >= 2 && x.gates.analyse)) e = 85; else if (x.gates.apply >= 3 && x.gates.wrote >= 2 && x.gates.analyse) e += Math.min(15, x.mp);
     return Math.round(Math.min(100, Math.max(x.pct0 != null ? x.pct0 : 0, e))); };
-  sim.forEach((x) => { x.tp = x.passes * 12.5; x.mp = x.gates.mixed * 7.5; x.pct0 = x.pct; });
+  sim.forEach((x) => { x.tp = x.gates.testPart; x.mp = x.gates.mixPart; x.pct0 = x.pct; });
   const apply = (x, st) => { // what one step does, by the rules
     if (st.kind === 'practise' || st.kind === 'mistakes' || st.kind === 'review') { x.prac = Math.min(60, x.prac + setGain); x.done = (x.done || 0) + sessionSize();
       if (st.diff && x.prac >= 50) { if (x.gates.apply < 3) x.gates.apply = 3; else { x.gates.wrote = 2; x.gates.analyse = true; } } }
-    else if (st.kind === 'test') { if (passes) { x.passes++; x.lastPass = true; x.tp = Math.min(25, x.tp + 12.5); } else x.prac = Math.max(0, x.prac - 5); }
-    else if (st.kind === 'mixed') { x.gates.mixed++; x.mp = Math.min(15, x.mp + 7.5); }
+    else if (st.kind === 'test') { if (passes) { x.passes++; x.lastPass = true; x.tp = Math.min(25, x.tp + 12.5 * acc * acc); x.gates.testPart = x.tp; } else x.prac = Math.max(0, x.prac - 5); }
+    else if (st.kind === 'mixed') { x.gates.mixed++; x.mp = Math.min(15, x.mp + 7.5 * acc * acc); x.gates.mixPart = x.mp; }
     else if (st.kind === 'check') x.cracked = false;
     x.pct = pctOf(x); };
   const cost = (st) => (st.kind === 'test' || st.kind === 'mixed' ? ctMins(1) : stepMins(sessionSize(), 'q'));
@@ -7264,16 +7264,16 @@ async function fullTestCards(tests, btn) {
       if (p.left >= 2) steps.push(PT(`Practice test on ${fmtDay(testDay(p.x) - DAY)}`, `${fmtDay(testDay(p.x) - DAY)} 做模擬測驗`));
     }
     const what = p.ready == null ? PT('Add the textbook so Buddy can get you ready.', '加入課本，Buddy 便可幫你準備。')
-      : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT(`Aim for 80% by test day.`, '目標：考試前達到 80%。'))
+      : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT(`Aim for ${aim}% by test day.`, `目標：考試前達到 ${aim}%。`))
       : st === 'ok' ? PT(`With the plan you’ll reach about ${fc}%. Short reviews keep it there; Today’s plan takes care of it.`, `按現時進度，考試時約 ${fc}%。今日計劃會安排溫習，保持狀態。`)
-      : PT(`With the plan you’ll reach about ${fc}%. Aim for 80%.`, `按現時進度，考試時約 ${fc}%。目標 80%。`);
+      : PT(`With the plan you’ll reach about ${fc}%. Aim for ${aim}%.`, `按現時進度，考試時約 ${fc}%。目標 ${aim}%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<span class="pv-flag" style="left:${aim}%;--a:${aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${PT(`Goal ${aim}%`, `目標 ${aim}%`)}</b></span><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Goal for this test', '這個測驗的目標')}"></div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : fc == null ? '' : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>${!fcLocked && fc == null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
     const coach = p.ready == null ? '' : `<div class="pv-fcline" data-ready="${p.ready}" data-left="${p.left}" data-info="${esc(JSON.stringify(fcI))}">${fcLine(p.ready, aim, p.left, fcI)}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Slide Buddy to set your own goal for this test.', '拖動 Buddy，為這個測驗設定你自己的目標。')}</p>` : ''}${coach}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
-      <div class="pv-test-f">${p.book && p.ready != null && (p.x.kind || 'test') !== 'dict' ? btn(PT('My plan for this test', '這個測驗的計劃'), () => testPlanSheet(p, chOf(p), (local.sched || []).find((y) => y.id === p.x.id)?.aim || TEST_AIM, fc), 'pv-btn primary') : p.step ? btn(esc(p.step.t), p.step.run, 'pv-btn primary') : ''}${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
+      <div class="pv-test-f">${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
   });
 }
 // goal sliders on the full test cards: move the line and the status live; save when let go
