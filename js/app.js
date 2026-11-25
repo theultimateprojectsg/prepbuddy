@@ -382,11 +382,11 @@ function scoreOf(questions) {
 /* What one more practice set would really do to a chapter: answer a set (questions not seen yet first, then the
    least-known) at the child's recent first-try accuracy in this chapter, work the % out exactly as it will be worked
    out after the real set, then put everything back. So the bar on a step and the result afterwards agree. */
-function simPractice(book, u, qs, text, ntext, base, n, field = 'pct') {
+function simPractice(book, u, qs, text, ntext, base, n, field = 'pct', pAll = null) {
   if (!qs.length) return 0;
   const now = Date.now(), S0 = local.stats, M0 = local.mistakes || {};
   const recent = local.log.filter((e) => e.m && e.k !== 'mistakes' && qs.some((q) => q.id === e.q)).slice(-20);
-  const p = recent.length >= 4 ? recent.reduce((a, e) => a + e.g / e.m, 0) / recent.length : 0.75;
+  const p = pAll != null ? pAll : recent.length >= 4 ? recent.reduce((a, e) => a + e.g / e.m, 0) / recent.length : 0.75;
   const pool = [...qs.filter((q) => !S0[q.id]), ...qs.filter((q) => S0[q.id]).sort((a, b) => (S0[a.id].box || 0) - (S0[b.id].box || 0))].slice(0, n);
   const right = Math.round(pool.length * p);
   const logLen = local.log.length, md = JSON.stringify(local.mastDay || null), keep = new Map(pool.map((q) => [q.id, [S0[q.id], M0[q.id]]]));
@@ -609,7 +609,7 @@ async function bookMastery(book) {
     store.getMany(book.units.map((u) => `qs:${book.id}:${u.id}`), []),
   ]);
   const chapters = book.units.map((u, i) => { const qs = (lists[i] || []).filter((q) => !blocked(q)), tx = texts[i] || '', nt = ntextOf(`${book.id}:${u.id}`, tx);
-    const c = { unit: u, ...chapterMastery(book, u, qs, tx, nt) }; c.sim = (n) => simPractice(book, u, qs, tx, nt, c.pct, n); c.simL = (n) => simPractice(book, u, qs, tx, nt, c.likely, n, 'likely'); return c; });
+    const c = { unit: u, ...chapterMastery(book, u, qs, tx, nt) }; c.sim = (n, p) => simPractice(book, u, qs, tx, nt, c.pct, n, 'pct', p); c.simL = (n, p) => simPractice(book, u, qs, tx, nt, c.likely, n, 'likely', p); return c; });
   const w = chapters.reduce((t, c) => t + c.weight, 0) || 1;
   const raw = chapters.reduce((t, c) => t + c.pct * c.weight, 0) / w, pct = raw > 0 ? Math.max(1, Math.round(raw)) : 0; // started = at least 1%
   const areas = Object.fromEntries(AREAS.map(([k]) => [k, chapters.reduce((t, c) => t + c.score[k] * c.weight, 0) / w]));
@@ -3160,16 +3160,18 @@ async function renderHome() {
             if (st && (st.action === 'practise' || st.action === 'chapter_test')) { const nm0 = shortTitle(ch.unit.title);
               if (st.action === 'practise') { st.action = 'chapter_test'; st.label = Z(`Chapter test: ${nm0}`, `章節測驗：${nm0}`); st.why = Z('You’ve practised this well. Passing the chapter test is what moves it up now.', '這一章已練得不錯，通過章節測驗才能再進步。'); st.unitIds = [ch.unit.id]; saveLocal(); }
               x.now.t = st.label; x.now.why = st.why; x.icon = 'test'; x.maxS = 5; asTest = true; } }
-          const to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : asTest ? Math.min(100, ch.pct + 10) : plateau ? ch.pct : ch.pct + pracGain;
+          // practice shows the most it can add (every answer right), as "up to": a real result is never above it
+          const best = c.y === 'log' && !asTest && !plateau && !!ch.sim, bestGain = best ? Math.max(pracGain, Math.min(capP - ch.pct, ch.sim(sessionSize(), 1))) : pracGain;
+          const to = c.y === 'learn' ? Math.max(ch.pct, LESSON_CREDIT) : asTest ? Math.min(100, ch.pct + 10) : plateau ? ch.pct : ch.pct + bestGain;
           const nm = shortTitle(ch.unit.title), it = { lab: String(x.now.t || '').includes(nm) ? Z('This chapter', '這一章') : nm, from: ch.pct, to, u: '%' };
           // a test's chapter: what it does for that test too
           const tid = (String(x.key).match(/^[tc]:([^:]+)/) || [])[1], tp = tid && tests.steps.find((q) => q.x.id === tid);
-          if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const lg = c.y === 'learn' ? Math.max(0, 10 - (ch.likely || 0)) : asTest ? Math.max(0, 85 - (ch.likely || 0)) * 0.6 : ch.simL ? ch.simL(sessionSize()) : to - ch.pct, d = Math.max(1, Math.round(lg / tp.units.length)); it.tst = { n: tp.x.name, from: tp.ready, to: Math.min(100, tp.ready + d) }; }
+          if (tp && tp.ready != null && tp.units && tp.units.length && to > ch.pct) { const lg = c.y === 'learn' ? Math.max(0, 10 - (ch.likely || 0)) : asTest ? Math.max(0, 85 - (ch.likely || 0)) * 0.6 : ch.simL ? ch.simL(sessionSize(), best ? 1 : null) : to - ch.pct, d = Math.max(1, Math.round(lg / tp.units.length)); it.tst = { n: tp.x.name, from: tp.ready, to: Math.min(100, tp.ready + d) }; }
           if (!rushOff() && (local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('⚡ Too fast last time, so it didn’t count', '⚡ 上次太快，所以不計')
           if (asTest) it.test = Z('Your score on it counts most for this chapter’s %.', '測驗分數對這一章的百分比影響最大。');
           { const lv = chapterLever(ch); if (lv.k === 'wait' && !asTest) { it.note = Z(`${it.to > ch.pct ? 'Practice still adds a little, reviews add more.' : 'Grows with reviews now.'} A retest counts from ${new Date(lv.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `現在靠溫習進步。重考由 ${new Date(lv.at).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起才計算。`); } }
           if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
-          it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid;
+          it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid; if (best && to > ch.pct) it.best = true;
           impact[x.key] = it;
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
         else if (c.y === 'rv') impact[x.key] = { lab: Z('Questions due for review', '到期要溫習的題目'), from: due.length, to: Math.max(0, due.length - 10), u: '', down: true, max: due.length, test: Z('Keeps them in long-term memory, and nudges up the chapters they’re from', '把它們留在長期記憶裏，也會令所屬章節稍為進步') };
@@ -3195,8 +3197,8 @@ async function renderHome() {
     return `<i class="ms-imp-bar" aria-hidden="true"><b style="width:${a}%"></b><em style="left:${a}%;width:${Math.max(2, b - a)}%"></em></i>`; };
   const impHTML = (it) => { if (!it) return '';
     if (it.from == null) return it.note ? `<div class="ms-imp note"><span>${it.note}</span></div>` : '';
-    const max = it.max || 100, d = Math.abs(it.to - it.from), chip = d ? `<em class="ms-imp-g">${it.down ? '−' : '+'}${d}${it.u}</em>` : '';
-    const tst = it.tst ? `<div class="ms-imp-h ms-imp-t"><span data-raw>📝 ${esc(Z(`${it.tst.n} readiness`, `「${it.tst.n}」準備度`))}</span><span class="ms-imp-v"><em class="ms-imp-g">+${it.tst.to - it.tst.from}%</em><b>${it.tst.from}% → ${it.tst.to}%</b></span></div>${impBar(it.tst.from, it.tst.to, 100)}` : '';
+    const max = it.max || 100, d = Math.abs(it.to - it.from), upTo = it.best ? Z('up to ', '最多 ') : '', chip = d ? `<em class="ms-imp-g">${upTo}${it.down ? '−' : '+'}${d}${it.u}</em>` : '';
+    const tst = it.tst ? `<div class="ms-imp-h ms-imp-t"><span data-raw>📝 ${esc(Z(`${it.tst.n} readiness`, `「${it.tst.n}」準備度`))}</span><span class="ms-imp-v"><em class="ms-imp-g">${upTo}+${it.tst.to - it.tst.from}%</em><b>${it.tst.from}% → ${it.tst.to}%</b></span></div>${impBar(it.tst.from, it.tst.to, 100)}` : '';
     const lab = it.cu && it.u === '%' ? Z('This chapter', '這一章') : it.lab;
     return `<div class="ms-imp${it.down ? ' down' : ''}"><div class="ms-imp-h"><span data-raw>${esc(lab)}</span><span class="ms-imp-v">${chip}<b>${it.from}${it.u} → ${it.to}${it.u}</b></span></div>${impBar(it.from, it.to, max, it.down)}${tst}${it.test ? `<small data-raw>${esc(it.test)}</small>` : ''}${it.note ? `<small>${it.note}</small>` : ''}${it.warn ? `<small class="ms-imp-w">${it.warn}</small>` : ''}</div>`; };
   const SUBJS = new Set(books.filter((b) => b.subject).map((b) => subj(b.subject)));
