@@ -635,7 +635,7 @@ function nextStep(c) {
   if ((g.apply || 0) < 3) return S('practise', `Get ${3 - (g.apply || 0)} harder (Apply) question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`, 'hard');
   if (c.passes < 2 || !c.lastPass || (g.testPart != null && g.testPart < 24.5)) return S('test', c.passes >= 2 ? `Another chapter test on ${t}: higher marks fill the test part` : `${c.passes ? 'A second chapter test' : 'Chapter test'} on ${t} (new questions, 80% to pass)`, c.passes >= 2 ? `「${t}」再做一次章節測驗：分數越高，測驗部分越滿` : `「${t}」${c.passes ? '第二次' : ''}章節測驗（新題目，80% 合格）`);
   if (!((g.wrote || 0) >= 2 && g.analyse)) return S('practise', `Full marks on 2 written Apply answers and 1 Analyse question in ${t}`, `在「${t}」的 2 條應用文字題拿滿分，並答對 1 條分析題`, 'hard');
-  if ((g.mixed || 0) < 2 || (g.mixPart != null && g.mixPart < 14.5)) return S('mixed', `A mixed paper with ${t} and other chapters`, `包括「${t}」和其他章節的綜合試卷`);
+  if ((g.mixed || 0) < 2 || (g.mixPart != null && g.mixPart < 14.5)) return S('mixed', `Mock exam: ${t} with the other chapters`, `模擬考試：「${t}」和其他章節`);
   if ((c.prac || 0) < 60) return S('practise', `Practise more of ${t} to top up its practice part`, `多練習「${t}」，補滿練習部分`);
   return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
 }
@@ -765,13 +765,13 @@ async function startMiniMock(book, units, focus = null) { // focus: the chapter 
   if (!units.length) return go({ name: 'paper', bookId: book.id, from: 'home' });
   if (!allow('mock')) return;
   track('mini_mock');
-  const [nA, nB] = gradeBand() === 'p12' ? [10, 2] : [14, 3], mins = await askTime(LANG === 'zh' ? '模擬小測' : 'Mini mock', LANG === 'zh' ? `${nA} 題選擇題，${nB} 題文字題，來自 ${units.length} 章。` : `${nA} multiple-choice and ${nB} written questions from ${units.length} chapters.`, paperMinutes(nA, nB));
+  const [nA, nB] = gradeBand() === 'p12' ? [10, 2] : [14, 3], mins = await askTime(LANG === 'zh' ? '模擬考試' : 'Mock exam', LANG === 'zh' ? `${nA} 題選擇題，${nB} 題文字題，來自 ${units.length} 章。` : `${nA} multiple-choice and ${nB} written questions from ${units.length} chapters.`, paperMinutes(nA, nB));
   if (mins === null) return;
   try {
     const paper = await preparePaper(book, focus ? [focus, ...units.filter((u) => u.id !== focus.id).slice(0, 5)] : shuffle(units.slice()).slice(0, 6), nA, nB, 'sit', focus);
     if (!paper) return;
     startDse(book, paper, mins);
-    S.title = LANG === 'zh' ? '模擬小測' : 'Mini mock';
+    S.title = LANG === 'zh' ? '模擬考試' : 'Mock exam';
   } catch (e) {
     toast(e.status === 0 ? 'You seem to be offline.' : (e.message || 'Could not prepare the paper.'));
     go({ name: 'home' });
@@ -2593,7 +2593,7 @@ function missionHowHTML(id = 'howMission') {
     ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'Practice on the test’s weakest chapters, a chapter test once one is ready, and a practice test the day before.', '先練測驗範圍內最弱的章節，準備好就做章節測驗，考試前一天做模擬測驗。'],
     ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
-    ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', '60% Practised: from practice sets. 70% Test-ready: a chapter test passed (new questions every time). 85% Strong: a second strong test, and harder Apply, Analyse and written questions right. 100% Mastered: two strong mixed papers, like a real school test. Then it slowly fades unless you show it has stuck: a quick check wins it back, and each time it fades more slowly.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
+    ['⏱️', 'Chapter tests, and mock exams.', '章節測驗和模擬考試。', '60% Practised: from practice sets. 70% Test-ready: a chapter test passed (new questions every time). 85% Strong: a second strong test, and harder Apply, Analyse and written questions right. 100% Mastered: strong mock exams, like a real school test. Then it slowly fades unless you show it has stuck: a quick check wins it back, and each time it fades more slowly.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
     ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
     ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
 }
@@ -6670,7 +6670,8 @@ function testDayPlan(p, chs, aim = TEST_AIM, perDay = dayMins()) {
   const apply = (x, st) => { // what one step does, by the rules
     if (st.kind === 'practise' || st.kind === 'mistakes' || st.kind === 'review') { x.prac = Math.min(60, x.prac + setGain); x.done = (x.done || 0) + sessionSize();
       if (st.diff && x.prac >= 50) { if (x.gates.apply < 3) x.gates.apply = 3; else { x.gates.wrote = 2; x.gates.analyse = true; } } }
-    else if (st.kind === 'test') { if (passes) { x.passes++; x.lastPass = true; x.tp = Math.min(25, x.tp + 12.5 * acc * acc); x.gates.testPart = x.tp; } else x.prac = Math.max(0, x.prac - 5); }
+    else if (st.kind === 'test') { if (passes) { x.passes++; x.lastPass = true; x.tp = Math.min(25, x.tp + 12.5 * acc * acc); x.gates.testPart = x.tp;
+      if (acc >= 0.75) { x.gates.wrote = Math.min(2, x.gates.wrote + 1); if (x.passes >= 2) x.gates.analyse = true; } } else x.prac = Math.max(0, x.prac - 5); } // a passed test's written and Analyse questions count too
     else if (st.kind === 'mixed') { x.gates.mixed++; x.mp = Math.min(15, x.mp + 7.5 * acc * acc); x.gates.mixPart = x.mp; }
     else if (st.kind === 'check') x.cracked = false;
     x.pct = pctOf(x); };
@@ -6687,7 +6688,7 @@ function testDayPlan(p, chs, aim = TEST_AIM, perDay = dayMins()) {
         const cand = sim.filter((x) => !used.has(x)).map((x) => ({ x, st: nextStep(x) })).filter((y) => y.st && y.st.kind !== 'check').sort((a, z) => a.x.pct - z.x.pct)[0];
         if (!cand) break; const m = cost(cand.st); if (tasks.length && mins + m > perDay + 5) break;
         used.add(cand.x); mins += m; const from = cand.x.pct, p0 = cand.x.passes; apply(cand.x, cand.st);
-        const sn = nm(cand.x.unit), k = cand.st.kind, short = k === 'test' ? (p0 ? PT(`Second chapter test: ${sn}`, `第二次章節測驗：${sn}`) : PT(`Chapter test: ${sn}`, `章節測驗：${sn}`)) : k === 'mixed' ? PT(`Mixed paper with ${sn}`, `包括「${sn}」的綜合試卷`) : k === 'mistakes' ? PT(`Fix mistakes: ${sn}`, `改正錯題：${sn}`) : cand.st.diff ? PT(`Harder questions: ${sn}`, `較深題目：${sn}`) : PT(`Practise ${sn}`, `練習「${sn}」`);
+        const sn = nm(cand.x.unit), k = cand.st.kind, short = k === 'test' ? (p0 ? PT(`Second chapter test: ${sn}`, `第二次章節測驗：${sn}`) : PT(`Chapter test: ${sn}`, `章節測驗：${sn}`)) : k === 'mixed' ? PT(`Mock exam with ${sn}`, `包括「${sn}」的模擬考試`) : k === 'mistakes' ? PT(`Fix mistakes: ${sn}`, `改正錯題：${sn}`) : cand.st.diff ? PT(`Harder questions: ${sn}`, `較深題目：${sn}`) : PT(`Practise ${sn}`, `練習「${sn}」`);
         tasks.push([d === 0 ? cand.st.text : short, d === 0 ? (() => { const c = cand.x.real, st0 = nextStep(c); return () => boostSession(book, c, st0 || cand.st, true); })() : null,
           cand.st.kind === 'test' || cand.st.kind === 'mixed' ? 'test' : 'practise', from, cand.x.pct]); } }
     days.push({ t, d, task: tasks[0] || [PT('Rest day: reviews only', '休息日：只做溫習'), () => startReview('spaced'), 'review'], tasks, ready: avg() });
@@ -6720,7 +6721,7 @@ function stepsTo100(p, chs) {
       write: PT(`Written answers on ${sn} · ${n} set${n === 1 ? '' : 's'}`, `「${sn}」文字題 · ${n} 組`),
       mistakes: PT(`Fix your mistakes on ${sn}`, `改正「${sn}」的錯題`),
       test: PT(`Chapter test on ${sn} · ${n} test${n === 1 ? '' : 's'}`, `「${sn}」章節測驗 · ${n} 次`),
-      mixed: PT(`Mixed paper with all the test chapters · ${n} paper${n === 1 ? '' : 's'}`, `包括所有考試章節的綜合試卷 · ${n} 份`) }[it.kind]; };
+      mixed: PT(`Mock exam on all the test chapters · ${n} exam${n === 1 ? '' : 's'}`, `所有考試章節的模擬考試 · ${n} 次`) }[it.kind]; };
   items.forEach((it) => (it.text = label(it)));
   const total = raw.reduce((a, r) => a + r.mins, 0);
   return { items, total, end: avg(), acc, first: raw[0] || null };
@@ -6734,7 +6735,7 @@ function testPlanSheet(p, chs) {
     : left < 1 ? PT('The test is today: do the first step as a warm-up.', '今天考試：先做第一步熱身。')
     : PT(`Do these in order. That’s about ${L.total} minutes in all: about ${perDay} minutes a day gets you there by test day.`, `按次序做。合共約 ${L.total} 分鐘：每天約 ${perDay} 分鐘，考試前就能完成。`);
   const warn = !done && perDay > 90 ? `<p class="tp-p">${PT(`That’s a lot for ${days} day${days === 1 ? '' : 's'}. Do as many as you can, in order: every step counts.`, `${days} 日內有點多。盡量按次序做，每一步都有用。`)}</p>` : '';
-  const li = (it, i) => `<li class="tl-i ${i === 0 ? 'now' : ''}"><span class="tl-n">${i + 1}</span><span class="tl-t"><b data-raw>${esc(it.text)}</b>${it.from != null && it.to > it.from ? `<small>${it.x ? '' : PT('All test chapters: ', '所有考試章節：')}${it.from}% → ${it.to}%</small>` : it.kind === 'write' ? `<small>${PT('Unlocks the last 15% (mixed papers)', '解鎖最後 15%（綜合試卷）')}</small>` : ''}</span>${i === 0 ? `<button class="btn-sm primary" data-tl0>${PT('Start', '開始')}</button>` : ''}</li>`;
+  const li = (it, i) => `<li class="tl-i ${i === 0 ? 'now' : ''}"><span class="tl-n">${i + 1}</span><span class="tl-t"><b data-raw>${esc(it.text)}</b>${it.from != null && it.to > it.from ? `<small>${it.x ? '' : PT('All test chapters: ', '所有考試章節：')}${it.from}% → ${it.to}%</small>` : it.kind === 'write' ? `<small>${PT('Unlocks the last 15% (mock exams)', '解鎖最後 15%（模擬考試）')}</small>` : ''}</span>${i === 0 ? `<button class="btn-sm primary" data-tl0>${PT('Start', '開始')}</button>` : ''}</li>`;
   function nm(u) { return shortTitle(u.title); }
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   box.innerHTML = `<div class="cdlg tp tl" role="dialog" aria-modal="true" aria-labelledby="tp-t">
@@ -8011,7 +8012,7 @@ function goalCardHTML(D) {
 
 function testsCardHTML(D) {
   const list = D.tests;
-  const KIND = { paper: [PT('Mock exam', '模擬考試'), 'blue'], test: [PT('Chapter test', '章節測驗'), 'purple'], mini: [PT('Mini mock', '小型模擬'), 'orange'] };
+  const KIND = { paper: [PT('Mock exam', '模擬考試'), 'blue'], test: [PT('Chapter test', '章節測驗'), 'purple'], mini: [PT('Mock exam', '模擬考試'), 'orange'] };
   const fmt = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
   const row = (x) => { const p = x.m ? Math.round(100 * x.g / x.m) : 0, k = KIND[x.kind] || KIND.paper, pass = x.kind === 'test' ? p >= 80 : null;
     return `<div class="pg-test"><span class="pg-ic ${k[1]}">${pIcon(x.kind === 'test' ? 'check' : 'pencil', 18)}</span><div class="pg-tt"><small>${k[0]} · ${fmt(x.t)}</small><b data-raw>${esc(String(x.title || '').replace(/^(Chapter test|章節測驗) · /, ''))}</b><span>${x.g} / ${x.m} ${PT('marks', '分')} · ${x.min} ${PT('min', '分鐘')}${x.nt ? PT(' · no time limit', ' · 不限時') : x.x ? PT(` · +${x.x} min extra`, ` · 加時 ${x.x} 分鐘`) : ''}</span></div><b class="pg-tp ${p >= 80 ? 'good' : p >= 60 ? 'mid' : 'low'}">${p}%${pass === null ? '' : `<small>${pass ? PT('Passed', '合格') : PT('Not yet', '未合格')}</small>`}</b></div>`; };
@@ -9523,9 +9524,9 @@ async function startReview(mode, bookId = null, cap = 15) {
     S = newSession({ mode: 'weak', title: book ? `${LANG === 'zh' ? '弱項' : 'Weak topics'} · ${book.subject ? subj(book.subject) : book.title}` : (LANG === 'zh' ? '弱項' : 'Weak topics'), qs: pick, target: pick.length });
   } else {
     pick = shuffle(items).slice(0, 12).map((x) => x.q).sort((a, b) => a.level - b.level);
-    const mm = await askTime('Mini mock', `${pick.length} questions from your textbooks.`, 20);
+    const mm = await askTime(PT('Mock exam', '模擬考試'), `${pick.length} questions from your textbooks.`, 20);
     if (mm === null) return;
-    S = newSession({ mode: 'mock', title: 'Mini mock', qs: pick, target: pick.length, deadline: mm ? Date.now() + mm * 60 * 1000 : null });
+    S = newSession({ mode: 'mock', title: PT('Mock exam', '模擬考試'), qs: pick, target: pick.length, deadline: mm ? Date.now() + mm * 60 * 1000 : null });
   }
   renderQuestion();
 }
