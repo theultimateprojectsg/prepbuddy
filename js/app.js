@@ -497,7 +497,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
      KEPT: 2 days' grace after the last proof, then 3 / 1.5 / 0.75 / 0.4% a day by strength, never below 60% once a
      test is passed or it was practised again 3+ days later (else 30%). A "Still there?" check wins it back. */
   let likely = 0, earned = 0, gates = {}, fading = 0, strength = 0;
-  let pracPart = 0, pracSince = 0, pracVol = 0, pracAcc = 0;
+  let pracPart = 0, pracSince = 0, pracVol = 0, pracAcc = 0, capScore = 100, capFrom = '', capped = false;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), P = L.filter((e) => e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0;
     // practice fills over several sets, never in one: the points needed are at least 5 sets' worth of right answers
     // at Understand level. No daily limit: a child may practise as much as they like; crammed practice fades (below)
@@ -506,7 +506,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
       const v = Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.25 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); // 'lock' and 'place': older lock-in and level-check answers
       pts += Math.max(0, v); }
     const rec = P.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
-    const prac = 60 * Math.min(1, pts / need) * Math.min(1, acc / 0.9);
+    const prac = 60 * Math.min(1, pts / need);
     pracPart = Math.round(prac); pracVol = Math.min(1, pts / need); pracAcc = acc;
     const lastT = tests.length ? tests[tests.length - 1].t : 0;
     pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
@@ -519,6 +519,12 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     if (passes.length && lastPass && prac >= 35) est = Math.max(est, 70);
     if (apply < 3) est = Math.min(est, 75);
     if (est >= 85 && !(wrote >= 2 && analyse)) est = 85; else if (apply >= 3 && wrote >= 2 && analyse) est += Math.min(15, mc);
+    // rules.md §2: the % is the likely test score, so it can't be above what the child actually scores on this chapter:
+    // the last two chapter tests / mock exams (this chapter's own marks), or before any, recent practice (10+ answers)
+    { const sc2 = [...tests, ...mix].sort((a, b) => a.t - b.t).slice(-2), m2 = sc2.reduce((a, x) => a + x.r[1], 0);
+      capScore = sc2.length && m2 ? Math.round((100 * sc2.reduce((a, x) => a + x.r[0], 0)) / m2) : rec.length >= 10 ? Math.round(100 * acc) : 100;
+      capFrom = sc2.length ? 'tests' : 'practice';
+      capped = est > capScore + 0.5; if (capped) est = capScore; }
     earned = Math.round(Math.min(100, est));
     gates = { apply, wrote, analyse, mixed: mix.length, testPart: Math.min(25, tc), mixPart: Math.min(15, mc) }; // how full each part is
     // proofs: [time, strong?]; strong ones (tests, mixed papers, checks) can raise the strength
@@ -554,7 +560,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, earned, fading, strength, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), gates, prac: pracPart, pracVol, pracAcc, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, lvNow, lvTop, l3n, l4n, written, b4, b5, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, earned, fading, strength, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), gates, prac: pracPart, pracVol, pracAcc, capScore, capFrom, capped, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, lvNow, lvTop, l3n, l4n, written, b4, b5, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -636,8 +642,12 @@ function nextStep(c) {
   if (c.passes < 2 || !c.lastPass || (g.testPart != null && g.testPart < 24.5)) return S('test', c.passes >= 2 ? `Another chapter test on ${t}: higher marks fill the test part` : `${c.passes ? 'A second chapter test' : 'Chapter test'} on ${t} (new questions, 80% to pass)`, c.passes >= 2 ? `「${t}」再做一次章節測驗：分數越高，測驗部分越滿` : `「${t}」${c.passes ? '第二次' : ''}章節測驗（新題目，80% 合格）`);
   if (!((g.wrote || 0) >= 2 && g.analyse)) return S('practise', `Full marks on 2 written Apply answers and 1 Analyse question in ${t}`, `在「${t}」的 2 條應用文字題拿滿分，並答對 1 條分析題`, 'hard');
   if ((g.mixed || 0) < 2 || (g.mixPart != null && g.mixPart < 14.5)) return S('mixed', `Mock exam: ${t} with the other chapters`, `模擬考試：「${t}」和其他章節`);
-  if ((c.prac || 0) < 59.5) return (c.pracVol || 0) < 1 ? S('practise', `Practise more of ${t} to top up its practice part`, `多練習「${t}」，補滿練習部分`)
-    : S('practise', `Practise ${t} and aim for 9 out of 10 right: practice counts in full at 90%+ (you’re at ${Math.round(100 * (c.pracAcc || 0))}%)`, `練習「${t}」，目標 10 題答對 9 題：答對率 90% 以上練習才全數計算（現在 ${Math.round(100 * (c.pracAcc || 0))}%）`);
+  if ((c.prac || 0) < 59.5) return S('practise', `Practise more of ${t} to top up its practice part`, `多練習「${t}」，補滿練習部分`);
+  // every part is full, but the % follows the child's actual scores (rules.md §2): raise the scores
+  if (c.capped) { const cs = c.capScore, st = (c.open || 0) >= 1 ? S('mistakes', `Fix your ${c.open} mistake${c.open > 1 ? 's' : ''} in ${t}: your % follows your scores (${cs}% now)`, `改正「${t}」的 ${c.open} 條錯題：百分比跟隨你的分數（現在 ${cs}%）`)
+      : c.capFrom === 'practice' ? S('practise', `Practise ${t} and aim for full marks: your % follows your scores (${cs}% now)`, `練習「${t}」，目標滿分：百分比跟隨你的分數（現在 ${cs}%）`)
+      : S('test', `Score higher on a chapter test of ${t}: your % follows your last two scores (${cs}% now)`, `在「${t}」的章節測驗拿更高分：百分比跟隨你最近兩次的分數（現在 ${cs}%）`);
+    st.cap = true; return st; }
   return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
 }
 // The next step for the weakest chapters (up to 3), for screens that list a few.
@@ -2599,7 +2609,7 @@ function missionHowHTML(id = 'howMission') {
     ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'Practice on the test’s weakest chapters, a chapter test once one is ready, and a practice test the day before.', '先練測驗範圍內最弱的章節，準備好就做章節測驗，考試前一天做模擬測驗。'],
     ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
-    ['⏱️', 'Chapter tests, and mock exams.', '章節測驗和模擬考試。', '60% Practised: from practice sets. 70% Test-ready: a chapter test passed (new questions every time). 85% Strong: a second strong test, and harder Apply, Analyse and written questions right. 100% Mastered: strong mock exams, like a real school test. Then it slowly fades unless you show it has stuck: a quick check wins it back, and each time it fades more slowly.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
+    ['⏱️', 'Chapter tests, and mock exams.', '章節測驗和模擬考試。', '60% Practised: from practice sets. 70% Test-ready: a chapter test passed (new questions every time). 85% Strong: a second strong test, and harder Apply, Analyse and written questions right. 100% Mastered: strong mock exams, like a real school test. It never goes above what you actually score: your last two tests or mock exams on that chapter. Then it slowly fades unless you show it has stuck: a quick check wins it back, and each time it fades more slowly.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
     ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
     ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
 }
@@ -6665,16 +6675,17 @@ function testDayPlan(p, chs, aim = TEST_AIM, perDay = dayMins()) {
   // the child's recent accuracy decides how much each step is likely to add (no history: 90%, what full practice needs)
   const rec = (local.log || []).filter((e) => e.m && e.q && chs.some((c) => e.q.startsWith(`${book.id}:${c.unit.id}:`))).slice(-40);
   const acc = rec.length >= 8 ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0.9;
-  const setGain = 12 * Math.min(1, acc / 0.9), passes = acc >= 0.75;
+  const setGain = 12, passes = acc >= 0.75, cap = rec.length >= 8 ? Math.round(100 * acc) : 100; // the % follows the child's scores (rules.md §2)
   // a copy of each chapter that the plan moves forward (the same fields the brain reads)
   const sim = chs.map((c) => ({ unit: c.unit, real: c, pct: c.pct, prac: c.prac || 0, pracVol: c.pracVol != null ? c.pracVol : (c.prac || 0) / 60, pracAcc: c.pracAcc || 0, done: c.done, passes: c.passes || 0, lastPass: c.lastPass, open: 0, due: 0, cracked: false,
     gates: { apply: (c.gates || {}).apply || 0, wrote: (c.gates || {}).wrote || 0, analyse: !!(c.gates || {}).analyse, mixed: (c.gates || {}).mixed || 0, testPart: (c.gates || {}).testPart || 0, mixPart: (c.gates || {}).mixPart || 0 }, tp: 0, mp: 0, fading: 0 }));
   const pctOf = (x) => { let e = Math.min(60, x.prac) + Math.min(25, x.tp); if (x.passes && x.prac >= 35) e = Math.max(e, 70);
     if (x.gates.apply < 3) e = Math.min(e, 75); if (e >= 85 && !(x.gates.wrote >= 2 && x.gates.analyse)) e = 85; else if (x.gates.apply >= 3 && x.gates.wrote >= 2 && x.gates.analyse) e += Math.min(15, x.mp);
+    x.capScore = cap; x.capFrom = 'tests'; x.capped = e > cap + 0.5; if (x.capped) e = cap;
     return Math.round(Math.min(100, Math.max(x.pct0 != null ? x.pct0 : 0, e))); };
   sim.forEach((x) => { x.tp = x.gates.testPart; x.mp = x.gates.mixPart; x.pct0 = x.pct; });
   const apply = (x, st) => { // what one step does, by the rules
-    if (st.kind === 'practise' || st.kind === 'mistakes' || st.kind === 'review') { x.prac = Math.max(x.prac, Math.min(60 * Math.min(1, acc / 0.9), x.prac + setGain)); x.pracVol = Math.min(1, x.pracVol + 0.2); x.pracAcc = acc; x.done = (x.done || 0) + sessionSize(); // practice counts in full only at 90%+ right
+    if (st.kind === 'practise' || st.kind === 'mistakes' || st.kind === 'review') { x.prac = Math.min(60, x.prac + setGain); x.pracVol = Math.min(1, x.pracVol + 0.2); x.pracAcc = acc; x.done = (x.done || 0) + sessionSize();
       if (st.diff && x.prac >= 50) { if (x.gates.apply < 3) x.gates.apply = 3; else { x.gates.wrote = 2; x.gates.analyse = true; } } }
     else if (st.kind === 'test') { if (passes) { x.passes++; x.lastPass = true; x.tp = Math.min(25, x.tp + 12.5 * acc * acc); x.gates.testPart = x.tp;
       if (acc >= 0.75) { x.gates.wrote = Math.min(2, x.gates.wrote + 1); if (x.passes >= 2) x.gates.analyse = true; } } else x.prac = Math.max(0, x.prac - 5); } // a passed test's written and Analyse questions count too
@@ -6708,7 +6719,7 @@ function stepsTo100(p, chs) {
   const raw = [];
   for (let guard = 0; guard < 120; guard++) {
     // each chapter's own steps first (weakest chapter first); mixed papers once every chapter is ready for them
-    const all = sim.map((x) => ({ x, st: nextStep(x) })).filter((y) => y.st && y.st.kind !== 'check' && y.st.kind !== 'review' && !(y.st.kind === 'practise' && !y.st.diff && y.x.pracVol >= 1 && y.x.prac >= 60 * Math.min(1, acc / 0.9) - 0.5)).sort((a, z) => a.x.pct - z.x.pct);
+    const all = sim.map((x) => ({ x, st: nextStep(x) })).filter((y) => y.st && y.st.kind !== 'check' && y.st.kind !== 'review' && !y.st.cap).sort((a, z) => a.x.pct - z.x.pct);
     const cand = all.find((y) => y.st.kind !== 'mixed') || all[0];
     if (!cand) break;
     const k = cand.st.kind, from = k === 'mixed' ? avg() : cand.x.pct, p0 = cand.x.passes;
@@ -6730,7 +6741,7 @@ function stepsTo100(p, chs) {
       mixed: PT(`Mock exam on all the test chapters · ${n} exam${n === 1 ? '' : 's'}`, `所有考試章節的模擬考試 · ${n} 次`) }[it.kind]; };
   items.forEach((it) => (it.text = label(it)));
   const total = raw.reduce((a, r) => a + r.mins, 0);
-  return { items, total, end: avg(), acc, first: raw[0] || null, capped: avg() < 99 && acc < 0.9 };
+  return { items, total, end: avg(), acc, first: raw[0] || null, capped: avg() < 99 };
 }
 function testPlanSheet(p, chs) {
   const book = p.book, left = p.left;
@@ -6748,7 +6759,7 @@ function testPlanSheet(p, chs) {
     <header class="tp-h"><div><small>${fmt(testDay(p.x))} · ${leftText(left)}</small><b id="tp-t">${PT('My plan to reach 100%', '我的 100% 計劃')}</b><small data-raw>${esc(p.x.name)}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="tp-body tl-body">
       <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${L.capped ? 'close' : 'ok'}">${done ? 100 : L.capped ? L.end : 100}%</b><span>${done ? PT('done', '完成') : PT(`after ${L.items.length} step${L.items.length === 1 ? '' : 's'}`, `完成 ${L.items.length} 步之後`)}</span></div></div>
-      <p class="tp-p">${tip}</p>${warn}${L.capped && !done ? `<p class="tp-p">${PT(`At ${Math.round(100 * L.acc)}% right, this gets to about ${L.end}%. The last ${100 - L.end}% needs about 9 out of 10 right in practice: practice counts in full at 90%+.`, `以 ${Math.round(100 * L.acc)}% 的答對率，大約可達 ${L.end}%。最後 ${100 - L.end}% 需要練習時 10 題答對約 9 題：答對率 90% 以上練習才全數計算。`)}</p>` : ''}
+      <p class="tp-p">${tip}</p>${warn}${L.capped && !done ? `<p class="tp-p">${PT(`Your % follows your scores. At about ${Math.round(100 * L.acc)}% right, these steps get you to about ${L.end}%. To go higher, fix your mistakes and aim for full marks on chapter tests and mock exams.`, `百分比跟隨你的分數。以約 ${Math.round(100 * L.acc)}% 的答對率，這些步驟大約可達 ${L.end}%。要更高，就要改正錯題，並在章節測驗和模擬考試爭取滿分。`)}</p>` : ''}
       ${done ? '' : `<ol class="tl-list">${L.items.map(li).join('')}</ol>`}
       ${done || left < 2 ? '' : `<p class="tl-foot">${PT('The day before the test: a quick “Still there?” check. On test day: a 5-question warm-up.', '考試前一天：「還記得嗎？」快速檢查。考試當日：5 題熱身。')}</p>`}
     </div></div>`;
