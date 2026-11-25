@@ -496,42 +496,22 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   // earned, not given: grows with the questions answered, each open mistake holds some back until it's fixed,
   // and one left past MK_GRACE days holds back twice as much
   const fixed = done.length ? Math.min(1, done.length / T) * Math.max(0, 1 - (open + stale) / 5) : 0;
-  // tested: passes (80%+) at least a week apart; the latest test must be a pass
+  // chapter tests: passes are 80%+; the latest one counts most (rules.md §2)
   const tests = testsFor(key);
   const passes = tests.filter((x) => x.r[0] / x.r[1] >= PASS);
   const passDays = new Set(passes.map((x) => new Date(x.t).toDateString())).size;
-  const spread = passes.length >= 2 && passes[passes.length - 1].t - passes[0].t >= 7 * DAY;
   const lastPass = tests.length ? tests[tests.length - 1].r[0] / tests[tests.length - 1].r[1] >= PASS : false;
-  let tested = spread ? 1 : passes.length ? 0.5 : 0;
-  if (tests.length && !lastPass) tested = Math.min(tested, 0.5);
+  const tested = lastPass ? Math.min(1, passes.length / 2) : passes.length ? 0.25 : 0;
+  // descriptive stats for screens (what's covered, how accurate, how deep, what's remembered); the % is below
   const score = { tested, covered, accurate, deep, remembered, fixed };
-  // long-term mastery (internal now: it guides Buddy's plan, the child sees the likely score below as the chapter %)
-  let mast = Math.round(AREAS.reduce((t, [k, , w]) => t + w * score[k], 0));
-  if (!passes.length) mast = Math.min(mast, 70);
-  else if (!spread || !lastPass) mast = Math.min(mast, 85);
-  if (!b5) mast = Math.min(mast, 95);
   const learnedIt = !!(local.learned || {})[key];
-  /* likely: the score this child would probably get on this chapter in a test now (what a test goal is measured by).
-     How well they answer (first tries, and their latest go so fixed mistakes count), times how much of the chapter
-     they've seen; a recent chapter test counts most; eases off a little if the chapter is left for over a week. */
-  /* The chapter % (the score this child would likely get). Earned, then kept:
-     EARNED (no waiting, only real work):
-     - Practice, up to 60%: right answers, worth more at harder levels and for full-marks written answers; the same
-       question again counts half, then a quarter; at least 5 full sets fill it (no daily limit); held
-       back if recent answers aren't mostly right.
-     - Chapter tests (always new questions, the same difficulty mix every time), up to 25% more: two strong tests fill
-       it. A pass on a practised chapter makes it Test-ready (70%). A failed latest test halves this part.
-     - Gates: past 75% needs 3 Apply questions right first time; past 85% needs 2 full-marks written Apply answers and
-       a right Analyse answer.
-     - Mixed papers (this chapter with others, like a school test), up to 15% more: two strong ones fill it.
-     KEPT (it fades unless shown to stick, like Duolingo; won back with a check, like Khan):
-     - After the last proof (a passed test or mixed paper, a "Still there?" check, or a practice day at 70%+), 2 days'
-       grace, then it fades (crammed: down to 30%; once it holds: never below 60%) at a rate set by its strength: Fresh 3%/day, Holding 1.5 (practised or proven again 3+
-       days later), Solid 0.75 (7+ days), Locked in 0.4 (14+ days). A test, mixed paper or check after such a gap
-       raises the strength; a good practice day only restarts the clock.
-     - The latest "Still there?" check: 5-6 of 6 right wins it all back; 3-4 holds it 10% below; fewer, 15% below. */
+  /* The chapter %: exactly the rules in the project doc claude/rules.md (§2 earn it, §3 it fades if you stop).
+     EARNED: practice up to 60 (about 5 sets of right answers), chapter tests up to 85 (first pass = at least 70),
+     mixed papers up to 100; gates: >75 needs 3 Apply right, >85 needs 2 full-mark written + 1 Analyse. No waits.
+     KEPT: 2 days' grace after the last proof, then 3 / 1.5 / 0.75 / 0.4% a day by strength, never below 60% once a
+     test is passed or it was practised again 3+ days later (else 30%). A "Still there?" check wins it back. */
   let likely = 0, earned = 0, gates = {}, fading = 0, strength = 0;
-  let pracPart = 0, pracSince = 0, pracCapped = false;
+  let pracPart = 0, pracSince = 0;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), P = L.filter((e) => e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0;
     // practice fills over several sets, never in one: the points needed are at least 5 sets' worth of right answers
     // at Understand level. No daily limit: a child may practise as much as they like; crammed practice fades (below)
@@ -572,8 +552,8 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     // the latest check, if nothing has proved more since: 3-4 of 6 holds it 10% below what was earned, fewer 15%
     const top = ck && ck.sc < 0.8 && ck.t >= proofs[proofs.length - 1][0] ? earned - (ck.sc >= 0.5 ? 10 : 15) : earned;
     let shown = top;
-    // crammed (never shown to hold on another day) fades down to 30%; once it holds, never below 60%
-    const floor = strength >= 1 ? 60 : 30;
+    // rules.md §3: never below 60% once a chapter test is passed or it was practised again 3+ days later; else 30%
+    const floor = passes.length || strength >= 1 ? 60 : 30;
     if (lastProof && top > floor) { const days = (now - lastProof) / DAY - 2;
       if (days > 0) shown = Math.max(floor, top - [3, 1.5, 0.75, 0.4][strength] * days); }
     fading = Math.max(0, Math.round(earned - shown));
@@ -589,7 +569,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, earned, fading, strength, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), mast, gates, pracCapped, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, earned, fading, strength, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), gates, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -657,30 +637,27 @@ function weakestChapter(m) {
   const real = left.filter((c) => !NOT_TEACHING.test(String(c.unit.title)));
   return (real.length ? real : left).sort((a, b) => a.pct - b.pct)[0] || null;
 }
-// The next things to do, from the weakest areas of the weakest chapters.
-// The next step for the weakest chapters, following the stages of the chapter % (practice → Apply questions →
-// chapter tests → written and Analyse answers → mixed papers → proof it lasts). kind is what the button runs.
+// THE "what next" brain (rules.md §5). One answer per chapter, used by the yellow button, Buddy's plan, the results
+// pop-up and the chapter page, so they can never disagree. kind is what runs; diff 'hard' asks for harder questions.
+function nextStep(c) {
+  const Z = (en, zh) => (LANG === 'zh' ? zh : en), t = shortTitle(c.unit.title), g = c.gates || {};
+  const S = (kind, en, zh, diff) => ({ unit: c.unit, kind, text: Z(en, zh), diff });
+  if (c.pct >= 100 && !c.cracked) return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
+  if (c.cracked) return S('check', `Win back ${t}: a quick check (it was ${c.earned}%)`, `贏回「${t}」：快速檢查（曾經是 ${c.earned}%）`);
+  if ((c.open || 0) >= 3) return S('mistakes', `Fix ${c.open} mistakes in ${t}`, `改正「${t}」的 ${c.open} 條錯題`);
+  if (!c.done) return S('practise', `Start ${t}: a first practice set`, `開始「${t}」：第一組練習`);
+  if ((c.prac || 0) < 50) return S('practise', `Practise more of ${t}`, `多練習「${t}」`);
+  if ((g.apply || 0) < 3) return S('practise', `Get ${3 - (g.apply || 0)} harder (Apply) question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`, 'hard');
+  if (c.passes < 2 || !c.lastPass) return S('test', `${c.passes ? 'A second chapter test' : 'Chapter test'} on ${t} (new questions, 80% to pass)`, `「${t}」${c.passes ? '第二次' : ''}章節測驗（新題目，80% 合格）`);
+  if (!((g.wrote || 0) >= 2 && g.analyse)) return S('practise', `Full marks on 2 written Apply answers and 1 Analyse question in ${t}`, `在「${t}」的 2 條應用文字題拿滿分，並答對 1 條分析題`, 'hard');
+  if ((g.mixed || 0) < 2) return S('mixed', `A mixed paper with ${t} and other chapters`, `包括「${t}」和其他章節的綜合試卷`);
+  if ((c.prac || 0) < 60) return S('practise', `Practise more of ${t} to top up its practice part`, `多練習「${t}」，補滿練習部分`);
+  return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
+}
+// The next step for the weakest chapters (up to 3), for screens that list a few.
 function masterySteps(m) {
-  const Z = (en, zh) => (LANG === 'zh' ? zh : en), steps = [];
-  const left = m.chapters.filter((c) => c.pct < 100), real = left.filter((c) => !NOT_TEACHING.test(String(c.unit.title)));
-  for (const c of (real.length ? real : left).sort((a, b) => a.pct - b.pct)) {
-    if (steps.length >= 3) break;
-    const t = shortTitle(c.unit.title), g = c.gates || {}, lv = chapterLever(c), add = (text, kind, diff) => steps.push({ unit: c.unit, text, kind, diff });
-    if (!c.done && !c.learned && LESSONS_IN_PLAN) add(Z(`Learn ${t}, then practise it`, `學習「${t}」，然後練習`), 'learn');
-    else if (!c.done) add(Z(`Start ${t}: a first practice set`, `開始「${t}」：第一組練習`), 'practise');
-    else if (c.cracked) add(Z(`Win back ${t}: a quick check (it was ${c.earned}%)`, `贏回「${t}」：快速檢查（曾經是 ${c.earned}%）`), 'check');
-    else if ((c.open || 0) >= 3) add(Z(`Fix ${c.open} mistakes in ${t}`, `改正「${t}」的 ${c.open} 條錯題`), 'mistakes');
-    else if ((c.prac || 0) < 50 && lv.k !== 'test') add(Z(`Practise more of ${t}`, `多練習「${t}」`), 'practise');
-    else if ((g.apply || 0) < 3) add(Z(`Get ${3 - (g.apply || 0)} Apply question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`), 'practise', 'hard');
-    else if (lv.k === 'test' || lv.k === 'retest') add(Z(`Pass a chapter test on ${t} (new questions, 80% to pass)`, `通過「${t}」的章節測驗（新題目，80% 合格）`), 'test');
-    else if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) add(Z(`Get full marks on written Apply questions and an Analyse question in ${t}`, `在「${t}」的應用文字題拿滿分，並答對一條分析題`), 'practise', 'hard');
-    else if (c.pct >= 80 && (g.mixed || 0) < 2 && c.pct < 100) add(Z(`Do a mixed paper with ${t} and other chapters`, `做一份包括「${t}」和其他章節的綜合試卷`), 'mixed');
-    else if (c.due) add(Z(`Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`), 'review');
-    else if ((c.prac || 0) < 60 && c.pct < 100) add(Z(`Practise more of ${t} to top up its practice part`, `多練習「${t}」，補滿練習部分`), 'practise');
-    else if (lv.k === 'practise') add(Z(`Practise the ideas you missed in ${t}, then retest`, `練習「${t}」答錯的概念，然後再測驗`), 'practise');
-    else add(Z(`Keep ${t}: a quick check now and then stops it fading`, `保持「${t}」：不時快速檢查，就不會退步`), 'check');
-  }
-  return steps;
+  const left = m.chapters.filter((c) => c.pct < 100 || c.cracked), real = left.filter((c) => !NOT_TEACHING.test(String(c.unit.title)));
+  return (real.length ? real : left).sort((a, b) => a.pct - b.pct).map(nextStep).filter(Boolean).slice(0, 3);
 }
 function masteryCard(m) {
   // Only the next step: it's what the button does, so it's written on the button.
@@ -708,7 +685,6 @@ async function closerPick() {
     for (const c of m.chapters) {
       if ((ids && !ids.includes(c.unit.id)) || c.pct >= 100 || NOT_TEACHING.test(String(c.unit.title))) continue;
       const st = masterySteps({ ...m, chapters: [c] })[0]; if (!st) continue;
-      if ((st.kind === 'practise' || st.kind === 'review') && c.pracCapped) continue; // practice can't move it again today
       if (st.kind === 'learn' || (st.kind === 'check' && !c.cracked)) continue; // a check only helps a chapter that has faded
       if (!best || c.pct < best.c.pct) best = { book, c, step: st, test };
     }
@@ -722,10 +698,10 @@ async function runCloser() {
   return boostSession(p.book, p.c, p.step);
 }
 // "Get me closer to 100%": the next step for the weakest chapter, whatever stage it's at.
-async function boostSession(book, c0 = null, step0 = null) {
+async function boostSession(book, c0 = null, step0 = null, plan = false) {
   const m = await bookMastery(book);
   const c = c0 ? m.chapters.find((x) => x.unit.id === c0.unit.id) || c0 : weakestChapter(m);
-  boostAt = Date.now();
+  if (!plan) boostAt = Date.now();
   if (!c) return toast(PT('Every chapter is at 100%. Keep up your reviews!', '每一章都到 100% 了，記得繼續溫習！'));
   const step = step0 || masterySteps({ ...m, chapters: [c] })[0] || { kind: 'practise' };
   if (step.kind === 'learn') return go({ name: 'learn', bookId: book.id, unitId: c.unit.id });
@@ -1269,26 +1245,14 @@ async function stepUseful(st) {
   const chs = (await bookMastery(b)).chapters.filter((c) => st.unitIds.includes(c.unit.id)); if (!chs.length) return true;
   if (st.action === 'learn') return LESSONS_IN_PLAN && chs.some((c) => !c.done && !c.learned); // a lesson is for a chapter not started yet
   return chs.some((c) => { const lv = chapterLever(c); if (st.action === 'chapter_test') return lv.k === 'test' || lv.k === 'retest' || lv.k === 'practise';
-    return !c.pracCapped && (!['wait', 'reviews'].includes(lv.k) || practiceGain(st.bookId, c) >= 3); });
+    return lv.k !== 'reviews' || practiceGain(st.bookId, c) >= 3; });
 }
 function chapterLever(c) {
-  const fmt = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  if (!c.done) return { k: 'start', en: LESSONS_IN_PLAN ? 'a lesson or a first practice set' : 'a first practice set' };
-  if (c.cracked && c.checkWeak) return { k: 'practise', en: 'practice on what the last check missed, then another check' };
-  if (c.cracked) return { k: 'check', en: `a quick "Still there?" check: it has slipped from ${c.earned}% to ${c.pct}%, and 5 of 6 right wins it back` };
-  if (!c.passes) {
-    // a failed test: practise the missed ideas first (a set since that test, and not the same day), then retest
-    if (c.lastTestT) { const lt = c.lastTestT;
-      if ((c.pracSince || 0) < Math.min(8, sessionSize()) || startOfToday() <= new Date(lt).setHours(0, 0, 0, 0)) return { k: 'practise', en: 'practice on the ideas missed in the last test, then a retest' }; }
-    // the test once practice has done most of its job (50 of its 60%), or the chapter's questions have run out
-    return (c.prac || 0) >= 50 || (c.done >= c.target && (c.prac || 0) >= 40) ? { k: 'test', en: 'its chapter test (practice has done most of its job)' } : { k: 'practise', en: 'more practice' };
-  }
-  { const g = c.gates || {};
-    if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) return { k: 'practise', en: 'harder questions: two full-marks written answers at Apply level and one Analyse question (85% needs real understanding)' };
-    if (c.pct >= 80 && (g.mixed || 0) < 2 && c.pct < 100) return { k: 'mixed', en: 'a mixed paper with other chapters, like a real school test' }; }
-  // a second strong chapter test (new questions) fills the test part: any time (no waiting: fading does that job)
-  if (c.passes < 2) return { k: 'retest', en: 'a second chapter test (new questions) to make it Strong' };
-  return { k: 'reviews', en: 'keeping it: a quick "Still there?" check now and then stops it fading' };
+  // the brain's answer in the older shape: k = start / check / practise / test / retest / mixed / reviews
+  const st = nextStep(c);
+  if (!st) return { k: 'reviews', en: 'keeping it: reviews and a quick check now and then' };
+  const k = !c.done ? 'start' : st.kind === 'test' ? (c.passes ? 'retest' : 'test') : st.kind === 'mixed' ? 'mixed' : st.kind === 'check' ? 'check' : st.kind === 'review' ? 'reviews' : 'practise';
+  return { k, en: st.text.charAt(0).toLowerCase() + st.text.slice(1) };
 }
 async function coachSnapshot() {
   const books = await getBooks(); const r = await currentReport();
@@ -1307,7 +1271,7 @@ async function coachSnapshot() {
     const practised = new Set((local.log || []).filter((e) => e.k !== 'place' && String(e.q).startsWith(b.id + ':')).map((e) => qUnit(e.q)[1]));
     for (const c of started.slice(0, 40)) {
       const acc = c.done ? pc(c.score.accurate / Math.max(0.01, Math.min(1, c.done / c.target))) : 0;
-      lines.push(`- [${code(c.unit)}] ${c.unit.title}${!practised.has(c.unit.id) && !c.tests ? ' (only seen in the level check, not studied yet)' : ''}: ready ${c.pct}% (long-term mastery ${c.mast}%), ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}. Lesson ${c.learned ? 'done' : 'not taken'}. What moves it next: ${chapterLever(c).en}.`);
+      lines.push(`- [${code(c.unit)}] ${c.unit.title}${!practised.has(c.unit.id) && !c.tests ? ' (only seen in the level check, not studied yet)' : ''}: ready ${c.pct}%, ${c.done} questions answered (target ${c.target}), latest accuracy ${acc}%, mistakes open ${c.open}, reviews due ${c.due}, chapter tests taken ${c.tests}, passed on ${c.passDays} day(s)${c.uncovered ? `, ${c.uncovered} part(s) of the chapter not covered yet` : ''}. Lesson ${c.learned ? 'done' : 'not taken'}. What moves it next: ${chapterLever(c).en}.`);
     }
     const fresh = m.chapters.filter((c) => !c.done && !c.tests).map((c) => `[${code(c.unit)}] ${c.unit.title}`);
     if (fresh.length) lines.push(`- Not started yet (${fresh.length}): ${fresh.slice(0, 40).join('; ')}${fresh.length > 40 ? '; …' : ''}`);
@@ -2928,127 +2892,39 @@ async function renderHome() {
   const tests = await schoolTestsHTML();
   // ---- Today's mission: up to 3 steps in order, fixed for the day, ticked off as they get done ----
   const cands = []; // { key, icon, t, s, attr, chk }
-  for (const p of tests.steps.filter((q) => q.left <= 14 && q.step).slice(0, 2)) {
-    { const k = tests.steps.indexOf(p); cands.push({ key: `t:${p.x.id}`, icon: p.step.icon, t: p.step.t, s: Z(`For ${p.x.name} · ${leftText(p.left)}`, `為「${p.x.name}」準備 · ${leftText(p.left)}`), attr: `data-tstep="${k}"`, chk: p.dict ? { y: 'dict', L: p.dict.id } : !p.book ? { y: 'none' } : p.step.u ? (p.step.icon === 'learn' ? { y: 'learn', b: p.book.id, u: p.step.u } : { y: 'log', b: p.book.id, us: [p.step.u] }) : { y: 'log', b: p.book.id, us: p.all ? null : p.units.map((u) => u.id) } }); } }
-  // behind pace for a test's goal: add catch-up jobs for it (its weakest chapters), so the daily amount matches what the goal needs
-  let extraJobs = 0;
-  for (const p of tests.steps.filter((q) => q.left >= 1 && q.left <= 14 && q.step && q.book && q.ready != null && (q.x.kind || 'test') !== 'dict').slice(0, 2)) {
-    const aim = p.x.aim || TEST_AIM; if (p.ready >= aim) continue;
-    const m = await bookMastery(p.book), chs = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)); if (!chs.length) continue;
-    const habit = practiceHabit(), fc = planForecast(p.ready, chs, p.left, habit); if (fc >= aim) continue; // the usual pace gets there
-    const N = planNeeds(p.ready, chs.map((c) => c.pct || 0), p.left, aim), perDay = Math.ceil(N.sets / Math.max(1, p.left));
-    const want = Math.min(3, perDay) - 1; if (want <= 0) continue;
-    const taken = new Set(cands.flatMap((c) => (c.chk && c.chk.u ? [c.chk.u] : c.chk && c.chk.us ? c.chk.us : [])));
-    const pick = chs.filter((c) => !taken.has(c.unit.id)).sort((a, b) => a.pct - b.pct).slice(0, want);
-    for (const c of pick) {
-      const fresh = LESSONS_IN_PLAN && !c.done && !c.learned, nm = shortTitle(c.unit.title);
-      cands.push({ key: `c:${p.x.id}:${c.unit.id}`, icon: fresh ? 'learn' : 'practise', t: fresh ? Z(`Learn: ${nm}`, `學習：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`),
-        s: Z(`Extra, to reach your ${aim}% goal`, `額外練習，達到 ${aim}% 目標`),
-        why: fc == null ? Z(`Your ${p.x.name} is ${leftText(p.left)}. To reach your ${aim}% goal, every chapter in it needs practice, so Buddy added this one.`, `「${p.x.name}」${leftText(p.left)}。要達到 ${aim}% 目標，每一章都要練習，所以 Buddy 加了這一章。`) : Z(`To reach your ${aim}% goal for the ${p.x.name}, Buddy added this. At your usual pace you’d get about ${fc}%.`, `為了在「${p.x.name}」達到 ${aim}% 目標，Buddy 加了這一項。照平時的步伐約 ${fc}%。`),
-        attr: fresh ? `data-mlearn="${esc(p.book.id)}:${esc(c.unit.id)}"` : `data-weak="${esc(p.book.id)}:${esc(c.unit.id)}"`,
-        chk: fresh ? { y: 'learn', b: p.book.id, u: c.unit.id } : { y: 'log', b: p.book.id, us: [c.unit.id] }, tag: ['test', Z(`${p.x.name} · catch up`, `「${p.x.name}」· 追進度`)] });
-      extraJobs++;
-    }
-  }
+  // rules.md §5: Buddy's plan is the brain's next step for each chapter of the nearest test (furthest behind first);
+  // with no test within 30 days, the chapters in progress (furthest behind first), then the next new chapter of a book.
+  // Then reviews and mistakes, plus 默書 and writing tests when they're near.
+  { const nt = (tests.steps || []).filter((q) => q.left >= 0 && q.left <= 30 && q.book && q.units && q.units.length && (q.x.kind || 'test') !== 'dict').sort((a, z) => a.left - z.left)[0];
+    const list = [];
+    if (nt) { const m = await bookMastery(nt.book);
+      for (const c of m.chapters) if (nt.units.some((u) => u.id === c.unit.id)) { const st = nextStep(c); if (st) list.push({ b: nt.book, c, st, nt }); } }
+    else { const ic = local.inClass || {};
+      for (const b of books) { const m = await bookMastery(b), real = m.chapters.filter((c) => !NOT_TEACHING.test(String(c.unit.title)));
+        for (const c of real.filter((c) => c.done)) { const st = nextStep(c); if (st) list.push({ b, c, st }); }
+        const icu = ic[b.id] && Date.now() - ic[b.id].t < 21 * DAY ? real.find((c) => c.unit.id === ic[b.id].u && !c.done) : null; // the class's chapter first
+        const fresh = icu || real.find((c) => !c.done); if (fresh) list.push({ b, c: fresh, st: nextStep(fresh), fresh: true }); } }
+    list.sort((a, z) => (a.fresh ? 1 : 0) - (z.fresh ? 1 : 0) || a.c.pct - z.c.pct);
+    for (const { b, c, st, nt: tt } of list) {
+      const nm = shortTitle(c.unit.title), k = st.kind, kb = `${b.id}:${c.unit.id}`;
+      const icon = k === 'test' || k === 'mixed' ? 'test' : k === 'check' || k === 'review' ? 'review' : k === 'mistakes' ? 'mistakes' : st.diff ? 'weak' : 'practise';
+      const chk = k === 'test' ? { y: 'ctest', b: b.id, u: c.unit.id } : k === 'mixed' ? { y: 'mm', b: b.id, us: [c.unit.id] } : k === 'check' ? { y: 'check', b: b.id, us: [c.unit.id] }
+        : k === 'mistakes' ? { y: 'mk', n: mk, k: Math.min(3, c.open || 1) } : k === 'review' ? { y: 'rv', n: due.length } : { y: 'log', b: b.id, us: [c.unit.id] };
+      cands.push({ key: `n:${kb}`, icon, t: st.text, s: tt ? Z(`For your ${tt.x.name} · ${leftText(tt.left)}`, `為「${tt.x.name}」準備 · ${leftText(tt.left)}`) : (b.subject ? subj(b.subject) : shortTitle(b.title)),
+        attr: `data-next="${esc(b.id)}|${esc(c.unit.id)}"`, chk,
+        tag: tt ? ['test', Z(`${tt.x.name} · ${leftText(tt.left)}`, `「${tt.x.name}」· ${leftText(tt.left)}`)] : ['practise', Z(`${nm} · ${c.pct}%`, `${nm} · ${c.pct}%`)],
+        why: Z(`${nm} is at ${c.pct}%. This is what moves it up next.`, `「${nm}」現在 ${c.pct}%。這一步最能令它進步。`) }); } }
   // school 默書 in the next 2 days, and a writing test in the next 3, go straight into the mission
   for (const x of (local.sched || []).filter((x) => x.kind === 'dict' && testLeft(x) >= 0 && testLeft(x) <= 2)) {
-    if (cands.some((c) => c.key === `t:${x.id}`)) continue;
     const L = (local.dict || []).find((d) => d.id === x.L);
     cands.push({ key: `d:${x.id}`, icon: 'dictation', t: L ? Z(`Practise 默書: ${shortTitle(L.title || '')}`, `練習默書：${shortTitle(L.title || '')}`) : Z('Add your 默書 words', '加入默書詞語'), s: Z('Buddy reads, you write', 'Buddy 讀，你寫'), why: Z(`School 默書 ${leftText(testLeft(x))}. Buddy reads the words, you write them, then you see what to fix.`, `學校默書${leftText(testLeft(x))}。Buddy 讀，你寫，然後看看要改正甚麼。`), attr: `data-dictgo="${esc(L ? L.id : 'new')}"`, chk: L ? { y: 'dict', L: L.id } : { y: 'none' }, tag: ['test', testLeft(x) === 0 ? Z('默書 today', '今天默書') : Z(`默書 ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}默書`)] });
   }
   { const x = (local.sched || []).find((x) => x.kind !== 'dict' && /writ|compos|essay|作文|寫作/i.test(x.name || '') && testLeft(x) >= 0 && testLeft(x) <= 3);
-    if (x && !cands.some((c) => c.key === `t:${x.id}`)) cands.push({ key: `wt:${x.id}`, icon: 'writing', t: Z('Practise writing', '練習寫作'), s: Z('Write a piece, Buddy gives feedback', '寫一篇，Buddy 給意見'), why: Z(`${x.name} is ${leftText(testLeft(x))}. Write a piece and Buddy marks it with feedback.`, `「${x.name}」${leftText(testLeft(x))}。寫一篇，Buddy 會批改並給意見。`), attr: 'data-wrgo="1"', chk: { y: 'wr' }, tag: ['test', Z(`Writing ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}寫作`)] }); }
+    if (x) cands.push({ key: `wt:${x.id}`, icon: 'writing', t: Z('Practise writing', '練習寫作'), s: Z('Write a piece, Buddy gives feedback', '寫一篇，Buddy 給意見'), why: Z(`${x.name} is ${leftText(testLeft(x))}. Write a piece and Buddy marks it with feedback.`, `「${x.name}」${leftText(testLeft(x))}。寫一篇，Buddy 會批改並給意見。`), attr: 'data-wrgo="1"', chk: { y: 'wr' }, tag: ['test', Z(`Writing ${leftText(testLeft(x))}`, `${leftText(testLeft(x))}寫作`)] }); }
   // reviews come before mistakes: they're due today and slip if they wait
   if (due.length > 10) cands.push({ key: 'rv', icon: 'review', t: Z('Go over 10 questions from before', '溫習 10 題舊題目'), s: Z(`${due.length} due · the rest over the next few days · about 6 min`, `共 ${due.length} 題到期 · 其餘留待之後幾天 · 約 6 分鐘`), attr: 'data-mode="spaced" data-cap="10"', chk: { y: 'rv', n: due.length } });
   else if (due.length) cands.push({ key: 'rv', icon: 'review', t: Z(`Go over ${due.length} question${due.length > 1 ? 's' : ''} from before`, `溫習 ${due.length} 題舊題目`), s: Z(`So you don’t forget · about ${Math.max(2, Math.round(due.length * 0.6))} min`, `鞏固記憶 · 約 ${Math.max(2, Math.round(due.length * 0.6))} 分鐘`), attr: 'data-mode="spaced"', chk: { y: 'rv' } });
   if (mk) { const n = Math.min(5, mk); cands.push({ key: 'mk', icon: 'mistakes', t: mk > n ? Z(`Fix ${n} of your ${mk} mistakes`, `改正 ${n} 題錯題（共 ${mk} 題）`) : Z(`Fix ${mk} mistake${mk > 1 ? 's' : ''}`, `改正 ${mk} 題錯題`), s: Z('Questions you didn’t get fully right', '未完全答對的題目'), attr: 'id="mistakes"', chk: { y: 'mk', n: mk, k: n } }); }
-  // Exam components: practice alone stops at 70%. A chapter that's ready gets its timed chapter test (80% to pass; its score counts most);
-  // one passed a few days ago gets a second test on another day (up to 95%). Once a week, a short mini mock across chapters.
-  { const inT = new Set(cands.flatMap((c) => (c.chk && c.chk.u ? [`${c.chk.b}:${c.chk.u}`] : c.chk && c.chk.us ? c.chk.us.map((u) => `${c.chk.b}:${u}`) : [])));
-    const used = books.filter((b) => local.log.some((e) => e.q && e.q.startsWith(b.id + ':')));
-    let first = null, again = null, mock = null, slip = null;
-    for (const b of used) { const m = await bookMastery(b);
-      for (const c of m.chapters) { if (inT.has(`${b.id}:${c.unit.id}`)) continue;
-        if (!c.passes && chapterLever(c).k === 'test' && (!first || c.pct > first.c.pct)) first = { b, c };
-        else if (c.passes && chapterLever(c).k === 'retest' && (!again || c.pct > again.c.pct)) again = { b, c };
-        if (c.fading >= 8 && !c.checkWeak && (!slip || c.fading > slip.c.fading)) slip = { b, c }; }
-      const prac = m.chapters.filter((c) => c.pct >= 70); // mixed papers once chapters are Test-ready
-      if (prac.length >= 2 && (!mock || prac.length > mock.us.length)) mock = { b, us: prac.map((c) => c.unit.id) }; }
-    // a chapter that has slipped 8%+ from what it earned: a quick "Still there?" check wins it back
-    if (slip) { const nm = shortTitle(slip.c.unit.title);
-      cands.push({ key: `chk1:${slip.b.id}:${slip.c.unit.id}`, icon: 'review', t: Z(`Still there? ${nm}`, `還記得嗎？${nm}`), s: Z(`6 questions · about 8 min · back to ${slip.c.earned}%`, `6 題 · 約 8 分鐘 · 回到 ${slip.c.earned}%`),
-        chk: { y: 'check', b: slip.b.id, us: [slip.c.unit.id] }, attr: `data-chk="${slip.b.id}|${slip.c.unit.id}"`, tag: ['review', Z('Win it back', '贏回來')],
-        why: Z(`${nm} was ${slip.c.earned}% and has slipped to ${slip.c.pct}%. Get 5 of 6 right and it’s back, and it’ll fade more slowly after.`, `「${nm}」曾經是 ${slip.c.earned}%，現在跌到 ${slip.c.pct}%。答對 6 題中的 5 題就能回來，之後也會退得更慢。`) }); }
-    const t = first || again;
-    if (t) { const nm = shortTitle(t.c.unit.title);
-      cands.push({ key: `${first ? 'ct' : 'ct2'}:${t.b.id}:${t.c.unit.id}`, icon: 'test', t: first ? Z(`Chapter test: ${nm}`, `章節測驗：${nm}`) : Z(`Prove it again: ${nm}`, `再證明一次：${nm}`),
-        s: Z('Timed · 80% to pass', '限時 · 80% 合格'), attr: `data-ctest="${esc(t.b.id)}:${esc(t.c.unit.id)}"`, chk: { y: 'ctest', b: t.b.id, u: t.c.unit.id },
-        tag: ['test', first ? Z('Prove it', '證明實力') : Z('Prove it again', '再證明一次')],
-        why: first ? Z(`You’ve practised ${nm} enough to try its chapter test. Practice alone goes up to 60%: passing the chapter test makes it Test-ready (70%).`, `你已經練習「${nm}」夠多，可以做章節測驗。限時測驗最能證明實力：它的分數對這一章的百分比影響最大。`)
-          : Z(`You passed ${nm} before. Another strong test takes it towards 85% (Strong), and shows it has stuck.`, `你之前通過了「${nm}」。在另一日再次合格，證明真的記住了，可升至 95%。`) }); }
-    const lastMock = Math.max(0, ...(local.tests || []).filter((x) => x.kind === 'mini' || x.kind === 'paper').map((x) => x.t));
-    if (mock && Date.now() - lastMock >= 7 * DAY) { const sj = mock.b.subject ? subj(mock.b.subject) : shortTitle(mock.b.title);
-      cands.push({ key: `mm:${mock.b.id}`, icon: 'test', t: Z(`Mini mock: ${sj}`, `模擬小測：${sj}`), s: Z(`${mock.us.length} chapters · timed · Section A + B`, `${mock.us.length} 章 · 限時 · 甲部 + 乙部`),
-        attr: `data-mmock="${esc(mock.b.id)}"`, chk: { y: 'mm', b: mock.b.id, us: mock.us }, tag: ['test', Z('Weekly mini mock', '每週模擬小測')],
-        why: Z(`Once a week: a short timed paper mixing the ${mock.us.length} chapters you’ve practised, like the real exam. It shows what you can do under time pressure.`, `每週一次：混合你練過的 ${mock.us.length} 章的限時短卷，像真正的考試，看看在時間壓力下的表現。`) }); } }
-  // the weakest chapter practised lately (first tries, last 2 weeks), if it isn't already in the list
-  { const by = {}, wk2 = Date.now() - 14 * DAY, seen = new Set();
-    for (const e of local.log) { if (!e.q || !e.m || seen.has(e.q)) continue; seen.add(e.q); if (e.t < wk2 || e.k === 'mistakes' || e.k === 'spaced') continue; const k = String(e.q).split(':').slice(0, 2).join(':'); (by[k] || (by[k] = [])).push(e); }
-    const acc = (es) => Math.round(100 * es.reduce((x, e) => x + e.g, 0) / es.reduce((x, e) => x + e.m, 0));
-    const inList = new Set(cands.map((c) => (c.chk && c.chk.u ? `${c.chk.b}:${c.chk.u}` : '')).concat(cands.flatMap((c) => (c.chk && c.chk.us ? c.chk.us.map((u) => `${c.chk.b}:${u}`) : []))));
-    const w = Object.entries(by).filter(([k, es]) => es.length >= 5 && acc(es) < 70 && !inList.has(k)).sort((a, b) => acc(a[1]) - acc(b[1]))[0];
-    if (w) { const [bid, uid] = w[0].split(':'), b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === uid);
-      if (u) cands.push({ key: `w:${w[0]}`, icon: 'weak', t: Z(`Practise ${shortTitle(u.title)}`, `練習「${shortTitle(u.title)}」`), s: Z(`Your weakest lately · ${acc(w[1])}% right`, `最近最弱的一章 · 答對 ${acc(w[1])}%`), why: Z(`${acc(w[1])}% right on first tries lately, your weakest chapter. A short set makes it stronger.`, `最近第一次作答只答對 ${acc(w[1])}%，是最弱的一章。做一組就會進步。`), attr: `data-weak="${esc(w[0])}"`, chk: { y: 'log', b: bid, us: [uid] }, tag: ['weak', Z('Weak spot', '弱項')] }); } }
-  // In class now (set on the book page): keep in step with school, like a tutor who asks what the teacher covered this week
-  for (const [bid, ic] of Object.entries(local.inClass || {})) { if (!ic || Date.now() - ic.t > 21 * DAY) continue;
-    const b = books.find((x) => x.id === bid), u = b && b.units.find((x) => x.id === ic.u); if (!u) continue;
-    const m = await bookMastery(b), c = m.chapters.find((x) => x.unit.id === u.id); if (!c || c.pct >= 70) continue;
-    const fresh = LESSONS_IN_PLAN && !c.done && !c.learned, nm = shortTitle(u.title);
-    if (cands.some((x) => x.chk && ((x.chk.u === u.id) || (x.chk.us || []).includes(u.id)) && x.chk.b === bid)) continue;
-    cands.unshift({ key: `ic:${bid}:${u.id}`, icon: fresh ? 'learn' : 'practise', t: fresh ? Z(`Learn: ${nm}`, `學習：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`),
-      s: Z('What your class is doing now', '你班現在教的'), why: Z(`Your class is on ${nm} right now. Keeping in step with school makes lessons easier and homework quicker.`, `你班現在教「${nm}」。跟上學校的進度，上堂更易明白，做功課也更快。`),
-      attr: fresh ? `data-mlearn="${esc(bid)}:${esc(u.id)}"` : `data-weak="${esc(bid)}:${esc(u.id)}"`,
-      chk: fresh ? { y: 'learn', b: bid, u: u.id } : { y: 'log', b: bid, us: [u.id] }, tag: ['practise', Z('In class now', '班上進度')] }); }
-  // "Still there?": 2-3 days before a school test, a short mixed check on its chapters, so the child walks in at their peak
-  for (const p of tests.steps || []) { if (!p.book || p.left > 3 || p.left < 1 || (p.x.kind || 'test') === 'dict') continue;
-    const us = (p.units || []).filter((u) => (local.stats && Object.keys(local.stats).some((id) => id.startsWith(`${p.book.id}:${u.id}:`))));
-    const recent = us.some((u) => { const c = (local.checks || {})[`${p.book.id}:${u.id}`]; return c && Date.now() - c.t < 5 * DAY; });
-    if (us.length && !recent) cands.push({ key: `chk:${p.x.id}`, icon: 'review', t: Z(`Still there? Quick check for ${p.x.name}`, `還記得嗎？「${p.x.name}」快速檢查`), s: Z(`${Math.min(12, us.length * 3)} questions from ${us.length} chapter${us.length > 1 ? 's' : ''}, mixed · about ${stepMins(Math.min(12, us.length * 3), 'q')} min`, `${Math.min(12, us.length * 3)} 題，來自 ${us.length} 章 · 約 ${stepMins(Math.min(12, us.length * 3), 'q')} 分鐘`), chk: { y: 'check', b: p.book.id, us: us.map((u) => u.id) }, attr: `data-chk="${p.book.id}|${us.map((u) => u.id).join(',')}"`, why: Z('Checks what’s still remembered before the test. Your % follows what you remember now, not last month.', '考試前檢查還記得多少。百分比會跟你現在記得的，而不是上個月。') }); }
-  { const nb = null; // the level check is gone: practice finds the right level by itself after a few answers
-    if (nb) cands.push({ key: `lv:${nb.id}`, icon: 'level', t: Z('Find your level', '找出你的程度'), s: Z(`${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · about 5 min`, `${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · 約 5 分鐘`), attr: `data-lv="${esc(nb.id)}"`, chk: { y: 'lv', b: nb.id } }); }
-  // "pick up where you left off" only when no other step already practises that chapter
-  if (last) { if (!cands.some((c) => c.chk && c.chk.b === last.book.id && (c.chk.u === last.unit.id || (c.chk.us || []).includes(last.unit.id)))) {
-    const sc = scoreOf(await getQs(last.book.id, last.unit.id));
-    cands.push({ key: `u:${last.book.id}:${last.unit.id}`, icon: 'practise', t: shortTitle(last.unit.title), s: Z(`Keep going${sc !== null ? ` · scored ${sc}%` : ''}`, `繼續${sc !== null ? ` · 得分 ${sc}%` : ''}`), attr: `data-firstch="${esc(last.book.id)}:${esc(last.unit.id)}"`, chk: { y: 'log', b: last.book.id, us: [last.unit.id] } });
-  } } else { // nothing practised yet: start straight away on the first real chapter (not a summary or glossary)
-    const u0 = books[0].units.find((u) => !NOT_TEACHING.test(String(u.title))) || books[0].units[0];
-    if (!cands.some((c) => c.chk && c.chk.b === books[0].id && (c.chk.u === u0.id || (c.chk.us || []).includes(u0.id)))) cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z(`Practise ${shortTitle(u0.title)}`, `練習「${shortTitle(u0.title)}」`), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-firstch="${esc(books[0].id)}:${esc(u0.id)}"`, chk: { y: 'log', b: books[0].id, us: [u0.id] } }); }
-  // Buddy's pick is the optimal arrangement: drop practice that can't move its chapter today (turning it into the
-  // chapter test when that's the move), and while a school test is near, put chapters outside it at the back.
-  { const MBx = new Map(), bmx = async (id) => { if (!MBx.has(id)) { const b = books.find((x) => x.id === id); MBx.set(id, b ? await bookMastery(b) : null); } return MBx.get(id); };
-    const testU = new Set(); for (const p of tests.steps.filter((q) => q.left >= 0 && q.left <= 14 && q.book && q.units)) p.units.forEach((u) => testU.add(`${p.book.id}:${u.id}`));
-    const keep = [], later = [];
-    for (const c of cands) {
-      const ck = c.chk || {}, ids = ck.y === 'log' && ck.b ? (ck.us && ck.us.length ? ck.us : []) : [];
-      if (ids.length) { const m = await bmx(ck.b), chs = m ? m.chapters.filter((x) => ids.includes(x.unit.id)) : [];
-        if (chs.length && chs.every((x) => { const lv = chapterLever(x); return lv.k === 'test' || lv.k === 'retest' || (['wait', 'reviews'].includes(lv.k) && practiceGain(ck.b, x) < 3); })) {
-          const t = chs.find((x) => ['test', 'retest'].includes(chapterLever(x).k)), b = books.find((x) => x.id === ck.b);
-          if (t && b && ![...cands, ...keep].some((z) => z.chk && z.chk.y === 'ctest' && z.chk.u === t.unit.id)) { const nm = shortTitle(t.unit.title), again = chapterLever(t).k === 'retest';
-            keep.push({ key: `${again ? 'ct2' : 'ct'}:${b.id}:${t.unit.id}`, icon: 'test', t: again ? Z(`Prove it again: ${nm}`, `再證明一次：${nm}`) : Z(`Chapter test: ${nm}`, `章節測驗：${nm}`), s: Z('Timed · 80% to pass', '限時 · 80% 合格'), attr: `data-ctest="${esc(b.id)}:${esc(t.unit.id)}"`, chk: { y: 'ctest', b: b.id, u: t.unit.id },
-              tag: ['test', again ? Z('Prove it again', '再證明一次') : Z('Prove it', '證明實力')], why: again ? Z(`A week after your first pass: another strong test shows ${nm} has really stuck. Each test day adds more, up to 100%.`, `第一次合格一星期後：再考得好證明「${nm}」真的記住了。每次測驗都會再加分，最高 100%。`) : Z(`You’ve practised ${nm} well. Practice alone goes up to 60%: passing the chapter test makes it Test-ready (70%).`, `「${nm}」已練得不錯。只靠練習最多 60%：通過章節測驗就達到「準備好考試」（70%）。`) }); }
-          continue; }
-        if (testU.size && /^(u|w|b):/.test(c.key) && !ids.some((u) => testU.has(`${ck.b}:${u}`))) { later.push(c); continue; } }
-      keep.push(c); }
-    cands.splice(0, cands.length, ...keep, ...later);
-    // a sensible order: the level check first (it sets where every chapter starts), then a test's chapters in book
-    // order, with a chapter's lesson before its practice
-    const uIdx = (c) => { const ck = c.chk || {}, b = books.find((x) => x.id === ck.b), u = ck.u || (ck.us || [])[0]; return b && u ? b.units.findIndex((x) => x.id === u) : 999; };
-    const inTest = (c) => { const ck = c.chk || {}; return (ck.u ? [ck.u] : ck.us || []).some((u) => testU.has(`${ck.b}:${u}`)); };
-    const tPos = cands.map((c, i) => (/^(t|c):/.test(c.key) || (/^(b|u|w):/.test(c.key) && inTest(c)) ? i : -1)).filter((i) => i >= 0);
-    const tSorted = tPos.map((i) => cands[i]).sort((a, z) => uIdx(a) - uIdx(z) || ((a.icon === 'learn' ? 0 : 1) - (z.icon === 'learn' ? 0 : 1)));
-    tPos.forEach((i, j) => { cands[i] = tSorted[j]; });
-    const lv = cands.findIndex((c) => c.key.startsWith('lv:'));
-    if (lv > 0 && tPos.length) { const [x] = cands.splice(lv, 1); cands.unshift(x); } }
   // every mission step says why it's there: a coloured reason tag and one plain sentence
   for (const c of cands) {
     if (c.key.startsWith('c:')) continue;
@@ -3079,12 +2955,12 @@ async function renderHome() {
     if (ic === 'test') return ctMins(1);
     if (ic === 'mock') return 15;
     return stepMins(sessionSize(), 'q'); };
-  const nSteps = Math.min(8, 5 + extraJobs); // up to 5, plus catch-up jobs when behind pace for a test
+  const nSteps = 6; // as many as fit in the daily study time, up to 6
   // today's time: steps in order while they fit in the daily study time (a parent setting), always at least one
   const fitSteps = (() => { const cap = dayMins(), out = []; let t = 0;
     for (const x of cands) { if (out.length >= nSteps) break; const m = jobMin(x); if (out.length && t + m > cap + 5) continue; /* a few minutes over is fine: a short review still fits after a chapter test */ out.push(x); t += m; }
     return out; })();
-  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 8) { local.mission = { v: 8, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: fitSteps.map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
+  if (!local.mission || local.mission.d !== t0 || !local.mission.steps.length || local.mission.v !== 9) { local.mission = { v: 9, d: t0, at: (local.mission && local.mission.d === t0 && local.mission.at) || Date.now(), steps: fitSteps.map(({ key, icon, t, s, chk, attr, tag, why }) => ({ key, icon, t, s, chk, attr, tag, why })) }; saveLocal(); }
   const M = local.mission;
   const isDone = (st) => {
     const c = st.chk || {};
@@ -3203,8 +3079,7 @@ async function renderHome() {
           if (!rushOff() && (local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('⚡ Too fast last time, so it didn’t count', '⚡ 上次太快，所以不計')
           if (asTest) it.test = Z('Your score on it counts most for this chapter’s %.', '測驗分數對這一章的百分比影響最大。');
           { const lv = chapterLever(ch); if (lv.k === 'wait' && !asTest) { it.note = Z(`${it.to > ch.pct ? 'Practice still adds a little, reviews add more.' : 'Grows with reviews now.'} A retest counts from ${new Date(lv.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `現在靠溫習進步。重考由 ${new Date(lv.at).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起才計算。`); } }
-          if (to <= ch.pct && ch.pracCapped) it.note = Z('Practice has added the most it can to this chapter today. More still helps you remember it; it counts again tomorrow.', '今天的練習已為這一章加到上限。多做仍有助記憶，明天會再計算。');
-          else if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
+          if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
           it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid; if (best && to > ch.pct) it.best = true;
           impact[x.key] = it;
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
@@ -3562,7 +3437,7 @@ async function renderHome() {
   let closerHTML = '';
   try { const cp = await closerPick();
     if (cp) { const nm = shortTitle(cp.c.unit.title), k = cp.step.kind;
-      const what = k === 'test' ? Z(`Chapter test: ${nm}`, `章節測驗：${nm}`) : k === 'mixed' ? Z(`Mixed paper with ${nm}`, `包括「${nm}」的綜合試卷`) : k === 'mistakes' ? Z(`Fix mistakes in ${nm}`, `改正「${nm}」的錯題`) : k === 'check' ? Z(`Quick check: ${nm}`, `快速檢查：${nm}`) : k === 'review' ? Z(`Reviews in ${nm}`, `溫習「${nm}」`) : cp.step.diff ? Z(`Harder questions: ${nm}`, `較深題目：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`);
+      const what = cp.step.text; // the brain's own words, the same as Buddy's plan and the chapter page
       closerHTML = `<button class="closer-btn" id="closerGo"><span class="cl-ic" aria-hidden="true">🎯</span><span class="cl-t"><b>${Z('Get me closer to 100%', '帶我更接近 100%')}</b><small data-raw>${esc(Z('Next: ', '下一步：') + what + (cp.test ? Z(` · for your ${cp.test}`, ` · 為「${cp.test}」`) : ''))} · ${cp.c.pct}%</small></span><span class="cl-go" aria-hidden="true">→</span></button>`; }
     else if (books.length) closerHTML = `<div class="closer-btn cl-done" role="status"><span class="cl-ic" aria-hidden="true">🏁</span><span class="cl-t"><b>${Z('As close as you can get today', '今天已盡力更接近 100%')}</b><small>${Z('Everything that can move today has moved. Come back tomorrow for more.', '今天能進步的都完成了，明天再來。')}</small></span></div>`; } catch (e) { console.warn(e); }
   const nextPick = allDone || !missionPick.n ? { fresh: true } : missionPick; // once the mission is done, Buddy's pick makes a fresh set // the child should see Start without scrolling
@@ -3655,6 +3530,7 @@ async function renderHome() {
   $app.querySelectorAll('[data-wrgo]').forEach((b) => (b.onclick = () => go({ name: 'writing' })));
   $app.querySelectorAll('[data-mlearn]').forEach((b) => (b.onclick = () => { const [bid, uid] = b.dataset.mlearn.split(':'); go({ name: 'learn', bookId: bid, unitId: uid }); }));
   $app.querySelectorAll('.msd [data-go]').forEach((b) => (b.onclick = () => go({ name: b.dataset.go, tab: 'todo' })));
+  $app.querySelectorAll('[data-next]').forEach((b) => (b.onclick = async () => { const [bid, uid] = b.dataset.next.split('|'); const bk = (await getBooks()).find((x) => x.id === bid); if (!bk) return; const c = (await bookMastery(bk)).chapters.find((x) => x.unit.id === uid); if (c) boostSession(bk, c, nextStep(c) || { kind: 'practise' }, true); }));
   $app.querySelectorAll('[data-ctest]').forEach((b) => (b.onclick = async () => { const [bid, uid] = b.dataset.ctest.split(':'); const bk = (await getBooks()).find((x) => x.id === bid), u = bk && bk.units.find((x) => x.id === uid); if (u) startChapterTest(bk, [u]); }));
   $app.querySelectorAll('[data-chk]').forEach((b) => (b.onclick = async () => { const [bid, us] = b.dataset.chk.split('|'); const bk = (await getBooks()).find((x) => x.id === bid); if (bk) startCheck(bk, bk.units.filter((u) => us.split(',').includes(u.id))); }));
   $app.querySelectorAll('[data-mmock]').forEach((b) => (b.onclick = async () => { const st = M.steps.find((x) => x.key === `mm:${b.dataset.mmock}`); const bk = (await getBooks()).find((x) => x.id === b.dataset.mmock); if (bk) startMiniMock(bk, bk.units.filter((u) => ((st && st.chk && st.chk.us) || []).includes(u.id))); }));
@@ -7007,7 +6883,7 @@ function chapterSheet(book, c) {
   const n = local.count || sessionSize(), name = shortTitle(c.unit.title);
   // where the chapter stands, in plain words (no formula), and what's still to do for 100%
   const fmtD = (t) => new Date(t).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
-  const now = Date.now(), wk = 7 * DAY, recentTest = c.lastTest && now - c.lastTest < wk, retestAt = c.lastTest + wk;
+  const now = Date.now();
   // the six steps to 100%, each a tile: done (green), started (amber) or still to do (grey), with one line
   // that says where it stands or what's needed next
   const ST3 = (done, part) => (done ? 'done' : part ? 'part' : 'todo');
@@ -7017,24 +6893,17 @@ function chapterSheet(book, c) {
     ['level', PT('Harder questions', '較深題目'), ST3(c.score.deep >= 1, c.lvTop >= 3), c.score.deep >= 1 ? PT('Analyse level done', '分析程度完成') : c.lvTop >= 3 ? PT('Apply reached · analyse next', '已到應用 · 下一步分析') : PT('Unlocks as you improve', '進步後解鎖')],
     ['mistakes', PT('Mistakes', '錯題'), ST3(c.done > 0 && !c.open, c.open > 0), c.open ? PT(`${c.open} to fix`, `${c.open} 題要改正`) : c.done ? PT('All fixed', '全部改正') : PT('None yet', '暫時沒有')],
     ['review', PT('Memory', '記憶'), ST3(c.score.remembered >= 1, c.done > 0), c.due ? PT(`${c.due} reviews due now`, `${c.due} 題到期溫習`) : c.nextDue < Infinity ? PT(`Next review ${fmtD(c.nextDue)}`, `下次溫習 ${fmtD(c.nextDue)}`) : PT('Right again over 2 weeks', '兩星期內再答對')],
-    ['test', PT('Chapter test', '章節測驗'), ST3(c.spread && c.lastPass, c.passes > 0), c.spread && c.lastPass ? PT('Passed twice', '兩次合格') : recentTest ? PT(`Passed ${fmtD(c.lastTest)} · retest ${fmtD(retestAt)}`, `${fmtD(c.lastTest)} 合格 · ${fmtD(retestAt)} 再考`) : c.passes ? PT('Passed once · retest now', '合格一次 · 可再考') : c.tests ? PT('Not passed yet · 80%', '未合格 · 80%') : PT('Pass with 80%', '80% 合格')],
+    ['test', PT('Chapter test', '章節測驗'), ST3(c.passes >= 2 && c.lastPass, c.passes > 0), c.passes >= 2 && c.lastPass ? PT('Passed twice', '兩次合格') : c.passes ? PT('Passed once · retest now', '合格一次 · 可再考') : c.tests ? PT('Not passed yet · 80%', '未合格 · 80%') : PT('Pass with 80%', '80% 合格')],
   ];
   const left = steps.filter((x) => x[2] !== 'done').length;
   const LV = [PT('Remember', '記憶'), PT('Understand', '理解'), PT('Apply', '應用'), PT('Analyse', '分析')];
   const ladder = `<section class="cs2-sec"><h3>${PT('Question difficulty level', '題目難度級別')}</h3>
     <div class="cs2-lv">${LV.map((l, i) => `<div class="${i + 1 <= c.lvTop ? 'got' : ''}${i + 1 === c.lvNow ? ' now' : ''}">${i + 1 === c.lvNow ? `<span class="cs2-you">${buddySVG('happy', 30)}</span>` : ''}<i style="height:${10 + i * 6}px"></i><b>${l}</b></div>`).join('')}</div>
     <p class="cs2-sub">${c.done >= 5 ? PT(`Buddy is giving you <b>${LV[c.lvNow - 1].toLowerCase()}</b> questions now. Get 80% right and it steps up; under 50% and it eases off.`, `Buddy 現在給你<b>${LV[c.lvNow - 1]}</b>題目。答對 80% 會升一級；低於 50% 會調低。`) : PT('After 5 questions Buddy starts moving the difficulty up or down to match you.', '做了 5 題之後，Buddy 會按你的表現調高或調低難度。')}</p></section>`;
-  // Buddy's pick, in the order a tutor would go
-  const retestOK = !!c.passes; // a retest any time: fading, not waiting, keeps it honest
-  const pick = LESSONS_IN_PLAN && !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review'
-    : (!c.passes || !c.lastPass) && !(c.lastTest && Date.now() - c.lastTest < 2 * DAY) ? 'test' : c.passes < 2 && retestOK ? 'test' : c.score.deep < 1 ? 'practise' : 'review';
-  const why = {
-    lesson: PT('You haven’t started this chapter. The lesson explains it step by step with quick checks.', '你還未開始這一章。課堂會一步步講解，並有小測。'),
-    fix: PT(`You have ${c.open} mistakes open here. Fixing them is the fastest way up.`, `這一章有 ${c.open} 題錯題，改正它們是最快的進步方法。`),
-    practise: c.passes && c.score.deep < 1 ? PT('You’ve passed the test. Now the harder apply and analyse questions: Buddy moves you up as you get them right.', '你已通過測驗。接著挑戰較深的應用和分析題，答對了 Buddy 會再調高程度。') : c.done ? PT(`${acc}% right so far over ${c.done} questions. More practice will firm it up.`, `目前 ${c.done} 題答對 ${acc}%。多做練習可以鞏固。`) : (learned ? PT('You’ve done the lesson. Now practise so it sticks.', '你已上了課，現在做練習鞏固。') : PT('Start with a practice set: Buddy begins with easier questions and moves you up as you get them right.', '先做一組練習：Buddy 由較易的題目開始，答對了就會調高程度。')),
-    review: !c.due && c.passes && !retestOK ? PT(`Nice work. You tested this recently, so give it a few days. Come back on ${new Date(c.firstPass + 7 * DAY).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} to retest and show it stuck. Flashcards keep it fresh meanwhile.`, `做得好！你最近考過，先休息幾日。${new Date(c.firstPass + 7 * DAY).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}再回來考一次，證明記得。期間可以用閃卡保持記憶。`) : PT(`${c.due || 'A few'} questions are due. Getting them right days later is what makes it stick.`, `有 ${c.due || '幾'} 題到期溫習。隔幾日仍答對，才算真正記住。`),
-    test: c.tests && !c.lastPass ? PT('Your practice is strong. Try the timed chapter test again: 80% passes.', '練習做得好，再試一次限時章節測驗：80% 合格。') : c.passes ? PT('It’s been a week since you passed. Passing again now shows it has stuck.', '距離上次合格已經一星期，現在再合格一次，證明你真的記住了。') : PT('Your practice is strong. A timed chapter test (like a mock exam) proves it: 80% passes.', '練習做得好。做一次限時章節測驗（像模擬試）來證明：80% 合格。'),
-  }[pick];
+  // Buddy's pick: the brain's next step for this chapter (the same answer as the yellow button and Buddy's plan)
+  const nx = nextStep(c);
+  const pick = !nx ? 'review' : nx.kind === 'mistakes' ? 'fix' : nx.kind === 'review' ? 'review' : nx.kind === 'test' ? 'test' : nx.kind === 'practise' && !nx.diff ? 'practise' : 'next';
+  const why = nx ? nx.text + '.' : PT('It’s at 100%. Reviews now and then keep it there.', '已到 100%。不時溫習就能保持。');
   const O = [
     LESSONS_IN_PLAN ? ['lesson', 'learn', learned ? PT('Redo the lesson', '重溫課堂') : PT('Take the lesson', '上課'), PT('Step-by-step teaching with quick checks', '一步步講解，附小測'), () => go({ name: 'learn', bookId: book.id, unitId: c.unit.id })] : null,
     ['practise', 'practise', PT(`Practise ${n} questions`, `練習 ${n} 題`), PT('New questions that adapt to you', '會按你的程度調整的新題目'), () => startUnits(book, [c.unit], n)],
@@ -7051,6 +6920,7 @@ function chapterSheet(book, c) {
     }] : null,
     ['cards', 'flashcards', PT('Flashcards', '閃卡'), PT('Key words and ideas, quick fire', '重點詞語和概念，快速溫習'), () => go({ name: 'cards', bookId: book.id })],
     ['notes', 'notes', PT('Revision notes', '溫習筆記'), PT('The chapter on one page', '一頁看完整章'), () => go({ name: 'notes', bookId: book.id })],
+    pick === 'next' ? ['next', nx.kind === 'mixed' ? 'test' : nx.kind === 'check' ? 'review' : 'weak', nx.text, nx.kind === 'mixed' ? PT('Timed, several chapters, like the real exam', '限時，多章混合，像真正考試') : nx.kind === 'check' ? PT('6 questions to win back what faded', '6 題，贏回退步的分數') : PT('Buddy picks harder questions for you', 'Buddy 為你選較深的題目'), () => boostSession(book, c, nx, true)] : null,
   ].filter(Boolean);
   const best = O.find((o) => o[0] === pick) || O[0], rest = O.filter((o) => o !== best);
   const tone = c.pct >= 70 ? 'hi' : c.pct >= 40 ? 'mid' : 'lo';
@@ -11328,8 +11198,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       if (c) {
         const nm = shortTitle(c.unit.title), u = c.unit;
         const test = { label: Z('Take the chapter test', '做章節測驗'), run: () => startChapterTest(sess.book, [u]) };
-        if (c.pracCapped && !(!c.passes && chapterLever(c).k === 'test')) lever = { l: ['📅', Z(`That’s the most practice can add to ${nm} in one day. It still helps you remember, and it counts again tomorrow. Another chapter can still go up today.`, `「${nm}」今天的練習已加到上限。多做仍有助記憶，明天會再計算。其他章節今天仍可進步。`)] };
-        else if (!c.passes && chapterLever(c).k === 'test') lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Your score on it counts most.`, `「${nm}」現在最大的進步來自章節測驗，它的分數影響最大。`)], main: test };
+        if (!c.passes && chapterLever(c).k === 'test') lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Your score on it counts most.`, `「${nm}」現在最大的進步來自章節測驗，它的分數影響最大。`)], main: test };
         else if ((() => { const st = masterySteps({ chapters: [c] })[0]; if (!st || st.kind === 'check' || st.kind === 'learn') return false;
           lever = { l: ['🎯', Z(`Next jump: ${st.text}.`, `下一步：${st.text}。`)] }; return true; })()) {}
         else if (c.needL3 || c.needL4) lever = { l: ['🧗', Z(`Next jump: get a harder “${c.needL4 ? 'analyse' : 'apply'}” question right. Buddy mixes them in as you go.`, `下一步：答對一題較難的「${c.needL4 ? '分析' : '應用'}」題。Buddy 會逐步加入這類題目。`)] };
