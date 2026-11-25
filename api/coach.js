@@ -22,7 +22,7 @@ Below is a snapshot of this student's progress, made just now from their practic
 ${APP_GUIDE}
 </app_guide>`;
 const STEP = {
-  action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today', 'homework', 'dictation', 'learn', 'writing', 'speaking'] },
+  action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today', 'homework', 'dictation', 'writing', 'speaking'] },
   chapters: { type: 'array', items: { type: 'string' }, description: 'Chapter codes from the snapshot, e.g. ["B1.C3"].' },
   book: { type: 'string', description: 'Book code, e.g. "B1".' },
   count: { type: 'integer', minimum: 5, maximum: 30 },
@@ -36,8 +36,8 @@ const OPEN_TOOL = {
       go_now: { type: 'boolean', description: 'true: open it now (the student agreed or asked). false: only show buttons under your reply.' },
       buttons: { type: 'array', maxItems: 3, description: 'For go_now false: 1-3 buttons, main suggestion first.',
         items: { type: 'object', properties: { label: { type: 'string', description: 'Short button text, in the language of your reply.' }, ...STEP }, required: ['label', 'action'] } },
-      action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today', 'homework', 'dictation', 'learn', 'writing', 'speaking'],
-        description: 'practise = practice questions on chapters; chapter_test = timed chapter test; review = the reviews due today; mistakes = the Mistake book; weak_topics = questions they found hard; mock_paper = DSE-style mock paper for a book; notes / flashcards = revision notes or flashcards for chapters; book = the book\'s chapter page; progress = their progress page; library = the textbook library (to add a book); books = their Books tab; settings; star_shop; today = the Today screen; homework = Homework help (photograph school homework and get hints); dictation = 默書 / spelling dictation; learn = a guided lesson on chapters (needs a chapter); writing = Writing practice (DSE English / Chinese composition marked by DSE criteria, then redraft); speaking = Speaking practice (DSE English Paper 4 one-minute individual response).' },
+      action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today', 'homework', 'dictation', 'writing', 'speaking'],
+        description: 'practise = practice questions on chapters; chapter_test = timed chapter test; review = the reviews due today; mistakes = the Mistake book; weak_topics = questions they found hard; mock_paper = DSE-style mock paper for a book; notes / flashcards = revision notes or flashcards for chapters; book = the book\'s chapter page; progress = their progress page; library = the textbook library (to add a book); books = their Books tab; settings; star_shop; today = the Today screen; homework = Homework help (photograph school homework and get hints); dictation = 默書 / spelling dictation on chapters (needs a chapter); writing = Writing practice (DSE English / Chinese composition marked by DSE criteria, then redraft); speaking = Speaking practice (DSE English Paper 4 one-minute individual response).' },
       chapters: { type: 'array', items: { type: 'string' }, description: 'Chapter codes from the snapshot, e.g. ["B1.C3"]. Needed for practise and chapter_test; optional for notes, flashcards and book.' },
       book: { type: 'string', description: 'Book code, e.g. "B1", for mock_paper, weak_topics, notes, flashcards or book when no chapter is given.' },
       count: { type: 'integer', minimum: 5, maximum: 30, description: 'How many practice questions (practise only). Default 10.' },
@@ -68,7 +68,7 @@ const PLAN_RULES = `
 The student wants a plan for right now. Call make_plan; no other reply is needed.
 - Fit the time they give (default 30 minutes if they don't say). Step minutes should add up to about that time. A practice set of 10 questions takes about 10 minutes.
 - Follow what they asked: a subject, a test, "100%", their mistakes, something new. If they ask for a test, use its chapters, weakest first.
-- PrepBuddy is test prep, like a private tutor: practice questions, chapter tests and mock papers. Never plan a lesson (action learn), even for a chapter not started: a new chapter starts with a practice set.
+- PrepBuddy is test prep, like a private tutor: practice questions, chapter tests and mock papers. A new chapter starts with a practice set.
 - Good order: practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due. A chapter_test on one chapter takes 40 minutes (two chapters 50, three 60; 30 for P1–P2): plan with those times.
 - Only add a Mistake book step when the snapshot shows open mistakes for that subject.
 - Only add a review step when the snapshot shows questions due for review.

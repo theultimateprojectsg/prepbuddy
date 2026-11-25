@@ -22,10 +22,6 @@
       "destination": "/api/study?fn=homework"
     },
     {
-      "source": "/api/learn",
-      "destination": "/api/study?fn=learn"
-    },
-    {
       "source": "/api/writing",
       "destination": "/api/study?fn=writing"
     },
