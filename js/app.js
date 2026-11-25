@@ -6647,7 +6647,7 @@ function chapterSheet(book, c) {
 // The day-by-day plan for a test: rules.md run forward. Each day fills the daily study time with the brain's next
 // steps (one step per chapter a day, so practice is spread out and holds), estimating each step's effect from the
 // rules (§2) and the child's own accuracy. The day before: a "Still there?" check; the day itself: a warm-up.
-function testDayPlan(p, chs, aim = TEST_AIM) {
+function testDayPlan(p, chs, aim = TEST_AIM, perDay = dayMins()) {
   const book = p.book, units = p.units, t0 = dayStart(), left = p.left, nm = (u) => shortTitle(u.title);
   // what each chapter needs right now (the brain's step), for the "What each chapter needs" list
   const need = chs.slice().sort((a, b) => a.pct - b.pct).map((c) => {
@@ -6684,7 +6684,7 @@ function testDayPlan(p, chs, aim = TEST_AIM) {
     else { let mins = 0; const used = new Set();
       for (let guard = 0; guard < 8; guard++) {
         const cand = sim.filter((x) => !used.has(x)).map((x) => ({ x, st: nextStep(x) })).filter((y) => y.st && y.st.kind !== 'check').sort((a, z) => a.x.pct - z.x.pct)[0];
-        if (!cand) break; const m = cost(cand.st); if (tasks.length && mins + m > dayMins() + 5) break;
+        if (!cand) break; const m = cost(cand.st); if (tasks.length && mins + m > perDay + 5) break;
         used.add(cand.x); mins += m; const from = cand.x.pct, p0 = cand.x.passes; apply(cand.x, cand.st);
         const sn = nm(cand.x.unit), k = cand.st.kind, short = k === 'test' ? (p0 ? PT(`Second chapter test: ${sn}`, `第二次章節測驗：${sn}`) : PT(`Chapter test: ${sn}`, `章節測驗：${sn}`)) : k === 'mixed' ? PT(`Mixed paper with ${sn}`, `包括「${sn}」的綜合試卷`) : k === 'mistakes' ? PT(`Fix mistakes: ${sn}`, `改正錯題：${sn}`) : cand.st.diff ? PT(`Harder questions: ${sn}`, `較深題目：${sn}`) : PT(`Practise ${sn}`, `練習「${sn}」`);
         tasks.push([d === 0 ? cand.st.text : short, d === 0 ? (() => { const c = cand.x.real, st0 = nextStep(c); return () => boostSession(book, c, st0 || cand.st, true); })() : null,
@@ -6714,12 +6714,19 @@ function testPlanSheet(p, chs, aim, fc) {
     : days.map((x) => `<div class="tp-row ${x.d === 0 ? 'now' : ''}"><span class="tp-d"><b>${x.d === 0 ? PT('Today', '今日') : x.d === 1 ? PT('Tomorrow', '明日') : fmt(x.t, { weekday: 'short' })}</b><small>${fmt(x.t, { day: 'numeric', month: 'short' })}</small></span><div class="tp-w"><ul>${x.tasks.map(stepLi).join('')}</ul><small class="tp-r">${PT(`About ${x.ready}% ready`, `約 ${x.ready}% 準備度`)}</small></div>${x.d === 0 ? `<button class="btn-sm primary" data-tp="0">${PT('Start', '開始')}</button>` : ''}</div>`).join('');
   const tone = aimTone(end, aim);
   const gap = Math.max(0, aim - end);
+  // how much time a day would get to 100%: try longer days until the plan reaches it (up to 2 hours)
+  // (practice is spread one session per chapter a day so it sticks, so near a test more time stops helping)
+  let reachMins = null, bestMins = null, bestEnd = end;
+  if (gap) for (const m of [45, 60, 75, 90, 120].filter((v) => v > dayMins())) { const e = testDayPlan(p, chs, aim, m).end; if (e > bestEnd + 1) { bestEnd = e; bestMins = m; } if (e >= 99) { reachMins = m; break; } }
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   box.innerHTML = `<div class="cdlg tp" role="dialog" aria-modal="true" aria-labelledby="tp-t">
-    <header class="tp-h"><div><small>${fmt(tday, { weekday: 'long', day: 'numeric', month: 'long' })} · ${leftText(left)}</small><b id="tp-t" data-raw>${esc(p.x.name)}</b></div><span class="pv-pill ${tone}">${{ ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') }[tone]}</span><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <header class="tp-h"><div><small>${PT('My plan to reach 100%', '我的 100% 計劃')} · ${fmt(tday, { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(left)}</small><b id="tp-t" data-raw>${esc(p.x.name)}</b></div><span class="pv-pill ${tone}">${{ ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') }[tone]}</span><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="tp-body"><div class="tp-col">
       <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${end}%</b><span>${PT('on test day with this plan', '跟著這個計劃考試當日')}</span></div><i>·</i><div><b>100%</b><span>${PT('the goal', '目標')}</span></div></div>
-      <p class="tp-p">${gap ? PT(`Doing this plan every day gets about ${end}% by test day. Every extra step with “Let’s do what’s next”, or more study time each day (Settings), gets closer to 100%.`, `每天跟著這個計劃做，考試當日大約可達 ${end}%。每多做一次「下一步」，或每天多些溫習時間（設定），都會更接近 100%。`) : PT(`Doing this plan every day gets you to 100% by test day. Each day is ${dayMins()} minutes.`, `每天跟著這個計劃做，考試當日可達 100%。每天 ${dayMins()} 分鐘。`)}</p>
+      <p class="tp-p">${!gap ? PT(`Follow this plan every day and you reach 100% by test day. Each day is ${dayMins()} minutes.`, `每天跟著這個計劃做，考試當日可達 100%。每天 ${dayMins()} 分鐘。`)
+        : reachMins ? PT(`At ${dayMins()} minutes a day this plan gets about ${end}%. To reach 100%, study about ${reachMins} minutes a day (change it in Settings), or do extra steps with “Let’s do what’s next”.`, `每天 ${dayMins()} 分鐘，這個計劃大約可達 ${end}%。要達到 100%，每天溫習約 ${reachMins} 分鐘（可在設定修改），或多做「下一步」。`)
+        : bestMins ? PT(`At ${dayMins()} minutes a day this plan gets about ${end}%. With ${left} day${left === 1 ? '' : 's'} left there isn’t time to reach 100%, but about ${bestMins} minutes a day gets the most: about ${bestEnd}%.`, `每天 ${dayMins()} 分鐘，這個計劃大約可達 ${end}%。只剩 ${left} 日，來不及達到 100%，但每天約 ${bestMins} 分鐘可以做到最好：約 ${bestEnd}%。`)
+        : PT(`This plan gets about ${end}%: the most ${left} day${left === 1 ? '' : 's'} allow${left === 1 ? 's' : ''}, because practice needs a few days to stick. Every step still counts.`, `這個計劃大約可達 ${end}%：只剩 ${left} 日，這已是最多，因為練習需要幾天才能記牢。每一步都有用。`)}</p>
       <h3>${PT('What each chapter needs', '每章需要做甚麼')}</h3>
       <div class="tp-ch">${needInOrder.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${tl(x.c)}%"></em><s style="left:${aim}%"></s></i></span><strong>${tl(x.c)}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
     </div><div class="tp-col">
@@ -7183,7 +7190,7 @@ function goalsCardHTML(GD, o = {}) {
   const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<span class="pv-flag ag-flag" style="left:${g.aim}%;--a:${g.aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</b></span></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>${g.fc == null && g.ready != null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
   const sub = (g, i) => {
     const mis = (o.inMission ? o.inMission(g) : false) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s plan', '已在今日計劃中')}</span>` : '';
-    if (g.kind === 'test') return `<details class="ag-sc t ${g.st}"><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${o.testBody ? o.testBody(g) : ''}</div></details>${(g.p.x.kind || 'test') !== 'dict' && g.p.book ? `<div class="ag-acts"><button class="btn ag-go" data-tgo="${esc(g.p.x.id)}">${Z('Let’s do what’s next', '開始下一步')} →</button><button class="btn ghost ag-plan" data-tplan2="${esc(g.p.x.id)}">${Z('See my day-by-day plan', '查看每日計劃')}</button></div>` : ''}`;
+    if (g.kind === 'test') return `<details class="ag-sc t ${g.st}"><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${o.testBody ? o.testBody(g) : ''}</div></details>${(g.p.x.kind || 'test') !== 'dict' && g.p.book ? `<div class="ag-acts"><button class="btn ag-go" data-tgo="${esc(g.p.x.id)}">${Z('Let’s do what’s next', '開始下一步')} →</button><button class="btn ghost ag-plan" data-tplan2="${esc(g.p.x.id)}">${Z('My plan to reach 100%', '我的 100% 計劃')}</button></div>` : ''}`;
     const name = esc(g.lab);
     // subject goals open too: the level week by week, how far it has come, and what Buddy suggests next
     const toProg = o.progress ? '' : `<button class="linkbtn ag-more" data-gfocus2="${esc(g.id)}">${Z('See it on Progress', '在「進度」查看')} ›</button>`;
