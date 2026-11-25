@@ -2986,10 +2986,11 @@ async function renderHome() {
     if (us.length && !recent) cands.push({ key: `chk:${p.x.id}`, icon: 'review', t: Z(`Still there? Quick check for ${p.x.name}`, `還記得嗎？「${p.x.name}」快速檢查`), s: Z(`${Math.min(12, us.length * 3)} questions from ${us.length} chapter${us.length > 1 ? 's' : ''}, mixed · about ${stepMins(Math.min(12, us.length * 3), 'q')} min`, `${Math.min(12, us.length * 3)} 題，來自 ${us.length} 章 · 約 ${stepMins(Math.min(12, us.length * 3), 'q')} 分鐘`), chk: { y: 'check', b: p.book.id, us: us.map((u) => u.id) }, attr: `data-chk="${p.book.id}|${us.map((u) => u.id).join(',')}"`, why: Z('Checks what’s still remembered before the test. Your % follows what you remember now, not last month.', '考試前檢查還記得多少。百分比會跟你現在記得的，而不是上個月。') }); }
   { const nb = null; // the level check is gone: practice finds the right level by itself after a few answers
     if (nb) cands.push({ key: `lv:${nb.id}`, icon: 'level', t: Z('Find your level', '找出你的程度'), s: Z(`${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · about 5 min`, `${nb.subject ? subj(nb.subject) : shortTitle(nb.title)} · 約 5 分鐘`), attr: `data-lv="${esc(nb.id)}"`, chk: { y: 'lv', b: nb.id } }); }
-  if (last) {
+  // "pick up where you left off" only when no other step already practises that chapter
+  if (last) { if (!cands.some((c) => c.chk && c.chk.b === last.book.id && (c.chk.u === last.unit.id || (c.chk.us || []).includes(last.unit.id)))) {
     const sc = scoreOf(await getQs(last.book.id, last.unit.id));
     cands.push({ key: `u:${last.book.id}:${last.unit.id}`, icon: 'practise', t: shortTitle(last.unit.title), s: Z(`Keep going${sc !== null ? ` · scored ${sc}%` : ''}`, `繼續${sc !== null ? ` · 得分 ${sc}%` : ''}`), attr: `data-firstch="${esc(last.book.id)}:${esc(last.unit.id)}"`, chk: { y: 'log', b: last.book.id, us: [last.unit.id] } });
-  } else { // nothing practised yet: start straight away on the first real chapter (not a summary or glossary)
+  } } else { // nothing practised yet: start straight away on the first real chapter (not a summary or glossary)
     const u0 = books[0].units.find((u) => !NOT_TEACHING.test(String(u.title))) || books[0].units[0];
     if (!cands.some((c) => c.chk && c.chk.b === books[0].id && (c.chk.u === u0.id || (c.chk.us || []).includes(u0.id)))) cands.push({ key: `b:${books[0].id}`, icon: 'practise', t: Z(`Practise ${shortTitle(u0.title)}`, `練習「${shortTitle(u0.title)}」`), s: books[0].subject ? subj(books[0].subject) : shortTitle(books[0].title), attr: `data-firstch="${esc(books[0].id)}:${esc(u0.id)}"`, chk: { y: 'log', b: books[0].id, us: [u0.id] } }); }
   // Buddy's pick is the optimal arrangement: drop practice that can't move its chapter today (turning it into the
