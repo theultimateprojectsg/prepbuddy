@@ -6038,6 +6038,8 @@ async function renderBook(bookId) {
         : `<div class="lc-list" id="lclist">${lrow(nextU, 'next')}</div>
         <label class="lc-pick"><span>Or choose a chapter</span><select id="learnpick"><option value="">Choose…</option>${book.units.map((u) => `<option value="${esc(u.id)}">${lkey(u) ? '✓ ' : ''}${esc(cleanTitle(u.title))}</option>`).join('')}</select></label>`}
     </section>`;
+  // lessons are hidden from the journey (test prep first): just one quiet line under the chapters, for a missed class
+  const missHTML = `<label class="lc-miss"><span>${PT('Missed a class? Buddy can explain a chapter.', '缺了課？Buddy 可以講解一章。')}</span><select id="learnmiss"><option value="">${PT('Choose a chapter…', '選擇章節…')}</option>${book.units.filter((u) => !NOT_TEACHING.test(String(u.title))).map((u) => `<option value="${esc(u.id)}">${esc(cleanTitle(u.title))}</option>`).join('')}</select></label>`;
   const stat = (v, label) => `<span><b>${v}</b> ${label}</span>`;
   const bkT = (() => { try { return PG.trackSummary(pgState().b[book.id]); } catch (e) { return null; } })();
   const bkLevel = bkT && bkT.level != null && bkT.n >= 15 ? `<span class="bk-lv ${bkT.status}" title="${LANG === 'zh' ? '程度 1–4：大約答對三分之二的題目難度' : 'Level 1–4: the difficulty you get about 2 in 3 right'}">${LANG === 'zh' ? '程度' : 'Level'} <b>${bkT.level.toFixed(1)}</b>${bkT.status === 'rising' ? ' ▲' : bkT.status === 'dipping' ? ' ▼' : ''}</span>` : '';
@@ -6056,7 +6058,7 @@ async function renderBook(bookId) {
   <main class="bk-main stack g14">
     <div class="bk-head-d">${head}</div>
     ${plHTML}
-    ${learnHTML}
+    ${LESSONS_IN_PLAN ? learnHTML : ''}
     <h2 class="bk-sec" id="bk-practise"><span class="bk-sec-ic">${actionIcon('practise', 22)}</span>Practise</h2>
     <div class="chtools">
       <p style="margin:0;font-size:16px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters to practise <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
@@ -6064,6 +6066,7 @@ async function renderBook(bookId) {
       ${book.units.length > 12 ? `<label class="chsearch"><span aria-hidden="true">${ICON.search}</span><input id="chsearch" type="search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>` : ''}
     </div>
     <div class="chlist" id="chlist">${listHTML}</div>
+    ${LESSONS_IN_PLAN ? '' : missHTML}
     <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
       ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
       : `Uploaded by you · ${book.pageCount} pages · chapters found from ${book.method === 'ai' ? 'the contents page and headings, checked by AI' : book.method === 'bookmarks' ? 'the book’s bookmarks' : book.method === 'headings' ? 'numbered headings' : '8-page blocks (no headings found)'}`}</p>
@@ -6153,6 +6156,7 @@ async function renderBook(bookId) {
   bindLearn();
   { const pg = document.getElementById('plGo'); if (pg) pg.onclick = () => startPlacement(book); }
   { const ps = document.getElementById('plSkip'); if (ps) ps.onclick = () => { local.plHide = { ...(local.plHide || {}), [book.id]: 1 }; saveLocal(); keep(); }; }
+  { const lm = document.getElementById('learnmiss'); if (lm) lm.onchange = () => { if (lm.value) go({ name: 'learn', bookId: book.id, unitId: lm.value }); }; }
   { const lp = document.getElementById('learnpick'); if (lp) lp.onchange = () => {
     // picking a chapter shows it in the card above; the child then presses Start lesson
     const u = book.units.find((x) => x.id === lp.value) || nextU, box = document.getElementById('lclist');
