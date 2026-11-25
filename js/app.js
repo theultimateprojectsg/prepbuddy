@@ -3327,7 +3327,7 @@ const BK_SKIP = ['pin', 'pinAt', 'pinLock'];
 const bkLocal = (l) => { const o = { ...l }; BK_SKIP.forEach((k) => delete o[k]); return o; };
 const idbKeep = (k, v) => !String(k).startsWith('spaud:') && v !== null && v !== undefined && !(typeof Blob !== 'undefined' && v instanceof Blob);
 function idbOpen(name) {
-  return new Promise((resolve, reject) => { try { const r = indexedDB.open(name, 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); } catch (e) { reject(e); } });
+  return new Promise((resolve, reject) => { try { const r = indexedDB.open(name, 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => { const db = r.result; db.onversionchange = () => { try { db.close(); } catch (e) {} }; resolve(db); }; r.onerror = () => reject(r.error); } catch (e) { reject(e); } });
 }
 // everything in another child's database (the current child's goes through store, which caches it)
 async function idbAll(name) {
@@ -7267,3 +7267,5 @@ pilotGate().then(async () => { if ((await getBooks()).some((b) => b.demo)) await
   setTimeout(() => pilotSync(true), 8000);
   setTimeout(offerResume, 400);
 });
+// The saved data couldn't be opened (usually "Delete everything" waiting on another PrepBuddy tab): say so once
+setTimeout(() => { try { if (window.PB_DB_BLOCKED) toast(PT('Close any other PrepBuddy tabs, then reload. Until then, nothing here is saved.', '請關閉其他 PrepBuddy 分頁，然後重新載入。在此之前，這裡的內容不會儲存。')); } catch (e) {} }, 7000);

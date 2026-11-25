@@ -16,9 +16,15 @@ function open() {
   dbPromise = new Promise((resolve) => {
     try {
       const req = indexedDB.open(DB, 1);
+      // another tab is deleting everything (or the delete is still waiting on another tab): don't hang on the
+      // loading screen; after 5 seconds carry on in memory and say why
+      const slow = setTimeout(() => { try { window.PB_DB_BLOCKED = true; } catch (e) {} resolve(null); }, 5000);
       req.onupgradeneeded = () => req.result.createObjectStore(STORE);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => resolve(null);
+      req.onsuccess = () => { clearTimeout(slow); const db = req.result;
+        // "Delete everything" in another tab: let go of the database so it can be deleted, then start fresh
+        db.onversionchange = () => { try { db.close(); } catch (e) {} dbPromise = Promise.resolve(null); try { location.reload(); } catch (e) {} };
+        resolve(db); };
+      req.onerror = () => { clearTimeout(slow); resolve(null); };
     } catch (e) { resolve(null); }
   });
   return dbPromise;
