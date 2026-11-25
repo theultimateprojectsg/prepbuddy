@@ -3077,6 +3077,8 @@ async function renderHome() {
     return false;
   };
   const steps = M.steps.map((st) => ({ ...st, done: isDone(st), now: cands.find((c) => c.key === st.key) || (st.attr && !/^t:/.test(st.key) ? { t: st.t, s: st.s, attr: st.attr, why: st.why, tag: st.tag } : null) }));
+  // nothing done yet and a step no longer applies (e.g. a test was added or changed after the plan was made): remake today's plan
+  if (!steps.some((x) => x.done) && M.steps.some((st) => !cands.some((c) => c.key === st.key)) && !renderHome.remade) { renderHome.remade = true; local.mission = null; saveLocal(); try { return await renderHome(); } finally { renderHome.remade = false; } }
   let firstOpen = steps.findIndex((x) => !x.done && x.now);
   M.open = steps.filter((x) => !x.done && x.now).map((x) => [x.key, x.now.t]); // for the results pop-up: what's next in the plan
   const allDone = steps.every((x) => x.done || !x.now);
@@ -3370,7 +3372,7 @@ async function renderHome() {
   const missionHTML = allDone
     ? `<section class="ms-card ms-done ms-done2" aria-label="${Z('Today’s plan', '今日計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`${steps.length + pDoneN} of ${steps.length + pDoneN} done today. See you tomorrow!`, `今天完成了 ${steps.length + pDoneN}／${steps.length + pDoneN} 項，明天見！`)}</span><button class="linkbtn" id="msmore">${extra ? esc(extra.label) : Z('Do a bit more', '再做多一點')} ›</button>${missionHowHTML()}</div></div><details class="msd-all"><summary>${Z('What you did today', '今天做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${steps.map((x, k) => stepRow({ ...x, done: true }, k)).join('')}${pDoneN ? planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('') : ''}</details></section>`
     : `<section class="ms-card" aria-label="${Z('Today’s plan', '今日計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howMission', Z('How does this work?', '這是怎樣運作的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${started ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${mins} min`, `${mins} 分鐘`)}${started ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span></div>
-      <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)).sort((a, b) => (b[1] === firstOpen) - (a[1] === firstOpen)), done = idx.filter(([x]) => x.done || !x.now);
+      <div class="ms-list">${(() => { const idx = steps.map((x, k) => [x, k]), open = idx.filter(([x]) => !(x.done || !x.now)).sort((a, b) => (b[1] === firstOpen) - (a[1] === firstOpen)), done = idx.filter(([x]) => x.done); // a step that no longer applies (and wasn't done) just goes
         return open.map(([x, k]) => stepRow(x, k)).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done today · ${done.length}`, `今天已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k)).join('')}` : ''); })()}</div>
       ${missionHowHTML()}
       ${starsOn() ? `<p class="ms-bonus">${starSVG(14)} ${Z('Finish every step for +5 bonus stars', '完成所有步驟，額外 +5 粒星星')}</p>` : ''}
