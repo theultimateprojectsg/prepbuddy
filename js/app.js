@@ -531,18 +531,19 @@ function chapterMastery(book, u, qs, text, ntextPre) {
        raises the strength; a good practice day only restarts the clock.
      - The latest "Still there?" check: 5-6 of 6 right wins it all back; 3-4 holds it 10% below; fewer, 15% below. */
   let likely = 0, earned = 0, gates = {}, fading = 0, strength = 0;
-  let pracPart = 0, pracSince = 0;
+  let pracPart = 0, pracSince = 0, pracCapped = false;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), P = L.filter((e) => e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0;
     // practice fills over several sets, never in one: the points needed are at least 5 sets' worth of right answers
-    // at Understand level, and one sitting (answers less than 20 minutes apart) adds at most a quarter of them
+    // at Understand level, and one day adds at most a quarter of them (so practice fills over 4+ days, never in one)
     const need = Math.max(2.5 * T, 5 * sessionSize());
     let sit = 0, sitPts = 0;
     for (const e of P) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
-      if (e.t - sit > 20 * 60000) sitPts = 0; sit = e.t;
+      if (dayStart(e.t) !== sit) { sitPts = 0; sit = dayStart(e.t); }
       const v = Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.25 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1);
       const add = Math.max(0, Math.min(v, need / 4 - sitPts)); sitPts += add; pts += add; }
     const rec = P.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
     const prac = 60 * Math.min(1, pts / need) * Math.min(1, acc / 0.9);
+    pracCapped = sit === dayStart() && sitPts >= need / 4 - 0.01 && pts < need; // today's practice already added the most it can
     pracPart = Math.round(prac);
     const lastT = tests.length ? tests[tests.length - 1].t : 0;
     pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
@@ -587,7 +588,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, earned, fading, strength, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), mast, gates, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, earned, fading, strength, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), mast, gates, pracCapped, prac: pracPart, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, learned: learnedIt, lvNow, lvTop, l3n, l4n, written, b4, b5, spread, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -1238,7 +1239,7 @@ async function stepUseful(st) {
   const chs = (await bookMastery(b)).chapters.filter((c) => st.unitIds.includes(c.unit.id)); if (!chs.length) return true;
   if (st.action === 'learn') return LESSONS_IN_PLAN && chs.some((c) => !c.done && !c.learned); // a lesson is for a chapter not started yet
   return chs.some((c) => { const lv = chapterLever(c); if (st.action === 'chapter_test') return lv.k === 'test' || lv.k === 'retest' || lv.k === 'practise';
-    return !['wait', 'reviews'].includes(lv.k) || practiceGain(st.bookId, c) >= 3; });
+    return !c.pracCapped && (!['wait', 'reviews'].includes(lv.k) || practiceGain(st.bookId, c) >= 3); });
 }
 function chapterLever(c) {
   const fmt = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
@@ -1382,7 +1383,7 @@ function planHTML(missionDone, pick, askOnly) {
   const P = askOnly ? null : todayPlan();
   if (P) {
     const done = P.steps.map(planStepDone), next = done.indexOf(false), mins = P.steps.reduce((a, x, k) => a + (done[k] ? 0 : planStepMin(x)), 0);
-    return `<section class="ms-card bp-card" aria-label="${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2>${buddySVG('happy', 30)} ${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}</h2><button class="bp-x" id="bpX" aria-label="${PT('Clear this plan', '清除計劃')}">✕</button></div>
+    return `<section class="ms-card bp-card" aria-label="${PT('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2>${buddySVG('happy', 30)} ${PT('Your plan', '你的計劃')}</h2><button class="bp-x" id="bpX" aria-label="${PT('Clear this plan', '清除計劃')}">✕</button></div>
       <p class="bp-ask">“${esc(P.ask)}”</p>${P.title ? `<b class="bp-title" data-raw>${esc(P.title)}</b>` : ''}${P.intro ? `<p class="bp-intro" data-raw>${esc(P.intro)}</p>` : ''}
       <div class="bp-steps">${P.steps.map((x, k) => `<button class="bp-row ${done[k] ? 'done' : ''} ${k === next ? 'is-next' : ''}" data-pstep="${k}"><span class="ms-ic">${actionIcon(PLAN_IC[x.action] || 'practise', 16)}</span><span class="bp-t"><b data-raw>${esc(x.label)}</b><small data-raw>${x.why ? `${esc(x.why)} · ` : ''}${PT(`${x.minutes} min`, `${x.minutes} 分鐘`)}</small></span>${done[k] ? `<span class="ms-tick">${ICON.check}</span>` : k === next ? `<span class="ms-next">${PT('Next', '下一步')}</span>` : '<span class="ms-ring" aria-hidden="true"></span>'}</button>`).join('')}</div>
       ${next < 0 ? `<p class="bp-done">🎉 ${PT('Plan done! Great extra work today.', '計劃完成！今天額外努力，做得好！')}</p>` : `<button class="btn ms-start" id="bpGo">${done.some(Boolean) ? PT('Keep going', '繼續') : PT('Start', '開始')} · ${PT(`${mins} min`, `${mins} 分鐘`)}</button>`}</section>`;
@@ -3171,7 +3172,8 @@ async function renderHome() {
           if (!rushOff() && (local.sess || []).some((y) => y.t >= M.at && y.b === c.b && y.r)) it.warn = Z('⚡ Too fast last time, so it didn’t count', '⚡ 上次太快，所以不計')
           if (asTest) it.test = Z('Your score on it counts most for this chapter’s %.', '測驗分數對這一章的百分比影響最大。');
           { const lv = chapterLever(ch); if (lv.k === 'wait' && !asTest) { it.note = Z(`${it.to > ch.pct ? 'Practice still adds a little, reviews add more.' : 'Grows with reviews now.'} A retest counts from ${new Date(lv.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, `現在靠溫習進步。重考由 ${new Date(lv.at).toLocaleDateString('zh-HK', { month: 'short', day: 'numeric' })} 起才計算。`); } }
-          if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
+          if (to <= ch.pct && ch.pracCapped) it.note = Z('Practice has added the most it can to this chapter today. More still helps you remember it; it counts again tomorrow.', '今天的練習已為這一章加到上限。多做仍有助記憶，明天會再計算。');
+          else if (to <= ch.pct) it.note = ch.passes ? Z('Keeps this chapter fresh', '保持這一章的手感') : plateau ? Z('Keeps it fresh. The chapter test is what moves it up now.', '保持手感。現在要靠章節測驗才能再進步。') : Z('Next: pass the chapter test to go above 70%', '下一步：通過章節測驗，才能超過 70%');
           it.cb = c.b; it.cu = ch.unit.id; it.nm = nm; it.tid = tid; if (best && to > ch.pct) it.best = true;
           impact[x.key] = it;
         } else if (c.y === 'mk') impact[x.key] = { lab: Z('Mistakes to fix', '待改正的錯題'), from: c.n, to: Math.max(0, c.n - (c.k || 1)), u: '', down: true, max: c.n };
@@ -3347,8 +3349,8 @@ async function renderHome() {
       ['✅', 'Steps tick off like the mission.', '步驟像任務一樣自動打勾。', 'Finish a set without rushing and it ticks. The plan lasts for today.', '不太急地完成一組就會打勾。計劃只限今天。'],
     ])}</div></details>`;
     planCard = pNext < 0
-      ? `<section class="ms-card ms-done ms-done2 bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`All ${planSteps.length} steps of Buddy’s plan done. Great extra work!`, `Buddy 計劃的 ${planSteps.length} 個步驟全部完成，做得好！`)}</span><button class="linkbtn" id="bpX2">${Z('Ask Buddy for another plan', '請 Buddy 再訂計劃')} ›</button>${planHow}</div></div><details class="msd-all"><summary>${Z('What you did', '做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('')}</details></section>`
-      : `<section class="ms-card bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Buddy’s plan', 'Buddy 的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${pStarted ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${pMin} min`, `${pMin} 分鐘`)}${pStarted ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span><button type="button" class="bp-edit" id="bpEdit" aria-expanded="false" aria-haspopup="true" aria-label="${Z('Change or remove this plan', '更改或移除這個計劃')}">${pIcon('pencil', 17)}</button>
+      ? `<section class="ms-card ms-done ms-done2 bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Your plan', '你的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`All ${planSteps.length} steps of Buddy’s plan done. Great extra work!`, `Buddy 計劃的 ${planSteps.length} 個步驟全部完成，做得好！`)}</span><button class="linkbtn" id="bpX2">${Z('Ask Buddy for another plan', '請 Buddy 再訂計劃')} ›</button>${planHow}</div></div><details class="msd-all"><summary>${Z('What you did', '做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('')}</details></section>`
+      : `<section class="ms-card bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Your plan', '你的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${pStarted ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${pMin} min`, `${pMin} 分鐘`)}${pStarted ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span><button type="button" class="bp-edit" id="bpEdit" aria-expanded="false" aria-haspopup="true" aria-label="${Z('Change or remove this plan', '更改或移除這個計劃')}">${pIcon('pencil', 17)}</button>
       <div class="bp-acts" id="bpActs" hidden><button class="bp-mi" id="bpChange">${pIcon('pencil', 16)} ${Z('Change plan', '更改計劃')}</button><button class="bp-mi bp-rm" id="bpRemove">${GICON.trash} ${Z('Remove plan', '移除計劃')}</button></div></div>
       ${PP.extra ? `<p class="bp-extra">✨ ${Z('Extra practice to lock it in · won’t change the %', '額外練習，鞏固記憶 · 不會改變百分比')}</p>` : ''}
       <div class="ms-list">${(() => { const idx = planSteps.map((x, k) => [x, k]), open = idx.filter(([x]) => !x.done), done = idx.filter(([x]) => x.done);
@@ -11266,7 +11268,8 @@ async function resultMoment(sess, qs, pct, got, total) {
       if (c) {
         const nm = shortTitle(c.unit.title), u = c.unit;
         const test = { label: Z('Take the chapter test', '做章節測驗'), run: () => startChapterTest(sess.book, [u]) };
-        if (!c.passes && chapterLever(c).k === 'test') lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Your score on it counts most.`, `「${nm}」現在最大的進步來自章節測驗，它的分數影響最大。`)], main: test };
+        if (c.pracCapped && !(!c.passes && chapterLever(c).k === 'test')) lever = { l: ['📅', Z(`That’s the most practice can add to ${nm} in one day. It still helps you remember, and it counts again tomorrow. Another chapter can still go up today.`, `「${nm}」今天的練習已加到上限。多做仍有助記憶，明天會再計算。其他章節今天仍可進步。`)] };
+        else if (!c.passes && chapterLever(c).k === 'test') lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Your score on it counts most.`, `「${nm}」現在最大的進步來自章節測驗，它的分數影響最大。`)], main: test };
         else if (c.passes && (!c.spread || !c.lastPass)) lever = { l: ['📅', Z(`Next jump: pass the test again on a day at least a week after the first pass. That unlocks up to 95%.`, `下一步：在第一次合格至少一星期後再考一次並合格，就可升至 95%。`)] };
         else if (c.needL3 || c.needL4) lever = { l: ['🧗', Z(`Next jump: get a harder “${c.needL4 ? 'analyse' : 'apply'}” question right. Buddy mixes them in as you go.`, `下一步：答對一題較難的「${c.needL4 ? '分析' : '應用'}」題。Buddy 會逐步加入這類題目。`)] };
         else if (c.due) lever = { l: ['🔁', Z(`Next jump: ${c.due} review${c.due === 1 ? '' : 's'} waiting in ${nm}.`, `下一步：「${nm}」有 ${c.due} 題溫習在等你。`)], main: { label: Z('Do the reviews', '做溫習'), run: () => startReview('spaced') } };
