@@ -688,7 +688,7 @@ async function runTestNext(id) {
   if (!pk) return toast(PT('Everything for this test that can move today has moved. Come back tomorrow!', '這個測驗今天能進步的都完成了，明天再來！'));
   track('test_next'); return boostSession(t.p.book, pk.c, pk.st);
 }
-async function openTestPlan(id) { const t = await testCtx(id); if (t) testPlanSheet(t.p, t.chs, t.aim, planForecast(t.p.ready, t.chs, t.p.left)); }
+async function openTestPlan(id) { const t = await testCtx(id); if (t) testPlanSheet(t.p, t.chs); }
 document.addEventListener('click', (e) => {
   const g = e.target.closest && e.target.closest('[data-tgo]'); if (g) { e.preventDefault(); g.disabled = true; runTestNext(g.dataset.tgo).finally(() => { g.disabled = false; }); return; }
   const pl = e.target.closest && e.target.closest('[data-tplan2]'); if (pl) { e.preventDefault(); openTestPlan(pl.dataset.tplan2); }
@@ -3138,7 +3138,7 @@ async function renderHome() {
       const job = p.step ? `<div class="tdc-job"><span class="tdc-ji">${actionIcon(p.step.icon || 'practise', 20)}</span><div><small>${Z('Today', '今天')}${mins}</small><b data-raw>${esc(p.step.t)}</b></div><button class="btn-sm primary" data-tstep="${k}">${Z('Start', '開始')}</button></div>` : '';
       jobsT[k] = job;
       const next = plan && p.left >= 2 ? plan.days[p.left - 1] : null;
-      if (plan) tdPlans[k] = () => testPlanSheet(p, chs, aim, planForecast(p.ready, chs, p.left));
+      if (plan) tdPlans[k] = () => testPlanSheet(p, chs);
       const icon = p.book ? subjectTile(p.book.subject, 44, p.book.title) : actionTile(p.x.kind === 'dict' ? 'dictation' : 'test', 44);
       const r = p.ready == null ? null : Math.max(0, Math.min(100, p.ready)), tone = r == null ? '' : r >= aim ? 'ok' : r >= aim - 15 ? 'mid' : 'low';
       const bar = r == null ? '' : `<div class="tdc-bar"><div class="tdc-bl"><span><b>${r}%</b> ${Z('ready', '準備度')}</span><span>${Z(`goal ${aim}%`, `目標 ${aim}%`)}</span></div><div class="tdc-tr"><i class="${tone}" style="width:${Math.max(2, r)}%"></i><em style="left:${aim}%"></em></div></div>`;
@@ -6676,6 +6676,7 @@ function testDayPlan(p, chs, aim = TEST_AIM, perDay = dayMins()) {
     x.pct = pctOf(x); };
   const cost = (st) => (st.kind === 'test' || st.kind === 'mixed' ? ctMins(1) : stepMins(sessionSize(), 'q'));
   const avg = () => Math.round(sim.reduce((a, x) => a + x.pct, 0) / Math.max(1, sim.length));
+  if (perDay === 'list') return { sim, apply, cost, avg, acc, nm };
   const days = [];
   for (let d = 0; d <= left; d++) {
     const t = t0 + d * DAY, tasks = [];
@@ -6693,52 +6694,63 @@ function testDayPlan(p, chs, aim = TEST_AIM, perDay = dayMins()) {
   }
   return { need, days, end: days.length ? days[days.length - 1].ready : p.ready, acc };
 }
-function testPlanSheet(p, chs, aim, fc) {
-  const book = p.book, units = p.units, n = local.count || sessionSize();
+// The list of steps to 100% for a test: the brain (nextStep) run forward on a copy of the chapters, weakest chapter
+// first, until every chapter is at 100%. Repeats of the same step on the same chapter are grouped ("Practise Unit 1 · 4 sets").
+function stepsTo100(p, chs) {
+  const { sim, apply, cost, avg, acc, nm } = testDayPlan(p, chs, TEST_AIM, 'list');
+  const raw = [];
+  for (let guard = 0; guard < 120; guard++) {
+    // each chapter's own steps first (weakest chapter first); mixed papers once every chapter is ready for them
+    const all = sim.map((x) => ({ x, st: nextStep(x) })).filter((y) => y.st && y.st.kind !== 'check' && y.st.kind !== 'review').sort((a, z) => a.x.pct - z.x.pct);
+    const cand = all.find((y) => y.st.kind !== 'mixed') || all[0];
+    if (!cand) break;
+    const k = cand.st.kind, from = k === 'mixed' ? avg() : cand.x.pct, p0 = cand.x.passes;
+    if (k === 'mixed') sim.forEach((x) => apply(x, cand.st)); else apply(cand.x, cand.st); // a mixed paper covers every test chapter
+    const kind = k === 'mixed' ? 'mixed' : k === 'test' ? 'test' : k === 'mistakes' ? 'mistakes' : cand.st.diff ? (cand.x.gates.wrote >= 2 ? 'write' : 'hard') : 'practise';
+    raw.push({ kind, x: k === 'mixed' ? null : cand.x, from, to: k === 'mixed' ? avg() : cand.x.pct, mins: cost(cand.st), first: raw.length === 0, st: cand.st, p0 });
+  }
+  // group: one line per chapter and kind of step, in the order they first come up
+  const items = [];
+  for (const r of raw) { const key = r.kind + ':' + (r.x ? r.x.unit.id : '*'); let it = items.find((y) => y.key === key);
+    if (!it) { it = { key, kind: r.kind, x: r.x, n: 0, mins: 0, from: r.from, to: r.to }; items.push(it); }
+    it.n++; it.mins += r.mins; if (r.to != null) it.to = r.to; }
+  const label = (it) => { const sn = it.x ? nm(it.x.unit) : '', n = it.n;
+    return { practise: PT(`Practise ${sn} · ${n} set${n === 1 ? '' : 's'}`, `練習「${sn}」· ${n} 組`),
+      hard: PT(`Harder questions on ${sn} · ${n} set${n === 1 ? '' : 's'}`, `「${sn}」較深題目 · ${n} 組`),
+      write: PT(`Written answers on ${sn} · ${n} set${n === 1 ? '' : 's'}`, `「${sn}」文字題 · ${n} 組`),
+      mistakes: PT(`Fix your mistakes on ${sn}`, `改正「${sn}」的錯題`),
+      test: PT(`Chapter test on ${sn} · ${n} test${n === 1 ? '' : 's'}`, `「${sn}」章節測驗 · ${n} 次`),
+      mixed: PT(`Mixed paper with all the test chapters · ${n} paper${n === 1 ? '' : 's'}`, `包括所有考試章節的綜合試卷 · ${n} 份`) }[it.kind]; };
+  items.forEach((it) => (it.text = label(it)));
+  const total = raw.reduce((a, r) => a + r.mins, 0);
+  return { items, total, end: avg(), acc, first: raw[0] || null };
+}
+function testPlanSheet(p, chs) {
+  const book = p.book, left = p.left;
   const fmt = (t, o) => new Date(t).toLocaleDateString(LOCALE(), o || { weekday: 'short', day: 'numeric', month: 'short' });
-  const t0 = dayStart(), tday = testDay(p.x), left = p.left;
-  const nm = (u) => shortTitle(u.title);
-  const { need, days, end } = testDayPlan(p, chs, aim);
-  // chapters listed in textbook order (Unit 1, 2, 3…), not by how much each one needs
-  const uIdx = (u) => { const k = (p.book && p.book.units || []).findIndex((x) => x.id === u.id); return k < 0 ? 999 : k; };
-  const needInOrder = need.slice().sort((a, b) => uIdx(a.c.unit) - uIdx(b.c.unit));
-  const weekly = left > 14;
-  // each day: its steps, what each does to its chapter, and test readiness at the end of the day (the plan's estimate)
-  const stepLi = (x) => `<li data-raw>${esc(x[0])}${x[3] != null && x[4] > x[3] ? ` <em class="tp-g">${x[3]}→${x[4]}%</em>` : ''}</li>`;
-  const kindN = (part) => { const c = { practise: 0, test: 0 }; part.forEach((x) => x.tasks.forEach((t) => { if (t[2] === 'test') c.test++; else if (t[2] === 'practise') c.practise++; })); return c; };
-  const rows = weekly
-    ? Array.from({ length: Math.ceil((left + 1) / 7) }, (_, w) => { const part = days.slice(w * 7, w * 7 + 7), c = kindN(part), last = part[part.length - 1];
-        const sum = [c.practise ? PT(`${c.practise} practice set${c.practise === 1 ? '' : 's'}`, `${c.practise} 組練習`) : '', c.test ? PT(`${c.test} test${c.test === 1 ? '' : 's'} or paper${c.test === 1 ? '' : 's'}`, `${c.test} 次測驗或試卷`) : ''].filter(Boolean).join(' · ');
-        const special = part.flatMap((x) => x.tasks.filter((t) => t[2] === 'test-day' || t[0].includes('Still there') || t[0].includes('還記得'))).map((t) => t[0]);
-        return `<div class="tp-row ${w === 0 ? 'now' : ''}"><span class="tp-d"><b>${PT(`Week ${w + 1}`, `第 ${w + 1} 週`)}</b><small>${fmt(part[0].t, { day: 'numeric', month: 'short' })}–${fmt(last.t, { day: 'numeric', month: 'short' })}</small></span><div class="tp-w"><ul>${sum ? `<li>${sum}</li>` : ''}${[...new Set(part.flatMap((x) => x.tasks.filter((t) => t[2] === 'test').map((t) => t[0])))].slice(0, 4).map((x) => `<li data-raw>${esc(x)}</li>`).join('')}${special.map((x) => `<li data-raw>${esc(x)}</li>`).join('')}</ul><small class="tp-r">${PT(`About ${last.ready}% ready by ${fmt(last.t, { weekday: 'short', day: 'numeric' })}`, `${fmt(last.t, { weekday: 'short', day: 'numeric' })} 前約 ${last.ready}% 準備度`)}</small></div></div>`; }).join('')
-    : days.map((x) => `<div class="tp-row ${x.d === 0 ? 'now' : ''}"><span class="tp-d"><b>${x.d === 0 ? PT('Today', '今日') : x.d === 1 ? PT('Tomorrow', '明日') : fmt(x.t, { weekday: 'short' })}</b><small>${fmt(x.t, { day: 'numeric', month: 'short' })}</small></span><div class="tp-w"><ul>${x.tasks.map(stepLi).join('')}</ul><small class="tp-r">${PT(`About ${x.ready}% ready`, `約 ${x.ready}% 準備度`)}</small></div>${x.d === 0 ? `<button class="btn-sm primary" data-tp="0">${PT('Start', '開始')}</button>` : ''}</div>`).join('');
-  const tone = aimTone(end, aim);
-  const gap = Math.max(0, aim - end);
-  // how much time a day would get to 100%: try longer days until the plan reaches it (up to 2 hours)
-  // (practice is spread one session per chapter a day so it sticks, so near a test more time stops helping)
-  let reachMins = null, bestMins = null, bestEnd = end;
-  if (gap) for (const m of [45, 60, 75, 90, 120].filter((v) => v > dayMins())) { const e = testDayPlan(p, chs, aim, m).end; if (e > bestEnd + 1) { bestEnd = e; bestMins = m; } if (e >= 99) { reachMins = m; break; } }
+  const L = stepsTo100(p, chs), days = Math.max(1, left), perDay = Math.max(10, Math.ceil(L.total / days / 5) * 5);
+  const done = !L.items.length;
+  const tip = done ? PT('Every chapter is at 100%. Short reviews keep it there.', '每章都達到 100%。做短時間溫習保持狀態。')
+    : left < 1 ? PT('The test is today: do the first step as a warm-up.', '今天考試：先做第一步熱身。')
+    : PT(`Do these in order. That’s about ${L.total} minutes in all: about ${perDay} minutes a day gets you there by test day.`, `按次序做。合共約 ${L.total} 分鐘：每天約 ${perDay} 分鐘，考試前就能完成。`);
+  const warn = !done && perDay > 90 ? `<p class="tp-p">${PT(`That’s a lot for ${days} day${days === 1 ? '' : 's'}. Do as many as you can, in order: every step counts.`, `${days} 日內有點多。盡量按次序做，每一步都有用。`)}</p>` : '';
+  const li = (it, i) => `<li class="tl-i ${i === 0 ? 'now' : ''}"><span class="tl-n">${i + 1}</span><span class="tl-t"><b data-raw>${esc(it.text)}</b>${it.from != null && it.to > it.from ? `<small>${it.x ? '' : PT('All test chapters: ', '所有考試章節：')}${it.from}% → ${it.to}%</small>` : it.kind === 'write' ? `<small>${PT('Unlocks the last 15% (mixed papers)', '解鎖最後 15%（綜合試卷）')}</small>` : ''}</span>${i === 0 ? `<button class="btn-sm primary" data-tl0>${PT('Start', '開始')}</button>` : ''}</li>`;
+  function nm(u) { return shortTitle(u.title); }
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
-  box.innerHTML = `<div class="cdlg tp" role="dialog" aria-modal="true" aria-labelledby="tp-t">
-    <header class="tp-h"><div><small>${PT('My plan to reach 100%', '我的 100% 計劃')} · ${fmt(tday, { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(left)}</small><b id="tp-t" data-raw>${esc(p.x.name)}</b></div><span class="pv-pill ${tone}">${{ ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') }[tone]}</span><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
-    <div class="tp-body"><div class="tp-col">
-      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${end}%</b><span>${PT('on test day with this plan', '跟著這個計劃考試當日')}</span></div><i>·</i><div><b>100%</b><span>${PT('the goal', '目標')}</span></div></div>
-      <p class="tp-p">${!gap ? PT(`Follow this plan every day and you reach 100% by test day. Each day is ${dayMins()} minutes.`, `每天跟著這個計劃做，考試當日可達 100%。每天 ${dayMins()} 分鐘。`)
-        : reachMins ? PT(`At ${dayMins()} minutes a day this plan gets about ${end}%. To reach 100%, study about ${reachMins} minutes a day (change it in Settings), or do extra steps with “Let’s do what’s next”.`, `每天 ${dayMins()} 分鐘，這個計劃大約可達 ${end}%。要達到 100%，每天溫習約 ${reachMins} 分鐘（可在設定修改），或多做「下一步」。`)
-        : bestMins ? PT(`At ${dayMins()} minutes a day this plan gets about ${end}%. With ${left} day${left === 1 ? '' : 's'} left there isn’t time to reach 100%, but about ${bestMins} minutes a day gets the most: about ${bestEnd}%.`, `每天 ${dayMins()} 分鐘，這個計劃大約可達 ${end}%。只剩 ${left} 日，來不及達到 100%，但每天約 ${bestMins} 分鐘可以做到最好：約 ${bestEnd}%。`)
-        : PT(`This plan gets about ${end}%: the most ${left} day${left === 1 ? '' : 's'} allow${left === 1 ? 's' : ''}, because practice needs a few days to stick. Every step still counts.`, `這個計劃大約可達 ${end}%：只剩 ${left} 日，這已是最多，因為練習需要幾天才能記牢。每一步都有用。`)}</p>
-      <h3>${PT('What each chapter needs', '每章需要做甚麼')}</h3>
-      <div class="tp-ch">${needInOrder.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${tl(x.c)}%"></em><s style="left:${aim}%"></s></i></span><strong>${tl(x.c)}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
-    </div><div class="tp-col">
-      <h3>${weekly ? PT('Week by week', '每週計劃') : PT('Day by day', '每日計劃')}</h3>
-      <div class="tp-plan">${rows}</div>
-    </div></div></div>`;
+  box.innerHTML = `<div class="cdlg tp tl" role="dialog" aria-modal="true" aria-labelledby="tp-t">
+    <header class="tp-h"><div><small>${fmt(testDay(p.x))} · ${leftText(left)}</small><b id="tp-t">${PT('My plan to reach 100%', '我的 100% 計劃')}</b><small data-raw>${esc(p.x.name)}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <div class="tp-body tl-body">
+      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ok">100%</b><span>${done ? PT('done', '完成') : PT(`after ${L.items.length} step${L.items.length === 1 ? '' : 's'}`, `完成 ${L.items.length} 步之後`)}</span></div></div>
+      <p class="tp-p">${tip}</p>${warn}
+      ${done ? '' : `<ol class="tl-list">${L.items.map(li).join('')}</ol>`}
+      ${done || left < 2 ? '' : `<p class="tl-foot">${PT('The day before the test: a quick “Still there?” check. On test day: a 5-question warm-up.', '考試前一天：「還記得嗎？」快速檢查。考試當日：5 題熱身。')}</p>`}
+    </div></div>`;
   document.body.appendChild(box);
   const close = () => box.remove();
   box.querySelector('.cs2-x').onclick = close;
   box.onclick = (e) => { if (e.target === box) close(); };
-  box.querySelectorAll('[data-tc]').forEach((b) => (b.onclick = () => { close(); needInOrder[+b.dataset.tc].act[2](); }));
-  const st = box.querySelector('[data-tp]'); if (st) st.onclick = () => { close(); days[0].task[1](); };
+  const go = box.querySelector('[data-tl0]');
+  if (go && L.first) go.onclick = () => { close(); const it = L.items[0]; const c = it.x ? it.x.real : chs.slice().sort((a, b) => a.pct - b.pct)[0]; boostSession(book, c, nextStep(c) || L.first.st, true); };
 }
 // Tapping "In long-term memory": what it means, where it stands, and the reviews that grow it (nothing starts until asked).
 async function memorySheet() {
