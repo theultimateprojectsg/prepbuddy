@@ -8303,6 +8303,11 @@ async function preparePaper(book, units, nA, nB, purpose, focus = null) {
     const out = []; (mcq ? short.mcq : short.w).fill(0);
     for (const L of levels) { if (byL[L].length) { out.push(byL[L].shift()); continue; } (mcq ? short.mcq : short.w)[L]++;
       const alt = [L + 1, L - 1, L + 2, L - 2, L + 3, L - 3].find((x) => x >= 1 && x <= 4 && byL[x].length); if (alt) out.push(byL[alt].shift()); }
+    // not enough new questions (and new ones may not be ready yet): the ones seen longest ago stand in, so the paper
+    // still starts; the missing new ones are written in the background for next time (fillLevels, below)
+    if (purpose === 'sit' && out.length < n) { const used = new Set(out.map((q) => q.id));
+      const old = all.filter((q) => isMcqLike(q) === mcq && !used.has(q.id) && !fresh(q)).sort((a, b) => ((local.stats[a.id] || {}).at || 0) - ((local.stats[b.id] || {}).at || 0));
+      out.push(...old.slice(0, n - out.length)); }
     return out;
   };
   // a mixed paper for one chapter's step: that chapter gets half the questions, so the paper counts for it (it needs
