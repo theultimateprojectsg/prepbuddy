@@ -674,8 +674,9 @@ function masterySteps(m) {
     else if ((g.apply || 0) < 3) add(Z(`Get ${3 - (g.apply || 0)} Apply question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`), 'practise', 'hard');
     else if (lv.k === 'test' || lv.k === 'retest') add(Z(`Pass a chapter test on ${t} (new questions, 80% to pass)`, `通過「${t}」的章節測驗（新題目，80% 合格）`), 'test');
     else if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) add(Z(`Get full marks on written Apply questions and an Analyse question in ${t}`, `在「${t}」的應用文字題拿滿分，並答對一條分析題`), 'practise', 'hard');
-    else if (c.pct >= 80 && !g.mixed) add(Z(`Do a mixed paper with ${t} and other chapters`, `做一份包括「${t}」和其他章節的綜合試卷`), 'mixed');
+    else if (c.pct >= 80 && (g.mixed || 0) < 2 && c.pct < 100) add(Z(`Do a mixed paper with ${t} and other chapters`, `做一份包括「${t}」和其他章節的綜合試卷`), 'mixed');
     else if (c.due) add(Z(`Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`), 'review');
+    else if ((c.prac || 0) < 60 && c.pct < 100) add(Z(`Practise more of ${t} to top up its practice part`, `多練習「${t}」，補滿練習部分`), 'practise');
     else if (lv.k === 'practise') add(Z(`Practise the ideas you missed in ${t}, then retest`, `練習「${t}」答錯的概念，然後再測驗`), 'practise');
     else add(Z(`Keep ${t}: a quick check now and then stops it fading`, `保持「${t}」：不時快速檢查，就不會退步`), 'check');
   }
@@ -708,7 +709,7 @@ async function closerPick() {
       if ((ids && !ids.includes(c.unit.id)) || c.pct >= 100 || NOT_TEACHING.test(String(c.unit.title))) continue;
       const st = masterySteps({ ...m, chapters: [c] })[0]; if (!st) continue;
       if ((st.kind === 'practise' || st.kind === 'review') && c.pracCapped) continue; // practice can't move it again today
-      if (st.kind === 'learn') continue;
+      if (st.kind === 'learn' || (st.kind === 'check' && !c.cracked)) continue; // a check only helps a chapter that has faded
       if (!best || c.pct < best.c.pct) best = { book, c, step: st, test };
     }
   }
@@ -1284,10 +1285,9 @@ function chapterLever(c) {
   }
   { const g = c.gates || {};
     if (c.pct >= 80 && !(g.wrote >= 2 && g.analyse)) return { k: 'practise', en: 'harder questions: two full-marks written answers at Apply level and one Analyse question (85% needs real understanding)' };
-    if (c.pct >= 80 && !g.mixed) return { k: 'mixed', en: 'a mixed paper with other chapters, like a real school test' }; }
-  // a second strong chapter test (new questions) fills the test part: any day after the first pass
-  if (c.passes < 2) { const at = new Date(c.lastTestT || 0).setHours(24, 0, 0, 0);
-    return Date.now() < at ? { k: 'wait', at, en: 'practice or reviews today; a second chapter test from tomorrow' } : { k: 'retest', en: 'a second chapter test (new questions) to make it Strong' }; }
+    if (c.pct >= 80 && (g.mixed || 0) < 2 && c.pct < 100) return { k: 'mixed', en: 'a mixed paper with other chapters, like a real school test' }; }
+  // a second strong chapter test (new questions) fills the test part: any time (no waiting: fading does that job)
+  if (c.passes < 2) return { k: 'retest', en: 'a second chapter test (new questions) to make it Strong' };
   return { k: 'reviews', en: 'keeping it: a quick "Still there?" check now and then stops it fading' };
 }
 async function coachSnapshot() {
@@ -7025,9 +7025,9 @@ function chapterSheet(book, c) {
     <div class="cs2-lv">${LV.map((l, i) => `<div class="${i + 1 <= c.lvTop ? 'got' : ''}${i + 1 === c.lvNow ? ' now' : ''}">${i + 1 === c.lvNow ? `<span class="cs2-you">${buddySVG('happy', 30)}</span>` : ''}<i style="height:${10 + i * 6}px"></i><b>${l}</b></div>`).join('')}</div>
     <p class="cs2-sub">${c.done >= 5 ? PT(`Buddy is giving you <b>${LV[c.lvNow - 1].toLowerCase()}</b> questions now. Get 80% right and it steps up; under 50% and it eases off.`, `Buddy 現在給你<b>${LV[c.lvNow - 1]}</b>題目。答對 80% 會升一級；低於 50% 會調低。`) : PT('After 5 questions Buddy starts moving the difficulty up or down to match you.', '做了 5 題之後，Buddy 會按你的表現調高或調低難度。')}</p></section>`;
   // Buddy's pick, in the order a tutor would go
-  const retestOK = c.passes && Date.now() >= c.firstPass + 7 * DAY;
+  const retestOK = !!c.passes; // a retest any time: fading, not waiting, keeps it honest
   const pick = LESSONS_IN_PLAN && !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review'
-    : (!c.passes || !c.lastPass) && !(c.lastTest && Date.now() - c.lastTest < 2 * DAY) ? 'test' : !c.spread && retestOK ? 'test' : c.score.deep < 1 ? 'practise' : 'review';
+    : (!c.passes || !c.lastPass) && !(c.lastTest && Date.now() - c.lastTest < 2 * DAY) ? 'test' : c.passes < 2 && retestOK ? 'test' : c.score.deep < 1 ? 'practise' : 'review';
   const why = {
     lesson: PT('You haven’t started this chapter. The lesson explains it step by step with quick checks.', '你還未開始這一章。課堂會一步步講解，並有小測。'),
     fix: PT(`You have ${c.open} mistakes open here. Fixing them is the fastest way up.`, `這一章有 ${c.open} 題錯題，改正它們是最快的進步方法。`),
@@ -11330,7 +11330,8 @@ async function resultMoment(sess, qs, pct, got, total) {
         const test = { label: Z('Take the chapter test', '做章節測驗'), run: () => startChapterTest(sess.book, [u]) };
         if (c.pracCapped && !(!c.passes && chapterLever(c).k === 'test')) lever = { l: ['📅', Z(`That’s the most practice can add to ${nm} in one day. It still helps you remember, and it counts again tomorrow. Another chapter can still go up today.`, `「${nm}」今天的練習已加到上限。多做仍有助記憶，明天會再計算。其他章節今天仍可進步。`)] };
         else if (!c.passes && chapterLever(c).k === 'test') lever = { l: ['🔓', Z(`The biggest jump for ${nm} now comes from the chapter test. Your score on it counts most.`, `「${nm}」現在最大的進步來自章節測驗，它的分數影響最大。`)], main: test };
-        else if (c.passes && (!c.spread || !c.lastPass)) lever = { l: ['📅', Z(`Next jump: pass the test again on a day at least a week after the first pass. That unlocks up to 95%.`, `下一步：在第一次合格至少一星期後再考一次並合格，就可升至 95%。`)] };
+        else if ((() => { const st = masterySteps({ chapters: [c] })[0]; if (!st || st.kind === 'check' || st.kind === 'learn') return false;
+          lever = { l: ['🎯', Z(`Next jump: ${st.text}.`, `下一步：${st.text}。`)] }; return true; })()) {}
         else if (c.needL3 || c.needL4) lever = { l: ['🧗', Z(`Next jump: get a harder “${c.needL4 ? 'analyse' : 'apply'}” question right. Buddy mixes them in as you go.`, `下一步：答對一題較難的「${c.needL4 ? '分析' : '應用'}」題。Buddy 會逐步加入這類題目。`)] };
         else if (c.due) lever = { l: ['🔁', Z(`Next jump: ${c.due} review${c.due === 1 ? '' : 's'} waiting in ${nm}.`, `下一步：「${nm}」有 ${c.due} 題溫習在等你。`)], main: { label: Z('Do the reviews', '做溫習'), run: () => startReview('spaced') } };
         else lever = { l: ['⏳', Z(`Next jump: answer these again in a few days. Still getting them right later is what moves the %.`, `下一步：幾天後再答這些題目。過一段時間仍答對，百分比就會上升。`)] };
