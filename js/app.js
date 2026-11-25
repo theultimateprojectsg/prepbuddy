@@ -521,7 +521,9 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     if (est >= 85 && !(wrote >= 2 && analyse)) est = 85; else if (apply >= 3 && wrote >= 2 && analyse) est += Math.min(15, mc);
     // rules.md §2: the % is the likely test score, so it can't be above what the child actually scores on this chapter:
     // the last two chapter tests / mock exams (this chapter's own marks), or before any, recent practice (10+ answers)
-    { const sc2 = [...tests, ...mix].sort((a, b) => a.t - b.t).slice(-2), m2 = sc2.reduce((a, x) => a + x.r[1], 0);
+    { const all2 = [...tests, ...mix].sort((a, b) => b.t - a.t), sc2 = []; let mm = 0;
+      for (const x of all2) { if (sc2.length >= 2 && mm >= 20) break; sc2.push(x); mm += x.r[1]; }
+      const m2 = mm;
       capScore = sc2.length && m2 ? Math.round((100 * sc2.reduce((a, x) => a + x.r[0], 0)) / m2) : rec.length >= 10 ? Math.round(100 * acc) : 100;
       capFrom = sc2.length ? 'tests' : 'practice';
       capped = est > capScore + 0.5; if (capped) est = capScore; }
@@ -646,7 +648,7 @@ function nextStep(c) {
   // every part is full, but the % follows the child's actual scores (rules.md §2): raise the scores
   if (c.capped) { const cs = c.capScore, st = (c.open || 0) >= 1 ? S('mistakes', `Fix your ${c.open} mistake${c.open > 1 ? 's' : ''} in ${t}: your % follows your scores (${cs}% now)`, `改正「${t}」的 ${c.open} 條錯題：百分比跟隨你的分數（現在 ${cs}%）`)
       : c.capFrom === 'practice' ? S('practise', `Practise ${t} and aim for full marks: your % follows your scores (${cs}% now)`, `練習「${t}」，目標滿分：百分比跟隨你的分數（現在 ${cs}%）`)
-      : S('test', `Score higher on a chapter test of ${t}: your % follows your last two scores (${cs}% now)`, `在「${t}」的章節測驗拿更高分：百分比跟隨你最近兩次的分數（現在 ${cs}%）`);
+      : S('test', `Score higher on a chapter test of ${t}: your % follows your recent scores (${cs}% now)`, `在「${t}」的章節測驗拿更高分：百分比跟隨你最近的分數（現在 ${cs}%）`);
     st.cap = true; return st; }
   return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
 }
@@ -951,7 +953,9 @@ function planForecast(ready, chs, left, habit = practiceHabit()) {
 }
 // fewer than 3 days of practice: too early to say on track or behind
 function practiceDays() { const d = new Set(); for (const e of local.log || []) if (e.t) d.add(new Date(e.t).toDateString()); return d.size; }
-const goalTone = (fc, aim) => (practiceDays() < 3 && fc < 60 ? 'early' : aimTone(fc, aim)); // 'Getting started' only while it really is
+// Before there's a test-day forecast (3 days of practice) there's nothing to be ahead or behind of: show the stage
+// readiness has reached. With a forecast: how near test day gets to 100% (On track / A little behind / Behind).
+const goalTone = (fc, aim) => (practiceDays() >= 3 ? aimTone(fc, aim) : fc >= 85 ? 'strong' : fc >= 70 ? 'ready' : fc >= 60 ? 'prac' : 'early');
 // what it takes to reach a goal: practice sets in total, the most that's reachable, and where to start
 // a practice set lifts a chapter's likely score by about 12 points while it's still being learnt
 function planNeeds(ready, pcts, left, aim) { return { sets: Math.max(0, Math.ceil(((aim - ready) * Math.max(1, pcts.length)) / 12)) }; }
@@ -2609,7 +2613,7 @@ function missionHowHTML(id = 'howMission') {
     ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'Practice on the test’s weakest chapters, a chapter test once one is ready, and a practice test the day before.', '先練測驗範圍內最弱的章節，準備好就做章節測驗，考試前一天做模擬測驗。'],
     ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
-    ['⏱️', 'Chapter tests, and mock exams.', '章節測驗和模擬考試。', '60% Practised: from practice sets. 70% Test-ready: a chapter test passed (new questions every time). 85% Strong: a second strong test, and harder Apply, Analyse and written questions right. 100% Mastered: strong mock exams, like a real school test. It never goes above what you actually score: your last two tests or mock exams on that chapter. Then it slowly fades unless you show it has stuck: a quick check wins it back, and each time it fades more slowly.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
+    ['⏱️', 'Chapter tests, and mock exams.', '章節測驗和模擬考試。', '60% Practised: from practice sets. 70% Test-ready: a chapter test passed (new questions every time). 85% Strong: a second strong test, and harder Apply, Analyse and written questions right. 100% Mastered: strong mock exams, like a real school test. It never goes above what you actually score on that chapter in recent tests and mock exams. Then it slowly fades unless you show it has stuck: a quick check wins it back, and each time it fades more slowly.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
     ['🎯', 'Then your weak spot, or keep going.', '然後是弱項，或者繼續。', 'The chapter you’ve found hardest lately, or the one you were working on.', '最近最難的一章，或你正在學的那一章。'],
     ['🌱', 'Tomorrow’s list follows today’s results.', '明天的清單會跟著今天的表現。', 'Questions get harder as you get them right, and easier when you don’t.', '答對了題目會變難，答錯了會變易。']]);
 }
@@ -4855,8 +4859,16 @@ function devFinish(rate) {
   }
   const from = S.phase === 'revealed' ? S.i + 1 : S.i, n = S.qs.length, ks = [];
   for (let k = from; k < n; k++) ks.push(k);
-  const all = n, want = Math.round((rate / 100) * all), already = S.qs.slice(0, from).filter((q, k) => (S.got[k] || 0) >= marksOf(q)).length;
-  const rightSet = new Set(shuffle(ks).slice(0, Math.max(0, Math.min(ks.length, want - already))));
+  const byU = {};
+  shuffle(ks).forEach((k) => { const u = qUnit(S.qs[k].id).join(':'); (byU[u] = byU[u] || []).push(k); });
+  // one right answer at a time, to whichever chapter is furthest below the rate
+  // by marks: each chapter gets as near the rate of its own marks as whole questions allow
+  const rightSet = new Set(), mk = (k) => marksOf(S.qs[k]) || 1;
+  const us = Object.values(byU).map((g) => ({ g: g.slice(), got: 0, tot: g.reduce((a, k) => a + mk(k), 0) }));
+  let target = Math.round((rate / 100) * us.reduce((a, u) => a + u.tot, 0));
+  while (target > 0) { const u = us.filter((x) => x.g.length).sort((a, b) => ((rate / 100) * b.tot - b.got) - ((rate / 100) * a.tot - a.got))[0]; if (!u) break;
+    const want = (rate / 100) * u.tot - u.got; u.g.sort((a, b) => Math.abs(mk(a) - want) - Math.abs(mk(b) - want)); const k = u.g.shift();
+    rightSet.add(k); u.got += mk(k); target -= mk(k); }
   const t0 = Date.now() - (ks.length + 1) * 15000; S.at = Math.min(S.at || t0, t0 - 15000); S.times = S.times || [];
   for (const k of ks) {
     const q = S.qs[k], right = rightSet.has(k), m = marksOf(q); S.i = k;
@@ -6945,7 +6957,7 @@ function masteredSheet(subs, done, all) {
    (local.goal is the separate weekly practice goal.) Each day one goal is the focus: one the child tapped today,
    else a test in the next 2 weeks that's behind (nearest first), else the nearest such test, else the long-term goal
    furthest from its target, else the nearest later test. */
-const GOAL_ST = () => ({ early: PT('Getting started', '剛開始'), done: PT('Goal reached', '已達目標'), ok: PT('On track', '進度理想'), close: PT('A little behind', '稍為落後'), risk: PT('Behind', '落後') });
+const GOAL_ST = () => ({ early: PT('Getting started', '剛開始'), prac: PT('Practised', '已練習'), ready: PT('Test-ready', '可應考'), strong: PT('Strong', '穩固'), done: PT('Goal reached', '已達目標'), ok: PT('On track', '進度理想'), close: PT('A little behind', '稍為落後'), risk: PT('Behind', '落後') });
 const lv10 = (v) => Math.max(0, Math.min(10, Math.round(((v - 1) / 3) * 100) / 10));
 function myGoals() {
   // an earlier version kept this in local.goal; move it out of the weekly goal's way
