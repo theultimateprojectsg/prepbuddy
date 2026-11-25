@@ -4830,8 +4830,10 @@ function devFinish(rate) {
   // the set isn't fully written yet: don't wait. Make up placeholder questions (a normal mix of levels) so the dev
   // run answers a full set straight away. They're saved to the chapter's bank marked dev, and hidden outside dev mode.
   if (S.qs.length < (S.target || 0) && S.book) {
-    const us = (S.units && S.units.length ? S.units : [S.book.units[0]]), LV = [2, 3, 2, 1, 3, 4, 2, 3, 2, 4], stamp = Date.now().toString(36);
-    for (let k = 0; S.qs.length < S.target; k++) { const u = us[k % us.length];
+    // the chapters this set is really on (a chapter test has no S.units: take them from its own questions)
+    const own = [...new Set(S.qs.map((q) => qUnit(q.id)[1]))].map((id) => S.book.units.find((u) => u.id === id)).filter(Boolean);
+    const us = own.length ? own : S.units && S.units.length ? S.units : [], LV = [2, 3, 2, 1, 3, 4, 2, 3, 2, 4], stamp = Date.now().toString(36);
+    for (let k = 0; us.length && S.qs.length < S.target; k++) { const u = us[k % us.length];
       const q = { id: `${S.book.id}:${u.id}:dev${stamp}${k}`, type: 'mcq', level: LV[k % LV.length], stem: 'DEV placeholder question (simulated)', options: ['Right', 'Wrong', 'Wrong', 'Wrong'], correct_option: 'A', explanation: 'Simulated in developer mode.', parts: [], dev: true, section: u.title };
       S.qs.push(q); addToBank(S.book.id, u.id, [q]); }
     S.jobs = new Set(); S.pending = 0;
