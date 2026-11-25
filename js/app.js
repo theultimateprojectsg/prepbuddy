@@ -2801,7 +2801,7 @@ function goalsHowHTML(id = 'howGoals') {
 function missionHowHTML(id = 'howMission') {
   return howPanel(id, 'How does this work?', '這是怎樣運作的？', [
     ['📋', 'Up to 5 jobs a day, most important first.', '每天最多 5 項，最重要的排先。', 'Try to finish them all. Each one ticks itself off when it’s done.', '盡量全部完成，做完會自動打勾。'],
-    ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'A lesson for a chapter you haven’t started, or your weakest one. A practice test the day before.', '先上還未開始的章節，或練最弱的一章。考試前一天做模擬測驗。'],
+    ['📅', 'Tests coming up come first.', '快到的測驗排最先。', 'Practice on the test’s weakest chapters, a chapter test once one is ready, and a practice test the day before.', '先練測驗範圍內最弱的章節，準備好就做章節測驗，考試前一天做模擬測驗。'],
     ['⏩', 'Behind on a test goal? Buddy adds catch-up jobs.', '未追上測驗目標？Buddy 會加追進度的任務。', 'Up to 2 more a test, on its weakest chapters, so each day does enough to reach the goal.', '每個測驗最多多加 2 項，集中最弱的章節，讓每天的份量足夠達到目標。'],
     ['🔁', 'Then reviews and mistakes.', '然後是溫習和錯題。', 'Reviews bring back questions just before you’d forget them. Mistakes, up to 5 a day.', '溫習在快忘記時再出題。錯題每天最多 5 題。'],
     ['⏱️', 'Chapter tests, and a weekly mini mock.', '章節測驗，和每週模擬小測。', '60% Practised: from practice sets. 70% Test-ready: a chapter test passed (new questions every time). 85% Strong: a second strong test, and harder Apply, Analyse and written questions right. 100% Mastered: two strong mixed papers, like a real school test. Then it slowly fades unless you show it has stuck: a quick check wins it back, and each time it fades more slowly.', '練習最多令一章去到 70%。準備好後，限時章節測驗（80% 合格）可以再提升，另一日再合格會更高。每星期一次跨章節的限時短卷。'],
@@ -3897,7 +3897,7 @@ function renderAbout() {
   ];
   const qa = [
     [Z('What exactly is PrepBuddy?', 'PrepBuddy 究竟是甚麼？'),
-      Z('A study coach on your phone or laptop, built from your child’s own textbooks. Add a book and Buddy turns every chapter into lessons, practice questions, chapter tests, mock exams, revision notes and flashcards, then marks every answer and decides what your child should do next.', '一個放在手機或電腦上的溫習教練，以孩子自己的課本為基礎。加入課本後，Buddy 會把每一章變成課堂、練習題、章節測驗、模擬試、筆記和溫習卡，批改每一題，並決定孩子下一步應該做甚麼。')],
+      Z('A study coach on your phone or laptop, built from your child’s own textbooks. Add a book and Buddy turns every chapter into practice questions, chapter tests, mock exams, revision notes and flashcards, then marks every answer and decides what your child should do next.', '一個放在手機或電腦上的溫習教練，以孩子自己的課本為基礎。加入課本後，Buddy 會把每一章變成課堂、練習題、章節測驗、模擬試、筆記和溫習卡，批改每一題，並決定孩子下一步應該做甚麼。')],
     [Z('Why not just use ChatGPT?', '為甚麼不直接用 ChatGPT？'),
       Z('A general AI chat is a brilliant tool, but it only does what you ask, each time you ask. It doesn’t know which textbook your child uses, which chapters are on Friday’s test, or what they got wrong last week, and it can state wrong answers confidently. PrepBuddy uses the same kind of AI, but builds a whole tutor around it: questions made from and checked against your child’s own pages, every mistake kept and brought back, reviews timed before things are forgotten, a plan for each day up to the test, and a weekly report for you. Your child just opens it and starts; nobody has to know what to ask.', '一般 AI 聊天是很好的工具，但它只會做你每次要求的事。它不知道孩子用哪本課本、星期五測驗考哪幾章、上星期錯了甚麼，而且可能很肯定地說出錯誤答案。PrepBuddy 用同類的 AI，但圍繞它建立了一位完整的導師：題目由孩子自己的課本製作並與課本核對、每個錯誤都會記住並再出現、在快忘記前安排溫習、按測驗日期安排每天的練習，並每週向你報告。孩子打開就能開始，不用懂得怎樣發問。')],
     [Z('Does it really know my child, or is it just random questions?', '它真的了解我的孩子嗎？還是只是隨機出題？'),
@@ -3936,7 +3936,7 @@ function renderAbout() {
     Z('Learns your child’s own pace: how many sets they need to master a chapter, so plans and forecasts fit them exactly.', '學習孩子自己的步伐：掌握一章需要多少組練習，讓計劃和預測更貼合。'),
     Z('“Buddy noticed”: patterns a tutor would spot, like “more accurate in the evening” or “often loses marks on units”.', '「Buddy 發現」：導師會留意到的規律，例如「晚上較準確」或「常因單位失分」。'),
     Z('A day-by-day plan to each exam that re-plans itself, with a mock exam aimed at weak spots.', '為每個考試制定每日計劃並自動調整，以及針對弱項的模擬試。'),
-    Z('Weak spots at skill level, not just chapter level, with 3-minute mini-lessons on exactly that skill.', '找出技能層面的弱項（不只章節），並提供針對該技能的 3 分鐘小課堂。'),
+    Z('Weak spots at skill level, not just chapter level, with targeted practice on exactly that skill.', '找出技能層面的弱項（不只章節），並針對該技能練習。'),
   ];
   $app.innerHTML = `
   <main class="pad stack g18 about" data-view="settings" style="flex:1">
@@ -4760,7 +4760,7 @@ async function quickTour(replay) {
   const steps = [
     { go: 'home', sel: tab('home'), t: C('Hi, I’m Buddy! This is Today', '你好，我是 Buddy！這是「今日」'), d: C('Your home screen: your streak, your next school test and today’s plan. Tap Start and I’ll take you through it.', '你的主頁：連續練習日數、下一個學校測驗和今日計劃。按「開始」，我會帶你逐項完成。') },
     { go: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('Your textbooks. We’ve added free PrepBuddy books to try, and you can add your own school books here.', '你的課本。我們已加入 PrepBuddy 的免費課本給你試用，你也可以在這裏加入學校課本。') },
-    { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Learn or practise any chapter, plus dictation, writing, listening, speaking and homework help.', '學習或練習任何一章，還有默書、寫作、聆聽、說話和功課幫手。') },
+    { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Practise any chapter, plus dictation, writing, listening, speaking and homework help.', '練習任何一章，還有默書、寫作、聆聽、說話和功課幫手。') },
     { go: 'practice', sel: '#mkgo', skipIfMissing: true, t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here, under Practice. Get it right again a day later and it’s mastered.', '答錯的題目都會放在「練習」的錯題簿。隔一天再答對，就算掌握了。') },
     { go: 'settings', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, backups, and the parent dashboard.', '名字、語言、備份，以及家長主頁。') },
     { go: 'progress', sel: tab('progress'), t: C('Progress', '進度'), d: C('How you’re doing each week. Parents can open the parent dashboard from here or from Settings.', '每週的學習情況。家長可以在這裏或「設定」打開家長主頁。') },
@@ -4783,11 +4783,11 @@ async function startTour(replay) {
     { go: 'home', sel: tab('home'), t: C('Today', '今日'), d: C('Your home screen. Buddy plans what to do each day: reviews, a chapter to practise, mistakes to fix.', '你的主頁。Buddy 每天為你安排要做的事：溫習、練習章節、改正錯題。') },
     { go: 'home', sel: '.ms-card', skipIfMissing: true, t: C('Today’s plan', '今日計劃'), d: C('Start here every day: Buddy picks 2–3 things to do, in order. Tap Start, and each one gets a tick when it’s done. About 15 minutes.', '每天由這裏開始：Buddy 會按次序選 2 至 3 件事。按「開始」，完成一項就會打勾。約 15 分鐘。') },
     { go: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('All your textbooks live here. For the tour I’ve added a sample book. Let’s open it.', '你所有的課本都在這裏。我為導覽加了一本示範課本，我們打開看看。') },
-    { go: book, sel: '.bk-head', t: C('A book', '一本課本'), d: C('Every chapter of your textbook becomes questions, lessons, notes and flashcards, written from the book itself.', '課本的每一章都會變成題目、課堂、筆記和閃卡，全部根據課本內容。') },
+    { go: book, sel: '.bk-head', t: C('A book', '一本課本'), d: C('Every chapter of your textbook becomes practice questions, chapter tests, notes and flashcards, written from the book itself.', '課本的每一章都會變成練習題、章節測驗、筆記和閃卡，全部根據課本內容。') },
     { go: book, sel: '.pl-card', skipIfMissing: true, t: C('Find your level', '找出你的程度'), d: C('A 5-minute quiz across the book, so every chapter starts at the right difficulty.', '一個 5 分鐘、涵蓋全書的小測驗，讓每一章都由合適的難度開始。') },
     { go: book, sel: 'section.learn-card', skipIfMissing: true, t: C('Learn mode', '學習模式') + lt('lesson'), d: C('New chapter? Buddy teaches it before you practise. Let’s look inside.', '新章節？Buddy 會先教你，再讓你練習。我們進去看看。') },
-    { go: { name: 'learn', bookId: DEMO_ID, unitId: 'u0' }, sel: '.ln-start', t: C('A lesson', '一課'), d: C('Short steps with examples, each followed by a quick check question.', '簡短的步驟加例子，每一步之後有一條小測驗。') },
-    { go: { name: 'learn', bookId: DEMO_ID, unitId: 'u0' }, sel: '#lnchat', skipIfMissing: true, t: C('Ask Buddy during the lesson', '上課時問 Buddy'), d: C('Confused? Ask anything here, in English or Chinese. Buddy answers from your textbook.', '不明白？可以用中文或英文在這裏發問，Buddy 會根據你的課本回答。') },
+    ...(LESSONS_IN_PLAN ? [{ go: { name: 'learn', bookId: DEMO_ID, unitId: 'u0' }, sel: '.ln-start', t: C('A lesson', '一課'), d: C('Short steps with examples, each followed by a quick check question.', '簡短的步驟加例子，每一步之後有一條小測驗。') }] : []),
+    ...(LESSONS_IN_PLAN ? [{ go: { name: 'learn', bookId: DEMO_ID, unitId: 'u0' }, sel: '#lnchat', skipIfMissing: true, t: C('Ask Buddy during the lesson', '上課時問 Buddy'), d: C('Confused? Ask anything here, in English or Chinese. Buddy answers from your textbook.', '不明白？可以用中文或英文在這裏發問，Buddy 會根據你的課本回答。') }] : []),
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set() }; await go(book); }, sel: '.crow', t: C('Pick chapters to practise', '選擇要練習的章節'), d: C('Tick one or more chapters. You can choose multiple choice, written questions or both, and the difficulty.', '剔選一個或多個章節，可以選擇選擇題、文字題或兩者，以及難度。') },
     { go: book, sel: '#go', skipIfMissing: true, t: C('Start a practice set', '開始練習'), d: C('About 10 questions at a time, about 10 minutes. Let’s try one.', '每次約 10 題、約 10 分鐘。我們試試看。') },
     { run: async () => { const b = await demo(); if (b) await startUnits(b, b.units, 5, { types: 'mcq', diff: 'auto' }); }, sel: '#opts, .opt', t: C('Answer the question', '回答問題'), d: C('Tap an answer to see if it’s right, with an explanation from the textbook. Written answers are marked by AI.', '按一個答案，就會知道對不對，並附課本的解釋。文字題由 AI 批改。') },
@@ -4799,7 +4799,7 @@ async function startTour(replay) {
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set(), opts: true }; await go(book); }, sel: '#paper', skipIfMissing: true, t: C('Mock exams', '模擬考試') + lt('mock'), d: C('Full DSE-style papers, or printable worksheets to do on paper.', '完整 DSE 模式試卷，或可列印的工作紙。') },
     { go: 'home', sel: '.td-sec', skipIfMissing: true, t: C('School tests', '學校測驗') + lt('sched'), d: C('Add your test dates and chapters. The next test shows here with how ready you are for each chapter, and Today’s plan works on it first.', '加入測驗日期和範圍。下一個測驗會在這裏顯示每章的準備度，今日計劃也會優先溫習。') },
     { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Every way to study in one place. You choose a book, then the chapters.', '所有學習方式都在這裏。先選課本，再選章節。') },
-    { go: 'practice', sel: 'main[data-view="practice"] .quick', skipIfMissing: true, t: C('Study tools', '學習工具'), d: C('Homework help, lessons, revision notes, flashcards, practice questions, mock exams, weak topics and the Mistake book.', '功課幫手、課堂、溫習筆記、閃卡、練習題、模擬考試、弱項和錯題簿。') },
+    { go: 'practice', sel: 'main[data-view="practice"] .quick', skipIfMissing: true, t: C('Study tools', '學習工具'), d: C('Homework help, revision notes, flashcards, practice questions, mock exams, weak topics and the Mistake book.', '功課幫手、溫習筆記、閃卡、練習題、模擬考試、弱項和錯題簿。') },
     { go: 'homework', sel: '.hw-cap, .hw-hero', t: C('Homework help', '功課幫手') + lt('homework'), d: C('Snap a photo of your homework. Buddy reads it and guides you through each question.', '拍下功課，Buddy 會讀取題目，並引導你逐題完成。') },
     { go: 'dictation', sel: '#dnew', skipIfMissing: true, t: C('Dictation', '默書'), d: C('Snap your dictation list. Buddy reads the words aloud, you write them, then check.', '拍下默書範圍，Buddy 讀出詞語，你寫下來，然後核對。') },
     { go: 'writing', sel: '.wr-step', skipIfMissing: true, t: C('Writing', '寫作') + lt('writing'), d: C('Pick a DSE paper, write or snap your essay, and get marked against the real criteria. Then redraft.', '選擇 DSE 試卷，輸入或拍下文章，按真實準則批改，再修改。') },
@@ -6685,7 +6685,7 @@ function habitGaps(E, inT = () => true) {
   { const open = Object.entries(local.mistakes || {}).filter(([id, m]) => !m.done && inT(id)), rep2 = open.filter(([, m]) => (m.n || 1) >= 2).length;
     if (rep2 >= 3 && rep2 >= open.length * 0.3) gaps.push(['weak', Z('Repeating the same mistakes', '重複犯同樣的錯')]); }
   { const practised = new Set(E.filter((e) => e.k !== 'spaced').map((e) => qUnit(e.q).join(':'))), skipped = [...practised].filter((u) => !(local.learned || {})[u]);
-    if (skipped.length >= 2 || (skipped.length === 1 && practised.size <= 2)) gaps.push(['weak', Z('Skipping lessons before practising', '未上課就直接練習')]); }
+    if (LESSONS_IN_PLAN && (skipped.length >= 2 || (skipped.length === 1 && practised.size <= 2))) gaps.push(['weak', Z('Skipping lessons before practising', '未上課就直接練習')]); }
   { const R = E.filter((e) => e.k === 'spaced' && e.t > now - 30 * DAY);
     if (R.length >= 4 && acc(R) < 60) gaps.push(['weak', Z('Seems to forget after a week or so', '過了一星期左右就忘記')]); }
   { const T = E.filter((e) => e.s && e.t > now - 30 * DAY), M = T.filter((e) => e.k === 'mock' || e.k === 'dse'), use = M.length >= 5 ? M : T;
@@ -6870,7 +6870,7 @@ function readySummary(rows, name, U = { daily: false, n: 6 }) {
   if (best.ch >= (U.daily ? 2 : 3)) parts.push(Z(`<b>${esc(best.n)} up ${best.ch}% ${span(best)}</b>${best.chs >= 1 ? `, about ${best.chs} more chapter${best.chs === 1 ? '' : 's'} known well` : ''}.`, `<b>${esc(best.n)}${span(best)}上升 ${best.ch}%</b>${best.chs >= 1 ? `，約多掌握 ${best.chs} 章` : ''}。`));
   if (dip && dip !== best) parts.push(Z(`${esc(dip.n)} dipped ${-dip.step}% ${when}: fixing mistakes and doing reviews brings it back.`, `${esc(dip.n)}${when}下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
   else if (dip) parts.push(Z(`It dipped ${-dip.step}% ${when}: fixing mistakes and doing reviews brings it back.`, `${when}下跌 ${-dip.step}%：改正錯題、做溫習就能追回。`));
-  if (flat && parts.length < 2) parts.push(Z(`${esc(flat.n)} has barely moved: try a lesson this week.`, `${esc(flat.n)}幾乎沒有變化：這星期試上一課吧。`));
+  if (flat && parts.length < 2) parts.push(Z(`${esc(flat.n)} has barely moved: a few practice sets on its weakest chapter this week will help.`, `${esc(flat.n)}幾乎沒有變化：這星期在最弱的章節多做幾組練習會有幫助。`));
   if (!parts.length) parts.push(best.ch > 0 ? Z(`Small steps up. A short plan most days gets the lines climbing.`, `有少少進步。大部分日子做個小任務，線就會上升。`) : Z('Not much change yet. A short plan most days gets the lines moving.', '暫時變化不大。大部分日子做個小任務，線就會上升。'));
   return parts.join(' ');
 }
@@ -6947,7 +6947,7 @@ function chapterSheet(book, c) {
   // that says where it stands or what's needed next
   const ST3 = (done, part) => (done ? 'done' : part ? 'part' : 'todo');
   const steps = [
-    ['learn', PT('Lesson', '課堂'), ST3(learned, false), learned ? PT('Done', '已完成') : PT('Take the lesson', '上課')],
+    ...(LESSONS_IN_PLAN ? [['learn', PT('Lesson', '課堂'), ST3(learned, false), learned ? PT('Done', '已完成') : PT('Take the lesson', '上課')]] : []),
     ['practise', PT('Practice', '練習'), ST3(c.done >= T && (acc || 0) >= 75, c.done > 0), c.done ? PT(`${c.done}/${T} questions · ${acc}% first try`, `${c.done}/${T} 題 · 第一次答對 ${acc}%`) : PT(`Answer ${T} questions`, `回答 ${T} 題`)],
     ['level', PT('Harder questions', '較深題目'), ST3(c.score.deep >= 1, c.lvTop >= 3), c.score.deep >= 1 ? PT('Analyse level done', '分析程度完成') : c.lvTop >= 3 ? PT('Apply reached · analyse next', '已到應用 · 下一步分析') : PT('Unlocks as you improve', '進步後解鎖')],
     ['mistakes', PT('Mistakes', '錯題'), ST3(c.done > 0 && !c.open, c.open > 0), c.open ? PT(`${c.open} to fix`, `${c.open} 題要改正`) : c.done ? PT('All fixed', '全部改正') : PT('None yet', '暫時沒有')],
@@ -6961,17 +6961,17 @@ function chapterSheet(book, c) {
     <p class="cs2-sub">${c.done >= 5 ? PT(`Buddy is giving you <b>${LV[c.lvNow - 1].toLowerCase()}</b> questions now. Get 80% right and it steps up; under 50% and it eases off.`, `Buddy 現在給你<b>${LV[c.lvNow - 1]}</b>題目。答對 80% 會升一級；低於 50% 會調低。`) : PT('After 5 questions Buddy starts moving the difficulty up or down to match you.', '做了 5 題之後，Buddy 會按你的表現調高或調低難度。')}</p></section>`;
   // Buddy's pick, in the order a tutor would go
   const retestOK = c.passes && Date.now() >= c.firstPass + 7 * DAY;
-  const pick = !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review'
+  const pick = LESSONS_IN_PLAN && !learned && !c.done ? 'lesson' : c.open >= 3 ? 'fix' : c.done < Math.ceil(T / 2) || (acc ?? 0) < 60 ? 'practise' : c.due >= 3 ? 'review'
     : (!c.passes || !c.lastPass) && !(c.lastTest && Date.now() - c.lastTest < 2 * DAY) ? 'test' : !c.spread && retestOK ? 'test' : c.score.deep < 1 ? 'practise' : 'review';
   const why = {
     lesson: PT('You haven’t started this chapter. The lesson explains it step by step with quick checks.', '你還未開始這一章。課堂會一步步講解，並有小測。'),
     fix: PT(`You have ${c.open} mistakes open here. Fixing them is the fastest way up.`, `這一章有 ${c.open} 題錯題，改正它們是最快的進步方法。`),
-    practise: c.passes && c.score.deep < 1 ? PT('You’ve passed the test. Now the harder apply and analyse questions: Buddy moves you up as you get them right.', '你已通過測驗。接著挑戰較深的應用和分析題，答對了 Buddy 會再調高程度。') : c.done ? PT(`${acc}% right so far over ${c.done} questions. More practice will firm it up${learned ? '' : ', or take the lesson first if it feels shaky'}.`, `目前 ${c.done} 題答對 ${acc}%。多做練習可以鞏固${learned ? '' : '；如果覺得不穩，可以先上課'}。`) : PT('You’ve done the lesson. Now practise so it sticks.', '你已上了課，現在做練習鞏固。'),
+    practise: c.passes && c.score.deep < 1 ? PT('You’ve passed the test. Now the harder apply and analyse questions: Buddy moves you up as you get them right.', '你已通過測驗。接著挑戰較深的應用和分析題，答對了 Buddy 會再調高程度。') : c.done ? PT(`${acc}% right so far over ${c.done} questions. More practice will firm it up.`, `目前 ${c.done} 題答對 ${acc}%。多做練習可以鞏固。`) : (learned ? PT('You’ve done the lesson. Now practise so it sticks.', '你已上了課，現在做練習鞏固。') : PT('Start with a practice set: Buddy begins with easier questions and moves you up as you get them right.', '先做一組練習：Buddy 由較易的題目開始，答對了就會調高程度。')),
     review: !c.due && c.passes && !retestOK ? PT(`Nice work. You tested this recently, so give it a few days. Come back on ${new Date(c.firstPass + 7 * DAY).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} to retest and show it stuck. Flashcards keep it fresh meanwhile.`, `做得好！你最近考過，先休息幾日。${new Date(c.firstPass + 7 * DAY).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}再回來考一次，證明記得。期間可以用閃卡保持記憶。`) : PT(`${c.due || 'A few'} questions are due. Getting them right days later is what makes it stick.`, `有 ${c.due || '幾'} 題到期溫習。隔幾日仍答對，才算真正記住。`),
     test: c.tests && !c.lastPass ? PT('Your practice is strong. Try the timed chapter test again: 80% passes.', '練習做得好，再試一次限時章節測驗：80% 合格。') : c.passes ? PT('It’s been a week since you passed. Passing again now shows it has stuck.', '距離上次合格已經一星期，現在再合格一次，證明你真的記住了。') : PT('Your practice is strong. A timed chapter test (like a mock exam) proves it: 80% passes.', '練習做得好。做一次限時章節測驗（像模擬試）來證明：80% 合格。'),
   }[pick];
   const O = [
-    ['lesson', 'learn', learned ? PT('Redo the lesson', '重溫課堂') : PT('Take the lesson', '上課'), PT('Step-by-step teaching with quick checks', '一步步講解，附小測'), () => go({ name: 'learn', bookId: book.id, unitId: c.unit.id })],
+    LESSONS_IN_PLAN ? ['lesson', 'learn', learned ? PT('Redo the lesson', '重溫課堂') : PT('Take the lesson', '上課'), PT('Step-by-step teaching with quick checks', '一步步講解，附小測'), () => go({ name: 'learn', bookId: book.id, unitId: c.unit.id })] : null,
     ['practise', 'practise', PT(`Practise ${n} questions`, `練習 ${n} 題`), PT('New questions that adapt to you', '會按你的程度調整的新題目'), () => startUnits(book, [c.unit], n)],
     c.open ? ['fix', 'mistakes', PT(`Fix ${c.open} mistakes`, `改正 ${c.open} 題錯題`), PT('Try the ones you got wrong again', '再做一次答錯的題目'), () => go({ name: 'mistakes', book: book.id })] : null,
     c.done ? ['review', 'review', PT(c.due ? `Review ${c.due} due` : 'Review', c.due ? `溫習 ${c.due} 題` : '溫習'), PT('Questions from before, just before you’d forget', '在快忘記前再做以前的題目'), () => startReview('spaced', book.id)] : null,
@@ -7000,7 +7000,7 @@ function chapterSheet(book, c) {
     <section class="cs2-sec"><h3>${PT('Or choose for yourself', '或自己選擇')}</h3><div class="cs2-more">${rest.map((o, i) => `<button data-o="${i + 1}">${actionTile(o[1], 32)}<span><b>${o[2]}</b><em>${o[3]}</em></span><i>›</i></button>`).join('')}</div></section>
     </div><div class="cs2-col">
     ${ladder}
-    <section class="cs2-sec"><h3>${left ? PT(`${6 - left} of 6 steps to 100%`, `100% 的 6 步中完成了 ${6 - left} 步`) : PT('All 6 steps done: mastered', '6 步全部完成：已掌握')}</h3>
+    <section class="cs2-sec"><h3>${left ? PT(`${steps.length - left} of ${steps.length} steps to 100%`, `100% 的 ${steps.length} 步中完成了 ${steps.length - left} 步`) : PT(`All ${steps.length} steps done: mastered`, `${steps.length} 步全部完成：已掌握`)}</h3>
       <div class="cs2-steps">${steps.map(([ic, l, st3, v]) => `<div class="cs2-st s-${st3}"><span class="cs2-ic">${pIcon({ learn: 'book', practise: 'target', level: 'bars', mistakes: 'pencil', review: 'memory', test: 'check' }[ic], 18)}</span><div><b>${l}</b><em>${v}</em></div><i aria-label="${st3}">${st3 === 'done' ? '✓' : ''}</i></div>`).join('')}</div></section>
     </div></div>
   </div>`;
@@ -7748,7 +7748,7 @@ async function renderProgress(PO = {}) {
     <div class="pv-grid3">${testCards.join('') || `<div class="pv-test none"><b>${PT('Got a test coming up?', '快要測驗？')}</b><p class="pv-p">${PT('Add it and Buddy plans backwards from the date: practice on the weakest chapters, chapter tests, then a practice test the day before.', '加入後，Buddy 會按日期倒數安排：先學新章節，再練最弱的，前一天做模擬測驗。')}</p>${btn(`+ ${PT('Add a test', '加入測驗')}`, () => testDialog())}</div>`}</div>
     <details class="ms-how how-panel" id="howTestP"><summary>${PT('How is this worked out?', '這是怎樣計算的？')}</summary><div>
       <p>${PT('Ready now is the readiness of the chapters in the test (or everything practised so far, if you didn’t choose chapters).', '「現在」是測驗範圍內各章節的準備度（未選章節的話，就是所有練習過的內容）。')}</p>
-      <p>${PT('Finishing a chapter’s lesson counts as 10%. Practice, reviews and chapter tests take it the rest of the way. Practice on chapters that aren’t in the test doesn’t change this number.', '完成一章的課堂計 10%，之後靠練習、溫習和章節測驗提升。練習測驗範圍以外的章節不會影響這個數字。')}</p>
+      <p>${PT('Practice, reviews and chapter tests build it up. Practice on chapters that aren’t in the test doesn’t change this number.', '靠練習、溫習和章節測驗提升。練習測驗範圍以外的章節不會影響這個數字。')}</p>
       <p>${PT('On test day is where Buddy expects you to be if you practise as often as you usually do and follow its plan for these chapters. It works from day one, even for a test that’s only days away.', '「考試當日」是預計：如果你像平時一樣經常練習，並跟著 Buddy 為這些章節訂的計劃，考試時會到達的程度。由第一日就有，即使測驗只剩幾日。')}</p>
       <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('your goal or more by test day (80% unless you drag the goal line)', '考試時達到你的目標或以上（預設 80%，可拖動目標線）')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('within 15% of your goal', '與目標相差 15% 以內')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('more than 15% below your goal', '比目標低超過 15%')}</li></ul></div></details></section>`;
 
@@ -7911,7 +7911,7 @@ async function renderProgress(PO = {}) {
       <li><b>${PT('Memory', '記憶')}</b> · ${PT('Review questions come back after 1, 3, 7, 14 and 30 days. This is how many were right when they came back.', '溫習題會在 1、3、7、14、30 日後再出現。這是再出現時答對的比例。')}</li>
       <li><b>${PT('Answers and levels', '作答和程度')}</b> · ${PT('Multiple choice vs written answers, and remember/understand vs apply/analyse questions, on first tries in the last 30 days.', '過去 30 日第一次作答：選擇題對比文字題，記憶/理解對比應用/分析。')}</li>
       <li><b>${PT('Habits', '習慣')}</b> · ${PT('Careless slips (wrong, then right on the very next try), long sessions where scores drop, late nights, and long or diagram questions.', '粗心（答錯後下一次就答對）、長時間練習後分數下降、太夜練習，以及長題目或圖表題。')}</li>
-      <li><b>${PT('To do', '待辦')}</b> · ${PT('Reviews more than 2 days overdue, mistakes older than 2 weeks, chapters practised without their lesson, little practice on a subject with a test soon, and lower scores when timed.', '過期 2 日以上的溫習、超過兩星期的錯題、未上課就練習的章節、快考試但很少練習的科目，以及限時下分數較低。')}</li>
+      <li><b>${PT('To do', '待辦')}</b> · ${PT('Reviews more than 2 days overdue, mistakes older than 2 weeks, little practice on a subject with a test soon, and lower scores when timed.', '過期 2 日以上的溫習、超過兩星期的錯題、快考試但很少練習的科目，以及限時下分數較低。')}</li>
       <li><b>${PT('Wins', '進步')}</b> · ${PT('A chapter that jumped this week, and chapters newly mastered.', '本週大進步的章節，以及新掌握的章節。')}</li>
       <li><b>${PT('Writing and dictation', '寫作和默書')}</b> · ${PT('Writing: the rubric scores across your drafts. Dictation: words missed 2 or more times.', '寫作：各份草稿的評分項目。默書：寫錯 2 次或以上的詞語。')}</li></ul>`)}
     ${!ins && mkAll.length >= 3 ? `<p class="pv-empty pv-loading" id="pvMix">${PT('Buddy is looking through your mistakes for mix-ups…', 'Buddy 正在從錯題中找出常見混淆…')}</p>` : ''}</section>`;
@@ -7959,7 +7959,7 @@ async function renderProgress(PO = {}) {
     ? PT(`Strongest at “${names[best.i].toLowerCase()}”. “${names[worst.i]}” questions are the gap, and that’s where test marks are.`, `最擅長「${names[best.i]}」；「${names[worst.i]}」是弱項，也是考試失分的地方。`) : rated.length ? PT('Fairly even across question types.', '各類題型表現大致平均。') : '';
   const sec3 = `<section class="pv-sec"><div class="pv-h"><h2 class="h-info">${PT('Am I mastering my subjects?', '我掌握了各科嗎？')}${ib('howWorkP', PT('How to read this', '怎樣看'))}</h2>
       <span class="pv-legend"><span class="pv-lsub">${PT('How well you know each textbook, chapter by chapter', '你對每本課本、每一章的掌握程度')}</span><i class="good"></i>${PT('Strong', '強')}<i class="mid"></i>${PT('Getting there', '漸入佳境')}<i class="low"></i>${PT('Needs work', '需加強')}</span></div>
-    ${how('howWorkP', PT('How to read this', '怎樣看'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it (or to start its lesson).', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習（或開始上課）。')}</p>
+    ${how('howWorkP', PT('How to read this', '怎樣看'), `<p>${PT('Each tile is a chapter, coloured by its readiness: green 80% or more, yellow 60–79%, red under 60%, white not started yet. Tap a tile to practise it.', '每格是一章，按準備度上色：綠色 80% 或以上，黃色 60–79%，紅色低於 60%，白色未開始。按一格就可以練習。')}</p>
       <p><b>${PT('Most useful next', '下一步')}</b> · ${PT('in order: what your nearest test needs, then this week’s weakest chapter, then mistakes to fix, then reviews due.', '次序：最近的測驗需要的、本週最弱的章節、要改正的錯題、到期的溫習。')}</p>
       <p><b>${PT('Types of question', '題型')}</b> · ${PT('every question has a level: 1 remember facts, 2 understand, 3 use it, 4 think it through. This is your score on each, over the last 30 days.', '每題都有級別：1 記憶、2 理解、3 應用、4 深入思考。這是過去 30 日各級的得分。')}</p>`)}
     ${subjHTML ? `<div class="pv-subjs">${subjHTML}</div>` : ''}
@@ -9037,10 +9037,10 @@ const UNL = Infinity;
 const TIERS = {
   free: { name: 'Free', zh: '免費', price: 0, year: 0, tag: ['Practise and fix mistakes. Free forever.', '練習、改正錯誤，永久免費。'],
     lim: { books: 1, q: 20, written: 3, lesson: 2, buddy: 10, hardDiff: 0, stars: 0, coach: 0, report: 0, test: 0, sched: 0, homework: 0, writing: 0, speaking: 0, mock: 0, voice: 0, forecast: 0, parent: 0 },
-    pitch: ['', ''], has: [['Practice questions from your textbooks: multiple choice, plus 3 written a day', '課本練習題：選擇題，另每日 3 條文字題'], ['Learn mode lessons with Buddy', '學習模式課堂，有 Buddy 陪你'], ['Buddy hints on every question', '每條題目都有 Buddy 提示'], ['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and dictation', '筆記、溫習卡和默書'], ['Easy and Medium difficulty', '容易和中等難度'], ['Weekly activity report for parents', '家長每週練習報告']] },
+    pitch: ['', ''], has: [['Practice questions from your textbooks: multiple choice, plus 3 written a day', '課本練習題：選擇題，另每日 3 條文字題'], ['Buddy hints on every question', '每條題目都有 Buddy 提示'], ['Mistake book, reviews and level check', '錯題簿、溫習和程度評估'], ['Notes, flashcards and dictation', '筆記、溫習卡和默書'], ['Easy and Medium difficulty', '容易和中等難度'], ['Weekly activity report for parents', '家長每週練習報告']] },
   plus: { name: 'Standard', zh: '標準', price: 218, year: 2180, tag: ['Exam-ready at school', '應付校內考試'],
     lim: { books: 3, q: 80, written: UNL, lesson: 10, buddy: 60, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: 10, writing: 2, speaking: 2, mock: 0, voice: 0, forecast: 0, parent: 0 },
-    pitch: ['', ''], has: [['Practice questions from your textbooks, written answers marked by AI', '課本練習題，文字答案由 AI 批改'], ['Learn mode lessons with Buddy, and Buddy hints on every question', '學習模式課堂，每條題目都有 Buddy 提示'], ['Mistake book, reviews, notes, flashcards and dictation', '錯題簿、溫習、筆記、溫習卡和默書'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
+    pitch: ['', ''], has: [['Practice questions from your textbooks, written answers marked by AI', '課本練習題，文字答案由 AI 批改'], ['Buddy hints on every question', '每條題目都有 Buddy 提示'], ['Mistake book, reviews, notes, flashcards and dictation', '錯題簿、溫習、筆記、溫習卡和默書'], ['Hard and Master difficulty', '困難和大師難度'], ['Chapter tests and the school test planner', '章節測驗和學校測驗計劃'], ['Homework help from photos', '拍照功課輔導'], ['Study coach with daily plans', '溫習教練，每日計劃'], ['Stars and rewards', '星星獎勵'], ['Full parent report: chapters, skills, trends', '完整家長報告：章節、能力、趨勢'], ['Writing and speaking marking, 2 a week each', '寫作和說話評分，每週各 2 次']] },
   pro: { name: 'Pro', zh: 'Pro', price: 298, year: 2980, best: true, tag: ['A private tutor, for less than one lesson a month', '私人導師，每月比一堂補習更便宜'],
     lim: { books: UNL, q: UNL, written: UNL, lesson: UNL, buddy: UNL, hardDiff: 1, stars: 1, coach: 1, report: 1, test: UNL, sched: UNL, homework: UNL, writing: UNL, speaking: UNL, mock: UNL, voice: 1, forecast: 1, parent: 1 },
     pitch: ['Everything in Standard, plus:', '標準計劃的全部功能，再加上：'], has: [['Mock exams (school tests and exams) and printable worksheets', '模擬考試（校內考試、呈分試或 DSE）和可列印工作紙'], ['Unlimited writing marking with redrafts', '無限寫作批改和修改稿'], ['Unlimited speaking practice', '無限說話練習'], ['Talk to Buddy by voice', '用語音和 Buddy 對話'], ['Exam forecast and goals', '考試預測和目標'], ['No daily limits on anything', '所有功能都沒有每日上限'], ['A parent dashboard: today, this week, tests and what needs attention', '家長主頁：今日、本週、測驗和需要留意的地方']] },
@@ -9178,7 +9178,7 @@ function planCardHTML() {
   // pilot families: everything is free, so no plans or prices (they're shown with ?dev=1 for testing)
   if (local.pilot && !DEV) return `<section class="card stack g6 plancard" style="padding:16px"><b style="font-size:16px">${PL('Free during the pilot', '試用期間免費')}</b><span class="muted" style="font-size:14px;line-height:1.5">${PL('Everything is included while you help us test PrepBuddy. Thank you!', '在你幫我們試用 PrepBuddy 期間，所有功能都可以免費使用。謝謝你！')}</span></section>`;
   const P = curPlan(), id = planId();
-  const meters = ['q', 'written', 'buddy', 'lesson', 'homework', 'writing', 'speaking', 'mock'].filter((f) => limitOf(f) !== UNL && limitOf(f) > 0).map((f) => { const lim = limitOf(f), u = Math.min(lim, usedOf(f)); return `<div class="pm"><span>${PL(FEAT[f].en[0], FEAT[f].zh[0])}</span><span class="pm-bar"><i style="width:${(u / lim) * 100}%" class="${u >= lim ? 'full' : ''}"></i></span><b>${u}/${lim}</b><small>${FEAT[f].per === 'day' ? PL('today', '今日') : PL('this week', '本週')}</small></div>`; }).join('');
+  const meters = ['q', 'written', 'buddy', ...(LESSONS_IN_PLAN ? ['lesson'] : []), 'homework', 'writing', 'speaking', 'mock'].filter((f) => limitOf(f) !== UNL && limitOf(f) > 0).map((f) => { const lim = limitOf(f), u = Math.min(lim, usedOf(f)); return `<div class="pm"><span>${PL(FEAT[f].en[0], FEAT[f].zh[0])}</span><span class="pm-bar"><i style="width:${(u / lim) * 100}%" class="${u >= lim ? 'full' : ''}"></i></span><b>${u}/${lim}</b><small>${FEAT[f].per === 'day' ? PL('today', '今日') : PL('this week', '本週')}</small></div>`; }).join('');
   return `<section class="card stack g10 plancard" style="padding:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">${PL('Your plan', '你的計劃')}: <span class="plan-pill ${id}">${PL(P.name, P.zh)}</span></b><button class="btn-sm ${id === 'pro' ? '' : 'primary'}" id="splans">${id === 'pro' ? PL('See plans', '查看計劃') : PL('Upgrade', '升級')}</button></div>
     ${meters ? `<div class="pms">${meters}</div>` : `<span class="muted" style="font-size:14px">${PL('Everything unlimited.', '全部無限使用。')}</span>`}
@@ -9601,7 +9601,7 @@ function renderPlacementResult() {
     const [gu, mu] = per[u.id], a = mu ? gu / mu : 0;
     const st = a >= 0.99 ? ['strong', LV('Strong', '掌握得好'), LV('Harder questions from the start', '一開始就出較難的題目')]
       : a >= 0.4 ? ['ok', LV('Some gaps', '有些地方未掌握'), LV('Practice will fill the gaps', '多練習就能補上')]
-      : ['weak', LV('Start here', '從這裏開始'), LV('A lesson first, then the basics', '先上一課，再由基礎題開始')];
+      : ['weak', LV('Start here', '從這裏開始'), LV('Start with the easier questions', '先由較易的題目開始')];
     return { u, a, st, gu, mu };
   });
   const weak = rows.filter((r) => r.st[0] === 'weak');
