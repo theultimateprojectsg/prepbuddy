@@ -517,7 +517,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   /* The chapter % (the score this child would likely get). Earned, then kept:
      EARNED (no waiting, only real work):
      - Practice, up to 60%: right answers, worth more at harder levels and for full-marks written answers; the same
-       question again counts half, then a quarter; at least 5 full sets fill it and one sitting adds at most a quarter (so 15%); held
+       question again counts half, then a quarter; at least 5 full sets fill it (no daily limit); held
        back if recent answers aren't mostly right.
      - Chapter tests (always new questions, the same difficulty mix every time), up to 25% more: two strong tests fill
        it. A pass on a practised chapter makes it Test-ready (70%). A failed latest test halves this part.
@@ -526,7 +526,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
      - Mixed papers (this chapter with others, like a school test), up to 15% more: two strong ones fill it.
      KEPT (it fades unless shown to stick, like Duolingo; won back with a check, like Khan):
      - After the last proof (a passed test or mixed paper, a "Still there?" check, or a practice day at 70%+), 2 days'
-       grace, then it fades towards 60% at a rate set by its strength: Fresh 3%/day, Holding 1.5 (proven again 3+
+       grace, then it fades (crammed: down to 30%; once it holds: never below 60%) at a rate set by its strength: Fresh 3%/day, Holding 1.5 (practised or proven again 3+
        days later), Solid 0.75 (7+ days), Locked in 0.4 (14+ days). A test, mixed paper or check after such a gap
        raises the strength; a good practice day only restarts the clock.
      - The latest "Still there?" check: 5-6 of 6 right wins it all back; 3-4 holds it 10% below; fewer, 15% below. */
@@ -534,16 +534,13 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   let pracPart = 0, pracSince = 0, pracCapped = false;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), P = L.filter((e) => e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0;
     // practice fills over several sets, never in one: the points needed are at least 5 sets' worth of right answers
-    // at Understand level, and one day adds at most a quarter of them (so practice fills over 4+ days, never in one)
+    // at Understand level. No daily limit: a child may practise as much as they like; crammed practice fades (below)
     const need = Math.max(2.5 * T, 5 * sessionSize());
-    let sit = 0, sitPts = 0;
     for (const e of P) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
-      if (dayStart(e.t) !== sit) { sitPts = 0; sit = dayStart(e.t); }
       const v = Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.25 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1);
-      const add = Math.max(0, Math.min(v, need / 4 - sitPts)); sitPts += add; pts += add; }
+      pts += Math.max(0, v); }
     const rec = P.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
     const prac = 60 * Math.min(1, pts / need) * Math.min(1, acc / 0.9);
-    pracCapped = sit === dayStart() && sitPts >= need / 4 - 0.01 && pts < need; // today's practice already added the most it can
     pracPart = Math.round(prac);
     const lastT = tests.length ? tests[tests.length - 1].t : 0;
     pracSince = P.filter((e) => e.t > lastT && e.k !== 'lock').length;
@@ -567,14 +564,18 @@ function chapterMastery(book, u, qs, text, ntextPre) {
       for (const r of days.values()) if (r[1] >= 5 && r[0] / r[1] >= 0.7) proofs.push([r[2], false]); }
     proofs.sort((a, b) => a[0] - b[0]);
     for (let i = 1, prev = proofs.length ? proofs[0][0] : 0; i < proofs.length; i++) { const gap = (proofs[i][0] - prev) / DAY;
-      if (proofs[i][1]) strength = Math.max(strength, gap >= 14 ? 3 : gap >= 7 ? 2 : gap >= 3 ? 1 : 0); prev = proofs[i][0]; }
+      if (proofs[i][1]) strength = Math.max(strength, gap >= 14 ? 3 : gap >= 7 ? 2 : gap >= 3 ? 1 : 0);
+      else if (gap >= 3) strength = Math.max(strength, 1); // practised again 3+ days later: it's holding, not crammed
+      prev = proofs[i][0]; }
     if (b5) strength = Math.max(strength, 3); else if (b4) strength = Math.max(strength, 2); // work already shown to last in reviews
-    const lastProof = Math.max(proofs.length ? proofs[proofs.length - 1][0] : 0, local.fadeFrom || (local.fadeFrom = Date.now()));
+    const lastProof = Math.max(proofs.length ? proofs[proofs.length - 1][0] : 0, local.fadeFrom || (local.fadeFrom = Date.now()), local.fadeFrom2 || (local.fadeFrom2 = Date.now()));
     // the latest check, if nothing has proved more since: 3-4 of 6 holds it 10% below what was earned, fewer 15%
     const top = ck && ck.sc < 0.8 && ck.t >= proofs[proofs.length - 1][0] ? earned - (ck.sc >= 0.5 ? 10 : 15) : earned;
     let shown = top;
-    if (lastProof && top > 60) { const days = (now - lastProof) / DAY - 2;
-      if (days > 0) shown = Math.max(60, top - [3, 1.5, 0.75, 0.4][strength] * days); }
+    // crammed (never shown to hold on another day) fades down to 30%; once it holds, never below 60%
+    const floor = strength >= 1 ? 60 : 30;
+    if (lastProof && top > floor) { const days = (now - lastProof) / DAY - 2;
+      if (days > 0) shown = Math.max(floor, top - [3, 1.5, 0.75, 0.4][strength] * days); }
     fading = Math.max(0, Math.round(earned - shown));
     likely = Math.round(Math.max(0, shown)); }
   if (LESSONS_IN_PLAN && learnedIt) likely = Math.max(likely, LESSON_CREDIT); // a finished lesson is a real first step
@@ -7321,6 +7322,7 @@ async function goalsData(tests) {
     // a daily record of each test's readiness: the chart on Progress and "this week" come from it
     if ((local.thistV || 0) < 3) { local.thist = {}; local.thistV = 3; }
     if (!local.fadeFrom) { local.fadeFrom = Date.now(); saveLocal(); } // earned-then-fade began: nobody drops on the day it switches
+    if (!local.fadeFrom2) { local.fadeFrom2 = Date.now(); saveLocal(); } // crammed practice began to fade (25 Nov 2026): the clock starts now for everyone
     if ((local.aimV || 0) < 1) { (local.sched || []).forEach((x) => { if (x.aim === 80) x.aim = TEST_AIM; }); local.aimV = 1; } // the default goal became 70% (Test-ready) // readiness became the likely score: older history measured something else
     local.thist = local.thist || {}; const h = (local.thist[p.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, p.ready, p.raw]); local.thist[p.x.id] = h.slice(-90);
     const old = h.filter((x) => x[0] <= t0 - 5 * DAY).sort((a, b) => Math.abs(a[0] - (t0 - 7 * DAY)) - Math.abs(b[0] - (t0 - 7 * DAY)))[0];
