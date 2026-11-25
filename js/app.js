@@ -4993,7 +4993,7 @@ async function moment(o) {
   const chips = (o.chips || []).filter(Boolean);
   w.innerHTML = `${conf}<div class="cdlg sc-card sc2 mo-card mo-${tone}" role="dialog" aria-modal="true" aria-labelledby="moT">
     <div class="mo-scroll"><div class="sc2-top mo-top">${rays}${sky}${hero}<div class="sc2-bud" aria-hidden="true">${buddySVG(face, 54)}</div></div>
-    <div class="mo-body"><b id="moT" class="pp-h">${o.title}</b>${o.sub ? `<p class="mo-sub">${o.sub}</p>` : ''}
+    <div class="mo-body"><b id="moT" class="pp-h">${o.title}</b>${o.what && o.what.name ? `<p class="mo-what"><span class="mo-kind">${o.what.kind}</span><span data-raw>${esc(o.what.name)}</span></p>` : ''}${o.sub ? `<p class="mo-sub">${o.sub}</p>` : ''}
     ${chips.length ? `<div class="mo-chips">${chips.map(([k, t]) => `<span class="mo-chip ${k}">${t}</span>`).join('')}</div>` : ''}
     ${(o.bars || []).slice(0, 3).map(bar).join('')}
     ${(o.lines || []).length ? `<ul class="mo-lines">${o.lines.map(([i, t]) => `<li><span aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>` : ''}
@@ -10792,7 +10792,10 @@ async function resultMoment(sess, qs, pct, got, total) {
   const chips = [['ok', Z(`✅ ${right} right`, `✅ 答對 ${right}`)], missed ? ['miss', Z(`❌ ${missed} to fix`, `❌ ${missed} 題要改`)] : null, fixedN ? ['fix', Z(`🔧 ${fixedN} fixed`, `🔧 改正 ${fixedN}`)] : null, stars ? ['star', `⭐ +${stars}`] : null];
   const toAnswers = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   const hero = { pct }, sml = starMomentLines(sess.won);
-  const say = (o) => moment({ ...o, lines: [...(o.lines || []), ...sml] });
+  const wUnits = sess.book ? sess.book.units.filter((u) => qs.some((q) => qUnit(q.id)[1] === u.id)) : [];
+  const what = { kind: sess.test ? Z('Chapter test', '章節測驗') : sess.mode === 'dse' || sess.mode === 'mock' ? Z('Mock exam', '模擬考試') : sess.mode === 'spaced' ? Z('Review', '溫習') : sess.mode === 'mistakes' || sess.mode === 'drill' ? Z('Fixing mistakes', '改正錯題') : Z('Practice', '練習'),
+    name: wUnits.length === 1 ? shortTitle(wUnits[0].title) : wUnits.length ? Z(`${wUnits.length} chapters: ${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join(', ')}`, `${wUnits.length} 章：${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join('、')}`) : (sess.book ? sess.book.title : '') };
+  const say = (o) => moment({ ...o, what, bars: (o.bars || []).map((b) => (wUnits.length === 1 && b.lab === what.name ? { ...b, lab: Z('Chapter progress', '這一章的進度') } : b)), lines: [...(o.lines || []), ...sml] });
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
   { const P = local.impPrev, ids = qs.map((q) => qUnit(q.id)[1]); if (P && P.s && sess.book) { Object.values(P.s).forEach((x) => { if (x.b === sess.book.id && ids.includes(x.u)) x.shown = 1; }); saveLocal(); } }
   // No % gain this time: say exactly what moves this chapter next (and offer it), instead of a generic "keep going"
@@ -10845,7 +10848,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   const great = pct >= 80, ok = pct >= 50, wantFix = missed >= 2 && !great;
   return say({ face: great ? 'done' : 'happy', confetti: great || grew, sel: 'main.results', hero, chips, tone: great ? 'great' : ok ? 'ok' : 'tough',
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
-    sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
+    sub: great ? '' : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(boostLast ? [['🏁', Z('That’s everything that can move today. Brilliant work! Come back tomorrow for more.', '今天能進步的都完成了，做得好！明天再來。')]] : []), ...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(() => { const cn = qs.filter((q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done && m.careless && m.t >= Date.now() - 3 * 3600e3; }).length;
       return cn ? [['🔍', Z(`${cn} of your misses look careless: you usually get these right. Slow down and re-read before you answer.`, `有 ${cn} 題錯題看來是粗心：你平時答得對。答題前慢一點，重讀題目。`)]] : []; })(), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
     main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : seeAns });
