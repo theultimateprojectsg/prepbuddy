@@ -707,7 +707,7 @@ async function boostSession(book, c0 = null, step0 = null, plan = false) {
   if (!c) return toast(PT('Every chapter is at 100%. Keep up your reviews!', '每一章都到 100% 了，記得繼續溫習！'));
   const step = step0 || masterySteps({ ...m, chapters: [c] })[0] || { kind: 'practise' };
   if (step.kind === 'test') return startChapterTest(book, [c.unit]);
-  if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit); return startMiniMock(book, [c.unit, ...others]); }
+  if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit); return startMiniMock(book, [c.unit, ...others], c.unit); }
   if (step.kind === 'mistakes') return go({ name: 'mistakes', bookId: book.id });
   if (step.kind === 'check') return startCheck(book, [c.unit]);
   if (step.kind === 'review') return startReview('spaced', null, 10);
@@ -761,14 +761,14 @@ async function startCheck(book, units) {
   if (!qs.length) return toast(PT('Nothing to check yet: practise these chapters first.', '暫時未有可檢查的題目：先練習這些章節。'));
   await startUnits(book, units, qs.length, { title: PT('Still there? Quick check', '還記得嗎？快速檢查'), check: true, only: shuffle(qs).map(shuffleOptions) });
 }
-async function startMiniMock(book, units) {
+async function startMiniMock(book, units, focus = null) { // focus: the chapter this paper is for (it gets half the questions)
   if (!units.length) return go({ name: 'paper', bookId: book.id, from: 'home' });
   if (!allow('mock')) return;
   track('mini_mock');
   const [nA, nB] = gradeBand() === 'p12' ? [10, 2] : [14, 3], mins = await askTime(LANG === 'zh' ? '模擬小測' : 'Mini mock', LANG === 'zh' ? `${nA} 題選擇題，${nB} 題文字題，來自 ${units.length} 章。` : `${nA} multiple-choice and ${nB} written questions from ${units.length} chapters.`, paperMinutes(nA, nB));
   if (mins === null) return;
   try {
-    const paper = await preparePaper(book, shuffle(units.slice()).slice(0, 6), nA, nB, 'sit');
+    const paper = await preparePaper(book, focus ? [focus, ...units.filter((u) => u.id !== focus.id).slice(0, 5)] : shuffle(units.slice()).slice(0, 6), nA, nB, 'sit', focus);
     if (!paper) return;
     startDse(book, paper, mins);
     S.title = LANG === 'zh' ? '模擬小測' : 'Mini mock';
@@ -8264,7 +8264,7 @@ function blueprintW(n) { return Array.from({ length: n }, (_, i) => [3, 4, 2, 3,
 function fillLevels(book, units, short) {
   for (const [kind, arr] of [['mcq', short.mcq], ['written', short.w]]) arr.forEach((k, L) => { if (k > 0) units.forEach((u) => ensureFill(book, u, Math.ceil(k / units.length) + 1, kind, 1, false, 'l' + L)); });
 }
-async function preparePaper(book, units, nA, nB, purpose) {
+async function preparePaper(book, units, nA, nB, purpose, focus = null) {
   const token = {}; paperJob = token;
   const total = nA + nB;
   $app.innerHTML = `<div class="topbar"><button class="backbtn" id="cancel" data-kind="wait">${ICON.back}<span>${PT('Back', '返回')}</span></button></div>
@@ -8304,8 +8304,20 @@ async function preparePaper(book, units, nA, nB, purpose) {
       const alt = [L + 1, L - 1, L + 2, L - 2, L + 3, L - 3].find((x) => x >= 1 && x <= 4 && byL[x].length); if (alt) out.push(byL[alt].shift()); }
     return out;
   };
+  // a mixed paper for one chapter's step: that chapter gets half the questions, so the paper counts for it (it needs
+  // its own marks; a random draw could give it none, since its unseen questions run out first). If it has run out of
+  // new questions, ones it has seen before stand in.
+  const pick = (all, mcq, n) => {
+    if (!focus || units.length < 2) return take(all, mcq, n);
+    const mine = (q) => q.id.startsWith(`${book.id}:${focus.id}:`), want = Math.ceil(n / 2);
+    let F = take(all.filter(mine), mcq, want);
+    if (F.length < want) { const have = new Set(F.map((q) => q.id));
+      const old = shuffle(all.filter((q) => mine(q) && !have.has(q.id) && isMcqLike(q) === mcq)).slice(0, want - F.length); F = F.concat(old); }
+    const R = take(all.filter((q) => !mine(q)), mcq, n - F.length);
+    return F.concat(R);
+  };
   let all = await pool();
-  let A = take(all, true, nA), B = take(all, false, nB);
+  let A = pick(all, true, nA), B = pick(all, false, nB);
   show(A.length + B.length);
   // Sitting the paper: start once the first few questions are ready; the rest are made while the student answers.
   const enough = () => (nA ? A.length >= Math.min(nA, 4) : B.length >= 1);
@@ -8322,7 +8334,7 @@ async function preparePaper(book, units, nA, nB, purpose) {
         let left = js.length;
         js.forEach((j) => j.listeners.add(async (passed, done) => {
           if (paperJob !== token) return resolve();
-          all = await pool(); A = take(all, true, nA); B = take(all, false, nB); show(A.length + B.length);
+          all = await pool(); A = pick(all, true, nA); B = pick(all, false, nB); show(A.length + B.length);
           if (enough()) return resolve();
           if (done && --left === 0) {
             const hard = js.map((x) => x.error).find((e) => e && (e.status === 0 || e.status === 401));
