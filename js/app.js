@@ -406,7 +406,7 @@ const AREAS = [
 ];
 const PASS = 0.8, TEST_MIN_Q = 3, MK_GRACE = 3;
 // The default goal for a school test: 70% = "Test-ready" (practised, and a chapter test passed). 85 and 100 are bonus levels.
-const TEST_AIM = 70;
+const TEST_AIM = 100; // every test aims for 100%: the goal is fixed, not set by parents
 function chapterTarget(u) {
   const pages = u.startPage && u.endPage ? u.endPage - u.startPage + 1 : 0;
   const n = pages ? Math.round(pages * 1.2) : Math.round((u.chars || 30000) / 2500);
@@ -680,7 +680,7 @@ async function closerPick() {
 async function testCtx(id) {
   const T = await schoolTestsHTML(), p = (T.steps || []).find((q) => q.x.id === id); if (!p || !p.book) return null;
   const m = await bookMastery(p.book), chs = m.chapters.filter((c) => (p.units || []).some((u) => u.id === c.unit.id));
-  return { p, chs, aim: p.x.aim || TEST_AIM };
+  return { p, chs, aim: TEST_AIM };
 }
 async function runTestNext(id) {
   const t = await testCtx(id); if (!t) return;
@@ -2600,7 +2600,7 @@ function missionHowHTML(id = 'howMission') {
 function testsHowHTML(id = 'howTests') {
   return howPanel(id, 'How do school tests work?', '學校測驗是怎樣運作的？', [
     ['➕', 'Add each school test, exam or 默書 with its date.', '加入學校的每個測驗、考試或默書和日期。', 'Pick the chapters if you know them. If not, Buddy uses everything practised in that subject.', '知道範圍就選章節；不知道的話，Buddy 會用該科練習過的所有內容。'],
-    ['📊', 'The bar shows how ready you are, and your goal.', '進度條顯示準備度和你的目標。', 'Set the goal by sliding Buddy on the test card.', '在測驗卡上拖動 Buddy 設定目標。'],
+    ['📊', 'The bar shows how ready you are.', '進度條顯示你的準備度。', 'Every test aims for 100%.', '每個測驗的目標都是 100%。'],
     ['▶️', 'Today shows one job for each test, with Start.', '每個測驗今天都有一項任務，按「開始」。', 'It’s the same job as in Today’s plan.', '和今日計劃的那一項一樣。'],
     ['📝', 'A practice test the day before.', '考試前一天做模擬測驗。', 'Tap Full plan to see every day until the test.', '按「完整計劃」看每一天的安排。']]);
 }
@@ -3123,7 +3123,7 @@ async function renderHome() {
     // each test: a countdown card with a strip of days to the test, today's job for it, and the full plan one tap away
     const KIC = { practise: 'practise', mixed: 'practise', test: 'test', mock: 'mock', 'test-day': 'test', review: 'review' };
     const card = async (p) => {
-      const k = tests.steps.indexOf(p), aim = p.x.aim || TEST_AIM, day = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+      const k = tests.steps.indexOf(p), aim = TEST_AIM, day = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
       const m = p.book ? await bookMastery(p.book) : null, chs = m ? m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : [];
       const plan = p.book && chs.length && (p.x.kind || 'test') !== 'dict' ? testDayPlan(p, chs, aim) : null;
       let strip = '';
@@ -3279,7 +3279,6 @@ async function renderHome() {
   $app.querySelectorAll('[data-tq]').forEach((b) => (b.onclick = () => quick[+b.dataset.tq].run()));
   { const mm = document.getElementById('msmore'); if (mm) mm.onclick = () => (extra ? extra.run() : go({ name: 'practice' })); }
   $app.querySelectorAll('[data-tdact]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); const f = tdActs[+b.dataset.tdact]; if (f) f(); }));
-  bindTestCards($app);
   $app.querySelectorAll('[data-tplan]').forEach((b) => (b.onclick = () => { const f = tdPlans[+b.dataset.tplan]; if (f) f(); }));
   $app.querySelectorAll('[data-dictgo]').forEach((b) => (b.onclick = () => go(b.dataset.dictgo === 'new' ? { name: 'dictation', id: 'new' } : { name: 'dictation', id: b.dataset.dictgo, sub: 'run' })));
   $app.querySelectorAll('[data-wrgo]').forEach((b) => (b.onclick = () => go({ name: 'writing' })));
@@ -5085,7 +5084,7 @@ async function checkWins() {
     for (const b of books.filter((x) => used.has(x.id))) { const m = await bookMastery(b); for (const c of m.chapters) if (c.pct >= 80) cur.ch[`${b.id}:${c.unit.id}`] = shortTitle(c.unit.title); }
     const GS = await gsData().catch(() => null); for (const x of (GS ? GS.s : [])) if (x[1] != null && (x[8] || 0) >= 40 && (x[5] || []).length >= 2) cur.lv[x[0]] = Math.floor(lv10(x[1])); // same bar as the goals card: no level-ups until the level is shown
     cur.fg = fixedForGood().good;
-    for (const x of schoolTests()) { if (testDay(x) < startOfToday()) continue; const h = ((local.thist || {})[x.id] || []).slice(-1)[0]; if (h && h[1] >= (x.aim || TEST_AIM)) cur.rd[x.id] = x.name; }
+    for (const x of schoolTests()) { if (testDay(x) < startOfToday()) continue; const h = ((local.thist || {})[x.id] || []).slice(-1)[0]; if (h && h[1] >= (TEST_AIM)) cur.rd[x.id] = x.name; }
     if (W) {
       for (const [k, n] of Object.entries(cur.ch)) if (!W.ch[k]) ev.push(['chapter', PT(`You mastered ${n}!`, `你掌握了「${n}」！`), PT('It’s past 80%: practised and proven in a chapter test.', '超過 80%：練習充足，章節測驗也證明了實力。')]);
       for (const [k, v] of Object.entries(cur.lv)) if (W.lv[k] != null && v > W.lv[k]) ev.push(['level', PT(`${k} level up: ${W.lv[k]} → ${v}`, `${k}程度提升：${W.lv[k]} → ${v}`), PT('Out of 10. It only goes up when harder questions go right.', '滿分 10。只有答對更難的題目才會提升。'), [W.lv[k], v], k]);
@@ -6719,8 +6718,8 @@ function testPlanSheet(p, chs, aim, fc) {
   box.innerHTML = `<div class="cdlg tp" role="dialog" aria-modal="true" aria-labelledby="tp-t">
     <header class="tp-h"><div><small>${fmt(tday, { weekday: 'long', day: 'numeric', month: 'long' })} · ${leftText(left)}</small><b id="tp-t" data-raw>${esc(p.x.name)}</b></div><span class="pv-pill ${tone}">${{ ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') }[tone]}</span><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="tp-body"><div class="tp-col">
-      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${end}%</b><span>${PT('on test day with this plan', '跟著這個計劃考試當日')}</span></div><i>·</i><div><b>${aim}%</b><span>${PT('your goal', '你的目標')}</span></div></div>
-      <p class="tp-p">${gap ? PT(`Doing this plan every day gets about ${end}%, ${gap} short of your ${aim}% goal. More study time each day (Settings) or extra steps with “Let’s do what’s next” close the gap.`, `每天跟著這個計劃做，大約可達 ${end}%，距離 ${aim}% 目標還差 ${gap}。每天多些溫習時間（設定）或多做「下一步」可以追上。`) : PT(`Doing this plan every day gets about ${end}%: your ${aim}% goal. Each day is ${dayMins()} minutes.`, `每天跟著這個計劃做，大約可達 ${end}%，達到 ${aim}% 目標。每天約 ${dayMins()} 分鐘。`)}</p>
+      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${tone}">${end}%</b><span>${PT('on test day with this plan', '跟著這個計劃考試當日')}</span></div><i>·</i><div><b>100%</b><span>${PT('the goal', '目標')}</span></div></div>
+      <p class="tp-p">${gap ? PT(`Doing this plan every day gets about ${end}% by test day. Every extra step with “Let’s do what’s next”, or more study time each day (Settings), gets closer to 100%.`, `每天跟著這個計劃做，考試當日大約可達 ${end}%。每多做一次「下一步」，或每天多些溫習時間（設定），都會更接近 100%。`) : PT(`Doing this plan every day gets you to 100% by test day. Each day is ${dayMins()} minutes.`, `每天跟著這個計劃做，考試當日可達 100%。每天 ${dayMins()} 分鐘。`)}</p>
       <h3>${PT('What each chapter needs', '每章需要做甚麼')}</h3>
       <div class="tp-ch">${needInOrder.map((x, i) => `<div class="tp-c"><span><b data-raw>${esc(nm(x.c.unit))}</b><i><em style="width:${tl(x.c)}%"></em><s style="left:${aim}%"></s></i></span><strong>${tl(x.c)}%</strong><button class="btn-sm ${x.act[0] === 'ok' ? 'quiet' : ''}" data-tc="${i}">${x.act[1]}</button></div>`).join('')}</div>
     </div><div class="tp-col">
@@ -6891,7 +6890,6 @@ function masteredSheet(subs, done, all) {
 }
 // The full school-test card (goal slider with Buddy, test-day forecast, Buddy's plan, chapter rows, My plan, edit).
 // It lives on Today, where the child acts on it; Progress shows a simpler on-track summary.
-let tcFcLine = null;
 /* ---------- goals: what the family is working towards ----------
    Every upcoming school test (with its textbook) is a goal, against the target score set for it. Long-term goals
    are subjects to get stronger in, against a target level out of 10: local.mygoals = { main, longs: [{ subj, target }] }.
@@ -6909,12 +6907,12 @@ async function goalsData(tests) {
   const MG = myGoals(), t0 = dayStart(), out = [];
   for (const p of tests.steps.filter((q) => q.book && q.ready != null && (q.x.kind || 'test') !== 'dict')) {
     const chs = (await bookMastery(p.book)).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id));
-    const fc = locked('forecast') ? null : planForecast(p.ready, chs, p.left), aim = p.x.aim || TEST_AIM;
+    const fc = locked('forecast') ? null : planForecast(p.ready, chs, p.left), aim = TEST_AIM;
     // a daily record of each test's readiness: the chart on Progress and "this week" come from it
     if ((local.thistV || 0) < 3) { local.thist = {}; local.thistV = 3; }
     if (!local.fadeFrom) { local.fadeFrom = Date.now(); saveLocal(); } // earned-then-fade began: nobody drops on the day it switches
     if (!local.fadeFrom2) { local.fadeFrom2 = Date.now(); saveLocal(); } // crammed practice began to fade (25 Nov 2026): the clock starts now for everyone
-    if ((local.aimV || 0) < 1) { (local.sched || []).forEach((x) => { if (x.aim === 80) x.aim = TEST_AIM; }); local.aimV = 1; } // the default goal became 70% (Test-ready) // readiness became the likely score: older history measured something else
+    // readiness became the likely score: older history measured something else
     local.thist = local.thist || {}; const h = (local.thist[p.x.id] || []).filter((x) => x[0] !== t0); h.push([t0, p.ready, p.raw]); local.thist[p.x.id] = h.slice(-90);
     const old = h.filter((x) => x[0] <= t0 - 5 * DAY).sort((a, b) => Math.abs(a[0] - (t0 - 7 * DAY)) - Math.abs(b[0] - (t0 - 7 * DAY)))[0];
     out.push({ kind: 'test', id: 't:' + p.x.id, p, ready: p.ready, fc, aim, st: p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim), wk: old ? p.ready - old[1] : null, hist: h, chs });
@@ -7001,7 +6999,7 @@ function goalTopHTML(G, next, n = 1) {
   if (G.kind === 'test') {
     const x = G.p.x, wk = G.wk != null && Math.abs(G.wk) >= 1 ? `<span class="gl-wk ${G.wk > 0 ? 'up' : 'down'}">${G.wk > 0 ? '▲' : '▼'} ${Math.abs(G.wk)}% ${Z('this week', '本週')}</span>` : '';
     return `<section class="gl-card test ${G.st}" aria-label="${tag}">
-      ${head(`${esc(x.name)} · ${G.aim}%`, `${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(G.p.left)}`, G.st)}
+      ${head(esc(x.name), `${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(G.p.left)}`, G.st)}
       <div class="gl-body">${goalRingSVG(G.ready, G.fc, G.aim)}<div class="gl-nums">
         ${G.fc != null ? `<div><b class="fc ${G.st}">${G.fc}%</b><span>${Z('on test day, at this pace', '照現時步伐，考試當日')}</span></div>` : ''}
         <div><b>${G.aim}%</b><span>${Z('goal', '目標')}</span></div>${wk}</div></div>
@@ -7045,7 +7043,7 @@ async function myGoalsSheet(onDone) {
   { const top = GS ? GS.s.filter((x) => x[1] != null).sort((a, b) => (b[8] || 0) - (a[8] || 0))[0] : null; longs.forEach((x) => { if (!x.subj && top) x.subj = top[0]; }); }
   const subs = [...new Set([...(GS ? GS.s.map((x) => x[0]) : []), ...books.map((b) => (b.subject ? subj(b.subject) : '')).filter(Boolean)])];
   const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
-  const aims = Object.fromEntries(tests.map((x) => [x.id, x.aim || TEST_AIM]));
+  const aims = Object.fromEntries(tests.map((x) => [x.id, TEST_AIM]));
   let pin = MG.pin || null;
   const pinB = (id) => `<button class="mg-ic pin ${pin === id ? 'on' : ''}" data-pin="${esc(id)}" aria-pressed="${pin === id}" aria-label="${Z('Pin as the focus', '置頂為重點')}" title="${Z('Pin as the focus', '置頂為重點')}">${GICON.pin}</button>`;
   let adding = false;
@@ -7076,7 +7074,7 @@ async function myGoalsSheet(onDone) {
     box.querySelectorAll('[data-tedit2]').forEach((b) => (b.onclick = () => { save(); close(); testDialog((local.sched || []).find((y) => y.id === b.dataset.tedit2)); }));
     box.querySelector('#glAddT').onclick = () => { save(); close(); testDialog(); };
     box.querySelector('#glAddL').onclick = () => { adding = !adding; draw(); };
-    const save = () => { local.mygoals = { ...myGoals(), longs, pin }; (local.sched || []).forEach((y) => { if (aims[y.id] != null) y.aim = aims[y.id]; }); saveLocal(); };
+    const save = () => { local.mygoals = { ...myGoals(), longs, pin }; saveLocal(); };
     box.querySelector('#glSave').onclick = () => { save(); close(); toast(Z('Goals saved', '目標已儲存')); onDone && onDone(); };
   };
   box.onclick = (e) => { if (e.target === box) box.remove(); };
@@ -7122,7 +7120,7 @@ async function renderGoals() {
   const TG = { 5: Z('Keeping up', '跟上進度'), 6.7: Z('Above grade level', '高於年級水平'), 8.5: Z('Top of the class', '名列前茅') };
   const pinTag = (id) => (MG.pin === id ? `<em class="mgp-pin">${GICON.pin}${Z('Focus', '重點')}</em>` : '');
   const row = (id, ic, cls, name, sub) => `<button class="mgp-row" data-gedit="${esc(id)}"><span class="atile mgp-ic ${cls}" aria-hidden="true">${ic}</span><span class="mgp-t"><b data-raw>${name}</b><small data-raw>${sub}</small></span>${pinTag(id)}<i aria-hidden="true">›</i></button>`;
-  const tRows = tests.map((x) => row('t:' + x.id, GIC.test, 'blue', esc(x.name), `${Z('Goal', '目標')} ${x.aim || TEST_AIM}% · ${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(testLeft(x))}`)).join('');
+  const tRows = tests.map((x) => row('t:' + x.id, GIC.test, 'blue', esc(x.name), `${Z('Goal', '目標')} ${TEST_AIM}% · ${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(testLeft(x))}`)).join('');
   const lRows = longs.map((x) => { const lv = lvOf(x.subj); return row('l:' + (x.subj || ''), GIC.long, 'green', esc(x.subj || Z('Main subject', '主要科目')), `${Z('Target', '目標')} ${(x.target || 6.7).toFixed(1)} · ${TG[x.target || 6.7] || ''}${lv != null ? ` · ${Z('now', '現在')} ${lv.toFixed(1)}` : ''}`); }).join('');
   $app.innerHTML = `<main class="pad stack g14 mgp-page" style="flex:1">
     ${backTop({ name: 'home' }, 'Today')}<h1 class="pagetitle">${Z('My goals', '我的目標')}</h1>
@@ -7141,15 +7139,14 @@ async function renderGoals() {
 function goalEditDialog(id, { subs = [] }) {
   const Z = PT, MG = myGoals(), longs = (MG.longs || []).map((x) => ({ ...x }));
   const isT = id && id.startsWith('t:'), x = isT ? (local.sched || []).find((y) => y.id === id.slice(2)) : null, li = !isT && id ? longs.findIndex((y) => 'l:' + (y.subj || '') === id) : -1;
-  const st = { aim: x ? x.aim || TEST_AIM : TEST_AIM, target: li >= 0 ? longs[li].target || 6.7 : 6.7, pin: id ? MG.pin === id : false, subj: subs[0] || '' };
+  const st = { aim: TEST_AIM, target: li >= 0 ? longs[li].target || 6.7 : 6.7, pin: id ? MG.pin === id : false, subj: subs[0] || '' };
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   const draw = () => {
     const TG = [[5, Z('Keeping up', '跟上進度')], [6.7, Z('Above grade level', '高於年級水平')], [8.5, Z('Top of the class', '名列前茅')]];
     box.innerHTML = `<div class="cdlg rdlg tdlg" role="dialog" aria-modal="true" aria-labelledby="gd-t" data-raw>
       <div class="td-head"><b id="gd-t">${isT ? esc(x.name) : id ? esc(longs[li].subj || Z('Main subject', '主要科目')) : Z('Get stronger in a subject', '加強一科')}</b>${li >= 0 ? `<button type="button" class="btn-sm danger td-delbtn" id="gd-del">${GICON.trash} ${Z('Remove', '移除')}</button>` : ''}</div>
       ${!id ? `<label>${Z('Subject', '科目')}</label>${subs.length ? `<div class="td-kinds">${subs.map((v) => `<button type="button" data-sub="${esc(v)}" class="${st.subj === v ? 'on' : ''}" aria-pressed="${st.subj === v}"><b data-raw>${esc(v)}</b></button>`).join('')}</div>` : `<span class="td-hint">${Z('Every subject with a textbook is already a goal, or add a textbook first.', '有課本的科目都已經是目標，或請先加入課本。')}</span>`}` : ''}
-      ${isT ? `<label>${Z('Goal for this test', '這個測驗的目標')}</label><div class="td-seg gd-seg">${[60, 70, 80, 85, 90, 100].map((v) => `<button type="button" data-aim="${v}" class="${st.aim === v ? 'on' : ''}" aria-pressed="${st.aim === v}">${v}%</button>`).join('')}</div>`
-        : `<label>${Z('Target level, out of 10', '目標程度（滿分 10）')}</label><div class="td-kinds">${TG.map(([v, t]) => `<button type="button" data-tg="${v}" class="${st.target === v ? 'on' : ''}" aria-pressed="${st.target === v}"><b>${v.toFixed(1)}</b><small>${t}</small></button>`).join('')}</div>`}
+      ${isT ? '' : `<label>${Z('Target level, out of 10', '目標程度（滿分 10）')}</label><div class="td-kinds">${TG.map(([v, t]) => `<button type="button" data-tg="${v}" class="${st.target === v ? 'on' : ''}" aria-pressed="${st.target === v}"><b>${v.toFixed(1)}</b><small>${t}</small></button>`).join('')}</div>`}
       <div class="gd-pin"><span><b>${Z('Make this the focus every day', '每天以這個為重點')}</b><small>${Z('Otherwise Buddy picks the goal that needs the most work each day.', '否則 Buddy 每天會選最需要努力的目標。')}</small></span><button class="switch ${st.pin ? 'on' : ''}" id="gd-pin" role="switch" aria-checked="${st.pin}" aria-label="${Z('Make this the focus every day', '每天以這個為重點')}"><i></i></button></div>
       ${isT ? `<button type="button" class="linkbtn gd-edit" id="gd-edit">${GICON.edit} ${Z('Edit the test: name, date, chapters', '修改測驗：名稱、日期、範圍')}</button>` : ''}
       <div class="rd-row"><button class="btn ghost" id="gd-cancel">${Z('Cancel', '取消')}</button><button class="btn" id="gd-save" ${!id && !st.subj ? 'disabled' : ''}>${!id ? Z('Add', '加入') : Z('Save', '儲存')}</button></div></div>`;
@@ -7163,7 +7160,7 @@ function goalEditDialog(id, { subs = [] }) {
     { const e = $('#gd-edit'); if (e) e.onclick = () => { close(); testDialog(x); }; }
     $('#gd-save').onclick = () => {
       let gid = id;
-      if (isT) x.aim = st.aim;
+      if (isT) { /* tests always aim for 100% */ }
       else if (li >= 0) longs[li].target = st.target;
       else { if (!st.subj) return; longs.push({ subj: st.subj, target: st.target }); gid = 'l:' + st.subj; }
       const pin = st.pin ? gid : MG.pin === gid ? null : MG.pin;
@@ -7231,11 +7228,11 @@ async function fullTestCards(tests, btn) {
   // under each test bar, Buddy as a coach: honest about where the usual pace lands, then the plan to make the goal
   const fcLine = (ready, aim, left, I) => {
     const E = esc, li = (t) => `<li>${t}</li>`, box = (head, steps, extra = '') => `<div class="pv-coach"><div><b>${head}</b>${steps.length ? `<ol>${steps.map(li).join('')}</ol>` : ''}${extra}</div></div>`;
-    if (ready >= aim) return box(E(PT(`You’ve reached your ${aim}% goal. Nice work!`, `已達到 ${aim}% 目標，做得好！`)), [E(PT('Keep it there with short reviews every few days.', '每隔幾日做短時間溫習，保持狀態。'))]);
+    if (ready >= aim) return box(E(PT('You’re at 100%. Nice work!', '已達到 100%，做得好！')), [E(PT('Keep it there with short reviews every few days.', '每隔幾日做短時間溫習，保持狀態。'))]);
     const ord = I.names.map((n, k) => [n, I.pcts[k], (I.levers || [])[k]]).filter((x) => !x[2] || x[2].k !== 'reviews').sort((a, b) => a[1] - b[1]);
     const todayStep = ord.length ? (ord[0][2] && ord[0][2].en ? PT(`Today: ${ord[0][0]} (${ord[0][1]}%): ${ord[0][2].en}.`, `今天：「${ord[0][0]}」（${ord[0][1]}%）：${ord[0][2].en}。`) : PT(`Today: practise ${ord[0][0]}, your weakest chapter (${ord[0][1]}%).`, `今天：練習最弱的「${ord[0][0]}」（${ord[0][1]}%）。`)) : '';
     const testStep = left >= 2 ? PT(`${I.prev}: a practice test, so test day feels familiar.`, `${I.prev}：做一次模擬測驗，考試時更有把握。`) : '';
-    if (I.lock || I.fc == null) return box(E(PT(`Here’s how to reach ${aim}%`, `這樣做就能達到 ${aim}%`)), [todayStep, testStep].filter(Boolean).map(E));
+    if (I.lock || I.fc == null) return box(E(PT('Here’s how to get closer to 100%', '這樣做就能更接近 100%')), [todayStep, testStep].filter(Boolean).map(E));
     const usual = Math.max(1, Math.round(left * I.habit)), dayW = (n) => (n >= left ? PT('every day', '每天') : PT(`on ${n} of the ${left} days left`, `餘下 ${left} 日中的 ${n} 日`));
     const mins = (sets, days) => Math.max(10, Math.round((sets * SET_MIN) / Math.max(1, days) / 5) * 5);
     const N = planNeeds(ready, I.pcts, left, aim), easy = N.sets <= Math.round(left * I.habit * 2);
@@ -7243,16 +7240,13 @@ async function fullTestCards(tests, btn) {
     const how = m > 40 ? PT(`Practise ${dayW(days)} for about ${m} minutes, split into two sessions (after school and after dinner works well). Buddy’s plan picks what to do in each one.`, `${dayW(days)}練習大約 ${m} 分鐘，分兩次做（例如放學後和晚飯後）。Buddy 的計劃會安排每次做甚麼。`)
       : PT(`Practise ${dayW(days)} for about ${m} minutes. Buddy’s plan picks what to do each day.`, `${dayW(days)}練習大約 ${m} 分鐘，Buddy 的計劃會安排每天做甚麼。`);
     const steps = [how, todayStep, PT('Every wrong answer goes into your Mistake book. Fix them the next day so they don’t cost marks twice.', '答錯的題目會放進錯題簿，第二天改正，就不會再失分。'), testStep].filter(Boolean).map(E);
-    if (easy) return box(E(PT(`You’re on track for ${aim}%. Keep it up!`, `你正朝 ${aim}% 進發，繼續努力！`)), steps.filter((x, k) => k !== 2));
-    const push = I.fc + 15 < aim;
-    return box(E(push ? PT(`At your usual pace you’d reach about ${I.fc}%. ${aim}% means stepping it up, and we can do it together. Here’s the plan:`, `照平時的步伐，考試時約 ${I.fc}%。要達到 ${aim}% 就要加把勁，我們一起做得到。計劃是這樣：`)
-      : PT(`At your usual pace you’d reach about ${I.fc}%, close to your ${aim}% goal. A bit more each day gets you there. Here’s the plan:`, `照平時的步伐，考試時約 ${I.fc}%，接近 ${aim}% 目標。每天多做一點就能達到。計劃是這樣：`)), steps);
+    if (easy) return box(E(PT(`You’re heading for about ${I.fc}%. Keep it up!`, `你正朝約 ${I.fc}% 進發，繼續努力！`)), steps.filter((x, k) => k !== 2));
+    return box(E(PT(`At your usual pace you’d reach about ${I.fc}%. Every step gets you closer to 100%. Here’s the plan:`, `照平時的步伐，考試時約 ${I.fc}%。每一步都更接近 100%。計劃是這樣：`)), steps);
   };
-  tcFcLine = fcLine;
   return tests.steps.map((p, ti) => {
     const habit = practiceHabit(), fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, habit);
     const fcI = { pcts: chOf(p).map((c) => c.pct || 0), names: chOf(p).map((c) => chName(c.unit)), levers: chOf(p).map((c) => (c.score ? chapterLever(c) : null)), habit, fc, lock: !!fcLocked, prev: fmtDay(testDay(p.x) - DAY) };
-    const aim = p.x.aim || TEST_AIM; // the parent's target for this test, set with the slider
+    const aim = TEST_AIM; // the parent's target for this test, set with the slider
     const st = p.ready == null ? 'none' : p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
     const steps = [];
@@ -7264,50 +7258,20 @@ async function fullTestCards(tests, btn) {
       if (p.left >= 2) steps.push(PT(`Practice test on ${fmtDay(testDay(p.x) - DAY)}`, `${fmtDay(testDay(p.x) - DAY)} 做模擬測驗`));
     }
     const what = p.ready == null ? PT('Add the textbook so Buddy can get you ready.', '加入課本，Buddy 便可幫你準備。')
-      : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT(`Aim for ${aim}% by test day.`, `目標：考試前達到 ${aim}%。`))
+      : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT('Every step gets you closer to 100%.', '每一步都更接近 100%。'))
       : st === 'ok' ? PT(`With the plan you’ll reach about ${fc}%. Short reviews keep it there; Today’s plan takes care of it.`, `按現時進度，考試時約 ${fc}%。今日計劃會安排溫習，保持狀態。`)
-      : PT(`With the plan you’ll reach about ${fc}%. Aim for ${aim}%.`, `按現時進度，考試時約 ${fc}%。目標 ${aim}%。`);
+      : PT(`With the plan you’ll reach about ${fc}%. Every extra step gets closer to 100%.`, `按現時進度，考試時約 ${fc}%。每多做一步都更接近 100%。`);
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
-      <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<span class="pv-flag" style="left:${aim}%;--a:${aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${PT(`Goal ${aim}%`, `目標 ${aim}%`)}</b></span><input type="range" class="pv-aim" min="0" max="100" step="5" value="${aim}" data-aim="${esc(p.x.id)}" data-fc="${fc ?? p.ready}" aria-label="${PT('Goal for this test', '這個測驗的目標')}"></div>
+      <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}</div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : fc == null ? '' : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>${!fcLocked && fc == null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
     const coach = p.ready == null ? '' : `<div class="pv-fcline" data-ready="${p.ready}" data-left="${p.left}" data-info="${esc(JSON.stringify(fcI))}">${fcLine(p.ready, aim, p.left, fcI)}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${bar}${p.ready != null && ti === 0 ? `<p class="pv-aimhint">${PT('Slide Buddy to set your own goal for this test.', '拖動 Buddy，為這個測驗設定你自己的目標。')}</p>` : ''}${coach}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
+      ${bar}${coach}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
       <div class="pv-test-f">${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
   });
 }
-// goal sliders on the full test cards: move the line and the status live; save when let go
-function bindTestCards(root) {
-  root.querySelectorAll('.pv-aim').forEach((r) => {
-    const card = r.closest('.pv-test'), bar = r.closest('.pv-bar'), fc = +r.dataset.fc;
-    const LAB = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁') };
-    const show = () => { if (+r.value < 50) r.value = 50; const a = +r.value, t = aimTone(fc, a); const fl = bar.querySelector('.pv-flag'); fl.style.left = a + '%'; fl.style.setProperty('--a', a); fl.querySelector('b').textContent = PT(`Goal ${a}%`, `目標 ${a}%`);
-      ['ok', 'close', 'risk'].forEach((k) => { card.classList.toggle(k, k === t); bar.classList.toggle(k, k === t); }); const pill = card.querySelector('.pv-pill'); if (pill) { pill.className = `pv-pill ${t}`; pill.textContent = LAB[t]; }
-      const f = card.querySelector('.pv-num .fc'); if (f) f.className = `fc ${t}`;
-      const ln = card.querySelector('.pv-fcline'); if (ln) { ln.innerHTML = tcFcLine(+ln.dataset.ready, a, +ln.dataset.left, JSON.parse(ln.dataset.info)); bindSet(); } };
-    const bindSet = () => card.querySelectorAll('[data-setaim]').forEach((b) => (b.onclick = () => { r.value = b.dataset.setaim; r.onchange(); }));
-    r.oninput = show; r.onpointerdown = () => bar.classList.add('drag'); r.onpointerup = r.onblur = () => bar.classList.remove('drag');
-    // nothing is saved until it's confirmed: a slip of the finger while scrolling is easy to undo
-    const saved = () => { const x = (local.sched || []).find((y) => y.id === r.dataset.aim); return (x && x.aim) || 80; };
-    r.onchange = () => {
-      show();
-      let cf = card.querySelector('.pv-aimok'); const a = +r.value, was = saved();
-      if (a === was) { if (cf) cf.remove(); return; }
-      if (!cf) { cf = document.createElement('div'); cf.className = 'pv-aimok'; (bar.closest('.pv-track') || bar).after(cf); }
-      cf.innerHTML = `<span>${PT(`Change the goal from ${was}% to ${a}%?`, `把目標由 ${was}% 改為 ${a}%？`)}</span><button type="button" class="btn-sm" data-k="no">${PT(`Keep ${was}%`, `保留 ${was}%`)}</button><button type="button" class="btn-sm primary" data-k="yes">${PT(`Set ${a}%`, `設為 ${a}%`)}</button>`;
-      cf.querySelector('[data-k="no"]').onclick = () => { r.value = was; show(); cf.remove(); };
-      cf.querySelector('[data-k="yes"]').onclick = () => {
-        const x = (local.sched || []).find((y) => y.id === r.dataset.aim); if (x) { x.aim = a; saveLocal(); }
-        cf.remove(); toast(PT(`Goal set to ${a}%`, `目標已設為 ${a}%`));
-        // Today's mission and minutes follow the goal: redraw, staying where the child was on the page
-        if (view && view.name === 'home') { const id = r.dataset.aim, top = card.getBoundingClientRect().top; renderHome().then(() => { const c = [...document.querySelectorAll('.pv-aim')].find((e) => e.dataset.aim === id), t = c && c.closest('.pv-test'); if (!t) return; const keep = () => window.scrollTo(0, window.scrollY + t.getBoundingClientRect().top - top); keep(); requestAnimationFrame(keep); t.classList.add('aim-saved'); setTimeout(() => t.classList.remove('aim-saved'), 1200); }); }
-      };
-    };
-    bindSet();
-  });
-}
-// On track / close / at risk, against the target the parent set for that test (default 80%).
-const aimTone = (v, aim = TEST_AIM) => (v >= aim ? 'ok' : v >= aim - 15 ? 'close' : 'risk');
+// On track / close / at risk: how near the test-day forecast gets to 100% (the goal is always 100)
+const aimTone = (v) => (v >= 90 ? 'ok' : v >= 75 ? 'close' : 'risk');
 // Mistakes fixed for good: fixed, then right again on a later day (2+ days after fixing). Fixed once may just be memory.
 function fixedForGood() {
   const M = Object.entries(local.mistakes || {}), byQ = new Map();
@@ -7326,7 +7290,7 @@ function goalProgressHTML(G, pts, gl1 = false, bodyOnly = false) {
     const from = Math.min(H[0][0], t0 - 6 * DAY), span = Math.max(DAY, td - from), W = 300, X = (t) => (34 + ((t - from) / span) * (W - 44)).toFixed(1), Y = (v) => (130 - (v / 100) * 112).toFixed(1);
     const line = H.map((h) => `${X(h[0])},${Y(h[1])}`).join(' '), last = H[H.length - 1];
     const fmt = (t) => new Date(t).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' });
-    title = `${esc(x.name)} · ${G.aim}%`; sub = leftText(G.p.left);
+    title = esc(x.name); sub = leftText(G.p.left);
     body = `<svg class="glp-chart" width="100%" viewBox="0 0 ${W} 160" role="img" aria-label="${esc(Z(`Readiness ${G.ready}% now${G.fc != null ? `, heading for ${G.fc}% on test day` : ''}, goal ${G.aim}%`, `現在準備度 ${G.ready}%${G.fc != null ? `，考試當日預計 ${G.fc}%` : ''}，目標 ${G.aim}%`))}">
       <g class="glp-ax"><text x="0" y="${+Y(100) + 4}">100%</text><text x="0" y="${+Y(50) + 4}">50%</text><text x="0" y="${+Y(0) + 4}">0%</text></g>
       <line x1="34" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="#E3E7F1"></line><line x1="34" x2="${W}" y1="${Y(50)}" y2="${Y(50)}" stroke="#EEF1F6"></line>
@@ -7383,13 +7347,13 @@ async function renderProgress(PO = {}) {
   const chOf = (p) => (p.book && p.units && p.units.length ? MB.get(p.book.id).chapters.filter((c) => p.units.some((u) => u.id === c.unit.id)) : []);
   // Progress only reports: on track or not, ready now, where it's heading, the goal. Acting on it happens on Today.
   const testCards = tests.steps.map((p) => {
-    const aim = p.x.aim || TEST_AIM, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
+    const aim = TEST_AIM, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
     const st = p.ready == null ? 'none' : p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
     const say = p.ready == null ? PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')
-      : st === 'ok' ? PT(`Heading for about ${fc}% on test day, at or above the ${aim}% goal.`, `考試當日預計約 ${fc}%，達到 ${aim}% 目標。`)
-      : st === 'close' ? PT(`Heading for about ${fc}%, a little short of the ${aim}% goal.`, `考試當日預計約 ${fc}%，略低於 ${aim}% 目標。`)
-      : PT(`Heading for about ${fc}%, well short of the ${aim}% goal. Today’s plan steps it up.`, `考試當日預計約 ${fc}%，離 ${aim}% 目標較遠，今日的計劃會加把勁。`);
+      : st === 'ok' ? PT(`Heading for about ${fc}% on test day. Keep going for 100%.`, `考試當日預計約 ${fc}%。繼續向 100% 進發。`)
+      : st === 'close' ? PT(`Heading for about ${fc}%. A bit more each day gets closer to 100%.`, `考試當日預計約 ${fc}%。每天多做一點就更接近 100%。`)
+      : PT(`Heading for about ${fc}%. Today’s plan steps it up.`, `考試當日預計約 ${fc}%。今日的計劃會加把勁。`);
     const nums = p.ready == null ? '' : `<div class="pv-snum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i aria-hidden="true">→</i><div><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div><div><b>${aim}%</b><span>${PT('goal', '目標')}</span></div></div>
       <div class="pv-sbar ${st}"><i style="width:${p.ready}%"></i>${fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:${aim}%"></s></div>`;
     return `<div class="pv-test pv-simple ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
@@ -7405,7 +7369,7 @@ async function renderProgress(PO = {}) {
       <p>${PT('Ready now is the readiness of the chapters in the test (or everything practised so far, if you didn’t choose chapters).', '「現在」是測驗範圍內各章節的準備度（未選章節的話，就是所有練習過的內容）。')}</p>
       <p>${PT('Practice, reviews and chapter tests build it up. Practice on chapters that aren’t in the test doesn’t change this number.', '靠練習、溫習和章節測驗提升。練習測驗範圍以外的章節不會影響這個數字。')}</p>
       <p>${PT('On test day is where Buddy expects you to be if you practise as often as you usually do and follow its plan for these chapters. It works from day one, even for a test that’s only days away.', '「考試當日」是預計：如果你像平時一樣經常練習，並跟著 Buddy 為這些章節訂的計劃，考試時會到達的程度。由第一日就有，即使測驗只剩幾日。')}</p>
-      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('your goal or more by test day (80% unless you drag the goal line)', '考試時達到你的目標或以上（預設 80%，可拖動目標線）')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('within 15% of your goal', '與目標相差 15% 以內')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('more than 15% below your goal', '比目標低超過 15%')}</li></ul></div></details></section>`;
+      <ul><li><b>${PT('On track', '進度理想')}</b> · ${PT('heading for 90% or more by test day', '考試時預計 90% 或以上')}</li><li><b>${PT('Close', '接近')}</b> · ${PT('heading for 75–89%', '預計 75–89%')}</li><li><b>${PT('At risk', '需要加把勁')}</b> · ${PT('heading for under 75%', '預計低於 75%')}</li></ul></div></details></section>`;
 
   // ---------- 2. What Buddy has noticed ----------
   const cards = [], add = (pri, html, win = false, par = null) => cards.push({ pri, html, win, par });
@@ -7794,7 +7758,7 @@ async function renderProgress(PO = {}) {
   // The summary card at the top: Buddy's verdict, three takeaways (going well / keep an eye on / next), and the four headline numbers.
   const goodTx = !local.log.length ? '' : rising.length ? PT(`Getting stronger in ${rising.slice(0, 2).join(' and ')}`, `${rising.slice(0, 2).join('和')}越來越強`)
     : days28 >= 12 ? PT(`Practised on ${days28} of the last 28 days`, `過去 28 日中有 ${days28} 日練習`) : D.longTerm ? PT(`${D.longTerm} questions now in long-term memory`, `${D.longTerm} 題已進入長期記憶`) : PT(`${r.dp} days of practice this week`, `本週練習了 ${r.dp} 日`);
-  const closeAim = close ? ((local.sched || []).find((y) => y.id === close.x.id) || {}).aim || TEST_AIM : 80;
+  const closeAim = close ? TEST_AIM : 80;
   const watchTx = close ? PT(`${close.x.name} ${leftText(close.left)}: ${close.ready}% ready, goal ${closeAim}%`, `「${close.x.name}」${leftText(close.left)}：準備度 ${close.ready}%，目標 ${closeAim}%`)
     : quiet ? PT(`${sname(quiet)} has been quiet for a few days`, `${sname(quiet)}已經幾天沒有練習`) : D.weak ? PT(`Weakest chapter: ${chName(D.weak.unit)} · ${D.weak.a}%`, `最弱的章節：${chName(D.weak.unit)} · ${D.weak.a}%`) : '';
   const nx = next[0];
@@ -7940,8 +7904,8 @@ async function renderProgress(PO = {}) {
         ['👉', 'Most important first, with a win near the top.', '最重要的排第一，進步排在前面。', 'Tap the button on a card to fix it straight away.', '按卡片上的按鈕，馬上去改善。']]),
       howTestP: L([['📊', '<b>Ready now</b>: how well you know the chapters in this test.', '<b>現在</b>：你對這個測驗的章節有多熟。', 'Built from your practice, chapter tests and reviews on those chapters only.', '只根據這些章節的練習、章節測驗和溫習計算。'],
         ['🔮', '<b>On test day</b>: where you’ll be if you keep going like this.', '<b>考試當日</b>：照現在的速度會到哪裡。', 'Based on how fast you’ve been improving recently.', '根據你最近進步的速度推算。'],
-        ['🎯', '<b>Goal</b>: slide Buddy to set your own.', '<b>目標</b>：拖動 Buddy 設定你自己的目標。', 'Each test keeps its own goal. It starts at 80%.', '每個測驗各有目標，預設 80%。'],
-        ['🚦', 'Green = on track · Yellow = close · Red = at risk', '綠色 = 理想 · 黃色 = 接近 · 紅色 = 要加把勁', 'Compares where you’re heading with your goal.', '比較預測結果和你的目標。']]),
+        ['🎯', '<b>Goal</b>: 100% on every test.', '<b>目標</b>：每個測驗都是 100%。', 'Buddy keeps finding the next step until you get there.', 'Buddy 會一直安排下一步，直到你達到為止。'],
+        ['🚦', 'Green = on track · Yellow = close · Red = at risk', '綠色 = 理想 · 黃色 = 接近 · 紅色 = 要加把勁', 'Green: heading for 90%+ · Yellow: 75–89% · Red: under 75%.', '綠色：預計 90% 以上 · 黃色：75–89% · 紅色：低於 75%。']]),
       howWorkP: L([['🟩', 'Each box is a chapter, coloured by how ready you are.', '每格是一章，按準備度上色。', 'Green strong, yellow getting there, red needs work, white not started.', '綠色好、黃色漸入佳境、紅色要加油、白色未開始。'],
         ['💯', 'Readiness is more than getting questions right.', '準備度不只是答對題目。', 'It also checks you can handle harder questions, pass a timed test and still remember it later.', '還要能應付較深的題目、通過限時測驗，而且之後仍然記得。'],
         ['🔒', 'It can’t be rushed.', '不能一蹴而就。', 'The top scores only come with proof over time, so 100% really means ready.', '最高分要經過一段時間證明，所以 100% 是真正準備好。'],
@@ -8866,7 +8830,7 @@ async function renderParent() {
   if (passedWk.length) lines.push(PD(`• Passed chapter tests: ${passedWk.slice(0, 3).join(', ')} (now Test-ready)`, `• 通過章節測驗：${passedWk.slice(0, 3).join('、')}（已達「準備好考試」）`));
   let tip = '';
   for (const p of tests) { const when = new Date(testDay(p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
-    if (p.ready != null) lines.push(PD(`• ${p.x.name} (${when}): likely about ${p.ready}/100 if it were today · goal ${p.x.aim || TEST_AIM}`, `• ${p.x.name}（${when}）：如果今天考，大約 ${p.ready}/100 · 目標 ${p.x.aim || TEST_AIM}`));
+    if (p.ready != null) lines.push(PD(`• ${p.x.name} (${when}): likely about ${p.ready}/100 if it were today · goal ${TEST_AIM}`, `• ${p.x.name}（${when}）：如果今天考，大約 ${p.ready}/100 · 目標 ${TEST_AIM}`));
     if (!tip && p.book) { const m = await bookMastery(p.book), ids = new Set((p.units || []).map((u) => u.id)); const w = m.chapters.filter((c) => ids.has(c.unit.id) && c.done).sort((a, b) => a.pct - b.pct)[0];
       if (w) tip = PD(`At home: ask ${kid} to explain “${shortTitle(w.unit.title)}” to you in their own words. Explaining it is the best check.`, `在家：請${kid}用自己的話向你解釋「${shortTitle(w.unit.title)}」。能解釋到，才是真正明白。`); } }
   if (wkMiss) lines.push(PD(`• ${wkMiss} mistake${wkMiss > 1 ? 's' : ''} this week${careless ? `, ${careless} of them careless (knew it, slipped)` : ''}`, `• 本週 ${wkMiss} 題錯題${careless ? `，其中 ${careless} 題是粗心（識但做錯）` : ''}`));
@@ -8998,7 +8962,7 @@ function testDialog(edit) {
     kind: edit ? (edit.grp ? 'exam' : edit.kind || 'test') : 'test',
     id: edit ? edit.id : uid(), name: edit ? (edit.grp ? edit.gname || '' : edit.name) : '', named: !!edit,
     date: edit ? edit.date : wk, subj: edit ? edit.subj || '' : '', b: edit ? edit.b || null : null, u: new Set(edit && edit.u ? edit.u : []),
-    lang: edit && edit.lang ? edit.lang : 'zh', L: edit ? edit.L || '' : '', aim: edit && edit.aim ? edit.aim : group && group[0].aim ? group[0].aim : TEST_AIM,
+    lang: edit && edit.lang ? edit.lang : 'zh', L: edit ? edit.L || '' : '', aim: TEST_AIM,
     parts: group ? group.map((x) => ({ id: x.id, subj: x.subj || '', date: x.date, b: x.b || '', score: x.score })) : [{ id: uid(), subj: '', date: wk, b: '' }],
   };
   const autoName = () => {
@@ -9073,7 +9037,6 @@ function testDialog(edit) {
       ${edit ? '' : `<div class="td-kinds" role="radiogroup" aria-label="${SCH('What kind of test?', '甚麼類型？')}">${kinds.map(([k, t, sub, ic]) => `<button type="button" role="radio" aria-checked="${st.kind === k}" data-kind="${k}" class="${st.kind === k ? 'on' : ''}"><span class="td-kic">${actionIcon(ic, 18)}</span><b>${t}</b><small>${sub}</small></button>`).join('')}</div>`}
       <label for="td-n">${SCH('Name', '名稱')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, Term 1 exams', '例如：科學測驗、上學期考試')}" value="${esc(st.name)}">
       ${body}
-      ${st.kind !== 'dict' ? `<label>${SCH('Goal', '目標')} <span class="td-opt">${SCH('the score you’re aiming for', '想考到的分數')}</span></label><div class="td-seg td-aims">${[70, 80, 85, 90, 100].map((v) => `<button type="button" data-aim="${v}" class="${st.aim === v ? 'on' : ''}" aria-pressed="${st.aim === v}">${v}%</button>`).join('')}</div>` : ''}
       <p class="hw-err" id="td-err" role="alert" hidden></p>
       <div class="rd-row"><button class="btn ghost" id="td-cancel">${SCH('Cancel', '取消')}</button><button class="btn" id="td-save">${SCH('Save', '儲存')}</button></div>
     </div>`;
@@ -9119,7 +9082,6 @@ function testDialog(edit) {
         recs = st.parts.map((pt) => ({ id: pt.id, kind: 'test', grp, gname: name, name: `${name} · ${pt.b ? (dlgBooks.find((b) => b.id === pt.b) || {}).subject || tSubjName(pt.subj) : tSubjName(pt.subj)}`.slice(0, 60), date: pt.date, subj: pt.subj, b: pt.b || null, u: [], ...(typeof pt.score === 'number' ? { score: pt.score } : {}) }));
       } else if (st.kind === 'dict') recs = [{ id: st.id, kind: 'dict', name, date: st.date, subj: (DICT_LANGS.find((x) => x[0] === st.lang) || DICT_LANGS[0])[3], lang: st.lang, L: st.L || null }];
       else recs = [{ id: st.id, kind: 'test', name, date: st.date, subj: st.subj, b: st.b || null, u: [...st.u], ...(st.sname ? { sname: st.sname } : {}) }];
-      if (st.kind !== 'dict') recs.forEach((r) => { r.aim = st.aim; });
       if (edit && typeof edit.score === 'number' && !group) recs[0].score = edit.score;
       local.sched = [...others, ...recs].slice(-40);
       if (recs.some((r) => testLeft(r) <= 14)) local.mission = null; // rebuild today's mission so it includes the new test
