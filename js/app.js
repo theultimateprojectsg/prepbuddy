@@ -364,7 +364,7 @@ function missingRef(q) {
 }
 // "Choose the graph" questions are switched off for now (set GRAPHS_ON = true to bring them back).
 const GRAPHS_ON = false;
-const blocked = (q) => !q || (local.reports || []).includes(q.id) || !!missingRef(q) || (!GRAPHS_ON && q.type === 'graph');
+const blocked = (q) => !q || (q.dev && !DEV) || (local.reports || []).includes(q.id) || !!missingRef(q) || (!GRAPHS_ON && q.type === 'graph');
 async function getQs(bookId, unitId) { return (await store.get(`qs:${bookId}:${unitId}`, [])).filter((q) => !blocked(q)); }
 async function setQs(bookId, unitId, list) { await store.set(`qs:${bookId}:${unitId}`, list); }
 function scoreOf(questions) {
@@ -4825,16 +4825,16 @@ function devQuickSetup() {
     mygoals: { main: 'test', longs: [{ subj: 'Science', target: 6.7 }] } });
 }
 // testing only: answer the rest of this set at a chosen score and go to the results (counts like real answers)
-function devFinish(rate, waited = 0) {
+function devFinish(rate) {
   if (!DEV || !S || !S.qs || !S.qs.length) return;
-  // the set isn't fully written yet: wait for the rest (up to 3 minutes) so the dev run answers a full set
-  const busy = [...(S.jobs || [])].some((j) => !j.done);
-  if (S.qs.length < (S.target || 0) && !S.error && waited < 180 && (busy || waited < 5)) { // nothing writing after 5s: finish what's there
-    const sess = S;
-    if (!waited) { if (!busy) topUp(sess); toast(`DEV · waiting for ${sess.target - sess.qs.length} more questions to be written…`); }
-    const b = document.querySelector('.dev-pass'); if (b) b.innerHTML = `<span>DEV · writing questions ${sess.qs.length}/${sess.target}…</span>`;
-    setTimeout(() => { if (S === sess) devFinish(rate, waited + 1); }, 1000);
-    return;
+  // the set isn't fully written yet: don't wait. Make up placeholder questions (a normal mix of levels) so the dev
+  // run answers a full set straight away. They're saved to the chapter's bank marked dev, and hidden outside dev mode.
+  if (S.qs.length < (S.target || 0) && S.book) {
+    const us = (S.units && S.units.length ? S.units : [S.book.units[0]]), LV = [2, 3, 2, 1, 3, 4, 2, 3, 2, 4], stamp = Date.now().toString(36);
+    for (let k = 0; S.qs.length < S.target; k++) { const u = us[k % us.length];
+      const q = { id: `${S.book.id}:${u.id}:dev${stamp}${k}`, type: 'mcq', level: LV[k % LV.length], stem: 'DEV placeholder question (simulated)', options: ['Right', 'Wrong', 'Wrong', 'Wrong'], correct_option: 'A', explanation: 'Simulated in developer mode.', parts: [], dev: true, section: u.title };
+      S.qs.push(q); addToBank(S.book.id, u.id, [q]); }
+    S.jobs = new Set(); S.pending = 0;
   }
   const from = S.phase === 'revealed' ? S.i + 1 : S.i, n = S.qs.length, ks = [];
   for (let k = from; k < n; k++) ks.push(k);
