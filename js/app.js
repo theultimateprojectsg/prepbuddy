@@ -641,6 +641,11 @@ function nextStep(c) {
   if (!c.done) return S('practise', `Start ${t}: a first practice set`, `開始「${t}」：第一組練習`);
   if ((c.pracVol != null ? c.pracVol < 0.83 : (c.prac || 0) < 50)) return S('practise', `Practise more of ${t}`, `多練習「${t}」`);
   if ((g.apply || 0) < 3) return S('practise', `Get ${3 - (g.apply || 0)} harder (Apply) question${3 - (g.apply || 0) > 1 ? 's' : ''} right in ${t}`, `在「${t}」答對 ${3 - (g.apply || 0)} 條應用題`, 'hard');
+  // a chapter test needs 80% to pass: under 70% right in practice it would almost surely fail, so get the scores up first
+  if (c.pracAcc != null && c.pracAcc > 0 && c.pracAcc < 0.7 && (c.passes < 2 || !c.lastPass || (g.testPart != null && g.testPart < 24.5))) { const a = Math.round(100 * c.pracAcc);
+    const st = (c.open || 0) >= 1 ? S('mistakes', `Fix your mistakes in ${t} and get to 7 out of 10 right (now ${a}%), then its chapter test`, `改正「${t}」的錯題，做到 10 題答對 7 題（現在 ${a}%），然後做章節測驗`)
+      : S('practise', `Practise ${t} until you get 7 out of 10 right (now ${a}%), then its chapter test`, `練習「${t}」，直到 10 題答對 7 題（現在 ${a}%），然後做章節測驗`);
+    st.cap = true; return st; }
   if (c.passes < 2 || !c.lastPass || (g.testPart != null && g.testPart < 24.5)) return S('test', c.passes >= 2 ? `Another chapter test on ${t}: higher marks fill the test part` : `${c.passes ? 'A second chapter test' : 'Chapter test'} on ${t} (new questions, 80% to pass)`, c.passes >= 2 ? `「${t}」再做一次章節測驗：分數越高，測驗部分越滿` : `「${t}」${c.passes ? '第二次' : ''}章節測驗（新題目，80% 合格）`);
   if (!((g.wrote || 0) >= 2 && g.analyse)) return S('practise', `Full marks on 2 written Apply answers and 1 Analyse question in ${t}`, `在「${t}」的 2 條應用文字題拿滿分，並答對 1 條分析題`, 'hard');
   if ((g.mixed || 0) < 2 || (g.mixPart != null && g.mixPart < 14.5)) return S('mixed', `Mock exam: ${t} with the other chapters`, `模擬考試：「${t}」和其他章節`);
@@ -655,7 +660,7 @@ function nextStep(c) {
 // The next step for the weakest chapters (up to 3), for screens that list a few.
 function masterySteps(m) {
   const left = m.chapters.filter((c) => c.pct < 100 || c.cracked), real = left.filter((c) => !NOT_TEACHING.test(String(c.unit.title)));
-  return (real.length ? real : left).sort((a, b) => a.pct - b.pct).map(nextStep).filter(Boolean).slice(0, 3);
+  return (real.length ? real : left).map((c) => ({ c, st: nextStep(c) })).filter((y) => y.st).sort((a, b) => (a.st.cap ? 1 : 0) - (b.st.cap ? 1 : 0) || a.c.pct - b.c.pct).map((y) => y.st).slice(0, 3); // held chapters after ones that can move
 }
 function masteryCard(m) {
   // Only the next step: it's what the button does, so it's written on the button.
@@ -684,7 +689,7 @@ async function closerPick() {
       if ((ids && !ids.includes(c.unit.id)) || c.pct >= 100 || NOT_TEACHING.test(String(c.unit.title))) continue;
       const st = masterySteps({ ...m, chapters: [c] })[0]; if (!st) continue;
       if (st.kind === 'check' && !(c.fading >= 1)) continue; // a check only helps a chapter that has faded
-      if (!best || c.pct < best.c.pct) best = { book, c, step: st, test };
+      const held = !!st.cap; if (!best || (held ? 1 : 0) < (best.held ? 1 : 0) || ((held ? 1 : 0) === (best.held ? 1 : 0) && c.pct < best.c.pct)) best = { book, c, step: st, test, held };
     }
   }
   return best;
@@ -697,7 +702,7 @@ async function testCtx(id) {
 }
 async function runTestNext(id) {
   const t = await testCtx(id); if (!t) return;
-  const pk = t.chs.map((c) => ({ c, st: nextStep(c) })).filter((x) => x.st && !(x.st.kind === 'check' && !(x.c.fading >= 1))).sort((a, z) => a.c.pct - z.c.pct)[0];
+  const pk = t.chs.map((c) => ({ c, st: nextStep(c) })).filter((x) => x.st && !(x.st.kind === 'check' && !(x.c.fading >= 1))).sort((a, z) => (a.st.cap ? 1 : 0) - (z.st.cap ? 1 : 0) || a.c.pct - z.c.pct)[0]; // held chapters after ones that can move
   if (!pk) return toast(PT('Everything for this test that can move today has moved. Come back tomorrow!', '這個測驗今天能進步的都完成了，明天再來！'));
   track('test_next'); return boostSession(t.p.book, pk.c, pk.st);
 }
@@ -4844,7 +4849,7 @@ function devQuickSetup() {
     mygoals: { main: 'test', longs: [{ subj: 'Science', target: 6.7 }] } });
 }
 // testing only: answer the rest of this set at a chosen score and go to the results (counts like real answers)
-function devFinish(rate) {
+function devFinish(rate, perUnit = null) { // perUnit: { unitId: rate } (testing several abilities at once)
   if (!DEV || !S || !S.qs || !S.qs.length) return;
   // the set isn't fully written yet: don't wait. Make up placeholder questions (a normal mix of levels) so the dev
   // run answers a full set straight away. They're saved to the chapter's bank marked dev, and hidden outside dev mode.
@@ -4864,10 +4869,11 @@ function devFinish(rate) {
   // one right answer at a time, to whichever chapter is furthest below the rate
   // by marks: each chapter gets as near the rate of its own marks as whole questions allow
   const rightSet = new Set(), mk = (k) => marksOf(S.qs[k]) || 1;
-  const us = Object.values(byU).map((g) => ({ g: g.slice(), got: 0, tot: g.reduce((a, k) => a + mk(k), 0) }));
-  let target = Math.round((rate / 100) * us.reduce((a, u) => a + u.tot, 0));
-  while (target > 0) { const u = us.filter((x) => x.g.length).sort((a, b) => ((rate / 100) * b.tot - b.got) - ((rate / 100) * a.tot - a.got))[0]; if (!u) break;
-    const want = (rate / 100) * u.tot - u.got; u.g.sort((a, b) => Math.abs(mk(a) - want) - Math.abs(mk(b) - want)); const k = u.g.shift();
+  const rOf = (key) => (perUnit && perUnit[key.split(':')[1]] != null ? perUnit[key.split(':')[1]] : rate) / 100;
+  const us = Object.entries(byU).map(([key, g]) => ({ g: g.slice(), r: rOf(key), got: 0, tot: g.reduce((a, k) => a + mk(k), 0) }));
+  let target = Math.round(us.reduce((a, u) => a + u.r * u.tot, 0));
+  while (target > 0) { const u = us.filter((x) => x.g.length).sort((a, b) => (b.r * b.tot - b.got) - (a.r * a.tot - a.got))[0]; if (!u) break;
+    const want = u.r * u.tot - u.got; u.g.sort((a, b) => Math.abs(mk(a) - want) - Math.abs(mk(b) - want)); const k = u.g.shift();
     rightSet.add(k); u.got += mk(k); target -= mk(k); }
   const t0 = Date.now() - (ks.length + 1) * 15000; S.at = Math.min(S.at || t0, t0 - 15000); S.times = S.times || [];
   for (const k of ks) {
@@ -5003,6 +5009,7 @@ async function moment(o) {
   if (busy()) return;
   if (o.sel && !document.querySelector(o.sel)) return; // the screen it belongs to has gone
   if (o.view && (!view || view.name !== o.view)) return;
+  if (o.sess && S !== o.sess) return; // a newer set has started: this one's numbers are out of date
   const w = document.createElement('div'); w.className = 'cdlg-wrap pp-pop mo-pop';
   const conf = o.confetti ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59', '#B57AF0'][i % 5]}"></i>`).join('')}</div>` : '';
   const bar = (b) => { const u = b.u == null ? '%' : b.u, max = b.max || 100, a = Math.round((100 * Math.min(b.from, b.to)) / max), z = Math.round((100 * Math.max(b.from, b.to)) / max), d = b.to - b.from;
@@ -6690,18 +6697,19 @@ function testDayPlan(p, chs, aim = TEST_AIM, perDay = dayMins()) {
   const setGain = 12, passes = acc >= 0.75, cap = rec.length >= 8 ? Math.round(100 * acc) : 100; // the % follows the child's scores (rules.md §2)
   // a copy of each chapter that the plan moves forward (the same fields the brain reads)
   const accOf = (c) => { const r = (local.log || []).filter((e) => e.m && e.q && e.q.startsWith(`${book.id}:${c.unit.id}:`)).slice(-20); return r.length >= 8 ? r.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / r.length : acc; };
-  const sim = chs.map((c) => ({ acc: accOf(c), unit: c.unit, real: c, pct: c.pct, prac: c.prac || 0, pracVol: c.pracVol != null ? c.pracVol : (c.prac || 0) / 60, pracAcc: c.pracAcc || 0, done: c.done, passes: c.passes || 0, lastPass: c.lastPass, open: 0, due: 0, cracked: false,
+  const sim = chs.map((c) => ({ acc: accOf(c), unit: c.unit, real: c, pct: c.pct, prac: c.prac || 0, pracVol: c.pracVol != null ? c.pracVol : (c.prac || 0) / 60, pracAcc: c.pracAcc || 0, done: c.done, passes: c.passes || 0, lastPass: c.lastPass, open: c.open || 0, due: 0, cracked: false,
     gates: { apply: (c.gates || {}).apply || 0, wrote: (c.gates || {}).wrote || 0, analyse: !!(c.gates || {}).analyse, mixed: (c.gates || {}).mixed || 0, testPart: (c.gates || {}).testPart || 0, mixPart: (c.gates || {}).mixPart || 0 }, tp: 0, mp: 0, fading: 0 }));
   const pctOf = (x) => { let e = Math.min(60, x.prac) + Math.min(25, x.tp); if (x.passes && x.prac >= 35) e = Math.max(e, 70);
     if (x.gates.apply < 3) e = Math.min(e, 75); if (e >= 85 && !(x.gates.wrote >= 2 && x.gates.analyse)) e = 85; else if (x.gates.apply >= 3 && x.gates.wrote >= 2 && x.gates.analyse) e += Math.min(15, x.mp);
-    const cp = rec.length >= 8 ? Math.round(100 * x.acc) : cap; x.capScore = cp; x.capFrom = 'tests'; x.capped = e > cp + 0.5; if (x.capped) e = cp;
+    const cp = x.real && x.real.capFrom === 'tests' ? x.real.capScore : rec.length >= 8 ? Math.round(100 * x.acc) : cap; x.capScore = cp; x.capFrom = 'tests'; x.capped = e > cp + 0.5; if (x.capped) e = cp; // the child's real test-based figure when there is one
     return Math.round(Math.min(100, Math.max(x.pct0 != null ? x.pct0 : 0, e))); };
   sim.forEach((x) => { x.tp = x.gates.testPart; x.mp = x.gates.mixPart; x.pct0 = x.pct; });
   const apply = (x, st) => { // what one step does, by the rules
+    if (st.kind === 'mistakes') x.open = 0;
     if (st.kind === 'practise' || st.kind === 'mistakes' || st.kind === 'review') { x.prac = Math.min(60, x.prac + setGain); x.pracVol = Math.min(1, x.pracVol + 0.2); x.pracAcc = x.acc; x.done = (x.done || 0) + sessionSize();
       if (st.diff && x.prac >= 50) { if (x.gates.apply < 3) x.gates.apply = 3; else { x.gates.wrote = 2; x.gates.analyse = true; } } }
-    else if (st.kind === 'test') { if (x.acc >= 0.75) { x.passes++; x.lastPass = true; x.tp = Math.min(25, x.tp + 12.5 * x.acc * x.acc); x.gates.testPart = x.tp;
-      if (x.acc >= 0.75) { x.gates.wrote = Math.min(2, x.gates.wrote + 1); if (x.passes >= 2) x.gates.analyse = true; } } else x.prac = Math.max(0, x.prac - 5); } // a passed test's written and Analyse questions count too
+    else if (st.kind === 'test') { if (x.acc >= 0.7) { x.passes++; x.lastPass = true; x.tp = Math.min(25, x.tp + 12.5 * x.acc * x.acc); x.gates.testPart = x.tp;
+      if (x.acc >= 0.7) { x.gates.wrote = Math.min(2, x.gates.wrote + 1); if (x.passes >= 2) x.gates.analyse = true; } } else x.prac = Math.max(0, x.prac - 5); } // a passed test's written and Analyse questions count too
     else if (st.kind === 'mixed') { x.gates.mixed++; x.mp = Math.min(15, x.mp + 7.5 * x.acc * x.acc); x.gates.mixPart = x.mp; }
     else if (st.kind === 'check') x.cracked = false;
     x.pct = pctOf(x); };
@@ -6735,10 +6743,10 @@ function stepsTo100(p, chs) {
     const all = sim.map((x) => ({ x, st: nextStep(x) })).filter((y) => y.st && y.st.kind !== 'check' && y.st.kind !== 'review' && !y.x.held).sort((a, z) => a.x.pct - z.x.pct);
     const cand = all.find((y) => y.st.kind !== 'mixed') || all[0];
     if (!cand) break;
-    if (cand.st.kind === 'test' && cand.x.acc < 0.75) { // at this accuracy its chapter test (80% to pass) would fail: get the scores up first
+    if (cand.st.kind === 'test' && cand.x.acc < 0.7) { // at this accuracy its chapter test (80% to pass) would fail: get the scores up first
       const t = nm(cand.x.unit); cand.x.held = true;
       raw.push({ kind: 'raise', x: cand.x, from: null, to: null, mins: cost({ kind: 'practise' }) * 2, first: raw.length === 0, st: { kind: 'mistakes', text: '' },
-        text: PT(`Fix your mistakes and practise ${t} until you get 8 out of 10 right (now ${Math.round(100 * cand.x.acc)}%), then take its chapter test`, `改正錯題並練習「${t}」，直到 10 題答對 8 題（現在 ${Math.round(100 * cand.x.acc)}%），然後做章節測驗`) });
+        text: PT(`Fix your mistakes and practise ${t} until you get 7 out of 10 right (now ${Math.round(100 * cand.x.acc)}%), then take its chapter test`, `改正錯題並練習「${t}」，直到 10 題答對 7 題（現在 ${Math.round(100 * cand.x.acc)}%），然後做章節測驗`) });
       continue; }
     if (cand.st.cap) { cand.x.held = true; raw.push({ kind: 'raise', x: cand.x, from: null, to: null, mins: cost(cand.st), first: raw.length === 0, st: cand.st, text: cand.st.text }); continue; }
     const k = cand.st.kind, from = k === 'mixed' ? avg() : cand.x.pct, p0 = cand.x.passes;
@@ -6763,6 +6771,7 @@ function stepsTo100(p, chs) {
       test: PT(`Chapter test on ${sn} · ${n} test${n === 1 ? '' : 's'}`, `「${sn}」章節測驗 · ${n} 次`),
       mixed: PT(`Mock exam on all the test chapters · ${n} exam${n === 1 ? '' : 's'}`, `所有考試章節的模擬考試 · ${n} 次`) }[it.kind]; };
   items.forEach((it) => (it.text = it.kind === 'raise' ? it.raw : label(it)));
+  items.sort((a, b) => (a.kind === 'raise' ? 1 : 0) - (b.kind === 'raise' ? 1 : 0)); // chapters held at their scores last, as on the button
   const total = raw.reduce((a, r) => a + r.mins, 0);
   return { items, total, end: avg(), acc, first: raw[0] || null, capped: avg() < 99 };
 }
@@ -10823,7 +10832,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   const wUnits = sess.book ? sess.book.units.filter((u) => qs.some((q) => qUnit(q.id)[1] === u.id)) : [];
   const what = { kind: sess.test ? Z('Chapter test', '章節測驗') : sess.mode === 'dse' || sess.mode === 'mock' ? Z('Mock exam', '模擬考試') : sess.mode === 'spaced' ? Z('Review', '溫習') : sess.mode === 'mistakes' || sess.mode === 'drill' ? Z('Fixing mistakes', '改正錯題') : Z('Practice', '練習'),
     name: wUnits.length === 1 ? shortTitle(wUnits[0].title) : wUnits.length ? Z(`${wUnits.length} chapters: ${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join(', ')}`, `${wUnits.length} 章：${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join('、')}`) : (sess.book ? sess.book.title : '') };
-  const say = (o) => moment({ ...o, what, bars: (o.bars || []).map((b) => (wUnits.length === 1 && b.lab === what.name ? { ...b, lab: Z('Chapter progress', '這一章的進度') } : b)), lines: [...(o.lines || []), ...sml] });
+  const say = (o) => moment({ ...o, sess, what, bars: (o.bars || []).map((b) => (wUnits.length === 1 && b.lab === what.name ? { ...b, lab: Z('Chapter progress', '這一章的進度') } : b)), lines: [...(o.lines || []), ...sml] });
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
   { const P = local.impPrev, ids = qs.map((q) => qUnit(q.id)[1]); if (P && P.s && sess.book) { Object.values(P.s).forEach((x) => { if (x.b === sess.book.id && ids.includes(x.u)) x.shown = 1; }); saveLocal(); } }
   // No % gain this time: say exactly what moves this chapter next (and offer it), instead of a generic "keep going"
