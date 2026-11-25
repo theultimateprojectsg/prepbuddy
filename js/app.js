@@ -2762,7 +2762,7 @@ async function pilotGate() {
       ok.disabled = true; ok.textContent = PLT('Checking…', '檢查中…'); face('think'); speak(PLT('Let me check…', '讓我看看…'));
       try {
         const r = await pilotPost({ step: 'check', code: c, welcome: 1 });
-        if (r.ok || !r.pilot) { local.code = c; saveLocal(); return celebrate(c, r.name); }
+        if (r.ok || !r.pilot) { local.code = r.code || c; saveLocal(); return celebrate(local.code, r.name); }
         fail(PLT('That code isn’t right. Check it and try again.', '代碼不正確，請檢查後再試。'));
       } catch (er) { fail(PLT('Couldn’t check the code. Are you online?', '未能檢查代碼，你有連接網絡嗎？')); }
     };

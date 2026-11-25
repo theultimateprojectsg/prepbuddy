@@ -449,7 +449,7 @@ async function renderPilot(note, tab = route()) {
   } else if (tab === 'families') {
     body = `<div class="pl-famtop"><button class="btn" id="addopen">＋ Add a family</button></div>
   <div class="card pl-add" id="addcard" ${fams.length ? 'hidden' : ''}><h2>Add a family</h2>
-    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Parent’s WhatsApp (optional)<input id="fphone" inputmode="tel" placeholder="e.g. 9123 4567"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
+    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Parent’s WhatsApp (optional)<input id="fphone" inputmode="tel" placeholder="e.g. 9123 4567"></label><label>Their code (optional)<input id="fcode" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="20" pattern="[A-Za-z0-9 \-]{4,24}" placeholder="e.g. CHANFAMILY · blank = made for you"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
     <button class="btn" style="grid-column:1/-1" id="addgo">Make a family code</button></form><div id="newcode"></div></div>
   <div class="card"><h2>Families</h2>
     ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Stronger<br><small>subjects</small></th><th>Streak</th><th>AI cost</th><th>Books</th><th>Problems</th><th>Plan</th></tr></thead>
@@ -490,13 +490,13 @@ async function renderPilot(note, tab = route()) {
   { const af = $('addf'); if (af) af.onsubmit = async (e) => {
     e.preventDefault(); const btn = $('addgo'); btn.disabled = true;
     try {
-      const r = await adminApi({ action: 'pilot_add', name: $('fname').value, note: $('fnote').value, phone: $('fphone') ? $('fphone').value : '' });
+      const r = await adminApi({ action: 'pilot_add', name: $('fname').value, note: $('fnote').value, phone: $('fphone') ? $('fphone').value : '', code: $('fcode') ? $('fcode').value.trim() : '' });
       const msg = `Hi! Thanks for trying PrepBuddy. Open ${location.origin} on your child’s phone or computer and enter this family code: ${r.family.code}\nAny feedback is welcome: there’s a box for it in Settings.`;
       $('newcode').innerHTML = `<div class="ok">Code for ${esc(r.family.name)}: <b style="font-size:18px;letter-spacing:.05em">${esc(r.family.code)}</b></div>
         <label>Message to send them<textarea id="invite" rows="3">${esc(msg)}</textarea></label><div class="acts"><button class="link" id="copyinv">Copy message</button><button class="link" id="refresh">Done: refresh the list</button></div>`;
       $('copyinv').onclick = () => { navigator.clipboard.writeText($('invite').value); $('copyinv').textContent = 'Copied'; };
       $('refresh').onclick = () => renderPilot('reload', 'families');
-      $('fname').value = ''; $('fnote').value = '';
+      $('fname').value = ''; $('fnote').value = ''; if ($('fcode')) $('fcode').value = '';
     } catch (err) { $('newcode').innerHTML = `<div class="err">${esc(err.message)}</div>`; }
     btn.disabled = false;
   }; }

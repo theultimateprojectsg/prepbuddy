@@ -105,8 +105,15 @@ module.exports = async (req, res) => {
       const P = require('../lib/pilot');
       if (!P.pilotOn()) throw err(400, 'Set PILOT_REPO in Vercel first.');
       const name = String(body.name || '').trim().slice(0, 60); if (!name) throw err(400, 'Give the family a name.');
-      const fam = { code: P.makeCode(name), name, note: String(body.note || '').trim().slice(0, 300), created: Date.now(), ...(body.phone ? { phone: phoneOf(body.phone) } : {}) };
-      await P.writeFile('families.json', (cur) => [...(cur || []), fam], `Pilot: add ${fam.code}`);
+      let code = P.makeCode(name), custom = false;
+      if (body.code) { // a code the admin chose: letters and digits only, and not already used
+        code = String(body.code).trim().toUpperCase().replace(/[\s-]/g, '');
+        if (!P.CUSTOM_RE.test(code)) throw err(400, 'A code is 4 to 20 letters or numbers, no spaces or symbols.');
+        const cur = (await P.readFile('families.json')).data || [], gone = (await P.readFile('removed.json')).data || [];
+        if (cur.some((f) => f.code === code) || gone.includes(code)) throw err(400, `${code} is already used. Try another.`);
+        custom = true; }
+      const fam = { code, ...(custom ? { custom: true } : {}), name, note: String(body.note || '').trim().slice(0, 300), created: Date.now(), ...(body.phone ? { phone: phoneOf(body.phone) } : {}) };
+      await P.writeFile('families.json', (cur) => [...(cur || []), fam], `Pilot: add ${fam.code}`); P.forgetCustom();
       out = { ok: true, family: fam };
     } else if (body.action === 'pilot_links') {
       // A permanent link per child (device) to their latest weekly report: /r/<token>. Made once, then reused.
@@ -125,7 +132,7 @@ module.exports = async (req, res) => {
       out = { ok: true, links };
     } else if (body.action === 'pilot_remove') {
       const P = require('../lib/pilot');
-      if (!P.validCode(body.code) && !/^[A-Z]{1,6}\d{2}-[A-Z0-9]{6}$/.test(String(body.code || ''))) throw err(400, 'Bad family code.');
+      if (!P.validCode(body.code) && !/^[A-Z]{1,6}\d{2}-[A-Z0-9]{6}$/.test(String(body.code || '')) && !P.CUSTOM_RE.test(String(body.code || ''))) throw err(400, 'Bad family code.');
       await P.removeFamily(body.code);
       out = { ok: true };
     } else if (body.action === 'pilot_note') {
