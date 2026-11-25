@@ -3077,6 +3077,7 @@ async function renderHome() {
   };
   const steps = M.steps.map((st) => ({ ...st, done: isDone(st), now: cands.find((c) => c.key === st.key) || (st.attr && !/^t:/.test(st.key) ? { t: st.t, s: st.s, attr: st.attr, why: st.why, tag: st.tag } : null) }));
   let firstOpen = steps.findIndex((x) => !x.done && x.now);
+  M.open = steps.filter((x) => !x.done && x.now).map((x) => [x.key, x.now.t]); // for the results pop-up: what's next in the plan
   const allDone = steps.every((x) => x.done || !x.now);
   // the Today tab shows how many mission steps are left today
   { const left = steps.filter((x) => !x.done && x.now).length, d = startOfToday(); if (!local.msLeft || local.msLeft.d !== d || local.msLeft.n !== left) { local.msLeft = { d, n: left }; saveLocal(); renderTabs(); } }
@@ -3206,7 +3207,7 @@ async function renderHome() {
   const stepRow = (x, k, nk = firstOpen) => (subjOf(x), x.done || !x.now)
     ? `<details class="msd"><summary class="ms-row done"><span class="ms-ic">${actionIcon(x.icon, 14)}</span><span class="ms-t"><b data-raw>${esc(x.t)}</b></span><span class="ms-tick" aria-label="${Z('Done', '完成')}">${ICON.check}</span></summary>${doneInfo(x)}</details>`
     : (() => { const why = x.now.why || x.why, tg = x.now.tag || x.tag, ms = maxStars(x);
-      return `<div class="ms-item ${k === nk ? 'is-next' : ''}"><div class="ms-hd">${x.now.subj ? `<em class="ms-subj" data-raw>${esc(x.now.subj)}</em>` : `<span class="ms-ic">${actionIcon(x.icon, 16)}</span>`}${tg ? `<em class="pv-tag2 ${tg[0]}">${esc(tg[1])}</em>` : ''}${why ? `<button type="button" class="ms-q" aria-expanded="false" aria-label="${Z('Why this step?', '為甚麼做這一步？')}">?</button>` : ''}<span class="ms-meta">${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}${ms ? ` · <span class="ms-stars" title="${Z('Most stars you can earn', '最多可賺的星星')}">${starSVG(12)} ${ms}</span>` : ''}</span></div>`
+      return `<div class="ms-item ${k === nk ? 'is-next' : ''}" data-skey="${esc(x.key)}"><div class="ms-hd">${x.now.subj ? `<em class="ms-subj" data-raw>${esc(x.now.subj)}</em>` : `<span class="ms-ic">${actionIcon(x.icon, 16)}</span>`}${tg ? `<em class="pv-tag2 ${tg[0]}">${esc(tg[1])}</em>` : ''}${why ? `<button type="button" class="ms-q" aria-expanded="false" aria-label="${Z('Why this step?', '為甚麼做這一步？')}">?</button>` : ''}<span class="ms-meta">${Z(`${jobMin(x)} min`, `${jobMin(x)} 分鐘`)}${ms ? ` · <span class="ms-stars" title="${Z('Most stars you can earn', '最多可賺的星星')}">${starSVG(12)} ${ms}</span>` : ''}</span></div>`
         + `<div class="ms-row"><span class="ms-t"><b data-raw>${esc(String(x.now.t).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, ''))}</b>${x.now.s ? `<small data-raw>${esc(x.now.s)}</small>` : ''}</span>${k === nk ? '' : '<span class="ms-ring ms-exp" aria-hidden="true"></span>'}</div>${impHTML(impact[x.key])}`
         + `${why ? `<p class="ms-why" hidden><span class="ms-bud" aria-hidden="true">${buddySVG('happy', 22)}</span><span data-raw>${esc(why)}</span></p>` : ''}`
         + `<button class="btn ms-go" ${x.now.attr}>${Z('I’m ready, let’s go!', '準備好了，出發！')}</button></div>`; })();
@@ -3594,6 +3595,9 @@ async function renderHome() {
   }));
   { const b = document.getElementById('twX'); if (b) b.onclick = () => { const c = b.closest('.td-wins'); local.winsHid = { d: dayStart(), k: c.dataset.k }; saveLocal(); c.remove(); }; }
   $app.querySelectorAll('[data-mtime]').forEach((b) => (b.onclick = () => { local.mtime = +b.dataset.mtime; local.mission = null; saveLocal(); renderHome(); }));
+  // which plan step the child started (the results pop-up then offers the next one), and "Next step" from a results pop-up
+  $app.querySelectorAll('[data-skey] .ms-go').forEach((b) => b.addEventListener('click', () => { const k = b.closest('[data-skey]').dataset.skey; if (local.mission) { local.mission.cur = k; local.mission.curAt = Date.now(); saveLocal(); } }, true));
+  if (local.autoNext && Date.now() - local.autoNext < 30000) { delete local.autoNext; saveLocal(); const g = $app.querySelector('.ms-item.is-next .ms-go') || $app.querySelector('[data-skey] .ms-go'); if (g) setTimeout(() => g.click(), 50); }
   { const lg = document.getElementById('lessonGo'); if (lg && lessonLeft) lg.onclick = () => go({ name: 'learn', bookId: lessonLeft.b.id, unitId: lessonLeft.u.id }); }
   { const lx = document.getElementById('lessonX'); if (lx && lessonLeft) lx.onclick = async () => {
     if (!(await confirmLeave({ title: Z('Close this lesson?', '關閉這一課？'), body: Z('Your place in it is cleared. You can start it again any time from the chapter.', '會清除這一課的進度，你可以隨時在章節重新開始。'), stay: Z('Keep it', '保留'), leave: Z('Close', '關閉') }))) return;
@@ -8984,7 +8988,7 @@ function streakInfo(has, t0 = startOfToday()) {
   return { n, rests };
 }
 function newSession(props) {
-  const sess = Object.assign({ at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
+  const sess = Object.assign({ from: view && view.name, at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
   if (!sess.placement) snapPre(sess);
   try { sess.preMk = mistakeCount(); } catch (e) {}
   return sess;
@@ -11235,7 +11239,16 @@ function starMomentLines(won) {
 async function resultMoment(sess, qs, pct, got, total) {
   if (!document.querySelector('main.results')) return;
   const Z = PT, bars = await sessionBars(sess, qs).catch(() => []), missed = qs.filter((q, k) => (sess.got[k] || 0) < marksOf(q)).length, right = qs.length - missed;
-  const home = { label: missionNextLabel(), run: () => go({ name: 'home' }) };
+  // the main button: the next step of Buddy's plan when this set was one of its steps; back to the chapters when it
+  // was started from a book page; otherwise back to Today
+  let home = { label: missionNextLabel(), run: () => go({ name: 'home' }) };
+  { const M = local.mission;
+    if (M && M.cur && M.curAt && M.d === dayStart() && sess.from === 'home' && Date.now() - M.curAt < 3 * 3600000) {
+      const nx = (M.open || []).find(([k]) => k !== M.cur); delete M.cur; saveLocal(); // used once
+      if (nx) home = { label: Z(`Next: ${String(nx[1]).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')} →`, `下一步：${nx[1]} →`), run: () => { local.autoNext = Date.now(); saveLocal(); go({ name: 'home' }); } };
+    } else if (sess.from === 'book' && sess.book) home = { label: Z('Back to chapters', '返回章節'), run: () => go({ name: 'book', bookId: sess.book.id }) }; }
+  const toAnswers0 = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const seeAns = { label: Z('Check my answers', '看看我的答案'), run: toAnswers0 };
   const fix = missed ? { label: Z(`Fix the ${missed} you missed`, `改正答錯的 ${missed} 題`), run: () => { const d = document.getElementById('drillall'); if (d) d.click(); else go({ name: 'mistakes' }); } } : null;
   const mkNow = mistakeCount(), fixedN = sess.preMk != null ? Math.max(0, sess.preMk - mkNow) : 0, stars = sess.won && sess.won.n ? sess.won.n : 0;
   const chBars = [...bars.map((b) => ({ lab: b.lab, from: b.from, to: b.to })), ...(fixedN ? [{ lab: Z('Mistakes to fix', '待改正的錯題'), from: sess.preMk, to: mkNow, u: '', max: sess.preMk }] : [])], grew = bars.some((b) => b.to > b.from) || fixedN > 0;
@@ -11272,7 +11285,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       bars: chBars,
       lines: passed ? bars.filter((b) => b.passed).map((b) => ['🏆', Z(`${b.lab}: proven in a timed test`, `${b.lab}：已在限時測驗中證明實力`)])
         : [...(dropLine.length ? dropLine : [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Buddy will bring the test back in your plan.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。Buddy 會在任務中再安排測驗。`)]])],
-      main: passed ? home : fix || home, alt: passed ? null : { label: Z('Later', '稍後'), run: null } });
+      main: passed ? home : fix || home, alt: passed ? seeAns : { label: Z('Later', '稍後'), run: null } });
   }
   if (sess.mode === 'dse' || sess.mode === 'mock') { // a mock paper: score, time, and the weaker section
     const used = Math.max(1, Math.round((Date.now() - sess.at) / 60000)), allowed = sess.deadline ? Math.round((sess.deadline - sess.at) / 60000) : null;
@@ -11297,7 +11310,7 @@ async function resultMoment(sess, qs, pct, got, total) {
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(() => { const cn = qs.filter((q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done && m.careless && m.t >= Date.now() - 3 * 3600e3; }).length;
       return cn ? [['🔍', Z(`${cn} of your misses look careless: you usually get these right. Slow down and re-read before you answer.`, `有 ${cn} 題錯題看來是粗心：你平時答得對。答題前慢一點，重讀題目。`)]] : []; })(), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
-    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : false });
+    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : seeAns });
 }
 function renderSummary() {
   setTimeout(() => pilotSync(), 3000);
