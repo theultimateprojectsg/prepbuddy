@@ -11642,7 +11642,7 @@ async function refreshOldQuestions() {
     const lists = await store.getMany(keys, []);
     for (let i = 0; i < keys.length; i++) {
       const list = lists[i] || [];
-      const keep = list.filter((q) => q.checked === 'human' || local.stats[q.id] || (local.mistakes || {})[q.id]); // starter-book questions are hand-written: never dropped
+      const keep = list.filter((q) => q.checked || local.stats[q.id] || (local.mistakes || {})[q.id]); // starter-book questions (checked: human or claude) are never dropped
       if (keep.length !== list.length) await store.set(keys[i], keep);
     }
   }
