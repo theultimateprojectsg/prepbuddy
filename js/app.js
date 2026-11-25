@@ -3995,9 +3995,9 @@ function renderSettings(sec) {
       <button class="btn-sm primary" id="sfbgo" style="align-self:flex-start">${PLT('Send', '傳送')}</button>
       <span class="hint" style="margin:0">${PLT(`Family code ${esc(local.code || '')}`, `家庭代碼 ${esc(local.code || '')}`)}</span>
     </section>` : ''}
-    ${(() => { try { return localStorage.getItem('pb.dev') !== null; } catch (e) { return false; } })() ? `<section class="card stack g10" style="padding:16px">
+    ${true ? `<section class="card stack g10" style="padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><b style="font-size:16px">Developer mode</b><button type="button" class="btn-sm ${DEV ? 'primary' : 'quiet'}" id="sdev" aria-pressed="${DEV}">${DEV ? 'On' : 'Off'}</button></div>
-      <span class="muted" style="font-size:14px;line-height:1.5">For testing: shows answers and the “finish at 60 / 80 / 100%” bar. Only shows on devices that have used developer mode.</span>
+      <span class="muted" style="font-size:14px;line-height:1.5">For the PrepBuddy team: shows answers and the “finish at 60 / 80 / 100%” bar. Turning it on needs the admin password.</span>
     </section>` : ''}
 `;
   const SECS = {
@@ -4125,7 +4125,23 @@ function renderSettings(sec) {
   $app.querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => { if (b.dataset.lang === LANG) return; setLang(b.dataset.lang); go({ name: 'settings', sec }); }));
   { const nm = document.getElementById('sname'); if (nm) nm.oninput = () => { local.name = nm.value.trim().slice(0, 30); saveLocal(); }; }
   { const u = document.getElementById('susage'); if (u) u.onclick = () => go({ name: 'usage' }); }
-  { const d = document.getElementById('sdev'); if (d) d.onclick = () => { try { localStorage.setItem('pb.dev', DEV ? '0' : '1'); } catch (e) {} location.replace(location.pathname + location.search.replace(/[?&]dev=[01]\b/, '').replace(/^&/, '?') + location.hash); }; }
+  { const d = document.getElementById('sdev'); if (d) d.onclick = async () => {
+    const flip = () => { try { localStorage.setItem('pb.dev', DEV ? '0' : '1'); } catch (e) {} location.replace(location.pathname + location.search.replace(/[?&]dev=[01]\b/, '').replace(/^&/, '?') + location.hash); };
+    if (DEV) return flip(); // switching off needs nothing
+    // switching on: the admin password, checked by the server (never kept on the device)
+    const w = document.createElement('div'); w.className = 'cdlg-wrap';
+    w.innerHTML = `<div class="cdlg" role="dialog" aria-modal="true" aria-labelledby="dvT"><h2 id="dvT">Developer mode</h2><p>Enter the admin password to turn it on for this device.</p>
+      <input id="dvPw" class="input" type="password" autocomplete="current-password" aria-label="Admin password"><p id="dvErr" class="ms-imp-w" style="margin:0" hidden></p>
+      <div class="cdlg-btns"><button class="btn ghost" id="dvNo">Cancel</button><button class="btn" id="dvGo">Turn on</button></div></div>`;
+    document.body.appendChild(w); const pw = w.querySelector('#dvPw'); pw.focus();
+    const close = () => w.remove(); w.querySelector('#dvNo').onclick = close;
+    const go2 = async () => { const b = w.querySelector('#dvGo'), er = w.querySelector('#dvErr'); b.disabled = true; b.textContent = 'Checking…'; er.hidden = true;
+      try { const r = await fetch('/api/admin', { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-password': pw.value }, body: JSON.stringify({ action: 'check' }) });
+        const d = await r.json().catch(() => ({})); if (r.ok && d && d.ok === true && 'github' in d) { close(); return flip(); } // the admin 'check' reply only
+        er.textContent = r.status === 401 ? 'That password isn’t right.' : 'Couldn’t check it. Try again.'; }
+      catch (e) { er.textContent = 'Couldn’t check it. Are you online?'; }
+      er.hidden = false; b.disabled = false; b.textContent = 'Turn on'; };
+    w.querySelector('#dvGo').onclick = go2; pw.onkeydown = (e) => { if (e.key === 'Enter') go2(); }; }; }
   { const t = document.getElementById('stour'); if (t) t.onclick = () => startTour(true); const f = document.getElementById('stourfull'); if (f) f.onclick = () => startTour('full'); }
   { const sp = document.getElementById('sparent'); if (sp) sp.onclick = () => openParent(); }
   { const sk = document.getElementById('skids'); if (sk) sk.onclick = async () => { await kidPicker(); go({ name: 'settings', sec }); }; }
