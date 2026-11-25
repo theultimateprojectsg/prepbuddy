@@ -692,12 +692,40 @@ function masteryCard(m) {
     ${p > 0 && p < 100 ? `<button class="btn boost" id="boost"><b>${ICON.target} ${p ? PT('Get me closer to 100%', '帶我更接近 100%') : PT('Get started', '開始')}</b>${steps[0] ? `<small data-raw>${esc(p ? `${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(steps[0].text)}` : `${LANG === 'zh' ? '由這章開始：' : 'Begins with '}${cleanUnitTitle(steps[0].unit.title)}`)}</small>` : ''}</button>` : ''}
   </section>`;
 }
+// "Get me closer to 100%" on Today: the nearest test's chapters (or every book when no test is near), the one
+// furthest behind that something can still move today, and its next stage. Pressed again after each set.
+let boostAt = 0;
+async function closerPick() {
+  const books = await getBooks(); if (!books.length) return null;
+  let scope = books.map((b) => ({ book: b, ids: null })), test = null;
+  try { const T = await schoolTestsHTML(); const p = (T.steps || []).filter((q) => q.left >= 0 && q.left <= 30 && q.book && q.units && q.units.length && (q.x.kind || 'test') !== 'dict').sort((a, z) => a.left - z.left)[0];
+    if (p) { scope = [{ book: p.book, ids: p.units.map((u) => u.id) }]; test = p.x.name; } } catch (e) {}
+  let best = null;
+  for (const { book, ids } of scope) {
+    const m = await bookMastery(book);
+    for (const c of m.chapters) {
+      if ((ids && !ids.includes(c.unit.id)) || c.pct >= 100 || NOT_TEACHING.test(String(c.unit.title))) continue;
+      const st = masterySteps({ ...m, chapters: [c] })[0]; if (!st) continue;
+      if ((st.kind === 'practise' || st.kind === 'review') && c.pracCapped) continue; // practice can't move it again today
+      if (st.kind === 'learn') continue;
+      if (!best || c.pct < best.c.pct) best = { book, c, step: st, test };
+    }
+  }
+  return best;
+}
+async function runCloser() {
+  const p = await closerPick();
+  if (!p) return toast(PT('Everything that can move today has moved. Brilliant! Come back tomorrow.', '今天能進步的都進步了，做得好！明天再來。'));
+  track('closer');
+  return boostSession(p.book, p.c, p.step);
+}
 // "Get me closer to 100%": the next step for the weakest chapter, whatever stage it's at.
-async function boostSession(book) {
+async function boostSession(book, c0 = null, step0 = null) {
   const m = await bookMastery(book);
-  const c = weakestChapter(m);
+  const c = c0 ? m.chapters.find((x) => x.unit.id === c0.unit.id) || c0 : weakestChapter(m);
+  boostAt = Date.now();
   if (!c) return toast(PT('Every chapter is at 100%. Keep up your reviews!', '每一章都到 100% 了，記得繼續溫習！'));
-  const step = masterySteps({ ...m, chapters: [c] })[0] || { kind: 'practise' };
+  const step = step0 || masterySteps({ ...m, chapters: [c] })[0] || { kind: 'practise' };
   if (step.kind === 'learn') return go({ name: 'learn', bookId: book.id, unitId: c.unit.id });
   if (step.kind === 'test') return startChapterTest(book, [c.unit]);
   if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit); return startMiniMock(book, [c.unit, ...others]); }
@@ -3529,12 +3557,20 @@ async function renderHome() {
   const planDoneNow = !!pDoneN || (!!planCard && planCard.includes('ms-card ms-done'));
   const missionPick = { n: steps.filter((x) => !x.done && x.now).length, mins: steps.reduce((a, x) => a + (x.done || !x.now ? 0 : jobMin(x)), 0), titles: steps.filter((x) => !x.done && x.now).map((x) => String(x.now.t).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')) };
   planState.due = (await dueItems().catch(() => [])).length; // for the "Clear your to-dos" choice
+  // "Get me closer to 100%": always there, says what it will do next
+  let closerHTML = '';
+  try { const cp = await closerPick();
+    if (cp) { const nm = shortTitle(cp.c.unit.title), k = cp.step.kind;
+      const what = k === 'test' ? Z(`Chapter test: ${nm}`, `章節測驗：${nm}`) : k === 'mixed' ? Z(`Mixed paper with ${nm}`, `包括「${nm}」的綜合試卷`) : k === 'mistakes' ? Z(`Fix mistakes in ${nm}`, `改正「${nm}」的錯題`) : k === 'check' ? Z(`Quick check: ${nm}`, `快速檢查：${nm}`) : k === 'review' ? Z(`Reviews in ${nm}`, `溫習「${nm}」`) : cp.step.diff ? Z(`Harder questions: ${nm}`, `較深題目：${nm}`) : Z(`Practise ${nm}`, `練習「${nm}」`);
+      closerHTML = `<button class="closer-btn" id="closerGo"><span class="cl-ic" aria-hidden="true">🎯</span><span class="cl-t"><b>${Z('Get me closer to 100%', '帶我更接近 100%')}</b><small data-raw>${esc(Z('Next: ', '下一步：') + what + (cp.test ? Z(` · for your ${cp.test}`, ` · 為「${cp.test}」`) : ''))} · ${cp.c.pct}%</small></span><span class="cl-go" aria-hidden="true">→</span></button>`; }
+    else if (books.length) closerHTML = `<div class="closer-btn cl-done" role="status"><span class="cl-ic" aria-hidden="true">🏁</span><span class="cl-t"><b>${Z('As close as you can get today', '今天已盡力更接近 100%')}</b><small>${Z('Everything that can move today has moved. Come back tomorrow for more.', '今天能進步的都完成了，明天再來。')}</small></span></div>`; } catch (e) { console.warn(e); }
   const nextPick = allDone || !missionPick.n ? { fresh: true } : missionPick; // once the mission is done, Buddy's pick makes a fresh set // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
     ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', comboHTML || goalHTML ? `<div class="gr-goals">${comboHTML || goalHTML}</div>` : '').replace('<!--SKCHIP-->', skChip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}
+    ${closerHTML}
     ${MODE === null ? planHTML(false, nextPick) : ''}
     ${MODE === 'plan' ? (planCard ? planCard + (planDoneNow ? planHTML(true, nextPick, true) : '') : planHTML(true, nextPick, true)) : ''}
     ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
@@ -3602,6 +3638,7 @@ async function renderHome() {
   // which plan step the child started (the results pop-up then offers the next one), and "Next step" from a results pop-up
   $app.querySelectorAll('[data-skey] .ms-go').forEach((b) => b.addEventListener('click', () => { const k = b.closest('[data-skey]').dataset.skey; if (local.mission) { local.mission.cur = k; local.mission.curAt = Date.now(); saveLocal(); } }, true));
   if (local.autoNext && Date.now() - local.autoNext < 30000) { delete local.autoNext; saveLocal(); const g = $app.querySelector('.ms-item.is-next .ms-go') || $app.querySelector('[data-skey] .ms-go'); if (g) setTimeout(() => g.click(), 50); }
+  { const cg = document.getElementById('closerGo'); if (cg) cg.onclick = () => { cg.disabled = true; runCloser().finally(() => { cg.disabled = false; }); }; }
   { const lg = document.getElementById('lessonGo'); if (lg && lessonLeft) lg.onclick = () => go({ name: 'learn', bookId: lessonLeft.b.id, unitId: lessonLeft.u.id }); }
   { const lx = document.getElementById('lessonX'); if (lx && lessonLeft) lx.onclick = async () => {
     if (!(await confirmLeave({ title: Z('Close this lesson?', '關閉這一課？'), body: Z('Your place in it is cleared. You can start it again any time from the chapter.', '會清除這一課的進度，你可以隨時在章節重新開始。'), stay: Z('Keep it', '保留'), leave: Z('Close', '關閉') }))) return;
@@ -9008,7 +9045,7 @@ function streakInfo(has, t0 = startOfToday()) {
   return { n, rests };
 }
 function newSession(props) {
-  const sess = Object.assign({ from: view && view.name, at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
+  const sess = Object.assign({ from: view && view.name, boost: Date.now() - boostAt < 60000, at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
   if (!sess.placement) snapPre(sess);
   try { sess.preMk = mistakeCount(); } catch (e) {}
   return sess;
@@ -11262,8 +11299,11 @@ async function resultMoment(sess, qs, pct, got, total) {
   // the main button: the next step of Buddy's plan when this set was one of its steps; back to the chapters when it
   // was started from a book page; otherwise back to Today
   let home = { label: missionNextLabel(), run: () => go({ name: 'home' }) };
+  let boostLast = false; // "Get me closer": nothing more can move today
   { const M = local.mission;
-    if (M && M.cur && M.curAt && M.d === dayStart() && sess.from === 'home' && Date.now() - M.curAt < 3 * 3600000) {
+    if (sess.boost) { const nx = await closerPick().catch(() => null);
+      if (nx) home = { label: Z('Keep going: closer to 100% →', '繼續：更接近 100% →'), run: () => runCloser() }; else boostLast = true; }
+    else if (M && M.cur && M.curAt && M.d === dayStart() && sess.from === 'home' && Date.now() - M.curAt < 3 * 3600000) {
       const nx = (M.open || []).find(([k]) => k !== M.cur); delete M.cur; saveLocal(); // used once
       if (nx) home = { label: Z(`Next: ${String(nx[1]).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')} →`, `下一步：${nx[1]} →`), run: () => { local.autoNext = Date.now(); saveLocal(); go({ name: 'home' }); } };
     } else if (sess.from === 'book' && sess.book) home = { label: Z('Back to chapters', '返回章節'), run: () => go({ name: 'book', bookId: sess.book.id }) }; }
@@ -11329,7 +11369,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   return say({ face: great ? 'done' : 'happy', confetti: great || grew, sel: 'main.results', hero, chips, tone: great ? 'great' : ok ? 'ok' : 'tough',
     title: great ? Z('Brilliant set! 🎉', '這組做得很棒！🎉') : ok ? Z('Nice work!', '做得好！') : Z('Tough set: that’s how you learn', '這組有難度，這正是學習的方法'),
     sub: great ? Z('You really know this. Reviews over the next days will lock it in.', '你真的掌握了。之後幾天的溫習會讓你記得更牢。') : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
-    lines: [...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(() => { const cn = qs.filter((q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done && m.careless && m.t >= Date.now() - 3 * 3600e3; }).length;
+    lines: [...(boostLast ? [['🏁', Z('That’s everything that can move today. Brilliant work! Come back tomorrow for more.', '今天能進步的都完成了，做得好！明天再來。')]] : []), ...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(() => { const cn = qs.filter((q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done && m.careless && m.t >= Date.now() - 3 * 3600e3; }).length;
       return cn ? [['🔍', Z(`${cn} of your misses look careless: you usually get these right. Slow down and re-read before you answer.`, `有 ${cn} 題錯題看來是粗心：你平時答得對。答題前慢一點，重讀題目。`)]] : []; })(), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
     main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : seeAns });
 }
