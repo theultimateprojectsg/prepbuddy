@@ -7263,26 +7263,9 @@ async function fullTestCards(tests, btn) {
     return `<p class="pv-out">ⓘ ${PT(`Your practice so far was on ${other.slice(0, 2).map((c) => chName(c.unit)).join(' and ')}, which ${other.length > 1 ? 'aren’t' : 'isn’t'} in this test. If the test covers ${other.length > 1 ? 'them' : 'it'}, tap Edit and add ${other.length > 1 ? 'them' : 'it'}.`, `你目前練習的是${other.slice(0, 2).map((c) => `「${chName(c.unit)}」`).join('和')}，不在這個測驗範圍內。如果測驗包括，請按「修改」加入。`)}</p>`; };
   // one plain sentence under each test bar: where it's heading, or why there's no forecast yet, and what it would take
   // under each test bar, Buddy as a coach: honest about where the usual pace lands, then the plan to make the goal
-  const fcLine = (ready, aim, left, I) => {
-    const E = esc, li = (t) => `<li>${t}</li>`, box = (head, steps, extra = '') => `<div class="pv-coach"><div><b>${head}</b>${steps.length ? `<ol>${steps.map(li).join('')}</ol>` : ''}${extra}</div></div>`;
-    if (ready >= aim) return box(E(PT('You’re at 100%. Nice work!', '已達到 100%，做得好！')), [E(PT('Keep it there with short reviews every few days.', '每隔幾日做短時間溫習，保持狀態。'))]);
-    const ord = I.names.map((n, k) => [n, I.pcts[k], (I.levers || [])[k]]).filter((x) => !x[2] || x[2].k !== 'reviews').sort((a, b) => a[1] - b[1]);
-    const todayStep = ord.length ? (ord[0][2] && ord[0][2].en ? PT(`Today: ${ord[0][0]} (${ord[0][1]}%): ${ord[0][2].en}.`, `今天：「${ord[0][0]}」（${ord[0][1]}%）：${ord[0][2].en}。`) : PT(`Today: practise ${ord[0][0]}, your weakest chapter (${ord[0][1]}%).`, `今天：練習最弱的「${ord[0][0]}」（${ord[0][1]}%）。`)) : '';
-    const testStep = left >= 2 ? PT(`${I.prev}: a practice test, so test day feels familiar.`, `${I.prev}：做一次模擬測驗，考試時更有把握。`) : '';
-    if (I.lock || I.fc == null) return box(E(PT('Here’s how to get closer to 100%', '這樣做就能更接近 100%')), [todayStep, testStep].filter(Boolean).map(E));
-    const usual = Math.max(1, Math.round(left * I.habit)), dayW = (n) => (n >= left ? PT('every day', '每天') : PT(`on ${n} of the ${left} days left`, `餘下 ${left} 日中的 ${n} 日`));
-    const mins = (sets, days) => Math.max(10, Math.round((sets * SET_MIN) / Math.max(1, days) / 5) * 5);
-    const N = planNeeds(ready, I.pcts, left, aim), easy = N.sets <= Math.round(left * I.habit * 2);
-    const days = easy || Math.ceil(N.sets / usual) <= 3 ? usual : left, m = mins(N.sets, days);
-    const how = m > 40 ? PT(`Practise ${dayW(days)} for about ${m} minutes, split into two sessions (after school and after dinner works well). Buddy’s plan picks what to do in each one.`, `${dayW(days)}練習大約 ${m} 分鐘，分兩次做（例如放學後和晚飯後）。Buddy 的計劃會安排每次做甚麼。`)
-      : PT(`Practise ${dayW(days)} for about ${m} minutes. Buddy’s plan picks what to do each day.`, `${dayW(days)}練習大約 ${m} 分鐘，Buddy 的計劃會安排每天做甚麼。`);
-    const steps = [how, todayStep, PT('Every wrong answer goes into your Mistake book. Fix them the next day so they don’t cost marks twice.', '答錯的題目會放進錯題簿，第二天改正，就不會再失分。'), testStep].filter(Boolean).map(E);
-    if (easy) return box(E(PT(`You’re heading for about ${I.fc}%. Keep it up!`, `你正朝約 ${I.fc}% 進發，繼續努力！`)), steps.filter((x, k) => k !== 2));
-    return box(E(PT(`At your usual pace you’d reach about ${I.fc}%. Every step gets you closer to 100%. Here’s the plan:`, `照平時的步伐，考試時約 ${I.fc}%。每一步都更接近 100%。計劃是這樣：`)), steps);
-  };
+
   return tests.steps.map((p, ti) => {
     const habit = practiceHabit(), fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, habit);
-    const fcI = { pcts: chOf(p).map((c) => c.pct || 0), names: chOf(p).map((c) => chName(c.unit)), levers: chOf(p).map((c) => (c.score ? chapterLever(c) : null)), habit, fc, lock: !!fcLocked, prev: fmtDay(testDay(p.x) - DAY) };
     const aim = TEST_AIM; // the parent's target for this test, set with the slider
     const st = p.ready == null ? 'none' : p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim);
     const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
@@ -7301,9 +7284,8 @@ async function fullTestCards(tests, btn) {
     const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}</div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : fc == null ? '' : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>${!fcLocked && fc == null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
-    const coach = p.ready == null ? '' : `<div class="pv-fcline" data-ready="${p.ready}" data-left="${p.left}" data-info="${esc(JSON.stringify(fcI))}">${fcLine(p.ready, aim, p.left, fcI)}</div>`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${bar}${coach}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
+      ${bar}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
       <div class="pv-test-f">${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
   });
 }

@@ -2827,14 +2827,6 @@ button.ix-step{cursor:pointer}button.ix-step:hover{border-color:var(--accent)}
   .pv-kpi .pv-kdots i{width:auto!important;height:auto!important;aspect-ratio:1;max-height:14px;border-radius:3px}
 }
 
-.pv-fcline{margin:6px 0 0!important}
-.pv-coach{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:#FFFFFF;border:1.5px solid #E3E7F2}
-.pv-coach>svg{flex:none;margin-top:2px}
-.pv-coach>div{display:flex;flex-direction:column;gap:6px;min-width:0}
-.pv-coach b{font-size:14.5px;line-height:1.4;color:var(--ink)}
-.pv-coach ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13.5px;line-height:1.45;color:var(--text-2)}
-.pv-coach ol li::marker{color:var(--accent);font-weight:700}
-.pv-coach .pv-setaim{align-self:flex-start;margin-top:2px}
 .pv-nofc b{color:var(--muted)!important}
 
 /* sign-in, welcome and set-up screens hide the side menu: centre them on the whole screen */
@@ -3211,7 +3203,6 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .cb-mk{align-self:center;font-size:13px;font-weight:700;border:0;background:none}
 .cb-hb{display:flex;gap:4px}
 /* combined preview: the focus test card kept short; Next step is the big button */
-.cb-focus .pv-coach ol{display:none}.cb-focus .pv-coach b{font-weight:600}
 .cb-focus .pv-test-f .pv-btn.primary{background:none!important;color:var(--accent)!important;border:0!important;box-shadow:none!important;min-height:40px;padding:0 4px!important;width:auto!important;flex:0 0 auto;text-decoration:underline;text-underline-offset:3px;font-size:14px}
 .cb-focus .pv-test-f{justify-content:space-between}
 .gl-why{display:block;font-style:normal;font-size:12.5px;font-weight:500;line-height:1.4;color:var(--text-2);text-transform:none;letter-spacing:0;margin:2px 0 4px}
@@ -3220,11 +3211,11 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 /* DEV preview: all goals, most work first */
 .cb-modes{display:flex;gap:6px;flex-wrap:wrap;width:100%}.cb-dev .cb-modes .btn-sm{margin:0}
 .ag{display:flex;flex-direction:column;gap:12px}.ag>.gl-oh{padding:0 2px}
-.ag-item{display:flex;flex-direction:column;gap:6px}.ag-item .pv-test{margin:0}.ag-item .pv-coach ol{display:none}
+.ag-item{display:flex;flex-direction:column;gap:6px}.ag-item .pv-test{margin:0}
 .ag-mis{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:#1E7A46;background:#E8F7EF;padding:3px 10px;border-radius:999px}.ag-mis svg{width:13px;height:13px}
 .ag-long{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:18px;background:#FFFFFF;border:1.5px solid #BFE6D1}
 .ag-long .gl-ht b{font-family:'Lexend',sans-serif;font-size:18px}
-.ag-item .pv-coach ol,.cb-focus .pv-coach ol{display:block!important}.ag-item .pv-coach ol li:nth-child(n+3),.cb-focus .pv-coach ol li:nth-child(n+3){display:none}
+
 /* All goals: tests fold to a row */
 .ag-t{border-radius:18px;background:#FFFFFF;border:1px solid #E3E7F1;overflow:hidden}
 .ag-t>summary{list-style:none;border-top:0!important;position:relative;padding-right:38px!important}.ag-t>summary::-webkit-details-marker{display:none}
@@ -3250,7 +3241,7 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ag-mt .pv-bar{height:10px}
 .ag-sc[open] .ag-mt{display:none}
 .ag-body .pv-test{border:0!important;border-radius:0!important;margin:0;padding:0!important;background:none!important;box-shadow:none!important}.ag-body .pv-test-h{display:none}
-.ag-body .pv-coach ol li:nth-child(n+3){display:none}
+
 .ag-lv{display:flex;align-items:center;gap:12px}.ag-lv .pv-num b{font-size:18px}.ag-lv .pv-num span{font-size:11px}
 .ag-lvb{flex:1;min-width:0}.ag-lvb .gl-lvl{font-size:11px}
 .ag-sc .ag-mis{align-self:flex-start}
@@ -3281,7 +3272,7 @@ body[data-tab=""] #app,body:has(#tabs[style*="display: none"]) #app{margin-left:
 .ag-icb{all:unset;box-sizing:border-box;width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:#EEF1FB;color:#26357A;cursor:pointer}
 .ag-icb:hover{background:#E1E6F7}.ag-icb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ag-sc>summary{gap:12px}.ag-sc.l{gap:12px}
-.ag-body{margin-top:10px}.ag-body .pv-coach{background:#FFFFFF}
+.ag-body{margin-top:10px}
 .ag-body .pv-track{padding-top:22px!important}
 /* My goals sheet */
 .mg{gap:16px}
