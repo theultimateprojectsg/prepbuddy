@@ -23,7 +23,9 @@ function open() {
       req.onsuccess = () => { clearTimeout(slow); const db = req.result;
         // "Delete everything" in another tab: let go of the database so it can be deleted, then start fresh
         db.onversionchange = () => { try { db.close(); } catch (e) {} dbPromise = Promise.resolve(null); try { location.reload(); } catch (e) {} };
-        resolve(db); };
+        // the browser closed it (phone browsers do this to a tab left in the background): open it again next time
+        db.onclose = () => { if (dbPromise && dbPromise.db === db) dbPromise = null; };
+        dbPromise.db = db; resolve(db); };
       req.onerror = () => { clearTimeout(slow); resolve(null); };
     } catch (e) { resolve(null); }
   });
@@ -36,7 +38,17 @@ export async function close() {
   dbPromise = Promise.resolve(null);
 }
 
-function tx(db, mode, fn) {
+// One transaction. If the connection has been closed under us ("The database connection is closing"), open a
+// fresh one and try once more, instead of failing whatever the child was doing.
+async function tx(db, mode, fn) {
+  try { return await tx1(db, mode, fn); } catch (e) {
+    if (!e || (e.name !== 'InvalidStateError' && !/closing|closed/i.test(String(e.message || '')))) throw e;
+    if (dbPromise && dbPromise.db === db) dbPromise = null;
+    const db2 = await open(); if (!db2 || db2 === db) throw e;
+    return tx1(db2, mode, fn);
+  }
+}
+function tx1(db, mode, fn) {
   return new Promise((resolve, reject) => {
     const t = db.transaction(STORE, mode);
     const r = fn(t.objectStore(STORE));
@@ -62,11 +74,7 @@ export async function getMany(keys, fallback = null) {
   if (!miss.length) return res;
   const db = await open();
   if (!db) { miss.forEach((i) => { res[i] = memory.has(keys[i]) ? memory.get(keys[i]) : fallback; }); return res; }
-  await new Promise((resolve, reject) => {
-    const t = db.transaction(STORE, 'readonly'), s = t.objectStore(STORE);
-    for (const i of miss) { const r = s.get(keys[i]); r.onsuccess = () => { cache.set(keys[i], r.result); res[i] = out(r.result, fallback); }; }
-    t.oncomplete = () => resolve(); t.onerror = () => reject(t.error); t.onabort = () => reject(t.error);
-  });
+  await tx(db, 'readonly', (st) => { for (const i of miss) { const r = st.get(keys[i]); r.onsuccess = () => { cache.set(keys[i], r.result); res[i] = out(r.result, fallback); }; } });
   return res;
 }
 
