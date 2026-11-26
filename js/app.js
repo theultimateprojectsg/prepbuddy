@@ -516,7 +516,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     // practice fills over several sets, never in one: the points needed are at least 5 sets' worth of right answers
     // at Understand level. No daily limit: a child may practise as much as they like; crammed practice fades (below)
     const need = Math.max(2.5 * T, 5 * sessionSize());
-    for (const e of P) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1);
+    for (const e of L) { const c = seen.get(e.q) || 0; seen.set(e.q, c + 1); // every answer on this chapter, tests and mock exams included
       const v = Math.max(0, Math.min(1, e.g / e.m)) * LV_W(e.l) * (e.ty === 'w' ? 1.25 : 1) * (c === 0 ? 1 : c === 1 ? 0.5 : 0.25) * (e.k === 'lock' ? 0.3 : 1); // 'lock' and 'place': older lock-in and level-check answers
       pts += Math.max(0, v); }
     const rec = P.slice(-20), acc = rec.length ? rec.reduce((a, e) => a + Math.max(0, Math.min(1, e.g / e.m)), 0) / rec.length : 0;
@@ -3003,7 +3003,8 @@ async function renderHome() {
     // chapter tests passed in the last 3 days
     for (const x of (local.tests || []).filter((x) => x.t > d3 && x.m && x.g / x.m >= 0.8).slice(-2)) {
       const nm = (x.title && String(x.title).replace(/^chapter test[:·\s-]*/i, '')) || unitName(Object.keys(x.per || {})[0]);
-      add(2, 'medal', Z(`You passed ${nm ? `the ${nm} test` : 'a chapter test'} with ${Math.round(100 * x.g / x.m)}%!`, `${nm ? `「${nm}」測驗` : '章節測驗'}考了 ${Math.round(100 * x.g / x.m)}%，合格了！`), Z('Under time, first try. That’s test-ready.', '限時、第一次就合格，準備好考試了。')); }
+      const pc = Math.round(100 * x.g / x.m), mock = x.kind !== 'test' || /mock|模擬/i.test(nm || '');
+      add(2, 'medal', mock ? Z(`You scored ${pc}% on a mock exam!`, `模擬考試考了 ${pc}%！`) : Z(`You passed the ${nm ? `${shortTitle(nm)} ` : ''}chapter test with ${pc}%!`, `${nm ? `「${shortTitle(nm)}」` : ''}章節測驗考了 ${pc}%，合格了！`), Z('Under time, first try. That’s test-ready.', '限時、第一次就合格，準備好考試了。')); }
     // a chapter that jumped: this week vs the week before
     { const by = {}; for (const e of local.log) { if (!e.q || !e.m || e.t < wk - 7 * DAY) continue; const k = String(e.q).split(':').slice(0, 2).join(':'); const o = by[k] || (by[k] = { now: [], prev: [] }); (e.t >= wk ? o.now : o.prev).push(e); }
       const best = Object.entries(by).map(([k, o]) => ({ k, a: o.now.length >= 4 ? accP(o.now) : null, b: o.prev.length >= 4 ? accP(o.prev) : null })).filter((x) => x.a != null && x.b != null && x.a - x.b >= 15).sort((x, y) => (y.a - y.b) - (x.a - x.b))[0];
