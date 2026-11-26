@@ -5078,11 +5078,12 @@ async function moment(o) {
     ${chips.length ? `<div class="mo-chips">${chips.map(([k, t]) => `<span class="mo-chip ${k}">${t}</span>`).join('')}</div>` : ''}
     ${(o.bars || []).slice(0, 3).map(bar).join('')}
     ${(o.lines || []).length ? `<ul class="mo-lines">${o.lines.map(([i, t]) => `<li><span aria-hidden="true">${i}</span><span>${t}</span></li>`).join('')}</ul>` : ''}
-    </div></div><div class="mo-btns">${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}${o.alt === false && o.main ? '' : `<button class="btn ${o.main ? 'ghost' : ''}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button>`}</div></div>`;
+    </div></div><div class="mo-btns">${o.main ? `<button class="btn" id="moMain">${o.main.label}</button>` : ''}${o.alt === false && o.main ? '' : `<button class="btn ${o.main ? 'ghost' : ''}" id="moAlt">${o.alt ? o.alt.label : PT('Nice!', '好！')}</button>`}${o.link ? `<button class="mo-link" id="moLink">${o.link.label}</button>` : ''}</div></div>`;
   document.body.classList.add('mo-lock'); document.body.appendChild(w);
   const close = () => { w.remove(); if (!document.querySelector('.mo-pop')) document.body.classList.remove('mo-lock'); };
   const mA = w.querySelector('#moAlt'); if (mA) mA.onclick = () => { close(); if (o.alt && o.alt.run) o.alt.run(); };
   const m = w.querySelector('#moMain'); if (m) m.onclick = () => { close(); o.main.run(); };
+  const mL = w.querySelector('#moLink'); if (mL) mL.onclick = () => { close(); o.link.run(); };
   w.onclick = (e) => { if (e.target === w) close(); };
   (m || w.querySelector('#moAlt')).focus({ preventScroll: true }); { const cd = w.querySelector('.mo-scroll'); if (cd) cd.scrollTop = 0; }
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -10979,7 +10980,7 @@ async function resultMoment(sess, qs, pct, got, total) {
     sub: great ? '' : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(boostLast ? [['🏁', Z('That’s everything that can move today. Brilliant work! Come back tomorrow for more.', '今天能進步的都完成了，做得好！明天再來。')]] : []), ...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(() => { const cn = qs.filter((q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done && m.careless && m.t >= Date.now() - 3 * 3600e3; }).length;
       return cn ? [['🔍', Z(`${cn} of your misses look careless: you usually get these right. Slow down and re-read before you answer.`, `有 ${cn} 題錯題看來是粗心：你平時答得對。答題前慢一點，重讀題目。`)]] : []; })(), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
-    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? { label: Z('See what I missed', '看看我答錯的'), run: toAnswers } : seeAns });
+    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? fix : seeAns, link: !wantFix && missed ? { label: Z('See my answers', '看看我的答案'), run: toAnswers } : null });
 }
 function renderSummary() {
   setTimeout(() => pilotSync(), 3000);
@@ -10994,14 +10995,14 @@ function renderSummary() {
     const st = full ? 'right' : g ? 'half' : 'miss';
     // Missed or partly right: the right answer and why, under the question.
     let fix = '';
-    if (!full) {
+    {
       const ZZ = (en, zh) => (LANG === 'zh' ? zh : en), lines = [];
       // one compact line per answer: a tick, or what the child put (crossed out) → the right answer
       const norm = (t) => String(t || '').toLowerCase().replace(/<[^>]*>/g, '').replace(/[\s.,;:!?'"’‘“”。，]/g, '');
       const line = (good, alsoOk, mine, ok, lab = '') => `<div class="rfx-line ${ok ? 'ok' : 'no'}">${lab ? `<span class="rfx-pl">${lab}</span>` : ''}<span class="rfx-ic" aria-hidden="true">${ok ? '✓' : '✗'}</span><span class="rfx-a" data-keep>${ok ? `<b>${mine || good}</b>` : `${mine ? `<s>${mine}</s>` : `<i>${ZZ('blank', '未作答')}</i>`}<span class="rfx-arr" aria-hidden="true">→</span><b>${good}</b>`}${!ok && alsoOk ? `<em>${ZZ('also OK', '亦接受')}: ${alsoOk}</em>` : ''}</span></div>`;
       if (choiceType(q) && Array.isArray(q.options)) {
         const L = q.correct_option, oi = 'ABCD'.indexOf(L), mine = S.answers && S.answers[k];
-        if (oi >= 0) lines.push(line(`${L}. ${esc(plain(q.options[oi]))}`, '', mine && 'ABCD'.indexOf(mine) >= 0 ? `${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}` : '', false));
+        if (oi >= 0) lines.push(line(`${L}. ${esc(plain(q.options[oi]))}`, '', mine && 'ABCD'.indexOf(mine) >= 0 ? `${mine}. ${esc(plain(q.options['ABCD'.indexOf(mine)]))}` : '', full));
       } else if (Array.isArray(q.parts)) {
         const tk = (S.ticks && S.ticks[k]) || [], my = (S.answers && S.answers[k]) || [];
         q.parts.forEach((p, pi) => {
@@ -11021,7 +11022,7 @@ function renderSummary() {
           });
           if (!ans && p.blank && rest.length) ans = rest.shift()[0];
           const mine = String(my[pi] || '').trim();
-          const partOK = (tk[pi] && p.mark_scheme.length && p.mark_scheme.every((_, j) => tk[pi][j])) || (ans && mine && (norm(mine) === norm(ans) || acc.split(' · ').some((a) => a && norm(a) === norm(mine))));
+          const partOK = full || (tk[pi] && p.mark_scheme.length && p.mark_scheme.every((_, j) => tk[pi][j])) || (ans && mine && (norm(mine) === norm(ans) || acc.split(' · ').some((a) => a && norm(a) === norm(mine))));
           let h = '';
           if (ans) h += line(esc(ans), esc(acc), esc(mine.slice(0, 200)), partOK, lab);
           else if (lab) h += `<div class="rfx-part">${ZZ('Part', '部分')} ${lab}</div>`;
@@ -11038,7 +11039,8 @@ function renderSummary() {
       if (q.explanation) lines.push(`<div class="rfx-why2"><span class="rfx-bulb" aria-hidden="true">💡</span><span data-keep>${esc(plain(q.explanation))}</span></div>`);
       if (lines.length) fix = `<div class="rfix">${lines.join('')}</div>`;
     }
-    return `<div class="rrow ${st}"><span class="rnum">Q${k + 1}</span><span class="rtext" data-raw>${esc(String(label).slice(0, 110))}${String(label).length > 110 ? '…' : ''}</span><span class="rmark">${g}/${m}</span>${fix}</div>`;
+    const tog = full && fix ? ` rtog" role="button" tabindex="0" aria-expanded="false` : '';
+    return `<div class="rrow ${st}${tog}"><span class="rnum">Q${k + 1}</span><span class="rtext" data-raw>${esc(String(label).slice(0, 110))}${String(label).length > 110 ? '…' : ''}</span><span class="rmark">${g}/${m}</span>${tog ? '<span class="rchev" aria-hidden="true">›</span>' : ''}${fix}</div>`;
   }).join('');
   const missed = qs.filter((q, k) => (S.got[k] || 0) < marksOf(q));
   const missedIdx = qs.map((q, k) => k).filter((k) => (S.got[k] || 0) < marksOf(qs[k]));
@@ -11117,6 +11119,8 @@ function renderSummary() {
       ${S.mode === 'spaced' ? `<p class="hint" style="margin:0 0 8px;line-height:1.5">Questions you got right come back later and later. The ones you missed come back tomorrow.</p>` : ''}
       <div class="card">${list}</div></section>
     </main>`;
+  $app.querySelectorAll('.rrow.rtog').forEach((r) => { const t = (e) => { if (e.target.closest('.rfix')) return; const o = r.classList.toggle('open'); r.setAttribute('aria-expanded', String(o)); };
+    r.onclick = t; r.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); t(e); } }; });
   const leave = () => (S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' }));
   document.getElementById('home').onclick = leave;
   document.getElementById('back').onclick = leave;
