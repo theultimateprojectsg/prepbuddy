@@ -548,6 +548,256 @@
    "explanation": "Past question: Did + you + base verb (visit) …?",
    "id": "pbu0x18",
    "checked": "claude"
+  },
+  {
+   "id": "pbr001",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Ming's Sunday",
+    "kind": "diary",
+    "text": "Sunday, 9 March\nToday was a busy day. In the morning, I helped Dad wash the car. Then we drove to Grandma's flat in Sha Tin. Grandma cooked my favourite noodles for lunch. I ate two big bowls!\nIn the afternoon, my cousin Lok and I went to the park near Grandma's building. We played football for an hour. Lok kicked the ball very hard and it landed in a tree. We didn't know what to do. Luckily, a tall man saw us and he climbed up to get it. We thanked him many times.\nWhen we got back, Grandma gave us some cold watermelon. I was hot and tired, so it tasted wonderful.\nIn the evening, Mum asked me about my day, and I told her about the tall man. She said we were very lucky. After dinner, I finished my homework and read a comic book. I went to bed at nine o'clock. It was a great Sunday!"
+   },
+   "stem": "Read Ming's diary. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where does Ming's grandma live?",
+     "marks": 1,
+     "options": [
+      "In Tai O",
+      "In Sha Tin",
+      "In Central",
+      "In Tung Chung"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. In Sha Tin"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What did Ming and Lok play in the park?",
+     "marks": 1,
+     "options": [
+      "Basketball",
+      "Badminton",
+      "Football",
+      "Hide-and-seek"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Football"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Ming helped Dad wash the car in the afternoon.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word in the diary that means 'very good'. (It begins with 'w'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: wonderful"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Who got the ball out of the tree?",
+     "marks": 1,
+     "mark_scheme": [
+      "A tall man (who saw them) climbed up and got it"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Why did the watermelon taste wonderful to Ming? Give one reason.",
+     "marks": 1,
+     "mark_scheme": [
+      "Because he was hot and/or tired (after playing football)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr002",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "A trip to the Science Museum",
+    "kind": "email",
+    "text": "Dear Aunt Mei,\nLast Friday, our class visited the Hong Kong Science Museum. We took a coach from school at nine o'clock. The journey took about forty minutes.\nFirst, we watched a show about electricity. A teacher at the museum touched a special ball, and her hair stood up! Everyone laughed. Then we visited the hall about the human body. I learned that our hearts beat about one hundred thousand times a day.\nOur teacher, Mr Lam, asked us to write down three new facts in our notebooks. At lunchtime, we ate our sandwiches in the garden outside. After lunch, we tried some games about light and sound. My favourite one was a mirror maze. I got lost twice!\nWe also bought a small postcard of the museum for our classroom wall. We arrived back at school at three o'clock. I was tired, but I wanted to go again. Next time, I want to go with you.\nLove,\nHoi Yan"
+   },
+   "stem": "Read Hoi Yan's email. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How did the class go to the museum?",
+     "marks": 1,
+     "options": [
+      "By MTR",
+      "By coach",
+      "On foot",
+      "By ferry"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. By coach"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What did Hoi Yan learn in the hall about the human body?",
+     "marks": 1,
+     "options": [
+      "How light travels",
+      "How many times our hearts beat a day",
+      "How to make electricity",
+      "How mirrors work"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. How many times our hearts beat a day"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The class ate lunch inside the museum.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Which game was Hoi Yan's favourite? Write two words from the email.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: mirror maze"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What made everyone laugh during the show?",
+     "marks": 1,
+     "mark_scheme": [
+      "The teacher's hair stood up (when she touched the special ball)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "How do you know Hoi Yan enjoyed the trip? Give one piece of evidence.",
+     "marks": 1,
+     "mark_scheme": [
+      "She wanted to go again / she wants to go next time with her aunt"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr003",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Lost Kitten",
+    "kind": "story",
+    "text": "On a rainy afternoon, Jason was walking home from school when he heard a small sound under a bench. He bent down and saw a tiny grey kitten. It was wet and it was shaking.\nJason didn't want to leave it in the rain. He took off his jacket, wrapped the kitten in it and carried it home. His mother was surprised, but she quickly found an old towel and dried the kitten. Jason poured some milk into a saucer, but his mother stopped him. \"Milk isn't good for kittens,\" she said. \"Let's give it some water and ask the vet.\"\nThe next day, they took the kitten to the vet. The vet checked it and said it was healthy. She also found a small tag inside its collar with a phone number on it. Jason's mother called the number. Half an hour later, a girl and her father arrived. The girl cried with happiness when she saw her kitten.\nJason felt a little sad when the kitten left, but he also felt proud."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where did Jason find the kitten?",
+     "marks": 1,
+     "options": [
+      "In his school bag",
+      "Under a bench",
+      "Behind a door",
+      "In a park tree"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Under a bench"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "True or false? Jason's mother gave the kitten some milk.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "How did they find the kitten's owner?",
+     "marks": 1,
+     "options": [
+      "They put up a poster",
+      "The vet knew the girl",
+      "There was a phone number on a tag",
+      "The girl saw them in the street"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. There was a phone number on a tag"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that tells you the kitten was cold and scared. (It begins with 's'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: shaking"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What did Jason do so the kitten did not get wetter on the way home?",
+     "marks": 1,
+     "mark_scheme": [
+      "He wrapped it in his jacket (and carried it home)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Jason felt 'a little sad' but also 'proud'. Why did he feel each of these?",
+     "marks": 2,
+     "mark_scheme": [
+      "Sad: the kitten left / he couldn't keep it (1)",
+      "Proud: he helped/saved the kitten and it went back to its owner (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
   }
  ],
  "u1": [
@@ -1053,6 +1303,256 @@
    "explanation": "My cat = it, so the verb needs -s: sleeps.",
    "id": "pbu1x18",
    "checked": "claude"
+  },
+  {
+   "id": "pbr004",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "A Day at a Fire Station",
+    "kind": "article",
+    "text": "Firefighters work very long shifts. At a fire station in Kowloon, the day starts at seven o'clock in the morning. First, the firefighters check their fire engines and their equipment. They test the hoses, the ladders and the breathing masks. Everything must work perfectly.\nAfter that, they exercise for an hour. Firefighters need to be strong because their uniforms and tools are very heavy. Then they practise their skills. They climb ladders, carry heavy bags and learn about new kinds of fires.\nWhen the alarm rings, everything changes. The firefighters stop what they are doing and run to the fire engine. They usually leave the station in less than a minute.\nRight now, it is lunchtime at the station. Some firefighters are eating rice and vegetables. Others are cleaning the fire engine. One firefighter is talking to a group of students who are visiting today. He is showing them his helmet and his heavy boots."
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "What do the firefighters do first every morning?",
+     "marks": 1,
+     "options": [
+      "They exercise",
+      "They check the fire engines and equipment",
+      "They eat breakfast",
+      "They visit schools"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. They check the fire engines and equipment"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "True or false? Firefighters need to be strong because their tools are heavy.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "How quickly do the firefighters usually leave when the alarm rings?",
+     "marks": 1,
+     "options": [
+      "In less than a minute",
+      "In five minutes",
+      "In ten minutes",
+      "In an hour"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: A. In less than a minute"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'tools and things you need for a job'. (It begins with 'e'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: equipment"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Name two things the firefighters test in the morning.",
+     "marks": 1,
+     "mark_scheme": [
+      "Any two of: hoses, ladders, breathing masks"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Write one thing that is happening at the station right now.",
+     "marks": 1,
+     "mark_scheme": [
+      "Any one: some are eating rice and vegetables / others are cleaning the fire engine / one is talking to (showing) students his helmet and boots"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr005",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "My Morning Routine",
+    "kind": "blog",
+    "text": "Hi everyone! My name is Chloe and I'm nine years old. Today I'm writing about my school mornings.\nI get up at half past six every school day. I wash my face and brush my teeth. Then I put on my uniform. My mum always makes breakfast for me. I usually have a boiled egg and some toast, but on Fridays we have congee.\nI leave home at ten past seven. I take the school bus because my school is quite far away. On the bus, I sometimes read a book and sometimes chat with my friend Bella.\nBut this morning is different! It's a public holiday, so there's no school. Right now, I'm sitting in my pyjamas and I'm writing this blog. My little brother is watching cartoons and my dad is still sleeping. I'm going to make pancakes with Mum later. After lunch, we are going to visit my cousins in Tuen Mun. Holidays are the best!"
+   },
+   "stem": "Read Chloe's blog. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "What time does Chloe get up on school days?",
+     "marks": 1,
+     "options": [
+      "6:00",
+      "6:30",
+      "7:00",
+      "7:10"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. 6:30"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What does Chloe have for breakfast on Fridays?",
+     "marks": 1,
+     "options": [
+      "Toast",
+      "Pancakes",
+      "Congee",
+      "A boiled egg"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Congee"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Chloe walks to school because it is near her home.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What is Chloe's little brother doing right now? Write two words from the blog.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: watching cartoons"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why is this morning different from Chloe's usual mornings?",
+     "marks": 1,
+     "mark_scheme": [
+      "It is a public holiday / there is no school"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What does Chloe sometimes do on the school bus? Give one thing.",
+     "marks": 1,
+     "mark_scheme": [
+      "Reads a book / chats with her friend Bella"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr006",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Busy Wet Market",
+    "kind": "article",
+    "text": "Every morning, the wet market near Mrs Lee's home opens at six o'clock. The fishmongers arrive first because fresh fish must be ready for early shoppers. They put the fish on ice and spray water on them to keep them fresh. The vegetable sellers arrange their choi sum and tomatoes in neat piles.\nMrs Lee does her shopping here every Saturday. She likes the wet market because the food is fresh and the sellers know her name. She usually buys fish, vegetables and fruit for the whole week.\nToday is Saturday, and the market is very noisy. A butcher is shouting the prices of pork. A woman is choosing mangoes carefully. Mrs Lee is talking to the fish seller. She is asking him which fish is the freshest. He is pointing to a big grouper and smiling.\nSome young people prefer supermarkets because they are cool and quiet. But many older people still love the wet market."
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Why do the fishmongers arrive first?",
+     "marks": 1,
+     "options": [
+      "They live nearby",
+      "Fresh fish must be ready for early shoppers",
+      "They need to clean the market",
+      "They like the cool morning"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Fresh fish must be ready for early shoppers"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "True or false? Mrs Lee goes to the wet market every day.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "What is the butcher doing right now?",
+     "marks": 1,
+     "options": [
+      "Choosing mangoes",
+      "Spraying water on fish",
+      "Shouting the prices of pork",
+      "Talking to Mrs Lee"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Shouting the prices of pork"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word in the last paragraph that means 'like more'. (It begins with 'p'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: prefer"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Give two reasons why Mrs Lee likes the wet market.",
+     "marks": 2,
+     "mark_scheme": [
+      "The food is fresh (1)",
+      "The sellers know her name (1)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Why do some young people prefer supermarkets?",
+     "marks": 1,
+     "mark_scheme": [
+      "They are cool and quiet"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
   }
  ],
  "u2": [
@@ -1511,6 +2011,256 @@
    ],
    "explanation": "Be (am/is/are) + going to + base verb.",
    "id": "pbu2x17",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr007",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Sports Day is Coming!",
+    "kind": "notice",
+    "text": "SPORTS DAY NOTICE\nOur school Sports Day is going to be on Friday, 18 April, at the Wan Chai Sports Ground. It will start at 8:30 a.m. and finish at 3:00 p.m.\nStudents are going to travel to the sports ground by coach. Please arrive at school by 7:45 a.m. The coaches will leave at 8:00 a.m. sharp.\nEvery student will take part in at least one event. There are going to be running races, a long jump, a relay race and a tug of war between the classes.\nWhat to bring:\n- your PE uniform and running shoes\n- a water bottle and a cap\n- a snack (no fizzy drinks, please)\nIf it rains heavily, Sports Day will move to Friday, 25 April. We will send a message to parents by 6:30 a.m. on the day.\nParents are welcome to watch in the stands. Please remember to put sun cream on before you leave home, because there is not much shade at the sports ground."
+   },
+   "stem": "Read the notice. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where is Sports Day going to be?",
+     "marks": 1,
+     "options": [
+      "At the school hall",
+      "At Victoria Park",
+      "At the Wan Chai Sports Ground",
+      "At the Science Museum"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. At the Wan Chai Sports Ground"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What time must students arrive at school?",
+     "marks": 1,
+     "options": [
+      "7:30 a.m.",
+      "7:45 a.m.",
+      "8:00 a.m.",
+      "8:30 a.m."
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. 7:45 a.m."
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Students can bring fizzy drinks.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What will happen between the classes? Write three words from the notice.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: tug of war"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What will happen if it rains heavily?",
+     "marks": 1,
+     "mark_scheme": [
+      "Sports Day will move to Friday, 25 April"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "How will parents know if Sports Day is moved?",
+     "marks": 1,
+     "mark_scheme": [
+      "The school will send a message (by 6:30 a.m. on the day)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr008",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Summer Plans",
+    "kind": "email",
+    "text": "Hi Ben,\nGuess what? My family is going to visit my grandparents in Penang this summer! We're going to fly there on 15 July and stay for two weeks.\nMy grandparents have a house near the beach. I'm going to swim every day, and Grandpa is going to teach me how to fish. My mum says we will also visit a big night market. I want to try every kind of noodle there!\nMy sister isn't coming with us at first. She's going to join a music camp in Hong Kong, so she will fly to Penang a week later.\nWhat are you going to do this summer? Are you going to stay in Hong Kong? If you are, maybe we can go to the library together when I'm back in August.\nI'll send you some photos from Penang. I'm also going to buy you a small present from the night market, but it's a surprise!\nSee you soon,\nKelvin"
+   },
+   "stem": "Read Kelvin's email. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How long is Kelvin going to stay in Penang?",
+     "marks": 1,
+     "options": [
+      "One week",
+      "Two weeks",
+      "One month",
+      "The whole summer"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Two weeks"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What is Grandpa going to teach Kelvin?",
+     "marks": 1,
+     "options": [
+      "How to swim",
+      "How to cook noodles",
+      "How to fish",
+      "How to play music"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. How to fish"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Kelvin's sister is going to fly to Penang with the family on 15 July.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Where will the family try lots of food? Write two words from the email.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: night market"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why is Kelvin's sister going to Penang later?",
+     "marks": 1,
+     "mark_scheme": [
+      "She is going to join a music camp in Hong Kong (first)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What does Kelvin suggest he and Ben can do in August?",
+     "marks": 1,
+     "mark_scheme": [
+      "Go to the library together"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr009",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Weather Forecast",
+    "kind": "story",
+    "text": "It was Thursday evening, and the whole Chan family was watching the weather forecast. \"There will be strong winds tomorrow,\" said the reporter. \"The Observatory is going to raise the Typhoon Signal No. 8 at about six o'clock in the morning.\"\nTim jumped up. \"That means no school!\" he shouted.\n\"It also means we can't go out,\" said Mum. \"We're going to stay at home all day, so let's get ready tonight.\"\nDad went to the supermarket to buy bread, eggs and bottled water. Mum checked the torch and put new batteries in it. Tim and his sister, Amy, helped to move the plants from the balcony into the living room. \"If we leave them outside, the wind will blow them away,\" Amy explained.\nAt bedtime, Tim looked out of the window. The trees were already moving. \"I think tomorrow will be boring,\" he said.\n\"It won't be boring,\" said Amy. \"We're going to bake cookies and play board games. I've got a plan!"
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "What did the weather reporter say would happen tomorrow?",
+     "marks": 1,
+     "options": [
+      "It would be sunny",
+      "There would be strong winds",
+      "It would snow",
+      "There would be heavy fog"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. There would be strong winds"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "True or false? Dad went to the supermarket to buy food and water.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "Why did the children move the plants into the living room?",
+     "marks": 1,
+     "options": [
+      "The plants needed sunlight",
+      "Mum wanted to water them",
+      "The wind might blow them away",
+      "They wanted to sell them"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. The wind might blow them away"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What did Mum put new batteries in? Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: torch"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why did Tim shout 'That means no school!'?",
+     "marks": 1,
+     "mark_scheme": [
+      "Because Typhoon Signal No. 8 means schools close / there will be no school"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Tim thinks tomorrow will be boring. Does Amy agree? Explain using the story.",
+     "marks": 2,
+     "mark_scheme": [
+      "No, she doesn't agree (1)",
+      "She plans to bake cookies and play board games (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
    "checked": "claude"
   }
  ],
@@ -1991,6 +2741,256 @@
    ],
    "explanation": "Comparative + than: taller than, more careful than.",
    "id": "pbu3x17",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr010",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Hong Kong's Three Tallest Peaks",
+    "kind": "article",
+    "text": "Hong Kong is famous for its tall buildings, but it also has many mountains. Tai Mo Shan is the highest mountain in Hong Kong. It is 957 metres tall. On cold winter mornings, the top is sometimes covered in frost.\nLantau Peak is the second highest. It is 934 metres tall, so it is only a little lower than Tai Mo Shan. Many people climb Lantau Peak very early in the morning to watch the sunrise. The path is steeper and harder than the path up Tai Mo Shan.\nSunset Peak is the third highest at 869 metres. It is lower than Lantau Peak, but many hikers think it is the most beautiful. In autumn, its hills turn golden with tall grass.\nIf you are a beginner, Tai Mo Shan is a good choice because you can walk on a road for most of the way. Remember to bring plenty of water, whichever peak you choose!"
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Which is the highest mountain in Hong Kong?",
+     "marks": 1,
+     "options": [
+      "Lantau Peak",
+      "Sunset Peak",
+      "Tai Mo Shan",
+      "The Peak"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Tai Mo Shan"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "How much higher is Tai Mo Shan than Lantau Peak?",
+     "marks": 1,
+     "options": [
+      "23 metres",
+      "88 metres",
+      "65 metres",
+      "957 metres"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: A. 23 metres"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The path up Lantau Peak is easier than the path up Tai Mo Shan.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'a person who is just starting to learn something'. (It begins with 'b'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: beginner"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why do many people climb Lantau Peak very early in the morning?",
+     "marks": 1,
+     "mark_scheme": [
+      "To watch the sunrise"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What do many hikers think about Sunset Peak?",
+     "marks": 1,
+     "mark_scheme": [
+      "It is the most beautiful (its hills turn golden in autumn)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr011",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Choose Your Pet!",
+    "kind": "leaflet",
+    "text": "HAPPY PAWS PET SHOP – Which pet is right for you?\nGoldfish: Goldfish are the cheapest pets in our shop. They are quieter than any other pet and they don't need a lot of space. But you must clean their tank every week.\nRabbits: Rabbits are bigger than goldfish and they are very friendly. They love to be stroked. They need more space than hamsters, and they eat lots of fresh vegetables every day.\nHamsters: Hamsters are smaller than rabbits and they are easy to look after. But they sleep in the day and they are busiest at night, so they can be noisy when you want to sleep!\nTortoises: Tortoises are the slowest pets, but they live the longest. Some tortoises live for more than fifty years! They need a warm, dry home.\nCome and visit us at Shop 12, Happy Mall. We open every day from 10 a.m. to 8 p.m."
+   },
+   "stem": "Read the leaflet. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Which pets are the cheapest in the shop?",
+     "marks": 1,
+     "options": [
+      "Rabbits",
+      "Hamsters",
+      "Goldfish",
+      "Tortoises"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Goldfish"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Which pet can live for more than fifty years?",
+     "marks": 1,
+     "options": [
+      "A rabbit",
+      "A tortoise",
+      "A hamster",
+      "A goldfish"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. A tortoise"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Hamsters are bigger than rabbits.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'touched gently with your hand'. (It begins with 's'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: stroked"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why might a hamster be a problem at night?",
+     "marks": 1,
+     "mark_scheme": [
+      "It is busiest at night / it can be noisy when you want to sleep"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Which pet would be best for a family that wants a very quiet pet? Give a reason from the leaflet.",
+     "marks": 1,
+     "mark_scheme": [
+      "Goldfish, because they are quieter than any other pet"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr012",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Best Lunch Box",
+    "kind": "story",
+    "text": "Every Monday, Miss Wong's class has a 'Healthy Lunch Box' competition. This week, three students reached the final.\nSam's lunch box was the most colourful. It had red tomatoes, orange carrots, green cucumber and a brown rice ball. Ella's lunch box was the biggest. She had a large chicken sandwich, two apples and a carton of milk. Peter's lunch box was the smallest, but it had fish, vegetables and rice, and he had made it all by himself.\nMiss Wong looked carefully at each one. \"Ella, your lunch is very healthy, but it's too much food for one person,\" she said. \"Sam's lunch is the brightest, but it doesn't have much protein.\" Then she smiled at Peter. \"Peter's lunch box isn't the biggest or the most colourful, but it's balanced, and he cooked it himself. Peter is the winner!\"\nEveryone clapped. Sam whispered to Peter, \"Can you teach me to make that fish next week?\""
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Whose lunch box was the most colourful?",
+     "marks": 1,
+     "options": [
+      "Ella's",
+      "Peter's",
+      "Sam's",
+      "Miss Wong's"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Sam's"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "True or false? Ella's lunch box was the biggest.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "What was wrong with Ella's lunch, according to Miss Wong?",
+     "marks": 1,
+     "options": [
+      "It wasn't healthy",
+      "It was too much food for one person",
+      "It had no fruit",
+      "She didn't make it herself"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. It was too much food for one person"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Miss Wong says Peter's lunch has a good mix of foods. Find the word she uses. (It begins with 'b'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: balanced"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Give two reasons why Peter won.",
+     "marks": 2,
+     "mark_scheme": [
+      "His lunch was balanced (fish, vegetables and rice) (1)",
+      "He made/cooked it himself (1)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What does Sam's question at the end tell you about how he feels?",
+     "marks": 1,
+     "mark_scheme": [
+      "He is not upset / he admires Peter / he wants to learn from Peter"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
    "checked": "claude"
   }
  ],
@@ -2509,6 +3509,256 @@
    "explanation": "Furniture is uncountable: no -s, and it takes is.",
    "id": "pbu4x17",
    "checked": "claude"
+  },
+  {
+   "id": "pbr013",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Making Fried Rice",
+    "kind": "recount",
+    "text": "Last Saturday, my grandpa taught me how to make fried rice. First, we checked what we had in the kitchen. There was some cold rice from the night before, three eggs, a little ham and some peas. \"We don't need much oil,\" Grandpa said. \"Just two spoons.\"\nGrandpa heated the wok. I cracked the eggs into a bowl and beat them with chopsticks. We cooked the eggs first and took them out. Then we added the rice, the ham and a handful of peas. Grandpa showed me how to keep stirring so the rice didn't burn.\n\"How much salt should I add?\" I asked.\n\"Only a little,\" said Grandpa. \"Too much salt is bad for you. We can add a few drops of soy sauce instead.\"\nFinally, we put the eggs back in and mixed everything together. The fried rice was delicious. There wasn't any left at the end of lunch!"
+   },
+   "stem": "Read the recount. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How many eggs were there in the kitchen?",
+     "marks": 1,
+     "options": [
+      "Two",
+      "Three",
+      "Four",
+      "A dozen"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Three"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "How much oil did they use?",
+     "marks": 1,
+     "options": [
+      "Two spoons",
+      "A lot",
+      "Half a bottle",
+      "None"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: A. Two spoons"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? They cooked the eggs first and took them out of the wok.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What did they add instead of a lot of salt? Write two words from the recount.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: soy sauce"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why did they need to keep stirring the rice?",
+     "marks": 1,
+     "mark_scheme": [
+      "So the rice didn't burn"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "How do you know the family liked the fried rice?",
+     "marks": 1,
+     "mark_scheme": [
+      "There wasn't any left at the end of lunch (they ate it all)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr014",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Class Picnic Shopping List",
+    "kind": "notice",
+    "text": "CLASS 4B PICNIC – WHAT EACH GROUP NEEDS TO BRING\nOur class picnic is at Tai Tam Country Park next Wednesday. There are 30 students in our class, so we are going to make five groups of six.\nGroup 1: two loaves of bread and a jar of peanut butter (check that nobody is allergic to peanuts first!)\nGroup 2: six bottles of water for every group – that's thirty bottles in total\nGroup 3: a large bag of apples and two bunches of bananas\nGroup 4: paper plates, paper cups and plenty of tissues\nGroup 5: a big picnic mat and some rubbish bags\nPlease don't bring too many sweets or crisps. A few snacks are fine, but we want to eat healthily.\nWe will meet at the school gate at 9 a.m. and walk to the bus stop together. Remember: we must take all our rubbish home with us. There aren't any bins at the picnic site.\n– Miss Ho"
+   },
+   "stem": "Read Miss Ho's notice. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How many students are in each group?",
+     "marks": 1,
+     "options": [
+      "Five",
+      "Six",
+      "Thirty",
+      "Ten"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Six"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What does Group 3 need to bring?",
+     "marks": 1,
+     "options": [
+      "Bread and peanut butter",
+      "Water",
+      "Apples and bananas",
+      "Plates and cups"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Apples and bananas"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Group 2 needs to bring thirty bottles of water.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Which group should bring rubbish bags? Write the group number as a word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: five"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What must Group 1 check before bringing peanut butter?",
+     "marks": 1,
+     "mark_scheme": [
+      "That nobody is allergic to peanuts"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Why must the class take their rubbish home?",
+     "marks": 1,
+     "mark_scheme": [
+      "There aren't any bins at the picnic site"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr015",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "How Much Water Do You Need?",
+    "kind": "article",
+    "text": "Our bodies are more than half water, so we need to drink enough every day. Doctors say that most children aged nine or ten need about six to eight glasses of water a day. When it is hot, or when you play sports, you need even more.\nMany children don't drink enough water at school. They feel thirsty only when their bodies already need water. That is why it is a good idea to drink a little water many times a day, not a lot of water all at once.\nSome drinks have a lot of sugar in them. A small can of fizzy drink can have about seven teaspoons of sugar! Fruit juice is healthier, but it still has quite a lot of sugar. Plain water has no sugar at all, so it is the best choice.\nIf you don't like plain water, try adding a few slices of lemon or cucumber. It makes the water taste fresher, and it doesn't add any sugar."
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How many glasses of water do most children aged nine or ten need a day?",
+     "marks": 1,
+     "options": [
+      "Two to four",
+      "Six to eight",
+      "Ten to twelve",
+      "Fifteen"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Six to eight"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "How much sugar can a small can of fizzy drink have?",
+     "marks": 1,
+     "options": [
+      "None",
+      "One teaspoon",
+      "About seven teaspoons",
+      "A whole cup"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. About seven teaspoons"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Fruit juice has no sugar in it.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'needing a drink'. (It begins with 't'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: thirsty"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "When do you need more water than usual? Give one time.",
+     "marks": 1,
+     "mark_scheme": [
+      "When it is hot / when you play sports"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "The writer says it's better to drink a little water many times a day. Explain why, using the article.",
+     "marks": 2,
+     "mark_scheme": [
+      "You often feel thirsty only when your body already needs water (1)",
+      "So drinking regularly keeps you from waiting until you are already short of water (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
   }
  ],
  "u5": [
@@ -3017,6 +4267,256 @@
    "explanation": "Prepositions of place: on, under, next to, behind, in front of, between.",
    "id": "pbu5x17",
    "checked": "claude"
+  },
+  {
+   "id": "pbr016",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Welcome to Our New Flat",
+    "kind": "letter",
+    "text": "Dear Grandpa,\nWe moved into our new flat in Tseung Kwan O last week! It is on the twelfth floor of Block C. I want to tell you where everything is, so you can find it when you visit on Sunday.\nWhen you come out of the MTR station, turn left and walk past the bakery. Our building is opposite the library, next to a small playground. The entrance is between a flower shop and a pharmacy.\nInside the flat, my bedroom is at the end of the corridor. My bed is under the window, and my desk is beside the bookshelf. Mum put a photo of you on the wall above my desk!\nPlease come at about eleven o'clock in the morning. We are going to have lunch at a restaurant near the waterfront at half past twelve. After lunch, we can walk along the promenade.\nIn the evening, Dad will drive you home before eight o'clock.\nLove,\nWing"
+   },
+   "stem": "Read Wing's letter. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Which floor is Wing's new flat on?",
+     "marks": 1,
+     "options": [
+      "The second floor",
+      "The tenth floor",
+      "The twelfth floor",
+      "The twentieth floor"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. The twelfth floor"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What is opposite Wing's building?",
+     "marks": 1,
+     "options": [
+      "The bakery",
+      "The library",
+      "The pharmacy",
+      "The playground"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. The library"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Wing's bed is under the window.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What time should Grandpa come? Write two words from the letter.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: eleven o'clock"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Where is the entrance of the building?",
+     "marks": 1,
+     "mark_scheme": [
+      "Between a flower shop and a pharmacy"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What is on the wall above Wing's desk?",
+     "marks": 1,
+     "mark_scheme": [
+      "A photo of Grandpa"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr017",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Ocean Park School Trip",
+    "kind": "timetable",
+    "text": "OCEAN PARK TRIP – PRIMARY 4 – THURSDAY, 22 MAY\n8:15 a.m. Meet in the school hall. Teachers will check that everyone is here.\n8:30 a.m. Leave school by coach.\n9:30 a.m. Arrive at Ocean Park. Go through the main entrance with your class teacher.\n9:45 a.m. – 11:15 a.m. Visit the Grand Aquarium. Look for the manta rays and the hammerhead sharks.\n11:30 a.m. – 12:30 p.m. Lunch in the picnic area near the Panda Village. Please put your rubbish in the bins.\n12:45 p.m. – 2:00 p.m. Visit the Giant Pandas and the Red Pandas. Take notes on your worksheet.\n2:15 p.m. Meet at the Cable Car station in Waterfront. Each group will ride up the hill together.\n3:30 p.m. Leave Ocean Park by coach from the car park behind the main entrance.\n4:30 p.m. Arrive back at school. Parents can pick up their children at the school gate.\nRemember: Stay with your group at all times. If you get lost, go to the nearest information counter and wait there."
+   },
+   "stem": "Read the timetable. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where do the students meet at 8:15 a.m.?",
+     "marks": 1,
+     "options": [
+      "At the school gate",
+      "In the school hall",
+      "At the main entrance",
+      "At the car park"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. In the school hall"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Where will the students eat lunch?",
+     "marks": 1,
+     "options": [
+      "In the Grand Aquarium",
+      "In the picnic area near the Panda Village",
+      "At the Cable Car station",
+      "On the coach"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. In the picnic area near the Panda Village"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The students will visit the pandas before lunch.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Which sharks should students look for at the Grand Aquarium? Write the word that comes before 'sharks'.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: hammerhead"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What should a student do if he or she gets lost?",
+     "marks": 1,
+     "mark_scheme": [
+      "Go to the nearest information counter and wait there"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "How long will the students be at the Grand Aquarium?",
+     "marks": 1,
+     "mark_scheme": [
+      "An hour and a half / 90 minutes (9:45 to 11:15)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr018",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Missing Library Book",
+    "kind": "story",
+    "text": "On Monday morning, Sophie couldn't find her library book. It was due back at school that day. \"I put it on my desk on Friday evening,\" she said. \"I'm sure!\"\nShe looked under her bed, behind the sofa and inside her school bag. It wasn't there. Her little brother, Leo, was eating breakfast at the table. He kept very quiet.\n\"Leo,\" said Mum, \"do you know where Sophie's book is?\"\nLeo looked at his cereal. \"I borrowed it on Saturday afternoon,\" he said slowly. \"I wanted to look at the pictures of the dinosaurs. Then I took it into the bath with me.\"\nSophie gasped. Mum found the book on the shelf above the bath. The pages were wavy and a little wet.\nAt school, Sophie went to the librarian and told the truth. Mrs Chan looked at the book carefully. \"Thank you for being honest,\" she said. \"It isn't too badly damaged. Please be more careful next time.\"\nAfter school, Sophie and Leo made a sign for the bathroom door: NO BOOKS IN THE BATH!"
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "When did Sophie put the book on her desk?",
+     "marks": 1,
+     "options": [
+      "On Friday evening",
+      "On Saturday afternoon",
+      "On Sunday morning",
+      "On Monday morning"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: A. On Friday evening"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Where did Mum find the book?",
+     "marks": 1,
+     "options": [
+      "Under the bed",
+      "Behind the sofa",
+      "On the shelf above the bath",
+      "In Sophie's school bag"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. On the shelf above the bath"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Leo borrowed the book because he wanted to look at pictures of dinosaurs.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that describes the pages after they got wet. (It begins with 'w'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: wavy"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why did Mrs Chan thank Sophie?",
+     "marks": 1,
+     "mark_scheme": [
+      "For being honest / for telling the truth"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Leo 'kept very quiet' at breakfast. Why do you think he did this? Explain.",
+     "marks": 2,
+     "mark_scheme": [
+      "He knew he had taken the book (1)",
+      "He was worried / afraid he would be in trouble (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
   }
  ],
  "u6": [
@@ -3501,6 +5001,256 @@
    ],
    "explanation": "After gave, the person receiving takes the object pronoun: me.",
    "id": "pbu6x17",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr019",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "The Lost Property Box",
+    "kind": "story",
+    "text": "Every Friday, Mr Ho opens the lost property box in our classroom. This week, it was full!\nFirst, he held up a blue water bottle. \"Whose is this?\" he asked.\n\"It's mine!\" said Kevin. \"My name is on the bottom.\" He took it back happily.\nNext, Mr Ho held up a pair of red gloves. Nobody said anything. \"Are they yours, Amy?\" he asked. Amy shook her head. \"No, mine are pink. I think they're Bella's. Hers are red.\" Bella was absent, so Mr Ho put the gloves on her desk.\nThen he took out a pencil case with stars on it. \"That's ours!\" said the twins, Lily and Lucy. \"We share it.\"\nAt the bottom of the box, there was a small brown teddy bear. Everyone laughed. It was Mr Ho's! \"My daughter put it in my bag this morning,\" he said with a smile. \"She wanted it to come to school with me.\"\nAt the end, the box was empty. \"Please write your names on your things,\" said Mr Ho."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Whose water bottle was it?",
+     "marks": 1,
+     "options": [
+      "Amy's",
+      "Kevin's",
+      "Bella's",
+      "Mr Ho's"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Kevin's"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What colour are Amy's gloves?",
+     "marks": 1,
+     "options": [
+      "Red",
+      "Blue",
+      "Pink",
+      "Brown"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Pink"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Lily and Lucy share a pencil case.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'not at school'. (It begins with 'a'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: absent"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "How did Kevin know the water bottle was his?",
+     "marks": 1,
+     "mark_scheme": [
+      "His name was on the bottom"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Why was the teddy bear in Mr Ho's bag?",
+     "marks": 1,
+     "mark_scheme": [
+      "His daughter put it there (because she wanted it to go to school with him)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr020",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Our Class Garden",
+    "kind": "email",
+    "text": "Dear Mrs Lam,\nThank you for giving our class a corner of the school roof for our garden. We want to tell you about it.\nEach group looks after its own plants. Our group's plants are the tomatoes. We water them every morning before lessons. Group B's plants are the sunflowers. Theirs are already taller than our teacher! Group C grows mint and basil. Their herbs smell lovely when the wind blows.\nLast week, a bird ate some of our tomatoes. We were sad, but Group B lent us their net. Now our tomatoes are safe. We will lend them our watering can because theirs is broken.\nNext month, we want to have a small market at school. We will sell our vegetables and herbs to parents. The money will help to buy new seeds for next year.\nPlease come and visit our garden! We think you will love it.\nYours sincerely,\nGroup A, Class 4C"
+   },
+   "stem": "Read the email from Group A. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where is the class garden?",
+     "marks": 1,
+     "options": [
+      "In the playground",
+      "On the school roof",
+      "Next to the hall",
+      "In Mrs Lam's office"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. On the school roof"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Which plants belong to Group B?",
+     "marks": 1,
+     "options": [
+      "Tomatoes",
+      "Mint and basil",
+      "Sunflowers",
+      "Lettuce"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Sunflowers"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Group A waters its plants every evening.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What did Group B lend Group A? Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: net"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why will Group A lend Group B its watering can?",
+     "marks": 1,
+     "mark_scheme": [
+      "Because Group B's watering can is broken"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What will the money from the market be used for?",
+     "marks": 1,
+     "mark_scheme": [
+      "To buy new seeds for next year"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr021",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "Grandma's Old Box",
+    "kind": "story",
+    "text": "During the summer holiday, Mei and her brother Hugo helped Grandma clean her storeroom. Behind some old suitcases, they found a wooden box with a small lock.\n\"Whose box is this?\" asked Hugo.\nGrandma smiled. \"It was my mother's. Now it's mine. One day, it will be yours.\"\nShe found a tiny key on her key ring and opened the box. Inside, there were black-and-white photos, a silver hairpin and a pile of letters tied with ribbon.\n\"These letters are from your great-grandfather,\" said Grandma. \"He worked on a ship, so he wrote to my mother from many different countries.\"\nMei picked up a photo of a young woman standing in front of a shop. \"Is this you, Grandma?\"\n\"No, that's my mother. That was her tailor's shop in Yau Ma Tei. She made dresses for half of the street!\"\nHugo was quiet for a moment. \"Grandma, can we read the letters together next weekend?\"\nGrandma's eyes were bright. \"I would love that,\" she said."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where did the children find the box?",
+     "marks": 1,
+     "options": [
+      "Under Grandma's bed",
+      "Behind some old suitcases",
+      "In a cupboard in the kitchen",
+      "In a shop in Yau Ma Tei"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Behind some old suitcases"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Who wrote the letters?",
+     "marks": 1,
+     "options": [
+      "Grandma",
+      "Mei's mother",
+      "Mei's great-grandfather",
+      "Hugo"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Mei's great-grandfather"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The woman in the photo is Grandma.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What did Grandma's mother make in her shop? Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: dresses"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why did the letters come from many different countries?",
+     "marks": 1,
+     "mark_scheme": [
+      "Because great-grandfather worked on a ship (and wrote from different places)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "At the end, 'Grandma's eyes were bright.' How does she feel? Explain why.",
+     "marks": 2,
+     "mark_scheme": [
+      "She feels happy / touched / moved (1)",
+      "Because her grandchildren are interested in the family's past / want to read the letters with her (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
    "checked": "claude"
   }
  ],
@@ -4017,6 +5767,256 @@
    "explanation": "After because, give a reason.",
    "id": "pbu7x17",
    "checked": "claude"
+  },
+  {
+   "id": "pbr022",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "The School Concert",
+    "kind": "recount",
+    "text": "Last Friday, our school held its winter concert. I was nervous because I had to play the piano in front of everyone. I practised every day for a month, but my hands were still shaking before the concert.\nBefore my turn, the choir sang three songs and the dancers performed a lion dance. The lion dance was so exciting that everyone clapped loudly.\nThen it was my turn. I walked onto the stage and sat down at the piano. At first, I played too fast because I was nervous. However, I took a deep breath and slowed down. After that, the music sounded much better.\nWhen I finished, the audience clapped and cheered. My parents were sitting in the third row, so I could see them smiling. My little sister waved at me.\nAfter the concert, my music teacher said, \"You were brave, and you didn't give up.\" I felt very proud. Next year, I want to play a duet with my best friend."
+   },
+   "stem": "Read the recount. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Why was the writer nervous?",
+     "marks": 1,
+     "options": [
+      "She had to sing in the choir",
+      "She had to play the piano in front of everyone",
+      "She forgot her music",
+      "Her parents were late"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. She had to play the piano in front of everyone"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What did the dancers perform?",
+     "marks": 1,
+     "options": [
+      "A lion dance",
+      "A ballet",
+      "A dragon dance",
+      "A hip-hop dance"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: A. A lion dance"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The writer played too slowly at first.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'the people watching a show'. (It begins with 'a'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: audience"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What did the writer do when she was playing too fast?",
+     "marks": 1,
+     "mark_scheme": [
+      "She took a deep breath and slowed down"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "How could the writer see her parents smiling?",
+     "marks": 1,
+     "mark_scheme": [
+      "They were sitting in the third row (near the stage)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr023",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Why Do We Need Sleep?",
+    "kind": "article",
+    "text": "Sleep is very important for children, but many children in Hong Kong don't get enough. Children aged nine or ten need about nine to eleven hours of sleep every night.\nWhen we sleep, our bodies rest and grow. Our brains also sort out everything we learned during the day, so good sleep helps us to remember things. If we don't sleep enough, we feel tired and grumpy. We also find it hard to concentrate in class.\nThere are some easy ways to sleep better. First, try to go to bed at the same time every night, even at weekends. Second, stop using phones and tablets an hour before bed because the bright screens can keep your brain awake. Third, keep your bedroom dark and quiet.\nSome people drink sweet drinks or eat big snacks before bed. However, this can make it harder to fall asleep. A glass of warm milk or water is a better choice.\nSo tonight, put down your phone, turn off the light and get a good night's sleep!"
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How many hours of sleep do children aged nine or ten need?",
+     "marks": 1,
+     "options": [
+      "Six to seven",
+      "Seven to eight",
+      "Nine to eleven",
+      "Twelve to fourteen"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Nine to eleven"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Why should we stop using screens an hour before bed?",
+     "marks": 1,
+     "options": [
+      "They use too much electricity",
+      "The bright screens can keep the brain awake",
+      "They make our eyes red",
+      "Our parents need them"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. The bright screens can keep the brain awake"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Good sleep helps us to remember things.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'in a bad mood'. (It begins with 'g'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: grumpy"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Give one more way to sleep better from the third paragraph.",
+     "marks": 1,
+     "mark_scheme": [
+      "Go to bed at the same time every night / keep the bedroom dark and quiet"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What is a better choice than sweet drinks before bed?",
+     "marks": 1,
+     "mark_scheme": [
+      "A glass of warm milk or water"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr024",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Rainy Day Plan",
+    "kind": "story",
+    "text": "Joey and his friends wanted to play football on Saturday, but it rained all morning. They were disappointed because they had planned the game for weeks.\n\"We can't play outside, so what can we do?\" asked Joey.\n\"We could go to the sports centre,\" said Raymond. \"However, it's expensive, and we would need to book it first.\"\nJoey's mother had an idea. \"Why don't you make a football game at home? You can use paper, cardboard and bottle caps.\"\nAt first, the boys thought it was a silly idea. But they were bored, so they decided to try. Raymond drew the pitch on a big piece of cardboard, and Joey cut out the goals. Ken used bottle caps as players because they could slide easily on the cardboard.\nBy the afternoon, they had invented their own rules and played twenty games. Ken won the most games, although Joey scored the best goal.\nWhen the rain stopped, the boys didn't want to go outside. \"Let's play one more game!\" said Raymond."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Why couldn't the boys play football outside?",
+     "marks": 1,
+     "options": [
+      "The park was closed",
+      "It rained all morning",
+      "They had no ball",
+      "Joey was ill"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. It rained all morning"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "True or false? The boys liked Joey's mother's idea straight away.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "What did Ken use as players?",
+     "marks": 1,
+     "options": [
+      "Paper people",
+      "Coins",
+      "Bottle caps",
+      "Toy cars"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Bottle caps"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'made something new for the first time'. (It begins with 'i'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: invented"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Give one reason why the boys didn't go to the sports centre.",
+     "marks": 1,
+     "mark_scheme": [
+      "It was expensive / they would need to book it first"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "At the end, the boys didn't want to go outside. What does this tell you about their day? Explain.",
+     "marks": 2,
+     "mark_scheme": [
+      "They enjoyed the game / had fun (1)",
+      "Their feelings changed: at first they thought the idea was silly (but now they love it) (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
   }
  ],
  "u8": [
@@ -4502,6 +6502,256 @@
    "explanation": "Did + subject + base verb …?",
    "id": "pbu8x17",
    "checked": "claude"
+  },
+  {
+   "id": "pbr025",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "An Interview with a Zookeeper",
+    "kind": "article",
+    "text": "Our class newspaper interviewed Miss Kwan, a zookeeper at the Hong Kong Zoological and Botanical Gardens.\nWhat do you do every day?\n\"I feed the animals and clean their homes. I also check that they are healthy. If an animal looks ill, I call the vet.\"\nWhich animals do you look after?\n\"I look after the orangutans and the lemurs. The orangutans are my favourites because they are very clever.\"\nHow clever are they?\n\"Very clever! One orangutan, Lulu, can open a box with a key. She watched me do it only twice.\"\nWhat do the animals eat?\n\"The orangutans eat fruit, vegetables and leaves. The lemurs love bananas, but we only give them a little because bananas have a lot of sugar.\"\nWhy did you want to become a zookeeper?\n\"When I was a girl, I visited this zoo with my grandfather every Sunday. I loved watching the animals. I knew I wanted to work with them one day.\"\nThank you, Miss Kwan!"
+   },
+   "stem": "Read the interview. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Which animals does Miss Kwan look after?",
+     "marks": 1,
+     "options": [
+      "Lions and tigers",
+      "Orangutans and lemurs",
+      "Flamingos and turtles",
+      "Pandas and monkeys"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Orangutans and lemurs"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What does Miss Kwan do if an animal looks ill?",
+     "marks": 1,
+     "options": [
+      "She gives it bananas",
+      "She calls the vet",
+      "She closes the zoo",
+      "She cleans its home"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. She calls the vet"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Lulu learned to open a box after watching only twice.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Why are the orangutans Miss Kwan's favourites? They are very ______. Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: clever"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why do the lemurs get only a little banana?",
+     "marks": 1,
+     "mark_scheme": [
+      "Bananas have a lot of sugar"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Why did Miss Kwan want to become a zookeeper?",
+     "marks": 1,
+     "mark_scheme": [
+      "She visited the zoo with her grandfather every Sunday as a girl and loved watching the animals"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr026",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Join the Reading Club!",
+    "kind": "poster",
+    "text": "JOIN THE READING CLUB!\nDo you love stories? Do you want to make new friends? Then the Reading Club is for you!\nWho can join?\nAll students from Primary 3 to Primary 6.\nWhen do we meet?\nEvery Tuesday from 3:30 p.m. to 4:30 p.m.\nWhere do we meet?\nIn the school library, on the second floor.\nWhat do we do?\nWe read a new book together every month. We talk about the characters and guess what will happen next. Sometimes we act out our favourite parts. At the end of each term, we invite a real author to visit us!\nHow much does it cost?\nIt's free! You only need to bring a pencil and a notebook. You can also borrow the club's books to take home.\nHow can I join?\nFill in the form below and give it to Miss Yip in the library before Friday, 12 September.\nName: ____________ Class: ____________\nWhy do you want to join? ______________________"
+   },
+   "stem": "Read the poster. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Which students can join the Reading Club?",
+     "marks": 1,
+     "options": [
+      "Primary 1 to Primary 3",
+      "Primary 3 to Primary 6",
+      "Only Primary 4",
+      "Only Primary 6"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Primary 3 to Primary 6"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Where does the club meet?",
+     "marks": 1,
+     "options": [
+      "In the hall",
+      "In Classroom 4A",
+      "In the school library",
+      "In the playground"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. In the school library"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Students must pay to join the club.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Who visits the club at the end of each term? Write two words from the poster.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: real author"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What do students need to bring to the club?",
+     "marks": 1,
+     "mark_scheme": [
+      "A pencil and a notebook"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Who should students give the form to, and by when?",
+     "marks": 1,
+     "mark_scheme": [
+      "Miss Yip (in the library) before Friday, 12 September"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr027",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "Twenty Questions",
+    "kind": "story",
+    "text": "On the long bus ride to camp, Miss Tsang taught her class a game called Twenty Questions. \"I am thinking of an animal,\" she said. \"You can ask me twenty questions, but I can only answer 'yes' or 'no'.\"\n\"Does it live in the sea?\" asked Tom.\n\"No.\"\n\"Can it fly?\" asked Priya.\n\"No.\"\n\"Is it bigger than a dog?\" asked Marcus.\n\"Yes.\"\n\"Does it live in Hong Kong?\" asked Grace.\n\"Yes, it does.\"\nThe children looked at each other. \"Is it a cow?\" asked Tom.\n\"No. That was question five. You still have fifteen left,\" said Miss Tsang.\nPriya thought carefully. \"Does it have stripes?\"\n\"No.\"\n\"Does it eat bamboo?\" asked Marcus.\n\"No,\" said Miss Tsang, smiling.\nThen Grace remembered something from a trip to the countryside. \"Is it brown, with big ears, and does it come out at night?\"\n\"Yes!\"\n\"Is it a wild boar?\"\n\"Yes! Well done, Grace! You got it in nine questions.\"\nEveryone cheered, and Grace chose the next animal."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "What could Miss Tsang say when the children asked questions?",
+     "marks": 1,
+     "options": [
+      "Anything she liked",
+      "Only 'yes' or 'no'",
+      "Only 'maybe'",
+      "Nothing at all"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Only 'yes' or 'no'"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Which question did Marcus ask first?",
+     "marks": 1,
+     "options": [
+      "Does it live in the sea?",
+      "Can it fly?",
+      "Is it bigger than a dog?",
+      "Is it a cow?"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Is it bigger than a dog?"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The animal lives in Hong Kong.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What was the animal? Write two words from the story.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: wild boar"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "How many questions did the children use to guess the animal?",
+     "marks": 1,
+     "mark_scheme": [
+      "Nine"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Why was 'Does it eat bamboo?' a useful question? Explain what Marcus was trying to find out.",
+     "marks": 2,
+     "mark_scheme": [
+      "He was checking if it was a panda (an animal that eats bamboo) (1)",
+      "A 'no' answer helped them rule out some animals / narrow down the answer (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
   }
  ],
  "u9": [
@@ -4900,6 +7150,257 @@
    ],
    "explanation": "Kelly asked about 'my kitten', so the kitten is hers. The last line says where she lives.",
    "id": "pbu9x15",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr028",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Dragon Boat Racing",
+    "kind": "article",
+    "text": "Every year, on the fifth day of the fifth month of the lunar calendar, people in Hong Kong celebrate the Tuen Ng Festival. One of the most exciting events is dragon boat racing.\nA dragon boat is long and narrow. It has a dragon's head at the front and a tail at the back. There are usually twenty paddlers in each boat. They sit in pairs and paddle at the same time. A drummer sits at the front and beats a drum to help them keep the rhythm. A steerer stands at the back and controls the direction of the boat.\nTeamwork is very important. If the paddlers don't move together, the boat goes slowly or even turns in circles. Teams practise for months before the races.\nOn festival day, thousands of people watch the races at places like Stanley and Tai Po. They cheer, eat rice dumplings and enjoy the summer sun. Many families make the trip every year because it is such a fun tradition."
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How many paddlers are there in a dragon boat, usually?",
+     "marks": 1,
+     "options": [
+      "Ten",
+      "Twelve",
+      "Twenty",
+      "Fifty"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Twenty"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What does the drummer do?",
+     "marks": 1,
+     "options": [
+      "Steers the boat",
+      "Helps the paddlers keep the rhythm",
+      "Cheers for the other team",
+      "Sells rice dumplings"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Helps the paddlers keep the rhythm"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The steerer sits at the front of the boat.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'long and thin'. (It begins with 'n'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: narrow"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What can happen if the paddlers don't move together?",
+     "marks": 1,
+     "mark_scheme": [
+      "The boat goes slowly or turns in circles"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Name two things people do at the races on festival day.",
+     "marks": 1,
+     "mark_scheme": [
+      "Any two: watch/cheer, eat rice dumplings, enjoy the summer sun"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr029",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Kite on the Hill",
+    "kind": "story",
+    "text": "Every Sunday, Mr Leung flew a big red kite on the hill near Ah Fai's home. The kite had a long tail made of ribbons. Ah Fai always watched it from his window and wished he had one too.\nOne windy Sunday, the kite string broke. The kite flew over the trees and landed on the roof of Ah Fai's building. Mr Leung looked up sadly. He was too old to climb up there.\nAh Fai ran to find the building manager. Together, they took the lift to the top floor and went out onto the roof. The kite was caught on a pipe, but it wasn't damaged.\nWhen Ah Fai gave the kite back, Mr Leung's face lit up. \"Thank you, young man,\" he said. \"Would you like to learn how to fly it?\"\nAfter that, Ah Fai went to the hill every Sunday. By the end of the summer, he could make the kite dance in the sky. Mr Leung said Ah Fai was the best student he had ever had."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "What was the kite's tail made of?",
+     "marks": 1,
+     "options": [
+      "Paper",
+      "Ribbons",
+      "Plastic bags",
+      "Feathers"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Ribbons"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Why couldn't Mr Leung get the kite himself?",
+     "marks": 1,
+     "options": [
+      "He was too busy",
+      "He didn't have a key",
+      "He was too old to climb up there",
+      "He was afraid of the building manager"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. He was too old to climb up there"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The kite was badly damaged.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the phrase that shows Mr Leung looked very happy. Write two words. ('His face lit ___')",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: lit up"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Who helped Ah Fai get onto the roof?",
+     "marks": 1,
+     "mark_scheme": [
+      "The building manager"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "At the start, Ah Fai 'wished he had one too'. How did his wish come true in a different way? Explain.",
+     "marks": 2,
+     "mark_scheme": [
+      "He didn't get his own kite, but he learned to fly Mr Leung's kite (1)",
+      "Because he helped Mr Leung get the kite back / Mr Leung offered to teach him (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr030",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "Plastic and the Sea",
+    "kind": "article",
+    "text": "Hong Kong has beautiful beaches, but many of them have a big problem: plastic rubbish. Every day, people throw away millions of plastic bottles, bags and straws. Some of this rubbish ends up in the sea.\nPlastic is very dangerous for sea animals. Turtles sometimes eat plastic bags because they look like jellyfish, their favourite food. Fish and seabirds can get stuck in old fishing nets and plastic rings. Plastic also breaks into tiny pieces called microplastics. These pieces are so small that fish eat them by mistake.\nThe good news is that we can all help. We can bring our own bags when we go shopping. We can say no to plastic straws and use a refillable water bottle. Some schools also organise beach clean-ups. Last year, students from one school in Sai Kung collected more than two hundred kilograms of rubbish in one morning!\nIf everyone makes small changes, our sea will become cleaner and safer for the animals that live in it."
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Why do turtles sometimes eat plastic bags?",
+     "marks": 1,
+     "options": [
+      "They are very hungry",
+      "The bags look like jellyfish",
+      "The bags taste sweet",
+      "People feed them"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. The bags look like jellyfish"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What are microplastics?",
+     "marks": 1,
+     "options": [
+      "Big fishing nets",
+      "Tiny pieces of plastic",
+      "Plastic bottles",
+      "A kind of jellyfish"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Tiny pieces of plastic"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Students from a school in Sai Kung collected over two hundred kilograms of rubbish in one morning.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'can be filled again'. (It begins with 'r'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: refillable"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Give two ways we can use less plastic, from the article.",
+     "marks": 1,
+     "mark_scheme": [
+      "Any two: bring our own bags / say no to plastic straws / use a refillable water bottle"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What is the main message of the article? Explain in your own words.",
+     "marks": 2,
+     "mark_scheme": [
+      "Plastic rubbish harms sea animals / is a problem for our sea (1)",
+      "We can all help by making small changes (e.g. using less plastic, cleaning beaches) (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
    "checked": "claude"
   }
  ],
@@ -5359,6 +7860,256 @@
    "explanation": "Capitals for the first word, names (Kelly, Ocean Park), I and days (Sunday), and a full stop at the end.",
    "id": "pbu10x17",
    "checked": "claude"
+  },
+  {
+   "id": "pbr031",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "My First Day at Swimming Class",
+    "kind": "diary",
+    "text": "Saturday, 14 June\nToday I went to my first swimming class at the sports centre in Kowloon Tong. I was excited, but I was also a little scared because I can't swim yet.\nOur coach is called Coach Wendy. She is friendly and patient. First, she taught us how to blow bubbles in the water. I put my face in the water and blew hard. Water went up my nose and I coughed! Everyone laughed, but Coach Wendy said, \"Good try! Do it again slowly.\"\nNext, we held onto the side of the pool and kicked our legs. My legs got very tired, but I didn't stop. At the end of the lesson, Coach Wendy gave each of us a sticker. Mine had a dolphin on it.\nI stuck the sticker on my school bag when I got home. I'm going to practise blowing bubbles in the bath tonight. I hope I can swim one length of the pool by Christmas."
+   },
+   "stem": "Read the diary. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where was the swimming class?",
+     "marks": 1,
+     "options": [
+      "At the beach",
+      "At the sports centre in Kowloon Tong",
+      "At school",
+      "At a hotel"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. At the sports centre in Kowloon Tong"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What did Coach Wendy teach first?",
+     "marks": 1,
+     "options": [
+      "How to dive",
+      "How to kick",
+      "How to blow bubbles in the water",
+      "How to float on your back"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. How to blow bubbles in the water"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The writer stopped kicking because his legs were tired.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that describes Coach Wendy. It means 'calm and not angry when things take time'. (It begins with 'p'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: patient"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What was on the writer's sticker, and where did he put it?",
+     "marks": 1,
+     "mark_scheme": [
+      "A dolphin; on his school bag"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What does the writer hope to do by Christmas?",
+     "marks": 1,
+     "mark_scheme": [
+      "Swim one length of the pool"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr032",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "A Thank-You Email",
+    "kind": "email",
+    "text": "To: Uncle Simon\nSubject: Thank you for the birthday present!\n\nDear Uncle Simon,\nThank you so much for the birthday present. I opened it on Saturday morning and I was so surprised. It's the science kit I wanted! I didn't think anyone remembered I talked about it at Chinese New Year.\nOn Sunday, Dad helped me with the first experiment. We made a small volcano out of clay. Then we put baking soda and vinegar inside it. Red foam came out of the top and ran down the sides! My little sister screamed and then asked us to do it again.\nThere are twelve more experiments in the kit. Next weekend, I'm going to make crystals. The book says they will take five days to grow, so I'm going to check them every day.\nWhen you come to visit at Easter, I'll show you my volcano. Maybe we can do an experiment together.\nLove,\nNatalie"
+   },
+   "stem": "Read Natalie's email. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "What present did Uncle Simon give Natalie?",
+     "marks": 1,
+     "options": [
+      "A book",
+      "A science kit",
+      "A camera",
+      "Some clay"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. A science kit"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What did they put inside the volcano?",
+     "marks": 1,
+     "options": [
+      "Water and salt",
+      "Baking soda and vinegar",
+      "Juice and sugar",
+      "Red paint"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Baking soda and vinegar"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? There are twelve experiments in the kit altogether.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What is Natalie going to make next weekend? Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: crystals"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why was Natalie surprised by the present?",
+     "marks": 1,
+     "mark_scheme": [
+      "She didn't think anyone remembered she talked about it (at Chinese New Year)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "How did Natalie's little sister feel about the volcano? Give a reason from the email.",
+     "marks": 1,
+     "mark_scheme": [
+      "She enjoyed it / was excited: she screamed and asked them to do it again"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr033",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The New Classmate",
+    "kind": "story",
+    "text": "On the first day of term, a new girl joined Class 4D. Her name was Hana, and she had just moved to Hong Kong from Japan. She stood at the front of the classroom and looked at the floor. Her English was good, but she spoke very quietly.\nAt recess, Hana sat alone on a bench. Most of the class ran to the playground, but Kitty stopped. She remembered her own first day at a new school two years before. Nobody had talked to her for a whole week.\nKitty walked over to the bench. \"Do you want to play skipping with us?\" she asked.\nHana looked up. \"I'm not very good at skipping,\" she said.\n\"That's OK. I can teach you,\" said Kitty.\nBy the end of recess, Hana was laughing. The next day, she brought a bag of Japanese sweets to share with the skipping group. A week later, she taught everyone a Japanese clapping game.\nNow, Kitty and Hana are best friends."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where did Hana come from?",
+     "marks": 1,
+     "options": [
+      "Korea",
+      "Japan",
+      "Taiwan",
+      "Singapore"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Japan"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What did Kitty ask Hana to do at recess?",
+     "marks": 1,
+     "options": [
+      "Read a book",
+      "Play football",
+      "Play skipping",
+      "Eat lunch"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Play skipping"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Hana's English was not good.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What did Hana teach everyone a week later? Write two words: a Japanese ______ game.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: clapping game"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What did Hana bring the next day?",
+     "marks": 1,
+     "mark_scheme": [
+      "A bag of Japanese sweets (to share with the skipping group)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Why did Kitty decide to talk to Hana? Use the story to explain.",
+     "marks": 2,
+     "mark_scheme": [
+      "She remembered her own first day at a new school (1)",
+      "Nobody talked to her then, so she knew how lonely Hana felt / didn't want Hana to feel the same (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
   }
  ],
  "u11": [
@@ -5786,6 +8537,256 @@
    ],
    "explanation": "Can for now; couldn't for the past.",
    "id": "pbu11x16",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr034",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Amazing Animal Abilities",
+    "kind": "article",
+    "text": "Animals can do some amazing things. Some of them can do things that people can't do at all.\nA cheetah can run faster than any other land animal. It can reach about 100 kilometres an hour, but it can only run this fast for a short time. After that, it needs a long rest.\nAn octopus has no bones, so it can squeeze through very small holes. It can also change the colour of its skin to hide from enemies.\nMany birds can fly, but the hummingbird can do something special: it can fly backwards! It can also hover in one place while it drinks from a flower.\nA long time ago, people thought that animals couldn't use tools. Now we know that some can. Chimpanzees can use sticks to catch insects, and some crows can bend wires into hooks to get food.\nNext time you visit a zoo or watch a nature programme, think about what each animal can do."
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How fast can a cheetah run?",
+     "marks": 1,
+     "options": [
+      "About 10 kilometres an hour",
+      "About 50 kilometres an hour",
+      "About 100 kilometres an hour",
+      "About 500 kilometres an hour"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. About 100 kilometres an hour"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Why can an octopus squeeze through very small holes?",
+     "marks": 1,
+     "options": [
+      "It has no bones",
+      "It is very fast",
+      "It can change colour",
+      "It has eight arms"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: A. It has no bones"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? A hummingbird can fly backwards.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'stay in one place in the air'. (It begins with 'h'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: hover"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What can some crows do to get food?",
+     "marks": 1,
+     "mark_scheme": [
+      "Bend wires into hooks"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What did people think about animals a long time ago, and why were they wrong?",
+     "marks": 1,
+     "mark_scheme": [
+      "They thought animals couldn't use tools, but some can (e.g. chimpanzees use sticks, crows make hooks)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr035",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Can I Help?",
+    "kind": "story",
+    "text": "Mrs Chow, the school cook, was very busy on Thursday. Two of her helpers were ill, and she had to make lunch for two hundred students.\nDuring recess, Mandy walked past the kitchen and saw Mrs Chow carrying a heavy box of oranges. \"Can I help you, Mrs Chow?\" she asked.\nMrs Chow smiled. \"Could you ask your teacher first? If she says yes, you could help me put the fruit into bowls.\"\nMandy ran to ask Miss Fong. \"Of course you can,\" said Miss Fong. \"Could you take two friends with you? It will be quicker.\"\nMandy, Jack and Ruby washed their hands and put on aprons. They couldn't use the knives, because only adults can use them. But they could count the oranges and put three into each bowl.\nAt lunchtime, every student had fruit on time. Mrs Chow gave the three helpers a thank-you card. \"You couldn't have helped at a better time,\" she said."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Why was Mrs Chow very busy on Thursday?",
+     "marks": 1,
+     "options": [
+      "The school had a party",
+      "Two of her helpers were ill",
+      "The oven was broken",
+      "She was cooking for parents"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Two of her helpers were ill"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Who did Mandy ask for permission?",
+     "marks": 1,
+     "options": [
+      "Mrs Chow",
+      "Miss Fong",
+      "Her mother",
+      "Jack"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Miss Fong"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The children used knives to cut the oranges.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What did the children put on before helping? Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: aprons"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "How many oranges did the children put into each bowl?",
+     "marks": 1,
+     "mark_scheme": [
+      "Three"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Why did Miss Fong ask Mandy to take two friends?",
+     "marks": 1,
+     "mark_scheme": [
+      "It would be quicker (with more helpers)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr036",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "When Grandpa Was a Boy",
+    "kind": "recount",
+    "text": "Last weekend, I asked my grandpa what life was like when he was ten years old. His answers surprised me.\n\"When I was a boy, I couldn't watch TV every day,\" he said. \"Only one family in our building had a television. On Saturday nights, all the children could go to their flat to watch cartoons.\"\nGrandpa lived in a village in the New Territories. He couldn't take the MTR because there wasn't one. \"We could walk to school in twenty minutes, but in the rainy season, the path was very muddy.\"\nHe could swim very well because he swam in the river near his village every summer. \"Could you swim in the river now?\" I asked. Grandpa laughed. \"No, the river isn't there any more. There are tall buildings now.\"\nBefore I left, Grandpa said, \"You can do so many things I couldn't do. But remember, we were happy too. We didn't need much to have fun.\"\nI think about his words a lot."
+   },
+   "stem": "Read the recount. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where did Grandpa grow up?",
+     "marks": 1,
+     "options": [
+      "On Hong Kong Island",
+      "In a village in the New Territories",
+      "In Kowloon",
+      "In another country"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. In a village in the New Territories"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "When could the children watch cartoons?",
+     "marks": 1,
+     "options": [
+      "Every day after school",
+      "On Saturday nights",
+      "On Sunday mornings",
+      "Only at Chinese New Year"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. On Saturday nights"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Grandpa took the MTR to school.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What was the path like in the rainy season? Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: muddy"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why can't Grandpa swim in the river now?",
+     "marks": 1,
+     "mark_scheme": [
+      "The river isn't there any more (there are tall buildings now)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "What did Grandpa mean when he said, 'We didn't need much to have fun'? Explain.",
+     "marks": 2,
+     "mark_scheme": [
+      "They had few things (e.g. one TV, no MTR) (1)",
+      "But they were still happy / enjoyed simple things like swimming in the river and watching cartoons together (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
    "checked": "claude"
   }
  ],
@@ -6258,6 +9259,256 @@
    "explanation": "We say make a mistake and do the dishes.",
    "id": "pbu12x17",
    "checked": "claude"
+  },
+  {
+   "id": "pbr037",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "The Unhappy Robot",
+    "kind": "story",
+    "text": "In a small workshop, there lived a robot called Bolt. Bolt could tidy rooms quickly and carefully, but he was unhappy. Every night, his owner, an old inventor called Dr Lau, worked late and forgot to switch Bolt off.\n\"I'm so tired,\" Bolt said quietly one evening. \"Robots need to rest too.\"\nDr Lau didn't hear him. He was busily writing in his notebook. Bolt rolled slowly to the desk and gently tapped the inventor's arm.\n\"Excuse me, Dr Lau. Could I recharge now, please?\"\nDr Lau looked up in surprise. \"Bolt, I'm sorry! I was very thoughtless. You work hard every day, and I never say thank you.\"\nThat night, Dr Lau made a soft blue light for Bolt's charging corner. He also wrote a new rule on the wall: Everyone rests at ten o'clock, including inventors!\nThe next morning, Bolt tidied the workshop happily. He even sang a little song as he worked."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Why was Bolt unhappy?",
+     "marks": 1,
+     "options": [
+      "He couldn't tidy rooms",
+      "Dr Lau didn't switch him off at night",
+      "He didn't like the workshop",
+      "Dr Lau shouted at him"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Dr Lau didn't switch him off at night"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "How did Bolt get Dr Lau's attention?",
+     "marks": 1,
+     "options": [
+      "He shouted loudly",
+      "He switched off the light",
+      "He gently tapped the inventor's arm",
+      "He sang a song"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. He gently tapped the inventor's arm"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Dr Lau heard Bolt the first time he spoke.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word Dr Lau uses to say he did not think about Bolt's feelings. (It begins with 't'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: thoughtless"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What new rule did Dr Lau write on the wall?",
+     "marks": 1,
+     "mark_scheme": [
+      "Everyone rests at ten o'clock, including inventors"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "How did Bolt feel the next morning? How do you know?",
+     "marks": 1,
+     "mark_scheme": [
+      "Happy: he tidied happily / sang a little song as he worked"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr038",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Super Spiders",
+    "kind": "article",
+    "text": "Many people are afraid of spiders, but these small animals are actually very useful. Most spiders are harmless to people, and they eat lots of insects such as flies and mosquitoes.\nSpiders make silk inside their bodies. They use it to build webs, wrap their food and even travel. Young spiders can float through the air on a long thread of silk. This is called ballooning.\nSpider silk is amazingly strong. For its weight, it is stronger than steel! It is also very stretchy, so it doesn't break easily when an insect flies into the web. Scientists are carefully studying spider silk because they want to make stronger ropes and better clothes.\nSpiders are also patient hunters. Some spiders wait silently in their webs for hours. Others, like the jumping spider, hunt actively. A jumping spider can jump more than twenty times its own body length!\nSo next time you see a spider, don't scream. Look closely instead. You might see something truly impressive."
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "What do spiders eat?",
+     "marks": 1,
+     "options": [
+      "Leaves",
+      "Insects such as flies and mosquitoes",
+      "Fruit",
+      "Small fish"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Insects such as flies and mosquitoes"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What is 'ballooning'?",
+     "marks": 1,
+     "options": [
+      "Building a big web",
+      "Young spiders floating through the air on silk",
+      "Spiders jumping very high",
+      "Wrapping food in silk"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Young spiders floating through the air on silk"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Spider silk breaks very easily.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'not dangerous'. (It begins with 'h'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: harmless"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why are scientists studying spider silk?",
+     "marks": 1,
+     "mark_scheme": [
+      "They want to make stronger ropes and better clothes"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "How far can a jumping spider jump?",
+     "marks": 1,
+     "mark_scheme": [
+      "More than twenty times its own body length"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr039",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Impossible Puzzle",
+    "kind": "story",
+    "text": "For Christmas, Ryan got a puzzle with one thousand pieces. The picture on the box showed a lighthouse by the sea at sunset.\nOn the first day, Ryan worked eagerly for three hours. He found all the edge pieces and finished the frame. On the second day, he started the sky. But the sky was all orange and pink, and every piece looked the same. Ryan tried and tried, but nothing fitted.\n\"This puzzle is impossible!\" he shouted, and he pushed the pieces away angrily.\nHis older sister, Joanne, sat down next to him. \"It isn't impossible,\" she said calmly. \"You're just looking at it the wrong way. Sort the pieces by shape first, not by colour.\"\nRyan was unsure, but he tried it. He made piles of pieces with two knobs, three knobs and four knobs. Slowly, the sky began to fit together.\nTwo weeks later, Ryan placed the last piece. He took a photo of the finished puzzle and proudly sent it to his grandparents."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "What was the picture on the puzzle box?",
+     "marks": 1,
+     "options": [
+      "A ship at sea",
+      "A lighthouse by the sea at sunset",
+      "A mountain in the snow",
+      "A city at night"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. A lighthouse by the sea at sunset"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What did Ryan finish on the first day?",
+     "marks": 1,
+     "options": [
+      "The sky",
+      "The lighthouse",
+      "The frame (the edge pieces)",
+      "The whole puzzle"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. The frame (the edge pieces)"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Joanne told Ryan to sort the pieces by colour.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'not sure'. (It begins with 'u'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: unsure"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why was the sky so difficult for Ryan?",
+     "marks": 1,
+     "mark_scheme": [
+      "It was all orange and pink / every piece looked the same"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Look at the words 'angrily' and 'proudly'. How did Ryan's feelings change, and why?",
+     "marks": 2,
+     "mark_scheme": [
+      "He felt angry when the pieces didn't fit, but proud at the end (1)",
+      "Because he didn't give up / Joanne's idea helped him finish the puzzle (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
   }
  ],
  "u13": [
@@ -6603,6 +9854,256 @@
    ],
    "explanation": "Read the note under the timetable.",
    "id": "pbu13x13",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr040",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Swimming Pool Rules",
+    "kind": "notice",
+    "text": "KWUN TONG SWIMMING POOL – RULES FOR USERS\nOpening hours: 6:30 a.m. – 10:00 p.m. every day (closed every Tuesday morning for cleaning)\nEntry fee: Adults $17; children aged 3–13 and people aged 60 or above $8\n1. Everyone must take a shower before entering the pool.\n2. Children under 10 must be with an adult at all times.\n3. No running, pushing or diving in the shallow pool.\n4. No food or drinks (except water) in the pool area.\n5. Please wear proper swimwear. Swimming caps are recommended.\n6. Listen to the lifeguards. Leave the pool at once when you hear the whistle.\n7. Swimming is not allowed during a thunderstorm warning.\nLockers are available in the changing rooms. Please bring a $5 coin. You will get it back when you return the key.\nLost property can be collected at the main office. It will be kept for one month. After that, it will be thrown away.\nHot weather tip: There is a water fountain next to the changing rooms. Please drink water often, especially on sunny days. If you feel unwell, tell a lifeguard straight away. First aid is available at the office.\nThank you for helping to keep our pool clean and safe for everyone."
+   },
+   "stem": "Read the notice. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "When is the pool closed for cleaning?",
+     "marks": 1,
+     "options": [
+      "Every Monday",
+      "Every Tuesday morning",
+      "Every Sunday evening",
+      "Every day at 10 p.m."
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Every Tuesday morning"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "How much does a child aged 9 pay to enter?",
+     "marks": 1,
+     "options": [
+      "$5",
+      "$8",
+      "$17",
+      "Nothing"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. $8"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Children under 10 can swim alone.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Who should swimmers listen to? Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: lifeguards"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What must everyone do before entering the pool?",
+     "marks": 1,
+     "mark_scheme": [
+      "Take a shower"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Do you lose the $5 coin you use for a locker? Explain.",
+     "marks": 1,
+     "mark_scheme": [
+      "No, you get it back when you return the key"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr041",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Summer Fun Day at the Library",
+    "kind": "poster",
+    "text": "SUMMER FUN DAY AT SHA TIN PUBLIC LIBRARY\nSaturday, 2 August • 10:00 a.m. – 4:00 p.m. • Free for everyone!\nSTORY CORNER (Room A, 2nd floor)\n10:30 a.m. and 2:30 p.m. – Animal stories for children aged 4–8\nCRAFT WORKSHOP (Room B, 2nd floor)\n11:00 a.m. – 12:30 p.m. – Make your own bookmark. Only 20 places! Sign up at the front desk.\nSCIENCE SHOW (Activity Hall, ground floor)\n1:30 p.m. – Watch exciting experiments with Dr Fun. Children aged 8 and above.\nBOOK SWAP (Main entrance)\nAll day – Bring a used book in good condition and swap it for another one.\nREADING CHALLENGE\nRead five books in August and get a free tote bag! Pick up a reading record at the front desk.\nPlease note: Children under 8 must come with an adult.\nGetting here: The library is a five-minute walk from Sha Tin MTR Station, Exit A. There is no car park, so please take public transport.\nLunch: You can eat your lunch in the picnic area outside, but no food or drinks are allowed inside the library. Please take your rubbish home with you.\nWe hope to see you there!"
+   },
+   "stem": "Read the poster. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Where is the science show?",
+     "marks": 1,
+     "options": [
+      "In Room A",
+      "In Room B",
+      "In the Activity Hall",
+      "At the main entrance"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. In the Activity Hall"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "What can you make at the craft workshop?",
+     "marks": 1,
+     "options": [
+      "A tote bag",
+      "A bookmark",
+      "A science experiment",
+      "A storybook"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. A bookmark"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Everyone has to pay to join Summer Fun Day.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What do you get if you read five books in August? Write two words.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: tote bag"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why should children sign up early for the craft workshop?",
+     "marks": 1,
+     "mark_scheme": [
+      "There are only 20 places"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Can a seven-year-old watch the science show? Explain.",
+     "marks": 1,
+     "mark_scheme": [
+      "No, it is for children aged 8 and above"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr042",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "Island Ferry Timetable",
+    "kind": "timetable",
+    "text": "CENTRAL – CHEUNG CHAU FERRY TIMETABLE (Monday to Saturday)\nOrdinary ferry (about 55 minutes): $15.20 one way\nFast ferry (about 35 minutes): $29.20 one way\nFrom Central:\n7:00 a.m. ordinary • 8:15 a.m. fast • 9:30 a.m. ordinary • 10:45 a.m. fast • 12:00 noon ordinary • 2:00 p.m. ordinary • 4:30 p.m. fast • 6:00 p.m. ordinary\nFrom Cheung Chau:\n6:20 a.m. ordinary • 9:00 a.m. fast • 11:30 a.m. ordinary • 1:15 p.m. fast • 3:00 p.m. ordinary • 5:30 p.m. ordinary • 7:15 p.m. fast • 9:00 p.m. ordinary\nNotes:\n• Children aged 3–11 pay half price.\n• On Sundays and public holidays, there are extra ferries and the fares are higher.\n• Please arrive at the pier at least ten minutes before the ferry leaves.\n• Bicycles are allowed on ordinary ferries only.\n• The ordinary ferry has an upper deck where you can sit outside and enjoy the view. The fast ferry has air-conditioning but no outside seats.\n• You can pay with an Octopus card or buy a ticket from the machines at the pier.\n• If a Typhoon Signal No. 3 or higher is raised, ferries may be cancelled. Please check the ferry company's website before you leave home."
+   },
+   "stem": "Read the timetable. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How long does the fast ferry take?",
+     "marks": 1,
+     "options": [
+      "About 15 minutes",
+      "About 35 minutes",
+      "About 55 minutes",
+      "About 2 hours"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. About 35 minutes"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Which ferry should you take from Central if you want to arrive in Cheung Chau before 11:30 a.m. and travel cheaply?",
+     "marks": 1,
+     "options": [
+      "The 7:00 a.m. or 9:30 a.m. ordinary ferry",
+      "The 12:00 noon ordinary ferry",
+      "The 2:00 p.m. ordinary ferry",
+      "The 4:30 p.m. fast ferry"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: A. The 7:00 a.m. or 9:30 a.m. ordinary ferry"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? You can take a bicycle on the fast ferry.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Where should you arrive ten minutes before the ferry leaves? Write one word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: pier"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "How much does a ten-year-old pay for an ordinary ferry, one way? Show how you know.",
+     "marks": 1,
+     "mark_scheme": [
+      "$7.60 (half of $15.20, because children aged 3–11 pay half price)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "A family wants to go on a Sunday. Give two things that are different on Sundays.",
+     "marks": 2,
+     "mark_scheme": [
+      "There are extra ferries (1)",
+      "The fares are higher (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
    "checked": "claude"
   }
  ],
@@ -7071,6 +10572,257 @@
    ],
    "explanation": "Let's + base verb.",
    "id": "pbu14x17",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr043",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Staying Safe in the Hot Sun",
+    "kind": "article",
+    "text": "Summer in Hong Kong can be very hot. When the Observatory issues a Very Hot Weather Warning, you should be extra careful outdoors.\nFirst, you must drink plenty of water, even if you don't feel thirsty. You should carry a water bottle with you all the time.\nSecond, you should wear light-coloured, loose clothes. Dark colours take in more heat. A hat and sunglasses will protect your head and eyes.\nThird, you shouldn't stay in the sun for too long, especially between 11 a.m. and 3 p.m., when the sun is strongest. If you play sports, take breaks in the shade.\nYou must also put on sun cream before you go out. Put on more after swimming or sweating a lot.\nIf someone feels dizzy, has a headache or feels sick, they might have heatstroke. Let's remember what to do: move them to a cool place, give them water to sip slowly and tell an adult at once.\nWould you like to stay healthy this summer? Then follow these simple rules!"
+   },
+   "stem": "Read the article. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Who issues a Very Hot Weather Warning?",
+     "marks": 1,
+     "options": [
+      "The school",
+      "The Observatory",
+      "The hospital",
+      "The MTR"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. The Observatory"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Why should you wear light-coloured clothes?",
+     "marks": 1,
+     "options": [
+      "They are cheaper",
+      "Dark colours take in more heat",
+      "They are easier to wash",
+      "They look nicer"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. Dark colours take in more heat"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? The sun is strongest between 11 a.m. and 3 p.m.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "Find the word that means 'feeling that everything is spinning'. (It begins with 'd'.)",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: dizzy"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "When should you put on more sun cream?",
+     "marks": 1,
+     "mark_scheme": [
+      "After swimming or sweating a lot"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Someone has heatstroke. Write two things you should do.",
+     "marks": 2,
+     "mark_scheme": [
+      "One of: move them to a cool place / give them water to sip slowly / tell an adult at once (1)",
+      "A second, different one of these (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr044",
+   "type": "structured",
+   "level": 3,
+   "passage": {
+    "title": "Advice from the School Nurse",
+    "kind": "letter",
+    "text": "Dear Parents and Students,\nFlu season has started, and some students are feeling unwell. Please read these tips to help everyone stay healthy.\nStudents must wash their hands with soap for at least twenty seconds before eating and after using the toilet. Singing 'Happy Birthday' twice is a good way to count twenty seconds!\nYou should cover your mouth and nose with a tissue when you cough or sneeze. Throw the tissue into a bin with a lid and then wash your hands.\nIf your child has a fever, he or she must stay at home. Children should not come back to school until they have had no fever for 48 hours.\nStudents should eat fruit and vegetables every day and get enough sleep. Exercise also helps the body fight illness.\nWould you like your child to have a flu vaccine? We are going to have a free vaccination day at school on 15 November. Please return the reply slip by 1 November.\nLet's work together to keep our school healthy!\nYours faithfully,\nMs Tam, School Nurse"
+   },
+   "stem": "Read the letter. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "How long should students wash their hands?",
+     "marks": 1,
+     "options": [
+      "At least five seconds",
+      "At least ten seconds",
+      "At least twenty seconds",
+      "At least one minute"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. At least twenty seconds"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "When is the free vaccination day?",
+     "marks": 1,
+     "options": [
+      "1 November",
+      "15 November",
+      "20 November",
+      "1 December"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. 15 November"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? A child with a fever can come to school if he or she feels better.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: False"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "What song can help you count twenty seconds? Write two words.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: Happy Birthday"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "What should you do with a tissue after you cough or sneeze?",
+     "marks": 1,
+     "mark_scheme": [
+      "Throw it into a bin with a lid (and then wash your hands)"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Name two things from the letter that help the body stay healthy, apart from washing hands.",
+     "marks": 1,
+     "mark_scheme": [
+      "Any two: eating fruit and vegetables / enough sleep / exercise / a flu vaccine"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
+   "checked": "claude"
+  },
+  {
+   "id": "pbr045",
+   "type": "structured",
+   "level": 4,
+   "passage": {
+    "title": "The Class Trip Vote",
+    "kind": "story",
+    "text": "Mr Yeung's class had won the school tidy classroom competition. Their prize was a class trip, but they had to choose where to go.\n\"Let's go to the beach!\" said Anson. \"We could swim and build sandcastles.\"\n\"We shouldn't go to the beach in March,\" said Kayla. \"The water will be too cold. Why don't we go to the Wetland Park? We could see the birds.\"\n\"Would you like to go to a farm?\" asked Ivan. \"We could pick strawberries. My cousin went last month and loved it.\"\nMr Yeung wrote the three ideas on the board. \"You must listen to each other before you vote,\" he said. \"Think about the weather, the cost and what everyone can do.\"\nThe class talked about each idea. Anson agreed that the water would be cold. Some students worried that the farm was very far away. In the end, they voted, and the Wetland Park won with eighteen votes.\nAnson wasn't upset. \"Can we go to the beach in June?\" he asked with a grin."
+   },
+   "stem": "Read the story. Then answer the questions.",
+   "parts": [
+    {
+     "label": "1.",
+     "prompt": "Why did the class get a trip?",
+     "marks": 1,
+     "options": [
+      "They got the best test results",
+      "They won the tidy classroom competition",
+      "It was Mr Yeung's birthday",
+      "It was the end of the school year"
+     ],
+     "answer": 1,
+     "mark_scheme": [
+      "Answer: B. They won the tidy classroom competition"
+     ]
+    },
+    {
+     "label": "2.",
+     "prompt": "Whose idea won the vote?",
+     "marks": 1,
+     "options": [
+      "Anson's",
+      "Ivan's",
+      "Kayla's",
+      "Mr Yeung's"
+     ],
+     "answer": 2,
+     "mark_scheme": [
+      "Answer: C. Kayla's"
+     ]
+    },
+    {
+     "label": "3.",
+     "prompt": "True or false? Ivan wanted to go to a farm to pick strawberries.",
+     "marks": 1,
+     "options": [
+      "True",
+      "False"
+     ],
+     "answer": 0,
+     "mark_scheme": [
+      "Answer: True"
+     ]
+    },
+    {
+     "label": "4.",
+     "prompt": "How many votes did the Wetland Park get? Write the number as a word.",
+     "marks": 1,
+     "blank": true,
+     "mark_scheme": [
+      "Answer: eighteen"
+     ]
+    },
+    {
+     "label": "5.",
+     "prompt": "Why did Kayla think the beach was not a good idea?",
+     "marks": 1,
+     "mark_scheme": [
+      "It was March, so the water would be too cold"
+     ]
+    },
+    {
+     "label": "6.",
+     "prompt": "Mr Yeung said, 'You must listen to each other before you vote.' Was this good advice? Explain using the story.",
+     "marks": 2,
+     "mark_scheme": [
+      "Yes (1)",
+      "Listening helped them think about the weather/cost/distance and agree (e.g. Anson agreed the water was cold), so even Anson wasn't upset (1)"
+     ]
+    }
+   ],
+   "explanation": "Every answer can be found or worked out from the passage. Read the part of the passage the question is about again.",
    "checked": "claude"
   }
  ]

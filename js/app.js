@@ -365,7 +365,21 @@ function missingRef(q) {
 // "Choose the graph" questions are switched off for now (set GRAPHS_ON = true to bring them back).
 const GRAPHS_ON = false;
 const blocked = (q) => !q || (q.dev && !DEV) || (local.reports || []).includes(q.id) || !!missingRef(q) || (!GRAPHS_ON && q.type === 'graph');
-async function getQs(bookId, unitId) { return (await store.get(`qs:${bookId}:${unitId}`, [])).filter((q) => !blocked(q)); }
+const HAS_READING = new Set(); // chapters known to have reading passages (seen when their questions load)
+async function getQs(bookId, unitId) { const qs = (await store.get(`qs:${bookId}:${unitId}`, [])).filter((q) => !blocked(q)); if (qs.some((q) => q.passage)) HAS_READING.add(`${bookId}:${unitId}`); return qs; }
+// Reading passages (a passage + its questions) only come up in a chapter's Reading set: they're kept out of
+// ordinary practice, checks, reviews, chapter tests and mock exams, which pick from the rest of the bank.
+const notReading = (q) => !(q && q.passage);
+const getPractice = async (bookId, unitId) => (await getQs(bookId, unitId)).filter(notReading);
+// A chapter's Reading set: one passage and its questions (one the child hasn't done yet, else the one done longest ago)
+async function startReading(book, unit) {
+  const all = (await getQs(book.id, unit.id)).filter((q) => q.passage);
+  if (!all.length) return toast(PT('No reading passages for this chapter yet.', '這一章暫時未有閱讀文章。'));
+  const fresh = all.filter((q) => !local.stats[q.id]);
+  const pick = fresh.length ? shuffle(fresh)[0] : all.slice().sort((a, b) => ((local.stats[a.id] || {}).at || 0) - ((local.stats[b.id] || {}).at || 0))[0];
+  S = newSession({ mode: 'unit', title: PT(`Reading · ${shortTitle(unit.title)}`, `閱讀 · ${shortTitle(unit.title)}`), book, units: [unit], qs: [pick], target: 1, pending: 0, types: 'mix', count: 1, reading: true, bankLeft: {} });
+  renderQuestion();
+}
 async function setQs(bookId, unitId, list) { await store.set(`qs:${bookId}:${unitId}`, list); }
 function scoreOf(questions) {
   let got = 0, total = 0;
@@ -734,7 +748,7 @@ async function boostSession(book, c0 = null, step0 = null, plan = false) {
     return renderQuestion(); }
   if (step.kind === 'check') return startCheck(book, [c.unit]);
   if (step.kind === 'review') return startReview('spaced', null, 10);
-  const qs = await getQs(book.id, c.unit.id), now = Date.now();
+  const qs = await getPractice(book.id, c.unit.id), now = Date.now();
   const again = step.diff ? [] : shuffle(qs.filter((q) => { const st = local.stats[q.id]; return st && (st.due <= now || (st.last || 0) < 1); })).slice(0, 6).map(shuffleOptions);
   await startUnits(book, [c.unit], Math.max(6, 10 - again.length), step.diff ? { diff: step.diff } : {});
   if (S && again.length) {
@@ -777,7 +791,7 @@ function askTime(title, detail, suggested) {
 // The result per chapter is kept (local.checks) and caps that chapter's % for 3 weeks: what's remembered now.
 async function startCheck(book, units) {
   const per = units.length === 1 ? 6 : Math.max(2, Math.min(3, Math.floor(12 / units.length))), now = Date.now(), qs = [];
-  for (const u of units) { const all = (await getQs(book.id, u.id)).filter((q) => !blocked(q));
+  for (const u of units) { const all = (await getPractice(book.id, u.id)).filter((q) => !blocked(q));
     const old = shuffle(all.filter((q) => { const s2 = local.stats[q.id]; return s2 && (s2.last || 0) >= 1 && now - (s2.t || s2.due || 0) > 4 * DAY; }));
     const rest = shuffle(all.filter((q) => !old.includes(q)));
     qs.push(...[...old, ...rest].slice(0, per)); }
@@ -969,12 +983,12 @@ function planNeeds(ready, pcts, left, aim) { return { sets: Math.max(0, Math.cei
 const REVIEW_DAY = 20;
 async function dueItems() {
   const now = Date.now();
-  return (await allQuestions()).filter((x) => { const s = local.stats[x.q.id]; return s && s.due <= now; })
+  return (await allQuestions()).filter((x) => { const s = local.stats[x.q.id]; return s && s.due <= now && notReading(x.q); })
     .sort((a, b) => local.stats[a.q.id].due - local.stats[b.q.id].due).slice(0, REVIEW_DAY);
 }
 async function nextDue() {
   let next = Infinity;
-  for (const x of await allQuestions()) { const s = local.stats[x.q.id]; if (s && s.due > Date.now()) next = Math.min(next, s.due); }
+  for (const x of await allQuestions()) { const s = local.stats[x.q.id]; if (s && notReading(x.q) && s.due > Date.now()) next = Math.min(next, s.due); }
   return next;
 }
 function whenText(t) {
@@ -1414,7 +1428,7 @@ function planHTML(missionDone, pick, askOnly) {
     ['🎯', PT('Weakest subject', '最弱的科目'), PT('Where it’s needed most', '最需要的地方'), PT('30 minutes on my weakest subject', '30 分鐘練最弱的科目'), 30],
     ...(nt ? [['🗓️', PT(`Ready for ${nt.name}`, `準備「${nt.name}」`), PT(testLeft(nt) === 0 ? 'Test today' : testLeft(nt) === 1 ? 'Test tomorrow' : `Test in ${testLeft(nt)} days`, testLeft(nt) === 0 ? '今天測驗' : testLeft(nt) === 1 ? '明天測驗' : `${testLeft(nt)} 日後測驗`), PT(`30 minutes to get me ready for my ${nt.name}, weakest chapters first`, `30 分鐘幫我準備「${nt.name}」，先做最弱的章節`), 30]] : []),
     ['📝', PT('Chapter test', '章節測驗'), PT('Timed, like school', '限時，像學校測驗'), PT('A timed chapter test on the chapter that’s most ready for one (if none is ready yet, practice to get one there)', '為最準備好的一章做限時章節測驗（如果未有準備好的章節，就先練習）'), 40],
-    ['🏁', PT('Mock exam', '模擬考試'), PT('Mixed chapters, timed', '多章混合，限時'), PT('A mock exam: a timed mixed paper on the chapters I’ve practised, like the real exam', '模擬考試：用我練過的章節出一份限時混合試卷，像真正的考試'), 40],
+    ['🏁', PT('Mock exam', '模擬考試'), PT('Mixed chapters, timed', '多章混合，限時'), PT('A mock exam: a timed mixed paper on the chapters I’ve practised', '模擬考試：用我練過的章節出一份限時混合試卷'), 40],
   ];
   if (quick.length % 2) quick.splice(quick.findIndex((x) => x[0] === '🎯'), 1); // an even grid: the subject tile gives way
   if (planState.busy) return `<section class="ms-card bp-ask2" aria-label="${PT('More with Buddy', '和 Buddy 多做一點')}">${planThinkingHTML()}</section>`;
@@ -5880,7 +5894,7 @@ async function prefetch(book, units) {
     getSnippets(book, u).catch(() => {});
     const diff = curDiff();
     if (jobs.has(`${book.id}:${u.id}:${types}${diff === 'auto' ? '' : ':' + diff}`)) continue;
-    const fresh = (await getQs(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types) && diffOK(q, diff)).length;
+    const fresh = (await getPractice(book.id, u.id)).filter((q) => !local.stats[q.id] && matchType(q, types) && diffOK(q, diff)).length;
     const want = Math.ceil(count / units.length);
     if (fresh < want) ensureFill(book, u, Math.min(BATCH, want - fresh), types, 1, true, diff);
   }
@@ -6636,11 +6650,12 @@ function chapterSheet(book, c) {
   const why = nx ? nx.text + '.' : PT('It’s at 100%. Reviews now and then keep it there.', '已到 100%。不時溫習就能保持。');
   const O = [
     ['practise', 'practise', PT(`Practise ${n} questions`, `練習 ${n} 題`), PT('New questions that adapt to you', '會按你的程度調整的新題目'), () => startUnits(book, [c.unit], n)],
+    HAS_READING.has(`${book.id}:${c.unit.id}`) ? ['reading', 'notes', PT('Reading', '閱讀'), PT('A short passage and 5–6 questions on it', '一篇短文，回答 5–6 條問題'), () => startReading(book, c.unit)] : null,
     c.open ? ['fix', 'mistakes', PT(`Fix ${c.open} mistakes`, `改正 ${c.open} 題錯題`), PT('Try the ones you got wrong again', '再做一次答錯的題目'), () => go({ name: 'mistakes', book: book.id })] : null,
     c.done ? ['review', 'review', PT(c.due ? `Review ${c.due} due` : 'Review', c.due ? `溫習 ${c.due} 題` : '溫習'), PT('Questions from before, just before you’d forget', '在快忘記前再做以前的題目'), () => startReview('spaced', book.id)] : null,
     ['test', 'test', PT('Chapter test', '章節測驗'), c.lastTest && Date.now() - c.lastTest < 7 * DAY ? PT(`You did one ${new Date(c.lastTest).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}. Another now is fine for practice; the one that proves it stuck is from ${new Date(c.lastTest + 7 * DAY).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}`, `你在${new Date(c.lastTest).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}做過。現在再做可當練習；${new Date(c.lastTest + 7 * DAY).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}起再做才能證明記得`) : PT('Timed, like a mock exam · 80% passes', '限時，像模擬試 · 80% 合格'), () => startChapterTest(book, [c.unit])],
     c.done >= 3 ? ['drill', 'weak', PT('Drill my weak spots', '針對弱項練習'), PT('New questions on the ideas you got wrong', '針對你答錯的概念出新題目'), async () => {
-      const qs = (await getQs(book.id, c.unit.id)).filter((q) => local.stats[q.id] && (local.stats[q.id].last || 0) < 1 && canDrill(q))
+      const qs = (await getPractice(book.id, c.unit.id)).filter((q) => local.stats[q.id] && (local.stats[q.id].last || 0) < 1 && canDrill(q))
         .sort((a, b) => (local.stats[a.id].last || 0) - (local.stats[b.id].last || 0)).slice(0, 6);
       if (!qs.length) return toast(PT('No weak spots in this chapter right now. Nice!', '這一章暫時沒有弱項，做得好！'));
       const idea = (q) => choiceType(q) ? `Question: ${q.stem}\nCorrect answer: ${(q.options || [])['ABCD'.indexOf(q.correct_option)] || ''}\nWhy: ${q.explanation || ''}`
@@ -6649,7 +6664,7 @@ function chapterSheet(book, c) {
     }] : null,
     ['cards', 'flashcards', PT('Flashcards', '閃卡'), PT('Key words and ideas, quick fire', '重點詞語和概念，快速溫習'), () => go({ name: 'cards', bookId: book.id })],
     ['notes', 'notes', PT('Revision notes', '溫習筆記'), PT('The chapter on one page', '一頁看完整章'), () => go({ name: 'notes', bookId: book.id })],
-    pick === 'next' ? ['next', nx.kind === 'mixed' ? 'test' : nx.kind === 'check' ? 'review' : 'weak', nx.text, nx.kind === 'mixed' ? PT('Timed, several chapters, like the real exam', '限時，多章混合，像真正考試') : nx.kind === 'check' ? PT('6 questions to win back what faded', '6 題，贏回退步的分數') : PT('Buddy picks harder questions for you', 'Buddy 為你選較深的題目'), () => boostSession(book, c, nx, true)] : null,
+    pick === 'next' ? ['next', nx.kind === 'mixed' ? 'test' : nx.kind === 'check' ? 'review' : 'weak', nx.text, nx.kind === 'mixed' ? PT('Timed, several chapters mixed together', '限時，多章混合') : nx.kind === 'check' ? PT('6 questions to win back what faded', '6 題，贏回退步的分數') : PT('Buddy picks harder questions for you', 'Buddy 為你選較深的題目'), () => boostSession(book, c, nx, true)] : null,
   ].filter(Boolean);
   const best = O.find((o) => o[0] === pick) || O[0], rest = O.filter((o) => o !== best);
   const tone = c.pct >= 70 ? 'hi' : c.pct >= 40 ? 'mid' : 'lo';
@@ -6791,7 +6806,7 @@ function testPlanSheet(p, chs) {
   box.innerHTML = `<div class="cdlg tp tl" role="dialog" aria-modal="true" aria-labelledby="tp-t">
     <header class="tp-h"><div><small>${fmt(testDay(p.x))} · ${leftText(left)}</small><b id="tp-t">${PT('My plan to reach 100%', '我的 100% 計劃')}</b><small data-raw>${esc(p.x.name)}</small></div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="tp-body tl-body">
-      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i>→</i><div><b class="fc ${L.capped || none ? 'close' : 'ok'}">${done ? 100 : none ? p.ready : L.capped ? L.end : 100}%</b><span>${done ? PT('done', '完成') : none ? PT('after a quick check', '快速檢查之後') : PT(`after ${L.items.length} step${L.items.length === 1 ? '' : 's'}`, `完成 ${L.items.length} 步之後`)}</span></div></div>
+      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('known so far', '目前掌握')}</span></div><i>→</i><div><b class="fc ${L.capped || none ? 'close' : 'ok'}">${done ? 100 : none ? p.ready : L.capped ? L.end : 100}%</b><span>${done ? PT('done', '完成') : none ? PT('after a quick check', '快速檢查之後') : PT(`after ${L.items.length} step${L.items.length === 1 ? '' : 's'}`, `完成 ${L.items.length} 步之後`)}</span></div></div>
       <p class="tp-p">${tip}</p>${warn}${L.capped && !done ? `<p class="tp-p">${PT(`Your % follows your scores, so at your current scores these steps get you to about ${L.end}%. To go higher, fix your mistakes and aim for full marks on chapter tests and mock exams.`, `百分比跟隨你的分數。按現時的分數，這些步驟大約可達 ${L.end}%。要更高，就要改正錯題，並在章節測驗和模擬考試爭取滿分。`)}</p>` : ''}
       ${done ? '' : `<ol class="tl-list">${L.items.map(li).join('')}</ol>`}
       ${done || left < 2 ? '' : `<p class="tl-foot">${PT('The day before the test: a quick “Still there?” check. On test day: a 5-question warm-up.', '考試前一天：「還記得嗎？」快速檢查。考試當日：5 題熱身。')}</p>`}
@@ -7045,7 +7060,7 @@ function goalRingSVG(now, fc, aim) {
     ${fc != null && fc > now ? `<circle cx="75" cy="75" r="${r}" fill="none" stroke="#26357A" stroke-opacity=".28" stroke-width="13" stroke-dasharray="${((c * fc) / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 75 75)" stroke-linecap="round"></circle>` : ''}
     ${now > 0 ? `<circle cx="75" cy="75" r="${r}" fill="none" stroke="#26357A" stroke-width="13" stroke-dasharray="${((c * now) / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 75 75)" stroke-linecap="round"></circle>` : ''}
     <line x1="${a1.toFixed(1)}" y1="${b1.toFixed(1)}" x2="${a2.toFixed(1)}" y2="${b2.toFixed(1)}" stroke="#1B2559" stroke-width="3.5" stroke-linecap="round"></line>
-    <text x="75" y="76" text-anchor="middle" class="gl-rv">${now}%</text><text x="75" y="96" text-anchor="middle" class="gl-rl">${PT('ready now', '現在')}</text></svg>`;
+    <text x="75" y="76" text-anchor="middle" class="gl-rv">${now}%</text><text x="75" y="96" text-anchor="middle" class="gl-rl">${PT('known so far', '目前掌握')}</text></svg>`;
 }
 function goalLevelBar(now, start, target, cls = '') {
   return `<div class="gl-lv ${cls}"><div class="gl-lvb"><i style="width:${now * 10}%"></i>${start != null && Math.abs(start - now) >= 0.1 ? `<s style="left:${start * 10}%" title="${PT('Started', '起點')}"></s>` : ''}<u style="left:${target * 10}%"></u></div>
@@ -7250,7 +7265,7 @@ function goalsCardHTML(GD, o = {}) {
   // one goal = one sub-card, all the same shape: icon, name, when or target, status; then its measure
   const ST = GOAL_ST();
   const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}</span>`;
-  const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('ready now', '現在')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<span class="pv-flag ag-flag" style="left:${g.aim}%;--a:${g.aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</b></span></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>${g.fc == null && g.ready != null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
+  const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('known so far', '目前掌握')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<span class="pv-flag ag-flag" style="left:${g.aim}%;--a:${g.aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</b></span></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>${g.fc == null && g.ready != null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
   const sub = (g, i) => {
     const mis = (o.inMission ? o.inMission(g) : false) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s plan', '已在今日計劃中')}</span>` : '';
     if (g.kind === 'test') return `<details class="ag-sc t ${g.st}" open><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${o.testBody ? o.testBody(g) : ''}</div></details>${(g.p.x.kind || 'test') !== 'dict' && g.p.book ? `<div class="ag-acts"><button class="btn ag-go" data-tgo="${esc(g.p.x.id)}">${Z('Let’s do what’s next', '開始下一步')} →</button><button class="btn ghost ag-plan" data-tplan2="${esc(g.p.x.id)}">${Z('My plan to reach 100%', '我的 100% 計劃')}</button></div>` : ''}`;
@@ -7314,7 +7329,7 @@ async function fullTestCards(tests, btn) {
       : fcLocked || fc === p.ready ? (st === 'ok' ? PT('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : PT('Every step gets you closer to 100%.', '每一步都更接近 100%。'))
       : st === 'ok' ? PT(`With the plan you’ll reach about ${fc}%. Short reviews keep it there; Today’s plan takes care of it.`, `按現時進度，考試時約 ${fc}%。今日計劃會安排溫習，保持狀態。`)
       : PT(`With the plan you’ll reach about ${fc}%. Every extra step gets closer to 100%.`, `按現時進度，考試時約 ${fc}%。每多做一步都更接近 100%。`);
-    const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div>
+    const bar = p.ready == null ? '' : `<div class="pv-track"><div class="pv-num"><b>${p.ready}%</b><span>${PT('known so far', '目前掌握')}</span></div>
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}</div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : fc == null ? '' : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>${!fcLocked && fc == null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
@@ -7406,7 +7421,7 @@ async function renderProgress(PO = {}) {
       : st === 'ok' ? PT(`Heading for about ${fc}% on test day. Keep going for 100%.`, `考試當日預計約 ${fc}%。繼續向 100% 進發。`)
       : st === 'close' ? PT(`Heading for about ${fc}%. A bit more each day gets closer to 100%.`, `考試當日預計約 ${fc}%。每天多做一點就更接近 100%。`)
       : PT(`Heading for about ${fc}%. Today’s plan steps it up.`, `考試當日預計約 ${fc}%。今日的計劃會加把勁。`);
-    const nums = p.ready == null ? '' : `<div class="pv-snum"><div><b>${p.ready}%</b><span>${PT('ready now', '現在')}</span></div><i aria-hidden="true">→</i><div><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div><div><b>${aim}%</b><span>${PT('goal', '目標')}</span></div></div>
+    const nums = p.ready == null ? '' : `<div class="pv-snum"><div><b>${p.ready}%</b><span>${PT('known so far', '目前掌握')}</span></div><i aria-hidden="true">→</i><div><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div><div><b>${aim}%</b><span>${PT('goal', '目標')}</span></div></div>
       <div class="pv-sbar ${st}"><i style="width:${p.ready}%"></i>${fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}<s style="left:${aim}%"></s></div>`;
     return `<div class="pv-test pv-simple ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
       ${nums}${p.ready == null ? `<p class="pv-p">${say}</p>` : testPoints(p, chOf(p).length ? chOf(p) : p.book ? MB.get(p.book.id).chapters : [], aim, fc, st)}</div>`;
@@ -8324,7 +8339,7 @@ async function preparePaper(book, units, nA, nB, purpose, focus = null) {
   };
   const printed = new Set(local.printed || []);
   const fresh = (q) => (purpose === 'print' ? !printed.has(q.id) : !local.stats[q.id]);
-  const pool = async () => { const all = []; for (const u of units) all.push(...await getQs(book.id, u.id)); return all; };
+  const pool = async () => { const all = []; for (const u of units) all.push(...await getPractice(book.id, u.id)); return all; };
   /* Every test has the same difficulty mix, like a school paper (blueprint): multiple-choice about a quarter Recall,
      a third Understand, a quarter Apply and the rest Analyse; written answers Apply, Analyse, then Understand. When a
      level has run out, the nearest level stands in, and new questions are written at the missing level for next time. */
@@ -8540,7 +8555,7 @@ async function pumpPaper(sess) {
   if (sess.generating || sess.error || sess.review || sess.pumping) return;
   // first take any new questions already in the bank (e.g. made while the paper was starting)
   sess.pumping = true;
-  try { let all = []; for (const u of sess.fill.units) all.push(...await getQs(sess.book.id, u.id)); paperPlace(sess, shuffle(all.filter((q) => !local.stats[q.id]))); }
+  try { let all = []; for (const u of sess.fill.units) all.push(...await getPractice(sess.book.id, u.id)); paperPlace(sess, shuffle(all.filter((q) => !local.stats[q.id]))); }
   finally { sess.pumping = false; }
   if (sess !== S || sess.generating) return;
   sessionGrew(false);
@@ -8564,7 +8579,7 @@ async function pumpPaper(sess) {
           if ((left.a || left.b) && !sess.error) {
             if (f.rounds < 4) return pumpPaper(sess), sessionGrew(false);
             // Out of new material: reuse questions done before, then shrink the paper to what exists.
-            let all = []; for (const u of f.units) all.push(...await getQs(sess.book.id, u.id));
+            let all = []; for (const u of f.units) all.push(...await getPractice(sess.book.id, u.id));
             paperPlace(sess, shuffle(all));
             const now = paperShortfall(sess);
             if (now.a) { sess.sectionA -= now.a; paperPlace(sess, []); }
@@ -8658,7 +8673,7 @@ async function startUnits(book, units, count = sessionSize(), opts = {}) {
   const pools = [];
   for (const u of units) {
     const want = 2 + levelShift(book.id, u.id);
-    const all_ = (await getQs(book.id, u.id)).filter((q) => matchType(q, types) && diffOK(q, diff));
+    const all_ = (await getPractice(book.id, u.id)).filter((q) => matchType(q, types) && diffOK(q, diff));
     const pool = shuffle(all_.filter((q) => !local.stats[q.id]));
     // closest to the student's level first, with some variety
     pools.push(pool.map((q) => [q, Math.abs((q.level || 2) - want) + Math.random() * 1.5]).sort((a, b) => a[1] - b[1]).map((x) => x[0]));
@@ -9430,7 +9445,7 @@ function agoText(t) {
 const ssaOn = () => inHK() && /^P[56]$/.test(gradeNow() || '') && ((local.learner && local.learner.goals) || []).includes('ssa');
 const SSA_SUBJ = /chinese|中文|中國語文|english|英文|英國語文|math|數學|数学/i;
 async function startSprint() {
-  const all = (await allQuestions()).filter((x) => SSA_SUBJ.test(String(x.book.subject || '') + ' ' + x.book.title));
+  const all = (await allQuestions()).filter((x) => notReading(x.q) && SSA_SUBJ.test(String(x.book.subject || '') + ' ' + x.book.title));
   if (all.length < 6) return toast(LANG === 'zh' ? '先加入中文、英文或數學課本，並練習幾個章節。' : 'Add your Chinese, English or Maths books and practise a few chapters first.');
   const tried = all.filter((x) => local.stats[x.q.id]).sort((a, b) => local.stats[a.q.id].last - local.stats[b.q.id].last);
   const weak = tried.filter((x) => isWeak(x.q)).slice(0, 10);
@@ -9502,7 +9517,7 @@ async function renderPick(mode) {
   const books = await getBooks();
   if (!books.length) return go({ name: 'home' });
   const weakMode = mode === 'weak';
-  const items = await allQuestions();
+  const items = (await allQuestions()).filter((x) => notReading(x.q));
   const inBook = (id) => items.filter((x) => !id || x.book.id === id);
   const weakIn = (id) => inBook(id).filter((x) => isWeak(x.q)).length;
   const triedIn = (id) => inBook(id).filter((x) => local.stats[x.q.id]).length;
@@ -9544,7 +9559,7 @@ async function renderPick(mode) {
 
 async function startReview(mode, bookId = null, cap = 15) {
   if (mode === 'ssa') return startSprint();
-  const items = (await allQuestions()).filter((x) => !bookId || x.book.id === bookId);
+  const items = (await allQuestions()).filter((x) => notReading(x.q) && (!bookId || x.book.id === bookId));
   if (items.length < 4) return toast('Practise a chapter first, then come back here.');
   let pick;
   if (mode === 'spaced') {
@@ -9725,7 +9740,7 @@ function sessionGrew(done) {
 const MAX_RECAPS = 3;
 async function recapFor(sess) {
   const have = new Set(sess.qs.map((q) => q.id));
-  const all = (await Promise.all(sess.units.map((u) => getQs(sess.book.id, u.id)))).flat()
+  const all = (await Promise.all(sess.units.map((u) => getPractice(sess.book.id, u.id)))).flat()
     .filter((q) => local.stats[q.id] && !have.has(q.id) && matchType(q, sess.types));
   if (!all.length) return null;
   const rank = (q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done ? 0 : isWeak(q) ? 1 : 2; };
@@ -10119,7 +10134,7 @@ function renderQuestion() {
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
-    ${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${isPrimaryKid() && LANG !== 'zh' ? { mcq: 'Pick one', graph: 'Pick one', short: 'Short answer', structured: 'Long answer', essay: 'Writing' }[q.type] || TYPE[q.type] : TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
+    ${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${q.passage ? PT('Reading', '閱讀') : isPrimaryKid() && LANG !== 'zh' ? { mcq: 'Pick one', graph: 'Pick one', short: 'Short answer', structured: 'Long answer', essay: 'Writing' }[q.type] || TYPE[q.type] : TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${DEV ? `<div class="dev-pass"><span>DEV · finish at</span>${[60, 80, 100].map((r) => `<button type="button" data-devpass="${r}">${r}%</button>`).join('')}</div>` : ''}${devAnsHTML(q, S.phase === 'revealed')}${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '不明白？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
@@ -10467,11 +10482,13 @@ function acceptedOf(line) {
   const out = [...new Set(acc.map(normAns).filter(Boolean))];
   return out.length && out.every((a) => a.split(' ').length <= 4 && !/\b(mark|accept|must|any)\b/.test(a)) ? out : null;
 }
+const choiceMark = (p, a) => { const ok = normAns(a) === normAns(p.options[p.answer]); return { awarded: ok ? [0] : [], feedback: ok ? 'Correct.' : `The answer is: ${p.options[p.answer]}` }; };
 function localMark(q, answers) {
   if (q.type === 'essay' || !q.parts || !q.parts.length) return null;
-  if (!q.parts.every((p) => p.blank && p.marks === 1 && (p.mark_scheme || []).length === 1)) return null;
+  if (!q.parts.every((p) => p.options || (p.blank && p.marks === 1 && (p.mark_scheme || []).length === 1))) return null;
   const parts = [];
   for (let k = 0; k < q.parts.length; k++) {
+    if (q.parts[k].options) { parts.push(choiceMark(q.parts[k], answers[k])); continue; }
     const acc = acceptedOf(q.parts[k].mark_scheme[0]); const a = normAns(answers[k]);
     if (!acc || !a) return null;
     if (acc.includes(a)) parts.push({ awarded: [0], feedback: 'Correct.' });
@@ -10502,6 +10519,10 @@ async function markAnswer(sess, idx) {
       const text = await store.get(`text:${bookId}:${unitId}`, '');
       if (!text) throw new Error('missing text');
       sess.marks[idx] = await api('mark', { title: q.section, text, question: qForServer(q), figure: figB64(q), answers, inks: inks.some(Boolean) ? inks.map((x) => (x ? x.split(',')[1] : null)) : undefined, kind: await kindOfId(q.id), lang: langOf(q.stem + ' ' + q.parts.map((p) => p.prompt).join(' ')) });
+      if (sess.marks[idx] && sess.marks[idx].parts) q.parts.forEach((p, k) => { // multiple choice and exact one-word answers: checked here, never left to the AI
+        if (p.options) sess.marks[idx].parts[k] = choiceMark(p, answers[k]);
+        else if (p.blank && p.marks === 1 && (p.mark_scheme || []).length === 1) { const acc = acceptedOf(p.mark_scheme[0]); if (acc && acc.includes(normAns(answers[k]))) sess.marks[idx].parts[k] = { awarded: [0], feedback: 'Correct.' }; }
+      });
     } catch (e) {
       if (e !== 'done') sess.marks[idx] = { error: e.status === 0 ? 'You seem to be offline, so the AI could not mark this.' : 'The AI marker is not available right now.' };
     }
@@ -10517,9 +10538,31 @@ async function markAnswer(sess, idx) {
   if (sess === S && S.i === idx) { const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }
 }
 
+const PASSAGE_KIND = { diary: ['Diary', '日記'], story: ['Story', '故事'], email: ['Email', '電郵'], letter: ['Letter', '信件'], notice: ['Notice', '告示'], poster: ['Poster', '海報'],
+  article: ['Article', '文章'], leaflet: ['Leaflet', '單張'], ad: ['Advertisement', '廣告'], timetable: ['Timetable', '時間表'], recount: ['Recount', '記敘'], blog: ['Blog', '網誌'] };
+function passageHTML(q) {
+  if (!q.passage) return '';
+  const k = PASSAGE_KIND[q.passage.kind], paras = String(q.passage.text || '').split(/\n+/).map((t) => `<p>${esc(t)}</p>`).join('');
+  return `<details class="rpass" id="rpass" open><summary><span class="rp-t">📖 ${esc(q.passage.title || '')}</span>${k ? `<small>${PT(k[0], k[1])}</small>` : ''}</summary><div class="rp-text" data-raw>${paras}</div></details>`;
+}
+// "Show the passage": always on screen while answering a passage's questions, so the child never scrolls back up
+function bindPassage(q) {
+  if (!q.passage) return;
+  let b = document.getElementById('rpFab'); if (b) b.remove();
+  b = document.createElement('button'); b.id = 'rpFab'; b.className = 'rp-fab'; b.type = 'button'; b.innerHTML = `📖 ${PT('Show the passage', '看文章')}`;
+  $app.appendChild(b);
+  const box = document.getElementById('rpass');
+  if (box && 'IntersectionObserver' in window) { b.hidden = true; new IntersectionObserver((es) => { b.hidden = es[0].isIntersecting && box.open; }).observe(box); }
+  b.onclick = () => {
+    const w = document.createElement('div'); w.className = 'cdlg-wrap';
+    w.innerHTML = `<div class="cdlg rp-sheet" role="dialog" aria-modal="true" aria-label="${esc(q.passage.title || '')}"><header><b>📖 ${esc(q.passage.title || '')}</b><button class="chs-x" aria-label="${PT('Close', '關閉')}">✕</button></header><div class="rp-text" data-raw>${String(q.passage.text || '').split(/\n+/).map((t) => `<p>${esc(t)}</p>`).join('')}</div></div>`;
+    document.body.appendChild(w);
+    const close = () => w.remove(); w.querySelector('.chs-x').onclick = close; w.onclick = (e) => { if (e.target === w) close(); };
+  };
+}
 function writtenBody(q, revealed) {
   const ans = S.answers[S.i] || q.parts.map(() => '');
-  const stem = figHTML(q) + (q.stem ? renderStem(writtenStem(q), 'q') : ''); // the question is the biggest text on the screen
+  const stem = passageHTML(q) + figHTML(q) + (q.stem ? renderStem(writtenStem(q), 'q') : ''); // the question is the biggest text on the screen
   if (!revealed) {
     // The maths keypad and "show your working" only for questions that involve working something out.
     const maths = kindSync(q.id) === 'maths' && q.type !== 'essay' && /\d|calculat|work out|find|solve|show that|evaluate|simplif|expand|factori|prove|estimate|計算|求/i.test(q.parts.map((p) => `${p.prompt} ${p.mark_scheme.join(' ')}`).join(' ')), essay = q.type === 'essay';
@@ -10527,6 +10570,8 @@ function writtenBody(q, revealed) {
       const ink = inkOf(S.i, k, true);
       // a one-word blank (cloze, proofreading line, verb form): a one-line box, no handwriting pad
       // (a maths blank like "47 × 23" gets the full box instead: type with the maths keys, or handwrite)
+      if (p.options) return `<div class="part"><div class="ph"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></div>
+      <div class="ropts" role="radiogroup">${p.options.map((o, i) => `<button type="button" role="radio" aria-checked="${ans[k] === o}" class="ropt ${ans[k] === o ? 'on' : ''}" data-opt="${k}:${i}">${p.options.length > 2 ? `<b>${'ABCD'[i]}</b> ` : ''}${esc(o)}</button>`).join('')}</div></div>`;
       if (p.blank && !essay && !maths) return `<div class="part"><label class="ph${GENERIC_ASK.test(p.prompt) ? ' generic' : ''}" for="a${k}"><span>${esc(p.label)} ${esc(p.prompt)}</span><span class="mk">${p.marks} mark${p.marks > 1 ? 's' : ''}</span></label>
       <input id="a${k}" data-k="${k}" class="blank-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your answer" value="${esc(ans[k])}"></div>`;
       return `<div class="part">
@@ -10555,6 +10600,8 @@ function writtenBody(q, revealed) {
         const y = window.scrollY; renderQuestion(); window.scrollTo(0, y);
       }));
       $app.querySelectorAll('textarea, input.blank-in').forEach((t) => (t.oninput = grab));
+      $app.querySelectorAll('[data-opt]').forEach((b) => (b.onclick = () => { grab(); const [k, i] = b.dataset.opt.split(':').map(Number); S.answers[S.i][k] = q.parts[k].options[i]; const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }));
+      bindPassage(q);
       document.getElementById('check').onclick = () => {
         grab();
         if (isExam()) return advance();
@@ -10596,6 +10643,7 @@ function writtenBody(q, revealed) {
   const footer = `<div class="sheet"><span class="verdict ${got === marksOf(q) ? 'ok' : 'no'}">${got} / ${marksOf(q)} mark${marksOf(q) === 1 ? '' : 's'}</span>
     ${m.tip ? `<p class="tipline"><b>Tip:</b> <span data-raw>${esc(m.tip)}</span></p>` : ''}${feedbackBits(q)}<button class="btn" id="next">${nextLabel()}</button></div>`;
   return { main: `${stem}${partHtml}${note}`, footer, bind() {
+    bindPassage(q);
     $app.querySelectorAll('.point').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, j = +b.dataset.j; ticks[k][j] = !ticks[k][j]; const y = window.scrollY; renderQuestion(); window.scrollTo(0, y); }));
   } };
 }
@@ -10830,7 +10878,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   const toAnswers = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   const hero = { pct }, sml = starMomentLines(sess.won);
   const wUnits = sess.book ? sess.book.units.filter((u) => qs.some((q) => qUnit(q.id)[1] === u.id)) : [];
-  const what = { kind: sess.test ? Z('Chapter test', '章節測驗') : sess.mode === 'dse' || sess.mode === 'mock' ? Z('Mock exam', '模擬考試') : sess.mode === 'spaced' ? Z('Review', '溫習') : sess.mode === 'mistakes' || sess.mode === 'drill' ? Z('Fixing mistakes', '改正錯題') : Z('Practice', '練習'),
+  const what = { kind: sess.reading ? Z('Reading', '閱讀') : sess.test ? Z('Chapter test', '章節測驗') : sess.mode === 'dse' || sess.mode === 'mock' ? Z('Mock exam', '模擬考試') : sess.mode === 'spaced' ? Z('Review', '溫習') : sess.mode === 'mistakes' || sess.mode === 'drill' ? Z('Fixing mistakes', '改正錯題') : Z('Practice', '練習'),
     name: wUnits.length === 1 ? shortTitle(wUnits[0].title) : wUnits.length ? Z(`${wUnits.length} chapters: ${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join(', ')}`, `${wUnits.length} 章：${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join('、')}`) : (sess.book ? sess.book.title : '') };
   const say = (o) => moment({ ...o, sess, what, bars: (o.bars || []).map((b) => (wUnits.length === 1 && b.lab === what.name ? { ...b, lab: Z('Chapter progress', '這一章的進度') } : b)), lines: [...(o.lines || []), ...sml] });
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
