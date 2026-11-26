@@ -1426,8 +1426,8 @@ function planHTML(missionDone, pick, askOnly) {
     <form class="bpq-form2" id="bpForm"><span class="bpq-fb" aria-hidden="true">${buddySVG('happy', 28)}</span><input id="bpQ" maxlength="200" enterkeyhint="send" aria-label="${PT('Tell Buddy what you want to do', '告訴 Buddy 你想做甚麼')}" placeholder="${PT('e.g. 20 min on fractions', '例如：20 分鐘練分數')}" ${planState.busy ? 'disabled' : ''}><button class="bpq-send" aria-label="${PT('Plan it', '訂計劃')}" ${planState.busy ? 'disabled' : ''}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></form>
     ${planState.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(planState.error)}</p>` : ''}
     ${planState.maxed && planState.maxed.d === startOfToday() ? `<div class="bp-maxed"><span class="bp-mx-bud" aria-hidden="true">${buddySVG('done', 44)}</span><div><b>${PT('You’ve done all you can for these chapters today 🎉', '這些章節今天已經做到最好了 🎉')}</b>
-      <span>${PT('The rest of the % comes from remembering it in the next days: reviews and a retest a week after a pass. Want to practise anyway to lock it in?', '餘下的百分比要靠之後幾日仍然記得：溫習，以及合格一星期後重考。想再練習鞏固一下嗎？')}</span>
-      <button class="btn" id="bpAnyway">${PT('Practise anyway', '照樣練習')} <small>${PT('· won’t change the %', '· 不會改變百分比')}</small></button></div></div>` : ''}</section>`;
+      <span>${PT('To go higher, score higher on chapter tests and mock exams: your % follows your scores. Want to practise anyway?', '要更高，就要在章節測驗和模擬考試拿更高分：百分比跟隨你的分數。要不要照樣練習？')}</span>
+      <button class="btn" id="bpAnyway">${PT('Practise anyway', '照樣練習')}</button></div></div>` : ''}</section>`;
 }
 // Changing or removing Buddy's plan asks first, so a stray tap can't lose it
 function planChangeDialog() {
@@ -3043,7 +3043,7 @@ async function renderHome() {
       ? `<section class="ms-card ms-done ms-done2 bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Your plan', '你的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est ms-est-done">${ICON.check} ${Z('Done', '完成')}</span></div><div class="ms-drow">${buddySVG('done', 60)}<div class="ms-dt"><b>${Z('Plan done!', '計劃完成！')}</b><span>${Z(`All ${planSteps.length} steps of Buddy’s plan done. Great extra work!`, `Buddy 計劃的 ${planSteps.length} 個步驟全部完成，做得好！`)}</span><button class="linkbtn" id="bpX2">${Z('Ask Buddy for another plan', '請 Buddy 再訂計劃')} ›</button>${planHow}</div></div><details class="msd-all"><summary>${Z('What you did', '做了甚麼')}<span class="mq-chev" aria-hidden="true">›</span></summary>${planSteps.map((x, k) => stepRow({ ...x, done: true }, k, -1)).join('')}</details></section>`
       : `<section class="ms-card bp-card" aria-label="${Z('Buddy’s plan for you', 'Buddy 為你訂的計劃')}"><div class="ms-head"><h2 class="h-info">${Z('Your plan', '你的計劃')}${infoBtn('howPlan', Z('How was this plan made?', '這個計劃是怎樣訂的？'))}</h2><span class="ms-est">${pIcon('clock', 16)}<span class="ms-el">${pStarted ? Z('about', '尚餘約') : Z('about', '約')} </span>${Z(`${pMin} min`, `${pMin} 分鐘`)}${pStarted ? `<span class="ms-el">${Z(' left', '')}</span>` : ''}</span><button type="button" class="bp-edit" id="bpEdit" aria-expanded="false" aria-haspopup="true" aria-label="${Z('Change or remove this plan', '更改或移除這個計劃')}">${pIcon('pencil', 17)}</button>
       <div class="bp-acts" id="bpActs" hidden><button class="bp-mi" id="bpChange">${pIcon('pencil', 16)} ${Z('Change plan', '更改計劃')}</button><button class="bp-mi bp-rm" id="bpRemove">${GICON.trash} ${Z('Remove plan', '移除計劃')}</button></div></div>
-      ${PP.extra ? `<p class="bp-extra">✨ ${Z('Extra practice to lock it in · won’t change the %', '額外練習，鞏固記憶 · 不會改變百分比')}</p>` : ''}
+      ${PP.extra ? `<p class="bp-extra">✨ ${Z('Extra practice', '額外練習')}</p>` : ''}
       <div class="ms-list">${(() => { const idx = planSteps.map((x, k) => [x, k]), open = idx.filter(([x]) => !x.done), done = idx.filter(([x]) => x.done);
         return open.map(([x, k]) => stepRow(x, k, pNext).replace('class="ms-item ', 'class="ms-item is-open ')).join('') + (done.length ? `<div class="ms-donehd">${Z(`Done · ${done.length}`, `已完成 · ${done.length}`)}</div>${done.map(([x, k]) => stepRow(x, k, pNext)).join('')}` : ''); })()}</div>
       ${planHow}
@@ -10971,7 +10971,7 @@ function renderSummary() {
     local.sess = [...(local.sess || []), { t: Date.now(), k: S.check ? 'check' : S.mode || '', b: S.book ? S.book.id : '', u: [...new Set(qs.map((q) => qUnit(q.id)[1]))], n: qs.length, p: pct, min: Math.max(1, Math.round((Date.now() - S.at) / 60000)), r: rushedSet(qs) ? 1 : 0, e: S.endedEarly ? 1 : 0, ts: S.test ? 1 : 0 }].slice(-400);
     saveLocal();
   }
-  const willMoment = !S.endedEarly && !S.momented && qs.length >= 3;
+  const willMoment = !S.endedEarly && !S.momented && qs.length >= 1;
   if (won && !willMoment) setTimeout(() => { if (document.querySelector('main.results')) celebrate(won); }, 500);
   if (willMoment) { S.momented = true; const sess = S; sess.won = won; setTimeout(() => resultMoment(sess, qs, pct, got, total), 700); }
   const nRight = qs.filter((q, k) => (S.got[k] || 0) === marksOf(q)).length;
@@ -10979,7 +10979,7 @@ function renderSummary() {
   const nPart = qs.length - nRight - nMiss;
   const band = pct >= 85 ? 'good' : pct >= 50 ? 'mid' : '';
   const head = pct >= 85 ? 'Excellent work' : pct >= 70 ? 'Good, solid work' : pct >= 50 ? 'Getting there' : 'Worth another go';
-  const sub = pct >= 85 ? 'You know this well. Reviews over the next few days will lock it in.'
+  const sub = pct >= 85 ? 'You know this well.'
     : pct >= 70 ? 'A few slips to tidy up, then you’re there.'
     : pct >= 50 ? 'Fix the ones you missed and you’ll be well on your way.'
     : S.units ? 'This set was tough. Buddy’s suggestion below is the quickest way up.' : 'This set was tough. Drilling the ones you missed is the fastest way up.';
