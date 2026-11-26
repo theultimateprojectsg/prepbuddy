@@ -2732,16 +2732,10 @@ async function renderHome() {
     const tLine = (q) => [tIc(q), q.left === 0 ? Z(`${q.x.name} today`, `今天「${q.x.name}」`) : q.left === 1 ? Z(`${q.x.name} tomorrow`, `明天「${q.x.name}」`) : Z(`${q.x.name} in ${q.left} days`, `「${q.x.name}」還有 ${q.left} 日`), q.left <= 2];
     if (nt && nt.left === 0) return [...soon.map(tLine), ['practise', Z('A quick warm-up first? You’ve got this!', '先熱熱身？你一定得！')]];
     if (nt && nt.left === 1) return [...soon.map(tLine), ['practise', Z('A practice run tonight, then a good sleep', '今晚做一次模擬，然後好好睡一覺')]];
-    if (F.allDone) return F.streak >= 2 ? Z(`Plan done, and ${F.streak} days in a row. Brilliant!`, `計劃完成，已連續 ${F.streak} 日，太棒了！`) : Z('Plan done for today. Brilliant work!', '今天的計劃完成了，做得好！');
-    // tests further off aren't repeated here: the goals card right below shows each one with its countdown
-    if (F.restY && F.streak >= 1 && !F.doneToday) return Z(`Yesterday was your rest day 💤 so your ${F.streak}-day streak is safe. Practise today to keep it going!`, `昨天是你的休息日 💤，${F.streak} 日連續紀錄保住了。今天練習，繼續保持！`);
-    if (F.streak >= 2 && !F.doneToday) return Z(`${F.streak} days in a row! Keep the flame going today.`, `已連續 ${F.streak} 日！今天也要保持。`);
-    if (F.fixedY >= 3) return Z(`You fixed ${F.fixedY} mistakes yesterday. Nice!`, `昨天你改正了 ${F.fixedY} 題錯題，做得好！`);
-    if (F.gw && !F.gw.reached && F.gw.met === F.gw.days - 1) return Z('One more day and you hit this week’s goal!', '再多一日就達到本週目標！');
-    if (F.streak >= 2) return Z(`${F.streak} days in a row. Come back tomorrow for day ${F.streak + 1}!`, `已連續 ${F.streak} 日，明天回來挑戰第 ${F.streak + 1} 日！`);
+    if (F.doneToday) return Z('Nice work today!', '今天做得好！'); // simplified 26 Nov: no plan, streak or weekly-goal lines
     const L = LANG === 'zh'
-      ? (hr < 12 ? ['新的一天，先做一點點吧！', '早上的腦袋最清醒，來幾題吧！', '先做一點點，今天就輕鬆得多。'] : hr < 18 ? ['今天也來練習一下吧！', '放學後做一個小任務？', '十分鐘就夠，開始吧！'] : ['睡前做十分鐘，明天更有信心。', '今晚做一點，明天記得更牢。', '一個小任務，然後好好休息。'])
-      : (hr < 12 ? ['A little practice now, a lot easier later.', 'Fresh brain, fresh start. Let’s go!', 'A few questions before the day gets busy?'] : hr < 18 ? ['Ready for a quick practice?', 'A short plan after school?', 'Ten minutes is all it takes. Let’s go!'] : ['Ten minutes before bed goes a long way.', 'A little tonight helps it stick tomorrow.', 'One small plan, then time to relax.']);
+      ? (hr < 12 ? ['新的一天，先做一點點吧！', '早上的腦袋最清醒，來幾題吧！', '先做一點點，今天就輕鬆得多。'] : hr < 18 ? ['今天也來練習一下吧！', '放學後做幾題？', '十分鐘就夠，開始吧！'] : ['睡前做十分鐘，明天更有信心。', '今晚做一點，明天記得更牢。', '一個小任務，然後好好休息。'])
+      : (hr < 12 ? ['A little practice now, a lot easier later.', 'Fresh brain, fresh start. Let’s go!', 'A few questions before the day gets busy?'] : hr < 18 ? ['Ready for a quick practice?', 'A few questions after school?', 'Ten minutes is all it takes. Let’s go!'] : ['Ten minutes before bed goes a long way.', 'A little tonight helps it stick tomorrow.', 'A few questions, then time to relax.']);
     return L[Math.floor(Date.now() / DAY) % L.length];
   };
   // Phones: an app bar (logo · child · stars · settings) above a friendly greeting card with Buddy. Computers: the plain greeting.
@@ -3299,18 +3293,7 @@ async function renderHome() {
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}
     ${closerHTML}
-    ${MODE === null ? planHTML(false, nextPick) : ''}
-    ${MODE === 'plan' ? (planCard ? planCard + (planDoneNow ? planHTML(true, nextPick, true) : '') : planHTML(true, nextPick, true)) : ''}
-    ${MODE === 'mission' && planCard && !planDoneNow ? planCard : ''}
-    ${MODE === 'mission' && msFirst ? missionHTML : ''}
-    ${MODE === 'mission' && msFirst && !(planCard && !planDoneNow) ? planHTML(false, null, true) : ''}
-    ${MODE === 'mission' && msFirst && planDoneNow ? planCard : ''}
     ${installTip()}
-    ${winHTML}
-    ${slipHTML}
-    ${MODE === 'mission' && !msFirst && (!todayPlan() || planDoneNow) ? planHTML(true, nextPick, true) : ''}
-    ${MODE === 'mission' && !msFirst ? missionHTML : ''}
-    ${MODE === 'mission' && !msFirst && planDoneNow ? planCard : ''}
     ${comboHTML ? '' : tests.pastHTML}
     ${comboHTML ? '' : testHTML}
     ${quickHTML}
@@ -5165,7 +5148,11 @@ function missionNextLabel() { return PT('Back to Today', '返回今日'); }
 // priority (1 = most important); the best one shows and the rest wait for a later visit (their "seen" marks are
 // only set when they actually show, so nothing is lost).
 let homeOffers = [], homeOfferT = null, homeVisit = 0, homePopVisit = -1;
+// Simplified 26 Nov: Today no longer pops up celebrations (mission done, streak, progress, welcome back, weekly).
+// Only a pop-up that explains a change to the child's own % may still show.
+const HOME_POPS = new Set([2.5]);
 function homeOffer(prio, show) {
+  if (!HOME_POPS.has(prio)) return;
   homeOffers.push({ prio, show, v: homeVisit });
   clearTimeout(homeOfferT);
   homeOfferT = setTimeout(async () => {
@@ -5405,7 +5392,7 @@ function renderTabs(active = tabNow) {
   if (!active) { delete document.body.dataset.tab; return; }
   document.body.dataset.tab = active;
   const mk = mistakeCount();
-  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'practice' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : k === 'home' && local.msLeft && local.msLeft.d === startOfToday() && local.msLeft.n ? `<span class="badge">${local.msLeft.n}</span>` : ''}</button>`).join('')}</div>${planId() !== 'pro' ? `<button class="side-up" id="sideUp"><span class="plan-pill ${planId()}">${PL(curPlan().name, curPlan().zh)}</span><b>${PL('Upgrade', '升級')} →</b></button>` : ''}`;
+  nav.innerHTML = `<span class="brand-side">${logoSVG(30)}<span>PrepBuddy</span></span><div class="tabs-in">${TABS.map(([k, label, ic]) => `<button class="${k === active ? 'on' : ''}" data-tabgo="${k}" ${k === active ? 'aria-current="page"' : ''}>${menuIcon(k, k === active)}<span>${label}</span>${k === 'practice' && mk ? `<span class="badge">${mk > 99 ? '99+' : mk}</span>` : k === 'home' && false && local.msLeft ? `<span class="badge">${local.msLeft.n}</span>` : ''}</button>`).join('')}</div>${planId() !== 'pro' ? `<button class="side-up" id="sideUp"><span class="plan-pill ${planId()}">${PL(curPlan().name, curPlan().zh)}</span><b>${PL('Upgrade', '升級')} →</b></button>` : ''}`;
   bindStarChips(nav);
   { const su = nav.querySelector('#sideUp'); if (su) su.onclick = () => go({ name: 'plans' }); }
   nav.querySelectorAll('[data-tabgo]').forEach((b) => (b.onclick = async () => {
