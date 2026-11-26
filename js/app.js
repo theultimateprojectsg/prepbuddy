@@ -7300,7 +7300,7 @@ function goalsCardHTML(GD, o = {}) {
   const subHead = (g, ic, name, meta, chev) => `<span class="ag-h"><span class="gl-ric">${ic}</span><span class="ag-ht"><b data-raw>${name}</b><small data-raw>${meta}</small></span>${g.st && g.kind !== 'longnew' ? `<em class="gl-st ${g.st}">${ST[g.st]}</em>` : ''}</span>`;
   const miniTrack = (g) => `<div class="pv-track ag-mt"><div class="pv-num"><b>${g.ready}%</b><span>${Z('known so far', '目前掌握')}</span></div><div class="pv-bar ${g.st}"><i style="width:${g.ready}%"></i>${g.fc != null && g.fc > g.ready ? `<em style="left:${g.ready}%;width:${g.fc - g.ready}%"></em>` : ''}<span class="pv-flag ag-flag" style="left:${g.aim}%;--a:${g.aim}"><span class="pv-fbud">${buddySVG('happy', 30)}</span><b>${Z(`Goal ${g.aim}%`, `目標 ${g.aim}%`)}</b></span></div>${g.fc != null ? `<div class="pv-num"><b class="fc ${g.st}">${g.fc}%</b><span>${Z('on test day', '考試當日')}</span></div>` : ''}</div>${g.fc == null && g.ready != null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
   const sub = (g, i) => {
-    const mis = (o.inMission ? o.inMission(g) : false) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s plan', '已在今日計劃中')}</span>` : '';
+    const mis = false && (o.inMission ? o.inMission(g) : false) ? `<span class="ag-mis">${ICON.check} ${Z('In today’s plan', '已在今日計劃中')}</span>` : '';
     if (g.kind === 'test') return `<details class="ag-sc t ${g.st}" open><summary>${mis}${subHead(g, GIC.test, esc(g.p.x.name), `${new Date(testDay(g.p.x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(g.p.left)}`)}${miniTrack(g)}</summary><div class="ag-body">${o.testBody ? o.testBody(g) : ''}</div></details>${(g.p.x.kind || 'test') !== 'dict' && g.p.book ? `<div class="ag-acts"><button class="btn ag-go" data-tgo="${esc(g.p.x.id)}">${Z('Let’s do what’s next', '開始下一步')} →</button><button class="btn ghost ag-plan" data-tplan2="${esc(g.p.x.id)}">${Z('My plan to reach 100%', '我的 100% 計劃')}</button></div>` : ''}`;
     const name = esc(g.lab);
     // subject goals open too: the level week by week, how far it has come, and what Buddy suggests next
@@ -10172,7 +10172,7 @@ function bindTutorCTA(q, cls) {
 
 // In mixed sets (reviews, mistakes, weak spots) say where each question is from, and for reviews when it was last seen
 const sessKind = (s) => (s.reading ? PT('Reading', '閱讀') : s.test ? PT('Chapter test', '章節測驗') : s.mode === 'dse' || s.mode === 'mock' ? PT('Mock exam', '模擬考試')
-  : s.mode === 'spaced' ? PT('Review', '溫習') : s.mode === 'mistakes' || s.mode === 'drill' ? PT('Fixing mistakes', '改正錯題') : s.check ? PT('“Still there?” check', '「還記得嗎？」檢查')
+  : s.mode === 'spaced' ? PT('Review', '溫習') : s.mode === 'mistakes' || s.mode === 'drill' || s.mode === 'retry' ? PT('Fixing mistakes', '改正錯題') : s.check ? PT('“Still there?” check', '「還記得嗎？」檢查')
   : s.diff === 'hard' || s.diff === 'apply' || s.diff === 'analyse' ? PT('Harder questions', '較深題目') : PT('Practice', '練習'));
 const sessWhere = (s) => { const us = s.units || (s.book && s.qs ? s.book.units.filter((u) => s.qs.some((q) => qUnit(q.id)[1] === u.id)) : []);
   return us.length === 1 ? shortTitle(us[0].title) : us.length ? PT(`${us.length} chapters`, `${us.length} 章`) : ''; };
