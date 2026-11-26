@@ -577,7 +577,9 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, earned, fading, strength, idle, canFade, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), gates, prac: pracPart, pracVol, pracAcc, capScore, capFrom, capped, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, lvNow, lvTop, l3n, l4n, written, b4, b5, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, earned, fading, strength, idle, canFade, rested: (() => { // its test is over and no upcoming test has it: fading isn't pushed
+      const T0 = startOfToday(), inT = (x) => x.b === book.id && (!(x.u && x.u.length) || x.u.includes(u.id)), L = local.sched || [];
+      return L.some((x) => inT(x) && testDay(x) < T0) && !L.some((x) => inT(x) && testDay(x) >= T0); })(), cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), gates, prac: pracPart, pracVol, pracAcc, capScore, capFrom, capped, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, lvNow, lvTop, l3n, l4n, written, b4, b5, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -650,8 +652,8 @@ function weakestChapter(m) {
 function nextStep(c) {
   const Z = (en, zh) => (LANG === 'zh' ? zh : en), t = shortTitle(c.unit.title), g = c.gates || {};
   const S = (kind, en, zh, diff) => ({ unit: c.unit, kind, text: Z(en, zh), diff });
-  if (c.pct >= 100 && !(c.fading >= 1)) return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
-  if ((c.fading || 0) >= 1) return S('check', `Win back ${t}: a quick check (it was ${c.earned}%)`, `贏回「${t}」：快速檢查（曾經是 ${c.earned}%）`);
+  if ((c.pct >= 100 && !(c.fading >= 1)) || (c.rested && c.earned >= 100)) return c.due ? S('review', `Review ${c.due} question${c.due > 1 ? 's' : ''} in ${t}`, `溫習「${t}」的 ${c.due} 條題目`) : null;
+  if ((c.fading || 0) >= 1 && !c.rested) return S('check', `Win back ${t}: a quick check (it was ${c.earned}%)`, `贏回「${t}」：快速檢查（曾經是 ${c.earned}%）`);
   if ((c.open || 0) >= 3) return S('mistakes', `Fix ${c.open} mistakes in ${t}`, `改正「${t}」的 ${c.open} 條錯題`);
   if (!c.done) return S('practise', `Start ${t}: a first practice set`, `開始「${t}」：第一組練習`);
   if ((c.pracVol != null ? c.pracVol < 0.83 : (c.prac || 0) < 50)) return S('practise', `Practise more of ${t}`, `多練習「${t}」`);
@@ -3273,7 +3275,7 @@ async function renderHome() {
     // Every goal shown the same way, most work needed first; no focus, no picking. Today's mission says what to do.
     if (GD && (!DEV || DMODE === 'all')) {
       const cardOf = (G) => { const k = tests.steps.indexOf(G.p); return k >= 0 ? cards[k] : ''; };
-      comboHTML = goalsCardHTML(GD, { testBody: cardOf, inMission: (G) => G.kind === 'test' && G.p.book && steps.some((x) => !x.done && x.now && (G.p.units || []).some((u) => x.key === `n:${G.p.book.id}:${u.id}`)) });
+      comboHTML = goalsCardHTML(GD, { past: tests.pastHTML, testBody: cardOf, inMission: (G) => G.kind === 'test' && G.p.book && steps.some((x) => !x.done && x.now && (G.p.units || []).some((u) => x.key === `n:${G.p.book.id}:${u.id}`)) });
     }
 
   if (pDoneN) planCard = MODE === 'plan' ? missionHTML : '';
@@ -3308,7 +3310,7 @@ async function renderHome() {
     ${MODE === 'mission' && !msFirst && (!todayPlan() || planDoneNow) ? planHTML(true, nextPick, true) : ''}
     ${MODE === 'mission' && !msFirst ? missionHTML : ''}
     ${MODE === 'mission' && !msFirst && planDoneNow ? planCard : ''}
-    ${tests.pastHTML}
+    ${comboHTML ? '' : tests.pastHTML}
     ${comboHTML ? '' : testHTML}
     ${quickHTML}
   </main>
@@ -5051,7 +5053,7 @@ async function fadeNotice() {
   const Z = PT, seen = local.fadeSeen || (local.fadeSeen = {}), news = [];
   for (const b of await getBooks()) { const m = await bookMastery(b).catch(() => null); if (!m) continue;
     for (const c of m.chapters) { const k = `${b.id}:${c.unit.id}`;
-      if (!(c.fading >= 1)) { if (seen[k]) delete seen[k]; continue; }
+      if (!(c.fading >= 1) || c.rested) { if (seen[k]) delete seen[k]; continue; }
       if (c.done && c.fading > (seen[k] || 0)) news.push({ b, c, k }); } }
   saveLocal(); if (!news.length) return;
   news.sort((a, z) => z.c.fading - a.c.fading);
@@ -7303,7 +7305,7 @@ function goalEditDialog(id, { subs = [] }) {
 function goalsCardHTML(GD, o = {}) {
   const Z = PT;
   const rank = { risk: 0, close: 1, ok: 2, done: 3 };
-  const all = GD.list.filter((g) => ['test', 'long'].includes(g.kind) || (g.kind === 'longnew' && g.lab))
+  const all = GD.list.filter((g) => g.kind === 'test') // rules §4: the goal is a test at 100%; no subject "level" goals
     .sort((a, b) => (b.kind === 'test') - (a.kind === 'test') || (b.score || 0) - (a.score || 0) || (a.kind === 'test' && b.kind === 'test' ? a.p.left - b.p.left : rank[a.st] - rank[b.st]));
   // one goal = one sub-card, all the same shape: icon, name, when or target, status; then its measure
   const ST = GOAL_ST();
@@ -7326,7 +7328,7 @@ function goalsCardHTML(GD, o = {}) {
   };
   const who = o.title ? o.title : local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
   return `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
-    ${goalsHowHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : (local.noTestAsk && Date.now() - local.noTestAsk < 7 * DAY ? `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`
+    ${goalsHowHTML()}${o.past || ''}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : (local.noTestAsk && Date.now() - local.noTestAsk < 7 * DAY ? `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`
       : `<div class="ag-first"><span class="ag-fic" aria-hidden="true">📅</span><b>${SCH('When’s your next test?', '下一次測驗是甚麼時候？')}</b><p>${SCH('Tell Buddy the subject, the date and the chapters. Every day’s plan then gets you ready for it: practice on the weakest chapters, chapter tests, and a mock paper before the day.', '告訴 Buddy 科目、日期和章節。之後每天的計劃都會幫你準備：先練最弱的章節，再做章節測驗，考試前做模擬試卷。')}</p><button class="btn" id="addTest4">${SCH('Add my next test', '加入下一次測驗')}</button><button class="linkbtn" id="noTest">${SCH('No test coming up', '暫時沒有測驗')}</button></div>`)}</section>`;
 }
 async function fullTestCards(tests, btn) {
@@ -9258,7 +9260,7 @@ async function schoolTestsHTML() {
       ${calTile(testDay(p.x), 'sm')}
       <span class="stx-t"><b data-raw>${esc(p.x.name)}</b><small>${leftText(p.left)} · <span data-raw>${esc(testScope(p))}</span></small></span>
       <span class="stx-r"><b>${p.ready == null ? '–' : p.ready + '%'}</b><small>${SCH('ready', '準備度')}</small></span></button></div>`).join('');
-  const pastHTML = past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><button class="btn-sm primary stx-snap" data-snapscore="${esc(x.id)}">${SCH('Snap the marked paper', '拍下已批改的試卷')}</button><span class="stx-sc"><span class="muted" style="font-size:14px">${SCH('or type it:', '或輸入：')}</span><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('');
+  const pastHTML = past.map((x) => `<div class="card stx-past stx-done" data-raw><div class="stx-dh"><span class="stx-dic" aria-hidden="true">✅</span><span><b>${esc(x.name)}</b><small>${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${SCH('done', '已完成')}</small></span></div><span>${SCH('How did it go? Add your score so Buddy can see how the practice matched up.', '考得怎樣？輸入分數，Buddy 就知道練習的效果。')}</span><button class="btn-sm primary stx-snap" data-snapscore="${esc(x.id)}">${SCH('Snap the marked paper', '拍下已批改的試卷')}</button><span class="stx-sc"><span class="muted" style="font-size:14px">${SCH('or type it:', '或輸入：')}</span><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('');
   return { steps, pastHTML, html: `<section class="stack g10" aria-label="${SCH('School tests', '學校測驗')}">
       <div class="sect-head"><h2>${SCH('School tests', '學校測驗')}</h2><button class="btn-sm" id="addTest">+ ${SCH('Add a test', '加入測驗')}${locked('sched') ? ' 🔒' : ''}</button></div>
       ${past.map((x) => `<div class="card stx-past" data-raw><span>${SCH(`How did <b>${esc(x.name)}</b> go?`, `「<b>${esc(x.name)}</b>」考得怎樣？`)}</span><button class="btn-sm primary stx-snap" data-snapscore="${esc(x.id)}">${SCH('Snap the marked paper', '拍下已批改的試卷')}</button><span class="stx-sc"><span class="muted" style="font-size:14px">${SCH('or type it:', '或輸入：')}</span><input class="input" type="number" min="0" max="100" inputmode="numeric" placeholder="%" data-score="${esc(x.id)}" aria-label="${SCH('Score in percent', '分數（百分比）')}"><button class="btn-sm" data-savescore="${esc(x.id)}">${SCH('Save', '儲存')}</button><button class="btn-sm quiet" data-skipscore="${esc(x.id)}">${SCH('Skip', '略過')}</button></span></div>`).join('')}
