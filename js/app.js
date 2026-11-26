@@ -714,11 +714,14 @@ async function testCtx(id) {
   const m = await bookMastery(p.book), chs = m.chapters.filter((c) => (p.units || []).some((u) => u.id === c.unit.id));
   return { p, chs, aim: TEST_AIM };
 }
+// The test a "Let's do what's next" set came from: its results pop-up keeps going on the SAME test (not the nearest one)
+let boostTest = null;
+const testPick = (t) => t.chs.map((c) => ({ c, st: nextStep(c) })).filter((x) => x.st && !(x.st.kind === 'check' && !(x.c.fading >= 1))).sort((a, z) => (a.st.cap ? 1 : 0) - (z.st.cap ? 1 : 0) || a.c.pct - z.c.pct)[0]; // held chapters after ones that can move
 async function runTestNext(id) {
   const t = await testCtx(id); if (!t) return;
-  const pk = t.chs.map((c) => ({ c, st: nextStep(c) })).filter((x) => x.st && !(x.st.kind === 'check' && !(x.c.fading >= 1))).sort((a, z) => (a.st.cap ? 1 : 0) - (z.st.cap ? 1 : 0) || a.c.pct - z.c.pct)[0]; // held chapters after ones that can move
+  const pk = testPick(t);
   if (!pk) return toast(PT('Everything for this test that can move today has moved. Come back tomorrow!', '這個測驗今天能進步的都完成了，明天再來！'));
-  track('test_next'); return boostSession(t.p.book, pk.c, pk.st);
+  track('test_next'); return boostSession(t.p.book, pk.c, pk.st, false, id);
 }
 async function openTestPlan(id) { const t = await testCtx(id); if (t) testPlanSheet(t.p, t.chs); }
 document.addEventListener('click', (e) => {
@@ -742,13 +745,16 @@ function stepPreview(book, c, step) {
     const n = K[1], mins = Math.max(5, Math.round(n * 1.2 / 5) * 5);
     const what = step.kind === 'review' ? PT(`${n} questions from different chapters, just before you’d forget them`, `${n} 題不同章節的題目，在快忘記前溫習`)
       : PT(`${n} question${n === 1 ? '' : 's'} · about ${mins} min`, `${n} 題 · 約 ${mins} 分鐘`);
+    const look = { practise: step.diff ? ['💪', 'hard'] : ['✏️', 'prac'], mistakes: ['🔧', 'fix'], check: ['🔁', 'chk'], review: ['🗓️', 'rev'] }[step.kind] || ['✏️', 'prac'];
     const box = document.createElement('div'); box.className = 'cdlg-wrap';
-    box.innerHTML = `<div class="cdlg upnext" role="dialog" aria-modal="true" aria-labelledby="un-t">
-      <small class="un-tag">${PT('Up next', '下一步')}</small>
-      <b id="un-t">${K[0]}</b>${step.kind === 'review' ? '' : `<span class="un-ch" data-raw>${esc(name)}</span>`}
-      <p class="un-what">${what}</p>
-      ${step.text ? `<p class="un-why">${buddySVG('happy', 26)}<span>${esc(step.text)}</span></p>` : ''}
-      <button class="btn" id="unGo">${PT('Start', '開始')}</button><button class="btn-sm quiet" id="unNo">${PT('Not now', '稍後')}</button></div>`;
+    box.innerHTML = `<div class="cdlg upnext un-${look[1]}" role="dialog" aria-modal="true" aria-labelledby="un-t">
+      <div class="un-hero"><small class="un-tag">${PT('Up next', '下一步')}</small><span class="un-ic" aria-hidden="true">${look[0]}</span></div>
+      <div class="un-body">
+        <b id="un-t">${K[0]}</b>${step.kind === 'review' ? '' : `<span class="un-ch" data-raw>${esc(name)}</span>`}
+        <div class="un-chips">${step.kind === 'review' ? `<span>${what}</span>` : `<span>📝 ${PT(`${n} question${n === 1 ? '' : 's'}`, `${n} 題`)}</span><span>⏱️ ${PT(`about ${mins} min`, `約 ${mins} 分鐘`)}</span>`}</div>
+        ${step.text ? `<div class="un-why"><span class="un-bud">${buddySVG('happy', 40)}</span><p><small>${PT('Why Buddy picked this', 'Buddy 為甚麼選這個')}</small>${esc(step.text)}</p></div>` : ''}
+        <button class="btn" id="unGo">${PT('Start', '開始')} →</button><button class="btn-sm quiet" id="unNo">${PT('Not now', '稍後')}</button>
+      </div></div>`;
     document.body.appendChild(box);
     const done = (v) => { box.remove(); resolve(v); };
     box.querySelector('#unGo').onclick = () => done(true); box.querySelector('#unNo').onclick = () => done(false);
@@ -756,13 +762,14 @@ function stepPreview(book, c, step) {
     setTimeout(() => { const g = box.querySelector('#unGo'); if (g) g.focus(); }, 50);
   });
 }
-async function boostSession(book, c0 = null, step0 = null, plan = false) {
+async function boostSession(book, c0 = null, step0 = null, plan = false, testId = null) {
   const m = await bookMastery(book);
   const c = c0 ? m.chapters.find((x) => x.unit.id === c0.unit.id) || c0 : weakestChapter(m);
   if (!plan) boostAt = Date.now();
   if (!c) return toast(PT('Every chapter is at 100%. Keep up your reviews!', '每一章都到 100% 了，記得繼續溫習！'));
   const step = step0 || masterySteps({ ...m, chapters: [c] })[0] || { kind: 'practise' };
   if (step.kind !== 'test' && step.kind !== 'mixed' && !(await stepPreview(book, c, step))) return;
+  if (!plan) boostAt = Date.now(); boostTest = testId ? { id: testId, at: Date.now() } : null; // timed from Start, not from the tap that opened 'Up next'
   if (step.kind === 'test') return startChapterTest(book, [c.unit]);
   if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit); return startMiniMock(book, [c.unit, ...others], c.unit); }
   if (step.kind === 'mistakes') { // start fixing this chapter's open mistakes straight away
@@ -8677,7 +8684,7 @@ function streakInfo(has, t0 = startOfToday()) {
   return { n, rests };
 }
 function newSession(props) {
-  const sess = Object.assign({ from: view && view.name, boost: Date.now() - boostAt < 60000, at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
+  const sess = Object.assign({ from: view && view.name, boost: Date.now() - boostAt < 60000, boostTest: boostTest && Date.now() - boostTest.at < 60000 ? boostTest.id : null, at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
   snapPre(sess);
   try { sess.preMk = mistakeCount(); } catch (e) {}
   return sess;
@@ -10895,8 +10902,12 @@ async function resultMoment(sess, qs, pct, got, total) {
   let home = { label: missionNextLabel(), run: () => go({ name: 'home' }) };
   let boostLast = false; // "Get me closer": nothing more can move today
   { const M = local.mission;
-    if (sess.boost) { const nx = await closerPick().catch(() => null);
-      if (nx) home = { label: Z('Keep going: closer to 100% →', '繼續：更接近 100% →'), run: () => runCloser() }; else boostLast = true; }
+    if (sess.boost) {
+      // started from a test card: keep going on that test; otherwise (or if that test has nothing left) the yellow button's pick
+      const t = sess.boostTest ? await testCtx(sess.boostTest).catch(() => null) : null, tp = t && testPick(t);
+      if (tp) home = { label: Z(`Keep going: ${t.p.x.name} →`, `繼續：${t.p.x.name} →`), run: () => runTestNext(sess.boostTest) };
+      else { const nx = await closerPick().catch(() => null);
+        if (nx) home = { label: Z('Keep going: closer to 100% →', '繼續：更接近 100% →'), run: () => runCloser() }; else boostLast = true; } }
     else if (M && M.cur && M.curAt && M.d === dayStart() && sess.from === 'home' && Date.now() - M.curAt < 3 * 3600000) {
       const nx = (M.open || []).find(([k]) => k !== M.cur); delete M.cur; saveLocal(); // used once
       if (nx) home = { label: Z(`Next: ${String(nx[1]).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')} →`, `下一步：${nx[1]} →`), run: () => { local.autoNext = Date.now(); saveLocal(); go({ name: 'home' }); } };
