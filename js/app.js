@@ -10986,7 +10986,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       bars: chBars,
       lines: passed ? bars.filter((b) => b.passed).map((b) => ['🏆', Z(`${b.lab}: proven in a timed test`, `${b.lab}：已在限時測驗中證明實力`)])
         : [...(dropLine.length ? dropLine : [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Buddy will bring the test back in your plan.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。Buddy 會在任務中再安排測驗。`)]])],
-      main: passed ? home : fix || home, alt: passed ? (missed ? fix : done) : { label: Z('Later', '稍後'), run: null }, link: passed && missed ? seeAns : null });
+      main: passed ? home : fix || home, alt: passed ? (missed ? fix : done) : home, link: missed ? seeAns : null });
   }
   if (sess.mode === 'dse' || sess.mode === 'mock') { // a mock paper: score, time, and the weaker section
     const used = Math.max(1, Math.round((Date.now() - sess.at) / 60000)), allowed = sess.deadline ? Math.round((sess.deadline - sess.at) / 60000) : null;
@@ -11011,7 +11011,7 @@ async function resultMoment(sess, qs, pct, got, total) {
     sub: great ? '' : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(boostLast ? [['🏁', Z('That’s everything that can move today. Brilliant work! Come back tomorrow for more.', '今天能進步的都完成了，做得好！明天再來。')]] : []), ...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'}. Get ${fixedN === 1 ? 'it' : 'them'} right again in a few days and ${fixedN === 1 ? 'it’s' : 'they’re'} fixed for good.`, `你改正了 ${fixedN} 題錯題。過幾天再答對，就是真正改正了。`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(() => { const cn = qs.filter((q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done && m.careless && m.t >= Date.now() - 3 * 3600e3; }).length;
       return cn ? [['🔍', Z(`${cn} of your misses look careless: you usually get these right. Slow down and re-read before you answer.`, `有 ${cn} 題錯題看來是粗心：你平時答得對。答題前慢一點，重讀題目。`)]] : []; })(), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
-    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? fix : seeAns, link: !wantFix && missed ? seeAns : null });
+    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? (lever && lever.main) || home : missed ? fix : seeAns, link: missed ? seeAns : null }); // a miss always offers Fix, and always lets the child carry on
 }
 // Put the pop-up's next step on the results page too (top and after the answers), so reviewing never strands the child.
 function pageNext(nx, fixFirst) {
