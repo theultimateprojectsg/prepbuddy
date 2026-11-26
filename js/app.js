@@ -10915,7 +10915,7 @@ async function resultMoment(sess, qs, pct, got, total) {
     } else if (sess.from === 'book' && sess.book) home = { label: Z('Back to chapters', '返回章節'), run: () => go({ name: 'book', bookId: sess.book.id }) }; }
   const toAnswers0 = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   // all right: nothing to look back at, so the second button just ends the session; with misses, Fix comes second and the answers are a small link
-  const done = { label: Z('Done for now', '暫時完成'), run: () => go({ name: 'home' }) }, seeAns = missed ? { label: Z('See my answers', '看看我的答案'), run: toAnswers0 } : done;
+  const seeAns = { label: Z('Review my answers', '檢視我的答案'), run: toAnswers0 }, done = seeAns;
   const fix = missed ? { label: Z(`Fix the ${missed} you missed`, `改正答錯的 ${missed} 題`), run: () => { const d = document.getElementById('retry'); if (d) d.click(); else go({ name: 'mistakes' }); } } : null;
   const mkNow = mistakeCount(), fixedN = sess.preMk != null ? Math.max(0, sess.preMk - mkNow) : 0, stars = sess.won && sess.won.n ? sess.won.n : 0;
   const chBars = [...bars.map((b) => ({ lab: b.lab, from: b.from, to: b.to })), ...(fixedN ? [{ lab: Z('Mistakes to fix', '待改正的錯題'), from: sess.preMk, to: mkNow, u: '', max: sess.preMk }] : [])], grew = bars.some((b) => b.to > b.from) || fixedN > 0;
@@ -10925,7 +10925,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   const wUnits = sess.book ? sess.book.units.filter((u) => qs.some((q) => qUnit(q.id)[1] === u.id)) : [];
   const what = { kind: sessKind(sess),
     name: wUnits.length === 1 ? shortTitle(wUnits[0].title) : wUnits.length ? Z(`${wUnits.length} chapters: ${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join(', ')}`, `${wUnits.length} 章：${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join('、')}`) : (sess.book ? sess.book.title : '') };
-  const say = (o) => moment({ ...o, sess, what, bars: (o.bars || []).map((b) => (wUnits.length === 1 && b.lab === what.name ? { ...b, lab: Z('Chapter progress', '這一章的進度') } : b)), lines: [...(o.lines || []), ...sml] });
+  const say = (o) => { pageNext((lever && lever.main) || home, o.main === fix); return moment({ ...o, sess, what, bars: (o.bars || []).map((b) => (wUnits.length === 1 && b.lab === what.name ? { ...b, lab: Z('Chapter progress', '這一章的進度') } : b)), lines: [...(o.lines || []), ...sml] }); };
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
   { const P = local.impPrev, ids = qs.map((q) => qUnit(q.id)[1]); if (P && P.s && sess.book) { Object.values(P.s).forEach((x) => { if (x.b === sess.book.id && ids.includes(x.u)) x.shown = 1; }); saveLocal(); } }
   // No % gain this time: say exactly what moves this chapter next (and offer it), instead of a generic "keep going"
@@ -10981,7 +10981,17 @@ async function resultMoment(sess, qs, pct, got, total) {
     sub: great ? '' : ok ? Z('Solid work. A few to tidy up and you’re there.', '做得不錯。改正幾題就到位了。') : Z('Every miss shows Buddy exactly what to work on next.', '每一題答錯，都讓 Buddy 知道下一步要練甚麼。'), bars: chBars,
     lines: [...(boostLast ? [['🏁', Z('That’s everything that can move today. Brilliant work! Come back tomorrow for more.', '今天能進步的都完成了，做得好！明天再來。')]] : []), ...(fixedN ? [['🔧', Z(`You fixed ${fixedN} mistake${fixedN === 1 ? '' : 's'} for good!`, `你改正了 ${fixedN} 題錯題！`)]] : []), ...dropLine, ...(dropLine.length ? [] : keepGoing), ...(wantFix && !dropLine.length ? [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Left unfixed, they start to pull this chapter down.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。不改正的話，這一章的百分比會開始下跌。`)]] : []), ...(() => { const cn = qs.filter((q) => { const m = (local.mistakes || {})[q.id]; return m && !m.done && m.careless && m.t >= Date.now() - 3 * 3600e3; }).length;
       return cn ? [['🔍', Z(`${cn} of your misses look careless: you usually get these right. Slow down and re-read before you answer.`, `有 ${cn} 題錯題看來是粗心：你平時答得對。答題前慢一點，重讀題目。`)]] : []; })(), ...(missed && !wantFix && !dropLine.length ? [['📌', Z(`The ${missed} you missed ${missed === 1 ? 'holds' : 'hold'} this chapter back until you fix ${missed === 1 ? 'it' : 'them'}.`, `答錯的 ${missed} 題會拖慢這一章，改正後就會回升。`)]] : [])],
-    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? fix : seeAns, link: !wantFix && missed ? { label: Z('See my answers', '看看我的答案'), run: toAnswers } : null });
+    main: wantFix ? fix : (lever && lever.main) || home, alt: wantFix ? { label: Z('Later', '稍後'), run: null } : missed ? fix : seeAns, link: !wantFix && missed ? seeAns : null });
+}
+// Put the pop-up's next step on the results page too (top and after the answers), so reviewing never strands the child.
+function pageNext(nx, fixFirst) {
+  if (!nx) return;
+  document.querySelectorAll('main.results .rbtns2').forEach((box) => {
+    if (box.querySelector('[data-rnext]')) return;
+    const b = document.createElement('button'); b.className = 'btn'; b.dataset.rnext = '1'; b.textContent = nx.label; b.onclick = () => nx.run();
+    const f = box.querySelector('.rfixb');
+    if (f && fixFirst) { box.insertBefore(b, f.nextSibling); b.classList.add('ghost'); } else { box.prepend(b); if (f) f.classList.add('ghost'); }
+  });
 }
 function renderSummary() {
   setTimeout(() => pilotSync(), 3000);
@@ -11110,25 +11120,25 @@ function renderSummary() {
       ${(() => {
         // The pop-up already gave the next step; this page is for looking back. Only two choices: redo the misses, or leave.
         const Z = (en, zh) => (LANG === 'zh' ? zh : en);
-        const fixB = missed.length ? `<button class="btn" id="retry">${Z(`Fix the ${missed.length} you missed`, `改正答錯的 ${missed.length} 題`)}</button>` : '';
-        const homeB = `<button class="btn ${missed.length ? 'ghost' : ''}" id="home">${S.book ? Z('Back to chapters', '返回章節') : Z('Back to Today', '返回今日')}</button>`;
-        return `<div class="rbtns2">${fixB}${homeB}</div>`;
+        const fixB = missed.length ? `<button class="btn rfixb" id="retry">${Z(`Fix the ${missed.length} you missed`, `改正答錯的 ${missed.length} 題`)}</button>` : '';
+        return `<div class="rbtns2">${fixB}</div>`;
       })()}
     </div>
     </div>
     <section class="rlist"><h2>Your answers</h2>
       ${S.mode === 'spaced' ? `<p class="hint" style="margin:0 0 8px;line-height:1.5">Questions you got right come back later and later. The ones you missed come back tomorrow.</p>` : ''}
-      <div class="card">${list}</div></section>
+      <div class="card">${list}</div><div class="rbtns2 rend">${missed.length ? `<button class="btn rfixb" data-retry>${LANG === 'zh' ? `改正答錯的 ${missed.length} 題` : `Fix the ${missed.length} you missed`}</button>` : ''}</div></section>
     </main>`;
   $app.querySelectorAll('.rrow.rtog').forEach((r) => { const t = (e) => { if (e.target.closest('.rfix')) return; const o = r.classList.toggle('open'); r.setAttribute('aria-expanded', String(o)); };
     r.onclick = t; r.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); t(e); } }; });
   const leave = () => (S.book ? go({ name: 'book', bookId: S.book.id }) : go({ name: 'home' }));
-  document.getElementById('home').onclick = leave;
+  { const h = document.getElementById('home'); if (h) h.onclick = leave; }
   document.getElementById('back').onclick = leave;
   const m = document.getElementById('more'); if (m) m.onclick = () => startUnits(unitRef.book, unitRef.units, S.count || sessionSize());
   const r = document.getElementById('retry');
   const again = (list, title) => { const l = shuffle(list).map(shuffleOptions), was = S; S = newSession({ mode: 'retry', title, book: S.book, qs: l, target: l.length }); S.boost = was.boost; S.boostTest = was.boostTest; S.from = was.from; renderQuestion(); };
   if (r) r.onclick = () => again(missed, 'Retry');
+  $app.querySelectorAll('[data-retry]').forEach((x) => (x.onclick = () => again(missed, 'Retry')));
   const rd = document.getElementById('redo'); if (rd) rd.onclick = () => again(qs, 'Redo');
   const drill = () => { const items = drillable.map((k) => ({ q: qs[k], idea: missedIdea(qs[k], k) })); startDrills(items, S.book, S.types || 'mix'); };
   const da = document.getElementById('drillall');
