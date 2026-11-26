@@ -10914,7 +10914,8 @@ async function resultMoment(sess, qs, pct, got, total) {
       if (nx) home = { label: Z(`Next: ${String(nx[1]).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')} →`, `下一步：${nx[1]} →`), run: () => { local.autoNext = Date.now(); saveLocal(); go({ name: 'home' }); } };
     } else if (sess.from === 'book' && sess.book) home = { label: Z('Back to chapters', '返回章節'), run: () => go({ name: 'book', bookId: sess.book.id }) }; }
   const toAnswers0 = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-  const seeAns = { label: Z('Check my answers', '看看我的答案'), run: toAnswers0 };
+  // all right: nothing to look back at, so the second button just ends the session; with misses, Fix comes second and the answers are a small link
+  const done = { label: Z('Done for now', '暫時完成'), run: () => go({ name: 'home' }) }, seeAns = missed ? { label: Z('See my answers', '看看我的答案'), run: toAnswers0 } : done;
   const fix = missed ? { label: Z(`Fix the ${missed} you missed`, `改正答錯的 ${missed} 題`), run: () => { const d = document.getElementById('retry'); if (d) d.click(); else go({ name: 'mistakes' }); } } : null;
   const mkNow = mistakeCount(), fixedN = sess.preMk != null ? Math.max(0, sess.preMk - mkNow) : 0, stars = sess.won && sess.won.n ? sess.won.n : 0;
   const chBars = [...bars.map((b) => ({ lab: b.lab, from: b.from, to: b.to })), ...(fixedN ? [{ lab: Z('Mistakes to fix', '待改正的錯題'), from: sess.preMk, to: mkNow, u: '', max: sess.preMk }] : [])], grew = bars.some((b) => b.to > b.from) || fixedN > 0;
@@ -10955,7 +10956,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       bars: chBars,
       lines: passed ? bars.filter((b) => b.passed).map((b) => ['🏆', Z(`${b.lab}: proven in a timed test`, `${b.lab}：已在限時測驗中證明實力`)])
         : [...(dropLine.length ? dropLine : [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Buddy will bring the test back in your plan.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。Buddy 會在任務中再安排測驗。`)]])],
-      main: passed ? home : fix || home, alt: passed ? seeAns : { label: Z('Later', '稍後'), run: null } });
+      main: passed ? home : fix || home, alt: passed ? (missed ? fix : done) : { label: Z('Later', '稍後'), run: null }, link: passed && missed ? seeAns : null });
   }
   if (sess.mode === 'dse' || sess.mode === 'mock') { // a mock paper: score, time, and the weaker section
     const used = Math.max(1, Math.round((Date.now() - sess.at) / 60000)), allowed = sess.deadline ? Math.round((sess.deadline - sess.at) / 60000) : null;
@@ -10971,7 +10972,7 @@ async function resultMoment(sess, qs, pct, got, total) {
       sub: Z(`${got} of ${total} marks (${pct}%)`, `${total} 分中得 ${got} 分（${pct}%）`), bars: chBars,
       lines: [...(la ? [['🧾', la]] : []), ...(allowed ? [['⏱️', used <= allowed ? Z(`${used} of ${allowed} minutes: good timing`, `用了 ${used}／${allowed} 分鐘：時間控制得好`) : Z(`${used} minutes, ${used - allowed} over time. Speed comes with practice.`, `用了 ${used} 分鐘，超時 ${used - allowed} 分鐘。多練就會快。`)]] : [])],
       main: weakB && units.length ? { label: Z('Practise written answers next', '接著練習文字題'), run: () => { pick = { bookId: sess.book.id, ids: new Set(units.map((u) => u.id)) }; startUnits(sess.book, units.slice(0, 3), 8, { types: 'written' }); } } : fix || home,
-      alt: { label: Z('See my answers', '看看我的答案'), run: toAnswers } });
+      alt: seeAns });
   }
   // an ordinary set
   const great = pct >= 80, ok = pct >= 50, wantFix = missed >= 2 && !great;
