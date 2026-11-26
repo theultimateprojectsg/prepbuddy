@@ -7316,7 +7316,7 @@ async function fullTestCards(tests, btn) {
     const habit = practiceHabit(), fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, habit);
     const aim = TEST_AIM; // the parent's target for this test, set with the slider
     const st = p.ready == null ? 'none' : p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim);
-    const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
+    const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st] || (GOAL_ST()[st] || '');
     const steps = [];
     if (p.book && p.units && p.units.length && (p.x.kind || 'test') !== 'dict') {
       const m = MB.get(p.book.id), chs = m.chapters.filter((c) => p.units.some((u) => u.id === c.unit.id));
@@ -7416,7 +7416,7 @@ async function renderProgress(PO = {}) {
   const testCards = tests.steps.map((p) => {
     const aim = TEST_AIM, fc = p.ready == null ? null : planForecast(p.ready, chOf(p), p.left, practiceHabit());
     const st = p.ready == null ? 'none' : p.ready >= aim ? 'ok' : goalTone(fc ?? p.ready, aim);
-    const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st];
+    const stLab = { ok: PT('On track', '進度理想'), close: PT('Close', '接近'), risk: PT('At risk', '需要加把勁'), none: PT('Not started', '未開始') }[st] || (GOAL_ST()[st] || '');
     const say = p.ready == null ? PT('Add the textbook so Buddy can track this test.', '加入課本，Buddy 便可追蹤這個測驗。')
       : st === 'ok' ? PT(`Heading for about ${fc}% on test day. Keep going for 100%.`, `考試當日預計約 ${fc}%。繼續向 100% 進發。`)
       : st === 'close' ? PT(`Heading for about ${fc}%. A bit more each day gets closer to 100%.`, `考試當日預計約 ${fc}%。每天多做一點就更接近 100%。`)

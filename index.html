@@ -3885,6 +3885,27 @@ details.ag-sc[open] > summary .ag-mt, details.ag-sc[open] > summary .pv-nofc{dis
 .rp-sheet{max-height:85vh;overflow:auto}.rp-sheet header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 16px;position:sticky;top:0;background:#fff;border-bottom:1px solid #EEF1FB}
 .rp-sheet .rp-text{padding:14px 16px}
 @media (min-width:900px){.rp-fab{display:none}}
+/* Today · test card (opened): one clean column — progress, forecast note, chapters, a quiet edit link */
+details.ag-sc.t .ag-body .pv-test{padding:0!important;border:0!important;background:none!important;box-shadow:none!important;gap:0!important}
+details.ag-sc.t .ag-body .pv-test-h{display:none!important}
+details.ag-sc.t .ag-body .pv-track{display:flex!important;flex-direction:column;align-items:stretch;gap:8px;padding:16px 0 0!important}
+details.ag-sc.t .ag-body .pv-num{flex-direction:row;align-items:baseline;gap:8px}
+details.ag-sc.t .ag-body .pv-num b{font-size:30px;letter-spacing:-.5px}
+details.ag-sc.t .ag-body .pv-num span{font-size:14px;font-weight:600}
+details.ag-sc.t .ag-body .pv-bar{flex:none!important;width:100%;height:10px;margin:0}
+details.ag-sc.t .ag-body .pv-flag,details.ag-sc.t .ag-body .pv-aimhint{display:none}
+details.ag-sc.t .ag-body .pv-nofc{font-size:13px;line-height:1.4;color:var(--muted);margin:8px 0 0;display:flex;gap:6px;align-items:flex-start}
+details.ag-sc.t .ag-body .pv-nofc::before{content:"⏳";font-size:12px;line-height:1.5}
+details.ag-sc.t .ag-body .pv-tch{border:0!important;background:none!important;padding:0!important;margin:18px 0 0!important;gap:12px!important}
+details.ag-sc.t .ag-body .pv-tch::before{content:var(--chap-label,"Chapters");font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+details.ag-sc.t .ag-body .pv-tr span{font-size:15px;font-weight:600;white-space:normal!important;overflow:visible;line-height:1.3}
+details.ag-sc.t .ag-body .pv-tr em{font-size:13px}
+details.ag-sc.t .ag-body .pv-tr i{height:6px}
+details.ag-sc.t .ag-body .pv-test-f{display:flex!important;justify-content:flex-end;margin-top:10px}
+details.ag-sc.t .ag-body .pv-edit{display:inline-flex;align-items:center;gap:6px;border:0!important;background:none!important;box-shadow:none!important;color:var(--muted);font-size:13.5px;font-weight:700;padding:6px 2px!important;min-height:0;width:auto}
+details.ag-sc.t .ag-body .pv-edit svg{width:15px;height:15px}
+details.ag-sc.t .ag-body .pv-edit .sr{position:static!important;width:auto!important;height:auto!important;clip:auto!important;clip-path:none!important;overflow:visible!important;white-space:nowrap;margin:0!important}
+html[lang^="zh"] details.ag-sc.t .ag-body .pv-tch{--chap-label:"章節"}
 </style>
 </head>
 <body>
