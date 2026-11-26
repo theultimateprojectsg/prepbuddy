@@ -510,7 +510,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
      mixed papers up to 100; gates: >75 needs 3 Apply right, >85 needs 2 full-mark written + 1 Analyse. No waits.
      KEPT: 2 days' grace after the last proof, then 3 / 1.5 / 0.75 / 0.4% a day by strength, never below 60% once a
      test is passed or it was practised again 3+ days later (else 30%). A "Still there?" check wins it back. */
-  let likely = 0, earned = 0, gates = {}, fading = 0, strength = 0;
+  let likely = 0, earned = 0, gates = {}, fading = 0, strength = 0, idle = 0, canFade = false;
   let pracPart = 0, pracSince = 0, pracVol = 0, pracAcc = 0, capScore = 100, capFrom = '', capped = false;
   { const L = chapterLog(key).filter((e) => e.m && e.k !== 'place'), P = L.filter((e) => e.k !== 'dse' && e.k !== 'mock'), seen = new Map(); let pts = 0;
     // practice fills over several sets, never in one: the points needed are at least 5 sets' worth of right answers
@@ -562,6 +562,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
     let shown = top;
     // rules.md §3: never below 60% once a chapter test is passed or it was practised again 3+ days later; else 30%
     const floor = passes.length || strength >= 1 ? 60 : 30;
+    idle = lastProof ? (now - lastProof) / DAY : 0; canFade = top > floor;
     if (lastProof && top > floor) { const days = (now - lastProof) / DAY - 2;
       if (days > 0) shown = Math.max(floor, top - [3, 1.5, 0.75, 0.4][strength] * days); }
     fading = Math.max(0, Math.round(earned - shown));
@@ -576,7 +577,7 @@ function chapterMastery(book, u, qs, text, ntextPre) {
   const lvNow = Math.max(1, Math.min(4, 2 + levelShift(book.id, u.id)));
   const lvTop = [4, 3, 2, 1].find((l) => done.some((q) => (q.level || 2) === l && good(q))) || 0;
   return {
-    pct, likely, earned, fading, strength, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), gates, prac: pracPart, pracVol, pracAcc, capScore, capFrom, capped, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, lvNow, lvTop, l3n, l4n, written, b4, b5, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
+    pct, likely, earned, fading, strength, idle, canFade, cracked: fading >= 8, checkWeak: (() => { const k = (local.checks || {})[key]; return !!(k && k.sc < 0.8 && now - k.t < 2 * DAY); })(), gates, prac: pracPart, pracVol, pracAcc, capScore, capFrom, capped, pracSince, lastTestT: tests.length ? tests[tests.length - 1].t : 0, score, target: T, done: done.length, lvNow, lvTop, l3n, l4n, written, b4, b5, passes: passes.length, memTarget, hit: hit.size, firstPass: passes.length ? passes[0].t : 0, lastTest: tests.length ? tests[tests.length - 1].t : 0, nextDue: done.reduce((m, q) => Math.min(m, st(q).due || Infinity), Infinity), parts, uncovered: parts - hit.size,
     more: Math.max(0, T - done.length), needL3: l3n < 3, needL4: l4n < 2, needWritten: Math.max(0, 2 - written),
     due: done.filter((q) => st(q).due <= now).length, open, tests: tests.length, passDays, lastPass,
     weight: u.endPage && u.startPage ? u.endPage - u.startPage + 1 : (u.chars || 30000) / 2500,
@@ -3360,6 +3361,7 @@ async function renderHome() {
   window.scrollTo(0, 0);
   homeMoments(due);
   checkWins().catch(() => {});
+  fadeNotice().catch(() => {});
 }
 // Every practice tool, as tiles (used on the Practice page; Today shows a few with a link to the rest).
 function practiceTiles() {
@@ -5027,6 +5029,27 @@ document.addEventListener('click', async (e) => {
 // Celebration: stars fly in, Buddy cheers, new badges shown.
 // Today's own moments: a warm welcome back after a few days away (never "you lost your streak"),
 // and a short look back at last week, once, early in the new week.
+// A chapter that faded since the child last saw it: one pop-up saying what happened and how to win it back.
+// Remembered per chapter (local.fadeSeen); once it's won back, the next drop is told again.
+async function fadeNotice() {
+  const Z = PT, seen = local.fadeSeen || (local.fadeSeen = {}), news = [];
+  for (const b of await getBooks()) { const m = await bookMastery(b).catch(() => null); if (!m) continue;
+    for (const c of m.chapters) { const k = `${b.id}:${c.unit.id}`;
+      if (!(c.fading >= 1)) { if (seen[k]) delete seen[k]; continue; }
+      if (c.done && c.fading > (seen[k] || 0)) news.push({ b, c, k }); } }
+  saveLocal(); if (!news.length) return;
+  news.sort((a, z) => z.c.fading - a.c.fading);
+  const one = news.length === 1, f = news[0], nm = (x) => shortTitle(x.c.unit.title), d = Math.floor(f.c.idle);
+  const sameBook = news.filter((x) => x.b.id === f.b.id);
+  homeOffer(2.5, () => { news.forEach((x) => { seen[x.k] = x.c.fading; }); saveLocal();
+    moment({ face: 'think', view: 'home', hero: { icon: '🍂' }, tone: 'ok',
+      title: one ? Z(`${nm(f)} slipped a little`, `${nm(f)} 有少少淡忘`) : Z(`${news.length} chapters slipped a little`, `${news.length} 章有少少淡忘`),
+      bars: news.slice(0, 3).map((x) => ({ lab: one ? Z('Known so far', '目前掌握') : nm(x), from: x.c.pct + x.c.fading, to: x.c.pct })),
+      lines: [['📅', Z(`No practice on ${one ? 'it' : 'them'} for ${d} day${d === 1 ? '' : 's'}. Memory fades without use, so the % eases down after 2 days off.`, `已經 ${d} 日沒有練習。不用就會慢慢忘記，所以休息 2 日後分數會慢慢下降。`)],
+        ['✅', Z('A 2-minute “Still there?” check wins it all back.', '2 分鐘「還記得嗎？」檢查就能全部拿回來。')]],
+      main: { label: Z('Win it back', '拿回分數'), run: () => startCheck(f.b, sameBook.slice(0, 4).map((x) => x.c.unit)) },
+      alt: { label: Z('Later', '稍後'), run: null } }); });
+}
 function homeMoments(due) {
   const t0 = startOfToday(), Z = PT, log = local.log || [];
   if (!log.length) return;
@@ -7338,11 +7361,19 @@ async function fullTestCards(tests, btn) {
   const chipsOf = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
     if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
     const SHOWN = 4, more = cs.length - SHOWN;
-    const row = (c, hid) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.cracked ? '🍂 ' : ''}${tl(c)}%` : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🍂 ' : ''}${tl(c)}%"></b></i></div>`;
+    const row = (c, hid) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.fading >= 1 ? `<small class="pv-fd">↓${c.fading}</small>` : ''}${tl(c)}%` : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🍂 ' : ''}${tl(c)}%"></b></i></div>`;
     const id = `tch${p.x.id}`.replace(/\W/g, ''), lab = PT(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`);
     return `<div class="pv-tch" id="${id}">${cs.map((c, i) => row(c, i >= SHOWN && more > 1)).join('')}${more > 1 ? btn(lab, () => {
       const el = document.getElementById(id), open = el.classList.toggle('open'), bt = el.querySelector('.pv-tmore');
       if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : lab; }, 'pv-tmore') : ''}</div>`; };
+  // memory fades without use (rules §3): say so on the card, or warn the day before it starts, with a quick check
+  const fadeNote = (p) => { if (!p.book || (p.x.kind || 'test') === 'dict') return ''; const cs = chOf(p).filter((c) => c.done);
+    const gone = cs.filter((c) => c.fading >= 1).sort((a, b) => b.fading - a.fading), soon = cs.filter((c) => !(c.fading >= 1) && c.canFade && c.idle >= 1 && c.idle < 2);
+    const list = gone.length ? gone : soon; if (!list.length) return '';
+    const nm = list.length === 1 ? chName(list[0].unit) : PT(`${list.length} chapters`, `${list.length} 章`), d = Math.floor(list[0].idle);
+    const txt = gone.length ? PT(`<b>${nm}</b> faded a little: no practice for ${d} days. A quick check wins it back.`, `<b>${nm}</b> 有少少淡忘：已經 ${d} 日沒有練習。快速檢查就能拿回分數。`)
+      : PT(`<b>${nm}</b> ${list.length === 1 ? 'starts' : 'start'} fading tomorrow. A quick check now keeps ${list.length === 1 ? 'it' : 'them'} where ${list.length === 1 ? 'it is' : 'they are'}.`, `<b>${nm}</b> 明天開始淡忘。現在快速檢查就能保持分數。`);
+    return `<div class="pv-fade ${gone.length ? 'gone' : 'soon'}"><span aria-hidden="true">${gone.length ? '🍂' : '⏳'}</span><p>${txt}</p>${btn(PT('Quick check', '快速檢查'), () => startCheck(p.book, list.map((c) => c.unit)), 'pv-btn soft pv-fbtn')}</div>`; };
   // practice that went on other chapters of the same book doesn't move this test's number: say so
   const outside = (p) => { if (!p.book || p.all) return ''; const cs = chOf(p); if (!cs.length) return '';
     const other = MB.get(p.book.id).chapters.filter((c) => c.done && !p.units.some((u) => u.id === c.unit.id));
@@ -7372,7 +7403,7 @@ async function fullTestCards(tests, btn) {
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}</div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : fc == null ? '' : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>${!fcLocked && fc == null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${bar}${chipsOf(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
+      ${bar}${chipsOf(p)}${fadeNote(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
       <div class="pv-test-f">${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
   });
 }
@@ -7969,7 +8000,7 @@ async function renderProgress(PO = {}) {
     // goals and tests in one place, in Today's card: folded it answers "on track?", opened it shows the detail
     const chList = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
       if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
-      return `<details class="pvn-ch"><summary>${PT(`Chapters in this test (${cs.length})`, `測驗範圍內的章節（${cs.length}）`)}</summary><div class="pv-tch open">${cs.map((c) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.cracked ? '🍂 ' : ''}${tl(c)}%` : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🍂 ' : ''}${tl(c)}%"></b></i></div>`).join('')}</div></details>`; };
+      return `<details class="pvn-ch"><summary>${PT(`Chapters in this test (${cs.length})`, `測驗範圍內的章節（${cs.length}）`)}</summary><div class="pv-tch open">${cs.map((c) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.fading >= 1 ? `<small class="pv-fd">↓${c.fading}</small>` : ''}${tl(c)}%` : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🍂 ' : ''}${tl(c)}%"></b></i></div>`).join('')}</div></details>`; };
     const tBody = (g) => { const chs = chOf(g.p).length ? chOf(g.p) : g.p.book ? MB.get(g.p.book.id).chapters : [];
       return `${goalProgressHTML(g, g.p.ready == null ? '' : testPoints(g.p, chs, g.aim, g.fc, g.st), false, true)}${chList(g.p)}`; };
     const gCard = GDp ? goalsCardHTML(GDp, { progress: true, testBody: tBody, title: PT('Am I on track for my goals?', '我的目標進度如何？') }) : '';
