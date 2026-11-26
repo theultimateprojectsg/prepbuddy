@@ -13,9 +13,7 @@ const MIN_UNIT_ZH = 600;  // the same for Chinese, which packs more into fewer c
 const SKIP_TITLE = /^(table of )?contents$|^index$|^preface|^acknowledg|^copyright|^about (the|this)|^cover$|^title page|^bibliography|^references$|^answer key|^dedication|^目錄$|^目录$|^索引$|^序言?$|^前言$|^鳴謝$|^版權|^參考(書目|資料)$|^答案$|^glossary$|^key terms$|^index of|^詞彙表$/i;
 
 export async function readBook(data, onProgress = () => {}) {
-  // The font maps let it read Japanese, Chinese and Korean PDFs whose fonts aren't built into the file (common in Japanese books).
-  const base = typeof window !== 'undefined' ? new URL('../vendor/pdfjs/', import.meta.url).href : '';
-  const task = pdfjs.getDocument({ data, isEvalSupported: false, ...(base ? { cMapUrl: base + 'cmaps/', cMapPacked: true, standardFontDataUrl: base + 'standard_fonts/' } : {}) });
+  const task = pdfjs.getDocument({ data, isEvalSupported: false });
   const pdf = await task.promise;
   const n = pdf.numPages;
   const raw = [], info = [];
@@ -28,9 +26,7 @@ export async function readBook(data, onProgress = () => {}) {
     onProgress(i, n);
   }
   const pages = stripRepeatedLines(raw);
-  // Chinese and Japanese pack far more into each character, so short leaflets in those languages still count.
-  const all = pages.map((p) => p.join(' ')).join(' ');
-  if (all.length < (isChinese(all) ? 200 : 1000)) {
+  if (pages.reduce((s, p) => s + p.join(' ').length, 0) < 2000) {
     throw new Error('This PDF has almost no text. It may be scanned pages (pictures of text), which PrepBuddy cannot read yet.');
   }
 
@@ -43,8 +39,6 @@ export async function readBook(data, onProgress = () => {}) {
     .filter((u) => !SKIP_TITLE.test(u.title.trim()))
     .flatMap(splitLarge)
     .filter((u) => u.text.length >= (isChinese(u.text) ? MIN_UNIT_ZH : MIN_UNIT));
-  // A short leaflet or pamphlet: every part was too small to keep, so it becomes one chapter.
-  if (!units.length) units = byPages(pages, pages.length).map((u) => ({ ...u, title: 'Whole leaflet' }));
 
   // Pictures of the pages with diagrams, for diagram questions.
   try { await addFigures(pdf, units, raw, info, onProgress); } catch (e) { units.forEach((u) => { u.figures = u.figures || []; }); }

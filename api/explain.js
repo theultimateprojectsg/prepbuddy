@@ -2,7 +2,7 @@
 // body: { title, text, before: true if the student hasn't answered yet, question, answer: what the student answered, ask: the student's question, history: [{role, text}], lang, figure, voice: 'en' | 'yue' when it's a spoken chat }
 // returns: { reply }
 
-const { callText, streamText, MODELS, TOOLS, voiceNote, replyLang, systemBlocks, sectionBlock, questionForChecker, handler, httpError, APP_GUIDE } = require('../lib/claude');
+const { callText, streamText, MODELS, TOOLS, voiceNote, systemBlocks, sectionBlock, questionForChecker, handler, httpError, APP_GUIDE } = require('../lib/claude');
 
 // You are "Buddy", the one chat the student sees on this screen, so it also helps with things beyond this question.
 const OTHER = `
@@ -40,8 +40,8 @@ module.exports = handler(async (body, usage, emit) => {
   const fig = q.figure && typeof body.figure === 'string' ? [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: body.figure } }] : [];
   // Before answering, the tutor doesn't even see the answer key, so it can't give it away.
   const context = body.before
-    ? `${BEFORE}${replyLang(body.lang) ? '\n' + replyLang(body.lang) : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, false, body.learner)}\n</question>`
-    : `${TUTOR}${replyLang(body.lang) ? '\n' + replyLang(body.lang) : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, true, body.learner)}\n</question>\n` +
+    ? `${BEFORE}${body.lang === 'zh-HK' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, false, body.learner)}\n</question>`
+    : `${TUTOR}${body.lang === 'zh-HK' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<question>\n${questionForChecker(q, true, body.learner)}\n</question>\n` +
       `<explanation_shown>${String(q.explanation || '')}</explanation_shown>\n<student_answer>${String(body.answer || '(none)').slice(0, 3000)}</student_answer>`;
   // First turn carries the context; later turns are the conversation so far.
   const list = [];

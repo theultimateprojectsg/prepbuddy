@@ -16,17 +16,9 @@ function open() {
   dbPromise = new Promise((resolve) => {
     try {
       const req = indexedDB.open(DB, 1);
-      // another tab is deleting everything (or the delete is still waiting on another tab): don't hang on the
-      // loading screen; after 5 seconds carry on in memory and say why
-      const slow = setTimeout(() => { try { window.PB_DB_BLOCKED = true; } catch (e) {} resolve(null); }, 5000);
       req.onupgradeneeded = () => req.result.createObjectStore(STORE);
-      req.onsuccess = () => { clearTimeout(slow); const db = req.result;
-        // "Delete everything" in another tab: let go of the database so it can be deleted, then start fresh
-        db.onversionchange = () => { try { db.close(); } catch (e) {} dbPromise = Promise.resolve(null); try { location.reload(); } catch (e) {} };
-        // the browser closed it (phone browsers do this to a tab left in the background): open it again next time
-        db.onclose = () => { if (dbPromise && dbPromise.db === db) dbPromise = null; };
-        dbPromise.db = db; resolve(db); };
-      req.onerror = () => { clearTimeout(slow); resolve(null); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
     } catch (e) { resolve(null); }
   });
   return dbPromise;
@@ -38,17 +30,7 @@ export async function close() {
   dbPromise = Promise.resolve(null);
 }
 
-// One transaction. If the connection has been closed under us ("The database connection is closing"), open a
-// fresh one and try once more, instead of failing whatever the child was doing.
-async function tx(db, mode, fn) {
-  try { return await tx1(db, mode, fn); } catch (e) {
-    if (!e || (e.name !== 'InvalidStateError' && !/closing|closed/i.test(String(e.message || '')))) throw e;
-    if (dbPromise && dbPromise.db === db) dbPromise = null;
-    const db2 = await open(); if (!db2 || db2 === db) throw e;
-    return tx1(db2, mode, fn);
-  }
-}
-function tx1(db, mode, fn) {
+function tx(db, mode, fn) {
   return new Promise((resolve, reject) => {
     const t = db.transaction(STORE, mode);
     const r = fn(t.objectStore(STORE));
@@ -74,7 +56,11 @@ export async function getMany(keys, fallback = null) {
   if (!miss.length) return res;
   const db = await open();
   if (!db) { miss.forEach((i) => { res[i] = memory.has(keys[i]) ? memory.get(keys[i]) : fallback; }); return res; }
-  await tx(db, 'readonly', (st) => { for (const i of miss) { const r = st.get(keys[i]); r.onsuccess = () => { cache.set(keys[i], r.result); res[i] = out(r.result, fallback); }; } });
+  await new Promise((resolve, reject) => {
+    const t = db.transaction(STORE, 'readonly'), s = t.objectStore(STORE);
+    for (const i of miss) { const r = s.get(keys[i]); r.onsuccess = () => { cache.set(keys[i], r.result); res[i] = out(r.result, fallback); }; }
+    t.oncomplete = () => resolve(); t.onerror = () => reject(t.error); t.onabort = () => reject(t.error);
+  });
   return res;
 }
 

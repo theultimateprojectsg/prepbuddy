@@ -6,20 +6,16 @@
   },
   "rewrites": [
     {
-      "source": "/api/insights",
-      "destination": "/api/study?fn=insights"
-    },
-    {
       "source": "/r/:t",
       "destination": "/api/study?fn=pilot&r=:t"
     },
     {
-      "source": "/api/uitr",
-      "destination": "/api/study?fn=uitr"
-    },
-    {
       "source": "/api/homework",
       "destination": "/api/study?fn=homework"
+    },
+    {
+      "source": "/api/learn",
+      "destination": "/api/study?fn=learn"
     },
     {
       "source": "/api/writing",

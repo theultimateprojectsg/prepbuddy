@@ -16,8 +16,6 @@
 const REPO = () => process.env.GITHUB_REPO || 'theultimateprojectsg/prepbuddy';
 const BRANCH = () => process.env.GITHUB_BRANCH || 'main';
 const CATALOG = 'library/catalog.json';
-// Who can find a library book: true = every family, a list of family codes = only those families, false = nobody.
-const famVal = (v) => (Array.isArray(v) ? ((a) => (a.length ? a : false))([...new Set(v.map((c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '')).filter(Boolean))].slice(0, 300)) : !!v);
 const { listReports, resolveReport } = require('../lib/github');
 
 function err(status, message) { const e = new Error(message); e.status = status; return e; }
@@ -87,10 +85,10 @@ module.exports = async (req, res) => {
       out = { ok: true, commit };
     } else if (body.action === 'update') {
       if (!safeId(body.id)) throw err(400, 'Bad book id.');
-      const allowed = ['title', 'subject', 'level', 'publisher', 'licence', 'credit', 'kind', 'units', 'families'];
+      const allowed = ['title', 'subject', 'level', 'publisher', 'licence', 'credit', 'kind', 'units'];
       const commit = await commitWith({
         message: `Library: update details of ${body.id}`,
-        change: (cat) => cat.map((x) => { if (x.id !== body.id) return x; const y = { ...x }; for (const k of allowed) if (body.changes && k in body.changes) y[k] = k === 'families' ? famVal(body.changes[k]) : body.changes[k]; if (!y.families) delete y.families; return y; }),
+        change: (cat) => cat.map((x) => { if (x.id !== body.id) return x; const y = { ...x }; for (const k of allowed) if (body.changes && k in body.changes) y[k] = body.changes[k]; return y; }),
       });
       out = { ok: true, commit };
     } else if (body.action === 'bank') {
@@ -107,15 +105,8 @@ module.exports = async (req, res) => {
       const P = require('../lib/pilot');
       if (!P.pilotOn()) throw err(400, 'Set PILOT_REPO in Vercel first.');
       const name = String(body.name || '').trim().slice(0, 60); if (!name) throw err(400, 'Give the family a name.');
-      let code = P.makeCode(name), custom = false;
-      if (body.code) { // a code the admin chose: letters and digits only, and not already used
-        code = String(body.code).trim().toUpperCase().replace(/[\s-]/g, '');
-        if (!P.CUSTOM_RE.test(code)) throw err(400, 'A code is 4 to 20 letters or numbers, no spaces or symbols.');
-        const cur = (await P.readFile('families.json')).data || [], gone = (await P.readFile('removed.json')).data || [];
-        if (cur.some((f) => f.code === code) || gone.includes(code)) throw err(400, `${code} is already used. Try another.`);
-        custom = true; }
-      const fam = { code, ...(custom ? { custom: true } : {}), name, note: String(body.note || '').trim().slice(0, 300), created: Date.now(), ...(body.phone ? { phone: phoneOf(body.phone) } : {}) };
-      await P.writeFile('families.json', (cur) => [...(cur || []), fam], `Pilot: add ${fam.code}`); P.forgetCustom();
+      const fam = { code: P.makeCode(name), name, note: String(body.note || '').trim().slice(0, 300), created: Date.now(), ...(body.phone ? { phone: phoneOf(body.phone) } : {}) };
+      await P.writeFile('families.json', (cur) => [...(cur || []), fam], `Pilot: add ${fam.code}`);
       out = { ok: true, family: fam };
     } else if (body.action === 'pilot_links') {
       // A permanent link per child (device) to their latest weekly report: /r/<token>. Made once, then reused.
@@ -134,7 +125,7 @@ module.exports = async (req, res) => {
       out = { ok: true, links };
     } else if (body.action === 'pilot_remove') {
       const P = require('../lib/pilot');
-      if (!P.validCode(body.code) && !/^[A-Z]{1,6}\d{2}-[A-Z0-9]{6}$/.test(String(body.code || '')) && !P.CUSTOM_RE.test(String(body.code || ''))) throw err(400, 'Bad family code.');
+      if (!P.validCode(body.code) && !/^[A-Z]{1,6}\d{2}-[A-Z0-9]{6}$/.test(String(body.code || ''))) throw err(400, 'Bad family code.');
       await P.removeFamily(body.code);
       out = { ok: true };
     } else if (body.action === 'pilot_note') {

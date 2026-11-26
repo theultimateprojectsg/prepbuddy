@@ -21,7 +21,6 @@ const SUBJ = {
   chemistry: ['#0E7C8C', /chemi|化學/, (c) => `<path d="M7.6 14.5h8.8l2.6 4.6A1.6 1.6 0 0 1 17.6 21H6.4A1.6 1.6 0 0 1 5 19.1z" fill="${c}" fill-opacity=".22" stroke="none"/><path d="M9 3h6M10 3v6.5L5 19.1A1.6 1.6 0 0 0 6.4 21h11.2a1.6 1.6 0 0 0 1.4-1.9L14 9.5V3" stroke="${c}" stroke-width="2"/><circle cx="11" cy="17.5" r="1" fill="${c}"/><circle cx="14" cy="16" r=".8" fill="${c}"/>`],
   physics: ['#26357A', /physic|物理/, (c) => `<ellipse cx="12" cy="12" rx="9.5" ry="3.8" stroke="${c}" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)" stroke="${c}" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)" stroke="${c}" stroke-width="1.8"/><circle cx="12" cy="12" r="2.4" fill="${Y}" stroke="${c}" stroke-width="1.5"/>`],
   maths: ['#A3661A', /math|algebra|geometr|calcul|statist|數學/, (c) => `<rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="${c}" fill-opacity=".14" stroke="${c}" stroke-width="2"/><path d="M8 6.5v4M6 8.5h4M14 8.5h4M6.5 14l3 3M9.5 14l-3 3M14 14.5h4M14 17h4" stroke="${c}" stroke-width="1.8"/>`],
-  science: ['#2F7FB8', /^science|primary science|general science|general studies|科學|常識/, (c) => `<path d="M9 3.5h6M10 3.5v6.2L4.8 18.3A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.7L14 9.7V3.5" fill="${c}" fill-opacity=".12" stroke="${c}" stroke-width="2" stroke-linejoin="round"/><path d="M7.2 15h9.6" stroke="${c}" stroke-width="2" stroke-linecap="round"/><circle cx="10.5" cy="17.6" r="1" fill="${c}"/><circle cx="13.8" cy="18.2" r=".8" fill="${c}"/>`],
   economics: ['#8A5A12', /econom|經濟/, (c) => `<path d="M3.5 20.5h17" stroke="${c}" stroke-width="2"/><path d="M4 16l5-5 3.5 3L19 7.5" stroke="${c}" stroke-width="2"/><path d="M14.5 7.5H19V12" stroke="${c}" stroke-width="2"/><circle cx="6.5" cy="6.5" r="3" fill="${Y}" stroke="${c}" stroke-width="1.6"/>`],
   english: ['#B0346A', /english|literat|英文|英語/, (c) => `<path d="M3 5.5c3-1 6-.8 9 1v14c-3-1.8-6-2-9-1z" fill="${c}" fill-opacity=".16" stroke="${c}" stroke-width="2"/><path d="M21 5.5c-3-1-6-.8-9 1v14c3-1.8 6-2 9-1z" stroke="${c}" stroke-width="2"/><path d="M15 10h3M15 13h3" stroke="${c}" stroke-width="1.6"/>`],
   chinese: ['#C2452D', /chinese|中文|中國語文/, (c) => `<rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="${c}" fill-opacity=".14" stroke="${c}" stroke-width="2"/><text x="12" y="17" text-anchor="middle" font-size="12" font-weight="700" fill="${c}" stroke="none" font-family="PingFang HK, Microsoft JhengHei, Noto Sans TC, sans-serif">文</text>`],
@@ -31,10 +30,10 @@ const SUBJ = {
 };
 const OTHER_COLOURS = ['#26357A', '#18966A', '#C2452D', '#6B4FB0', '#0E7C8C', '#A3661A', '#B0346A', '#3E6B2F'];
 const OTHER = (c) => `<rect x="4" y="4" width="4.5" height="16" rx="1.2" fill="${c}" fill-opacity=".2" stroke="${c}" stroke-width="2"/><rect x="10.5" y="4" width="4.5" height="16" rx="1.2" stroke="${c}" stroke-width="2"/><path d="M17 5.6l2.6-.7 2.4 14.3-2.6.7z" stroke="${c}" stroke-width="2"/>`;
-const SUBJ_ZH = { science: '科學', biology: '生物', chemistry: '化學', physics: '物理', maths: '數學', economics: '經濟', english: '英文', chinese: '中文', history: '歷史', geography: '地理', finance: '理財' };
+const SUBJ_ZH = { biology: '生物', chemistry: '化學', physics: '物理', maths: '數學', economics: '經濟', english: '英文', chinese: '中文', history: '歷史', geography: '地理', finance: '理財' };
 // The subject's name to show: in Chinese when the app is in Chinese and the subject is one we know.
 export function subjectName(subject, lang) {
-  if (lang !== 'zh' || !subject) return /^\s*english\s*$/i.test(subject || '') ? 'English Language' : subject || ''; // one name for one subject
+  if (lang !== 'zh' || !subject) return subject || '';
   const k = subjectKey(subject);
   return (k && SUBJ_ZH[k]) || subject;
 }
@@ -80,14 +79,6 @@ const ACT = {
   listening: ['#E8F2FD', `<path d="M4 15v-3a8 8 0 0 1 16 0v3" stroke="${NAVY}" stroke-width="2"/><rect x="3" y="14" width="5" height="7" rx="2" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><rect x="16" y="14" width="5" height="7" rx="2" fill="${Y}" stroke="${NAVY}" stroke-width="2"/>`],
   sprint: ['#FFF0E0', `<path d="M13 2.5 5 13.5h6l-1 8 8-11h-6z" fill="${Y}" stroke="${NAVY}" stroke-width="2" stroke-linejoin="round"/>`],
   level: ['#FFF6CC', `<path d="M4 20h16" stroke="${NAVY}" stroke-width="2"/><rect x="5" y="13" width="3.5" height="7" rx="1" fill="${Y}" stroke="${NAVY}" stroke-width="1.8"/><rect x="10.25" y="9" width="3.5" height="11" rx="1" stroke="${NAVY}" stroke-width="1.8"/><rect x="15.5" y="5" width="3.5" height="15" rx="1" stroke="${NAVY}" stroke-width="1.8"/>`],
-  // Settings blocks
-  child: ['#FFF0E0', `<circle cx="12" cy="8" r="4" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" stroke="${NAVY}" stroke-width="2"/>`],
-  parent: ['#EEF1FB', `<circle cx="9" cy="7.5" r="3.2" stroke="${NAVY}" stroke-width="2"/><circle cx="17" cy="10" r="2.4" fill="${Y}" stroke="${NAVY}" stroke-width="1.8"/><path d="M3 20a6 6 0 0 1 12 0M14.5 20a4 4 0 0 1 6.5-3" stroke="${NAVY}" stroke-width="2"/>`],
-  language: ['#E8F2FD', `<circle cx="12" cy="12" r="9" stroke="${NAVY}" stroke-width="2"/><path d="M3.5 9h17M3.5 15h17" stroke="${NAVY}" stroke-width="1.6"/><path d="M12 3c-2.6 2.5-3.8 5.5-3.8 9s1.2 6.5 3.8 9c2.6-2.5 3.8-5.5 3.8-9S14.6 5.5 12 3z" fill="${Y}" fill-opacity=".6" stroke="${NAVY}" stroke-width="1.8"/>`],
-  backup: ['#E5F5EE', `<path d="M7 18.5a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.5 1.5 3.8 3.8 0 0 1-.4 7.5z" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M12 16v-5.5M9.5 12.5L12 10l2.5 2.5" stroke="${NAVY}" stroke-width="2"/>`],
-  help: ['#F1E9FB', `<circle cx="12" cy="12" r="9" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6" stroke="${NAVY}" stroke-width="2"/><circle cx="12" cy="17" r="1.1" fill="${NAVY}"/>`],
-  privacy: ['#FDEEEC', `<path d="M12 3l7.5 3v5.5c0 4.5-3.2 8.3-7.5 9.5-4.3-1.2-7.5-5-7.5-9.5V6z" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M9 12l2.2 2.2L15.5 10" stroke="${NAVY}" stroke-width="2"/>`],
-  usage: ['#FFF6CC', `<path d="M4 20V10M10 20V5M16 20v-7M21 20H3" stroke="${NAVY}" stroke-width="2"/><rect x="8.6" y="5" width="2.8" height="15" fill="${Y}" stroke="none" opacity=".8"/>`],
   flashcards: ['#E5F5EE', `<rect x="3" y="6" width="13" height="15" rx="2.5" stroke="${NAVY}" stroke-width="2" transform="rotate(-8 9.5 13.5)"/><rect x="8" y="3.5" width="13" height="15" rx="2.5" fill="${Y}" stroke="${NAVY}" stroke-width="2"/><path d="M12 9.5h5M12 12.5h3.5" stroke="${NAVY}" stroke-width="1.6"/>`],
 };
 export const actionIcon = (kind, size = 22) => wrap((ACT[kind] || ACT.practise)[1], size);
