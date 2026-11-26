@@ -3763,6 +3763,11 @@ function renderSettings(sec) {
       <span class="muted" style="font-size:14px;line-height:1.5">${PLT('A ding for right answers, cheers for wins, and a little buzz on phones that support it.', '答對有提示音，有進步時有歡呼聲，支援的手機還會輕輕震動。')}</span>
     </section>
     ${DEV ? `<section class="card stack g10" style="padding:16px;border:1.5px dashed #C9D3EE">
+      <b style="font-size:16px">DEV · Skip ahead</b>
+      <span class="muted" style="font-size:14px;line-height:1.5">Acts as if this many days have passed with no work: practice, tests and mistakes move into the past, and test dates come closer. Changes this child's saved data for real.</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${[1, 3, 7].map((n) => `<button class="btn-sm" data-devskip="${n}">+${n} day${n > 1 ? 's' : ''}</button>`).join('')}</div>
+    </section>
+    <section class="card stack g10" style="padding:16px;border:1.5px dashed #C9D3EE">
       <b style="font-size:16px">DEV · Fresh test family</b>
       <span class="muted" style="font-size:14px;line-height:1.5">Wipes this device and starts as ${esc(local.name || 'Phil')}, P4, with the starter books and a Science test on Units 1–3 in 11 days. Your DEV switches stay.</span>
       <button class="btn-sm danger" id="sdevfresh" style="align-self:flex-start">Start fresh as a test family</button>
@@ -3888,6 +3893,7 @@ function renderSettings(sec) {
   if (document.getElementById('srestore')) document.getElementById('srestore').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { await restoreFile(f); } catch (err) { toast(err.message); } e.target.value = ''; };
   { const sp = document.getElementById('splans'); if (sp) sp.onclick = () => go({ name: 'plans' }); }
   $app.querySelectorAll('[data-pv]').forEach((b) => (b.onclick = () => { local.planPreview = b.dataset.pv; saveLocal(); renderSettings(sec); renderTabs(); }));
+  $app.querySelectorAll('[data-devskip]').forEach((b) => (b.onclick = () => devSkip(+b.dataset.devskip)));
   { const fr = document.getElementById('sdevfresh'); if (fr) fr.onclick = async () => { if (await confirmLeave({ title: 'Start fresh as a test family?', body: 'Everything on this device is deleted, then a ready-made family is set up.', stay: 'Cancel', leave: 'Start fresh' })) devQuickSetup(); }; }
   { const sa = document.getElementById('sshowans'); if (sa) sa.onclick = () => { try { localStorage.setItem('pb.showans', showAns() ? '0' : '1'); } catch (e) {} sa.classList.toggle('on', showAns()); sa.setAttribute('aria-checked', String(showAns())); toast(showAns() ? 'Answers shown on this device' : 'Answers hidden'); }; }
   { const nr = document.getElementById('snorush'); if (nr) nr.onclick = () => { try { localStorage.setItem('pb.norush', rushOff() ? '0' : '1'); } catch (e) {} nr.classList.toggle('on', !rushOff()); nr.setAttribute('aria-checked', String(!rushOff())); toast(rushOff() ? 'Too-fast check off on this device' : 'Too-fast check on'); }; }
@@ -8989,6 +8995,20 @@ async function renderParent() {
    on the day. Afterwards they can note how it went. Kept on this device. */
 const SCH = (en, zh) => (LANG === 'zh' ? zh : en);
 const ymd = (t) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+// DEV: pretend `days` have passed. Every saved time (and date like 2026-11-26, and keys made of either) moves back by
+// that much, so to the app the work happened earlier and the tests are nearer. Then reload.
+function devSkip(days) {
+  const ms = days * DAY, isT = (v) => typeof v === 'number' && v > 1.6e12 && v < 2.2e12, isD = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const shD = (v) => ymd(new Date(v + 'T00:00:00').getTime() - ms);
+  const val = (v) => (isT(v) ? v - ms : isD(v) ? shD(v) : (v && typeof v === 'object' ? walk(v) : v));
+  const key = (k) => (/^\d{13}$/.test(k) && isT(+k) ? String(+k - ms) : isD(k) ? shD(k) : k);
+  function walk(o) {
+    if (Array.isArray(o)) { o.forEach((v, i) => { o[i] = val(v); }); return o; }
+    const ents = Object.entries(o); ents.forEach(([k]) => delete o[k]); ents.forEach(([k, v]) => { o[key(k)] = val(v); }); return o;
+  }
+  walk(local); delete local.mastDay; saveLocal();
+  toast(`Skipped ahead ${days} day${days > 1 ? 's' : ''}`); setTimeout(() => location.reload(), 600);
+}
 const testDay = (x) => new Date(x.date + 'T00:00:00').getTime();
 const testLeft = (x) => Math.round((testDay(x) - dayStart()) / DAY);
 /* Keeping the % honest: when a school result comes in, compare it with what PrepBuddy predicted for that test
