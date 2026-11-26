@@ -774,7 +774,7 @@ async function boostSession(book, c0 = null, step0 = null, plan = false, testId 
   if (step.kind !== 'test' && step.kind !== 'mixed' && !(await stepPreview(book, c, step))) return;
   if (!plan) boostAt = Date.now(); boostTest = testId ? { id: testId, at: Date.now() } : null; // timed from Start, not from the tap that opened 'Up next'
   // why, in plain words: where the chapter is and what this paper does for it (rules §2)
-  const nm0 = shortTitle(c.unit.title), why = step.kind === 'test' ? (!(c.passes > 0) ? PT(`Practice on ${nm0} is done (${c.pct}%). Passing a chapter test is the next step: the first pass takes it to at least 70%.`, `「${nm0}」的練習完成了（${c.pct}%）。下一步是通過章節測驗：第一次合格至少到 70%。`)
+  const nm0 = shortTitle(c.unit.title), why = step.kind === 'test' ? (!(c.passes > 0) ? PT(`Practice on ${nm0} is done (${c.pct}%). Next, a chapter test: score 80% or more and it becomes Test-ready (at least 70%).`, `「${nm0}」的練習完成了（${c.pct}%）。下一步是通過章節測驗：第一次合格至少到 70%。`)
       : PT(`${nm0} is at ${c.pct}%. Another chapter test fills the test part, up to 85%.`, `「${nm0}」現在 ${c.pct}%。再做一次章節測驗，可升到 85%。`))
     : step.kind === 'mixed' ? PT(`${nm0} is at ${c.pct}% and its chapter tests are done. Mock exams take it the rest of the way to 100%.`, `「${nm0}」現在 ${c.pct}%，章節測驗已完成。模擬考試帶你走到 100%。`) : '';
   const upT = { name: nm0, why: why || step.text || '' };
@@ -812,7 +812,7 @@ function askTime(title, detail, suggested, up = null) {
       <div class="un-hero"><small class="un-tag">${PT('Up next', '下一步')}</small><span class="un-ic" aria-hidden="true">${up.mock ? '🧾' : '📝'}</span></div>
       <div class="un-body">
         <b id="un-t">${up.mock ? PT('Mock exam', '模擬考試') : PT('Chapter test', '章節測驗')}</b><span class="un-ch" data-raw>${esc(up.name)}</span>
-        <div class="un-chips"><span>📝 ${PT(`${up.n} questions`, `${up.n} 題`)}</span>${up.mock ? '' : `<span>✅ ${PT('pass mark 80%', '80% 合格')}</span>`}</div>
+        <div class="un-chips"><span>📝 ${PT(`${up.n} questions`, `${up.n} 題`)}</span>${up.mock ? '' : `<span>🎯 ${PT('aim for 80%+', '目標 80% 以上')}</span>`}</div>
         ${up.why ? `<div class="un-why"><span class="un-bud">${buddySVG('happy', 40)}</span><p><small>${PT('Why Buddy picked this', 'Buddy 為甚麼選這個')}</small>${esc(up.why)}</p></div>` : ''}
         <div class="un-time"><span id="tm-l">${PT('Time allowed', '作答時間')}</span>
           <div class="stepper" role="group" aria-labelledby="tm-l"><button id="tm-m" aria-label="Less time" ${none || mins <= 5 ? 'disabled' : ''}>−</button><output>${none ? '—' : mins + ' min'}</output><button id="tm-p" aria-label="More time" ${none || mins >= 180 ? 'disabled' : ''}>+</button></div>
@@ -869,7 +869,7 @@ async function startChapterTest(book, units, up = null) {
   if (!allow('test')) return;
   track('chapter_test');
   const [nA, nB] = testSize(units.length);
-  const mins = await askTime(`${LANG === 'zh' ? '章節測驗' : 'Chapter test'} · ${units.map((u) => shortTitle(u.title)).join(', ')}`, LANG === 'zh' ? `只考這一章：${nA} 題選擇題，${nB} 題文字題。80% 合格。` : `On this chapter only: ${nA} multiple-choice and ${nB} written questions. Pass mark 80%.`, paperMinutes(nA, nB), up && { ...up, n: nA + nB });
+  const mins = await askTime(`${LANG === 'zh' ? '章節測驗' : 'Chapter test'} · ${units.map((u) => shortTitle(u.title)).join(', ')}`, LANG === 'zh' ? `只考這一章：${nA} 題選擇題，${nB} 題文字題。考到 80% 或以上，代表你掌握了這一章。` : `On this chapter only: ${nA} multiple-choice and ${nB} written questions. Score 80% or more to show you’ve got this chapter.`, paperMinutes(nA, nB), up && { ...up, n: nA + nB });
   if (mins === null) return;
   try {
     const paper = await preparePaper(book, units, nA, nB, 'sit');
@@ -877,7 +877,7 @@ async function startChapterTest(book, units, up = null) {
     startDse(book, paper, mins); meter('test');
     S.title = units.length === 1 ? `${LANG === 'zh' ? '章節測驗' : 'Chapter test'} · ${units[0].title}` : (LANG === 'zh' ? '章節測驗' : 'Chapter test');
     S.test = true;
-    toast(mins ? `${mins} min · pass mark 80%` : 'No time limit · pass mark 80%');
+    toast(mins ? `${mins} min · aim for 80%+` : 'No time limit · aim for 80%+');
   } catch (e) {
     toast(e.status === 0 ? 'You seem to be offline.' : (e.message || 'Could not prepare the test.'));
     go({ name: 'book', bookId: book.id });
@@ -2998,7 +2998,7 @@ async function renderHome() {
     for (const x of (local.tests || []).filter((x) => x.t > d3 && x.m && x.g / x.m >= 0.8).slice(-2)) {
       const nm = (x.title && String(x.title).replace(/^chapter test[:·\s-]*/i, '')) || unitName(Object.keys(x.per || {})[0]);
       const pc = Math.round(100 * x.g / x.m), mock = x.kind !== 'test' || /mock|模擬/i.test(nm || '');
-      add(2, 'medal', mock ? Z(`You scored ${pc}% on a mock exam!`, `模擬考試考了 ${pc}%！`) : Z(`You passed the ${nm ? `${shortTitle(nm)} ` : ''}chapter test with ${pc}%!`, `${nm ? `「${shortTitle(nm)}」` : ''}章節測驗考了 ${pc}%，合格了！`), Z('Under time, first try. That’s test-ready.', '限時、第一次就合格，準備好考試了。')); }
+      add(2, 'medal', mock ? Z(`You scored ${pc}% on a mock exam!`, `模擬考試考了 ${pc}%！`) : Z(`${nm ? `${shortTitle(nm)} chapter test` : 'Chapter test'}: ${pc}%. You’ve got it!`, `${nm ? `「${shortTitle(nm)}」` : ''}章節測驗考了 ${pc}%，合格了！`), Z('Under time, first try. That’s test-ready.', '限時、第一次就合格，準備好考試了。')); }
     // a chapter that jumped: this week vs the week before
     { const by = {}; for (const e of local.log) { if (!e.q || !e.m || e.t < wk - 7 * DAY) continue; const k = String(e.q).split(':').slice(0, 2).join(':'); const o = by[k] || (by[k] = { now: [], prev: [] }); (e.t >= wk ? o.now : o.prev).push(e); }
       const best = Object.entries(by).map(([k, o]) => ({ k, a: o.now.length >= 4 ? accP(o.now) : null, b: o.prev.length >= 4 ? accP(o.prev) : null })).filter((x) => x.a != null && x.b != null && x.a - x.b >= 15).sort((x, y) => (y.a - y.b) - (x.a - x.b))[0];
@@ -5173,7 +5173,7 @@ async function progressPop(pops) {
   const conf = big ? `<div class="confetti" aria-hidden="true">${Array.from({ length: 22 }, (_, i) => `<i style="left:${(i * 41) % 100}%;animation-delay:${(i % 8) * 0.08}s;background:${['#FFC531', '#4CC38A', '#5B8DEF', '#FF7A59'][i % 4]}"></i>`).join('')}</div>` : '';
   const row = (lab, from, to, k) => `<div class="pp-r mo-r"><small class="mo-rl" data-raw>${esc(lab)}</small><div class="mo-rv"><span class="mo-rf">${from}%</span><span class="mo-ra" aria-hidden="true">→</span><b><span class="pp-n" data-from="${from}" data-to="${to}">${from}</span>%</b><em class="ms-imp-g pp-g">+${to - from}%</em></div><i class="pp-bar"><b style="width:${from}%" data-to="${to}"></b><u style="left:${from}%;width:0" data-w="${to - from}"></u></i></div>`;
   w.innerHTML = `${conf}<div class="cdlg pp-card" role="dialog" aria-modal="true" aria-labelledby="ppT"><div class="pp-bud">${buddySVG('happy', 64)}</div>
-    <b id="ppT" class="pp-h">${pops.some((p) => p.passed) ? PT('Test passed! 🎉', '測驗合格！🎉') : PT('Your progress grew!', '你進步了！')}</b>
+    <b id="ppT" class="pp-h">${pops.some((p) => p.passed) ? PT('You’ve got it! 🎉', '你掌握了！🎉') : PT('Your progress grew!', '你進步了！')}</b>
     ${pops.slice(0, 3).map((p, k) => `${row(p.nm, p.from, p.to, k)}${p.passed ? `<p class="pp-note">🏆 ${PT('Proven in a timed test', '已在限時測驗中證明實力')}</p>` : ''}${p.tst ? row(PT(`📝 ${p.tst.n} readiness`, `📝「${p.tst.n}」準備度`), p.tst.from, p.tst.to, k) : ''}`).join('')}
     <button class="btn" id="ppOk">${PT('Nice!', '好！')}</button></div>`;
   document.body.appendChild(w);
@@ -7316,10 +7316,19 @@ function goalsCardHTML(GD, o = {}) {
   };
   const who = o.title ? o.title : local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
   return `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
-    ${goalsHowHTML()}${o.past || ''}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : (local.noTestAsk && Date.now() - local.noTestAsk < 7 * DAY ? `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`
+    ${goalsHowHTML()}${o.past || ''}${paceSumHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : (local.noTestAsk && Date.now() - local.noTestAsk < 7 * DAY ? `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`
       : `<div class="ag-first"><span class="ag-fic" aria-hidden="true">📅</span><b>${SCH('When’s your next test?', '下一次測驗是甚麼時候？')}</b><p>${SCH('Tell Buddy the subject, the date and the chapters. Every day’s plan then gets you ready for it: practice on the weakest chapters, chapter tests, and a mock paper before the day.', '告訴 Buddy 科目、日期和章節。之後每天的計劃都會幫你準備：先練最弱的章節，再做章節測驗，考試前做模擬試卷。')}</p><button class="btn" id="addTest4">${SCH('Add my next test', '加入下一次測驗')}</button><button class="linkbtn" id="noTest">${SCH('No test coming up', '暫時沒有測驗')}</button></div>`)}</section>`;
 }
+// Pace line: per test card, or (preview, localStorage pb.pace = 'sum') one line for all tests on top of the goals card
+let PACE_LIST = [];
+const paceSum = () => true; // decided 27 Nov: one combined line on top of the goals card
+function paceSumHTML() {
+  const L = PACE_LIST.filter((x) => x.left > 0); if (!paceSum() || !L.length) return '';
+  const tot = L.reduce((a, x) => a + x.per, 0), many = L.length > 1;
+  return `<p class="pv-pace pv-pace-sum">⏱️ ${PT(`${many ? `For your ${L.length} tests` : `For your ${esc(L[0].name)}`}: about <b>${tot} min a day</b> gets you to 100%${many ? ` (${L.map((x) => `${esc(x.name)} ${x.per}`).join(' · ')})` : ''}.${tot > 90 ? ' That’s a lot: do as much as you can, every step counts.' : ''}`, `${many ? `${L.length} 個測驗` : esc(L[0].name)}：每天約 <b>${tot} 分鐘</b>可達 100%${many ? `（${L.map((x) => `${esc(x.name)} ${x.per}`).join(' · ')}）` : ''}。`)}</p>`;
+}
 async function fullTestCards(tests, btn) {
+  PACE_LIST = [];
   const MB = new Map(); for (const p of tests.steps) if (p.book && !MB.has(p.book.id)) MB.set(p.book.id, await bookMastery(p.book));
   const chName = (u) => shortTitle(u.title);
   const fresh = (c) => !c.done && !c.tests;
@@ -7337,6 +7346,17 @@ async function fullTestCards(tests, btn) {
     return `<div class="pv-tch" id="${id}">${cs.map((c, i) => row(c, i >= SHOWN && more > 1)).join('')}${more > 1 ? btn(lab, () => {
       const el = document.getElementById(id), open = el.classList.toggle('open'), bt = el.querySelector('.pv-tmore');
       if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : lab; }, 'pv-tmore') : ''}</div>`; };
+  // from day 1, how much a day reaches 100% by test day (same numbers as "My plan to reach 100%"), so a close test is no surprise
+  const paceNote = (p) => { if (!p.book || p.left == null || p.left < 0 || (p.x.kind || 'test') === 'dict') return ''; const cs = chOf(p); if (!cs.length || cs.every((c) => (c.pct || 0) >= 100)) return '';
+    const L = stepsTo100(p, cs); if (!L.total) return '';
+    const days = Math.max(1, p.left), per = Math.max(10, Math.ceil(L.total / days / 5) * 5), end = Math.round(L.end);
+    const when = p.left === 0 ? PT('Test today', '今天考試') : PT(`${days} day${days === 1 ? '' : 's'} left`, `還有 ${days} 天`);
+    const goal = L.capped ? PT(`about ${end}% at your current scores`, `按現時分數約 ${end}%`) : '100%';
+    PACE_LIST.push({ name: p.x.name, per, left: p.left });
+    if (paceSum()) return ''; // one combined line on top instead (preview)
+    const txt = p.left === 0 ? PT(`${when}: do the next step as a warm-up.`, `${when}：做下一步當熱身。`)
+      : PT(`${when}: about <b>${per} min a day</b> gets you to ${goal}.${per > 90 ? ' That’s a lot: do as much as you can, every step counts.' : ''}`, `${when}：每天約 <b>${per} 分鐘</b>，可達 ${goal}。${per > 90 ? '有點多：盡量做，每一步都有用。' : ''}`);
+    return `<p class="pv-pace">⏱️ ${txt}</p>`; };
   // memory fades without use (rules §3): say so on the card, or warn the day before it starts, with a quick check
   const fadeNote = (p) => { if (!p.book || (p.x.kind || 'test') === 'dict') return ''; const cs = chOf(p).filter((c) => c.done);
     const gone = cs.filter((c) => c.fading >= 1).sort((a, b) => b.fading - a.fading), soon = cs.filter((c) => !(c.fading >= 1) && c.canFade && c.idle >= 1 && c.idle < 2);
@@ -7374,7 +7394,7 @@ async function fullTestCards(tests, btn) {
       <div class="pv-bar ${st}"><i style="width:${p.ready}%"></i>${!fcLocked && fc > p.ready ? `<em style="left:${p.ready}%;width:${fc - p.ready}%"></em>` : ''}</div>
       ${fcLocked ? btn(`🔒 ${PT('Test-day forecast', '考試日預測')}`, () => go({ name: 'plans', hi: 'pro' }), 'pv-lockfc') : fc == null ? '' : `<div class="pv-num"><b class="fc ${st}">${fc}%</b><span>${PT('on test day', '考試當日')}</span></div>`}</div>${!fcLocked && fc == null ? `<p class="pv-nofc">${PT('The test-day forecast shows after 3 days of practice.', '練習 3 日後會顯示考試日預測。')}</p>` : ''}`;
     return `<div class="pv-test ${st}"><div class="pv-test-h"><div><b data-raw>${esc(p.x.name)}</b><span>${fmtDay(testDay(p.x))} · ${leftText(p.left)}${p.book ? ` · <span data-raw>${esc(testScope(p))}</span>` : ''}</span></div><em class="pv-pill ${st}">${stLab}</em></div>
-      ${bar}${chipsOf(p)}${fadeNote(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
+      ${bar}${chipsOf(p)}${paceNote(p)}${fadeNote(p)}${p.ready == null ? `<p class="pv-p">${what}</p>` : ''}
       <div class="pv-test-f">${btn(`${pIcon('pencil', 18)}<span class="sr">${PT('Edit test', '修改測驗')}</span>`, () => testDialog((local.sched || []).find((x) => x.id === p.x.id)), 'pv-btn quiet pv-edit')}</div></div>`;
   });
 }
@@ -8760,7 +8780,7 @@ const FEAT = {
   buddy: { per: 'day', en: ['Ask Buddy messages', 'message a day', 'messages a day'], zh: ['問 Buddy 訊息', '則／日'] },
   books: { per: 'total', en: ['Textbooks', 'textbook', 'textbooks'], zh: ['課本', '本課本'] },
   hardDiff: { per: 'flag', en: ['Hard and Master difficulty'], zh: ['困難和大師難度'], d: ['Questions that stretch top students: applying and analysing, like the hardest exam questions.', '挑戰尖子的題目：應用和分析，好似考試最難的題目。'] },
-  test: { per: 'week', en: ['Chapter tests', 'a week'], zh: ['章節測驗', '次／週'], d: ['Timed tests on a chapter, 80% to pass, like a school test.', '限時章節測驗，80% 合格，好似學校測驗。'] },
+  test: { per: 'week', en: ['Chapter tests', 'a week'], zh: ['章節測驗', '次／週'], d: ['Timed tests on a chapter: 80% or more shows the chapter is learnt.', '限時章節測驗：80% 或以上代表掌握了這一章。'] },
   sched: { per: 'total', en: ['School test planner', 'test at a time', 'tests at a time'], zh: ['學校測驗計劃', '個測驗'], d: ['Add a school test and Today’s plan works on it, day by day.', '加入學校測驗，今日計劃會每天幫你準備。'] },
   homework: { per: 'week', en: ['Homework help (photos)', 'a week'], zh: ['功課輔導（拍照）', '次／週'], d: ['Snap tonight’s homework: Buddy explains, gives hints and checks your answers.', '拍下今晚的功課，Buddy 會解釋、給提示和檢查答案。'] },
   coach: { per: 'flag', en: ['Study coach'], zh: ['溫習教練'], d: ['A coach that sees your scores and mistakes, plans your day and starts it in one tap.', '教練看得到你的分數和錯題，幫你計劃每天溫習，一按就開始。'] },
@@ -10981,8 +11001,8 @@ async function resultMoment(sess, qs, pct, got, total) {
   if (sess.test) { // chapter test: a pass gets the unlock, a near miss gets the nudge
     const passed = pct >= 80, near = pct >= 60;
     return say({ face: passed ? 'done' : 'happy', confetti: passed, sel: 'main.results', hero: passed ? { icon: '🏆' } : hero, chips, tone: passed ? 'great' : near ? 'ok' : 'tough',
-      title: passed ? Z('Test passed! 🎉', '測驗合格！🎉') : near ? Z(`So close! ${pct}%`, `只差一點！${pct}%`) : Z('Not this time, and that’s okay', '這次未合格，沒關係'),
-      sub: passed ? Z(`${pct}%: proof you know this chapter.`, `${pct}%：證明你掌握了這一章。`) : Z(`80% passes. ${near ? `You’re only ${80 - pct}% away.` : 'Every test shows Buddy exactly what to work on.'}`, `80% 合格。${near ? `只差 ${80 - pct}%。` : '每次測驗都讓 Buddy 知道要練甚麼。'}`),
+      title: passed ? Z('You’ve got it! 🎉', '你掌握了！🎉') : near ? Z(`Nearly there! ${pct}%`, `就快到了！${pct}%`) : Z(`Good effort: ${pct}%`, `努力了：${pct}%`),
+      sub: passed ? Z(`${pct}%: this chapter is Test-ready.`, `${pct}%：這一章已準備好考試。`) : Z(`80% shows you’ve got this chapter. ${near ? `You’re ${80 - pct}% away.` : 'Every test shows Buddy exactly what to work on.'}`, `80% 或以上代表你掌握了這一章。${near ? `還差 ${80 - pct}%。` : '每次測驗都讓 Buddy 知道要練甚麼。'}`),
       bars: chBars,
       lines: passed ? bars.filter((b) => b.passed).map((b) => ['🏆', Z(`${b.lab}: proven in a timed test`, `${b.lab}：已在限時測驗中證明實力`)])
         : [...(dropLine.length ? dropLine : [['📌', Z(`Fix the ${missed} you missed in the next ${MK_GRACE} days. Buddy will bring the test back in your plan.`, `在 ${MK_GRACE} 日內改正答錯的 ${missed} 題。Buddy 會在任務中再安排測驗。`)]])],
