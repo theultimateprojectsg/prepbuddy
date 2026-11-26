@@ -1,7 +1,7 @@
 // POST /api/coach — the study coach on the Today screen. It sees a snapshot of the student's progress
 // (made on their device) and answers questions like "How am I doing?" or "What should I work on this week?".
 // body: { snapshot (text), ask, history: [{role, text}], lang, voice: 'en' | 'yue' when it's a spoken chat }   returns: { reply, action (or null): what to open in the app, usage }
-const { callTextWithAction, streamText, ndjson, MODELS, voiceNote, checkAccess, readJson, newUsage, httpError, APP_GUIDE } = require('../lib/claude');
+const { callTextWithAction, streamText, ndjson, MODELS, voiceNote, replyLang, checkAccess, readJson, newUsage, httpError, APP_GUIDE } = require('../lib/claude');
 
 const COACH = `You are the study coach inside PrepBuddy, an exam-practice app for Hong Kong secondary students (HKDSE). PrepBuddy turns the student's own textbooks into practice questions.
 Below is a snapshot of this student's progress, made just now from their practice history. Use it to answer.
@@ -22,7 +22,7 @@ Below is a snapshot of this student's progress, made just now from their practic
 ${APP_GUIDE}
 </app_guide>`;
 const STEP = {
-  action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today', 'homework', 'dictation', 'learn', 'writing', 'speaking'] },
+  action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today', 'homework', 'dictation', 'writing', 'speaking'] },
   chapters: { type: 'array', items: { type: 'string' }, description: 'Chapter codes from the snapshot, e.g. ["B1.C3"].' },
   book: { type: 'string', description: 'Book code, e.g. "B1".' },
   count: { type: 'integer', minimum: 5, maximum: 30 },
@@ -36,14 +36,50 @@ const OPEN_TOOL = {
       go_now: { type: 'boolean', description: 'true: open it now (the student agreed or asked). false: only show buttons under your reply.' },
       buttons: { type: 'array', maxItems: 3, description: 'For go_now false: 1-3 buttons, main suggestion first.',
         items: { type: 'object', properties: { label: { type: 'string', description: 'Short button text, in the language of your reply.' }, ...STEP }, required: ['label', 'action'] } },
-      action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today', 'homework', 'dictation', 'learn', 'writing', 'speaking'],
-        description: 'practise = practice questions on chapters; chapter_test = timed chapter test; review = the reviews due today; mistakes = the Mistake book; weak_topics = questions they found hard; mock_paper = DSE-style mock paper for a book; notes / flashcards = revision notes or flashcards for chapters; book = the book\'s chapter page; progress = their progress page; library = the textbook library (to add a book); books = their Books tab; settings; star_shop; today = the Today screen; homework = Homework help (photograph school homework and get hints); dictation = 默書 / spelling dictation; learn = a guided lesson on chapters (needs a chapter); writing = Writing practice (DSE English / Chinese composition marked by DSE criteria, then redraft); speaking = Speaking practice (DSE English Paper 4 one-minute individual response).' },
+      action: { type: 'string', enum: ['practise', 'chapter_test', 'review', 'mistakes', 'weak_topics', 'mock_paper', 'notes', 'flashcards', 'book', 'progress', 'library', 'books', 'settings', 'star_shop', 'today', 'homework', 'dictation', 'writing', 'speaking'],
+        description: 'practise = practice questions on chapters; chapter_test = timed chapter test; review = the reviews due today; mistakes = the Mistake book; weak_topics = questions they found hard; mock_paper = DSE-style mock paper for a book; notes / flashcards = revision notes or flashcards for chapters; book = the book\'s chapter page; progress = their progress page; library = the textbook library (to add a book); books = their Books tab; settings; star_shop; today = the Today screen; homework = Homework help (photograph school homework and get hints); dictation = 默書 / spelling dictation on chapters (needs a chapter); writing = Writing practice (DSE English / Chinese composition marked by DSE criteria, then redraft); speaking = Speaking practice (DSE English Paper 4 one-minute individual response).' },
       chapters: { type: 'array', items: { type: 'string' }, description: 'Chapter codes from the snapshot, e.g. ["B1.C3"]. Needed for practise and chapter_test; optional for notes, flashcards and book.' },
       book: { type: 'string', description: 'Book code, e.g. "B1", for mock_paper, weak_topics, notes, flashcards or book when no chapter is given.' },
       count: { type: 'integer', minimum: 5, maximum: 30, description: 'How many practice questions (practise only). Default 10.' },
     },
   },
 };
+// "Buddy's plan for you": the student says how much time they have and what they want; the coach builds a short plan
+// from their real chapters, which the app pins to the top of Today with a start button per step.
+const PLAN_TOOL = {
+  name: 'make_plan',
+  description: 'Build a short study plan for right now, from the snapshot, that fits the time the student has and what they asked for.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      title: { type: 'string', description: 'Short title, e.g. "30 minutes for your Maths test". Max 8 words.' },
+      intro: { type: 'string', description: 'One sentence: why this plan, naming the real weak chapters or the test. Max 30 words.' },
+      steps: { type: 'array', minItems: 1, maxItems: 5, items: { type: 'object', properties: {
+        label: { type: 'string', description: 'What to do, max 8 words, e.g. "Practise Fractions: 10 questions".' },
+        minutes: { type: 'integer', minimum: 2, maximum: 40 },
+        why: { type: 'string', description: 'Max 15 words: why this step, with a real number from the snapshot where there is one.' },
+        ...STEP,
+      }, required: ['label', 'minutes', 'action'] } },
+    },
+    required: ['title', 'steps'],
+  },
+};
+const PLAN_RULES = `
+The student wants a plan for right now. Call make_plan; no other reply is needed.
+- Fit the time they give (default 30 minutes if they don't say). Step minutes should add up to about that time. A practice set of 10 questions takes about 10 minutes.
+- Follow what they asked: a subject, a test, "100%", their mistakes, something new. If they ask for a test, use its chapters, weakest first.
+- PrepBuddy is test prep, like a private tutor: practice questions, chapter tests and mock papers. A new chapter starts with a practice set.
+- Good order: practice on the weakest chapters (practise, with chapters), then the Mistake book for that subject, then a chapter_test only when a chapter's mastery is 60% or more. Use review when reviews are due. A chapter_test on one chapter takes 40 minutes (two chapters 50, three 60; 30 for P1–P2): plan with those times.
+- Only add a Mistake book step when the snapshot shows open mistakes for that subject.
+- Only add a review step when the snapshot shows questions due for review.
+- When the test chapters are practised and tested, a mock_paper across them is the best rehearsal in the last few days before the test.
+- Each chapter line says "What moves it next". Plan that, and pick the steps that move the most: skip practice on chapters whose next move is a test, a retest or reviews, and never plan a retest before the date given.
+- When a school test is within 14 days, plan its chapters first (unless the student asks for something else). Other chapters only once the test chapters' next move is just reviews or a later retest.
+- Stay where the student is in the book. Choose from chapters they have actually practised, or the next chapters in book order after those. Do not jump ahead to much later chapters (for example Unit 18 when they are on Unit 5) just because a level check gave them a %, unless the student asks for it or an upcoming school test covers it.
+- If a chapter has been practised a lot but its test isn't passed yet, plan its chapter_test rather than more practice: more practice won't raise it until the test is passed.
+- Every label names what and where, e.g. "Practise Fractions" or "Chapter test: Division". Never vague labels like "Check your answers and notes".
+- Only use chapter and book codes that are in the snapshot. Never invent chapters.
+- Labels are short and say exactly what to do. Use the student's language.`;
 const ZH = `Reply in Traditional Chinese as used in Hong Kong (standard written Chinese). The student may write in English, Chinese or Cantonese.`;
 
 module.exports = async (req, res) => {
@@ -61,7 +97,7 @@ module.exports = async (req, res) => {
     while (history.length && history[0].role !== 'user') history.shift();
     const list = [...history, { role: 'user', content: ask }];
     for (let i = 1; i < list.length; i++) if (list[i].role === list[i - 1].role) throw httpError(400, 'Bad conversation.');
-    const system = [{ type: 'text', text: `${COACH}${body.lang === 'zh' ? '\n' + ZH : ''}${voiceNote(body.voice)}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>${body.screen ? `\n\nThe student is on this screen right now: ${String(body.screen).slice(0, 60)}.` : ''}` }];
+    const system = [{ type: 'text', text: `${COACH}${replyLang(body.lang) ? '\n' + replyLang(body.lang) : ''}${voiceNote(body.voice)}\n\n<progress_snapshot>\n${snapshot || '(no practice yet)'}\n</progress_snapshot>${body.screen ? `\n\nThe student is on this screen right now: ${String(body.screen).slice(0, 60)}.` : ''}` }];
     const usage = require('../lib/learner').attachLearner(newUsage(), body);
     const fallback = (out) => out.text || (out.action ? (body.lang === 'zh' ? '好，而家幫你打開。' : 'Okay, opening it now.') : '') || 'Sorry, I could not answer that. Please try asking another way.';
     if (body.stream) {
@@ -70,6 +106,11 @@ module.exports = async (req, res) => {
       const out = await streamText({ body: { model: body.voice ? MODELS.voice : MODELS.tutor, max_tokens: body.voice ? 500 : 2500, tools: [OPEN_TOOL], tool_choice: { type: 'auto' }, system, messages: list },
         usage, toolName: OPEN_TOOL.name, onText: (t) => write({ d: t }) });
       return res.end(JSON.stringify({ done: true, reply: fallback(out), action: out.action, usage }) + '\n');
+    }
+    if (body.plan) {
+      const sys2 = [{ ...system[0], text: system[0].text + PLAN_RULES }, ...system.slice(1)];
+      const out = await callTextWithAction({ messages: { system: sys2, list }, usage, step: 'tutor', maxTokens: 1500, tool: PLAN_TOOL, force: true });
+      res.statusCode = 200; return res.end(JSON.stringify({ plan: out.action, usage }));
     }
     const out = await callTextWithAction({ messages: { system, list }, usage, step: 'tutor', maxTokens: body.voice ? 500 : 2500, tool: OPEN_TOOL });
     res.statusCode = 200; res.end(JSON.stringify({ reply: fallback(out), action: out.action, usage }));

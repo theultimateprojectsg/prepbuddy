@@ -10,7 +10,8 @@ const PAUSE_INTERIM_MS = 1600; // longer when the recogniser hasn't settled on f
 const IDLE_STOP_MS = 120000; // stop after 2 minutes with nobody talking, so the mic isn't left on
 
 // Speech-recognition language codes. Chrome knows Cantonese as yue-Hant-HK; Safari as zh-HK.
-const REC_LANGS = { en: ['en-GB', 'en-US'], yue: ['zh-HK', 'yue-Hant-HK'] };
+const REC_LANGS = { en: ['en-GB', 'en-US'], yue: ['zh-HK', 'yue-Hant-HK'], fr: ['fr-FR'], ja: ['ja-JP'] };
+const SAY_LANG = { en: 'en-GB', yue: 'zh-HK', fr: 'fr-FR', ja: 'ja-JP' };
 
 // Turn a written reply into something that sounds right when read aloud.
 export function spokenText(t) {
@@ -24,7 +25,7 @@ const sentences = (t) => (t.match(/[^.!?。！？]+[.!?。！？]+["”’)]*|[^
 
 function pickVoice(lang) {
   const vs = speechSynthesis.getVoices();
-  const want = lang === 'yue' ? (v) => /^(zh-HK|yue)/i.test(v.lang) || /Cantonese|粵|粤/i.test(v.name) : (v) => /^en[-_]/i.test(v.lang);
+  const want = lang === 'yue' ? (v) => /^(zh-HK|yue)/i.test(v.lang) || /Cantonese|粵|粤/i.test(v.name) : lang === 'fr' ? (v) => /^fr[-_]/i.test(v.lang) : lang === 'ja' ? (v) => /^ja[-_]/i.test(v.lang) : (v) => /^en[-_]/i.test(v.lang);
   const ok = vs.filter(want);
   const score = (v) => (/Natural|Online|Neural|Premium|Enhanced/i.test(v.name) ? 4 : 0) + (/Google/i.test(v.name) ? 2 : 0) +
     (lang === 'en' && /en[-_]GB/i.test(v.lang) ? 1 : 0) + (v.localService ? 0 : 1);
@@ -33,7 +34,7 @@ function pickVoice(lang) {
 
 // How much of what the mic heard is just the tutor's own voice coming out of the speakers?
 function looksLikeEcho(heard, speaking) {
-  const toks = (s) => (/[㐀-鿿]/.test(s) ? [...s.replace(/[^㐀-鿿]/g, '')] : s.toLowerCase().match(/[a-z0-9']+/g) || []);
+  const toks = (s) => (/[㐀-鿿\u3040-\u30ff]/.test(s) ? [...s.replace(/[^㐀-鿿\u3040-\u30ff]/g, '')] : s.toLowerCase().match(/[\p{L}0-9']+/gu) || []);
   const h = toks(heard); if (!h.length) return true;
   const said = new Set(toks(speaking));
   return h.filter((w) => said.has(w)).length / h.length > 0.5;
@@ -142,7 +143,7 @@ export function startVoice({ lang = 'en', send, onUpdate = () => {}, alive = () 
     const u = new SpeechSynthesisUtterance(s);
     v.saying = s; wordAt = performance.now(); update();
     u.onboundary = () => { wordAt = performance.now(); };
-    if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = v.lang === 'yue' ? 'zh-HK' : 'en-GB';
+    if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = SAY_LANG[v.lang] || 'en-GB';
     u.rate = v.lang === 'yue' ? 1 : 1.05;
     u.onend = next; u.onerror = next;
     speechSynthesis.speak(u);

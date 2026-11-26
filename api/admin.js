@@ -16,6 +16,8 @@
 const REPO = () => process.env.GITHUB_REPO || 'theultimateprojectsg/prepbuddy';
 const BRANCH = () => process.env.GITHUB_BRANCH || 'main';
 const CATALOG = 'library/catalog.json';
+// Who can find a library book: true = every family, a list of family codes = only those families, false = nobody.
+const famVal = (v) => (Array.isArray(v) ? ((a) => (a.length ? a : false))([...new Set(v.map((c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '')).filter(Boolean))].slice(0, 300)) : !!v);
 const { listReports, resolveReport } = require('../lib/github');
 
 function err(status, message) { const e = new Error(message); e.status = status; return e; }
@@ -85,10 +87,10 @@ module.exports = async (req, res) => {
       out = { ok: true, commit };
     } else if (body.action === 'update') {
       if (!safeId(body.id)) throw err(400, 'Bad book id.');
-      const allowed = ['title', 'subject', 'level', 'publisher', 'licence', 'credit', 'kind', 'units'];
+      const allowed = ['title', 'subject', 'level', 'publisher', 'licence', 'credit', 'kind', 'units', 'families'];
       const commit = await commitWith({
         message: `Library: update details of ${body.id}`,
-        change: (cat) => cat.map((x) => { if (x.id !== body.id) return x; const y = { ...x }; for (const k of allowed) if (body.changes && k in body.changes) y[k] = body.changes[k]; return y; }),
+        change: (cat) => cat.map((x) => { if (x.id !== body.id) return x; const y = { ...x }; for (const k of allowed) if (body.changes && k in body.changes) y[k] = k === 'families' ? famVal(body.changes[k]) : body.changes[k]; if (!y.families) delete y.families; return y; }),
       });
       out = { ok: true, commit };
     } else if (body.action === 'bank') {

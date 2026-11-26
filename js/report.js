@@ -22,7 +22,7 @@ function acc(entries) {
 const shortTitle = (c) => c.replace(/\s*\(part \d+ of \d+\)$/i, '');
 
 // Build the report from the log. `stats` gives the spaced-review box per question.
-export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, exam, ts, sr, gs }) {
+export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, exam, ts, sr, gs, un, x }) {
   const zh = lang === 'zh'; const T = (en, c) => (zh ? c : en);
   const today = dayStart(Date.now());
   const from = today - 6 * DAY, prevFrom = from - 7 * DAY;
@@ -36,9 +36,10 @@ export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, e
 
   // chapters practised this week
   const byChapter = new Map();
-  for (const e of week) { const c = shortTitle(e.c || 'Other'); if (!byChapter.has(c)) byChapter.set(c, []); byChapter.get(c).push(e); }
+  const chOf = (e) => { const k = String(e.q || '').split(':').slice(0, 2).join(':'); return (un && un[k]) || shortTitle(e.c || T('Other', '其他')); };
+  for (const e of week) { const c = chOf(e); if (!byChapter.has(c)) byChapter.set(c, []); byChapter.get(c).push(e); }
   const prevBy = new Map();
-  for (const e of prev) { const c = shortTitle(e.c || 'Other'); if (!prevBy.has(c)) prevBy.set(c, []); prevBy.get(c).push(e); }
+  for (const e of prev) { const c = chOf(e); if (!prevBy.has(c)) prevBy.set(c, []); prevBy.get(c).push(e); }
   const chapters = [...byChapter.entries()].map(([c, es]) => [c, acc(es), es.length, (prevBy.get(c) || []).length >= 3 ? acc(prevBy.get(c)) : null])
     .sort((a, b) => b[2] - a[2]).slice(0, 8);
 
@@ -95,7 +96,7 @@ export function buildReport({ log, stats, name, books, lang, ms, mk, fx, goal, e
   return {
     v: 1, u: zh ? 'zh' : 'en', n: (name || '').trim().slice(0, 30), b: (books || []).slice(0, 3), from, at: Date.now(),
     days, q: week.length, a, pa, dp: daysPractised, tr, st, pq: prev.length, pm: minutesOf(prev), mk: mk ?? null, fx: fx ?? null, lt, rd, ch: chapters, up, weak, rev, next, sk, ms: (ms || []).slice(0, 6).map(([n, p, by]) => (by === undefined ? [String(n).slice(0, 40), p] : [String(n).slice(0, 40), p, by])),
-    g: goal ? { d: goal.days, m: goal.mins, met: days.filter((x) => x >= goal.mins).length } : null, ex: exam || null, ts: ts || [], sr: sr || null, gs: gs && gs.s && gs.s.length ? gs : null,
+    g: goal ? { d: goal.days, m: goal.mins, met: days.filter((x) => x >= goal.mins).length } : null, ex: exam || null, ts: ts || [], sr: sr || null, gs: gs && gs.s && gs.s.length ? gs : null, ...(x ? { x } : {}),
   };
 }
 
@@ -135,6 +136,13 @@ export function weekTone(r) {
 export function headline(r) {
   ZH = r.u === 'zh';
   const who = r.n || T('Your child', '你的子女');
+  const nt = r.x && r.x.nt;
+  if (nt && nt.r != null && r.q) {
+    const nm = nt.n;
+    if (nt.st === 'ok') return T(`${who} is on track for the ${nm}`, `${who}已準備好應付「${nm}」`);
+    if (nt.st === 'close') return T(`${who} is close to ready for the ${nm}`, `${who}快要準備好應付「${nm}」`);
+    if (nt.st === 'risk') return T(`${who} needs a push before the ${nm}`, `${who}在「${nm}」前需要加把勁`);
+  }
   const whoMid = r.n || T('your child', '你的子女'); // inside a sentence
   const k = weekTone(r);
   if (k === 'none') return T(`${who} didn't practise this week`, `${who}本週沒有練習`);
@@ -191,14 +199,46 @@ export function reportHTML(r, opts = {}) {
     : T(`Ask ${whoMid} which question was hardest this week, and praise the effort as well as the score.`, `問問${whoMid}本週哪一題最難，並稱讚他們付出的努力，而不只是分數。`);
   const stat = (ic, v, label, extra) => `<div><span class="rp-sic">${ri(ic, 16)}</span><b>${v}</b><span>${label}</span>${extra}</div>`;
   const chg = (now, was, unit) => { const d = now - was; if (!was && !now) return ''; return d === 0 ? `<em>${T('same as last week', '與上週相同')}</em>` : `<em class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d)}${unit} ${T('vs last week', '對比上週')}</em>`; };
+  const X = r.x || null;
+  const op = (t) => `<span class="rp-op">${T('Only PrepBuddy', '只有 PrepBuddy')} · ${t}</span>`;
+  const subline = [r.q ? T(`Practised ${r.dp} of 7 days`, `7 日中練習了 ${r.dp} 日`) : '', X && X.mx && X.mx.length ? T(`${X.mx.length} mix-up${X.mx.length === 1 ? '' : 's'} to fix`, `${X.mx.length} 個混淆要改正`) : ''].filter(Boolean).join(' · ');
+  // what PrepBuddy did this week: the work a tutor would do
+  const did = X && X.dw ? [[X.dw.q, T('questions from their own textbooks', '條題目來自自己的課本')], [X.dw.w, T('written answers marked, with feedback', '條文字答案已批改並有評語')], [X.dw.mx, T(X.dw.mx === 1 ? 'mix-up found by reading their answers' : 'mix-ups found by reading their answers', '個混淆從答案中找出')],
+    [X.dw.rv, T('reviews brought back just before they’d forget', '條溫習題在快忘記前再出現')], [X.dw.fx, T('mistakes fixed on a second try', '題錯題再做時改正')], [X.dw.ls, T('lessons taught by Buddy', '堂 Buddy 課堂')], [X.dw.hw, T('homework sheets helped with', '份功課得到協助')]].filter(([n]) => n > 0).slice(0, 6) : [];
+  const didHTML = did.length ? `<section class="rp-card rp-did"><div class="rp-card-head"><h2>${ri('check')} ${T('What PrepBuddy did this week', 'PrepBuddy 本週做了甚麼')}</h2></div><p class="rp-sub">${T(`The work a good tutor does, every day ${whoMid} practised.`, `好導師會做的事，${whoMid}每次練習都有。`)}</p>
+    <div class="rp-didg">${did.map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}</div></section>` : '';
+  // the next test, with the forecast and Buddy's plan
+  const nt = X && X.nt;
+  const ntHTML = nt ? (() => { const st = nt.st, lab = { ok: T('On track', '進度理想'), close: T('Close', '接近'), risk: T('Needs a push', '需要加把勁'), none: T('Not started', '未開始') }[st];
+    return `<section class="rp-card rp-nt ${st}"><div class="rp-nt-h"><div><h2>${esc(nt.n)}</h2><span>${fmtDate(nt.d, { weekday: 'short', day: 'numeric', month: 'short' })} · ${nt.l === 0 ? T('today', '今天') : nt.l === 1 ? T('tomorrow', '明天') : T(`in ${nt.l} days`, `${nt.l} 日後`)}${nt.sc ? ` · ${esc(nt.sc)}` : ''}</span></div><em class="rp-pill ${st}">${lab}</em></div>
+      ${nt.r != null ? `<div class="rp-ntbar"><div class="rp-ntn"><b>${nt.r}%</b><span>${T('ready now', '現在')}</span></div><div class="rp-ntt ${st}"><i style="width:${nt.r}%"></i>${nt.f != null && nt.f > nt.r ? `<em style="left:${nt.r}%;width:${nt.f - nt.r}%"></em>` : ''}<s style="left:80%"></s></div>${nt.f != null && nt.f !== nt.r ? `<div class="rp-ntn"><b class="${st}">${nt.f}%</b><span>${T('by the test', '考試時')}</span></div>` : ''}</div>
+      <p>${nt.f != null && nt.f !== nt.r ? T(`Practising as usual and following the plan, ${whoMid} reaches about ${nt.f}%; the aim is 80%.`, `如果像平時一樣練習並跟著計劃，${whoMid}考試時約 ${nt.f}%；目標是 80%。`) : st === 'ok' ? T('Ready already. Short reviews keep it there.', '已經準備好，短時間溫習保持狀態。') : T('The aim is 80% by the test.', '目標：考試前達到 80%。')}${nt.pl && nt.pl.length ? ` ${T('Buddy has planned the rest:', 'Buddy 已安排好：')}` : ''}</p>` : ''}
+      ${nt.pl && nt.pl.length ? `<div class="rp-plan">${nt.pl.map(([t, x]) => `<span><b>${fmtDate(t, { weekday: 'short', day: 'numeric' })}</b> · ${esc(x)}</span>`).join('')}</div>` : ''}
+      ${op(T('planned from their own textbook and test date', '按自己的課本和考試日期安排'))}</section>`; })() : '';
+  // what Buddy noticed
+  // Buddy's findings from the Progress page, worded for parents; the older built-in notes fill in when there aren't any
+  const nbs = X && X.nb && X.nb.length ? X.nb.map(([c, t, d]) => `<div class="rp-nb ${esc(c)}"><b>${esc(t)}</b>${d ? `<p>${esc(d)}</p>` : ''}</div>`) : null;
+  const notes = nbs ? nbs.slice(0, 5) : [...(X && X.mx ? X.mx.map(([t, d], i) => `<div class="rp-nb red"><b>${esc(t)}</b>${d ? `<p>${esc(d)}</p>` : ''}${i === 0 ? op(T('found by reading their answers', '從答案中找出')) : ''}</div>`) : []),
+    ...(X && X.hi && X.hi[0] - X.hi[1] >= 8 ? [`<div class="rp-nb green"><b>${T('Needs hints far less', '越來越少需要提示')}</b><p>${T(`${X.hi[0]}% of answers without help, up from ${X.hi[1]}% before. Working things out on their own.`, `現在 ${X.hi[0]}% 的題目不用提示，之前是 ${X.hi[1]}%。越來越能自己想通。`)}</p></div>`] : []),
+    ...(r.up ? [`<div class="rp-nb green"><b>${T('Getting better', '有進步')}</b><p>${esc(r.up)}</p></div>`] : []),
+    ...(r.weak ? [`<div class="rp-nb orange"><b>${T('Needs more practice', '需要多加練習')}</b><p>${esc(r.weak)}</p></div>`] : [])].slice(0, 4);
+  const notHTML = notes.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('brain')} ${T('What Buddy noticed', 'Buddy 的觀察')}</h2></div><div class="rp-nbs">${notes.join('')}</div></section>` : '';
+  // proof it's working
+  const gl = { above: T(`Above ${X && X.gn}`, `高於${X && X.gn}`), meet: T(`Meeting ${X && X.gn}`, `達到${X && X.gn}`), build: T(`Building to ${X && X.gn}`, `邁向${X && X.gn}`) };
+  const proof = X ? [
+    ...(X.pc || []).map(([n, a, b]) => `<div class="rp-pr"><span>${T('Progress check, same chapters and level', '進度檢查（相同章節及程度）')}</span><div><b>${esc(n)}</b><em><s>${a}%</s> → <b class="${b > a ? 'good' : b < a ? 'low' : ''}">${b}%</b></em></div>${op(T('before and after at the same level', '相同程度的前後對比'))}</div>`),
+    ...((X.ge || []).length ? [`<div class="rp-pr"><span>${T(`Against ${X.gn} expectations`, `與${X.gn}要求比較`)}</span>${X.ge.map(([n, k]) => `<div><b>${esc(n)}</b><em class="rp-ge ${k}">${gl[k]}</em></div>`).join('')}</div>`] : []),
+    ...((X.mk || []).length ? [`<div class="rp-pr"><span>${T('School marks, before PrepBuddy → latest', '學校成績：使用 PrepBuddy 前 → 最新')}</span>${X.mk.map(([n, a, b]) => `<div><b>${esc(n)}</b><em>${a} → <b>${b}</b> <b class="${b - a >= 2 ? 'good' : b - a <= -2 ? 'low' : ''}">${b - a > 0 ? '+' : ''}${b - a}</b></em></div>`).join('')}</div>`] : []),
+  ] : [];
+  const proofHTML = proof.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('up')} ${T('Proof it’s working', '成效證明')}</h2></div><div class="rp-prs">${proof.join('')}</div></section>` : '';
   const ring = (p, size = 64) => `<span class="rp-ring ${tone(p)}" style="--p:${p};width:${size}px;height:${size}px"><b>${p}%</b></span>`;
   return `<div class="rp">
   <header class="rp-head">
-    <div class="rp-brand"><span class="rp-logo"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><circle cx="57" cy="44" r="26" fill="#FFFFFF"/><path d="M31 44 H44 V77 L31 90 Z" fill="#FFFFFF"/><circle cx="57" cy="44" r="11" fill="#FFE066"/></svg>PrepBuddy</span><span>${opts.live ? `<i class="rp-live">●</i> ${T('Live dashboard', '即時主頁')} · ${T(`last 7 days to ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })}`, `截至 ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })} 的 7 日`)}` : `${T('Weekly report', '每週報告')} · ${range}`}</span></div>
+    <div class="rp-brand"><span class="rp-logo"><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><circle cx="53" cy="40" r="26" fill="#FFFFFF"/><path d="M27 40 H40 V73 L27 86 Z" fill="#FFFFFF"/><g transform="translate(53 40) scale(0.4118) translate(-50 -50)"><path d="M50 14 C50 9 52 6 57 5 C57 10 54 13 50 14 Z" fill="#18966A"/><path d="M50 13 V17" stroke="#18966A" stroke-width="2.5" stroke-linecap="round"/><circle cx="50" cy="50" r="34" fill="#FFE066"/><ellipse cx="29" cy="60" rx="5.5" ry="3.4" fill="#FF8F8F" opacity="0.65"/><ellipse cx="71" cy="60" rx="5.5" ry="3.4" fill="#FF8F8F" opacity="0.65"/><ellipse cx="38" cy="47" rx="6.5" ry="8" fill="#26357A"/><ellipse cx="62" cy="47" rx="6.5" ry="8" fill="#26357A"/><circle cx="40.5" cy="43.5" r="2.4" fill="#FFFFFF"/><circle cx="64.5" cy="43.5" r="2.4" fill="#FFFFFF"/><path d="M44 61 L49 66 L58 57" fill="none" stroke="#26357A" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></g></svg>PrepBuddy</span><span>${opts.live ? `<i class="rp-live">●</i> ${T('Live dashboard', '即時主頁')} · ${T(`last 7 days to ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })}`, `截至 ${fmtDate(r.from + 6 * DAY, { day: 'numeric', month: 'short' })} 的 7 日`)}` : `${r.sm ? `${T('Sample report', '報告樣本')} · ` : ''}${T('Weekly report', '每週報告')} · ${range}`}</span></div>
     <div class="rp-hero">
       <div class="rp-title">
         <h1>${esc(headline(r))}</h1>
-        <p>${esc(r.b && r.b.length ? r.b.join(' · ') : T('PrepBuddy practice', 'PrepBuddy 練習'))}</p>
+        <p>${esc(subline || (r.b && r.b.length ? r.b.join(' · ') : T('PrepBuddy practice', 'PrepBuddy 練習')))}</p>
         ${r.g || (r.ex && r.ex.left !== null) ? `<div class="rp-chips">${r.g ? `<span class="${r.g.met >= r.g.d ? 'ok' : ''}">${ri('target', 14)} ${T(`Goal ${r.g.d} days × ${r.g.m} min: met on ${r.g.met} day${r.g.met === 1 ? '' : 's'}`, `目標每星期 ${r.g.d} 日 × ${r.g.m} 分鐘：達成 ${r.g.met} 日`)}</span>` : ''}${r.ex ? `<span>${ri('flag', 14)} ${T(`${r.ex.left} days to the exam`, `距離考試 ${r.ex.left} 日`)}</span>` : ''}</div>` : ''}
         <div class="rp-week" aria-label=""${T(`Practised ${r.dp} of 7 days`, `7 日中有 ${r.dp} 日練習`)}">${r.days.map((m, i) => `<span class="${m ? 'on' : ''}" title="${dayNames[i]}: ${m} min">${ZH ? fmtDate(r.from + i * DAY, { weekday: 'narrow' }) : dayNames[i].slice(0, 2)}</span>`).join('')}<small>${T(`${r.dp} of 7 days`, `${r.dp}/7 日`)}</small></div>
       </div>
@@ -213,14 +253,17 @@ export function reportHTML(r, opts = {}) {
   <div class="rp-grid">
     <aside class="rp-side">
       ${opts.sideTop || ''}
-      <h2 class="rp-side-h">${T('At a glance', '重點')}</h2>
+      ${didHTML}
+      ${X ? '' : `<h2 class="rp-side-h">${T('At a glance', '重點')}</h2>
       ${r.up ? `<section class="rp-call good"><span class="rp-cic">${ri('up')}</span><div><h3>${T('Getting better', '有進步')}</h3><p>${esc(r.up)}</p></div></section>` : ''}
-      ${r.weak ? `<section class="rp-call weak"><span class="rp-cic">${ri('alert')}</span><div><h3>${T('Needs more practice', '需要多加練習')}</h3><p>${esc(r.weak)}</p></div></section>` : ''}
+      ${r.weak ? `<section class="rp-call weak"><span class="rp-cic">${ri('alert')}</span><div><h3>${T('Needs more practice', '需要多加練習')}</h3><p>${esc(r.weak)}</p></div></section>` : ''}`}
       <section class="rp-call next"><span class="rp-cic">${ri('flag')}</span><div><h3>${T('Suggested for next week', '下週建議')}</h3><p>${esc(r.next)}</p></div></section>
       <section class="rp-call help"><span class="rp-cic">${ri('heart')}</span><div><h3>${T('How you can help', '家長可以怎樣幫忙')}</h3><p>${esc(help)}</p></div></section>
     </aside>
     <main class="rp-main">
       ${opts.top || ''}
+      ${ntHTML}${notHTML}${proofHTML}
+      ${X ? `<details class="rp-more" ${opts.live ? 'open' : ''}><summary>${T('See every chapter and chart', '查看所有章節和圖表')}</summary><div class="rp-more-b">` : ''}
       ${r.gs ? strongerHTML(r.gs, ZH) : ''}
       <section class="rp-card">
         <div class="rp-card-head"><h2>${ri('bars')} ${T('Practice this week', '本週練習')}</h2><span>${r.q ? T(`Longest: ${fmtDate(r.from + longest * DAY, { weekday: 'long' })}, ${r.days[longest]} min`, `最長：${fmtDate(r.from + longest * DAY, { weekday: 'long' })}，${r.days[longest]} 分鐘`) : T('No practice in these 7 days', '這 7 日沒有練習')}</span></div>
@@ -235,14 +278,14 @@ export function reportHTML(r, opts = {}) {
         <div class="rp-mast">${r.ms.map(([n, p, by]) => `<div>${ring(p)}<span>${esc(n)}${by !== undefined && r.ex ? `<small class="${tone(by)}">${by >= 85 ? T(`On track: ~${by}% by the exam`, `進度理想：考試時約 ${by}%`) : T(`At this pace: ~${by}% by the exam`, `按現時進度：考試時約 ${by}%`)}</small>` : ''}</span></div>`).join('')}</div>
         <p class="rep-note">${T('Based on how much of the book is covered, scores, reviews and chapter tests.', '根據課本涵蓋範圍、分數、溫習及章節測驗計算。')}</p></section>` : ''}
       ${(r.tr || []).filter((x) => x !== null).length >= 2 ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('line')} ${T('Score over 6 weeks', '過去 6 星期的分數')}</h2><span>${T('% of marks each week', '每週得分率')}</span></div>${trendBars(r)}</section>` : ''}
-      ${r.ts && r.ts.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('pencil')} ${T('Tests and mock papers', '測驗及模擬試卷')}</h2><span>${T('last 30 days', '過去 30 日')}</span></div>
-        <div class="rp-tests">${r.ts.map(([k, title, t, p, min]) => `<div><span class="rp-tk ${k}">${k === 'test' ? T('Chapter test', '章節測驗') : k === 'mini' ? T('Mini mock', '小型模擬') : T('Mock paper', '模擬試卷')}</span><span class="rp-tn">${esc(String(title).replace(/^(Chapter test|章節測驗) · /, ''))}<small>${fmtDate(t, { day: 'numeric', month: 'short' })} · ${min} ${T('min', '分鐘')}</small></span><b class="${tone(p)}">${p}%${k === 'test' ? `<small>${p >= 80 ? T('Passed', '合格') : T('Not yet', '未合格')}</small>` : ''}</b></div>`).join('')}</div></section>` : ''}
+      ${r.ts && r.ts.length ? `<section class="rp-card"><div class="rp-card-head"><h2>${ri('pencil')} ${T('Tests and mock exams', '測驗及模擬考試')}</h2><span>${T('last 30 days', '過去 30 日')}</span></div>
+        <div class="rp-tests">${r.ts.map(([k, title, t, p, min]) => `<div><span class="rp-tk ${k}">${k === 'test' ? T('Chapter test', '章節測驗') : k === 'mini' ? T('Mini mock', '小型模擬') : T('Mock exam', '模擬考試')}</span><span class="rp-tn">${esc(String(title).replace(/^(Chapter test|章節測驗) · /, ''))}<small>${fmtDate(t, { day: 'numeric', month: 'short' })} · ${min} ${T('min', '分鐘')}</small></span><b class="${tone(p)}">${p}%${k === 'test' ? `<small>${p >= 80 ? T('Passed', '合格') : T('Not yet', '未合格')}</small>` : ''}</b></div>`).join('')}</div></section>` : ''}
       ${r.sr ? `<section class="rp-card rp-stars"><div class="rp-card-head"><h2>⭐ ${T('Stars and rewards', '星星與獎勵')}</h2><span>${T('earned for practising', '練習賺取')}</span></div>
         <div class="rp-tiles"><div><b>${r.sr.w}</b><span>${T('stars earned this week', '本週賺取的星星')}</span></div><div><b>${r.sr.bal}</b><span>${T('stars saved up', '已儲起的星星')}</span></div></div>
         ${r.sr.b.length ? `<p><b>${T('New badges', '新徽章')}:</b> ${r.sr.b.map(esc).join(' · ')}</p>` : ''}
         ${r.sr.r.length ? `<p><b>${T('Rewards given', '已換領獎勵')}:</b> ${r.sr.r.map(esc).join(' · ')}</p>` : ''}
         <p class="rep-note">${T('Your child spends stars on rewards you set in PrepBuddy (Star shop → For parents). Each one needs your PIN.', '孩子可用星星換領你在 PrepBuddy 設定的獎勵（星星商店 → 家長專區），每次都需要你的密碼。')}</p></section>` : ''}
-      ${r.bs ? `<section class="rp-card rp-basic"><h2>${ri('book')} ${T('Want the full picture?', '想看完整報告？')}</h2><p>${T('With PrepBuddy Standard, this report also shows scores for each chapter, how ready your child is for each subject, 6-week trends, tests and mock papers, and thinking skills.', '升級 PrepBuddy 標準計劃後，報告會顯示各章分數、各科準備程度、6 星期趨勢、測驗及模擬試卷成績和思考能力。')}</p></section>` : ''}
+      ${r.bs ? `<section class="rp-card rp-basic"><h2>${ri('book')} ${T('Want the full picture?', '想看完整報告？')}</h2><p>${T('With PrepBuddy Standard, this report also shows scores for each chapter, how ready your child is for each subject, 6-week trends, tests and mock exams, and thinking skills.', '升級 PrepBuddy 標準計劃後，報告會顯示各章分數、各科準備程度、6 星期趨勢、測驗及模擬考試成績和思考能力。')}</p></section>` : ''}
       <div class="rp-two" ${r.bs ? 'hidden' : ''}>
         ${skillsHTML(r)}
         <section class="rep-card"><h2>${ri('memory')} ${T('Remembering and fixing', '記憶與改正')}</h2>
@@ -254,11 +297,12 @@ export function reportHTML(r, opts = {}) {
           ${r.lt === undefined ? `<p>${esc(r.rev)}</p>` : ''}
         </section>
       </div>
+      ${X ? '</div></details>' : ''}
       ${opts.bottom || ''}
     </main>
   </div>
   ${opts.live ? '' : `<footer class="rp-foot">
-    <p>${T(`Sent by ${esc(who)} on ${fmtDate(r.at, { weekday: 'short', day: 'numeric', month: 'short' })}. Questions come from ${esc(who)}’s own textbook; written answers are marked by AI.`,
+    <p>${T(`Sent by ${esc(who)} on ${fmtDate(r.at, { weekday: 'short', day: 'numeric', month: 'short' })}. Every question comes from ${esc(who)}’s own textbooks; written answers are marked by AI. This report was made on ${esc(who)}’s device, and its data travels only inside this link.`,
       `由${esc(who)}於 ${fmtDate(r.at, { month: 'long', day: 'numeric', weekday: 'short' })} 傳送。題目來自${esc(who)}自己的課本；文字題由 AI 批改。`)}</p>
     <button class="rp-print" onclick="window.print()">${T('Print or save as PDF', '列印或儲存為 PDF')}</button>
   </footer>`}
@@ -289,6 +333,8 @@ export function strongerHTML(gs, zh, cls = 'rp-card', kid = false) {
         : T('Levels appear after about 10 questions in a subject, and a trend after about 3 weeks.', '每科完成約 10 題後會顯示程度，約 3 星期後顯示走勢。'))
       : up ? T(`Getting stronger in ${up} of ${ready.length} subject${ready.length > 1 ? 's' : ''}${kid ? '. Keep it up!' : ', even as the questions get harder.'}`, `${ready.length} 科中有 ${up} 科在進步${kid ? '，繼續加油！' : '，即使題目愈來愈難。'}`)
       : T('Holding steady so far. Steady practice on the weakest chapters is what moves the level up.', '目前保持穩定。多練習最弱的章節，程度就會提升。');
+    // nothing to show yet (the child's own Progress page): one short line instead of a card of dashes
+    if (kid && !started) return `<section class="${cls} gs-card gs-empty"><div class="rp-card-head"><h2>${ri('up')} ${T('Your levels', '你的程度')}</h2></div><p class="gs-lead" style="margin:0">${T('Your level in each subject shows after about 10 questions.', '每科完成約 10 題後會顯示你的程度。')}</p></section>`;
     const rows = gs.s.map(([name, lvl, st, ch, since, line, books, , n, wk, next]) => `<div class="gs-row"><div class="gs-name"><b>${esc(name)}</b><small>${st !== 'building' && since ? T(`since ${mon(since)}`, `自 ${mon(since)}`) : st === 'building' && lvl != null ? T('starting level', '初步程度') : ''}</small></div>
         ${spark(line)}<div class="gs-lvl"><b>${f1(lvl)}</b><small>${T('level', '程度')}</small></div>${st === 'building' ? early(n, wk) : chip(st, ch)}</div>
         ${next && next[0] ? (kid && next[1] ? `<button class="gs-next" data-unit="${esc(next[1])}">→ ${esc(next[0])}</button>` : `<p class="gs-next">→ ${T('Next', '下一步')}: ${esc(next[0])}</p>`) : ''}
@@ -321,6 +367,28 @@ export function skillsHTML(r, zhOverride) {
 }
 
 export const REPORT_CSS = `
+.rp-op{display:inline-block;align-self:flex-start;font-size:11.5px;font-weight:600;color:#26357A;border:1px solid #C9D1EE;border-radius:999px;padding:3px 9px;margin-top:8px;background:#fff}
+.rp-sub{margin:-4px 0 10px;font-size:13px;color:#5A6380}
+.rp-didg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.rp-didg div{background:#F6F7FB;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}.rp-didg b{font-size:22px;color:#1E2A5A}.rp-didg span{font-size:12.5px;color:#3F4868;line-height:1.35}
+.rp-nt{border-width:1px}.rp-nt.close{border-color:#F2C99C}.rp-nt.risk{border-color:#F3B4AC}.rp-nt.ok{border-color:#BFE3D2}
+.rp-nt-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}.rp-nt-h h2{margin:0;font-size:18px}.rp-nt-h span{font-size:13px;color:#5A6380}
+.rp-pill{font-style:normal;font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;white-space:nowrap;background:#EEF1FB;color:#26357A}.rp-pill.ok{background:#D3F0E2;color:#0E6E4D}.rp-pill.close{background:#FFE3C4;color:#8A3A10}.rp-pill.risk{background:#FBD9D4;color:#B22A1E}
+.rp-ntbar{display:flex;align-items:center;gap:10px}.rp-ntn{display:flex;flex-direction:column;align-items:center}.rp-ntn b{font-size:24px;line-height:1}.rp-ntn b.ok{color:#0E6E4D}.rp-ntn b.close{color:#8A3A10}.rp-ntn b.risk{color:#B22A1E}.rp-ntn span{font-size:11px;color:#5A6380}
+.rp-ntt{flex:1;position:relative;height:10px;border-radius:999px;background:#E9ECF3}.rp-ntt i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:#26357A}.rp-ntt.ok i{background:#18966A}.rp-ntt.close i{background:#E8891C}.rp-ntt.risk i{background:#D93A2B}
+.rp-ntt em{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(90deg,rgba(30,42,90,.25) 0 5px,transparent 5px 8px)}.rp-ntt s{position:absolute;top:-5px;width:2px;height:20px;background:#1E2A5A}
+.rp-nt p{margin:12px 0 8px;font-size:14px;line-height:1.5;color:#3F4868}
+.rp-plan{display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:#3F4868}.rp-plan b{color:#1E2A5A}
+.rp-nbs{display:flex;flex-direction:column;gap:8px}.rp-nb{border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;background:#F6F7FB}.rp-nb.red{background:#FFF5F4}.rp-nb.green{background:#F3FBF7}.rp-nb.orange{background:#FFF8EE}
+.rp-nb>b{font-size:15px}.rp-nb p{margin:0;font-size:13.5px;line-height:1.5;color:#3F4868}
+.rp-prs{display:flex;flex-direction:column;gap:12px}.rp-pr{display:flex;flex-direction:column;gap:6px;padding-bottom:12px;border-bottom:1px solid #EEF1F6}.rp-pr:last-child{border-bottom:0;padding-bottom:0}
+.rp-pr>span{font-size:13px;color:#5A6380}.rp-pr>div{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}.rp-pr em{font-style:normal;white-space:nowrap}.rp-pr s{text-decoration:none;color:#5A6380}
+.rp-pr b.good{color:#0E6E4D}.rp-pr b.low{color:#B22A1E}.rp-ge{font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;background:#EEF1FB;color:#26357A}.rp-ge.above{background:#E5F5EE;color:#0E6E4D}.rp-ge.build{background:#FFF1E0;color:#8A3A10}
+.rp-more{margin-top:4px}.rp-more>summary{list-style:none;cursor:pointer;font-weight:600;font-size:15px;color:#26357A;background:#fff;border:1px solid #DCE2EE;border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between}
+.rp-more>summary::after{content:'▾'}.rp-more[open]>summary::after{content:'▴'}.rp-more>summary::-webkit-details-marker{display:none}
+.rp-more-b{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+@media print{.rp-more>summary{display:none}.rp-more-b{display:flex!important}}
+.rp-print.rp-wa{background:#26357A;color:#fff;border-color:#26357A;margin-right:8px}@media print{.rp-wa{display:none}}
+
 .rep-card{background:#fff;border:1px solid #DCE2EE;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
 .rep-card h2{margin:0;font-size:15px;color:#1E2A5A}.rep-card p{margin:0;font-size:14px;line-height:1.55;color:#3F4868}
 .rep-note{font-size:13px!important;color:#5A6380!important;line-height:1.5}

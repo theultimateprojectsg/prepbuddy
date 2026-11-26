@@ -69,6 +69,44 @@ function shell(active, body) {
   const cur = app.querySelector('.adm-nav .on'); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   window.scrollTo(0, 0);
 }
+// Who can find a library book: hidden, every family, or only the families you tick.
+async function whoDialog(book) {
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;inset:0;z-index:50;background:rgba(20,28,60,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+  box.innerHTML = '<div class="card" style="max-width:560px;width:100%;max-height:88vh;overflow:auto;margin:0"><p class="hint">Loading families…</p></div>';
+  document.body.appendChild(box);
+  if (!PILOT) { try { PILOT = await adminApi({ action: 'pilot' }); PILOT.at = Date.now(); } catch (e) { box.remove(); return alert(e.message); } }
+  const fams = (PILOT.families || []).slice().sort((a, b) => String(a.name || a.code).localeCompare(String(b.name || b.code)));
+  const norm = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const picked = new Set(Array.isArray(book.families) ? book.families.map(norm) : []);
+  let mode = book.families === true ? 'all' : Array.isArray(book.families) ? 'some' : 'none';
+  const draw = () => {
+    box.firstChild.innerHTML = `<h2 style="margin-top:0">Who can find “${esc(book.title)}”?</h2>
+      <div style="display:flex;flex-direction:column;gap:8px;margin:12px 0">${[['none', 'Hidden', 'No family can find it in the library.'], ['all', 'All families', 'Every family can find and add it.'], ['some', 'Only selected families', 'Only the families you tick below.']].map(([k, t, d]) => `<label style="display:flex;flex-direction:row;text-align:left;gap:10px;align-items:flex-start;justify-content:flex-start;margin:0;font-weight:400;padding:10px 12px;border:1px solid ${mode === k ? '#26357A' : '#DCE2EE'};border-radius:10px;cursor:pointer;background:${mode === k ? '#EEF1FB' : '#fff'}"><input type="radio" name="who" value="${k}" ${mode === k ? 'checked' : ''} style="margin-top:3px;width:auto;flex:none"><span><b>${t}</b><br><span class="hint" style="margin:0">${d}</span></span></label>`).join('')}</div>
+      ${mode === 'some' ? (fams.length ? `<div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 6px"><b>Families (${picked.size} ticked)</b><span style="display:flex;gap:6px"><button class="link" id="w-all">Tick all</button><button class="link" id="w-none">Untick all</button></span></div>
+        <div style="border:1px solid #DCE2EE;border-radius:10px;max-height:300px;overflow:auto;padding:4px">${fams.map((f) => `<label style="display:flex;flex-direction:row;text-align:left;justify-content:flex-start;margin:0;font-weight:400;gap:10px;align-items:center;padding:8px;cursor:pointer"><input style="width:auto;flex:none" type="checkbox" data-code="${esc(norm(f.code))}" ${picked.has(norm(f.code)) ? 'checked' : ''}><span><b>${esc(f.name || f.code)}</b> <span class="hint" style="margin:0">${esc(f.code)}${f.note ? ' · ' + esc(String(f.note).slice(0, 60)) : ''}</span></span></label>`).join('')}</div>`
+        : '<p class="hint">No pilot families yet. Add families in the Families section first.</p>') : ''}
+      ${mode !== 'none' ? `<p class="hint">Only do this if PrepBuddy has the right to share it with these families (an open licence, your own material, or the publisher’s permission). Licence on file: ${esc(book.licence || 'not set')}.</p>` : ''}
+      <p class="hint">Families who already added the book keep their copy.</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="w-cancel">Cancel</button><button class="btn" id="w-save">Save</button></div>`;
+    box.querySelectorAll('input[name=who]').forEach((r) => (r.onchange = () => { mode = r.value; draw(); }));
+    box.querySelectorAll('[data-code]').forEach((c) => (c.onchange = () => { c.checked ? picked.add(c.dataset.code) : picked.delete(c.dataset.code); draw(); }));
+    const all = box.querySelector('#w-all'); if (all) all.onclick = () => { fams.forEach((f) => picked.add(norm(f.code))); draw(); };
+    const none = box.querySelector('#w-none'); if (none) none.onclick = () => { picked.clear(); draw(); };
+    box.querySelector('#w-cancel').onclick = () => box.remove();
+    box.querySelector('#w-save').onclick = async (e) => {
+      if (mode === 'some' && !picked.size) return alert('Tick at least one family, or choose Hidden.');
+      const val = mode === 'all' ? true : mode === 'some' ? [...picked] : false;
+      e.target.disabled = true; e.target.textContent = 'Saving…';
+      try {
+        await adminApi({ action: 'update', id: book.id, changes: { families: val } }); box.remove();
+        renderLibrary(mode === 'all' ? `Every family can now find “${book.title}” (in about 1–2 minutes).` : mode === 'some' ? `${picked.size} famil${picked.size === 1 ? 'y' : 'ies'} can now find “${book.title}” (in about 1–2 minutes).` : `“${book.title}” is hidden from families (anyone who already added it keeps their copy).`);
+      } catch (err) { alert(err.message); e.target.disabled = false; e.target.textContent = 'Save'; }
+    };
+  };
+  draw();
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+}
 async function renderLibrary(note) {
   setHash('#library');
   const cat = await catalog();
@@ -77,9 +115,9 @@ async function renderLibrary(note) {
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2>Books in the library (${cat.length})</h2><button class="btn" id="add">Add a textbook</button></div>
     <div>${cat.map((b) => `<div class="row" data-id="${esc(b.id)}"><div class="meta"><b>${esc(b.title)}</b><span>${esc(b.subject || '')}${b.level ? ' · ' + esc(b.level) : ''} · ${b.units.length} chapters · code ${esc(b.code)}</span></div>
-      <div class="acts">${b.questionCount ? `<span class="hint" style="align-self:center">${b.questionCount} questions</span>` : ''}<button class="link" data-starter="${esc(b.id)}">${b.questionCount ? 'Add more questions' : 'Add starter questions'}</button><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
+      <div class="acts">${b.starter ? '<span class="fam on" title="PrepBuddy’s own starter book: always in the families’ library">Families: always</span>' : `<button class="fam ${b.families ? 'on' : ''}" data-fam="${esc(b.id)}" title="Which families can find and add this book in the app’s library">Who can find it: <b>${b.families === true ? 'All families' : Array.isArray(b.families) ? `${b.families.length} famil${b.families.length === 1 ? 'y' : 'ies'}` : 'Hidden'}</b></button>`}${b.questionCount ? `<span class="hint" style="align-self:center">${b.questionCount} questions</span>` : ''}<button class="link" data-starter="${esc(b.id)}">${b.questionCount ? 'Add more questions' : 'Add starter questions'}</button><button class="link" data-edit="${esc(b.id)}">Edit details</button><button class="link red" data-remove="${esc(b.id)}">Remove</button></div></div>`).join('') || '<p class="muted">No books yet.</p>'}</div>
   </div>
-  <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy.</p>`);
+  <p class="hint">Changes go live in about 1–2 minutes, while Vercel updates the site. Students who already added a book keep their copy. Families only find PrepBuddy’s starter books plus books set to “All families”, or to a list of families that includes theirs.</p>`);
   $('add').onclick = () => renderUpload();
   app.querySelectorAll('[data-edit]').forEach((b) => (b.onclick = () => renderDetails(cat.find((x) => x.id === b.dataset.edit), cat)));
   app.querySelectorAll('[data-starter]').forEach((b) => (b.onclick = async () => {
@@ -87,6 +125,8 @@ async function renderLibrary(note) {
     try { const n = await starterFor(book); renderLibrary(`Added ${n} starter questions to “${book.title}”. Students get them in about 1–2 minutes.`); }
     catch (e) { renderLibrary(); alert(`Starter questions didn’t finish: ${e.message}`); }
   }));
+  // Families only see books switched on here (and PrepBuddy's starter books). Only for books you have the right to share.
+  app.querySelectorAll('[data-fam]').forEach((b) => (b.onclick = () => whoDialog(cat.find((x) => x.id === b.dataset.fam))));
   app.querySelectorAll('[data-remove]').forEach((b) => (b.onclick = async () => {
     const book = cat.find((x) => x.id === b.dataset.remove);
     if (!confirm(`Remove “${book.title}” from the library? Students who already added it keep their copy; nobody new can add it.`)) return;
@@ -449,7 +489,7 @@ async function renderPilot(note, tab = route()) {
   } else if (tab === 'families') {
     body = `<div class="pl-famtop"><button class="btn" id="addopen">＋ Add a family</button></div>
   <div class="card pl-add" id="addcard" ${fams.length ? 'hidden' : ''}><h2>Add a family</h2>
-    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Parent’s WhatsApp (optional)<input id="fphone" inputmode="tel" placeholder="e.g. 9123 4567"></label><label>Their code (optional)<input id="fcode" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="20" pattern="[A-Za-z0-9 \-]{4,24}" placeholder="e.g. CHANFAMILY · blank = made for you"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
+    <form id="addf" class="grid2"><label>Family name<input id="fname" required placeholder="e.g. Chan family (Ka Yan, S5)"></label><label>Family code <small class="muted">what they type to sign in · edit it if you like</small><input id="fcode" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="20" pattern="[A-Za-z0-9]{4,20}" title="4 to 20 letters or numbers" placeholder="fills in from the name · blank = random"></label><label>Parent’s WhatsApp (optional)<input id="fphone" inputmode="tel" placeholder="e.g. 9123 4567"></label><label>Notes (only you see these)<input id="fnote" placeholder="e.g. DSE Biology, joined via school"></label>
     <button class="btn" style="grid-column:1/-1" id="addgo">Make a family code</button></form><div id="newcode"></div></div>
   <div class="card"><h2>Families</h2>
     ${rows.length ? `<div class="pl-tablewrap"><table class="pl-table"><thead><tr><th>Family</th><th>Last active</th><th>Days active<br><small>last 14</small></th><th>Questions<br><small>7 days</small></th><th>Minutes<br><small>7 days</small></th><th>Score<br><small>7 days</small></th><th>Stronger<br><small>subjects</small></th><th>Streak</th><th>AI cost</th><th>Books</th><th>Problems</th><th>Plan</th></tr></thead>
@@ -487,6 +527,10 @@ async function renderPilot(note, tab = route()) {
   }));
   app.querySelectorAll('[data-close]').forEach((x) => (x.onclick = () => { const tr = app.querySelector(`[data-fam="${x.dataset.close}"]`); if (tr) { tr.click(); tr.scrollIntoView({ block: 'nearest' }); } }));
   app.querySelectorAll('[data-fam]').forEach((tr) => (tr.onclick = () => { const d = $('fd' + tr.dataset.fam); d.hidden = !d.hidden; tr.classList.toggle('open', !d.hidden); }));
+  // the family code fills in from the name (e.g. "Chan family (Ka Yan, S5)" → CHANFAMILY) until it's edited by hand
+  { const fn = $('fname'), fc = $('fcode'); if (fn && fc) {
+    fc.oninput = () => { fc.dataset.own = fc.value.trim() ? '1' : ''; fc.value = fc.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); };
+    fn.oninput = () => { if (fc.dataset.own) return; const base = fn.value.split('(')[0].normalize('NFKD').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20); fc.value = base.length >= 4 ? base : ''; }; } }
   { const af = $('addf'); if (af) af.onsubmit = async (e) => {
     e.preventDefault(); const btn = $('addgo'); btn.disabled = true;
     try {
@@ -496,7 +540,7 @@ async function renderPilot(note, tab = route()) {
         <label>Message to send them<textarea id="invite" rows="3">${esc(msg)}</textarea></label><div class="acts"><button class="link" id="copyinv">Copy message</button><button class="link" id="refresh">Done: refresh the list</button></div>`;
       $('copyinv').onclick = () => { navigator.clipboard.writeText($('invite').value); $('copyinv').textContent = 'Copied'; };
       $('refresh').onclick = () => renderPilot('reload', 'families');
-      $('fname').value = ''; $('fnote').value = ''; if ($('fcode')) $('fcode').value = '';
+      $('fname').value = ''; $('fnote').value = ''; if ($('fcode')) { $('fcode').value = ''; $('fcode').dataset.own = ''; }
     } catch (err) { $('newcode').innerHTML = `<div class="err">${esc(err.message)}</div>`; }
     btn.disabled = false;
   }; }
@@ -534,6 +578,9 @@ function weeklyMsg(f, lang) {
     });
     if (up.length) lines.push(T('  (Level = how hard the questions they get 2 in 3 right are, so it rises even when % stays the same.)', '  （程度＝孩子能答對約三分之二的題目難度，所以即使得分率不變，程度也會上升。）'));
     if (r && r.q && r.next && (r.u === 'zh') === zh) lines.push(T(`• Next: ${r.next}`, `• 下一步：${r.next}`)); // written in the app's language
+    // no school marks from before PrepBuddy yet, a week after starting: a gentle reminder to the parent (not the child)
+    if (!(sn.marks || []).some((m) => m.kind === 'before') && sn.first && Date.now() - sn.first > 7 * 864e5)
+      lines.push(T(`• Could you add ${who === 'Your child' ? 'your child' : who}’s school marks from before PrepBuddy? Settings → Parent dashboard → School results (1 minute). It lets us both see if practice is helping.`, `• 可否填寫${who}使用 PrepBuddy 前的學校成績？設定 → 家長主頁 → 學校成績（約 1 分鐘），讓我們一起看看練習有沒有幫助。`));
     const t = LINKS && LINKS[`${f.code}/${sn.device}`];
     if (t) lines.push(T(`Full report: ${location.origin}/r/${t}`, `完整報告：${location.origin}/r/${t}`));
     return `*${who}${grade}*\n${lines.join('\n')}`;
@@ -815,8 +862,8 @@ function renderUpload(msg) {
         }
       } catch (err) { /* keep the reader's own split */ }
       const sample = units.slice(0, 3).map((u) => u.text).join(' ').slice(0, 20000);
-      const cjk = (sample.match(/[㐀-鿿]/g) || []).length, words = (sample.match(/[A-Za-z]{2,}/g) || []).length;
-      draft = { fileName: file.name, title: book.title, pageCount: book.pageCount, pageTexts: book.pageTexts, units, hidden: [], lang: cjk > words ? 'zh-HK' : 'en', method };
+      const kana = (sample.match(/[\u3040-\u30ff]/g) || []).length, cjk = (sample.match(/[㐀-鿿]/g) || []).length, words = (sample.match(/[A-Za-z]{2,}/g) || []).length;
+      draft = { fileName: file.name, title: book.title, pageCount: book.pageCount, pageTexts: book.pageTexts, units, hidden: [], lang: kana >= 2 && kana > (kana + cjk) * 0.1 ? 'ja' : cjk > words ? 'zh-HK' : /\b(le|la|les|des|est|une|et|dans|pour)\b/gi.test(sample) && (sample.match(/\b(le|la|les|des|est|une|dans|pour)\b/gi) || []).length > (sample.match(/\b(the|and|is|of|to|in)\b/gi) || []).length ? 'fr' : 'en', method };
       // the book's details (title, subject, level, licence…) are read from its first pages while chapters are checked
       draft.infoP = aiApi('bookinfo', { fileName: file.name, pdfTitle: book.title, text: book.pageTexts.slice(0, 8).join('\n\n').slice(0, 12000) }).catch(() => null);
       renderChapters();

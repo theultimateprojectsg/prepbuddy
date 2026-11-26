@@ -3,8 +3,13 @@
 // Book content and questions are never translated here (they are already in the book's language).
 
 const EXACT = {
+  'Answer': '答案',
+  'You chose': '你選了',
+  'Marks were for': '得分要點',
+  'This set was tough. Buddy’s suggestion below is the quickest way up.': '這一組比較難。按下面 Buddy 的建議做，進步最快。',
+  'Your answers': '你的答案',
   'Parent dashboard': '家長主頁',
-  'Speaking': '說話 · Speaking',
+  'Speaking': '說話',
   'DSE Paper 4, one-minute answers': 'DSE 卷四，一分鐘回應',
   'New to this book? Find your level first': '第一次用這本書？先找出你的程度',
   'Start level check': '開始程度評估',
@@ -13,6 +18,7 @@ const EXACT = {
   'Find your level': '找出你的程度',
   'Level check': '程度評估',
   'Up next': '下一章',
+  'Your choice': '你選的章節',
   'Learn': '學習',
   'New to a chapter? Buddy teaches it step by step, with quick checks as you go. Then practise it below.': '第一次讀這一章？Buddy 會一步一步教你，每步都有小測。學完再在下面練習。',
   'Not learned yet · about 5 min': '未學 · 約 5 分鐘',
@@ -62,7 +68,7 @@ const EXACT = {
   'Weak topics': '弱項',
   'Questions you found hard': '你覺得難的題目',
   'Mini mock': '小型模擬測驗',
-  'Mock paper': '模擬試卷',
+  'Mock exam': '模擬考試',
   'DSE-style, timed': 'DSE 模式，限時作答',
   'Which textbook?': '哪一本課本？',
   'Practise the questions you found hard.': '練習你覺得難的題目。',
@@ -291,7 +297,7 @@ const EXACT = {
   'Written': '文字題',
   'Both': '兩者都要',
   'Tick at least one chapter above': '請在上面剔選最少一個章節',
-  'Or make a DSE-style mock paper / worksheet': '或製作 DSE 模式模擬試卷／工作紙',
+  'Or make a DSE-style mock exam / worksheet': '或製作 DSE 模式模擬考試／工作紙',
   'Fewer questions': '減少題目',
   'More questions': '增加題目',
   'Back to chapters': '返回章節',
@@ -454,7 +460,7 @@ const EXACT = {
   'Practise a chapter first, then come back here.': '請先練習一個章節，再回來這裏。',
   'Answer a few questions first, so PrepBuddy knows your weak spots.': '請先答幾條題目，PrepBuddy 才知道你的弱項。',
   // papers
-  'Mock paper or worksheet': '模擬試卷或工作紙',
+  'Mock exam or worksheet': '模擬考試或工作紙',
   'A DSE-style paper:': 'DSE 模式試卷：',
   'Section A': '甲部',
   'Section B': '乙部',
@@ -485,7 +491,7 @@ const EXACT = {
   'Enter the answers you wrote on paper': '輸入你在紙上寫的答案',
   'Printed worksheets': '已列印的工作紙',
   'Pick the worksheet you did. Check the code at the bottom of the page. Enter what you wrote on paper, and PrepBuddy marks it.': '選擇你做過的工作紙（編號印在每頁底部），輸入你在紙上寫的答案，PrepBuddy 會為你批改。',
-  'No printed worksheets yet. Open a textbook, choose Mock paper, then Print as a worksheet.': '仲未有列印過的工作紙。打開課本，選擇模擬試卷，再按「列印為工作紙」。',
+  'No printed worksheets yet. Open a textbook, choose Mock exam, then Print as a worksheet.': '仲未有列印過的工作紙。打開課本，選擇模擬考試，再按「列印為工作紙」。',
   'Enter answers': '輸入答案',
   'Mark again': '再批改一次',
   'Print again': '再列印',
@@ -493,7 +499,7 @@ const EXACT = {
   'Preparing your paper': '正在準備你的試卷',
   'Checking which questions are ready…': '正在檢查已有的題目…',
   'Cancel': '取消',
-  'DSE-style mock paper': 'DSE 模式模擬試卷',
+  'DSE-style mock exam': 'DSE 模式模擬考試',
   'Section B: written questions': '乙部：文字題',
   'No questions could be made for these chapters.': '未能為這些章節編寫題目。',
   'Could not prepare the paper.': '未能準備試卷。',
@@ -541,8 +547,8 @@ const PATTERNS = [
   [/^(\d+) of (\d+) learned$/, '已學 $1／$2 章'],
   [/^Suggested: (\d+) min\.?$/, '建議：$1 分鐘'],
   [/^(\d+) min$/, '$1 分鐘'],
-  [/^Start mock paper · (\d+) min$/, '開始模擬試卷 · $1 分鐘'],
-  [/^Start mock paper · no time limit$/, '開始模擬試卷 · 不限時'],
+  [/^Start mock exam · (\d+) min$/, '開始模擬考試 · $1 分鐘'],
+  [/^Start mock exam · no time limit$/, '開始模擬考試 · 不限時'],
   [/^(\d+) questions? to get right$/, '$1 題要改正'],
   [/^(\d+) fixed this week$/, '本星期改正了 $1 題'],
   [/^Redo all (\d+)$/, '全部重做（$1 題）'],
@@ -565,7 +571,7 @@ const PATTERNS = [
   [/^(?:pp\. (\d+)–(\d+) · )?(?:(\d+) ready · (\d+) done|(New questions will be made))( · harder questions now| · more basics first)?$/, (m, a, b, r, d, nw, sh) =>
     `${a ? `第 ${a}–${b} 頁 · ` : ''}${nw ? '會編寫新題目' : `${r} 條可用 · 已做 ${d} 條`}${sh ? (sh.includes('harder') ? ' · 現在題目較深' : ' · 先做基礎題') : ''}`],
   [/^Start (\d+) questions · about (\d+) min$/, '開始 $1 題 · 約 $2 分鐘'],
-  [/^Start mock paper · (\d+) min$/, '開始模擬試卷 · $1 分鐘'],
+  [/^Start mock exam · (\d+) min$/, '開始模擬考試 · $1 分鐘'],
   [/^Level (\d) · (Recall|Understand|Apply|Analyse \/ evaluate)$/, (m, n, l) => `程度 ${n} · ${EXACT[l]}`],
   [/^(MCQ|Graph MCQ|Short answer|Structured|Writing) · (\d+) marks?$/, (m, t, n) => `${{ MCQ: '多項選擇題', 'Graph MCQ': '圖表選擇題', 'Short answer': '短答題', Structured: '結構題', Writing: '寫作' }[t]} · ${n} 分`],
   [/^(\d+) marks?$/, '$1 分'],
@@ -634,7 +640,7 @@ const PATTERNS = [
   [/^Review (\d+) questions?$/, '溫習 $1 條題目'],
   [/^About (\d+) min · keeps what you learned fresh$/, '約 $1 分鐘 · 幫你記牢所學'],
   [/^Fix (\d+) mistakes?$/, '改正 $1 條錯題'],
-  [/^Keep going · (\d+)% so far$/, '繼續努力 · 目前 $1%'],
+  [/^Keep going · scored (\d+)%$/, '繼續努力 · 得分 $1%'],
   [/^Next review (tomorrow|in (\d+) days|in about a week|in (\d+) weeks)$/, (m, w, d, wk) => `下次溫習：${w === 'tomorrow' ? '明天' : d ? `${d} 日後` : wk ? `${wk} 星期後` : '約一星期後'}`],
   [/^(\d+)% to go\. Here’s what will get you there:$/, '還差 $1%。這樣做可以達標：'],
   [/^Review (\d+) questions? in (.+)$/, '溫習「$2」的 $1 條題目'],
@@ -662,23 +668,94 @@ const PATTERNS = [
 
 export let LANG = 'en';
 const KEY = 'prepbuddy.ui';
+const HTML_LANG = { zh: 'zh-HK', fr: 'fr', ja: 'ja', en: 'en' };
+export const LOCALE = () => ({ zh: 'zh-HK', fr: 'fr-FR', ja: 'ja-JP' }[LANG] || 'en-GB');
 
 export function initLang() {
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) {}
-  const phoneZh = (navigator.languages || [navigator.language || '']).some((l) => /^zh/i.test(l));
-  LANG = saved || (phoneZh ? 'zh' : 'en');
-  document.documentElement.lang = LANG === 'zh' ? 'zh-HK' : 'en';
+  const pl = navigator.languages || [navigator.language || ''];
+  const phone = pl.some((l) => /^zh/i.test(l)) ? 'zh' : /^fr/i.test(pl[0] || '') ? 'fr' : /^ja/i.test(pl[0] || '') ? 'ja' : 'en';
+  LANG = HTML_LANG[saved] ? saved : phone;
+  document.documentElement.lang = HTML_LANG[LANG];
+  loadAuto();
   return LANG;
 }
 
 export function setLang(l) {
   LANG = l;
   try { localStorage.setItem(KEY, l); } catch (e) {}
-  document.documentElement.lang = l === 'zh' ? 'zh-HK' : 'en';
+  document.documentElement.lang = HTML_LANG[l] || 'en';
+  loadAuto();
+}
+
+/* ---------- French and Japanese ----------
+   Screens are written in English (with Chinese inline), so for French and Japanese the English text is swapped as it
+   appears: first from the built-in list below, then from translations the AI made earlier on this device. Anything new
+   is sent to the AI in small batches (numbers are replaced by {0}, {1}… so "Review 5 questions" and "Review 6 questions"
+   share one translation), and the screen updates when it comes back. */
+const SEED = {
+  fr: { "Lesson done!": "Leçon terminée !", "Quick checks: {0} of {1} right first time": "Mini-quiz : {0} sur {1} réussis du premier coup", "Remember": "À retenir", "Key words": "Mots clés", "Key words dictation": "Dictée des mots clés", "Practise this chapter now": "M’entraîner sur ce chapitre", "Go through it again": "Refaire la leçon", "Back to the chapter": "Retour au chapitre", "Do the writing task": "Faire l’exercice d’écriture", "Start the lesson": "Commencer la leçon", "{0} short steps, each with an example and a quick check. About {1} minutes.": "{0} petites étapes, chacune avec un exemple et un mini-quiz. Environ {1} minutes.", "Step {0} of {1}": "Étape {0} sur {1}", "Example": "Exemple", "Quick check": "Mini-quiz", "Yes!": "Bravo !", "Not quite.": "Pas tout à fait.", "Answer the quick check to go on.": "Réponds au mini-quiz pour continuer.", "Stuck? Ask Buddy for a hint": "Bloqué ? Demande un indice à Buddy", "Finish": "Terminer", "Your tutor for this lesson": "Ton prof pour cette leçon", "Ask Buddy anything about this…": "Pose ta question à Buddy…", "Explain this another way": "Explique-moi autrement", "Give me another example": "Donne-moi un autre exemple", "Help me with the quick check": "Aide-moi pour le mini-quiz", "Why is that the answer?": "Pourquoi c’est la bonne réponse ?", "What will I learn?": "Qu’est-ce que je vais apprendre ?", "Why does this matter?": "À quoi ça sert ?", "What should I remember most?": "Qu’est-ce qui est le plus important ?", "Ask me a question to test me": "Pose-moi une question", "Getting your lesson ready…": "Ta leçon se prépare…", "Buddy is reading the chapter and planning how to teach it. This takes up to a minute the first time.": "Buddy lit le chapitre et prépare sa leçon. La première fois, cela peut prendre jusqu’à une minute.", "Couldn’t make the lesson": "Impossible de préparer la leçon", "Try again": "Réessayer", "You seem to be offline.": "Tu sembles hors ligne.", "Buddy is not available right now.": "Buddy n’est pas disponible pour le moment.", "Picking up where you left off: step {0}": "On reprend là où tu t’étais arrêté : étape {0}", "I’m right here while you learn. If something doesn’t make sense, ask me: I can explain it another way, give you a new example, or help with the quick check.": "Je suis là pendant ta leçon. Si tu ne comprends pas quelque chose, demande-moi : je peux expliquer autrement, donner un autre exemple ou t’aider pour le mini-quiz.", "Today": "Aujourd’hui", "Books": "Livres", "Practice": "Exercices", "Progress": "Progrès", "Settings": "Réglages", "Back": "Retour", "Next": "Suivant", "Start": "Commencer", "Close": "Fermer", "Continue": "Continuer", "Leave": "Quitter", "Keep going": "Continuer", "Cancel": "Annuler", "Save": "Enregistrer", "Done": "Terminé", "Delete": "Supprimer", "Edit": "Modifier", "Skip": "Passer", "Practise": "S’entraîner", "Learn": "Apprendre", "Chapter": "Chapitre", "Chapters": "Chapitres", "Language": "Langue", "Today’s mission": "Mission du jour", "School tests": "Contrôles à l’école", "+ Add a test": "+ Ajouter un contrôle", "Lesson in progress": "Leçon en cours", "Leave this lesson?": "Quitter cette leçon ?", "Your place is saved. You can carry on from Today.": "Ta progression est enregistrée. Tu peux reprendre depuis Aujourd’hui.", "Keep learning": "Continuer la leçon", "Mistake book": "Carnet d’erreurs", "Add a textbook": "Ajouter un manuel", "My textbooks": "Mes manuels", "Ask Buddy": "Demander à Buddy", "Check my answer": "Vérifier ma réponse", "Next question": "Question suivante", "I don’t get it": "Je ne comprends pas", "Results": "Résultats", "Find your level": "Trouve ton niveau", "About your child": "À propos de votre enfant", "For parents": "Pour les parents", "Reading voice": "Voix de lecture", "Time today:": "Temps aujourd’hui :", "Also for tonight": "Aussi pour ce soir", "Snap homework": "Photographier les devoirs", "Write": "Écrire", "Speaking": "Oral", "Writing": "Écriture", "Flashcards": "Cartes mémoire", "Revision notes": "Fiches de révision", "Mock exam": "Examen blanc", "Chapter test": "Contrôle du chapitre", "Good morning": "Bonjour", "Good afternoon": "Bon après-midi", "Good evening": "Bonsoir", "Am I ready?": "Suis-je prêt ?", "Why PrepBuddy?": "Pourquoi PrepBuddy ?", "Plans": "Formules", "Privacy": "Confidentialité", "Report a problem": "Signaler un problème", "Answer": "Réponse", "You chose": "Tu as choisi", "Marks were for": "Points attendus", "Your answers": "Tes réponses" },
+  ja: { "Lesson done!": "レッスン完了！", "Quick checks: {0} of {1} right first time": "ミニテスト：{1}問中{0}問、1回目で正解", "Remember": "ここがポイント", "Key words": "大事な単語", "Key words dictation": "大事な単語の書き取り", "Practise this chapter now": "この章の問題を解いてみる", "Go through it again": "もう一度レッスンを受ける", "Back to the chapter": "章のページにもどる", "Do the writing task": "作文に取り組む", "Start the lesson": "レッスンをはじめる", "{0} short steps, each with an example and a quick check. About {1} minutes.": "全{0}ステップ。各ステップに例とミニテストがあります。約{1}分。", "Step {0} of {1}": "ステップ {0} / {1}", "Example": "例", "Quick check": "ミニテスト", "Yes!": "正解！", "Not quite.": "おしい！", "Answer the quick check to go on.": "ミニテストに答えると、次に進めます。", "Stuck? Ask Buddy for a hint": "わからないときは Buddy にヒントを聞こう", "Finish": "おわる", "Next": "次へ", "Back": "もどる", "Ask Buddy": "Buddy に聞く", "Your tutor for this lesson": "このレッスンの先生", "Ask Buddy anything about this…": "このレッスンについて Buddy に聞いてみよう…", "Explain this another way": "別の言い方で説明して", "Give me another example": "ほかの例を見せて", "Help me with the quick check": "ミニテストのヒントがほしい", "Why is that the answer?": "どうしてこれが答えなの？", "What will I learn?": "何を学ぶの？", "Why does this matter?": "これを学ぶと何に役立つの？", "What should I remember most?": "一番大事なことは何？", "Ask me a question to test me": "問題を出して", "Getting your lesson ready…": "レッスンを準備しています…", "Buddy is reading the chapter and planning how to teach it. This takes up to a minute the first time.": "Buddy が章を読んで、教え方を考えています。初回は1分ほどかかります。", "Couldn’t make the lesson": "レッスンを作れませんでした", "Try again": "もう一度ためす", "You seem to be offline.": "インターネットにつながっていないようです。", "Buddy is not available right now.": "Buddy は今お返事できません。", "Picking up where you left off: step {0}": "前回のつづき（ステップ {0}）から再開します", "I’m right here while you learn. If something doesn’t make sense, ask me: I can explain it another way, give you a new example, or help with the quick check.": "レッスン中はいつでも聞いてね。わからないところは、別の言い方で説明したり、ほかの例を出したり、ミニテストのヒントを出したりできるよ。", "Leave this lesson?": "レッスンを中断しますか？", "Your place is saved. You can carry on from Today.": "ここまでの進み具合は保存されます。「きょう」からつづきができます。", "Keep learning": "レッスンをつづける", "Lesson in progress": "とちゅうのレッスン", "Today": "きょう", "Books": "本", "Practice": "練習", "Progress": "記録", "Settings": "設定", "Start": "はじめる", "Close": "閉じる", "Continue": "つづける", "Leave": "やめる", "Keep going": "つづける", "Cancel": "キャンセル", "Save": "保存", "Done": "完了", "Delete": "削除", "Edit": "編集", "Skip": "スキップ", "Practise": "練習する", "Learn": "学ぶ", "Chapter": "章", "Chapters": "章", "Language": "言語", "Today’s mission": "きょうのミッション", "School tests": "学校のテスト", "+ Add a test": "+ テストを追加", "Mistake book": "まちがいノート", "Add a textbook": "教科書を追加", "My textbooks": "自分の教科書", "Check my answer": "答え合わせ", "Next question": "次の問題", "I don’t get it": "わからない", "Results": "結果", "Find your level": "レベルチェック", "About your child": "お子さまについて", "For parents": "保護者の方へ", "Reading voice": "読み上げの声", "Time today:": "きょうの時間：", "Also for tonight": "今夜できること", "Snap homework": "宿題を撮る", "Write": "書く", "Speaking": "スピーキング", "Writing": "作文", "Flashcards": "単語カード", "Revision notes": "まとめノート", "Mock exam": "模擬テスト", "Chapter test": "章のテスト", "Good morning": "おはよう", "Good afternoon": "こんにちは", "Good evening": "こんばんは", "Am I ready?": "準備はできてる？", "Why PrepBuddy?": "PrepBuddy とは？", "Plans": "プラン", "Privacy": "プライバシー", "Report a problem": "問題を報告", "Answer": "答え", "You chose": "あなたが選んだ答え", "Marks were for": "採点のポイント", "Your answers": "あなたの答え" },
+};
+let AUTO = {}, VALS = new Set();
+// v2 (16 Nov): screens re-translated with the better translator, so older, more literal translations are dropped.
+const autoKey = () => `${KEY}.${LANG}.v2`;
+function loadAuto() {
+  AUTO = {}; VALS = new Set(); PEND.clear();
+  if (!SEED[LANG]) return;
+  try { AUTO = JSON.parse(localStorage.getItem(autoKey()) || '{}') || {}; } catch (e) { AUTO = {}; }
+  Object.assign(AUTO, SEED[LANG]);
+  Object.values(AUTO).forEach((v) => VALS.add(v.trim()));
+}
+function saveAuto() {
+  const mine = {}; for (const [k, v] of Object.entries(AUTO)) if (!SEED[LANG] || SEED[LANG][k] !== v) mine[k] = v;
+  try { localStorage.setItem(autoKey(), JSON.stringify(mine)); } catch (e) { /* storage full: keep this session's copy */ }
+}
+// "Review 5 questions in 2 days" → ["Review {0} questions in {1} days", ["5", "2"]]
+const NUM = /\d+(?:[.,:]\d+)?/g;
+const toTemplate = (t) => { const nums = []; const k = t.replace(NUM, (m) => `{${nums.push(m) - 1}}`); return [k, nums]; };
+const fill = (tpl, nums) => tpl.replace(/\{(\d+)\}/g, (m, i) => (nums[+i] !== undefined ? nums[+i] : m));
+let translator = null, timer = 0, busy = false, coolUntil = 0, fails = 0;
+const MISS = new Map(); // strings the AI skipped: asked again at most twice
+const PEND = new Set();
+// app.js supplies the call to the server (it holds the access code).
+export function setTranslator(fn) { translator = fn; }
+function queue(k) {
+  if (!translator || PEND.has(k) || PEND.size > 400 || (MISS.get(k) || 0) >= 2) return;
+  PEND.add(k); clearTimeout(timer); timer = setTimeout(flush, 350);
+}
+async function flush() {
+  if (busy || !PEND.size || Date.now() < coolUntil) { if (PEND.size && !busy) timer = setTimeout(flush, Math.max(500, coolUntil - Date.now())); return; }
+  busy = true;
+  const lang = LANG, batch = [...PEND].slice(0, 40);
+  try {
+    const out = await translator(lang, batch, (document.querySelector('main') || {}).dataset ? (document.querySelector('main').dataset.view || '') : '');
+    if (lang === LANG) {
+      batch.forEach((k, i) => { const v = out[i]; if (typeof v === 'string' && v.trim()) { AUTO[k] = v; VALS.add(v.trim()); PEND.delete(k); } else { PEND.delete(k); MISS.set(k, (MISS.get(k) || 0) + 1); } });
+      saveAuto(); fails = 0;
+      translateTree(document.body);
+    }
+  } catch (e) { batch.forEach((k) => PEND.delete(k)); fails++; coolUntil = Date.now() + Math.min(60000, 3000 * fails); try { console.warn('[PrepBuddy] screen translation failed', e && e.message); } catch (e2) {} }
+  busy = false;
+  if (PEND.size) timer = setTimeout(flush, 50);
+}
+function trAuto(text) {
+  const t = text.trim();
+  if (t.length < 2 || t.length > 700 || !/[A-Za-z]{2}/.test(t) || VALS.has(t)) return null;
+  if (/^[A-Z0-9][A-Z0-9-]{3,}$/.test(t) || /^https?:|@/.test(t)) return null; // codes, links, emails
+  if (Object.prototype.hasOwnProperty.call(AUTO, t)) return text.replace(t, AUTO[t]);
+  // "Start the lesson →", "‹ Back", "+ Add a test": look up the words without the arrows and symbols around them.
+  const edge = t.match(/^([+→›‹←✓✗·•\s]*)(.*?)([\s→›‹←✓]*)$/);
+  if (edge && (edge[1] || edge[3]) && edge[2] && Object.prototype.hasOwnProperty.call(AUTO, edge[2])) { const v = edge[1] + AUTO[edge[2]] + edge[3]; VALS.add(v.trim()); return text.replace(t, v); }
+  const [k, nums] = toTemplate(t);
+  if (Object.prototype.hasOwnProperty.call(AUTO, k)) { const v = fill(AUTO[k], nums); VALS.add(v.trim()); return text.replace(t, v); }
+  queue(k);
+  return null;
 }
 
 export function tr(text) {
+  if (SEED[LANG]) return trAuto(text);
   if (LANG !== 'zh') return null;
   const t = text.trim();
   if (!t || !/[A-Za-z]/.test(t)) return null;
@@ -692,9 +769,12 @@ export function tr(text) {
 const ATTRS = ['placeholder', 'aria-label', 'title'];
 // Book content and questions: never translate.
 const RAW = '.stemblock, [data-raw], .point > span:last-child, .marker, .fml, .terms, .stem, p.q, .pstem, .opt, .gcap, .expl, .src, .popts, .ph > span:first-child, .ppart > span:first-child, .pk ul, .pexp, table.data, textarea';
-const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(RAW)); };
+// French and Japanese: whole screens marked data-raw (they carry their own Chinese) are still translated, so only real
+// content is kept as written: questions, the textbook, lessons, Buddy's replies, the child's writing and word lists.
+const RAW_FJ = RAW.replace('[data-raw], ', '').replace(', table.data', '') + ', [data-keep], [lang]:not(html), .tmsg:not(.tmsg-ui), .ln-x, .ln-q, .ln-opt, .ln-sum li, .ln-start h1, .ln-card h2, .ln-script, .nbody, .ntitle, .ffront, .fback, .wtext, .readtxt, .rtext, .mq-text, .improve, .etitle, .sp-ex p, .sp-sample p, .sp-trx, .sp-phr, .wr-essay, .wr-ptext, .wr-corr, .wr-fixes, .wr-crit p, .wr-sum, .hw-qx, .katex, code, input, select, table.data td';
+const isRaw = (n) => { const el = n.nodeType === 1 ? n : n.parentElement; return !!(el && el.closest && el.closest(SEED[LANG] ? RAW_FJ : RAW)); };
 export function translateTree(root) {
-  if (LANG !== 'zh' || !root) return;
+  if (LANG === 'en' || !root) return;
   if (root.nodeType === 3) { if (isRaw(root)) return; const x = tr(root.nodeValue); if (x !== null && x !== root.nodeValue) root.nodeValue = x; return; }
   if (root.nodeType !== 1) return;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -713,7 +793,7 @@ export function translateTree(root) {
 export function watch(root = document.body) {
   translateTree(root);
   new MutationObserver((muts) => {
-    if (LANG !== 'zh') return;
+    if (LANG === 'en') return;
     for (const m of muts) {
       if (m.type === 'characterData') translateTree(m.target);
       m.addedNodes.forEach((n) => translateTree(n));
