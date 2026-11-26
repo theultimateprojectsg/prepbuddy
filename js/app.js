@@ -732,12 +732,37 @@ async function runCloser() {
   return boostSession(p.book, p.c, p.step);
 }
 // "Get me closer to 100%": the next step for the weakest chapter, whatever stage it's at.
+// "Up next": what Buddy's step is (practice, harder questions, fixing mistakes, a check, reviews), on which chapter,
+// how long, and why, before it starts. Chapter tests and mock exams skip this: their time picker says the same.
+function stepPreview(book, c, step) {
+  return new Promise((resolve) => {
+    const name = shortTitle(c.unit.title);
+    const K = { practise: [step.diff ? PT('Harder questions', '較深題目') : PT('Practice', '練習'), 10], mistakes: [PT('Fixing mistakes', '改正錯題'), Math.min(30, c.open || 3)],
+      check: [PT('“Still there?” check', '「還記得嗎？」檢查'), 6], review: [PT('Review', '溫習'), 10] }[step.kind] || [PT('Practice', '練習'), 10];
+    const n = K[1], mins = Math.max(5, Math.round(n * 1.2 / 5) * 5);
+    const what = step.kind === 'review' ? PT(`${n} questions from different chapters, just before you’d forget them`, `${n} 題不同章節的題目，在快忘記前溫習`)
+      : PT(`${n} question${n === 1 ? '' : 's'} · about ${mins} min`, `${n} 題 · 約 ${mins} 分鐘`);
+    const box = document.createElement('div'); box.className = 'cdlg-wrap';
+    box.innerHTML = `<div class="cdlg upnext" role="dialog" aria-modal="true" aria-labelledby="un-t">
+      <small class="un-tag">${PT('Up next', '下一步')}</small>
+      <b id="un-t">${K[0]}</b>${step.kind === 'review' ? '' : `<span class="un-ch" data-raw>${esc(name)}</span>`}
+      <p class="un-what">${what}</p>
+      ${step.text ? `<p class="un-why">${buddySVG('happy', 26)}<span>${esc(step.text)}</span></p>` : ''}
+      <button class="btn" id="unGo">${PT('Start', '開始')}</button><button class="btn-sm quiet" id="unNo">${PT('Not now', '稍後')}</button></div>`;
+    document.body.appendChild(box);
+    const done = (v) => { box.remove(); resolve(v); };
+    box.querySelector('#unGo').onclick = () => done(true); box.querySelector('#unNo').onclick = () => done(false);
+    box.onclick = (e) => { if (e.target === box) done(false); };
+    setTimeout(() => { const g = box.querySelector('#unGo'); if (g) g.focus(); }, 50);
+  });
+}
 async function boostSession(book, c0 = null, step0 = null, plan = false) {
   const m = await bookMastery(book);
   const c = c0 ? m.chapters.find((x) => x.unit.id === c0.unit.id) || c0 : weakestChapter(m);
   if (!plan) boostAt = Date.now();
   if (!c) return toast(PT('Every chapter is at 100%. Keep up your reviews!', '每一章都到 100% 了，記得繼續溫習！'));
   const step = step0 || masterySteps({ ...m, chapters: [c] })[0] || { kind: 'practise' };
+  if (step.kind !== 'test' && step.kind !== 'mixed' && !(await stepPreview(book, c, step))) return;
   if (step.kind === 'test') return startChapterTest(book, [c.unit]);
   if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit); return startMiniMock(book, [c.unit, ...others], c.unit); }
   if (step.kind === 'mistakes') { // start fixing this chapter's open mistakes straight away
@@ -771,7 +796,7 @@ function askTime(title, detail, suggested) {
         <b id="tm-t">${esc(title)}</b><span>${esc(detail)}</span>
         <div class="setup-row" style="margin-top:6px"><span id="tm-l">Time allowed</span>
           <div class="stepper" role="group" aria-labelledby="tm-l"><button id="tm-m" aria-label="Less time" ${none || mins <= 5 ? 'disabled' : ''}>−</button><output>${none ? '—' : mins + ' min'}</output><button id="tm-p" aria-label="More time" ${none || mins >= 180 ? 'disabled' : ''}>+</button></div></div>
-        <span class="hint">${none ? 'No timer. Good for learning, but it won’t feel like the real exam.' : mins === suggested ? 'Suggested time, at about exam pace.' : `Suggested: ${suggested} min.`}</span>
+        <span class="hint">${none ? 'No timer. Good for learning.' : mins === suggested ? 'Suggested time.' : `Suggested: ${suggested} min.`}</span>
         <label class="tm-none"><input type="checkbox" id="tm-n" ${none ? 'checked' : ''}> No time limit</label>
         <div class="rd-row"><button class="btn ghost" id="tm-c">Cancel</button><button class="btn" id="tm-s">Start</button></div></div>`;
       box.querySelector('#tm-m').onclick = () => { mins = Math.max(5, mins - 5); draw(); };
@@ -818,7 +843,7 @@ async function startChapterTest(book, units) {
   if (!allow('test')) return;
   track('chapter_test');
   const [nA, nB] = testSize(units.length);
-  const mins = await askTime(LANG === 'zh' ? '章節測驗' : 'Chapter test', `${nA} multiple-choice and ${nB} written questions. Pass mark 80%.`, paperMinutes(nA, nB));
+  const mins = await askTime(`${LANG === 'zh' ? '章節測驗' : 'Chapter test'} · ${units.map((u) => shortTitle(u.title)).join(', ')}`, LANG === 'zh' ? `只考這一章：${nA} 題選擇題，${nB} 題文字題。80% 合格。` : `On this chapter only: ${nA} multiple-choice and ${nB} written questions. Pass mark 80%.`, paperMinutes(nA, nB));
   if (mins === null) return;
   try {
     const paper = await preparePaper(book, units, nA, nB, 'sit');
@@ -10116,6 +10141,13 @@ function bindTutorCTA(q, cls) {
 }
 
 // In mixed sets (reviews, mistakes, weak spots) say where each question is from, and for reviews when it was last seen
+const sessKind = (s) => (s.reading ? PT('Reading', '閱讀') : s.test ? PT('Chapter test', '章節測驗') : s.mode === 'dse' || s.mode === 'mock' ? PT('Mock exam', '模擬考試')
+  : s.mode === 'spaced' ? PT('Review', '溫習') : s.mode === 'mistakes' || s.mode === 'drill' ? PT('Fixing mistakes', '改正錯題') : s.check ? PT('“Still there?” check', '「還記得嗎？」檢查')
+  : s.diff === 'hard' || s.diff === 'apply' || s.diff === 'analyse' ? PT('Harder questions', '較深題目') : PT('Practice', '練習'));
+const sessWhere = (s) => { const us = s.units || (s.book && s.qs ? s.book.units.filter((u) => s.qs.some((q) => qUnit(q.id)[1] === u.id)) : []);
+  return us.length === 1 ? shortTitle(us[0].title) : us.length ? PT(`${us.length} chapters`, `${us.length} 章`) : ''; };
+// "PRACTICE · Unit 1 · Talking about the past" above every question, so the child always knows what they're doing
+const qKindBar = () => (S && S.mode !== 'spaced' ? `<p class="qkind"><b>${sessKind(S)}</b>${sessWhere(S) ? `<span data-raw>${esc(sessWhere(S))}</span>` : ''}</p>` : '');
 function qWhere(q) {
   if (!S || S.mode === 'unit' || S.mode === 'dse') return '';
   const c = QCTX.get(q.id); if (!c) return '';
@@ -10134,7 +10166,7 @@ function renderQuestion() {
   const body = choiceType(q) ? mcqBody(q, S.phase === 'revealed') : writtenBody(q, S.phase === 'revealed');
   $app.innerHTML = header() + `
   <main class="stack g18 qpaper" style="flex:1;padding:14px 20px 20px">
-    ${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${q.passage ? PT('Reading', '閱讀') : isPrimaryKid() && LANG !== 'zh' ? { mcq: 'Pick one', graph: 'Pick one', short: 'Short answer', structured: 'Long answer', essay: 'Writing' }[q.type] || TYPE[q.type] : TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
+    ${qKindBar()}${qWhere(q)}<div class="chips">${S.mode === 'dse' ? `<span class="chip sec">${S.i < S.sectionA ? 'Section A' : 'Section B'}</span>` : ''}<span class="chip" title="${esc(LEVEL[q.level] || '')}">${LANG === 'zh' ? '程度' : 'Level'} ${q.level}<span class="hide-sm"> · ${LEVEL[q.level]}</span></span><span class="chip grey">${q.passage ? PT('Reading', '閱讀') : isPrimaryKid() && LANG !== 'zh' ? { mcq: 'Pick one', graph: 'Pick one', short: 'Short answer', structured: 'Long answer', essay: 'Writing' }[q.type] || TYPE[q.type] : TYPE[q.type]} · ${marksOf(q)} mark${marksOf(q) > 1 ? 's' : ''}</span>${readAloudOn() ? `<button class="chip say" id="sayq" aria-label="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}" title="${LANG === 'zh' ? '讀出題目' : 'Read the question to me'}">🔊</button>` : ''}${S.review ? '<span class="chip grey">Review</span>' : ''}${q.recap ? '<span class="chip recap" title="Done before. A quick recap while the next new question is checked">Quick recap</span>' : ''}</div>
     ${DEV ? `<div class="dev-pass"><span>DEV · finish at</span>${[60, 80, 100].map((r) => `<button type="button" data-devpass="${r}">${r}%</button>`).join('')}</div>` : ''}${devAnsHTML(q, S.phase === 'revealed')}${body.main}
     ${preTutorOK(q) && !preTutorInSide(q) ? (tutorFolded(q) ? tutorCTA(LANG === 'zh' ? '不明白？問 Buddy' : 'Stuck? Ask Buddy') : preTutorHTML(q)) : ''}
   </main>
@@ -10878,7 +10910,7 @@ async function resultMoment(sess, qs, pct, got, total) {
   const toAnswers = () => { const l = document.querySelector('.rlist'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   const hero = { pct }, sml = starMomentLines(sess.won);
   const wUnits = sess.book ? sess.book.units.filter((u) => qs.some((q) => qUnit(q.id)[1] === u.id)) : [];
-  const what = { kind: sess.reading ? Z('Reading', '閱讀') : sess.test ? Z('Chapter test', '章節測驗') : sess.mode === 'dse' || sess.mode === 'mock' ? Z('Mock exam', '模擬考試') : sess.mode === 'spaced' ? Z('Review', '溫習') : sess.mode === 'mistakes' || sess.mode === 'drill' ? Z('Fixing mistakes', '改正錯題') : Z('Practice', '練習'),
+  const what = { kind: sessKind(sess),
     name: wUnits.length === 1 ? shortTitle(wUnits[0].title) : wUnits.length ? Z(`${wUnits.length} chapters: ${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join(', ')}`, `${wUnits.length} 章：${wUnits.map((u) => (shortTitle(u.title).match(/^[^·:]+/) || [''])[0].trim()).join('、')}`) : (sess.book ? sess.book.title : '') };
   const say = (o) => moment({ ...o, sess, what, bars: (o.bars || []).map((b) => (wUnits.length === 1 && b.lab === what.name ? { ...b, lab: Z('Chapter progress', '這一章的進度') } : b)), lines: [...(o.lines || []), ...sml] });
   // the gain is celebrated here, so Today's step pop-up doesn't show the same chapter again
