@@ -6799,7 +6799,16 @@ function stepsTo100(p, chs) {
     const key = r.kind + ':' + u + ':' + (r.kind === 'mixed' ? 0 : seg[u]); let it = items.find((y) => y.key === key);
     if (!it) { it = { key, kind: r.kind, x: r.x, n: 0, mins: 0, from: r.from, to: r.to, raw: r.text }; items.push(it); }
     it.n++; it.mins += r.mins; if (r.to != null) it.to = r.to; }
+  const doneOf = (it) => { const r = it.x && it.x.real; if (it.kind === 'mixed') return Math.min(...chs.map((c) => (c.gates || {}).mixed || 0));
+    if (!r) return 0; return it.kind === 'practise' ? Math.min(5, Math.round(Math.min(60, r.prac || 0) / 12)) : it.kind === 'test' ? r.passes || 0 : 0; };
+  const of = (it, one, many, zo) => { const d = doneOf(it), t = d + it.n; return PT(`${d} of ${t} ${t === 1 ? one : many}`, `${d}/${t} ${zo}`); };
   const label = (it) => { const sn = it.x ? nm(it.x.unit) : '', n = it.n;
+    if (p.left >= 99) return { practise: PT(`Practise ${sn} · ${of(it, 'set', 'sets', '組')}`, `練習「${sn}」· ${of(it, 'set', 'sets', '組')}`),
+      hard: PT(`Harder questions on ${sn} · ${of(it, 'set', 'sets', '組')}`, `「${sn}」較深題目 · ${of(it, 'set', 'sets', '組')}`),
+      write: PT(`Written answers on ${sn} · ${of(it, 'set', 'sets', '組')}`, `「${sn}」文字題 · ${of(it, 'set', 'sets', '組')}`),
+      mistakes: PT(`Fix your mistakes on ${sn}`, `改正「${sn}」的錯題`),
+      test: PT(`Chapter test on ${sn} · ${of(it, 'test passed', 'tests passed', '次')}`, `「${sn}」章節測驗 · ${of(it, 'test passed', 'tests passed', '次')}`),
+      mixed: PT(`Mock exam on these chapters · ${of(it, 'exam', 'exams', '次')}`, `這些章節的模擬考試 · ${of(it, 'exam', 'exams', '次')}`) }[it.kind];
     return { practise: PT(`Practise ${sn} · ${n} set${n === 1 ? '' : 's'}`, `練習「${sn}」· ${n} 組`),
       hard: PT(`Harder questions on ${sn} · ${n} set${n === 1 ? '' : 's'}`, `「${sn}」較深題目 · ${n} 組`),
       write: PT(`Written answers on ${sn} · ${n} set${n === 1 ? '' : 's'}`, `「${sn}」文字題 · ${n} 組`),
@@ -6818,18 +6827,18 @@ function testPlanSheet(p, chs, sc = null) {
   const done = chs.every((c) => (c.pct || 0) >= 100), none = !done && !L.items.length;
   const tip = done ? PT('Every chapter is at 100%. Short reviews keep it there.', '每章都達到 100%。做短時間溫習保持狀態。')
     : none ? PT('Some of it has faded: “Let’s do what’s next” starts a quick check to win it back.', '有些內容淡忘了：按「下一步」做快速檢查，把分數拿回來。')
-    : sc ? PT(`Do these in order: about ${L.total >= 90 ? `${Math.round(L.total / 30) / 2} hours` : `${L.total} minutes`} in all. Press Start and Buddy takes you through them; after each set, “Keep going” picks up the next step.`, `按次序做：合共約 ${L.total} 分鐘。按「開始」，Buddy 會帶你一步步完成；每組做完後按「繼續」就到下一步。`)
+    : sc ? `⏱️ ${PT(`About <b>${L.total >= 90 ? `${Math.round(L.total / 30) / 2} hours` : `${L.total} min`}</b> to mastery`, `約 <b>${L.total >= 90 ? `${Math.round(L.total / 30) / 2} 小時` : `${L.total} 分鐘`}</b> 可完全掌握`)}`
     : left < 1 ? PT('The test is today: do the first step as a warm-up.', '今天考試：先做第一步熱身。')
     : PT(`Do these in order. That’s about ${L.total} minutes in all: about ${perDay} minutes a day gets you there by test day.`, `按次序做。合共約 ${L.total} 分鐘：每天約 ${perDay} 分鐘，考試前就能完成。`);
   const warn = !sc && !done && perDay > 90 ? `<p class="tp-p">${PT(`That’s a lot for ${days} day${days === 1 ? '' : 's'}. Do as many as you can, in order: every step counts.`, `${days} 日內有點多。盡量按次序做，每一步都有用。`)}</p>` : '';
-  const li = (it, i) => `<li class="tl-i ${i === 0 ? 'now' : ''}"><span class="tl-n">${i + 1}</span><span class="tl-t"><b data-raw>${esc(it.text)}</b>${it.from != null && it.to > it.from ? `<small>${it.x ? '' : sc ? PT('These chapters: ', '這些章節：') : PT('All test chapters: ', '所有考試章節：')}${it.from}% → ${it.to}%</small>` : it.kind === 'write' ? `<small>${PT('Unlocks the last 15% (mock exams)', '解鎖最後 15%（模擬考試）')}</small>` : it.kind === 'hard' ? `<small>${PT('Unlocks scores above 75%', '解鎖 75% 以上的分數')}</small>` : ''}</span>${i === 0 ? `<button class="btn-sm primary" data-tl0>${PT('Start', '開始')}</button>` : ''}</li>`;
+  const li = (it, i) => `<li class="tl-i ${i === 0 ? 'now' : ''}"><span class="tl-n">${i + 1}</span><span class="tl-t"><b data-raw>${esc(it.text)}</b>${it.from != null && it.to > it.from ? `<span class="tl-gain">${it.x ? '' : sc ? PT('These chapters ', '這些章節 ') : PT('All test chapters ', '所有考試章節 ')}${it.from}% → <b>${it.to}%</b></span>` : it.kind === 'write' ? `<span class="tl-gain un">🔓 ${PT('Unlocks the last 15%', '解鎖最後 15%')}</span>` : it.kind === 'hard' ? `<span class="tl-gain un">🔓 ${PT('Unlocks scores above 75%', '解鎖 75% 以上的分數')}</span>` : ''}</span>${i === 0 ? `<button class="btn-sm primary" data-tl0>${PT('Start', '開始')}</button>` : ''}</li>`;
   function nm(u) { return shortTitle(u.title); }
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   box.innerHTML = `<div class="cdlg tp tl" role="dialog" aria-modal="true" aria-labelledby="tp-t">
-    <header class="tp-h"><div>${sc ? `<small>${PT('No test date', '未有考試日期')}</small><b id="tp-t">${PT(`Your plan to master ${esc(sc.name)}`, `掌握「${esc(sc.name)}」的計劃`)}</b><small data-raw>${esc(book.title)}</small>` : `<small>${fmt(testDay(p.x))} · ${leftText(left)}</small><b id="tp-t">${PT('My plan to reach 100%', '我的 100% 計劃')}</b><small data-raw>${esc(p.x.name)}</small>`}</div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <header class="tp-h"><div>${sc ? `<b id="tp-t">${PT(`Your plan to master ${esc(sc.name)}`, `掌握「${esc(sc.name)}」的計劃`)}</b><small data-raw>${esc(book.title)}</small>` : `<small>${fmt(testDay(p.x))} · ${leftText(left)}</small><b id="tp-t">${PT('My plan to reach 100%', '我的 100% 計劃')}</b><small data-raw>${esc(p.x.name)}</small>`}</div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="tp-body tl-body">
       <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('known so far', '目前掌握')}</span></div><i>→</i><div><b class="fc ${L.capped || none ? 'close' : 'ok'}">${done ? 100 : none ? p.ready : L.capped ? L.end : 100}%</b><span>${done ? PT('done', '完成') : none ? PT('after a quick check', '快速檢查之後') : PT(`after ${L.items.length} step${L.items.length === 1 ? '' : 's'}`, `完成 ${L.items.length} 步之後`)}</span></div></div>
-      <p class="tp-p">${tip}</p>${warn}${L.capped && !done ? `<p class="tp-p">${PT(`Your % follows your scores, so at your current scores these steps get you to about ${L.end}%. To go higher, fix your mistakes and aim for full marks on chapter tests and mock exams.`, `百分比跟隨你的分數。按現時的分數，這些步驟大約可達 ${L.end}%。要更高，就要改正錯題，並在章節測驗和模擬考試爭取滿分。`)}</p>` : ''}
+      <p class="tp-p${sc ? ' tp-time' : ''}">${tip}</p>${warn}${L.capped && !done ? `<p class="tp-p">${PT(`Your % follows your scores, so at your current scores these steps get you to about ${L.end}%. To go higher, fix your mistakes and aim for full marks on chapter tests and mock exams.`, `百分比跟隨你的分數。按現時的分數，這些步驟大約可達 ${L.end}%。要更高，就要改正錯題，並在章節測驗和模擬考試爭取滿分。`)}</p>` : ''}
       ${done ? '' : `<ol class="tl-list">${L.items.map(li).join('')}</ol>`}
       ${done || left < 2 || sc ? '' : `<p class="tl-foot">${PT('The day before the test: a quick “Still there?” check. On test day: a 5-question warm-up.', '考試前一天：「還記得嗎？」快速檢查。考試當日：5 題熱身。')}</p>`}
     </div></div>`;
