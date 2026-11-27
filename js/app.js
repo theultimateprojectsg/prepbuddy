@@ -5857,7 +5857,6 @@ async function renderBook(bookId) {
     <div class="chtools">
       <p style="margin:0;font-size:16px;font-weight:600">${PT('Chapters', '章節')} <span class="muted" style="font-weight:500">(${book.units.length})</span></p>
       ${book.units.length > 1 ? `<button class="btn-sm" id="all" >${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
-      ${book.units.length > 12 ? `<label class="chsearch"><span aria-hidden="true">${ICON.search}</span><input id="chsearch" type="search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>` : ''}
     </div>
     <p class="bk-mhint bk-mhint-l">${PT('Tick chapters to master just those, or tap a chapter’s name to see it.', '剔選章節，只掌握這些；或按章節名稱查看該章。')}</p>
     <div class="chlist" id="chlist">${listHTML}</div>
@@ -5883,15 +5882,7 @@ async function renderBook(bookId) {
     ids.forEach((id) => (all ? pick.ids.delete(id) : pick.ids.add(id))); if (!all) pick.open.add(g.name); keep();
   }));
   const op = document.getElementById('opts'); if (op) op.onclick = () => { pick.opts = !pick.opts; keep(); };
-  const cs = document.getElementById('chsearch');
-  if (cs) cs.oninput = () => {
-    const w = cs.value.trim().toLowerCase();
-    if (grouped && w) {   // searching: show matching sections from every group
-      document.getElementById('chlist').innerHTML = `<div class="gbody flat">${book.units.filter((u) => String(u.title).toLowerCase().includes(w)).map(row).join('') || '<p class="muted" style="margin:12px 16px">No chapter matches.</p>'}</div>`;
-    } else if (grouped) return keep(); // back to the grouped list
-    else $app.querySelectorAll('.crow').forEach((r) => { r.hidden = !!w && !r.dataset.name.includes(w); });
-    bindRows();
-  };
+  // chapter search box removed (27 Nov)
   const keep = async () => { const y = window.scrollY; await renderBook(bookId); window.scrollTo(0, y); };
   // no Back button on the book page (27 Nov): the Books tab or the phone's back gesture go to the list
   const a = document.getElementById('all');
