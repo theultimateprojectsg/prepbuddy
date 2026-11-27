@@ -6692,27 +6692,17 @@ function chapterSheet(book, c) {
     <p class="cs2-sub">${c.done >= 5 ? PT(`Buddy is giving you <b>${LV[c.lvNow - 1].toLowerCase()}</b> questions now. Get 80% right and it steps up; under 50% and it eases off.`, `Buddy 現在給你<b>${LV[c.lvNow - 1]}</b>題目。答對 80% 會升一級；低於 50% 會調低。`) : PT('After 5 questions Buddy starts moving the difficulty up or down to match you.', '做了 5 題之後，Buddy 會按你的表現調高或調低難度。')}</p></section>`;
   // Buddy's pick: the brain's next step for this chapter (the same answer as the yellow button and Buddy's plan)
   const nx = nextStep(c);
-  const pick = !nx ? 'review' : nx.kind === 'mistakes' ? 'fix' : nx.kind === 'review' ? 'review' : nx.kind === 'test' ? 'test' : nx.kind === 'practise' && !nx.diff ? 'practise' : 'next';
+  const pickK = !nx ? 'review' : nx.kind === 'mistakes' ? 'fix' : nx.kind === 'review' ? 'review' : nx.kind === 'test' ? 'test' : nx.kind === 'practise' && !nx.diff ? 'practise' : 'next';
   const why = nx ? nx.text + '.' : PT('It’s at 100%. Reviews now and then keep it there.', '已到 100%。不時溫習就能保持。');
+  // 27 Nov: one main step (master this chapter: its plan to 100%), then only what the plan doesn't do
   const O = [
-    ['practise', 'practise', PT(`Practise ${n} questions`, `練習 ${n} 題`), PT('New questions that adapt to you', '會按你的程度調整的新題目'), () => startUnits(book, [c.unit], n)],
+    ['master', 'practise', c.pct >= 100 ? PT(`Keep ${name} at 100%`, `保持「${name}」100%`) : PT(`Master ${name}`, `掌握「${name}」`), c.pct >= 100 ? PT('Short reviews now and then', '不時做短時間溫習') : PT('Your plan to 100%: practice, chapter tests, then a mock exam', '你的 100% 計劃：練習、章節測驗、再到模擬考試'), () => (c.pct >= 100 ? startReview('spaced', book.id) : scopePlan({ b: book.id, ids: [c.unit.id] }))],
     HAS_READING.has(`${book.id}:${c.unit.id}`) ? ['reading', 'notes', PT('Reading', '閱讀'), PT('A short passage and 5–6 questions on it', '一篇短文，回答 5–6 條問題'), () => startReading(book, c.unit)] : null,
-    c.open ? ['fix', 'mistakes', PT(`Fix ${c.open} mistakes`, `改正 ${c.open} 題錯題`), PT('Try the ones you got wrong again', '再做一次答錯的題目'), () => go({ name: 'mistakes', book: book.id })] : null,
-    c.done ? ['review', 'review', PT(c.due ? `Review ${c.due} due` : 'Review', c.due ? `溫習 ${c.due} 題` : '溫習'), PT('Questions from before, just before you’d forget', '在快忘記前再做以前的題目'), () => startReview('spaced', book.id)] : null,
-    ['test', 'test', PT('Chapter test', '章節測驗'), c.lastTest && Date.now() - c.lastTest < 7 * DAY ? PT(`You did one ${new Date(c.lastTest).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}. Another now is fine for practice; the one that proves it stuck is from ${new Date(c.lastTest + 7 * DAY).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })}`, `你在${new Date(c.lastTest).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}做過。現在再做可當練習；${new Date(c.lastTest + 7 * DAY).toLocaleDateString(LOCALE(), { day: 'numeric', month: 'short' })}起再做才能證明記得`) : PT('Timed, like a mock exam · 80% passes', '限時，像模擬試 · 80% 合格'), () => startChapterTest(book, [c.unit])],
-    c.done >= 3 ? ['drill', 'weak', PT('Drill my weak spots', '針對弱項練習'), PT('New questions on the ideas you got wrong', '針對你答錯的概念出新題目'), async () => {
-      const qs = (await getPractice(book.id, c.unit.id)).filter((q) => local.stats[q.id] && (local.stats[q.id].last || 0) < 1 && canDrill(q))
-        .sort((a, b) => (local.stats[a.id].last || 0) - (local.stats[b.id].last || 0)).slice(0, 6);
-      if (!qs.length) return toast(PT('No weak spots in this chapter right now. Nice!', '這一章暫時沒有弱項，做得好！'));
-      const idea = (q) => choiceType(q) ? `Question: ${q.stem}\nCorrect answer: ${(q.options || [])['ABCD'.indexOf(q.correct_option)] || ''}\nWhy: ${q.explanation || ''}`
-        : `Question: ${writtenStem(q)}\nMarks were for: ${(q.parts || []).flatMap((p) => p.mark_scheme || []).slice(0, 4).join('; ')}\nWhy: ${q.explanation || ''}`;
-      startDrills(qs.map((q) => ({ q, idea: idea(q) })), book, 'mix');
-    }] : null,
-    ['cards', 'flashcards', PT('Flashcards', '閃卡'), PT('Key words and ideas, quick fire', '重點詞語和概念，快速溫習'), () => go({ name: 'cards', bookId: book.id })],
-    ['notes', 'notes', PT('Revision notes', '溫習筆記'), PT('The chapter on one page', '一頁看完整章'), () => go({ name: 'notes', bookId: book.id })],
-    pick === 'next' ? ['next', nx.kind === 'mixed' ? 'test' : nx.kind === 'check' ? 'review' : 'weak', nx.text, nx.kind === 'mixed' ? PT('Timed, several chapters mixed together', '限時，多章混合') : nx.kind === 'check' ? PT('6 questions to win back what faded', '6 題，贏回退步的分數') : PT('Buddy picks harder questions for you', 'Buddy 為你選較深的題目'), () => boostSession(book, c, nx, true)] : null,
+    ['test', 'test', PT('Chapter test', '章節測驗'), PT('Timed, on this chapter · aim for 80%+', '限時，只考這一章 · 目標 80% 以上'), () => startChapterTest(book, [c.unit])],
+    ['notes', 'notes', PT('Revision notes', '溫習筆記'), PT('The chapter on one page', '一頁看完整章'), () => { pick = { bookId: book.id, ids: new Set([c.unit.id]), open: new Set() }; go({ name: 'notes', bookId: book.id }); }],
+    ['cards', 'flashcards', PT('Flashcards', '閃卡'), PT('Key words and ideas, quick fire', '重點詞語和概念，快速溫習'), () => { pick = { bookId: book.id, ids: new Set([c.unit.id]), open: new Set() }; go({ name: 'cards', bookId: book.id }); }],
   ].filter(Boolean);
-  const best = O.find((o) => o[0] === pick) || O[0], rest = O.filter((o) => o !== best);
+  const best = O[0], rest = O.slice(1);
   const tone = c.pct >= 70 ? 'hi' : c.pct >= 40 ? 'mid' : 'lo';
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   box.innerHTML = `<div class="cdlg cs2" role="dialog" aria-modal="true" aria-labelledby="chs-t">
