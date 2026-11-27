@@ -2798,7 +2798,7 @@ async function renderHome() {
   };
   // Phones: an app bar (logo · child · stars · settings) above a friendly greeting card with Buddy. Computers: the plain greeting.
   const head = `<div class="greet" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-      <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${esc(hello)}${who ? `${LANG === 'zh' ? '，' : ', '}${esc(who)}` : ''}<span class="gr-bud-in" aria-hidden="true"><!--BUD46--></span></h1><span class="gr-sub"><!--CHEER--></span></div><span class="gr-buddy" aria-hidden="true"><!--BUD64--></span></div><!--STRIP--></div>
+      <div class="gr-hero"><div class="gr-row"><div class="gr-text"><h1 data-raw>${who ? `${LANG === 'zh' ? '你好，' : 'Hi, '}<em class="gr-who">${esc(who)}</em>` : esc(hello)}<span class="gr-bud-in" aria-hidden="true"><!--BUD46--></span></h1><p class="gr-tag">${PT(`${hello}! Your test buddy is here.`, `${hello}！你的溫習好拍檔在這裡。`)}</p><span class="gr-sub"><!--CHEER--></span></div><span class="gr-buddy" aria-hidden="true"><!--BUD64--></span></div><!--STRIP--></div>
       <div class="greet-r"><span class="gr-brand">${logoSVG(36)}<b>PrepBuddy</b></span>${KIDS.list.length > 1 ? kidChip() : ''}<!--SKCHIP-->${starChip()}${gearBtn()}</div></div>`;
   if (!books.length) {
     // Free starter books (written by PrepBuddy) for the child's grade: something to try before adding their own textbook.
