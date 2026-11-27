@@ -761,6 +761,31 @@ async function runCloser() {
 // "Get me closer to 100%": the next step for the weakest chapter, whatever stage it's at.
 // "Up next": what Buddy's step is (practice, harder questions, fixing mistakes, a check, reviews), on which chapter,
 // how long, and why, before it starts. Chapter tests and mock exams skip this: their time picker says the same.
+// practice sets done on a chapter (about 10 questions a set), for "Set 2 of 5" on the plan and the Up next card
+const setsDone = (bookId, unitId) => { const pre = `${bookId}:${unitId}:`; let n = 0; for (const e of local.log || []) if (e.q && e.q.startsWith(pre) && (e.k === 'unit' || e.k === 'practice')) n++; return Math.round(n / 10); };
+const LEVEL_NM = () => [null, PT('Remember', '記憶'), PT('Understand', '理解'), PT('Apply', '應用'), PT('Analyse', '分析')];
+function upInfo(book, c, step) {
+  const L = LEVEL_NM(), k = step.kind, info = {};
+  try {
+    const plan = stepsTo100({ book, units: [c.unit], left: 99, ready: c.pct }, [c]);
+    const want = k === 'test' ? 'test' : k === 'mixed' ? 'mixed' : k === 'practise' ? (step.diff ? 'hard' : 'practise') : null;
+    const it = want && plan.items.find((x) => x.kind === want || (want === 'hard' && x.kind === 'write'));
+    if (it) {
+      const done = want === 'practise' ? setsDone(book.id, c.unit.id) : want === 'test' ? c.passes || 0 : want === 'mixed' ? (c.gates || {}).mixed || 0 : 0;
+      const unit = { practise: PT('Set', '第'), hard: PT('Set', '第'), test: PT('Test', '測驗'), mixed: PT('Exam', '考試') }[want];
+      info.set = PT(`${unit} ${done + 1} of ${done + it.n}`, `${done + 1}/${done + it.n}`);
+      info.this = { practise: PT('This set', '這一組'), hard: PT('This set', '這一組'), test: PT('This test', '這次測驗'), mixed: PT('This exam', '這次考試') }[want];
+      if (it.from != null && it.to > it.from) info.gain = [c.pct, Math.min(it.to, Math.round(c.pct + (it.to - it.from) / it.n))];
+      else if (it.kind === 'hard') info.unlock = PT('Unlocks scores above 75%', '解鎖 75% 以上的分數');
+      else if (it.kind === 'write') info.unlock = PT('Unlocks the last 15%', '解鎖最後 15%');
+    }
+  } catch (e) { /* the card still works without these */ }
+  const lv = Math.max(1, Math.min(4, 2 + levelShift(book.id, c.unit.id)));
+  info.level = k === 'test' || k === 'mixed' ? `${L[1]} → ${L[4]}` : k === 'practise' && step.diff ? `${L[3]} · ${L[4]}` : k === 'practise' ? PT(`Mostly ${L[lv]}`, `主要${L[lv]}`) : null;
+  return info;
+}
+const upInfoHTML = (info) => `${info.set || info.level ? `<div class="un-chips un-meta">${info.set ? `<span>📍 ${info.set}</span>` : ''}${info.level ? `<span>🧠 ${info.level}</span>` : ''}</div>` : ''}
+  ${info.gain ? `<p class="un-gain">${info.this || PT('This set', '這一組')}: ${info.gain[0]}% → <b>${PT(`about ${info.gain[1]}%`, `約 ${info.gain[1]}%`)}</b></p>` : info.unlock ? `<p class="un-gain un">🔓 ${info.unlock}</p>` : ''}`;
 function stepPreview(book, c, step) {
   return new Promise((resolve) => {
     const name = shortTitle(c.unit.title);
@@ -772,12 +797,12 @@ function stepPreview(book, c, step) {
     const look = { practise: step.diff ? ['💪', 'hard'] : ['✏️', 'prac'], mistakes: ['🔧', 'fix'], check: ['🔁', 'chk'], review: ['🗓️', 'rev'] }[step.kind] || ['✏️', 'prac'];
     const box = document.createElement('div'); box.className = 'cdlg-wrap';
     box.innerHTML = `<div class="cdlg upnext un-${look[1]}" role="dialog" aria-modal="true" aria-labelledby="un-t">
-      <div class="un-hero"><small class="un-tag">${PT('Up next', '下一步')}</small><span class="un-ic" aria-hidden="true">${look[0]}</span></div>
+      <div class="un-hero"><small class="un-tag">${PT('Up next', '下一步')}</small><button class="un-x" id="unNo" aria-label="${PT('Close', '關閉')}">✕</button><span class="un-ic" aria-hidden="true">${look[0]}</span></div>
       <div class="un-body">
         <b id="un-t">${K[0]}</b>${step.kind === 'review' ? '' : `<span class="un-ch" data-raw>${esc(name)}</span>`}
         <div class="un-chips">${step.kind === 'review' ? `<span>${what}</span>` : `<span>📝 ${PT(`${n} question${n === 1 ? '' : 's'}`, `${n} 題`)}</span><span>⏱️ ${PT(`about ${mins} min`, `約 ${mins} 分鐘`)}</span>`}</div>
-        ${step.text ? `<div class="un-why"><span class="un-bud">${buddySVG('happy', 40)}</span><p><small>${PT('Why Buddy picked this', 'Buddy 為甚麼選這個')}</small>${esc(step.text)}</p></div>` : ''}
-        <button class="btn" id="unGo">${PT('Start', '開始')} →</button><button class="btn-sm quiet" id="unNo">${PT('Not now', '稍後')}</button>
+        ${upInfoHTML(upInfo(book, c, step))}
+        <button class="btn" id="unGo">${PT('Start', '開始')} →</button>
       </div></div>`;
     document.body.appendChild(box);
     const done = (v) => { box.remove(); resolve(v); };
@@ -798,7 +823,7 @@ async function boostSession(book, c0 = null, step0 = null, plan = false, testId 
   const nm0 = shortTitle(c.unit.title), why = step.kind === 'test' ? (!(c.passes > 0) ? PT(`Practice on ${nm0} is done (${c.pct}%). Next, a chapter test: score 80% or more and it becomes Test-ready (at least 70%).`, `「${nm0}」的練習完成了（${c.pct}%）。下一步是通過章節測驗：第一次合格至少到 70%。`)
       : PT(`${nm0} is at ${c.pct}%. Another chapter test fills the test part, up to 85%.`, `「${nm0}」現在 ${c.pct}%。再做一次章節測驗，可升到 85%。`))
     : step.kind === 'mixed' ? PT(`${nm0} is at ${c.pct}% and its chapter tests are done. Mock exams take it the rest of the way to 100%.`, `「${nm0}」現在 ${c.pct}%，章節測驗已完成。模擬考試帶你走到 100%。`) : '';
-  const upT = { name: nm0, why: why || step.text || '' };
+  const upT = { name: nm0, why: why || step.text || '', info: upInfo(book, c, step) };
   if (step.kind === 'test') return startChapterTest(book, [c.unit], upT);
   if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit);
     return startMiniMock(book, [c.unit, ...others], c.unit, { ...upT, name: PT(`Mostly ${upT.name}, plus ${others.length} other chapter${others.length === 1 ? '' : 's'}`, `主要是「${upT.name}」，另加 ${others.length} 章`) }); }
@@ -830,15 +855,15 @@ function askTime(title, detail, suggested, up = null) {
     box.className = 'cdlg-wrap';
     const draw = () => {
       box.innerHTML = up ? `<div class="cdlg upnext ${up.mock ? 'un-mock' : 'un-test'}" role="dialog" aria-modal="true" aria-labelledby="un-t">
-      <div class="un-hero"><small class="un-tag">${PT('Up next', '下一步')}</small><span class="un-ic" aria-hidden="true">${up.mock ? '🧾' : '📝'}</span></div>
+      <div class="un-hero"><small class="un-tag">${PT('Up next', '下一步')}</small><button class="un-x" id="tm-c" aria-label="${PT('Close', '關閉')}">✕</button><span class="un-ic" aria-hidden="true">${up.mock ? '🧾' : '📝'}</span></div>
       <div class="un-body">
         <b id="un-t">${up.mock ? PT('Mock exam', '模擬考試') : PT('Chapter test', '章節測驗')}</b><span class="un-ch" data-raw>${esc(up.name)}</span>
         <div class="un-chips"><span>📝 ${PT(`${up.n} questions`, `${up.n} 題`)}</span>${up.mock ? '' : `<span>🎯 ${PT('aim for 80%+', '目標 80% 以上')}</span>`}</div>
-        ${up.why ? `<div class="un-why"><span class="un-bud">${buddySVG('happy', 40)}</span><p><small>${PT('Why Buddy picked this', 'Buddy 為甚麼選這個')}</small>${esc(up.why)}</p></div>` : ''}
+        ${up.info ? upInfoHTML(up.info) : ''}
         <div class="un-time"><span id="tm-l">${PT('Time allowed', '作答時間')}</span>
           <div class="stepper" role="group" aria-labelledby="tm-l"><button id="tm-m" aria-label="Less time" ${none || mins <= 5 ? 'disabled' : ''}>−</button><output>${none ? '—' : mins + ' min'}</output><button id="tm-p" aria-label="More time" ${none || mins >= 180 ? 'disabled' : ''}>+</button></div>
           <label class="tm-none"><input type="checkbox" id="tm-n" ${none ? 'checked' : ''}> ${PT('No time limit', '不限時')}</label></div>
-        <button class="btn" id="tm-s">${PT('Start', '開始')} →</button><button class="btn-sm quiet" id="tm-c">${PT('Not now', '稍後')}</button>
+        <button class="btn" id="tm-s">${PT('Start', '開始')} →</button>
       </div></div>` : `<div class="cdlg rdlg" role="dialog" aria-modal="true" aria-labelledby="tm-t">
         <b id="tm-t">${esc(title)}</b><span>${esc(detail)}</span>
         <div class="setup-row" style="margin-top:6px"><span id="tm-l">Time allowed</span>
@@ -6800,7 +6825,7 @@ function stepsTo100(p, chs) {
     if (!it) { it = { key, kind: r.kind, x: r.x, n: 0, mins: 0, from: r.from, to: r.to, raw: r.text }; items.push(it); }
     it.n++; it.mins += r.mins; if (r.to != null) it.to = r.to; }
   const doneOf = (it) => { const r = it.x && it.x.real; if (it.kind === 'mixed') return Math.min(...chs.map((c) => (c.gates || {}).mixed || 0));
-    if (!r) return 0; return it.kind === 'practise' ? Math.min(5, Math.round(Math.min(60, r.prac || 0) / 12)) : it.kind === 'test' ? r.passes || 0 : 0; };
+    if (!r) return 0; return it.kind === 'practise' ? setsDone(p.book.id, r.unit.id) : it.kind === 'test' ? r.passes || 0 : 0; };
   const of = (it, one, many, zo) => { const d = doneOf(it), t = d + it.n; return PT(`${d} of ${t} ${t === 1 ? one : many}`, `${d}/${t} ${zo}`); };
   const label = (it) => { const sn = it.x ? nm(it.x.unit) : '', n = it.n;
     if (p.left >= 99) return { practise: PT(`Practise ${sn} · ${of(it, 'set', 'sets', '組')}`, `練習「${sn}」· ${of(it, 'set', 'sets', '組')}`),
