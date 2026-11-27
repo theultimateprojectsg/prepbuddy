@@ -2577,7 +2577,10 @@ function helperSync() {
   fab.classList.toggle('on', helper.open);
 }
 function helperOpen() {
-  if ($app.querySelector('#coach') || document.getElementById('helperPanel')) return;
+  if (document.getElementById('helperPanel')) return;
+  { const inPage = $app.querySelector('#coach'); // Today's side coach: shown on laptops, hidden on phones (27 Nov fix: the phone button did nothing)
+    if (inPage && inPage.getClientRects().length) { inPage.scrollIntoView({ block: 'nearest' }); const q = document.getElementById('coachQ'); if (q) q.focus(); return; }
+    if (inPage) inPage.remove(); }
   helper.open = true;
   const panel = document.createElement('div');
   panel.id = 'helperPanel'; panel.className = 'helper-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'PrepBuddy helper');
