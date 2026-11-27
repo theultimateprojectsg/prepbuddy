@@ -7378,6 +7378,8 @@ const paceSum = () => true; // decided 27 Nov: one combined line on top of the g
 function paceSumHTML() {
   const L = PACE_LIST.filter((x) => x.left > 0); if (!paceSum() || !L.length) return '';
   const tot = L.reduce((a, x) => a + x.per, 0), many = L.length > 1;
+  // 27 Nov: above an hour a day, no scary number: say what to do instead
+  if (tot > 60) return `<p class="pv-pace pv-pace-sum">⏱️ ${PT(`<b>Not much time left${many ? ' for your tests' : ''}.</b> Do a little every day and start with your weakest chapters: “Let’s do what’s next” picks them for you.`, `<b>${many ? '距離測驗' : ''}時間不多了。</b>每天做一點，先溫習最弱的章節：「下一步」會為你揀選。`)}</p>`;
   return `<p class="pv-pace pv-pace-sum">⏱️ ${PT(`${many ? `For your ${L.length} tests` : `For your ${esc(L[0].name)}`}: about <b>${tot} min a day</b> gets you to 100%${many ? ` (${L.map((x) => `${esc(x.name)} ${x.per}`).join(' · ')})` : ''}.${tot > 90 ? ' That’s a lot: do as much as you can, every step counts.' : ''}`, `${many ? `${L.length} 個測驗` : esc(L[0].name)}：每天約 <b>${tot} 分鐘</b>可達 100%${many ? `（${L.map((x) => `${esc(x.name)} ${x.per}`).join(' · ')}）` : ''}。`)}</p>`;
 }
 async function fullTestCards(tests, btn) {
@@ -7408,7 +7410,8 @@ async function fullTestCards(tests, btn) {
     PACE_LIST.push({ name: p.x.name, per, left: p.left });
     if (paceSum()) return ''; // one combined line on top instead (preview)
     const txt = p.left === 0 ? PT(`${when}: do the next step as a warm-up.`, `${when}：做下一步當熱身。`)
-      : PT(`${when}: about <b>${per} min a day</b> gets you to ${goal}.${per > 90 ? ' That’s a lot: do as much as you can, every step counts.' : ''}`, `${when}：每天約 <b>${per} 分鐘</b>，可達 ${goal}。${per > 90 ? '有點多：盡量做，每一步都有用。' : ''}`);
+      : per > 60 ? PT(`${when}: <b>not much time left.</b> Do a little every day, weakest chapters first.`, `${when}：<b>時間不多了。</b>每天做一點，先溫習最弱的章節。`)
+      : PT(`${when}: about <b>${per} min a day</b> gets you to ${goal}.`, `${when}：每天約 <b>${per} 分鐘</b>，可達 ${goal}。`);
     return `<p class="pv-pace">⏱️ ${txt}</p>`; };
   // memory fades without use (rules §3): say so on the card, or warn the day before it starts, with a quick check
   const fadeNote = (p) => { if (!p.book || (p.x.kind || 'test') === 'dict') return ''; const cs = chOf(p).filter((c) => c.done);
