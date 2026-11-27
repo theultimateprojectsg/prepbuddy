@@ -3354,7 +3354,9 @@ async function renderHome() {
       ${T('tdMist', 'mistakes', Z('Mistake book', '錯題簿'), mc ? Z(`${mc} to get right`, `${mc} 題要改正`) : Z('Nothing to fix', '沒有錯題'))}
       ${T('tdMock', 'mock', Z('Mock exam', '模擬考試'), Z('School-exam style, timed', '校內考試模式，限時'))}</div>`;
     tilesHTML = tilesHTML.replace('id="tdBook"', `id="tdBook" data-bk="${lb ? esc(lb.id) : ''}"`); }
+  const hasTests = !!comboHTML && !comboHTML.includes('<!--TDTILES-->');
   if (comboHTML) comboHTML = comboHTML.replace('<!--TDTILES-->', tilesHTML);
+  const quickTiles = hasTests ? `<section class="td-quick2" aria-label="${Z('Quick start', '快速開始')}"><h2 class="td-qh">${Z('Quick start', '快速開始')}</h2>${tilesHTML.replace(' main"', '"')}</section>` : ''; // 27 Nov: tiles stay under the test card
   const nextPick = allDone || !missionPick.n ? { fresh: true } : missionPick; // once the mission is done, Buddy's pick makes a fresh set // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
@@ -3362,6 +3364,7 @@ async function renderHome() {
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}
     ${closerHTML}
+    ${quickTiles}
     ${installTip()}
     ${comboHTML ? '' : tests.pastHTML}
     ${comboHTML ? '' : testHTML}

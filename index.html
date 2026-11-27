@@ -4042,6 +4042,17 @@ html[lang^="zh"] details.ag-sc.t .ag-body .pv-tch{--chap-label:"章節"}
 .td-tiles .td-tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:14px;border-radius:16px;border:1.5px solid var(--line);background:#fff;cursor:pointer;min-height:128px;font:inherit;color:inherit}
 .td-tiles .td-tile b{font-size:15.5px;color:#1B2559}.td-tiles .td-tile span[data-raw]{font-size:13px;color:var(--text-2);line-height:1.35}
 .td-tiles .td-tile.main{border-color:#26357A;background:#F3F5FF}
+
+/* Today flattened (27 Nov): plain one-line greeting, goals card sits on the page, no card around cards */
+main.today .greet .gr-hero{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important;overflow:visible!important;animation:none!important;gap:12px!important}
+.today .gr-hero::after,.today .gr-hero::before{display:none!important}
+.today .gr-buddy,.today .gr-sub{display:none!important}
+.today .gr-hero h1{font-size:22px!important}
+.today .gr-goals{margin-top:0}
+main.today .greet .gr-row{padding:0!important}
+.td-quick2{display:flex;flex-direction:column;gap:10px}
+.td-quick2 .td-qh{margin:4px 0 0;font-size:17px;color:#1B2559}
+.td-quick2 .td-tiles .td-tile{min-height:112px}
 </style>
 </head>
 <body>
