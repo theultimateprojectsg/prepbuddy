@@ -718,7 +718,22 @@ async function testCtx(id) {
   return { p, chs, aim: TEST_AIM };
 }
 // The test a "Let's do what's next" set came from: its results pop-up keeps going on the SAME test (not the nearest one)
-let boostTest = null;
+let boostTest = null, boostScope = null;
+// Book page: "Get me closer" (whole book) or "Master Unit 4 & 5" (ticked chapters) keep going inside that scope
+const scopeName = (book, ids) => { if (!ids || !ids.length) return shortTitle(book.title);
+  const us = book.units.filter((u) => ids.includes(u.id)).map((u) => shortTitle(u.title).replace(/\s*·.*$/, ''));
+  return us.length <= 2 ? us.join(' & ') : PT(`${us.length} chapters`, `${us.length} 章`); };
+async function scopePick(sc) {
+  const book = (await getBooks()).find((b) => b.id === sc.b); if (!book) return null;
+  const m = await bookMastery(book), chs = m.chapters.filter((c) => (sc.ids ? sc.ids.includes(c.unit.id) : !NOT_TEACHING.test(String(c.unit.title))));
+  const pk = chs.map((c) => ({ c, st: nextStep(c) })).filter((x) => x.st && !(x.st.kind === 'review')).sort((a, z) => (a.st.cap ? 1 : 0) - (z.st.cap ? 1 : 0) || a.c.pct - z.c.pct)[0];
+  return pk ? { book, ...pk } : null;
+}
+async function runScopeNext(sc) {
+  const pk = await scopePick(sc);
+  if (!pk) return toast(PT('Everything here that can move today has moved. Brilliant!', '這裏今天能進步的都完成了，做得好！'));
+  track('scope_next'); return boostSession(pk.book, pk.c, pk.st, false, null, sc);
+}
 const testPick = (t) => t.chs.map((c) => ({ c, st: nextStep(c) })).filter((x) => x.st && !(x.st.kind === 'check' && !(x.c.fading >= 1))).sort((a, z) => (a.st.cap ? 1 : 0) - (z.st.cap ? 1 : 0) || a.c.pct - z.c.pct)[0]; // held chapters after ones that can move
 async function runTestNext(id) {
   const t = await testCtx(id); if (!t) return;
@@ -765,14 +780,14 @@ function stepPreview(book, c, step) {
     setTimeout(() => { const g = box.querySelector('#unGo'); if (g) g.focus(); }, 50);
   });
 }
-async function boostSession(book, c0 = null, step0 = null, plan = false, testId = null) {
+async function boostSession(book, c0 = null, step0 = null, plan = false, testId = null, scope = null) {
   const m = await bookMastery(book);
   const c = c0 ? m.chapters.find((x) => x.unit.id === c0.unit.id) || c0 : weakestChapter(m);
   if (!plan) boostAt = Date.now();
   if (!c) return toast(PT('Every chapter is at 100%. Keep up your reviews!', '每一章都到 100% 了，記得繼續溫習！'));
   const step = step0 || masterySteps({ ...m, chapters: [c] })[0] || { kind: 'practise' };
   if (step.kind !== 'test' && step.kind !== 'mixed' && !(await stepPreview(book, c, step))) return;
-  if (!plan) boostAt = Date.now(); boostTest = testId ? { id: testId, at: Date.now() } : null; // timed from Start, not from the tap that opened 'Up next'
+  if (!plan) boostAt = Date.now(); boostTest = testId ? { id: testId, at: Date.now() } : null; boostScope = scope ? { ...scope, at: Date.now() } : null; // timed from Start, not from the tap that opened 'Up next'
   // why, in plain words: where the chapter is and what this paper does for it (rules §2)
   const nm0 = shortTitle(c.unit.title), why = step.kind === 'test' ? (!(c.passes > 0) ? PT(`Practice on ${nm0} is done (${c.pct}%). Next, a chapter test: score 80% or more and it becomes Test-ready (at least 70%).`, `「${nm0}」的練習完成了（${c.pct}%）。下一步是通過章節測驗：第一次合格至少到 70%。`)
       : PT(`${nm0} is at ${c.pct}%. Another chapter test fills the test part, up to 85%.`, `「${nm0}」現在 ${c.pct}%。再做一次章節測驗，可升到 85%。`))
@@ -5761,7 +5776,7 @@ async function renderBook(bookId) {
     return `<button class="crow ${on ? 'picked' : ''}" data-unit="${esc(u.id)}" aria-pressed="${on}" data-name="${esc(String(u.title).toLowerCase())}" title="${u.startPage ? `pp. ${u.startPage}–${u.endPage}` : ''}${sh > 0 ? ' · harder questions now' : sh < 0 ? ' · more basics first' : ''}">
       <span class="box ${on ? 'on' : ''}" aria-hidden="true">${on ? ICON.check : ''}</span>
       <span class="ct" data-raw>${esc(cleanTitle(u.title))}</span>
-      ${c.done ? `<span class="cp" style="color:${pctColour(c.pct)}">${c.pct}%</span>` : `<span class="cpp">${u.startPage ? `p. ${u.startPage}` : ''}</span>`}
+      <span class="cp2"><b style="color:${c.done ? pctColour(c.pct) : 'var(--muted-2)'}">${c.done ? `${c.pct}%` : '–'}</b><small>${masteryLabel(c.done ? c.pct : 0)}</small></span><span class="cgo" aria-hidden="true">›</span>
     </button>`;
   };
   const listHTML = grouped
@@ -5800,7 +5815,7 @@ async function renderBook(bookId) {
           <p>${[`${book.units.length} ${PT(book.units.length === 1 ? 'chapter' : 'chapters', '章')}`, answered ? `${answered} ${PT('answered', '題已答')}` : '', book.library ? '' : PT('Uploaded by you', '自行上載')].filter(Boolean).join(' · ')}</p></div>
         <div class="bk2-ring"><div class="ring ${hp >= 85 ? 'good' : hp >= 50 ? 'mid' : ''}" style="--p:${hp}" role="img" aria-label="${hp}% ready"><span>${hp}%</span></div><small>${masteryLabel(hp)}</small></div>
       </div>
-      ${hp > 0 && hp < 100 ? `<button class="btn boost bk2-boost"><b>${ICON.target} ${PT('Get me closer to 100%', '帶我更接近 100%')}</b>${hs[0] ? `<small data-raw>${esc(`${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(hs[0].text)}`)}</small>` : ''}</button>` : ''}
+      ${hp < 100 ? `<button class="btn boost bk2-boost"><b>${ICON.target} ${PT('Get me closer to 100%', '帶我更接近 100%')}</b>${hs[0] ? `<small data-raw>${esc(`${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(hs[0].text)}`)}</small>` : ''}</button>` : ''}
     </section>`;
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button></div>
@@ -5808,12 +5823,13 @@ async function renderBook(bookId) {
   <div class="bk-head-m">${head}</div>
   <main class="bk-main stack g14">
     <div class="bk-head-d">${head}</div>
-    <h2 class="bk-sec" id="bk-practise"><span class="bk-sec-ic">${actionIcon('practise', 22)}</span>Practise</h2>
+    
     <div class="chtools">
-      <p style="margin:0;font-size:16px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters to practise <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
+      <p style="margin:0;font-size:16px;font-weight:600">${PT('Chapters', '章節')} <span class="muted" style="font-weight:500">(${book.units.length})</span></p>
       ${book.units.length > 1 ? `<button class="btn-sm" id="all" >${n === book.units.length ? 'Clear all' : 'Select all'}</button>` : ''}
       ${book.units.length > 12 ? `<label class="chsearch"><span aria-hidden="true">${ICON.search}</span><input id="chsearch" type="search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>` : ''}
     </div>
+    <p class="bk-mhint bk-mhint-l">${PT('Tick chapters to master just those, or tap a chapter’s name to see it.', '剔選章節，只掌握這些；或按章節名稱查看該章。')}</p>
     <div class="chlist" id="chlist">${listHTML}</div>
     <p class="muted" style="font-size:12px;margin:0;line-height:1.5">${book.library
       ? `From the PrepBuddy library · book code ${esc(book.code)}${book.credit ? `<br>Source: ${esc(book.credit)}` : ''}`
@@ -5821,37 +5837,12 @@ async function renderBook(bookId) {
     <button class="btn-sm danger" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>
   <aside class="bk-side">
-  <div class="sheet sticky setup ${n ? 'armed' : ''} ${pick.opts ? 'expanded' : ''}">
-    <div class="setup-head"><p style="margin:0;font-size:16px;font-weight:600">2. Set up your practice${n ? ` <span class="muted" style="font-weight:500">· ${n} chapter${n > 1 ? 's' : ''} ticked</span>` : ''}</p>${n ? `<button class="btn-sm setup-more" id="opts" aria-expanded="${!!pick.opts}">${pick.opts ? 'Fewer options' : 'More options'}</button>` : ''}</div>
-    <div class="setup-row">
-      <span id="types-label">Questions</span>
-      <div class="seg" role="radiogroup" aria-labelledby="types-label">
-        ${TYPE_CHOICES.map(([k, l]) => `<button role="radio" aria-checked="${t === k}" data-types="${k}" class="${t === k ? 'on' : ''}">${l}</button>`).join('')}
-      </div>
-    </div>
-    <div class="setup-row diffrow">
-      <span id="diff-label">Difficulty</span>
-      <div class="seg diffseg" role="radiogroup" aria-labelledby="diff-label">
-        ${DIFFS.map(([k, l]) => `<button role="radio" aria-checked="${curDiff() === k}" data-diff="${k}" class="${curDiff() === k ? 'on' : ''} ${!cap('hardDiff') && !['easy', 'medium'].includes(k) ? 'dlock' : ''}" title="${{ auto: 'Adjusts to how you are doing', easy: 'Remember and understand', medium: 'Understand and apply', hard: 'Apply and analyse', master: 'Analyse and evaluate: the hardest questions' }[k]}">${l}${!cap('hardDiff') && !['easy', 'medium'].includes(k) ? ' 🔒' : ''}</button>`).join('')}
-      </div>
-    </div>
-    <div class="setup-row">
-      <span id="count-label">How many</span>
-      <div class="stepper" role="group" aria-labelledby="count-label">
-        <button id="minus" aria-label="Fewer questions" ${count <= 5 ? 'disabled' : ''}>−</button>
-        <output id="count" aria-live="polite">${count}</output>
-        <button id="plus" aria-label="More questions" ${count >= 100 ? 'disabled' : ''}>+</button>
-      </div>
-    </div>
-    <button class="btn" id="go" ${n ? '' : 'disabled'}>${n ? `Start ${count} questions · about ${mins} min` : 'Tick at least one chapter'}</button>
-    <div class="more-ways"><p class="mw-h">More ways to study${n ? '' : ' <span class="muted">· tick a chapter first</span>'}</p>
-      <div class="mw-grid">
-        <button class="mw" id="ctest" ${n ? '' : 'disabled'}>${lockTag('test')}${actionTile('test', 40)}<b>Chapter test</b><span>Timed, like a school test</span></button>
-        <button class="mw" id="notes" ${n ? '' : 'disabled'}>${actionTile('notes', 40)}<b>Notes</b><span>Key points to revise</span></button>
-        <button class="mw" id="cards" ${n ? '' : 'disabled'}>${actionTile('flashcards', 40)}<b>Flashcards</b><span>Quick-fire recall</span></button>
-        <button class="mw" id="paper">${lockTag('mock')}${actionTile('mock', 40)}<b>Mock exam</b><span>DSE-style or worksheet</span></button>
-      </div>
-    </div>
+  <div class="sheet sticky bk-master ${n ? 'armed' : ''}">
+    ${bookTool && bookTool.bookId === book.id ? (() => { const isN = bookTool.tool === 'notes', w = isN ? PT('revision notes', '溫習筆記') : PT('flashcards', '閃卡');
+      return n ? `<button class="btn" id="toolgo">${PT(`Open ${w}`, `打開${w}`)}</button>` : `<p class="bk-mhint">${PT(`Tick the chapters you want, then open their ${w}.`, `剔選章節，然後打開${w}。`)}</p>`; })()
+    : n ? `<button class="btn" id="master">${PT(`Master ${scopeName(book, [...pick.ids])} →`, `掌握「${scopeName(book, [...pick.ids])}」→`)}</button>
+      <p class="bk-mhint">${PT('Buddy takes these chapters step by step: practice, chapter tests, then a mock exam, until they reach 100%.', 'Buddy 會一步步帶你完成這些章節：練習、章節測驗，再到模擬考試，直到 100%。')}</p>`
+      : `<p class="bk-mhint">${PT('Tick chapters to master just those, or tap a chapter’s name to see it.', '剔選章節，只掌握這些；或按章節名稱查看該章。')}</p>`}
   </div>
   </aside>
   </div>`;
@@ -5875,17 +5866,20 @@ async function renderBook(bookId) {
   document.getElementById('back').onclick = () => { pick = { bookId: null, ids: new Set() }; goBack({ name: 'books' }); };
   const a = document.getElementById('all');
   if (a) a.onclick = () => { if (pick.ids.size === book.units.length) pick.ids.clear(); else book.units.forEach((u) => pick.ids.add(u.id)); keep(); };
-  function bindRows() { $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = () => { const id = b.dataset.unit; pick.ids.has(id) ? pick.ids.delete(id) : pick.ids.add(id); keep(); })); }
+  function bindRows() { $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = (e) => { const id = b.dataset.unit;
+    if (!e.target.closest('.box')) { const c = bm.chapters.find((x) => x.unit.id === id); if (c) return chapterSheet(book, c); }
+    pick.ids.has(id) ? pick.ids.delete(id) : pick.ids.add(id); keep(); })); }
   bindRows();
   prefetch(book, book.units.filter((u) => pick.ids.has(u.id)));
-  $app.querySelectorAll('[data-types]').forEach((b) => (b.onclick = () => { local.types = b.dataset.types; local.typesSet = true; saveLocal(); keep(); }));
+  // (removed 27 Nov: the setup panel)
   $app.querySelectorAll('[data-diff]').forEach((b) => (b.onclick = () => { if (b.classList.contains('dlock')) return upsell('hardDiff', 'locked'); local.diff = b.dataset.diff; saveLocal(); keep(); }));
   const step = (d) => { local.count = Math.min(100, Math.max(5, (local.count || sessionSize()) + d)); saveLocal(); keep(); };
-  document.getElementById('minus').onclick = () => step((local.count || sessionSize()) > 20 ? -10 : -5);
-  document.getElementById('plus').onclick = () => step((local.count || sessionSize()) >= 20 ? 10 : 5);
-  document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || sessionSize()); };
+  // (removed 27 Nov: the setup panel)
+  // (removed 27 Nov: the setup panel)
+  // (removed 27 Nov: the setup panel)
   document.getElementById('delete').onclick = () => confirmRemove(book);
-  $app.querySelectorAll('.bk2-boost').forEach((x) => (x.onclick = () => boostSession(book)));
+  $app.querySelectorAll('.bk2-boost').forEach((x) => (x.onclick = () => runScopeNext({ b: book.id, ids: null })));
+  { const ms = document.getElementById('master'); if (ms) ms.onclick = () => runScopeNext({ b: book.id, ids: [...pick.ids] }); }
   { const ics = document.getElementById('icSel'); if (ics) ics.onchange = () => { local.inClass = local.inClass || {};
     if (ics.value) local.inClass[book.id] = { u: ics.value, t: Date.now() }; else delete local.inClass[book.id];
     { const md = (local.mdone || {})[dayStart()]; if (local.mission && !(md && md[0])) local.mission.v = 0; } saveLocal(); toast(ics.value ? PT('Got it: Buddy will keep in step with your class', '收到：Buddy 會跟上班上進度') : PT('Cleared', '已清除')); }; }
@@ -5896,21 +5890,9 @@ async function renderBook(bookId) {
     if (b.dataset.stepKind === 'review') return startReview('spaced');
     pick.ids = new Set([b.dataset.stepUnit]); keep();
   }));
-  document.getElementById('ctest').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); if (units.length) startChapterTest(book, units); };
-  document.getElementById('paper').onclick = () => go({ name: 'paper', bookId });
-  document.getElementById('notes').onclick = () => go({ name: 'notes', bookId });
-  { const ps = document.getElementById('plSkip'); if (ps) ps.onclick = () => { local.plHide = { ...(local.plHide || {}), [book.id]: 1 }; saveLocal(); keep(); }; }
-  document.getElementById('cards').onclick = () => go({ name: 'cards', bookId });
-  if (bookTool && bookTool.bookId === bookId) {
-    const isN = bookTool.tool === 'notes', zh = LANG === 'zh', g = document.getElementById('go'), nT = pick.ids.size;
-    const what = isN ? (zh ? '溫習筆記' : 'revision notes') : (zh ? '閃卡' : 'flashcards');
-    // opened for flashcards or notes: say so
-    { const sec = document.getElementById('bk-practise'); if (sec) sec.lastChild.textContent = isN ? (zh ? '溫習筆記' : 'Revision notes') : (zh ? '閃卡' : 'Flashcards');
-      const c1 = $app.querySelector('.chtools > p'); if (c1 && book.units.length > 1) c1.innerHTML = `${zh ? '1. 選擇章節' : '1. Choose chapters'} <span class="muted" style="font-weight:500">(${book.units.length})</span>`;}
-    const h = $app.querySelector('.chtools'); if (h) h.insertAdjacentHTML('afterend', `<p class="bk-tip">${zh ? `剔選你想溫習的章節，然後按「打開${what}」。` : `Tick the chapters you want, then tap Open ${what}.`}</p>`);
-    const sh = $app.querySelector('.setup-head p'); if (sh) sh.innerHTML = `${zh ? '2. 打開' + what : '2. Open ' + what}${nT ? ` <span class="muted" style="font-weight:500">· ${nT} ${zh ? '章' : nT > 1 ? 'chapters' : 'chapter'}</span>` : ''}`;
-    if (g) { g.textContent = nT ? (zh ? `打開${what}` : `Open ${what}`) : (zh ? '先剔選至少一章' : 'Tick at least one chapter'); g.onclick = () => { document.getElementById(isN ? 'notes' : 'cards').click(); backTo = { name: 'book', bookId, focus: bookTool.tool }; }; }
-  }
+  // (removed 27 Nov: the setup panel)
+  // (removed 27 Nov: the setup panel)
+  { const tg = document.getElementById('toolgo'); if (tg) tg.onclick = () => go({ name: bookTool.tool === 'notes' ? 'notes' : 'cards', bookId }); }
   window.scrollTo(0, 0);
   if (bookFocus) {
     const el = $app.querySelector('#bk-practise'); bookFocus = null;
@@ -8713,7 +8695,7 @@ function streakInfo(has, t0 = startOfToday()) {
   return { n, rests };
 }
 function newSession(props) {
-  const sess = Object.assign({ from: view && view.name, boost: Date.now() - boostAt < 60000, boostTest: boostTest && Date.now() - boostTest.at < 60000 ? boostTest.id : null, at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
+  const sess = Object.assign({ from: view && view.name, boost: Date.now() - boostAt < 60000, boostTest: boostTest && Date.now() - boostTest.at < 60000 ? boostTest.id : null, boostScope: boostScope && Date.now() - boostScope.at < 60000 ? { b: boostScope.b, ids: boostScope.ids || null } : null, at: Date.now(), i: 0, answers: [], got: [], ticks: {}, marks: {}, phase: 'answer', review: false, deadline: null, waiting: false, generating: false, error: null }, props);
   snapPre(sess);
   try { sess.preMk = mistakeCount(); } catch (e) {}
   return sess;
@@ -10948,7 +10930,10 @@ async function resultMoment(sess, qs, pct, got, total) {
     if (sess.boost) {
       // started from a test card: keep going on that test; otherwise (or if that test has nothing left) the yellow button's pick
       const t = sess.boostTest ? await testCtx(sess.boostTest).catch(() => null) : null, tp = t && testPick(t);
-      if (tp) home = { label: Z(`Keep going: ${t.p.x.name} →`, `繼續：${t.p.x.name} →`), run: () => runTestNext(sess.boostTest) };
+      const sp = sess.boostScope ? await scopePick(sess.boostScope).catch(() => null) : null;
+      if (sp) home = { label: Z(`Keep going: ${scopeName(sp.book, sess.boostScope.ids)} →`, `繼續：${scopeName(sp.book, sess.boostScope.ids)} →`), run: () => runScopeNext(sess.boostScope) };
+      else if (sess.boostScope) { const bk = sess.book; home = { label: Z('Back to the book', '返回課本'), run: () => go(bk ? { name: 'book', bookId: bk.id } : { name: 'books' }) }; }
+      else if (tp) home = { label: Z(`Keep going: ${t.p.x.name} →`, `繼續：${t.p.x.name} →`), run: () => runTestNext(sess.boostTest) };
       else { const nx = await closerPick().catch(() => null);
         if (nx) home = { label: Z('Keep going: closer to 100% →', '繼續：更接近 100% →'), run: () => runCloser() }; else boostLast = true; } }
     else if (M && M.cur && M.curAt && M.d === dayStart() && sess.from === 'home' && Date.now() - M.curAt < 3 * 3600000) {
@@ -11186,7 +11171,7 @@ function renderSummary() {
   document.getElementById('back').onclick = leave;
   const m = document.getElementById('more'); if (m) m.onclick = () => startUnits(unitRef.book, unitRef.units, S.count || sessionSize());
   const r = document.getElementById('retry');
-  const again = (list, title) => { const l = shuffle(list).map(shuffleOptions), was = S; S = newSession({ mode: 'retry', title, book: S.book, qs: l, target: l.length }); S.boost = was.boost; S.boostTest = was.boostTest; S.from = was.from; renderQuestion(); };
+  const again = (list, title) => { const l = shuffle(list).map(shuffleOptions), was = S; S = newSession({ mode: 'retry', title, book: S.book, qs: l, target: l.length }); S.boost = was.boost; S.boostTest = was.boostTest; S.boostScope = was.boostScope; S.from = was.from; renderQuestion(); };
   if (r) r.onclick = () => again(missed, 'Retry');
   $app.querySelectorAll('[data-retry]').forEach((x) => (x.onclick = () => again(missed, 'Retry')));
   const rd = document.getElementById('redo'); if (rd) rd.onclick = () => again(qs, 'Redo');

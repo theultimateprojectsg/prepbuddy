@@ -3980,6 +3980,21 @@ html[lang^="zh"] details.ag-sc.t .ag-body .pv-tch{--chap-label:"章節"}
 .bk2-ring .ring{width:60px;height:60px}.bk2-ring .ring span{width:47px;height:47px;font-size:15px}
 .bk2-ring small{font-size:11.5px;font-weight:700;color:var(--text-2)}
 .bk2 .bk2-boost{padding:9px 14px}
+/* Book page: chapters with % and stage; tick to master, tap the name to open (27 Nov) */
+.bk-master{display:flex;flex-direction:column;gap:6px}
+.bk-master .btn{width:100%}
+.bk-mhint{margin:0;font-size:13px;line-height:1.45;color:var(--text-2);text-align:center}
+.crow .cp2{display:flex;flex-direction:column;align-items:flex-end;flex:none;line-height:1.15;margin-left:auto}
+.crow .cp2 b{font-size:15px}.crow .cp2 small{font-size:11px;color:var(--text-2);font-weight:600}
+.crow .cgo{flex:none;color:var(--text-2);font-size:20px;margin-left:6px}
+.crow .box{padding:6px;margin:-6px;box-sizing:content-box}
+@media (max-width:1023px){
+  .bk-master{position:fixed!important;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom))!important;z-index:30;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 28px rgba(30,42,90,.18)!important;padding:12px!important;background:#FFFFFF}
+  .bk-master:not(.armed){display:none!important}
+  .bookpage{padding-bottom:150px}
+}
+@media (min-width:1024px){ .bk-mhint-l{display:none} .bookpage .chlist .gbody{grid-template-columns:1fr!important} }
+.bk-mhint-l{text-align:left;margin:-4px 0 0}
 </style>
 </head>
 <body>
