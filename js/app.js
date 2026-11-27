@@ -459,11 +459,14 @@ function firstTries() {
 }
 // chapter tests on this chapter alone (mixed papers across chapters are counted separately: mixedFor)
 function testsFor(key) {
-  return (local.tests || []).filter((t) => t.per && Object.keys(t.per).length === 1).map((t) => ({ t: t.t, r: t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
+  return (local.tests || []).filter((t) => t.per && isChapterTest(t)).map((t) => ({ t: t.t, r: t.per[key] })).filter((x) => x.r && x.r[1] >= TEST_MIN_Q).sort((a, b) => a.t - b.t);
 }
 // mixed papers that covered this chapter along with others (closest to a real school test)
+// 27 Nov fix: a paper is a chapter test or a mock exam by what it was (kind), not by how many chapters it had: a mock exam
+// with only one chapter in it was counted as a chapter test, which can't go past 85%. Old records without a kind keep the old rule.
+const isChapterTest = (t) => (t.kind ? t.kind === 'test' : Object.keys(t.per).length === 1);
 function mixedFor(key) {
-  return (local.tests || []).filter((t) => t.per && Object.keys(t.per).length >= 2 && t.per[key] && t.per[key][1] >= 2).map((t) => ({ t: t.t, r: t.per[key], all: Object.values(t.per).reduce((a, r) => [a[0] + r[0], a[1] + r[1]], [0, 0]) })).sort((a, b) => a.t - b.t);
+  return (local.tests || []).filter((t) => t.per && !isChapterTest(t) && t.per[key] && t.per[key][1] >= 2).map((t) => ({ t: t.t, r: t.per[key], all: Object.values(t.per).reduce((a, r) => [a[0] + r[0], a[1] + r[1]], [0, 0]) })).sort((a, b) => a.t - b.t);
 }
 function chapterMastery(book, u, qs, text, ntextPre) {
   const T = chapterTarget(u), now = Date.now();
