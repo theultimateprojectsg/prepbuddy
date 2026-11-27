@@ -3331,13 +3331,25 @@ async function renderHome() {
   const missionPick = { n: steps.filter((x) => !x.done && x.now).length, mins: steps.reduce((a, x) => a + (x.done || !x.now ? 0 : jobMin(x)), 0), titles: steps.filter((x) => !x.done && x.now).map((x) => String(x.now.t).replace(/\s*[:：·,–-]\s*\d+\s*(questions?|qs|題)\s*$/i, '')) };
   planState.due = (await dueItems().catch(() => [])).length; // for the "Clear your to-dos" choice
   // "Get me closer to 100%": always there, says what it will do next
-  let closerHTML = '';
-  try { const cp = await closerPick();
+  let closerHTML = ''; const noToday = true; // 27 Nov: Get me closer lives on the book page only
+  if (!noToday) try { const cp = await closerPick();
     if (cp && cp.test) closerHTML = ''; // the test card's "Let's do what's next" does this
     else if (cp) { const nm = shortTitle(cp.c.unit.title), k = cp.step.kind;
       const what = cp.step.text; // the brain's own words, the same as Buddy's plan and the chapter page
       closerHTML = `<button class="closer-btn" id="closerGo"><span class="cl-ic" aria-hidden="true">🎯</span><span class="cl-t"><b>${Z('Get me closer to 100%', '帶我更接近 100%')}</b><small data-raw>${esc(Z('Next: ', '下一步：') + what + (cp.test ? Z(` · for your ${cp.test}`, ` · 為「${cp.test}」`) : ''))} · ${cp.c.pct}%</small></span><span class="cl-go" aria-hidden="true">→</span></button>`; }
     else if (books.length) closerHTML = `<div class="closer-btn cl-done" role="status"><span class="cl-ic" aria-hidden="true">🏁</span><span class="cl-t"><b>${Z('As close as you can get today', '今天已盡力更接近 100%')}</b><small>${Z('Everything that can move today has moved. Come back tomorrow for more.', '今天能進步的都完成了，明天再來。')}</small></span></div>`; } catch (e) { console.warn(e); }
+  // no test: four clear tiles instead (27 Nov)
+  let tilesHTML = '';
+  { let lb = null; for (let i = (local.log || []).length - 1; i >= 0 && !lb; i--) { const q = local.log[i].q; if (q) lb = books.find((b) => q.startsWith(b.id + ':')); }
+    lb = lb || books[0]; let lp = null; try { if (lb) lp = (await bookMastery(lb)).pct; } catch (e) { /* tile still works */ }
+    const mc = mistakeCount();
+    const T = (id, ic, t, sub, cls = '') => `<button class="qtile td-tile ${cls}" id="${id}">${actionTile(ic, 44)}<b>${t}</b><span data-raw>${sub}</span></button>`;
+    tilesHTML = `<div class="td-tiles">${T('tdAdd', 'test', SCH('Add a test', '加入測驗'), SCH('Buddy plans each day until it', 'Buddy 安排每天的溫習'), 'main')}
+      ${lb ? T('tdBook', 'practise', Z('Continue a book', '繼續課本'), esc(`${shortTitle(lb.title)}${lp != null ? ` · ${lp}%` : ''}`)) : ''}
+      ${T('tdMist', 'mistakes', Z('Mistake book', '錯題簿'), mc ? Z(`${mc} to get right`, `${mc} 題要改正`) : Z('Nothing to fix', '沒有錯題'))}
+      ${T('tdMock', 'mock', Z('Mock exam', '模擬考試'), Z('School-exam style, timed', '校內考試模式，限時'))}</div>`;
+    tilesHTML = tilesHTML.replace('id="tdBook"', `id="tdBook" data-bk="${lb ? esc(lb.id) : ''}"`); }
+  if (comboHTML) comboHTML = comboHTML.replace('<!--TDTILES-->', tilesHTML);
   const nextPick = allDone || !missionPick.n ? { fresh: true } : missionPick; // once the mission is done, Buddy's pick makes a fresh set // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
@@ -3355,6 +3367,8 @@ async function renderHome() {
   bindHomeCommon();
   { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-go') || $app.querySelector('.ms-item .ms-go'); if (r) r.click(); }; }
   { const a = document.getElementById('glAddTest'); if (a) a.onclick = () => testDialog(); }
+  { const t = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = () => f(e); };
+    t('tdAdd', () => testDialog()); t('tdBook', (e) => go({ name: 'book', bookId: e.dataset.bk })); t('tdMist', () => go({ name: 'mistakes' })); t('tdMock', () => go({ name: 'pick', mode: 'mock' })); }
   ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); });
   { const n = document.getElementById('noTest'); if (n) n.onclick = () => { local.noTestAsk = Date.now(); saveLocal(); renderHome(); }; }
   $app.querySelectorAll('[data-cbmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.combo', b.dataset.cbmode); renderHome(); }));
@@ -7327,8 +7341,7 @@ function goalsCardHTML(GD, o = {}) {
   };
   const who = o.title ? o.title : local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
   return `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
-    ${goalsHowHTML()}${o.past || ''}${paceSumHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : (local.noTestAsk && Date.now() - local.noTestAsk < 7 * DAY ? `<button class="weekstrip ag-empty" id="addTest4"><span class="wt"><b>${SCH('Got a test coming up?', '快要測驗？')}</b><span>${SCH('Add it and it becomes a goal: Buddy plans each day until the test.', '加入後就會成為目標：Buddy 會安排考試前每天的溫習。')}</span></span><span class="wp" aria-hidden="true">+</span></button>`
-      : `<div class="ag-first"><span class="ag-fic" aria-hidden="true">📅</span><b>${SCH('When’s your next test?', '下一次測驗是甚麼時候？')}</b><p>${SCH('Tell Buddy the subject, the date and the chapters. Every day’s plan then gets you ready for it: practice on the weakest chapters, chapter tests, and a mock paper before the day.', '告訴 Buddy 科目、日期和章節。之後每天的計劃都會幫你準備：先練最弱的章節，再做章節測驗，考試前做模擬試卷。')}</p><button class="btn" id="addTest4">${SCH('Add my next test', '加入下一次測驗')}</button><button class="linkbtn" id="noTest">${SCH('No test coming up', '暫時沒有測驗')}</button></div>`)}</section>`;
+    ${goalsHowHTML()}${o.past || ''}${paceSumHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : '<!--TDTILES-->'}</section>`;
 }
 // Pace line: per test card, or (preview, localStorage pb.pace = 'sum') one line for all tests on top of the goals card
 let PACE_LIST = [];
