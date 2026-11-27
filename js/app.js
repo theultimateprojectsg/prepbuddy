@@ -9215,7 +9215,7 @@ function testDialog(edit) {
     if (!st.subj && book && st.kind === 'test') st.subj = bookSubjKey(book);
     st.sname = book ? String(book.subject || book.title || '').trim() : '';
     if (!st.named) st.name = autoName();
-    const kinds = [['test', SCH('Test or quiz', '測驗'), SCH('One subject', '一個科目'), 'test'], ['exam', SCH('Exams', '考試'), SCH('Several subjects', '多個科目'), 'mock'], ['dict', SCH('Dictation', '默書'), SCH('Spelling', '默寫詞語'), 'dictation']];
+    const kinds = [['test', SCH('Test or quiz', '測驗'), SCH('One subject', '一個科目'), 'test'], ...(group ? [['exam', SCH('Exams', '考試'), SCH('Several subjects', '多個科目'), 'mock']] : []), ['dict', SCH('Dictation', '默書'), SCH('Spelling', '默寫詞語'), 'dictation']];
     const lists = (local.dict || []).filter((L) => dictGroup(L.lang) === st.lang);
     const dls = DICT_LANGS.filter((x) => x[0] === 'zh' || x[0] === 'en' || x[0] === st.lang || EXTRA_SUBJ.has(x[3]) || (local.dict || []).some((L) => L.lang === x[0]));
     let body = '';
@@ -9239,8 +9239,8 @@ function testDialog(edit) {
     }
     box.innerHTML = `<div class="cdlg rdlg tdlg" role="dialog" aria-modal="true" aria-labelledby="td-t" data-raw>
       <div class="td-head"><span class="td-ht"><b id="td-t">${edit ? SCH('Edit school test', '修改學校測驗') : SCH('Add a school test', '加入學校測驗')}</b><small>${SCH('It becomes a goal: Buddy plans each day until the test.', '它會成為目標：Buddy 會安排考試前每天的溫習。')}</small></span><button type="button" class="td-x" id="td-x" aria-label="${SCH('Close', '關閉')}">✕</button>${edit ? `<button type="button" class="btn-sm danger td-delbtn" id="td-del"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>${SCH('Delete', '刪除')}</button>` : ''}</div>
-      ${edit ? '' : `<div class="td-kinds" role="radiogroup" aria-label="${SCH('What kind of test?', '甚麼類型？')}">${kinds.map(([k, t, sub, ic]) => `<button type="button" role="radio" aria-checked="${st.kind === k}" data-kind="${k}" class="${st.kind === k ? 'on' : ''}"><span class="td-kic">${actionIcon(ic, 18)}</span><b>${t}</b><small>${sub}</small></button>`).join('')}</div>`}
-      <label for="td-n">${SCH('Name', '名稱')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. Science test, Term 1 exams', '例如：科學測驗、上學期考試')}" value="${esc(st.name)}">
+      ${edit ? '' : `<div class="td-kinds" style="grid-template-columns:repeat(${kinds.length},1fr)" role="radiogroup" aria-label="${SCH('What kind of test?', '甚麼類型？')}">${kinds.map(([k, t, sub, ic]) => `<button type="button" role="radio" aria-checked="${st.kind === k}" data-kind="${k}" class="${st.kind === k ? 'on' : ''}"><span class="td-kic">${actionIcon(ic, 18)}</span><b>${t}</b><small>${sub}</small></button>`).join('')}</div>`}
+      <label for="td-n">${SCH('Name', '名稱')}</label><input id="td-n" class="input" placeholder="${SCH('e.g. English test, Science quiz', '例如：英文測驗、科學小測')}" value="${esc(st.name)}">
       ${body}
       <p class="hw-err" id="td-err" role="alert" hidden></p>
       <div class="rd-row"><button class="btn ghost" id="td-cancel">${SCH('Cancel', '取消')}</button><button class="btn" id="td-save">${SCH('Save', '儲存')}</button></div>
