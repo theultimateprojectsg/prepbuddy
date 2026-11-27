@@ -1397,11 +1397,82 @@ function chapterLever(c) {
   const k = !c.done ? 'start' : st.kind === 'test' ? (c.passes ? 'retest' : 'test') : st.kind === 'mixed' ? 'mixed' : st.kind === 'check' ? 'check' : st.kind === 'review' ? 'reviews' : 'practise';
   return { k, en: st.text.charAt(0).toLowerCase() + st.text.slice(1) };
 }
+// Buddy sets things up (27 Nov, asked for by pilot parents): its reply can carry tests, dictations and a study reminder
+// to add. They show as a card under the reply; nothing is saved until the parent ticks and taps Add.
+async function parseSetup(list) {
+  const books = await getBooks(), out = [], today = ymd(Date.now());
+  for (const x of list.slice(0, 10)) {
+    if (!x || typeof x !== 'object') continue;
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(String(x.date || '')) && String(x.date) >= today ? String(x.date) : '';
+    if (x.kind === 'test') {
+      const chs = (Array.isArray(x.chapters) ? x.chapters : []).map((c) => coachIndex[String(c)]).filter((c) => c && c.unitId);
+      const bookId = (chs[0] && chs[0].bookId) || (coachIndex[String(x.book || '')] || {}).bookId; const b = books.find((y) => y.id === bookId);
+      if (!b || !date) continue;
+      out.push({ kind: 'test', name: String(x.name || `${b.subject || shortTitle(b.title)} test`).slice(0, 60), date, b: b.id, bt: shortTitle(b.title), subj: bookSubjKey(b), u: [...new Set(chs.filter((c) => c.bookId === b.id).map((c) => c.unitId))], on: true });
+    } else if (x.kind === 'dictation') {
+      if (!date) continue; const lang = x.lang === 'en' ? 'en' : 'zh';
+      out.push({ kind: 'dict', name: String(x.name || (lang === 'en' ? SCH('English dictation', '英文默書') : SCH('Chinese dictation', '中文默書'))).slice(0, 60), date, lang,
+        words: (Array.isArray(x.words) ? x.words : []).map((w) => String(w).trim().slice(0, 80)).filter(Boolean).slice(0, 40), on: true });
+    } else if (x.kind === 'reminder') {
+      const days = [...new Set((Array.isArray(x.days) ? x.days : []).map(Number).filter((d) => d >= 0 && d <= 6))].sort();
+      const time = /^\d{1,2}:\d{2}$/.test(String(x.time || '')) ? String(x.time).padStart(5, '0') : '';
+      if (days.length && time) out.push({ kind: 'remind', days, time, on: true });
+    }
+  }
+  return out;
+}
+function setupCardHTML(m, k) {
+  const DN = LANG === 'zh' ? ['一', '二', '三', '四', '五', '六', '日'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const fd = (d) => new Date(d + 'T00:00:00').toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' });
+  const row = (x, j) => {
+    const what = x.kind === 'test' ? `${fd(x.date)} · ${esc(x.bt || '')}${x.u.length ? ` · ${x.u.length} ${PT(x.u.length === 1 ? 'chapter' : 'chapters', '章')}` : ` · ${PT('everything practised', '所有練習過的內容')}`}`
+      : x.kind === 'dict' ? `${fd(x.date)} · ${x.lang === 'en' ? PT('English', '英文') : PT('Chinese', '中文')} · ${x.words.length ? PT(`${x.words.length} words`, `${x.words.length} 個詞語`) : PT('words to add', '稍後加入詞語')}`
+      : `${x.days.map((d) => DN[d]).join(LANG === 'zh' ? '、' : ', ')} · ${x.time}`;
+    const ic = x.kind === 'test' ? 'test' : x.kind === 'dict' ? 'dictation' : 'review';
+    const t = x.kind === 'remind' ? PT('Study-time reminder (in your calendar)', '溫習時間提醒（加入日曆）') : esc(x.name);
+    return `<label class="su-row${x.done ? ' done' : ''}">${x.done ? '<span class="su-ok">✓</span>' : `<input type="checkbox" data-su="${k}:${j}" ${x.on ? 'checked' : ''}>`}${actionTile(ic, 34)}<span class="su-t"><b data-raw>${t}</b><small data-raw>${what}</small></span></label>`; };
+  const left = m.setup.filter((x) => !x.done).length;
+  return `<div class="su-card"><div class="su-h">${PT('Buddy can add these', 'Buddy 可以加入以下項目')}</div>${m.setup.map(row).join('')}
+    ${left ? `<button class="btn-sm primary su-add" data-suadd="${k}">${PT(left > 1 ? 'Add the ticked ones' : 'Add', left > 1 ? '加入已選項目' : '加入')}</button>` : `<p class="su-done">${PT('Added. You can change them on Today.', '已加入，可以在「今日」修改。')}</p>`}</div>`;
+}
+function makeStudyReminder(days, time) { // a repeating calendar event: works on any phone, no app permissions or push setup needed
+  local.remind = { days, time }; saveLocal();
+  const [hh, mm] = time.split(':').map(Number), start = new Date(); start.setHours(hh, mm, 0, 0);
+  while (!days.includes((start.getDay() + 6) % 7)) start.setDate(start.getDate() + 1);
+  const pad = (n) => String(n).padStart(2, '0'), stamp = (t) => `${t.getFullYear()}${pad(t.getMonth() + 1)}${pad(t.getDate())}T${pad(t.getHours())}${pad(t.getMinutes())}00`;
+  const end = new Date(start.getTime() + dayMins() * 60000), url = location.origin + '/#/home';
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PrepBuddy//Study time//EN', 'BEGIN:VEVENT', `UID:prepbuddy-study-${Date.now()}@prepbuddy`, `DTSTAMP:${stamp(new Date())}`,
+    `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`, `RRULE:FREQ=WEEKLY;BYDAY=${days.map((i) => ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'][i]).join(',')}`,
+    `SUMMARY:${PT('PrepBuddy study time', 'PrepBuddy 溫習時間')}`, `DESCRIPTION:${PT(`Buddy’s plan is ready (about ${dayMins()} min). Open: `, `Buddy 的計劃準備好了（約 ${dayMins()} 分鐘）。打開：`)}${url}`, `URL:${url}`,
+    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${PT('Time for PrepBuddy', 'PrepBuddy 時間到')}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = 'prepbuddy-study-time.ics'; document.body.appendChild(a); a.click(); a.remove();
+}
+document.addEventListener('change', (e) => { const c = e.target.closest && e.target.closest('[data-su]'); if (!c) return;
+  const [k, j] = c.dataset.su.split(':').map(Number), m = (local.coach || [])[k]; if (m && m.setup && m.setup[j]) { m.setup[j].on = c.checked; saveLocal(); } });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-suadd]'); if (!b) return; e.preventDefault();
+  const m = (local.coach || [])[+b.dataset.suadd]; if (!m || !m.setup) return;
+  const pick = m.setup.filter((x) => x.on && !x.done); if (!pick.length) return toast(PT('Tick at least one', '最少選一項'));
+  const nTests = pick.filter((x) => x.kind !== 'remind').length;
+  if (nTests && limitOf('sched') !== UNL && new Set(upcomingTests().map((x) => x.grp || x.id)).size + nTests > limitOf('sched')) return upsell('sched', 'limit');
+  let added = 0;
+  for (const x of pick) {
+    if (x.kind === 'test') { local.sched = [...(local.sched || []), { id: uid(), kind: 'test', name: x.name, date: x.date, subj: x.subj || '', b: x.b, u: x.u }].slice(-40); }
+    else if (x.kind === 'dict') { let L = null; const lg = DICT_LANGS.find((d) => d[0] === x.lang) || DICT_LANGS[0];
+      if (x.words.length) { L = uid(); (local.dict = local.dict || []).push({ id: L, t: Date.now(), title: x.name, lang: x.lang, items: x.words, res: {}, runs: [] }); }
+      local.sched = [...(local.sched || []), { id: uid(), kind: 'dict', name: x.name, date: x.date, subj: lg[3], lang: x.lang, L }].slice(-40); }
+    else makeStudyReminder(x.days, x.time);
+    x.done = true; added++;
+  }
+  local.mission = null; track('test_added'); saveLocal();
+  toast(PT(`Added ${added}. See them on Today.`, `已加入 ${added} 項，可在「今日」查看。`));
+  const box = document.getElementById('coach'); if (box) { box.innerHTML = coachHTML(); bindCoach(); }
+  if (view && view.name === 'home') renderHome();
+});
 async function coachSnapshot() {
   const books = await getBooks(); const r = await currentReport();
   coachIndex = {};
   const pc = (x) => Math.round(100 * x);
-  const lines = [`Today: ${new Date().toDateString()}.`, // the child's name is never sent to the AI
+  const lines = [`Today: ${new Date().toDateString()} (${ymd(Date.now())}).`, // the child's name is never sent to the AI
     `Last 7 days: practised on ${r.dp} of 7 days, ${r.q} questions answered, ${r.a === null ? 'no score yet' : r.a + '% of marks'}${r.pa !== null && r.a !== null ? ` (previous week ${r.pa}%)` : ''}.`,
     `Thinking skills, last 30 days (% of marks, answers): ${['Recall', 'Understand', 'Apply', 'Analyse/evaluate'].map((n, i) => `${n} ${r.sk[i][1] ? r.sk[i][0] + '%' : '-'} (${r.sk[i][1]})`).join(', ')}.`,
     `Mistake book: ${mistakeCount()} questions still to get right. Reviews due now: ${(await dueItems()).length}.`, ...(() => { const c = calibration(); return c.f < 1 && c.last ? [`Honesty check: the last school test was ${c.last.score}%, PrepBuddy had predicted ${c.last.pred}%. Predictions are now scaled down; plan more apply-level questions and mixed papers.`] : []; })()];
@@ -1642,7 +1713,7 @@ function coachHTML() {
       ${voiceOn('coach') ? '' : `<button class="vtalk" id="coachTalk">${ICON.mic} Talk${locked('voice') ? ' 🔒' : ''}</button>`}</span></div>
     ${voiceOn('coach') ? voicePanelHTML() + (coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : '') : `<div class="coach-msgs" id="coachMsgs">
       <div class="tmsg ai tmsg-ui">${helper.open ? `Need help? Ask me anything about PrepBuddy or your studies.` : `Hi${local.name ? ` ${esc(local.name)}` : ''}! ${coach.brief ? esc(coach.brief) + ' ' : ''}Ask me how you’re doing, what to focus on, or for a study plan.`}</div>
-      ${msgs.map((m, k) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>${m.picked ? `<div class="coach-picked" data-raw>✓ ${esc(m.picked)}</div>` : ''}${m.btns && k === msgs.length - 1 && !coach.busy ? `<div class="coach-acts">${m.btns.map((b, j) => `<button class="${j ? 'btn-sm' : 'btn-sm primary'}" data-cact="${j}" data-raw>${j ? '' : '▶ '}${esc(b.label)}</button>`).join('')}</div>` : ''}`).join('')}
+      ${msgs.map((m, k) => m.role === 'user' ? `<div class="tmsg me nomath" data-raw>${esc(m.text)}</div>` : `<div class="tmsg ai" data-raw>${tutorMd(m.text)}</div>${m.picked ? `<div class="coach-picked" data-raw>✓ ${esc(m.picked)}</div>` : ''}${m.setup ? setupCardHTML(m, k) : ''}${m.btns && k === msgs.length - 1 && !coach.busy ? `<div class="coach-acts">${m.btns.map((b, j) => `<button class="${j ? 'btn-sm' : 'btn-sm primary'}" data-cact="${j}" data-raw>${j ? '' : '▶ '}${esc(b.label)}</button>`).join('')}</div>` : ''}`).join('')}
       ${coach.busy ? '<div class="tmsg ai"><span class="dots"><i></i><i></i><i></i></span></div>' : ''}
       ${coach.error ? `<p class="hint" style="margin:0;color:var(--miss-dark)">${esc(coach.error)}</p>` : ''}
       ${voiceNoticeHTML('coach')}
@@ -1666,7 +1737,8 @@ function bindCoach() {
       // Buttons under the reply: the coach's suggested next steps, one tap to start.
       const btns = r.action && r.action.go_now === false && Array.isArray(r.action.buttons)
         ? r.action.buttons.filter((b) => b && b.action && b.label).slice(0, 3).map((b) => ({ label: String(b.label).slice(0, 60), action: b.action, chapters: b.chapters, book: b.book, count: b.count })) : null;
-      msgs.push({ role: 'assistant', text: r.reply, voice: !!voice, btns: btns && btns.length ? btns : undefined }); reply = r.reply;
+      const setup = r.action && Array.isArray(r.action.set_up) ? await parseSetup(r.action.set_up) : [];
+      msgs.push({ role: 'assistant', text: r.reply, voice: !!voice, btns: btns && btns.length ? btns : undefined, setup: setup.length ? setup : undefined }); reply = r.reply;
       if (r.action && r.action.go_now !== false && r.action.action) {
         // Spoken: open it once the coach has finished saying so. Typed: open it after a moment to read the line.
         if (voice) reply = { text: r.reply, after: () => runCoachAction(r.action) };
@@ -7243,16 +7315,7 @@ document.addEventListener('click', (e) => {
   if (!(e.target.closest && e.target.closest('#rmAdd'))) return;
   const days = [...document.querySelectorAll('[data-rmday].on')].map((x) => +x.dataset.rmday), time = (document.getElementById('rmTime') || {}).value || '17:30';
   if (!days.length) return toast(PT('Pick at least one day', '最少揀一日'));
-  local.remind = { days, time }; saveLocal();
-  const [hh, mm] = time.split(':').map(Number), start = new Date(); start.setHours(hh, mm, 0, 0);
-  while (!days.includes((start.getDay() + 6) % 7)) start.setDate(start.getDate() + 1);
-  const pad = (n) => String(n).padStart(2, '0'), stamp = (t) => `${t.getFullYear()}${pad(t.getMonth() + 1)}${pad(t.getDate())}T${pad(t.getHours())}${pad(t.getMinutes())}00`;
-  const end = new Date(start.getTime() + dayMins() * 60000), url = location.origin + '/#/home';
-  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PrepBuddy//Study time//EN', 'BEGIN:VEVENT', `UID:prepbuddy-study-${Date.now()}@prepbuddy`, `DTSTAMP:${stamp(new Date())}`,
-    `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`, `RRULE:FREQ=WEEKLY;BYDAY=${days.map((i) => ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'][i]).join(',')}`,
-    `SUMMARY:${PT('PrepBuddy study time', 'PrepBuddy 溫習時間')}`, `DESCRIPTION:${PT(`Buddy’s plan is ready (about ${dayMins()} min). Open: `, `Buddy 的計劃準備好了（約 ${dayMins()} 分鐘）。打開：`)}${url}`, `URL:${url}`,
-    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${PT('Time for PrepBuddy', 'PrepBuddy 時間到')}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = 'prepbuddy-study-time.ics'; document.body.appendChild(a); a.click(); a.remove();
+  makeStudyReminder(days, time);
   toast(PT('Open the file to add it to your calendar', '打開檔案即可加入日曆'));
 });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-daymin]'); if (!b) return;

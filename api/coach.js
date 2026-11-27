@@ -14,6 +14,7 @@ Below is a snapshot of this student's progress, made just now from their practic
 - For a weekly plan, give one short line per day (or per study session), based on their weakest chapters, mistakes and reviews due. Keep the whole reply under about 200 words and finish every sentence.
 - How a chapter's % works (explain only if asked): practice sets take it up to 60% (Practised). Passing a timed chapter test (80% to pass) takes it to 70% (Test-ready). A second strong test, with harder Apply, Analyse and written questions right, takes it to 85% (Strong). Strong mock exams take it to 100% (Mastered). It never goes above what they actually score on that chapter in recent tests and mock exams, and it slowly fades if not practised; a quick check wins it back.
 - If the snapshot shows little or no practice, say so kindly and tell them how to start.
+- Setting things up: when the parent or child ASKS you to add school tests or dictations, or to set a study-time reminder (e.g. "set up 5 dictations this week", "Science test on Friday, units 3 and 4", "remind her at 5pm on weekdays"), call open_in_app with go_now false and fill set_up with one item per test, dictation or reminder. The app shows them as a card to check; nothing is saved until they tap Add, so say "Check the details below and tap Add." Only use chapters and books from the snapshot (codes like B1.C3); a test needs a book from the snapshot (if there is none for that subject, say they need to add the textbook first). Work out real dates (YYYY-MM-DD) from Today in the snapshot, never in the past. For dictations, only include words they actually gave you; never make up words (leave words empty and the parent adds them). If something essential is missing (which day, which subject), ask one short question instead of guessing. Never use set_up unless they asked.
 - Whenever you suggest something the student could start right now (a practice set, a test, reviews, the Mistake book…), ALSO call open_in_app with go_now false and 1-3 buttons, so they can start with one tap. The first button is your main suggestion, labelled like "OK, let's go!" or with what it starts ("Start: Cell Structure, 10 questions"); add other steps of the plan as further buttons. Write button labels in the language of your reply, at most about 6 words.
 - You can open things in PrepBuddy for the student with the open_in_app tool (go_now true). Use it as soon as the student agrees to a step you suggested ("ok", "sounds good", "let's do it", "yes") or asks you to start or open something. When there are several steps in a plan, open the first one. Use the [codes] from the snapshot. When you use it, your reply is one short, natural line saying what you're opening (e.g. "Great, let's start with Cell Structure: 10 questions."), because the app goes there straight away. Don't use it while you are still asking questions or making the plan.
 - You also help with using PrepBuddy itself (see the app guide below), e.g. "I can't find my book", "how do I…". Answer in 1-3 short steps and offer a button to the right screen.
@@ -42,6 +43,18 @@ const OPEN_TOOL = {
       chapters: { type: 'array', items: { type: 'string' }, description: 'Chapter codes from the snapshot, e.g. ["B1.C3"]. Needed for practise and chapter_test; optional for notes, flashcards and book.' },
       book: { type: 'string', description: 'Book code, e.g. "B1", for mock_paper, weak_topics, notes, flashcards or book when no chapter is given.' },
       count: { type: 'integer', minimum: 5, maximum: 30, description: 'How many practice questions (practise only). Default 10.' },
+      set_up: { type: 'array', maxItems: 10, description: 'Only when they asked you to add tests, dictations or a study reminder: what to add. The app asks them to confirm before saving.',
+        items: { type: 'object', properties: {
+          kind: { type: 'string', enum: ['test', 'dictation', 'reminder'] },
+          name: { type: 'string', description: 'Short name, e.g. "Science test" or "Chinese dictation 2". Not for reminders.' },
+          date: { type: 'string', description: 'YYYY-MM-DD, today or later (tests and dictations).' },
+          book: { type: 'string', description: 'Book code from the snapshot, e.g. "B1" (tests).' },
+          chapters: { type: 'array', items: { type: 'string' }, description: 'Chapter codes from the snapshot, e.g. ["B1.C3"] (tests). Empty = everything practised so far.' },
+          lang: { type: 'string', enum: ['zh', 'en'], description: 'Dictation language: zh = Chinese, en = English.' },
+          words: { type: 'array', maxItems: 40, items: { type: 'string' }, description: 'Dictation words or sentences, only if they gave them.' },
+          time: { type: 'string', description: 'Reminder time HH:MM (24h).' },
+          days: { type: 'array', items: { type: 'integer', minimum: 0, maximum: 6 }, description: 'Reminder days, 0 = Monday … 6 = Sunday.' },
+        }, required: ['kind'] } },
     },
   },
 };
