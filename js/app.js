@@ -7349,8 +7349,17 @@ function goalsCardHTML(GD, o = {}) {
   };
   const who = o.title ? o.title : local.name ? Z(`${esc(local.name)}’s goals`, `${esc(local.name)}的目標`) : Z('My goals', '我的目標');
   return `<section class="ms-card ag-card" aria-label="${who}"><div class="ms-head"><h2 class="h-info">${who}${infoBtn('howGoals', Z('How do goals work?', '目標是怎樣運作的？'))}</h2><span class="ag-ib"><button class="ag-icb" id="addTest3" aria-label="${SCH('Add a test', '加入測驗')}" title="${SCH('Add a test', '加入測驗')}">${GICON.plus}</button><button class="ag-icb" data-mygoals aria-label="${Z('Edit goals', '修改目標')}" title="${Z('Edit goals', '修改目標')}">${GICON.edit}</button></span></div>
-    ${goalsHowHTML()}${o.past || ''}${paceSumHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : '<!--TDTILES-->'}</section>`;
+    ${goalsHowHTML()}${o.past || ''}${paceSumHTML()}${all.length ? `<div class="ag-list">${all.map(sub).join('')}</div>` : '<!--TDTILES-->'}${dictRowsHTML()}</section>`;
 }
+// School dictations on Today (27 Nov): they have no %, so a simple row each, with a button to practise the words
+function dictRowsHTML() {
+  const ds = upcomingTests().filter((x) => x.kind === 'dict').sort((a, b) => testLeft(a) - testLeft(b)); if (!ds.length) return '';
+  return `<div class="td-dicts">${ds.map((x) => { const L = (local.dict || []).find((d) => d.id === x.L);
+    return `<div class="td-dict">${actionTile('dictation', 40)}<span class="tdd-t"><b data-raw>${esc(x.name)}</b><small>${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(testLeft(x))}${L ? ` · <span data-raw>${esc(L.title)}</span>` : ''}</small></span>
+      <button class="btn-sm primary" data-tddict="${L ? esc(L.id) : ''}">${L ? PT('Practise', '練習') : PT('Add words', '加入詞語')}</button></div>`; }).join('')}</div>`;
+}
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-tddict]'); if (!b) return; e.preventDefault();
+  go(b.dataset.tddict ? { name: 'dictation', id: b.dataset.tddict, sub: 'run' } : { name: 'dictation', id: 'new' }); });
 // Pace line: per test card, or (preview, localStorage pb.pace = 'sum') one line for all tests on top of the goals card
 let PACE_LIST = [];
 const paceSum = () => true; // decided 27 Nov: one combined line on top of the goals card
