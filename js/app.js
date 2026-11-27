@@ -6951,13 +6951,16 @@ function testPlanSheet(p, chs, sc = null) {
     <div class="tp-body tl-body">
       <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('known so far', '目前掌握')}</span></div><i>→</i><div><b class="fc ${L.capped || none ? 'close' : 'ok'}">${done ? 100 : none ? p.ready : L.capped ? L.end : 100}%</b><span>${done ? PT('done', '完成') : none ? PT('after a quick check', '快速檢查之後') : PT(`after ${L.items.length} step${L.items.length === 1 ? '' : 's'}`, `完成 ${L.items.length} 步之後`)}</span></div></div>
       <p class="tp-p${sc ? ' tp-time' : ''}">${tip}</p>${warn}${L.capped && !done ? `<p class="tp-p">${PT(`Your % follows your scores, so at your current scores these steps get you to about ${L.end}%. To go higher, fix your mistakes and aim for full marks on chapter tests and mock exams.`, `百分比跟隨你的分數。按現時的分數，這些步驟大約可達 ${L.end}%。要更高，就要改正錯題，並在章節測驗和模擬考試爭取滿分。`)}</p>` : ''}
-      ${done ? '' : `<ol class="tl-list">${L.items.map(li).join('')}</ol>`}
+      ${done ? `<div class="tl-more"><p class="tp-p">${PT('Want to keep sharp anyway?', '想繼續保持狀態？')}</p><button class="btn" id="tlPrac">${chs.length === 1 ? PT('Practise this chapter (10 questions)', '練習這一章（10 題）') : PT('Practise these chapters (10 questions)', '練習這些章節（10 題）')}</button><button class="btn ghost" id="tlMock">${chs.length === 1 ? PT('Take a mock exam on it', '做這一章的模擬考試') : PT('Take a mock exam on them', '做這些章節的模擬考試')}</button></div>` : `<ol class="tl-list">${L.items.map(li).join('')}</ol>`}
       ${done || left < 2 || sc ? '' : `<p class="tl-foot">${PT('The day before the test: a quick “Still there?” check. On test day: a 5-question warm-up.', '考試前一天：「還記得嗎？」快速檢查。考試當日：5 題熱身。')}</p>`}
     </div></div>`;
   document.body.appendChild(box);
   const close = () => box.remove();
   box.querySelector('.cs2-x').onclick = close;
   box.onclick = (e) => { if (e.target === box) close(); };
+  { const units = chs.map((c) => c.unit).filter(Boolean); // 27 Nov: at 100% you can still practise or rehearse (nothing in the plan is left)
+    const pr = box.querySelector('#tlPrac'); if (pr) pr.onclick = () => { close(); startUnits(book, units, 10); };
+    const mk = box.querySelector('#tlMock'); if (mk) mk.onclick = () => { close(); startMiniMock(book, units, null, null); }; }
   const go = box.querySelector('[data-tl0]');
   if (go && L.first) go.onclick = () => { close(); const it = L.items[0]; const c = it.x ? it.x.real : chs.slice().sort((a, b) => a.pct - b.pct)[0];
     if (sc) return boostSession(book, c, nextStep(c) || L.first.st, false, null, sc.scope, true); // the plan already says what and why: no "Up next" card
