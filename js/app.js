@@ -6937,7 +6937,7 @@ function testPlanSheet(p, chs, sc = null) {
   const fmt = (t, o) => new Date(t).toLocaleDateString(LOCALE(), o || { weekday: 'short', day: 'numeric', month: 'short' });
   const L = stepsTo100(p, chs), days = Math.max(1, left), perDay = Math.max(10, Math.ceil(L.total / days / 5) * 5);
   const done = chs.every((c) => (c.pct || 0) >= 100), none = !done && !L.items.length;
-  const tip = done ? PT('Every chapter is at 100%. Short reviews keep it there.', '每章都達到 100%。做短時間溫習保持狀態。')
+  const tip = done ? PT('Keep it sharp:', '繼續保持：')
     : none ? PT('Some of it has faded: “Let’s do what’s next” starts a quick check to win it back.', '有些內容淡忘了：按「下一步」做快速檢查，把分數拿回來。')
     : sc ? `⏱️ ${PT(`About <b>${L.total >= 90 ? `${Math.round(L.total / 30) / 2} hours` : `${L.total} min`}</b> to mastery`, `約 <b>${L.total >= 90 ? `${Math.round(L.total / 30) / 2} 小時` : `${L.total} 分鐘`}</b> 可完全掌握`)}`
     : left < 1 ? PT('The test is today: do the first step as a warm-up.', '今天考試：先做第一步熱身。')
@@ -6947,11 +6947,11 @@ function testPlanSheet(p, chs, sc = null) {
   function nm(u) { return shortTitle(u.title); }
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   box.innerHTML = `<div class="cdlg tp tl" role="dialog" aria-modal="true" aria-labelledby="tp-t">
-    <header class="tp-h"><div>${sc ? `<b id="tp-t">${PT(`Your plan to master ${esc(sc.name)}`, `掌握「${esc(sc.name)}」的計劃`)}</b><small data-raw>${esc(book.title)}</small>` : `<small>${fmt(testDay(p.x))} · ${leftText(left)}</small><b id="tp-t">${PT('My plan to reach 100%', '我的 100% 計劃')}</b><small data-raw>${esc(p.x.name)}</small>`}</div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
+    <header class="tp-h"><div>${sc ? `<b id="tp-t">${done ? esc(sc.name) : PT(`Your plan to master ${esc(sc.name)}`, `掌握「${esc(sc.name)}」的計劃`)}</b><small data-raw>${esc(book.title)}</small>` : `<small>${fmt(testDay(p.x))} · ${leftText(left)}</small><b id="tp-t">${PT('My plan to reach 100%', '我的 100% 計劃')}</b><small data-raw>${esc(p.x.name)}</small>`}</div><button class="chs-x cs2-x" aria-label="${PT('Close', '關閉')}">✕</button></header>
     <div class="tp-body tl-body">
-      <div class="tp-sum"><div><b>${p.ready}%</b><span>${PT('known so far', '目前掌握')}</span></div><i>→</i><div><b class="fc ${L.capped || none ? 'close' : 'ok'}">${done ? 100 : none ? p.ready : L.capped ? L.end : 100}%</b><span>${done ? PT('done', '完成') : none ? PT('after a quick check', '快速檢查之後') : PT(`after ${L.items.length} step${L.items.length === 1 ? '' : 's'}`, `完成 ${L.items.length} 步之後`)}</span></div></div>
+      <div class="tp-sum">${done ? `<div><b class="fc ok">100%</b><span>${PT('Mastered 🏆', '已掌握 🏆')}</span></div></div><!--` : ''}<div><b>${p.ready}%</b><span>${PT('known so far', '目前掌握')}</span></div><i>→</i><div><b class="fc ${L.capped || none ? 'close' : 'ok'}">${done ? 100 : none ? p.ready : L.capped ? L.end : 100}%</b><span>${done ? PT('done', '完成') : none ? PT('after a quick check', '快速檢查之後') : PT(`after ${L.items.length} step${L.items.length === 1 ? '' : 's'}`, `完成 ${L.items.length} 步之後`)}</span></div></div>${done ? '-->' : ''}
       <p class="tp-p${sc ? ' tp-time' : ''}">${tip}</p>${warn}${L.capped && !done ? `<p class="tp-p">${PT(`Your % follows your scores, so at your current scores these steps get you to about ${L.end}%. To go higher, fix your mistakes and aim for full marks on chapter tests and mock exams.`, `百分比跟隨你的分數。按現時的分數，這些步驟大約可達 ${L.end}%。要更高，就要改正錯題，並在章節測驗和模擬考試爭取滿分。`)}</p>` : ''}
-      ${done ? `<div class="tl-more"><p class="tp-p">${PT('Want to keep sharp anyway?', '想繼續保持狀態？')}</p><button class="btn" id="tlPrac">${chs.length === 1 ? PT('Practise this chapter (10 questions)', '練習這一章（10 題）') : PT('Practise these chapters (10 questions)', '練習這些章節（10 題）')}</button><button class="btn ghost" id="tlMock">${chs.length === 1 ? PT('Take a mock exam on it', '做這一章的模擬考試') : PT('Take a mock exam on them', '做這些章節的模擬考試')}</button></div>` : `<ol class="tl-list">${L.items.map(li).join('')}</ol>`}
+      ${done ? `<div class="td-tiles tl-tiles"><button class="qtile td-tile" id="tlPrac">${actionTile('practise', 44)}<b>${PT('Practise', '練習')}</b><span data-raw>${PT('10 questions', '10 題')}</span></button><button class="qtile td-tile" id="tlMock">${actionTile('mock', 44)}<b>${PT('Mock exam', '模擬考試')}</b><span data-raw>${PT('Timed, school-test style', '限時，校內考試模式')}</span></button></div>` : `<ol class="tl-list">${L.items.map(li).join('')}</ol>`}
       ${done || left < 2 || sc ? '' : `<p class="tl-foot">${PT('The day before the test: a quick “Still there?” check. On test day: a 5-question warm-up.', '考試前一天：「還記得嗎？」快速檢查。考試當日：5 題熱身。')}</p>`}
     </div></div>`;
   document.body.appendChild(box);
