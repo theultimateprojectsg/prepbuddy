@@ -3341,7 +3341,7 @@ async function renderHome() {
   const nextPick = allDone || !missionPick.n ? { fresh: true } : missionPick; // once the mission is done, Buddy's pick makes a fresh set // the child should see Start without scrolling
   $app.innerHTML = `
   <main class="pad stack today" data-view="home" style="flex:1">
-    ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', comboHTML || goalHTML ? `<div class="gr-goals">${comboHTML || goalHTML}</div>` : '').replace('<!--SKCHIP-->', skChip).replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
+    ${head.replace('<!--CHEER-->', cheerHTML(cheer)).replace('<!--BUD46-->', buddySVG('happy', 46)).replace('<!--BUD64-->', buddySVG('happy', 64)).replace('<!--STRIP-->', comboHTML || goalHTML ? `<div class="gr-goals">${comboHTML || goalHTML}</div>` : '').replace('<!--SKCHIP-->', '') /* streak chip removed 27 Nov */.replace('class="gr-hero"', `class="gr-hero glow-${lit ? tier : 0}"`)}
     ${profileOn() && !local.learner && !local.profSkip ? `<section class="card prof-ask"><span class="pa-ic">${buddySVG('happy', 44)}</span><div><b>${LANG === 'zh' ? '告訴 Buddy 孩子讀哪一級' : 'Tell Buddy your child’s grade'}</b><span>${LANG === 'zh' ? '題目、字詞和解釋會配合孩子的年級。只需 30 秒，家長填寫。' : 'Questions, words and explanations then fit their year. 30 seconds, for parents.'}</span></div><div class="pa-btns"><button class="btn-sm primary" id="profAsk">${LANG === 'zh' ? '設定' : 'Set up'}</button><button class="btn-sm quiet" id="profLater">${LANG === 'zh' ? '稍後' : 'Later'}</button></div></section>` : ''}
     ${false ? `<div class="cb-dev"><b>DEV preview</b><span>Same data as now. Only you see this.</span><div class="cb-modes">${[['all', 'All goals'], ['1', 'Focus + rows'], ['0', 'Current']].map(([k, t]) => `<button class="btn-sm ${k === '0' ? 'primary' : ''}" data-cbmode="${k}">${t}</button>`).join('')}</div></div>` : ''}
     ${closerHTML}
@@ -7351,12 +7351,12 @@ async function fullTestCards(tests, btn) {
   // the test's chapters in book order; past 4 the rest fold behind a "+N more" row at the bottom of the list
   const chipsOf = (p) => { const order = p.book ? p.book.units.map((u) => u.id) : [], cs = chOf(p).slice().sort((a, b) => order.indexOf(a.unit.id) - order.indexOf(b.unit.id));
     if (!cs.length || (p.x.kind || 'test') === 'dict') return '';
-    const SHOWN = 4, more = cs.length - SHOWN;
+    const SHOWN = 0, more = cs.length; // 27 Nov: chapters folded by default, tap to open
     const row = (c, hid) => `<div class="pv-tr ${tl(c) >= 70 ? 'good' : tl(c) >= 40 ? 'mid' : tl(c) > 0 ? 'low' : 'zero'}${hid ? ' hid' : ''}"><span data-raw>${esc(chName(c.unit))}</span><em>${c.done ? `${c.fading >= 1 ? `<small class="pv-fd">↓${c.fading}</small>` : ''}${tl(c)}%` : PT('Not started', '未開始')}</em><i><b style="width:${c.cracked ? '🍂 ' : ''}${tl(c)}%"></b></i></div>`;
-    const id = `tch${p.x.id}`.replace(/\W/g, ''), lab = PT(`+ ${more} more chapter${more === 1 ? '' : 's'}`, `+ 還有 ${more} 章`);
-    return `<div class="pv-tch" id="${id}">${cs.map((c, i) => row(c, i >= SHOWN && more > 1)).join('')}${more > 1 ? btn(lab, () => {
+    const id = `tch${p.x.id}`.replace(/\W/g, ''), lab = PT(`Chapters (${more})`, `章節（${more}）`);
+    return `<div class="pv-tch fold" id="${id}">${btn(`${lab}<i aria-hidden="true">▾</i>`, () => {
       const el = document.getElementById(id), open = el.classList.toggle('open'), bt = el.querySelector('.pv-tmore');
-      if (bt) bt.textContent = open ? PT('Show fewer', '顯示較少') : lab; }, 'pv-tmore') : ''}</div>`; };
+      if (bt) bt.setAttribute('aria-expanded', open); }, 'pv-tmore')}${cs.map((c) => row(c, true)).join('')}</div>`; };
   // from day 1, how much a day reaches 100% by test day (same numbers as "My plan to reach 100%"), so a close test is no surprise
   const paceNote = (p) => { if (!p.book || p.left == null || p.left < 0 || (p.x.kind || 'test') === 'dict') return ''; const cs = chOf(p); if (!cs.length || cs.every((c) => (c.pct || 0) >= 100)) return '';
     const L = stepsTo100(p, cs); if (!L.total) return '';
