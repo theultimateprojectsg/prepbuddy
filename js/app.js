@@ -5841,6 +5841,7 @@ async function renderBook(bookId) {
   const hp = bm.pct, hw = weakestChapter(bm), hs = hw ? masterySteps({ ...bm, chapters: [hw] }) : [];
   const head = `<section class="bk-head bk2">
       <div class="bk2-top">
+        <button class="bk2-back" aria-label="${PT('Back to books', '返回課本')}">${ICON.back}</button>
         <div class="bk-cover" style="background:${coverColour(book)}" aria-hidden="true">${subjectIcon(book.subject, 22, '#FFFFFF', book.title)}</div>
         <div class="bk2-info"><h1 data-raw title="${esc(book.title)}">${esc(book.title)}</h1>
           <p>${[`${book.units.length} ${PT(book.units.length === 1 ? 'chapter' : 'chapters', '章')}`, answered ? `${answered} ${PT('answered', '題已答')}` : '', book.library ? '' : PT('Uploaded by you', '自行上載')].filter(Boolean).join(' · ')}</p></div>
@@ -5849,8 +5850,7 @@ async function renderBook(bookId) {
       ${hp < 100 ? `<button class="btn boost bk2-boost"><b>${ICON.target} ${PT('Get me closer to 100%', '帶我更接近 100%')}</b>${hs[0] ? `<small data-raw>${esc(`${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(hs[0].text)}`)}</small>` : ''}</button>` : ''}
     </section>`;
   $app.innerHTML = `
-  <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button></div>
-  <div class="bookpage">
+    <div class="bookpage">
   <div class="bk-head-m">${head}</div>
   <main class="bk-main stack g14">
     <div class="bk-head-d">${head}</div>
@@ -5894,7 +5894,7 @@ async function renderBook(bookId) {
     bindRows();
   };
   const keep = async () => { const y = window.scrollY; await renderBook(bookId); window.scrollTo(0, y); };
-  document.getElementById('back').onclick = () => { pick = { bookId: null, ids: new Set() }; goBack({ name: 'books' }); };
+  $app.querySelectorAll('.bk2-back').forEach((x) => (x.onclick = () => { pick = { bookId: null, ids: new Set() }; goBack({ name: 'books' }); }));
   const a = document.getElementById('all');
   if (a) a.onclick = () => { if (pick.ids.size === book.units.length) pick.ids.clear(); else book.units.forEach((u) => pick.ids.add(u.id)); keep(); };
   function bindRows() { $app.querySelectorAll('[data-unit]').forEach((b) => (b.onclick = (e) => { const id = b.dataset.unit;
