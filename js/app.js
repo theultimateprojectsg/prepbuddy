@@ -835,7 +835,9 @@ async function boostSession(book, c0 = null, step0 = null, plan = false, testId 
     : step.kind === 'mixed' ? PT(`${nm0} is at ${c.pct}% and its chapter tests are done. Mock exams take it the rest of the way to 100%.`, `「${nm0}」現在 ${c.pct}%，章節測驗已完成。模擬考試帶你走到 100%。`) : '';
   const upT = { name: nm0, why: why || step.text || '', info: upInfo(book, c, step) };
   if (step.kind === 'test') return startChapterTest(book, [c.unit], upT);
-  if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit);
+  if (step.kind === 'mixed') { // 27 Nov: a mock exam only mixes in chapters from what's being mastered: the ticked chapters, or the test's chapters
+    const tst = testId && (local.sched || []).find((x) => x.id === testId), only = scope && scope.ids && scope.ids.length ? scope.ids : tst && tst.b === book.id && (tst.u || []).length ? tst.u : null;
+    const others = m.chapters.filter((x) => x !== c && x.done >= 4 && (!only || only.includes(x.unit.id))).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit);
     const nms = [c.unit, ...others].map((u) => shortTitle(u.title).replace(/\s*·.*$/, '')); // 27 Nov: questions shared evenly, so name every chapter
     const nm = nms.length === 1 ? upT.name : PT(`${nms.slice(0, -1).join(', ')} & ${nms[nms.length - 1]}`, nms.join('、'));
     return startMiniMock(book, [c.unit, ...others], c.unit, { ...upT, name: nm }); }
