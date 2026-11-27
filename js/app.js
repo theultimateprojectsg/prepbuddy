@@ -3351,6 +3351,7 @@ async function renderHome() {
     const mc = mistakeCount();
     const T = (id, ic, t, sub, cls = '') => `<button class="qtile td-tile ${cls}" id="${id}">${actionTile(ic, 44)}<b>${t}</b><span data-raw>${sub}</span></button>`;
     tilesHTML = `<div class="td-tiles">${T('tdAdd', 'test', SCH('Add a test', '加入測驗'), SCH('Buddy plans each day until it', 'Buddy 安排每天的溫習'), 'main')}
+      ${T('tdDict', 'dictation', Z('Add a dictation', '加入默書'), Z('Practise the words until they’re all right', '練習到全部寫對'))}
       ${lb ? T('tdBook', 'practise', Z('Continue a book', '繼續課本'), esc(`${shortTitle(lb.title)}${lp != null ? ` · ${lp}%` : ''}`)) : ''}
       ${T('tdMist', 'mistakes', Z('Mistake book', '錯題簿'), mc ? Z(`${mc} to get right`, `${mc} 題要改正`) : Z('Nothing to fix', '沒有錯題'))}
       ${T('tdMock', 'mock', Z('Mock exam', '模擬考試'), Z('School-exam style, timed', '校內考試模式，限時'))}</div>`;
@@ -3377,7 +3378,7 @@ async function renderHome() {
   { const n = document.getElementById('glNext'); if (n) n.onclick = () => { const r = $app.querySelector('.ms-item.is-next .ms-go') || $app.querySelector('.ms-item .ms-go'); if (r) r.click(); }; }
   { const a = document.getElementById('glAddTest'); if (a) a.onclick = () => testDialog(); }
   { const t = (id, f) => { const e = document.getElementById(id); if (e) e.onclick = () => f(e); };
-    t('tdAdd', () => testDialog()); t('tdBook', (e) => go({ name: 'book', bookId: e.dataset.bk })); t('tdMist', () => go({ name: 'mistakes' })); t('tdMock', () => go({ name: 'pick', mode: 'mock' })); }
+    t('tdAdd', () => testDialog()); t('tdDict', () => allow('sched') && testWizard('dict')); t('tdBook', (e) => go({ name: 'book', bookId: e.dataset.bk })); t('tdMist', () => go({ name: 'mistakes' })); t('tdMock', () => go({ name: 'pick', mode: 'mock' })); }
   ['addTest3', 'addTest4'].forEach((id) => { const a = document.getElementById(id); if (a) a.onclick = () => testDialog(); });
   { const n = document.getElementById('noTest'); if (n) n.onclick = () => { local.noTestAsk = Date.now(); saveLocal(); renderHome(); }; }
   $app.querySelectorAll('[data-cbmode]').forEach((b) => (b.onclick = () => { localStorage.setItem('pb.combo', b.dataset.cbmode); renderHome(); }));
@@ -9171,6 +9172,7 @@ async function testStep(x) {
 // 默書 (a word list), or exams (several subjects, each with its own date; saved as one record per subject sharing grp).
 function testDialog(edit) {
   if (!allow('sched')) return;
+  if (!edit) return testWizard(); // 27 Nov: adding goes step by step; editing keeps the one-page form
   const box = document.createElement('div'); box.className = 'cdlg-wrap';
   const group = edit && edit.grp ? (local.sched || []).filter((x) => x.grp === edit.grp).sort((a, b) => testDay(a) - testDay(b)) : null;
   const wk = ymd(Date.now() + 7 * DAY);
@@ -9314,6 +9316,90 @@ function testDialog(edit) {
   };
   box.onclick = (e) => { if (e.target === box) box.remove(); };
   draw(); document.body.appendChild(box);
+}
+// Add a test, one question per screen (27 Nov): which subject → when → which chapters → your plan.
+// Dictation: which language → when → summary, then add the words. Saves the same records as testDialog.
+async function testWizard(mode = 'test') {
+  const books = (await getBooks()).filter((b) => !b.demo);
+  const box = document.createElement('div'); box.className = 'cdlg-wrap';
+  const st = { step: 'what', kind: mode === 'dict' ? 'dict' : 'test', id: uid(), b: null, subj: '', sname: '', date: '', u: new Set(), lang: 'zh', name: '', named: false };
+  const chosen = () => books.find((b) => b.id === st.b);
+  const flow = () => st.b ? ['what', 'chs', 'sum'] : ['what', 'sum']; // 27 Nov: subject and date on one screen
+  const autoName = () => st.kind === 'dict' ? (() => { const n = DICT_LANGS.find((x) => x[0] === st.lang) || DICT_LANGS[0]; return SCH(`${n[2]} dictation`, `${n[1]}默書`); })()
+    : (st.sname || (st.subj && st.subj !== 'other' ? tSubjName(st.subj) : '')) ? SCH(`${st.sname || tSubjName(st.subj)} test`, `${st.sname || tSubjName(st.subj)}測驗`) : '';
+  let pcts = {};
+  const draw = async () => {
+    const F = flow(), k = F.indexOf(st.step), last = st.step === 'sum';
+    const head = `<div class="tw-top">${k > 0 ? `<button class="tw-back" id="twBack" aria-label="${PT('Back', '返回')}">‹</button>` : '<span></span>'}<div class="tw-dots">${F.map((_, i) => `<i class="${i <= k ? 'on' : ''}"></i>`).join('')}</div><button class="un-x tw-x" id="twX" aria-label="${PT('Close', '關閉')}">✕</button></div>`;
+    let body = '';
+    if (st.step === 'what') {
+      const sel = (k) => (k === (st.kind === 'dict' ? 'dict' : st.b ? 'b:' + st.b : st.subj ? 's:' + st.subj : '') ? ' on' : '');
+      const T = (key, attr, icon, t, sub) => `<button class="tw-tile${sel(key)}" ${attr}>${icon}<b data-raw>${esc(t)}</b>${sub ? `<span data-raw>${esc(sub)}</span>` : ''}</button>`;
+      body = `<h2 class="tw-q">${st.kind === 'dict' ? PT('Add a dictation', '加入默書') : PT('Add a test', '加入測驗')}</h2>${st.kind === 'dict' ? `<h3 class="tw-h3">${PT('Which language?', '哪一種語言？')}</h3>` : `<h3 class="tw-h3">${PT('What’s it on?', '哪一科？')}</h3><div class="tw-grid">
+        ${books.map((b) => T('b:' + b.id, `data-twb="${esc(b.id)}"`, subjectTile(b.subject, 40, b.title), b.subject || shortTitle(b.title), '')).join('')}
+</div>`}
+        ${st.kind === 'dict' ? `<div class="tw-pills tw-lang">${DICT_LANGS.slice(0, 2).map((x) => `<button class="tw-pill${st.lang === x[0] ? ' on' : ''}" data-twl="${x[0]}">${LANG === 'zh' ? x[1] : x[2]}</button>`).join('')}</div>` : ''}
+        <h3 class="tw-h3">${PT('When is it?', '甚麼時候？')}</h3>
+        <input type="date" id="twDate" class="input tw-date" min="${ymd(Date.now())}" value="${esc(st.date)}" aria-label="${PT('Test date', '測驗日期')}">`;
+    } else if (st.step === 'chs') {
+      const b = chosen();
+      if (!Object.keys(pcts).length) { try { (await bookMastery(b)).chapters.forEach((c) => { pcts[c.unit.id] = c.done ? c.pct : null; }); } catch (e) { /* no % */ } }
+      body = `<h2 class="tw-q">${PT('Which chapters are in it?', '測驗考哪幾章？')}</h2><p class="tw-sub">${PT('Tap to tick. Buddy plans only these.', '按一下選擇，Buddy 只會安排這幾章。')}</p>
+        <div class="tw-chs">${b.units.map((u) => { const p = pcts[u.id]; return `<button class="tw-ch ${st.u.has(u.id) ? 'on' : ''}" data-twu="${esc(u.id)}"><span class="tw-box" aria-hidden="true">${st.u.has(u.id) ? '✓' : ''}</span><span class="tw-cn" data-raw>${esc(cleanUnitTitle(u.title))}</span><em>${p == null ? PT('Not started', '未開始') : p + '%'}</em></button>`; }).join('')}</div>`;
+    } else {
+      if (!st.named) st.name = autoName();
+      const b = chosen(), f = st.date ? new Date(st.date + 'T00:00:00').toLocaleDateString(LOCALE(), { weekday: 'long', day: 'numeric', month: 'long' }) : '';
+      const left = st.date ? leftText(testLeft({ date: st.date })) : '';
+      const chs = b ? (st.u.size ? b.units.filter((u) => st.u.has(u.id)) : []) : [];
+      const avg = chs.length ? Math.round(chs.reduce((a, u) => a + (pcts[u.id] || 0), 0) / chs.length) : null;
+      body = `<h2 class="tw-q">${st.kind === 'dict' ? PT('Your dictation', '你的默書') : PT('Your test', '你的測驗')}</h2>
+        <label class="tw-name">${PT('Name', '名稱')}<input id="twName" class="input" maxlength="60" value="${esc(st.name)}" placeholder="${PT('e.g. Music test', '例如：音樂測驗')}"></label>
+        <div class="tw-sum">
+          <div><span>${PT('When', '日期')}</span><b>${esc(f)} · ${left}</b></div>
+          ${b ? `<div><span>${PT('Book', '課本')}</span><b data-raw>${esc(shortTitle(b.title))}</b></div>
+            <div><span>${PT('Chapters', '章節')}</span><b data-raw>${chs.length ? esc(chs.map((u) => shortTitle(u.title).replace(/\s*·.*$/, '')).join(', ')) : PT('Everything practised so far', '至今練習過的所有內容')}</b></div>
+            ${avg != null ? `<div><span>${PT('Ready now', '現在掌握')}</span><b>${avg}%</b></div>` : ''}` : ''}
+          ${st.kind === 'dict' ? `<div><span>${PT('Next', '下一步')}</span><b>${PT('Add the words, then practise until they’re all right', '加入詞語，然後練習到全部寫對')}</b></div>` : ''}
+        </div><p class="tw-err" id="twErr" hidden></p>`;
+    }
+    const foot = st.step === 'what' ? `<div class="tw-foot"><button class="btn" id="twNext" ${(st.b || st.subj || st.kind === 'dict') && st.date ? '' : 'disabled'}>${PT('Next', '下一步')} →</button></div>`
+      : st.step === 'chs' ? `<div class="tw-foot"><button class="btn" id="twNext" ${st.u.size ? '' : 'disabled'}>${PT('Next', '下一步')} →</button><button class="linkbtn" id="twAll">${PT('Not sure? Use everything practised', '不清楚？用所有練習過的內容')}</button></div>`
+      : last ? `<div class="tw-foot"><button class="btn" id="twSave">${st.kind === 'dict' ? PT('Add the words →', '加入詞語 →') : st.b ? PT('Start my plan →', '開始我的計劃 →') : PT('Save', '儲存')}</button>${st.b ? `<button class="linkbtn" id="twSaveOnly">${PT('Save for now', '先儲存')}</button>` : ''}</div>` : '';
+    box.innerHTML = `<div class="cdlg twiz" role="dialog" aria-modal="true" aria-label="${PT('Add a test', '加入測驗')}">${head}<div class="tw-body">${body}</div>${foot}</div>`;
+    const $ = (q) => box.querySelector(q), go2 = (s2) => { st.step = s2; draw(); };
+    const next = () => { const F2 = flow(); go2(F2[F2.indexOf(st.step) + 1]); };
+    $('#twX').onclick = () => box.remove();
+    if ($('#twBack')) $('#twBack').onclick = () => { const F2 = flow(); go2(F2[F2.indexOf(st.step) - 1]); };
+    box.querySelectorAll('[data-twb]').forEach((e) => (e.onclick = () => { const b = books.find((x) => x.id === e.dataset.twb); Object.assign(st, { kind: 'test', b: b.id, subj: bookSubjKey(b), sname: String(b.subject || b.title || '').trim() }); if (st.u.size && st.ub !== b.id) st.u = new Set(); st.ub = b.id; pcts = {}; if (!st.named) st.name = ''; draw(); }));
+    box.querySelectorAll('[data-tws]').forEach((e) => (e.onclick = () => { Object.assign(st, { kind: 'test', b: null, subj: e.dataset.tws, sname: '' }); draw(); }));
+    box.querySelectorAll('[data-twd]').forEach((e) => (e.onclick = () => { Object.assign(st, { kind: 'dict', b: null, subj: '' }); draw(); }));
+    box.querySelectorAll('[data-twl]').forEach((e) => (e.onclick = () => { st.lang = e.dataset.twl; draw(); }));
+    box.querySelectorAll('[data-twdate]').forEach((e) => (e.onclick = () => { st.date = e.dataset.twdate; draw(); }));
+    if ($('#twDate')) $('#twDate').onchange = (e) => { st.date = e.target.value && testLeft({ date: e.target.value }) >= 0 ? e.target.value : ''; const n = $('#twNext'); if (n) n.disabled = !((st.b || st.subj || st.kind === 'dict') && st.date); };
+    box.querySelectorAll('[data-twu]').forEach((e) => (e.onclick = () => { const id = e.dataset.twu; st.u.has(id) ? st.u.delete(id) : st.u.add(id); draw(); }));
+    if ($('#twNext')) $('#twNext').onclick = next;
+    if ($('#twAll')) $('#twAll').onclick = () => { st.u = new Set(); next(); };
+    if ($('#twName')) $('#twName').oninput = (e) => { st.name = e.target.value; st.named = true; };
+    const save = (start) => {
+      const name = String(st.name || '').trim().slice(0, 60), err = $('#twErr');
+      if (!name) { err.textContent = PT('Give it a name.', '請輸入名稱。'); err.hidden = false; return; }
+      if (limitOf('sched') !== UNL && new Set(upcomingTests().map((x) => x.grp || x.id)).size >= limitOf('sched')) { box.remove(); return upsell('sched', 'limit'); }
+      const rec = st.kind === 'dict' ? { id: st.id, kind: 'dict', name, date: st.date, subj: (DICT_LANGS.find((x) => x[0] === st.lang) || DICT_LANGS[0])[3], lang: st.lang, L: null }
+        : { id: st.id, kind: 'test', name, date: st.date, subj: st.subj, b: st.b || null, u: [...st.u], ...(st.sname ? { sname: st.sname } : {}) };
+      local.sched = [...(local.sched || []), rec].slice(-40);
+      if (testLeft(rec) <= 14) local.mission = null;
+      track('test_added');
+      if (st.kind === 'dict') { local.dictLink = st.id; saveLocal(); box.remove(); return go({ name: 'dictation', id: 'new' }); }
+      saveLocal(); box.remove();
+      if (view.name === 'home') renderHome(); else if (view.name === 'progress') renderProgress();
+      if (start && st.b) return runTestNext(st.id);
+      toast(PT(`Added ${name}. Buddy plans each day until it.`, `已加入「${name}」。Buddy 會安排每天的溫習。`));
+    };
+    if ($('#twSave')) $('#twSave').onclick = () => save(true);
+    if ($('#twSaveOnly')) $('#twSaveOnly').onclick = () => save(false);
+  };
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+  document.body.appendChild(box); draw();
 }
 // Today: a "School tests" section, and how-did-it-go for tests just passed.
 async function schoolTestsHTML() {
