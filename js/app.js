@@ -833,7 +833,9 @@ async function boostSession(book, c0 = null, step0 = null, plan = false, testId 
   const upT = { name: nm0, why: why || step.text || '', info: upInfo(book, c, step) };
   if (step.kind === 'test') return startChapterTest(book, [c.unit], upT);
   if (step.kind === 'mixed') { const others = m.chapters.filter((x) => x !== c && x.done >= 4).sort((a, b) => b.pct - a.pct).slice(0, 2).map((x) => x.unit);
-    return startMiniMock(book, [c.unit, ...others], c.unit, { ...upT, name: PT(`Mostly ${upT.name}, plus ${others.length} other chapter${others.length === 1 ? '' : 's'}`, `主要是「${upT.name}」，另加 ${others.length} 章`) }); }
+    const nms = [c.unit, ...others].map((u) => shortTitle(u.title).replace(/\s*·.*$/, '')); // 27 Nov: questions shared evenly, so name every chapter
+    const nm = nms.length === 1 ? upT.name : PT(`${nms.slice(0, -1).join(', ')} & ${nms[nms.length - 1]}`, nms.join('、'));
+    return startMiniMock(book, [c.unit, ...others], c.unit, { ...upT, name: nm }); }
   if (step.kind === 'mistakes') { // start fixing this chapter's open mistakes straight away
     const key = `${book.id}:${c.unit.id}`, ids = new Set(Object.entries(local.mistakes || {}).filter(([id, x]) => !x.done && qUnit(id).join(':') === key).map(([id]) => id));
     const mq = (await getQs(book.id, c.unit.id)).filter((q) => ids.has(q.id));
@@ -901,7 +903,7 @@ async function startCheck(book, units) {
   if (!qs.length) return toast(PT('Nothing to check yet: practise these chapters first.', '暫時未有可檢查的題目：先練習這些章節。'));
   await startUnits(book, units, qs.length, { title: PT('Still there? Quick check', '還記得嗎？快速檢查'), check: true, only: shuffle(qs).map(shuffleOptions) });
 }
-async function startMiniMock(book, units, focus = null, up = null) { // focus: the chapter this paper is for (it gets half the questions)
+async function startMiniMock(book, units, focus = null, up = null) { // focus: a plan step's paper (questions shared evenly across its chapters)
   if (!units.length) return go({ name: 'paper', bookId: book.id, from: 'home' });
   if (!allow('mock')) return;
   track('mini_mock');
@@ -8445,17 +8447,22 @@ async function preparePaper(book, units, nA, nB, purpose, focus = null) {
       out.push(...old.slice(0, n - out.length)); }
     return out;
   };
-  // a mixed paper for one chapter's step: that chapter gets half the questions, so the paper counts for it (it needs
-  // its own marks; a random draw could give it none, since its unseen questions run out first). If it has run out of
-  // new questions, ones it has seen before stand in.
+  // a mock exam step (focus set): questions shared evenly across its chapters (27 Nov; was half for the focus chapter),
+  // so every chapter gets its own marks and the paper counts for each, as the scoring already does. A chapter that has
+  // run out of new questions uses ones seen longest ago; any gap is filled from the other chapters.
   const pick = (all, mcq, n) => {
     if (!focus || units.length < 2) return take(all, mcq, n);
-    const mine = (q) => q.id.startsWith(`${book.id}:${focus.id}:`), want = Math.ceil(n / 2);
-    let F = take(all.filter(mine), mcq, want);
-    if (F.length < want) { const have = new Set(F.map((q) => q.id));
-      const old = shuffle(all.filter((q) => mine(q) && !have.has(q.id) && isMcqLike(q) === mcq)).slice(0, want - F.length); F = F.concat(old); }
-    const R = take(all.filter((q) => !mine(q)), mcq, n - F.length);
-    return F.concat(R);
+    const per = Math.floor(n / units.length); let extra = n - per * units.length; const out = [];
+    for (const u of units) {
+      const want = per + (extra-- > 0 ? 1 : 0); if (!want) continue;
+      const mine = (q) => q.id.startsWith(`${book.id}:${u.id}:`);
+      let F = take(all.filter(mine), mcq, want);
+      if (F.length < want) { const have = new Set(F.map((q) => q.id));
+        F = F.concat(shuffle(all.filter((q) => mine(q) && !have.has(q.id) && isMcqLike(q) === mcq)).slice(0, want - F.length)); }
+      out.push(...F);
+    }
+    if (out.length < n) { const have = new Set(out.map((q) => q.id)); out.push(...take(all.filter((q) => !have.has(q.id)), mcq, n - out.length)); }
+    return out;
   };
   let all = await pool();
   let A = pick(all, true, nA), B = pick(all, false, nB);
