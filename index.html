@@ -4108,32 +4108,6 @@ main.today .greet .gr-row{padding:0!important}
 
 .td-tiles .td-tile:last-child:nth-child(odd){grid-column:1/-1;flex-direction:row;align-items:center;min-height:0;gap:12px}
 .td-tiles .td-tile:last-child:nth-child(odd) b{margin-right:auto;white-space:nowrap}
-
-/* Today v3 look (27 Nov): soft pastel background, white floating cards, light big numbers, round quick-start buttons */
-body:has(main.today){background:radial-gradient(120% 60% at 0% 0%,#E4F6EE 0%,rgba(228,246,238,0) 60%),radial-gradient(120% 70% at 100% 10%,#ECE8FB 0%,rgba(236,232,251,0) 60%),linear-gradient(180deg,#F3F6FB 0%,#F6F4FC 100%)!important;background-attachment:fixed!important}
-body:has(main.today) .app,body:has(main.today) .content,body:has(main.today) main.today{background:transparent!important}
-main.today .greet .gr-text{display:flex;flex-direction:column;gap:2px}
-main.today .greet .gr-hero h1{font-size:28px!important;font-weight:500!important;letter-spacing:-.01em;color:#1B2559}
-main.today .gr-who{font-style:normal;font-weight:800}
-main.today .gr-tag{margin:0;font-size:15px;color:#6B7393}
-main.today .ag-card{background:#fff!important;border:0!important;border-radius:24px!important;box-shadow:0 10px 30px rgba(40,52,120,.08)!important}
-main.today .ag-sc.t{border:0!important;background:#F7F8FC!important;border-radius:18px!important}
-main.today .pv-num{font-weight:300!important;font-size:44px!important;letter-spacing:-.02em}
-main.today .ag-acts .btn,main.today .td-dict .btn{border-radius:999px!important}
-main.today .pv-pace-sum{background:#F3F5FF!important;border:0!important;border-radius:14px!important}
-main.today .td-dict{border:0!important;background:#F7F8FC!important;border-radius:18px!important}
-/* Quick start under the test card: one row of round buttons */
-main.today .td-quick2{background:#fff;border-radius:24px;padding:16px 14px 14px;box-shadow:0 10px 30px rgba(40,52,120,.08)}
-main.today .td-quick2 .td-qh{margin:0 4px 6px;font-size:16px}
-main.today .td-quick2 .td-tiles{grid-template-columns:repeat(5,1fr);gap:4px}
-main.today .td-quick2 .td-tile,main.today .td-quick2 .td-tile:last-child:nth-child(odd){grid-column:auto;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;border:0;background:none;padding:4px 0;min-height:0;gap:6px;box-shadow:none}
-main.today .td-quick2 .td-tile .atile{width:52px!important;height:52px!important;border-radius:50%!important}
-main.today .td-quick2 .td-tile b{font-size:12px;font-weight:600;color:#3A4470;white-space:normal!important;margin:0!important;line-height:1.2}
-main.today .td-quick2 .td-tile span[data-raw]{display:none}
-/* no test: tiles inside the card, softer */
-main.today .ag-card .td-tile{border:0;background:#F7F8FC;border-radius:18px}
-main.today .ag-card .td-tile.main{background:#EEF1FF}
-main.today .ag-list,main.today .pv-pace-sum{border-top:0!important;border-bottom:0!important}main.today .ag-list{padding-top:0!important}
 </style>
 </head>
 <body>
