@@ -3407,6 +3407,8 @@ function renderPractice() {
       ${pick(['ssago'])}</div>
       ${(local.worksheets || []).length ? `<button class="weekstrip" id="worksheets"><span class="wt"><b>Mark a printed worksheet</b><span>Enter the answers you wrote on paper</span></span><span aria-hidden="true" style="color:var(--accent);font-weight:700">›</span></button>` : ''}
 </section>
+    <section class="stack g10"><div class="sect-head"><h2>${Z('My textbooks', '我的課本')}</h2></div>
+      <button class="weekstrip" id="mybooks"><span class="wt"><b>${Z('Books, chapters and “In class now”', '課本、章節和「課堂進度」')}</b><span>${Z('See every chapter, add your own textbook, or remove one', '查看所有章節、加入自己的課本或移除')}</span></span><span aria-hidden="true" style="color:var(--text-2)">›</span></button></section>
     <section class="stack g10"><div class="sect-head"><h2>${Z('Language skills', '語文技能')}</h2></div><div class="quick">${pick(['dictgo', 'wrgo', 'lngo', 'spgo'])}</div></section>
   </main>${footerHTML()}`;
   bindPracticeTiles(); bindGear();
@@ -3414,6 +3416,7 @@ function renderPractice() {
   const toBook = async (mode) => { const bs = await getBooks(); if (bs.length === 1) go({ name: 'book', bookId: bs[0].id, focus: mode }); else go({ name: 'chapters', mode }); };
   document.getElementById('questionsgo').onclick = () => toBook('practise');
   document.getElementById('mkgo').onclick = () => go({ name: 'mistakes' });
+  document.getElementById('mybooks').onclick = () => go({ name: 'books' });
   document.getElementById('notesgo').onclick = () => toBook('notes');
   document.getElementById('cardsgo').onclick = () => toBook('cards');
   window.scrollTo(0, 0);
@@ -4526,8 +4529,8 @@ async function quickTour(replay) {
   const C = (en, zh) => (LANG === 'zh' ? zh : en);
   const tab = (k) => `[data-tabgo="${k}"]`;
   const steps = [
-    { go: 'home', sel: tab('home'), t: C('Hi, I’m Buddy! This is Today', '你好，我是 Buddy！這是「今日」'), d: C('Your home screen: your streak, your next school test and today’s plan. Tap Start and I’ll take you through it.', '你的主頁：連續練習日數、下一個學校測驗和今日計劃。按「開始」，我會帶你逐項完成。') },
-    { go: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('Your textbooks. We’ve added free PrepBuddy books to try, and you can add your own school books here.', '你的課本。我們已加入 PrepBuddy 的免費課本給你試用，你也可以在這裏加入學校課本。') },
+    { go: 'home', sel: tab('home'), t: C('Hi, I’m Buddy! This is Today', '你好，我是 Buddy！這是「今日」'), d: C('Your home screen: your next school test, and one button for what to do next. Tap Start and I’ll take you through it.', '你的主頁：連續練習日數、下一個學校測驗和今日計劃。按「開始」，我會帶你逐項完成。') },
+    { go: 'practice', sel: '#mybooks', skipIfMissing: true, t: C('My textbooks', '我的課本'), d: C('Under Practice: your textbooks and their chapters. We’ve added free PrepBuddy books to try, and you can add your own school books here.', '在「練習」裏：你的課本和章節。我們已加入 PrepBuddy 的免費課本給你試用，你也可以在這裏加入自己的課本。') },
     { go: 'practice', sel: tab('practice'), t: C('Practice', '練習'), d: C('Practise any chapter, plus dictation, writing, listening, speaking and homework help.', '練習任何一章，還有默書、寫作、聆聽、說話和功課幫手。') },
     { go: 'practice', sel: '#mkgo', skipIfMissing: true, t: C('Mistake book', '錯題簿'), d: C('Every wrong answer lands here, under Practice. Get it right again a day later and it’s mastered.', '答錯的題目都會放在「練習」的錯題簿。隔一天再答對，就算掌握了。') },
     { go: 'settings', sel: tab('settings'), t: C('Settings', '設定'), d: C('Your name, language, backups, and the parent dashboard.', '名字、語言、備份，以及家長主頁。') },
@@ -4550,7 +4553,7 @@ async function startTour(replay) {
     { go: 'home', t: C('Hi, I’m Buddy!', '你好，我是 Buddy！'), d: C('Let me show you everything PrepBuddy can do, on the real screens. It takes about 3 minutes, and you can skip any time.', '讓我在真實的頁面上，帶你看看 PrepBuddy 的所有功能，大約 3 分鐘，隨時可以略過。') },
     { go: 'home', sel: tab('home'), t: C('Today', '今日'), d: C('Your home screen. Buddy plans what to do each day: reviews, a chapter to practise, mistakes to fix.', '你的主頁。Buddy 每天為你安排要做的事：溫習、練習章節、改正錯題。') },
     { go: 'home', sel: '.ms-card', skipIfMissing: true, t: C('Today’s plan', '今日計劃'), d: C('Start here every day: Buddy picks 2–3 things to do, in order. Tap Start, and each one gets a tick when it’s done. About 15 minutes.', '每天由這裏開始：Buddy 會按次序選 2 至 3 件事。按「開始」，完成一項就會打勾。約 15 分鐘。') },
-    { go: 'books', sel: tab('books'), t: C('Books', '課本'), d: C('All your textbooks live here. For the tour I’ve added a sample book. Let’s open it.', '你所有的課本都在這裏。我為導覽加了一本示範課本，我們打開看看。') },
+    { go: 'practice', sel: '#mybooks', skipIfMissing: true, t: C('My textbooks', '我的課本'), d: C('Your textbooks live under Practice. For the tour I’ve added a sample book. Let’s open it.', '你的課本在「練習」裏。我為導覽加入了一本示範課本。打開看看。') },
     { go: book, sel: '.bk-head', t: C('A book', '一本課本'), d: C('Every chapter of your textbook becomes practice questions, chapter tests, notes and flashcards, written from the book itself.', '課本的每一章都會變成練習題、章節測驗、筆記和閃卡，全部根據課本內容。') },
     { run: async () => { pick = { bookId: DEMO_ID, ids: new Set(['u0']), open: new Set() }; await go(book); }, sel: '.crow', t: C('Pick chapters to practise', '選擇要練習的章節'), d: C('Tick one or more chapters. You can choose multiple choice, written questions or both, and the difficulty.', '剔選一個或多個章節，可以選擇選擇題、文字題或兩者，以及難度。') },
     { go: book, sel: '#go', skipIfMissing: true, t: C('Start a practice set', '開始練習'), d: C('About 10 questions at a time, about 10 minutes. Let’s try one.', '每次約 10 題、約 10 分鐘。我們試試看。') },
@@ -5384,7 +5387,7 @@ function rewardEditor() {
 }
 
 /* ---------- tab bar ---------- */
-const TABS = [['home', 'Today', 'today'], ['books', 'Books', 'books'], ['practice', 'Practice', 'practice'], ['progress', 'Progress', 'chart'], ['settings', 'Settings', 'gear']]; // the Mistake book is a block on Practice
+const TABS = [['home', 'Today', 'today'], ['practice', 'Practice', 'practice'], ['progress', 'Progress', 'chart'], ['settings', 'Settings', 'gear']]; // the Mistake book is a block on Practice
 let tabNow = null;
 function renderTabs(active = tabNow) {
   tabNow = active;
@@ -5406,7 +5409,7 @@ function renderTabs(active = tabNow) {
 }
 // The menu shows on every screen except timed papers (mock exams, chapter tests, mini mocks), which get the
 // whole screen like a real exam. Screens that aren't one of the four tabs light up the tab they belong to.
-const TAB_OF = { goals: 'home', mistakes: 'practice', chapters: 'practice', practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'books', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'books', mistakes: 'mistakes', progress: 'progress', book: 'books', notes: 'books', cards: 'books', paper: 'books', edit: 'books', library: 'books', pick: 'practice', worksheets: 'practice', usage: 'home' };
+const TAB_OF = { goals: 'home', mistakes: 'practice', chapters: 'practice', practice: 'practice', listening: 'practice', parent: 'progress', plans: 'settings', speaking: 'practice', writing: 'practice', learn: 'practice', dictation: 'practice', homework: 'practice', stars: 'progress', settings: 'settings', home: 'home', books: 'practice', mistakes: 'mistakes', progress: 'progress', book: 'practice', notes: 'practice', cards: 'practice', paper: 'practice', edit: 'practice', library: 'practice', pick: 'practice', worksheets: 'practice', usage: 'home' };
 const MAIN_TABS = ['home', 'books', 'practice', 'progress', 'settings'];
 function tabFor(v) {
   if (!v) return 'home';
