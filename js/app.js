@@ -2453,7 +2453,8 @@ function editDictation(L) {
         const old = new Map(L.items.map((t, i) => [t, (L.res || {})[i]]));
         L.res = Object.fromEntries(items.map((t, i) => [i, old.get(t)]).filter((x) => x[1]));
         Object.assign(L, { title, lang: st.lang, items });
-      } else (local.dict = local.dict || []).push({ id: uid(), t: Date.now(), title, lang: st.lang, items, res: {}, runs: [] });
+      } else { const nid = uid(); (local.dict = local.dict || []).push({ id: nid, t: Date.now(), title, lang: st.lang, items, res: {}, runs: [] });
+        const x = local.dictLink && (local.sched || []).find((y) => y.id === local.dictLink && y.kind === 'dict' && !y.L); if (x) x.L = nid; delete local.dictLink; }
       saveLocal(); go({ name: 'dictation' });
     };
     const d = document.getElementById('ddel');
@@ -7353,12 +7354,22 @@ function goalsCardHTML(GD, o = {}) {
 }
 // School dictations on Today (27 Nov): they have no %, so a simple row each, with a button to practise the words
 function dictRowsHTML() {
+  // 27 Nov: a dictation works like a test: its % = words right on their latest try (missed words come first next time)
   const ds = upcomingTests().filter((x) => x.kind === 'dict').sort((a, b) => testLeft(a) - testLeft(b)); if (!ds.length) return '';
   return `<div class="td-dicts">${ds.map((x) => { const L = (local.dict || []).find((d) => d.id === x.L);
-    return `<div class="td-dict">${actionTile('dictation', 40)}<span class="tdd-t"><b data-raw>${esc(x.name)}</b><small>${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(testLeft(x))}${L ? ` · <span data-raw>${esc(L.title)}</span>` : ''}</small></span>
-      <button class="btn-sm primary" data-tddict="${L ? esc(L.id) : ''}">${L ? PT('Practise', '練習') : PT('Add words', '加入詞語')}</button></div>`; }).join('')}</div>`;
+    const n = L ? (L.items || []).length : 0, res = (L && L.res) || {}, tried = n ? L.items.filter((_, i) => res[i] && res[i].n).length : 0;
+    const right = n ? L.items.filter((_, i) => res[i] && res[i].n && !res[i].due).length : 0, pct = n ? Math.round(100 * right / n) : 0;
+    const when = `${new Date(testDay(x)).toLocaleDateString(LOCALE(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${leftText(testLeft(x))}`;
+    const note = !L ? PT('Add the words first, then practise until you get them all right.', '先加入詞語，然後練習到全部寫對。')
+      : !tried ? PT(`${n} words · not practised yet`, `${n} 個詞語 · 未練習`)
+      : pct >= 100 ? PT('All words right last time. One more go the day before keeps them fresh.', '上次全部寫對！考前一天再練一次。')
+      : PT(`${right} of ${n} words right · missed ones come first next time`, `${n} 個詞語寫對 ${right} 個 · 下次先考寫錯的`);
+    return `<div class="td-dict"><div class="tdd-h">${actionTile('dictation', 40)}<span class="tdd-t"><b data-raw>${esc(x.name)}</b><small>${when}</small></span>${L ? `<em class="tdd-pct ${pct >= 100 ? 'ok' : ''}">${pct}%</em>` : ''}</div>
+      ${L ? `<div class="tdd-bar" aria-hidden="true"><i style="width:${pct}%"></i></div>` : ''}<p class="tdd-n">${note}</p>
+      <button class="btn ${L && pct >= 100 ? 'ghost' : ''}" data-tddict="${L ? esc(L.id) : ''}" data-tdsched="${esc(x.id)}">${!L ? PT('Add the words →', '加入詞語 →') : pct >= 100 ? PT('Practise again', '再練一次') : PT('Practise the words →', '練習詞語 →')}</button></div>`; }).join('')}</div>`;
 }
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-tddict]'); if (!b) return; e.preventDefault();
+  if (!b.dataset.tddict) { local.dictLink = b.dataset.tdsched; saveLocal(); } // the new list gets linked to this dictation when saved
   go(b.dataset.tddict ? { name: 'dictation', id: b.dataset.tddict, sub: 'run' } : { name: 'dictation', id: 'new' }); });
 // Pace line: per test card, or (preview, localStorage pb.pace = 'sum') one line for all tests on top of the goals card
 let PACE_LIST = [];
@@ -9291,7 +9302,7 @@ function testDialog(edit) {
       local.sched = [...others, ...recs].slice(-40);
       if (recs.some((r) => testLeft(r) <= 14)) local.mission = null; // rebuild today's mission so it includes the new test
       saveLocal();
-      if (st.kind === 'dict' && !st.L) { box.remove(); toast(SCH('Saved. Now add the words for your dictation.', '已儲存。請加入默書詞語。')); return go({ name: 'dictation', id: 'new' }); }
+      if (st.kind === 'dict' && !st.L) { box.remove(); local.dictLink = st.id; saveLocal(); toast(SCH('Saved. Now add the words for your dictation.', '已儲存。請加入默書詞語。')); return go({ name: 'dictation', id: 'new' }); }
       done(SCH(`Added. Today’s plan now gets you ready for ${name}.`, `已加入。今日計劃會幫你準備「${name}」。`));
     };
     // delete sits at the top; a second tap confirms
