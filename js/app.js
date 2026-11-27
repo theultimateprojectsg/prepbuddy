@@ -3342,7 +3342,7 @@ async function renderHome() {
     ${installTip()}
     ${comboHTML ? '' : tests.pastHTML}
     ${comboHTML ? '' : testHTML}
-    ${quickHTML}
+    ${'' /* Also for tonight removed 27 Nov */}
   </main>
   <aside class="coach" id="coach" aria-label="Study coach"><button class="tutor-cta coach-cta" id="coachOpen" type="button">${buddySVG('happy', 30)}<span>${LANG === 'zh' ? '問 Buddy：你的溫習教練' : 'Ask Buddy, your study coach'}</span><span aria-hidden="true" class="tc-go">›</span></button>${coachHTML()}</aside>${footerHTML()}`;
   { const co = document.getElementById('coachOpen'); if (co) co.onclick = () => { document.getElementById('coach').classList.remove('folded'); const q = document.getElementById('coachQ'); if (q) q.focus({ preventScroll: true }); document.getElementById('coach').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
