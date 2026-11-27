@@ -5792,13 +5792,15 @@ async function renderBook(bookId) {
   const stat = (v, label) => `<span><b>${v}</b> ${label}</span>`;
   const bkT = (() => { try { return PG.trackSummary(pgState().b[book.id]); } catch (e) { return null; } })();
   const bkLevel = bkT && bkT.level != null && bkT.n >= 15 ? `<span class="bk-lv ${bkT.status}" title="${LANG === 'zh' ? '程度 1–4：大約答對三分之二的題目難度' : 'Level 1–4: the difficulty you get about 2 in 3 right'}">${LANG === 'zh' ? '程度' : 'Level'} <b>${bkT.level.toFixed(1)}</b>${bkT.status === 'rising' ? ' ▲' : bkT.status === 'dipping' ? ' ▼' : ''}</span>` : '';
-  const head = `<section class="bk-head">
-      <div class="bk-cover" style="background:${coverColour(book)}" aria-hidden="true">${subjectIcon(book.subject, 30, '#FFFFFF', book.title)}</div>
-      <div class="bk-info">
-        <h1 data-raw>${esc(book.title)}</h1>
-        <p data-raw>${esc([subj(book.subject), book.level, book.library ? '' : (LANG === 'zh' ? '自行上載' : 'Uploaded by you')].filter(Boolean).join(' · ') || ' ')}</p>
-        <div class="bk-stats">${stat(book.units.length, book.units.length === 1 ? 'chapter' : 'chapters')}${stat(qReady, qReady === 1 ? 'question ready' : 'questions ready')}${stat(answered, 'answered')}${bkLevel}</div>
+  const hp = bm.pct, hw = weakestChapter(bm), hs = hw ? masterySteps({ ...bm, chapters: [hw] }) : [];
+  const head = `<section class="bk-head bk2">
+      <div class="bk2-top">
+        <div class="bk-cover" style="background:${coverColour(book)}" aria-hidden="true">${subjectIcon(book.subject, 22, '#FFFFFF', book.title)}</div>
+        <div class="bk2-info"><h1 data-raw title="${esc(book.title)}">${esc(book.title)}</h1>
+          <p>${[`${book.units.length} ${PT(book.units.length === 1 ? 'chapter' : 'chapters', '章')}`, answered ? `${answered} ${PT('answered', '題已答')}` : '', book.library ? '' : PT('Uploaded by you', '自行上載')].filter(Boolean).join(' · ')}</p></div>
+        <div class="bk2-ring"><div class="ring ${hp >= 85 ? 'good' : hp >= 50 ? 'mid' : ''}" style="--p:${hp}" role="img" aria-label="${hp}% ready"><span>${hp}%</span></div><small>${masteryLabel(hp)}</small></div>
       </div>
+      ${hp > 0 && hp < 100 ? `<button class="btn boost bk2-boost"><b>${ICON.target} ${PT('Get me closer to 100%', '帶我更接近 100%')}</b>${hs[0] ? `<small data-raw>${esc(`${LANG === 'zh' ? '下一步：' : 'Next: '}${trStep(hs[0].text)}`)}</small>` : ''}</button>` : ''}
     </section>`;
   $app.innerHTML = `
   <div class="topbar"><button class="backbtn" id="back">${ICON.back}<span>${LANG === 'zh' ? '返回' : 'Back'}</span></button></div>
@@ -5806,7 +5808,6 @@ async function renderBook(bookId) {
   <div class="bk-head-m">${head}</div>
   <main class="bk-main stack g14">
     <div class="bk-head-d">${head}</div>
-    ${plHTML}
     <h2 class="bk-sec" id="bk-practise"><span class="bk-sec-ic">${actionIcon('practise', 22)}</span>Practise</h2>
     <div class="chtools">
       <p style="margin:0;font-size:16px;font-weight:600">${book.units.length === 1 ? '1. Your chapter' : `1. Choose chapters to practise <span class="muted" style="font-weight:500">(${book.units.length})</span>`}</p>
@@ -5820,7 +5821,6 @@ async function renderBook(bookId) {
     <button class="btn-sm danger" id="delete" style="align-self:flex-start">Remove from my textbooks</button>
   </main>
   <aside class="bk-side">
-    ${masteryCard(bm)}
   <div class="sheet sticky setup ${n ? 'armed' : ''} ${pick.opts ? 'expanded' : ''}">
     <div class="setup-head"><p style="margin:0;font-size:16px;font-weight:600">2. Set up your practice${n ? ` <span class="muted" style="font-weight:500">· ${n} chapter${n > 1 ? 's' : ''} ticked</span>` : ''}</p>${n ? `<button class="btn-sm setup-more" id="opts" aria-expanded="${!!pick.opts}">${pick.opts ? 'Fewer options' : 'More options'}</button>` : ''}</div>
     <div class="setup-row">
@@ -5885,7 +5885,7 @@ async function renderBook(bookId) {
   document.getElementById('plus').onclick = () => step((local.count || sessionSize()) >= 20 ? 10 : 5);
   document.getElementById('go').onclick = () => { const units = book.units.filter((u) => pick.ids.has(u.id)); startUnits(book, units, local.count || sessionSize()); };
   document.getElementById('delete').onclick = () => confirmRemove(book);
-  const bst = document.getElementById('boost'); if (bst) bst.onclick = () => boostSession(book);
+  $app.querySelectorAll('.bk2-boost').forEach((x) => (x.onclick = () => boostSession(book)));
   { const ics = document.getElementById('icSel'); if (ics) ics.onchange = () => { local.inClass = local.inClass || {};
     if (ics.value) local.inClass[book.id] = { u: ics.value, t: Date.now() }; else delete local.inClass[book.id];
     { const md = (local.mdone || {})[dayStart()]; if (local.mission && !(md && md[0])) local.mission.v = 0; } saveLocal(); toast(ics.value ? PT('Got it: Buddy will keep in step with your class', '收到：Buddy 會跟上班上進度') : PT('Cleared', '已清除')); }; }
